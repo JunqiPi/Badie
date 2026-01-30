@@ -12,7 +12,10 @@ struct AuthView: View {
     @State private var regNickname = ""
     @State private var regPhone = ""
     @State private var regPassword = ""
-    @State private var selectedLevel: SkillLevel?
+    @State private var selectedLevel: Int? = nil  // 使用新的9级系统 (1-7可选)
+    
+    /// 可自选的技能等级范围 (1-7，8-9需要验证)
+    private let selectableLevels = Array(1...User.maxSelfSelectableLevel)
     
     var body: some View {
         ScrollView {
@@ -73,11 +76,11 @@ struct AuthView: View {
             )
             
             PrimaryButton("登录") {
-                // 模拟登录
+                // 模拟登录 - 使用新的9级系统，默认等级4（业余）
                 appState.login(
                     nickname: "球友\(loginPhone.suffix(4))",
                     phone: loginPhone,
-                    level: .intermediate
+                    selfReportedLevel: 4
                 )
             }
             .padding(.top, AppTheme.Spacing.md)
@@ -107,14 +110,23 @@ struct AuthView: View {
                 isSecure: true
             )
             
-            // 水平选择
+            // 水平选择 - 使用新的9级系统
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Text("羽毛球水平")
                     .font(AppTheme.Typography.caption)
                     .foregroundColor(AppTheme.Colors.textSecondary)
                 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppTheme.Spacing.md) {
-                    ForEach(SkillLevel.allCases) { level in
+                Text("选择1-7级，8-9级需要赛事认证")
+                    .font(AppTheme.Typography.small)
+                    .foregroundColor(AppTheme.Colors.textSecondary.opacity(0.7))
+                
+                // 使用 LazyVGrid 显示等级选择
+                LazyVGrid(columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible()),
+                    GridItem(.flexible())
+                ], spacing: AppTheme.Spacing.sm) {
+                    ForEach(selectableLevels, id: \.self) { level in
                         levelButton(level)
                     }
                 }
@@ -125,34 +137,43 @@ struct AuthView: View {
                 appState.login(
                     nickname: regNickname,
                     phone: regPhone,
-                    level: level
+                    selfReportedLevel: level
                 )
             }
             .padding(.top, AppTheme.Spacing.md)
         }
     }
     
-    // MARK: - 水平选择按钮
-    private func levelButton(_ level: SkillLevel) -> some View {
-        Button {
+    // MARK: - 水平选择按钮 (新的9级系统)
+    private func levelButton(_ level: Int) -> some View {
+        let isSelected = selectedLevel == level
+        
+        return Button {
             withAnimation(.spring(response: 0.3)) {
                 selectedLevel = level
             }
         } label: {
-            Text(level.displayText)
-                .font(AppTheme.Typography.caption)
-                .foregroundColor(AppTheme.Colors.textPrimary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, AppTheme.Spacing.md)
-                .background(AppTheme.Colors.bgCard)
-                .cornerRadius(AppTheme.Radius.md)
-                .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.Radius.md)
-                        .stroke(
-                            selectedLevel == level ? AppTheme.Colors.primary : AppTheme.Colors.bgLight,
-                            lineWidth: 2
-                        )
-                )
+            VStack(spacing: 4) {
+                Text(User.skillLevelIcon(for: level))
+                    .font(.system(size: 20))
+                Text(User.skillLevelName(for: level))
+                    .font(AppTheme.Typography.small)
+                    .foregroundColor(AppTheme.Colors.textPrimary)
+                Text("Lv.\(level)")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundColor(AppTheme.Colors.textSecondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, AppTheme.Spacing.sm)
+            .background(isSelected ? AppTheme.Colors.primary.opacity(0.15) : AppTheme.Colors.bgCard)
+            .cornerRadius(AppTheme.Radius.md)
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md)
+                    .stroke(
+                        isSelected ? AppTheme.Colors.primary : AppTheme.Colors.bgLight,
+                        lineWidth: 2
+                    )
+            )
         }
     }
 }

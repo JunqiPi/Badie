@@ -3,6 +3,13 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var appState: AppState
     
+    // MARK: - Feature Managers (功能管理器)
+    @EnvironmentObject var locationManager: LocationManager
+    @EnvironmentObject var friendManager: FriendManager
+    @EnvironmentObject var messageManager: MessageManager
+    @EnvironmentObject var roomManager: RoomManager
+    @EnvironmentObject var surveyManager: SurveyManager
+    
     var body: some View {
         ZStack {
             AppTheme.Colors.bgDark
@@ -111,4 +118,9 @@ struct ConfirmedView: View {
 #Preview {
     ContentView()
         .environmentObject(AppState())
+        .environmentObject(LocationManager())
+        .environmentObject(FriendManager())
+        .environmentObject(MessageManager())
+        .environmentObject(RoomManager())
+        .environmentObject(SurveyManager())
 }

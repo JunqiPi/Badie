@@ -23,7 +23,7 @@ struct MatchSuccessView: View {
                 // 左侧卡片 (我)
                 collisionCard(
                     name: appState.currentUser?.nickname ?? "我",
-                    level: appState.currentUser?.level ?? .intermediate,
+                    skillLevel: appState.currentUser?.displayLevel ?? 4,
                     borderColor: AppTheme.Colors.primary
                 )
                 .offset(x: leftCardOffset)
@@ -50,7 +50,7 @@ struct MatchSuccessView: View {
                 // 右侧卡片 (对手)
                 collisionCard(
                     name: appState.matchedOpponent?.nickname ?? "对手",
-                    level: appState.matchedOpponent?.level ?? .advanced,
+                    skillLevel: appState.matchedOpponent?.displayLevel ?? 6,
                     borderColor: AppTheme.Colors.secondary
                 )
                 .offset(x: rightCardOffset)
@@ -73,7 +73,7 @@ struct MatchSuccessView: View {
     }
     
     // MARK: - 碰撞卡片
-    private func collisionCard(name: String, level: SkillLevel, borderColor: Color) -> some View {
+    private func collisionCard(name: String, skillLevel: Int, borderColor: Color) -> some View {
         VStack(spacing: AppTheme.Spacing.md) {
             AvatarView(size: 56)
             
@@ -82,7 +82,7 @@ struct MatchSuccessView: View {
                 .fontWeight(.semibold)
                 .foregroundColor(AppTheme.Colors.textPrimary)
             
-            Text(level.displayText)
+            Text(User.skillLevelDisplayText(for: skillLevel))
                 .font(AppTheme.Typography.caption)
                 .foregroundColor(AppTheme.Colors.textSecondary)
         }
@@ -210,7 +210,7 @@ struct MatchSuccessView: View {
     MatchSuccessView()
         .environmentObject({
             let state = AppState()
-            state.currentUser = User(id: "1", nickname: "球友1", phone: "", level: .intermediate, totalGames: 0, wins: 0)
+            state.currentUser = User(id: "1", nickname: "球友1", phone: "", selfReportedLevel: 4, totalGames: 0, wins: 0)
             state.matchedOpponent = User.mockOpponents[0]
             return state
         }())

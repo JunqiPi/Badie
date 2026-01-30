@@ -61,7 +61,7 @@ struct ProfileView: View {
                     
                     // 详细信息
                     VStack(spacing: 0) {
-                        infoRow(label: "水平等级", value: user?.level.displayText ?? "⭐ 业余")
+                        infoRow(label: "水平等级", value: user?.displayLevelText ?? "⭐ 业余")
                         Divider().background(AppTheme.Colors.bgLight)
                         infoRow(label: "常用球馆", value: "朝阳区体育中心")
                         Divider().background(AppTheme.Colors.bgLight)
@@ -130,7 +130,7 @@ struct ProfileView: View {
     ProfileView()
         .environmentObject({
             let state = AppState()
-            state.currentUser = User(id: "1", nickname: "球友1", phone: "138****1234", level: .intermediate, totalGames: 23, wins: 18)
+            state.currentUser = User(id: "1", nickname: "球友1", phone: "138****1234", selfReportedLevel: 4, totalGames: 23, wins: 18)
             return state
         }())
         .preferredColorScheme(.dark)

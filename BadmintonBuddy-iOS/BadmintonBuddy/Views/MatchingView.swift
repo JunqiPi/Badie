@@ -18,7 +18,7 @@ struct MatchingView: View {
                 // 玩家卡片
                 PlayerCard(
                     name: appState.currentUser?.nickname ?? "我",
-                    level: appState.currentUser?.level ?? .intermediate
+                    skillLevel: appState.currentUser?.displayLevel ?? 4
                 )
             }
             .frame(height: 220)
@@ -70,7 +70,7 @@ struct MatchingView: View {
     MatchingView()
         .environmentObject({
             let state = AppState()
-            state.currentUser = User(id: "1", nickname: "球友1", phone: "", level: .intermediate, totalGames: 0, wins: 0)
+            state.currentUser = User(id: "1", nickname: "球友1", phone: "", selfReportedLevel: 4, totalGames: 0, wins: 0)
             state.selectedMode = .singles
             return state
         }())

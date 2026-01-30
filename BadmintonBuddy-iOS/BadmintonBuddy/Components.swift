@@ -176,8 +176,23 @@ struct SearchingRing: View {
 // MARK: - 玩家卡片 (用于匹配动画)
 struct PlayerCard: View {
     let name: String
-    let level: SkillLevel
+    let skillLevel: Int
     var borderColor: Color = AppTheme.Colors.primary
+    
+    /// 使用新的9级技能系统初始化
+    init(name: String, skillLevel: Int, borderColor: Color = AppTheme.Colors.primary) {
+        self.name = name
+        self.skillLevel = skillLevel
+        self.borderColor = borderColor
+    }
+    
+    /// 向后兼容：使用旧的 SkillLevel 枚举初始化
+    @available(*, deprecated, message: "使用 init(name:skillLevel:borderColor:) 替代")
+    init(name: String, level: SkillLevel, borderColor: Color = AppTheme.Colors.primary) {
+        self.name = name
+        self.skillLevel = level.toNineLevel
+        self.borderColor = borderColor
+    }
     
     var body: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
@@ -188,7 +203,7 @@ struct PlayerCard: View {
                 .fontWeight(.semibold)
                 .foregroundColor(AppTheme.Colors.textPrimary)
             
-            Text(level.displayText)
+            Text(User.skillLevelDisplayText(for: skillLevel))
                 .font(AppTheme.Typography.small)
                 .foregroundColor(AppTheme.Colors.textSecondary)
         }

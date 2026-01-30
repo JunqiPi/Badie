@@ -1,8 +1,12 @@
 import SwiftUI
+import MapKit
 
 struct HomeView: View {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var locationManager: LocationManager
     @State private var onlineCount = 128
+    @State private var selectedPlayer: User? = nil
+    @State private var showPlayerDetail = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -45,7 +49,7 @@ struct HomeView: View {
                             .fontWeight(.semibold)
                             .foregroundColor(AppTheme.Colors.textPrimary)
                         
-                        Text(appState.currentUser?.level.displayText ?? "⭐ 业余")
+                        Text(appState.currentUser?.displayLevelText ?? "⭐ 业余")
                             .font(AppTheme.Typography.small)
                             .foregroundColor(AppTheme.Colors.textSecondary)
                     }
@@ -68,72 +72,22 @@ struct HomeView: View {
     
     // MARK: - 地图区域
     private var mapView: some View {
-        ZStack {
-            // 地图背景
-            LinearGradient(
-                colors: [Color(hex: "1e3a5f"), Color(hex: "0d2137")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            
-            // 其他玩家位置
-            ForEach(0..<5, id: \.self) { index in
-                otherPlayerMarker(index: index)
+        RealMapView(
+            nearbyPlayers: locationManager.nearbyPlayers,
+            onPlayerTapped: { player in
+                selectedPlayer = player
+                showPlayerDetail = true
             }
-            
-            // 我的位置
-            VStack {
-                ZStack {
-                    // 脉冲效果
-                    Circle()
-                        .fill(AppTheme.Colors.primary.opacity(0.3))
-                        .frame(width: 60, height: 60)
-                        .scaleEffect(1.5)
-                        .opacity(0.5)
-                    
-                    Text("📍")
-                        .font(.system(size: 32))
-                }
-            }
-            
-            // 底部位置信息
-            VStack {
-                Spacer()
-                HStack {
-                    Text("📍 当前位置：朝阳区体育中心")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundColor(AppTheme.Colors.textPrimary)
-                    Spacer()
-                }
-                .padding(AppTheme.Spacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [.clear, .black.opacity(0.8)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-            }
-        }
+        )
         .frame(height: 200)
         .cornerRadius(AppTheme.Radius.lg)
-    }
-    
-    private func otherPlayerMarker(index: Int) -> some View {
-        let positions: [(CGFloat, CGFloat)] = [
-            (-80, -60), (100, -40), (-60, 40), (80, 20), (20, 60)
-        ]
-        let pos = positions[index % positions.count]
-        
-        return Text("🏸")
-            .font(.system(size: 20))
-            .offset(x: pos.0, y: pos.1)
-            .animation(
-                .easeInOut(duration: 3)
-                .repeatForever(autoreverses: true)
-                .delay(Double(index) * 0.5),
-                value: true
-            )
+        .sheet(isPresented: $showPlayerDetail) {
+            if let player = selectedPlayer {
+                PlayerDetailSheet(player: player)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+            }
+        }
     }
     
     // MARK: - 模式选择
@@ -207,9 +161,205 @@ struct HomeView: View {
     HomeView()
         .environmentObject({
             let state = AppState()
-            state.currentUser = User(id: "1", nickname: "球友1", phone: "138****1234", level: .intermediate, totalGames: 23, wins: 18)
+            state.currentUser = User(id: "1", nickname: "球友1", phone: "138****1234", selfReportedLevel: 4, totalGames: 23, wins: 18)
             return state
         }())
+        .environmentObject(LocationManager())
         .preferredColorScheme(.dark)
         .background(AppTheme.Colors.bgDark)
+}
+
+// MARK: - 玩家详情弹窗
+/// 显示玩家的详细信息，包括昵称、技能等级和声誉评分
+/// Requirements: 1.6
+struct PlayerDetailSheet: View {
+    let player: User
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            // 头部
+            HStack {
+                Text("球友详情")
+                    .font(AppTheme.Typography.headline)
+                    .foregroundColor(AppTheme.Colors.textPrimary)
+                
+                Spacer()
+                
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(AppTheme.Colors.textSecondary)
+                }
+                .accessibilityLabel("关闭")
+            }
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            .padding(.top, AppTheme.Spacing.lg)
+            
+            // 玩家信息卡片
+            VStack(spacing: AppTheme.Spacing.md) {
+                // 头像和基本信息
+                HStack(spacing: AppTheme.Spacing.lg) {
+                    // 头像
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.Colors.primaryGradient)
+                            .frame(width: 80, height: 80)
+                        
+                        Text("🏸")
+                            .font(.system(size: 36))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        Text(player.nickname)
+                            .font(AppTheme.Typography.headline)
+                            .foregroundColor(AppTheme.Colors.textPrimary)
+                        
+                        // 技能等级
+                        HStack(spacing: AppTheme.Spacing.sm) {
+                            Text("技能等级")
+                                .font(AppTheme.Typography.caption)
+                                .foregroundColor(AppTheme.Colors.textSecondary)
+                            
+                            Text("Lv.\(player.displayLevel)")
+                                .font(AppTheme.Typography.body)
+                                .fontWeight(.bold)
+                                .foregroundColor(skillLevelColor(for: player.displayLevel))
+                        }
+                        
+                        // 新玩家徽章
+                        if player.reputation.isNewPlayer {
+                            Text("🆕 新玩家")
+                                .font(AppTheme.Typography.small)
+                                .foregroundColor(AppTheme.Colors.warning)
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                .padding(AppTheme.Spacing.lg)
+                .background(AppTheme.Colors.bgCard)
+                .cornerRadius(AppTheme.Radius.lg)
+                
+                // 声誉评分
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                    Text("声誉评分")
+                        .font(AppTheme.Typography.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(AppTheme.Colors.textPrimary)
+                    
+                    HStack(spacing: AppTheme.Spacing.lg) {
+                        // 技能准确度
+                        reputationItem(
+                            icon: "🎯",
+                            label: "技能准确",
+                            value: String(format: "%.1f", player.reputation.averageSkillAccuracy)
+                        )
+                        
+                        // 守时率
+                        reputationItem(
+                            icon: "⏰",
+                            label: "守时率",
+                            value: String(format: "%.0f%%", player.reputation.punctualityPercentage)
+                        )
+                        
+                        // 人品评分
+                        reputationItem(
+                            icon: "⭐",
+                            label: "人品评分",
+                            value: String(format: "%.1f", player.reputation.averageCharacterRating)
+                        )
+                    }
+                }
+                .padding(AppTheme.Spacing.lg)
+                .background(AppTheme.Colors.bgCard)
+                .cornerRadius(AppTheme.Radius.lg)
+                
+                // 比赛统计
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                    Text("比赛统计")
+                        .font(AppTheme.Typography.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(AppTheme.Colors.textPrimary)
+                    
+                    HStack(spacing: AppTheme.Spacing.lg) {
+                        statItem(label: "总场次", value: "\(player.totalGames)")
+                        statItem(label: "胜场", value: "\(player.wins)")
+                        statItem(label: "胜率", value: String(format: "%.0f%%", player.winRate))
+                    }
+                }
+                .padding(AppTheme.Spacing.lg)
+                .background(AppTheme.Colors.bgCard)
+                .cornerRadius(AppTheme.Radius.lg)
+            }
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            
+            Spacer()
+        }
+        .background(AppTheme.Colors.bgDark)
+    }
+    
+    // MARK: - Helper Views
+    
+    private func reputationItem(icon: String, label: String, value: String) -> some View {
+        VStack(spacing: AppTheme.Spacing.xs) {
+            Text(icon)
+                .font(.system(size: 24))
+            
+            Text(value)
+                .font(AppTheme.Typography.body)
+                .fontWeight(.bold)
+                .foregroundColor(AppTheme.Colors.textPrimary)
+            
+            Text(label)
+                .font(AppTheme.Typography.small)
+                .foregroundColor(AppTheme.Colors.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    private func statItem(label: String, value: String) -> some View {
+        VStack(spacing: AppTheme.Spacing.xs) {
+            Text(value)
+                .font(AppTheme.Typography.headline)
+                .fontWeight(.bold)
+                .foregroundColor(AppTheme.Colors.primary)
+            
+            Text(label)
+                .font(AppTheme.Typography.small)
+                .foregroundColor(AppTheme.Colors.textSecondary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    /// 根据技能等级返回对应颜色
+    private func skillLevelColor(for level: Int) -> Color {
+        switch level {
+        case 1...3:
+            return AppTheme.Colors.success // 初级 - 绿色
+        case 4...6:
+            return AppTheme.Colors.primary // 中级 - 青绿
+        case 7...9:
+            return AppTheme.Colors.secondary // 高级 - 紫色
+        default:
+            return AppTheme.Colors.textSecondary
+        }
+    }
+}
+
+#Preview("PlayerDetailSheet") {
+    PlayerDetailSheet(
+        player: User(
+            id: "1",
+            nickname: "羽球达人",
+            phone: "138****1234",
+            selfReportedLevel: 6,
+            totalGames: 50,
+            wins: 35,
+            location: Coordinate(latitude: 39.91, longitude: 116.41)
+        )
+    )
+    .preferredColorScheme(.dark)
 }
