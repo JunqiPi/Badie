@@ -308,15 +308,49 @@ enum GameMode: String, CaseIterable, Identifiable, Codable {
 }
 
 // MARK: - 匹配结果
+/// 匹配结果模型，包含对手信息和匹配的球馆
+/// - Requirements: 7.1, 7.2, 7.3, 7.4
 struct MatchResult: Codable {
+    /// 匹配的对手
     let opponent: User
-    let venue: String
+    
+    /// 匹配的球馆（替换原有的 venue 字符串）
+    /// - Requirements: 7.2
+    let court: BadmintonCourt
+    
+    /// 到球馆的距离（公里）
+    /// - Note: 现在是到球馆的距离，而不是到对手的距离
+    /// - Requirements: 7.3
     let distance: Double
+    
+    /// 建议的比赛时间
     let suggestedTime: Date
+    
+    // MARK: - 计算属性
+    
+    /// 格式化的距离显示
+    /// - Requirements: 7.3
+    var formattedDistance: String {
+        if distance < 1 {
+            return String(format: "%.0f 米", distance * 1000)
+        } else {
+            return String(format: "%.1f 公里", distance)
+        }
+    }
+    
+    /// 格式化的建议时间显示
+    var formattedSuggestedTime: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "zh_CN")
+        formatter.dateFormat = "M月d日 HH:mm"
+        return formatter.string(from: suggestedTime)
+    }
+    
+    // MARK: - Mock 数据
     
     static let mock = MatchResult(
         opponent: User.mockOpponents[0],
-        venue: "朝阳区体育中心羽毛球馆",
+        court: BadmintonCourt.mock,
         distance: 1.2,
         suggestedTime: Calendar.current.date(bySettingHour: 19, minute: 0, second: 0, of: Date())!
     )

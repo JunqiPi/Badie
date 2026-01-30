@@ -3,8 +3,9 @@ import MapKit
 
 // MARK: - RealMapView (真实地图视图)
 /// 使用 MapKit 显示真实地图，以用户当前位置为中心
+/// 显示附近球馆标记（替换原有的玩家标记）
 /// 处理位置权限状态和位置不可用情况
-/// Requirements: 1.1, 1.2, 1.7
+/// Requirements: 1.1, 1.2, 1.7, 3.2, 4.1, 9.4
 struct RealMapView: View {
     
     // MARK: - Environment
@@ -21,11 +22,17 @@ struct RealMapView: View {
     
     // MARK: - Properties
     
-    /// 附近的玩家列表
-    var nearbyPlayers: [User]
+    /// 附近的球馆列表（替换原有的 nearbyPlayers）
+    /// - Requirements: 9.4
+    var nearbyCourts: [BadmintonCourt]
     
-    /// 玩家标记点击回调
-    var onPlayerTapped: ((User) -> Void)?
+    /// 已选中的球馆ID集合
+    /// - Requirements: 9.4
+    var selectedCourtIds: Set<String>
+    
+    /// 球馆标记点击回调（替换原有的 onPlayerTapped）
+    /// - Requirements: 9.4
+    var onCourtTapped: ((BadmintonCourt) -> Void)?
     
     // MARK: - Constants
     
@@ -45,14 +52,18 @@ struct RealMapView: View {
     
     /// 初始化地图视图
     /// - Parameters:
-    ///   - nearbyPlayers: 附近的玩家列表
-    ///   - onPlayerTapped: 玩家标记点击回调
+    ///   - nearbyCourts: 附近的球馆列表
+    ///   - selectedCourtIds: 已选中的球馆ID集合
+    ///   - onCourtTapped: 球馆标记点击回调
+    /// - Requirements: 9.4
     init(
-        nearbyPlayers: [User] = [],
-        onPlayerTapped: ((User) -> Void)? = nil
+        nearbyCourts: [BadmintonCourt] = [],
+        selectedCourtIds: Set<String> = [],
+        onCourtTapped: ((BadmintonCourt) -> Void)? = nil
     ) {
-        self.nearbyPlayers = nearbyPlayers
-        self.onPlayerTapped = onPlayerTapped
+        self.nearbyCourts = nearbyCourts
+        self.selectedCourtIds = selectedCourtIds
+        self.onCourtTapped = onCourtTapped
         
         // 初始化默认区域
         let initialRegion = MKCoordinateRegion(
@@ -108,15 +119,18 @@ struct RealMapView: View {
                     }
                 }
                 
-                // 附近玩家标记
-                ForEach(nearbyPlayers) { player in
-                    if let coordinate = player.location {
-                        Annotation(player.nickname, coordinate: CLLocationCoordinate2D(
-                            latitude: coordinate.latitude,
-                            longitude: coordinate.longitude
-                        )) {
-                            playerMarker(for: player)
-                        }
+                // 球馆标记（替换玩家标记）
+                // - Requirements: 3.2, 4.1
+                ForEach(nearbyCourts) { court in
+                    Annotation(court.name, coordinate: CLLocationCoordinate2D(
+                        latitude: court.location.latitude,
+                        longitude: court.location.longitude
+                    )) {
+                        CourtAnnotationView(
+                            court: court,
+                            isSelected: selectedCourtIds.contains(court.id),
+                            onTap: { onCourtTapped?(court) }
+                        )
                     }
                 }
             }
@@ -163,35 +177,6 @@ struct RealMapView: View {
         .accessibilityLabel("我的当前位置")
     }
     
-    // MARK: - Player Marker
-    
-    /// 玩家标记视图
-    /// - Parameter player: 玩家信息
-    /// - Returns: 玩家标记视图
-    private func playerMarker(for player: User) -> some View {
-        Button {
-            onPlayerTapped?(player)
-        } label: {
-            VStack(spacing: 2) {
-                // 羽毛球图标
-                Text("🏸")
-                    .font(.system(size: 24))
-                
-                // 技能等级徽章
-                Text("\(player.displayLevel)")
-                    .font(AppTheme.Typography.small)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(skillLevelColor(for: player.displayLevel))
-                    .cornerRadius(AppTheme.Radius.sm)
-            }
-        }
-        .accessibilityLabel("\(player.nickname)，技能等级\(player.displayLevel)")
-        .accessibilityHint("点击查看详情")
-    }
-    
     // MARK: - Permission Request View
     
     /// 请求位置权限视图
@@ -210,7 +195,7 @@ struct RealMapView: View {
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(AppTheme.Colors.textPrimary)
                 
-                Text("开启位置权限后，我们可以帮您找到附近的球友")
+                Text("开启位置权限后，我们可以帮您找到附近的球馆")
                     .font(AppTheme.Typography.body)
                     .foregroundColor(AppTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -253,7 +238,7 @@ struct RealMapView: View {
                     .font(AppTheme.Typography.headline)
                     .foregroundColor(AppTheme.Colors.textPrimary)
                 
-                Text("需要位置权限才能找到附近的球友\n请在设置中开启位置权限")
+                Text("需要位置权限才能找到附近的球馆\n请在设置中开启位置权限")
                     .font(AppTheme.Typography.body)
                     .foregroundColor(AppTheme.Colors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -417,22 +402,6 @@ struct RealMapView: View {
         }
     }
     
-    /// 根据技能等级返回对应颜色
-    /// - Parameter level: 技能等级 (1-9)
-    /// - Returns: 对应颜色
-    private func skillLevelColor(for level: Int) -> Color {
-        switch level {
-        case 1...3:
-            return AppTheme.Colors.success // 初级 - 绿色
-        case 4...6:
-            return AppTheme.Colors.primary // 中级 - 青绿
-        case 7...9:
-            return AppTheme.Colors.secondary // 高级 - 紫色
-        default:
-            return AppTheme.Colors.textSecondary
-        }
-    }
-    
     /// 格式化坐标显示
     /// - Parameter coordinate: 坐标
     /// - Returns: 格式化字符串
@@ -453,30 +422,27 @@ struct RealMapView: View {
 
 // MARK: - Preview
 
-#Preview("已授权 - 有位置") {
+#Preview("已授权 - 有球馆") {
     RealMapView(
-        nearbyPlayers: [
-            User(
-                id: "1",
-                nickname: "球友小明",
-                phone: "138****1234",
-                selfReportedLevel: 5,
-                totalGames: 20,
-                wins: 12,
-                location: Coordinate(latitude: 39.91, longitude: 116.41)
-            ),
-            User(
-                id: "2",
-                nickname: "羽球达人",
-                phone: "139****5678",
-                selfReportedLevel: 7,
-                totalGames: 50,
-                wins: 35,
-                location: Coordinate(latitude: 39.92, longitude: 116.42)
-            )
-        ]
-    ) { player in
-        print("点击了玩家: \(player.nickname)")
+        nearbyCourts: BadmintonCourt.mockCourts,
+        selectedCourtIds: ["court-001", "court-003"]
+    ) { court in
+        print("点击了球馆: \(court.name)")
+    }
+    .environmentObject({
+        let manager = LocationManager()
+        return manager
+    }())
+    .frame(height: 300)
+    .preferredColorScheme(.dark)
+}
+
+#Preview("已授权 - 无选中") {
+    RealMapView(
+        nearbyCourts: BadmintonCourt.mockCourts,
+        selectedCourtIds: []
+    ) { court in
+        print("点击了球馆: \(court.name)")
     }
     .environmentObject({
         let manager = LocationManager()

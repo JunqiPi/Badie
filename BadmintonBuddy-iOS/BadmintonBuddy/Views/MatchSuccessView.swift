@@ -1,7 +1,9 @@
 import SwiftUI
+import MapKit
 
 struct MatchSuccessView: View {
     @EnvironmentObject var appState: AppState
+    @EnvironmentObject var locationManager: LocationManager
     
     // 动画状态
     @State private var leftCardOffset: CGFloat = -300
@@ -135,8 +137,12 @@ struct MatchSuccessView: View {
             
             // 详情卡片
             VStack(spacing: AppTheme.Spacing.md) {
-                detailRow(icon: "📍", text: "朝阳区体育中心羽毛球馆")
-                detailRow(icon: "📏", text: "距离你 1.2 公里")
+                // 球馆信息（使用 matchedCourt）
+                if let court = appState.matchedCourt {
+                    detailRow(icon: "🏸", text: court.name)
+                    detailRow(icon: "📍", text: court.address)
+                    detailRow(icon: "📏", text: "距离你 \(court.formattedDistance(from: userCoordinate))")
+                }
                 detailRow(icon: "⏰", text: "建议时间：今天 19:00")
             }
             .padding(AppTheme.Spacing.lg)
@@ -148,6 +154,29 @@ struct MatchSuccessView: View {
             VStack(spacing: AppTheme.Spacing.md) {
                 PrimaryButton("确认约球") {
                     appState.confirmMatch()
+                }
+                
+                // 导航按钮（打开地图应用）
+                if let court = appState.matchedCourt {
+                    Button {
+                        openMapsNavigation(to: court)
+                    } label: {
+                        HStack(spacing: AppTheme.Spacing.sm) {
+                            Image(systemName: "map.fill")
+                            Text("导航到球馆")
+                        }
+                        .font(AppTheme.Typography.body)
+                        .foregroundColor(AppTheme.Colors.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, AppTheme.Spacing.md)
+                        .background(AppTheme.Colors.bgCard)
+                        .cornerRadius(AppTheme.Radius.lg)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.Radius.lg)
+                                .stroke(AppTheme.Colors.primary, lineWidth: 1)
+                        )
+                    }
+                    .accessibilityLabel("导航到\(court.name)")
                 }
                 
                 SecondaryButton(title: "重新匹配") {
@@ -167,6 +196,37 @@ struct MatchSuccessView: View {
                 .foregroundColor(AppTheme.Colors.textSecondary)
             Spacer()
         }
+    }
+    
+    // MARK: - 用户坐标
+    /// 获取用户当前坐标，用于计算到球馆的距离
+    /// - Requirements: 7.3
+    private var userCoordinate: Coordinate {
+        if let location = locationManager.currentLocation {
+            return Coordinate(
+                latitude: location.coordinate.latitude,
+                longitude: location.coordinate.longitude
+            )
+        }
+        // 默认北京坐标（天安门）
+        return Coordinate(latitude: 39.9042, longitude: 116.4074)
+    }
+    
+    // MARK: - 导航到球馆
+    /// 打开地图应用导航到指定球馆
+    /// - Parameter court: 目标球馆
+    /// - Requirements: 7.4
+    private func openMapsNavigation(to court: BadmintonCourt) {
+        let coordinate = CLLocationCoordinate2D(
+            latitude: court.location.latitude,
+            longitude: court.location.longitude
+        )
+        let placemark = MKPlacemark(coordinate: coordinate)
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = court.name
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+        ])
     }
     
     // MARK: - 碰撞动画
@@ -212,8 +272,10 @@ struct MatchSuccessView: View {
             let state = AppState()
             state.currentUser = User(id: "1", nickname: "球友1", phone: "", selfReportedLevel: 4, totalGames: 0, wins: 0)
             state.matchedOpponent = User.mockOpponents[0]
+            state.matchedCourt = BadmintonCourt.mock
             return state
         }())
+        .environmentObject(LocationManager())
         .preferredColorScheme(.dark)
         .background(AppTheme.Colors.bgDark)
 }

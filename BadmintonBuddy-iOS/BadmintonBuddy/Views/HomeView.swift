@@ -5,8 +5,19 @@ struct HomeView: View {
     @EnvironmentObject var appState: AppState
     @EnvironmentObject var locationManager: LocationManager
     @State private var onlineCount = 128
-    @State private var selectedPlayer: User? = nil
-    @State private var showPlayerDetail = false
+    
+    // MARK: - 球馆选择状态（替换原有的玩家选择）
+    /// 当前选中的球馆（用于显示详情弹窗）
+    /// - Requirements: 10.1
+    @State private var selectedCourt: BadmintonCourt? = nil
+    
+    /// 是否显示球馆详情弹窗
+    /// - Requirements: 10.1
+    @State private var showCourtDetail = false
+    
+    /// 是否显示出行半径设置弹窗
+    /// - Requirements: 10.4
+    @State private var showRadiusSettings = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -15,7 +26,7 @@ struct HomeView: View {
             
             ScrollView {
                 VStack(spacing: AppTheme.Spacing.lg) {
-                    // 地图区域
+                    // 地图区域（显示球馆标记）
                     mapView
                     
                     // 模式选择
@@ -70,24 +81,184 @@ struct HomeView: View {
         .background(AppTheme.Colors.bgCard)
     }
     
-    // MARK: - 地图区域
+    // MARK: - 地图区域（球馆选择）
+    /// 显示地图和球馆标记，支持球馆选择和出行半径设置
+    /// - Requirements: 10.1, 10.4
     private var mapView: some View {
-        RealMapView(
-            nearbyPlayers: locationManager.nearbyPlayers,
-            onPlayerTapped: { player in
-                selectedPlayer = player
-                showPlayerDetail = true
+        VStack(spacing: AppTheme.Spacing.sm) {
+            ZStack(alignment: .topTrailing) {
+                // 真实地图视图，显示附近球馆
+                RealMapView(
+                    nearbyCourts: locationManager.nearbyCourts,
+                    selectedCourtIds: appState.selectedCourtIds,
+                    onCourtTapped: { court in
+                        selectedCourt = court
+                        showCourtDetail = true
+                    }
+                )
+                .frame(height: 200)
+                .cornerRadius(AppTheme.Radius.lg)
+                
+                // 出行半径设置按钮
+                /// - Requirements: 10.4
+                Button {
+                    showRadiusSettings = true
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 16))
+                        .foregroundColor(.white)
+                        .padding(8)
+                        .background(AppTheme.Colors.bgCard.opacity(0.9))
+                        .clipShape(Circle())
+                }
+                .padding(AppTheme.Spacing.sm)
+                .accessibilityLabel("搜索范围设置")
+                .accessibilityHint("点击调整搜索球馆的范围")
             }
-        )
-        .frame(height: 200)
-        .cornerRadius(AppTheme.Radius.lg)
-        .sheet(isPresented: $showPlayerDetail) {
-            if let player = selectedPlayer {
-                PlayerDetailSheet(player: player)
-                    .presentationDetents([.medium])
-                    .presentationDragIndicator(.visible)
+            
+            // 已选球馆摘要
+            /// - Requirements: 10.2
+            selectedCourtsSummary
+        }
+        .sheet(isPresented: $showCourtDetail) {
+            if let court = selectedCourt {
+                CourtDetailSheet(
+                    court: court,
+                    isSelected: appState.selectedCourtIds.contains(court.id),
+                    userLocation: locationManager.currentLocation.map {
+                        Coordinate(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)
+                    },
+                    onToggleSelection: {
+                        appState.toggleCourtSelection(court.id)
+                    }
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
             }
         }
+        .sheet(isPresented: $showRadiusSettings) {
+            radiusSettingsSheet
+        }
+    }
+    
+    // MARK: - 已选球馆摘要
+    /// 显示已选择的球馆数量和名称标签
+    /// - Requirements: 5.6, 10.2
+    @ViewBuilder
+    private var selectedCourtsSummary: some View {
+        if !appState.selectedCourtIds.isEmpty {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                HStack {
+                    Text("已选择 \(appState.selectedCourtIds.count)/\(AppState.maxSelectedCourts) 个球馆")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundColor(AppTheme.Colors.textSecondary)
+                    
+                    Spacer()
+                    
+                    // 清除所有选择按钮
+                    Button("清除") {
+                        appState.clearCourtSelection()
+                    }
+                    .font(AppTheme.Typography.small)
+                    .foregroundColor(AppTheme.Colors.warning)
+                    .accessibilityLabel("清除所有选择")
+                    .accessibilityHint("点击取消选择所有球馆")
+                }
+                
+                // 已选球馆名称标签
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        ForEach(selectedCourts, id: \.id) { court in
+                            courtChip(court)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - 球馆标签组件
+    /// 显示单个已选球馆的标签，点击可取消选择
+    /// - Parameter court: 球馆信息
+    /// - Returns: 球馆标签视图
+    private func courtChip(_ court: BadmintonCourt) -> some View {
+        HStack(spacing: AppTheme.Spacing.xs) {
+            Image(systemName: "sportscourt.fill")
+                .font(.system(size: 12))
+            
+            Text(court.name)
+                .font(AppTheme.Typography.small)
+                .lineLimit(1)
+            
+            // 移除按钮
+            Button {
+                appState.toggleCourtSelection(court.id)
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(AppTheme.Colors.textSecondary)
+            }
+            .accessibilityLabel("取消选择\(court.name)")
+        }
+        .foregroundColor(AppTheme.Colors.textPrimary)
+        .padding(.horizontal, AppTheme.Spacing.sm)
+        .padding(.vertical, AppTheme.Spacing.xs)
+        .background(AppTheme.Colors.bgCard)
+        .cornerRadius(AppTheme.Radius.md)
+    }
+    
+    // MARK: - 出行半径设置弹窗
+    /// 显示出行半径调整滑块
+    /// - Requirements: 10.4
+    private var radiusSettingsSheet: some View {
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Text("搜索范围设置")
+                .font(AppTheme.Typography.headline)
+                .foregroundColor(AppTheme.Colors.textPrimary)
+            
+            VStack(spacing: AppTheme.Spacing.md) {
+                Text("\(Int(locationManager.userPreferences.travelRadiusKm)) 公里")
+                    .font(AppTheme.Typography.title)
+                    .foregroundColor(AppTheme.Colors.primary)
+                
+                Slider(
+                    value: Binding(
+                        get: { locationManager.userPreferences.travelRadiusKm },
+                        set: { locationManager.updateTravelRadius($0) }
+                    ),
+                    in: UserPreferences.minimumTravelRadius...UserPreferences.maximumTravelRadius,
+                    step: 1
+                )
+                .tint(AppTheme.Colors.primary)
+                
+                // 范围提示
+                HStack {
+                    Text("\(Int(UserPreferences.minimumTravelRadius)) 公里")
+                        .font(AppTheme.Typography.small)
+                        .foregroundColor(AppTheme.Colors.textSecondary)
+                    
+                    Spacer()
+                    
+                    Text("\(Int(UserPreferences.maximumTravelRadius)) 公里")
+                        .font(AppTheme.Typography.small)
+                        .foregroundColor(AppTheme.Colors.textSecondary)
+                }
+            }
+            .padding(AppTheme.Spacing.lg)
+            
+            Button("完成") {
+                showRadiusSettings = false
+            }
+            .font(AppTheme.Typography.body)
+            .foregroundColor(.white)
+            .padding(.horizontal, AppTheme.Spacing.xl)
+            .padding(.vertical, AppTheme.Spacing.md)
+            .background(AppTheme.Colors.primaryGradient)
+            .cornerRadius(AppTheme.Radius.lg)
+        }
+        .padding(AppTheme.Spacing.lg)
+        .presentationDetents([.height(300)])
+        .presentationDragIndicator(.visible)
     }
     
     // MARK: - 模式选择
@@ -111,6 +282,8 @@ struct HomeView: View {
     }
     
     // MARK: - 匹配按钮
+    /// 显示匹配按钮和状态提示
+    /// - Requirements: 5.5, 10.3
     private var matchButtonView: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             Button {
@@ -126,27 +299,49 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, AppTheme.Spacing.lg)
                 .background(
-                    appState.selectedMode == nil
-                        ? AnyShapeStyle(AppTheme.Colors.bgLight)
-                        : AnyShapeStyle(AppTheme.Colors.secondaryGradient)
+                    appState.canStartMatching
+                        ? AnyShapeStyle(AppTheme.Colors.secondaryGradient)
+                        : AnyShapeStyle(AppTheme.Colors.bgLight)
                 )
                 .cornerRadius(AppTheme.Radius.lg)
                 .shadow(
-                    color: appState.selectedMode == nil ? .clear : AppTheme.Colors.secondary.opacity(0.4),
+                    color: appState.canStartMatching ? AppTheme.Colors.secondary.opacity(0.4) : .clear,
                     radius: 10,
                     y: 4
                 )
             }
-            .disabled(appState.selectedMode == nil)
+            .disabled(!appState.canStartMatching)
             
-            Text(appState.selectedMode == nil ? "请先选择对战模式" : "已选择\(appState.selectedMode!.rawValue)模式")
+            // 匹配状态提示
+            Text(matchButtonPrompt)
                 .font(AppTheme.Typography.caption)
-                .foregroundColor(
-                    appState.selectedMode == nil
-                        ? AppTheme.Colors.textSecondary
-                        : AppTheme.Colors.primary
-                )
+                .foregroundColor(matchButtonPromptColor)
         }
+    }
+    
+    // MARK: - 匹配按钮提示文本
+    /// 根据当前选择状态返回提示文本
+    /// - Requirements: 5.5, 10.3
+    private var matchButtonPrompt: String {
+        if appState.selectedMode == nil {
+            return "请先选择对战模式"
+        } else if appState.selectedCourtIds.isEmpty {
+            return "请先选择球馆"
+        } else {
+            return "已选择\(appState.selectedMode!.rawValue)模式，\(appState.selectedCourtIds.count)个球馆"
+        }
+    }
+    
+    // MARK: - 匹配按钮提示颜色
+    /// 根据是否可以开始匹配返回提示颜色
+    private var matchButtonPromptColor: Color {
+        appState.canStartMatching ? AppTheme.Colors.primary : AppTheme.Colors.textSecondary
+    }
+    
+    // MARK: - 已选球馆列表
+    /// 从 locationManager 的球馆列表中筛选出已选择的球馆
+    private var selectedCourts: [BadmintonCourt] {
+        locationManager.nearbyCourts.filter { appState.selectedCourtIds.contains($0.id) }
     }
     
     // MARK: - 在线人数定时器
@@ -169,197 +364,20 @@ struct HomeView: View {
         .background(AppTheme.Colors.bgDark)
 }
 
-// MARK: - 玩家详情弹窗
-/// 显示玩家的详细信息，包括昵称、技能等级和声誉评分
-/// Requirements: 1.6
-struct PlayerDetailSheet: View {
-    let player: User
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        VStack(spacing: AppTheme.Spacing.lg) {
-            // 头部
-            HStack {
-                Text("球友详情")
-                    .font(AppTheme.Typography.headline)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
-                
-                Spacer()
-                
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(AppTheme.Colors.textSecondary)
-                }
-                .accessibilityLabel("关闭")
-            }
-            .padding(.horizontal, AppTheme.Spacing.lg)
-            .padding(.top, AppTheme.Spacing.lg)
-            
-            // 玩家信息卡片
-            VStack(spacing: AppTheme.Spacing.md) {
-                // 头像和基本信息
-                HStack(spacing: AppTheme.Spacing.lg) {
-                    // 头像
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.Colors.primaryGradient)
-                            .frame(width: 80, height: 80)
-                        
-                        Text("🏸")
-                            .font(.system(size: 36))
-                    }
-                    
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text(player.nickname)
-                            .font(AppTheme.Typography.headline)
-                            .foregroundColor(AppTheme.Colors.textPrimary)
-                        
-                        // 技能等级
-                        HStack(spacing: AppTheme.Spacing.sm) {
-                            Text("技能等级")
-                                .font(AppTheme.Typography.caption)
-                                .foregroundColor(AppTheme.Colors.textSecondary)
-                            
-                            Text("Lv.\(player.displayLevel)")
-                                .font(AppTheme.Typography.body)
-                                .fontWeight(.bold)
-                                .foregroundColor(skillLevelColor(for: player.displayLevel))
-                        }
-                        
-                        // 新玩家徽章
-                        if player.reputation.isNewPlayer {
-                            Text("🆕 新玩家")
-                                .font(AppTheme.Typography.small)
-                                .foregroundColor(AppTheme.Colors.warning)
-                        }
-                    }
-                    
-                    Spacer()
-                }
-                .padding(AppTheme.Spacing.lg)
-                .background(AppTheme.Colors.bgCard)
-                .cornerRadius(AppTheme.Radius.lg)
-                
-                // 声誉评分
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    Text("声誉评分")
-                        .font(AppTheme.Typography.body)
-                        .fontWeight(.semibold)
-                        .foregroundColor(AppTheme.Colors.textPrimary)
-                    
-                    HStack(spacing: AppTheme.Spacing.lg) {
-                        // 技能准确度
-                        reputationItem(
-                            icon: "🎯",
-                            label: "技能准确",
-                            value: String(format: "%.1f", player.reputation.averageSkillAccuracy)
-                        )
-                        
-                        // 守时率
-                        reputationItem(
-                            icon: "⏰",
-                            label: "守时率",
-                            value: String(format: "%.0f%%", player.reputation.punctualityPercentage)
-                        )
-                        
-                        // 人品评分
-                        reputationItem(
-                            icon: "⭐",
-                            label: "人品评分",
-                            value: String(format: "%.1f", player.reputation.averageCharacterRating)
-                        )
-                    }
-                }
-                .padding(AppTheme.Spacing.lg)
-                .background(AppTheme.Colors.bgCard)
-                .cornerRadius(AppTheme.Radius.lg)
-                
-                // 比赛统计
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    Text("比赛统计")
-                        .font(AppTheme.Typography.body)
-                        .fontWeight(.semibold)
-                        .foregroundColor(AppTheme.Colors.textPrimary)
-                    
-                    HStack(spacing: AppTheme.Spacing.lg) {
-                        statItem(label: "总场次", value: "\(player.totalGames)")
-                        statItem(label: "胜场", value: "\(player.wins)")
-                        statItem(label: "胜率", value: String(format: "%.0f%%", player.winRate))
-                    }
-                }
-                .padding(AppTheme.Spacing.lg)
-                .background(AppTheme.Colors.bgCard)
-                .cornerRadius(AppTheme.Radius.lg)
-            }
-            .padding(.horizontal, AppTheme.Spacing.lg)
-            
-            Spacer()
-        }
+#Preview("已选球馆") {
+    HomeView()
+        .environmentObject({
+            let state = AppState()
+            state.currentUser = User(id: "1", nickname: "球友1", phone: "138****1234", selfReportedLevel: 4, totalGames: 23, wins: 18)
+            state.selectedCourtIds = ["court-001", "court-002"]
+            state.selectedMode = .singles
+            return state
+        }())
+        .environmentObject({
+            let manager = LocationManager()
+            manager.nearbyCourts = BadmintonCourt.mockCourts
+            return manager
+        }())
+        .preferredColorScheme(.dark)
         .background(AppTheme.Colors.bgDark)
-    }
-    
-    // MARK: - Helper Views
-    
-    private func reputationItem(icon: String, label: String, value: String) -> some View {
-        VStack(spacing: AppTheme.Spacing.xs) {
-            Text(icon)
-                .font(.system(size: 24))
-            
-            Text(value)
-                .font(AppTheme.Typography.body)
-                .fontWeight(.bold)
-                .foregroundColor(AppTheme.Colors.textPrimary)
-            
-            Text(label)
-                .font(AppTheme.Typography.small)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    private func statItem(label: String, value: String) -> some View {
-        VStack(spacing: AppTheme.Spacing.xs) {
-            Text(value)
-                .font(AppTheme.Typography.headline)
-                .fontWeight(.bold)
-                .foregroundColor(AppTheme.Colors.primary)
-            
-            Text(label)
-                .font(AppTheme.Typography.small)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-    
-    /// 根据技能等级返回对应颜色
-    private func skillLevelColor(for level: Int) -> Color {
-        switch level {
-        case 1...3:
-            return AppTheme.Colors.success // 初级 - 绿色
-        case 4...6:
-            return AppTheme.Colors.primary // 中级 - 青绿
-        case 7...9:
-            return AppTheme.Colors.secondary // 高级 - 紫色
-        default:
-            return AppTheme.Colors.textSecondary
-        }
-    }
-}
-
-#Preview("PlayerDetailSheet") {
-    PlayerDetailSheet(
-        player: User(
-            id: "1",
-            nickname: "羽球达人",
-            phone: "138****1234",
-            selfReportedLevel: 6,
-            totalGames: 50,
-            wins: 35,
-            location: Coordinate(latitude: 39.91, longitude: 116.41)
-        )
-    )
-    .preferredColorScheme(.dark)
 }

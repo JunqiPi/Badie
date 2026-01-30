@@ -3,8 +3,8 @@ import CoreLocation
 import Combine
 
 // MARK: - LocationManager (位置管理器)
-/// 管理用户位置和附近玩家的发现
-/// Requirements: 1.1, 1.2, 1.3, 1.4
+/// 管理用户位置和附近球馆的发现
+/// Requirements: 1.1, 1.2, 1.3, 1.4, 8.1
 class LocationManager: NSObject, ObservableObject {
     
     // MARK: - Published Properties
@@ -15,8 +15,13 @@ class LocationManager: NSObject, ObservableObject {
     /// 位置授权状态
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     
-    /// 附近的玩家列表（50英里范围内）
-    @Published var nearbyPlayers: [User] = []
+    /// 附近的球馆列表（基于用户出行半径）
+    /// - Requirements: 8.1
+    @Published var nearbyCourts: [BadmintonCourt] = []
+    
+    /// 用户偏好设置（包含出行半径）
+    /// - Requirements: 8.1
+    @Published var userPreferences: UserPreferences = .default
     
     /// 位置是否可用
     @Published var isLocationAvailable: Bool = false
@@ -31,20 +36,63 @@ class LocationManager: NSObject, ObservableObject {
     
     private let locationManager = CLLocationManager()
     
+    /// 上次刷新球馆时的位置
+    /// - Requirements: 3.3
+    private var lastRefreshLocation: CLLocation?
+    
     /// 地理围栏半径（英里）
     static let geofenceRadiusMiles: Double = 50.0
+    
+    /// 触发球馆刷新的最小位置变化（米）
+    /// - Requirements: 3.3
+    static let locationChangeThresholdMeters: Double = 500.0
     
     // MARK: - Initialization
     
     override init() {
         super.init()
         setupLocationManager()
+        loadTravelRadiusFromUserDefaults()
     }
     
     private func setupLocationManager() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.distanceFilter = 100 // 100米更新一次
+    }
+    
+    // MARK: - 出行半径持久化
+    
+    /// UserDefaults 存储键
+    private static let travelRadiusKey = "userTravelRadiusKm"
+    
+    /// 从 UserDefaults 加载出行半径
+    /// - Note: 如果保存的值无效或不存在，则使用默认值
+    private func loadTravelRadiusFromUserDefaults() {
+        let savedRadius = UserDefaults.standard.double(forKey: Self.travelRadiusKey)
+        
+        // 检查是否有保存的有效值（double 默认返回 0.0 如果键不存在）
+        if savedRadius > 0 && userPreferences.isValidTravelRadius(savedRadius) {
+            userPreferences.travelRadiusKm = savedRadius
+            #if DEBUG
+            print("[LocationManager] 已加载保存的出行半径: \(savedRadius) 公里")
+            #endif
+        } else {
+            #if DEBUG
+            print("[LocationManager] 使用默认出行半径: \(UserPreferences.defaultTravelRadius) 公里")
+            #endif
+        }
+    }
+    
+    /// 保存出行半径到 UserDefaults
+    /// - Parameter radius: 要保存的出行半径（公里）
+    private func saveTravelRadiusToUserDefaults(_ radius: Double) {
+        UserDefaults.standard.set(radius, forKey: Self.travelRadiusKey)
+        UserDefaults.standard.synchronize()
+        
+        #if DEBUG
+        print("[LocationManager] 已保存出行半径: \(radius) 公里")
+        #endif
     }
     
     // MARK: - Public Methods
@@ -76,28 +124,88 @@ class LocationManager: NSObject, ObservableObject {
         return distanceMiles <= radiusMiles
     }
     
-    /// 过滤附近的玩家（50英里范围内）
-    /// - Parameters:
-    ///   - allUsers: 所有用户列表
-    ///   - radiusMiles: 过滤半径（英里），默认50英里
-    /// - Returns: 范围内的用户列表
-    func filterNearbyPlayers(allUsers: [User], radiusMiles: Double = geofenceRadiusMiles) -> [User] {
-        guard let currentLocation = currentLocation else { return [] }
+    // MARK: - 球馆过滤方法
+    
+    /// 根据用户出行半径过滤球馆
+    /// - Parameter allCourts: 所有球馆列表
+    /// - Returns: 在出行半径内的球馆列表，按距离排序（最近的在前）
+    /// - Requirements: 8.2
+    func filterCourtsByTravelRadius(allCourts: [BadmintonCourt]) -> [BadmintonCourt] {
+        // 如果没有用户位置，返回空数组
+        guard let userCoordinate = currentLocation?.coordinate else { return [] }
         
-        return allUsers.filter { user in
-            guard let userCoordinate = user.location else { return false }
-            let userLocation = CLLocation(
-                latitude: userCoordinate.latitude,
-                longitude: userCoordinate.longitude
-            )
-            return isWithinRange(userLocation, radiusMiles: radiusMiles)
-        }
+        // 将 CLLocationCoordinate2D 转换为 Coordinate 模型
+        let userCoord = Coordinate(
+            latitude: userCoordinate.latitude,
+            longitude: userCoordinate.longitude
+        )
+        
+        // 过滤出在出行半径内的球馆，并按距离排序（最近的在前）
+        return allCourts
+            .filter { court in
+                // 只保留距离 <= 用户设置的出行半径的球馆
+                court.distance(from: userCoord) <= userPreferences.travelRadiusKm
+            }
+            .sorted { court1, court2 in
+                // 按距离升序排序（最近的在前）
+                court1.distance(from: userCoord) < court2.distance(from: userCoord)
+            }
     }
     
-    /// 更新附近玩家列表
-    /// - Parameter allUsers: 所有用户列表
-    func updateNearbyPlayers(allUsers: [User]) {
-        nearbyPlayers = filterNearbyPlayers(allUsers: allUsers)
+    // MARK: - 出行半径更新
+    
+    /// 更新用户出行半径
+    /// - Parameter radiusKm: 新的出行半径（公里）
+    /// - Returns: 更新是否成功（如果半径无效则返回 false）
+    /// - Requirements: 1.2, 1.4
+    @discardableResult
+    func updateTravelRadius(_ radiusKm: Double) -> Bool {
+        // 验证半径是否在有效范围内 [1.0, 50.0] 公里
+        guard userPreferences.isValidTravelRadius(radiusKm) else {
+            #if DEBUG
+            print("[LocationManager] 无效的出行半径: \(radiusKm) 公里（有效范围: \(UserPreferences.minimumTravelRadius)-\(UserPreferences.maximumTravelRadius) 公里）")
+            #endif
+            return false
+        }
+        
+        // 更新偏好设置
+        userPreferences.travelRadiusKm = radiusKm
+        
+        // 持久化到 UserDefaults
+        saveTravelRadiusToUserDefaults(radiusKm)
+        
+        // 刷新附近球馆列表
+        refreshNearbyCourts()
+        
+        return true
+    }
+    
+    /// 刷新附近球馆列表
+    /// - Note: 使用模拟数据过滤球馆（实际应用中会从服务器获取）
+    /// - Requirements: 8.4
+    func refreshNearbyCourts() {
+        // 使用模拟数据过滤球馆（实际应用中会从服务器获取）
+        nearbyCourts = filterCourtsByTravelRadius(allCourts: BadmintonCourt.mockCourts)
+        
+        #if DEBUG
+        print("[LocationManager] 已刷新附近球馆列表，找到 \(nearbyCourts.count) 个球馆（出行半径: \(userPreferences.travelRadiusKm) 公里）")
+        #endif
+    }
+    
+    // MARK: - 位置变化阈值检测
+    
+    /// 检查是否应该刷新附近球馆列表
+    /// - Parameter newLocation: 新的位置
+    /// - Returns: 如果位置变化超过阈值（500米）则返回 true
+    /// - Requirements: 3.3
+    func shouldRefreshCourts(newLocation: CLLocation) -> Bool {
+        guard let lastLocation = lastRefreshLocation else {
+            // 首次获取位置，应该刷新
+            return true
+        }
+        
+        let distance = newLocation.distance(from: lastLocation)
+        return distance > Self.locationChangeThresholdMeters
     }
 }
 
@@ -111,6 +219,13 @@ extension LocationManager: CLLocationManagerDelegate {
         lastLocationUpdate = Date()
         isLocationAvailable = true
         locationError = nil
+        
+        // 检查是否需要刷新附近球馆
+        // - Requirements: 3.3
+        if shouldRefreshCourts(newLocation: location) {
+            lastRefreshLocation = location
+            refreshNearbyCourts()
+        }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

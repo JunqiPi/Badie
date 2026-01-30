@@ -2,11 +2,11 @@
 //  MatchingServiceProtocol.swift
 //  BadmintonBuddy
 //
-//  定义匹配服务协议，用于基于技能等级、位置和时间段进行玩家匹配
+//  定义匹配服务协议，用于基于球馆选择、技能等级和时间段进行玩家匹配
+//  - Requirements: 6.1, 6.2, 6.3, 6.5
 //
 
 import Foundation
-import CoreLocation
 
 // MARK: - TimeSlot
 // TimeSlot 模型已移至 Models/TimeSlotModels.swift
@@ -16,7 +16,7 @@ import CoreLocation
 
 /// 匹配候选人模型
 /// 表示一个潜在的匹配对手，包含用户信息、距离、技能差异和重叠时间段
-/// - Requirements: 4.4, 4.5
+/// - Requirements: 4.4, 4.5, 6.2, 6.3
 struct MatchCandidate: Identifiable, Equatable {
     /// 唯一标识符
     let id: String
@@ -25,8 +25,9 @@ struct MatchCandidate: Identifiable, Equatable {
     /// 包含昵称、技能等级、声誉评分等所有用户属性
     let user: User
     
-    /// 与当前用户的距离（英里）
-    /// 用于地理位置优先级排序
+    /// 与球馆的距离（公里）
+    /// 注意：现在是到球馆的距离，而不是到用户的距离
+    /// - Requirements: 6.3
     let distance: Double
     
     /// 技能等级差异
@@ -39,17 +40,27 @@ struct MatchCandidate: Identifiable, Equatable {
     /// - Requirements: 4.3
     let overlappingTimeSlot: TimeSlot
     
+    // MARK: - 球馆匹配属性
+    
+    /// 匹配的球馆（双方都选择的球馆）
+    /// - Requirements: 6.3
+    let matchedCourt: BadmintonCourt
+    
+    /// 共同选择的球馆数量
+    /// - Requirements: 6.2
+    let commonCourtCount: Int
+    
     // MARK: - 计算属性
     
     /// 匹配分数（越低越好）
-    /// 计算公式: |技能差异| × 10 + 距离 × 1
-    /// 优先考虑技能匹配（权重10），其次是地理距离（权重1）
-    /// - Requirements: 4.4, 4.5
+    /// 计算公式: |技能差异| × 10 - 共同球馆数 × 5
+    /// 优先考虑技能匹配（权重10），其次是球馆重叠（权重5）
+    /// - Requirements: 6.2
     /// - Note: 分数越低表示匹配质量越高
     var matchScore: Double {
         let skillWeight = 10.0
-        let distanceWeight = 1.0
-        return Double(abs(skillDifference)) * skillWeight + distance * distanceWeight
+        let courtWeight = 5.0
+        return Double(abs(skillDifference)) * skillWeight - Double(commonCourtCount) * courtWeight
     }
     
     /// 候选人的昵称（便捷访问）
@@ -72,12 +83,12 @@ struct MatchCandidate: Identifiable, Equatable {
         user.reputation.isNewPlayer
     }
     
-    /// 格式化的距离显示
+    /// 格式化的距离显示（到球馆的距离）
     var formattedDistance: String {
         if distance < 1 {
-            return String(format: "%.1f 英里", distance)
+            return String(format: "%.0f 米", distance * 1000)
         } else {
-            return String(format: "%.0f 英里", distance)
+            return String(format: "%.1f 公里", distance)
         }
     }
     
@@ -94,25 +105,32 @@ struct MatchCandidate: Identifiable, Equatable {
     
     // MARK: - 初始化器
     
-    /// 创建匹配候选人
+    /// 创建匹配候选人（基于球馆匹配）
     /// - Parameters:
     ///   - id: 唯一标识符（默认使用用户ID）
     ///   - user: 候选用户
-    ///   - distance: 距离（英里）
+    ///   - distance: 到球馆的距离（公里）
     ///   - skillDifference: 技能差异
     ///   - overlappingTimeSlot: 重叠时间段
+    ///   - matchedCourt: 匹配的球馆
+    ///   - commonCourtCount: 共同选择的球馆数量
+    /// - Requirements: 6.2, 6.3
     init(
         id: String? = nil,
         user: User,
         distance: Double,
         skillDifference: Int,
-        overlappingTimeSlot: TimeSlot
+        overlappingTimeSlot: TimeSlot,
+        matchedCourt: BadmintonCourt,
+        commonCourtCount: Int
     ) {
         self.id = id ?? user.id
         self.user = user
         self.distance = distance
         self.skillDifference = skillDifference
         self.overlappingTimeSlot = overlappingTimeSlot
+        self.matchedCourt = matchedCourt
+        self.commonCourtCount = commonCourtCount
     }
     
     // MARK: - Equatable
@@ -122,7 +140,9 @@ struct MatchCandidate: Identifiable, Equatable {
         lhs.user == rhs.user &&
         lhs.distance == rhs.distance &&
         lhs.skillDifference == rhs.skillDifference &&
-        lhs.overlappingTimeSlot == rhs.overlappingTimeSlot
+        lhs.overlappingTimeSlot == rhs.overlappingTimeSlot &&
+        lhs.matchedCourt == rhs.matchedCourt &&
+        lhs.commonCourtCount == rhs.commonCourtCount
     }
 }
 
@@ -151,27 +171,28 @@ extension Array where Element == MatchCandidate {
 
 // MARK: - Matching Service Protocol
 
-/// 匹配服务协议
-/// 提供基于多维度条件的玩家匹配功能
-/// - Requirements: 4.3, 4.4, 4.5
+/// 基于球馆的匹配服务协议
+/// 提供基于球馆选择、技能等级和时间段的玩家匹配功能
+/// - Requirements: 6.1, 6.2, 6.3, 6.4, 6.5
 protocol MatchingServiceProtocol {
     
-    /// 查找匹配的玩家
+    /// 基于球馆的匹配查找
     /// - Parameters:
     ///   - mode: 游戏模式（单打/双打）
     ///   - skillLevel: 当前用户技能等级 (1-9)
-    ///   - location: 当前用户位置
+    ///   - selectedCourtIds: 用户选择的球馆ID集合
     ///   - timeSlot: 期望的时间段
-    ///   - radiusMiles: 搜索半径（英里），默认50英里
+    ///   - currentUserId: 当前用户ID（排除自己）
     /// - Returns: 按匹配分数排序的候选人列表
     /// - Throws: 网络错误或无可用匹配时抛出错误
-    /// - Note: 匹配算法优先考虑技能等级差异，其次是地理距离
+    /// - Note: 只匹配至少有一个共同球馆选择的用户
+    /// - Requirements: 6.1, 6.5
     func findMatches(
         mode: GameMode,
         skillLevel: Int,
-        location: CLLocation,
+        selectedCourtIds: Set<String>,
         timeSlot: TimeSlot,
-        radiusMiles: Double
+        currentUserId: String
     ) async throws -> [MatchCandidate]
 }
 
