@@ -1,96 +1,55 @@
-# 羽毛球搭子 (BadmintonBuddy) - iOS App
+# 羽毛球搭子 · Badie (iOS)
 
-## 项目概述
+按 **水平 · 时间 · 距离** 匹配附近的羽毛球搭子；AA 费用透明、到场签到、双盲互评，让约球更靠谱。
 
-羽毛球搭子是一款帮助用户寻找羽毛球球友的社交匹配 App。
+> 设计过程、用户研究证据、设计系统与需求对照见 [docs/DESIGN.md](docs/DESIGN.md)。
 
-## 技术栈
+## 运行
 
-| 组件 | 技术选型 | 版本 |
-|------|---------|------|
-| UI 框架 | SwiftUI | iOS 17+ |
-| 动画库 | Lottie (Airbnb) | 4.4.0+ |
-| 最低系统 | iOS 17.0 | - |
-| 语言 | Swift | 5.9 |
+| 项 | 要求 |
+|---|---|
+| Xcode | 16 或更新（工程使用“文件夹同步”，新增文件无需手动加入工程） |
+| iOS | 17.0+ |
+| 依赖 | 无第三方依赖 |
 
-## 功能模块
+1. 打开 `BadmintonBuddy.xcodeproj`，选择 iPhone 模拟器，`⌘R` 运行。
+2. 登录：任意 11 位大陆手机号 → 获取验证码。演示环境不发短信，验证码会显示在页面上，可一键填入。
+3. 首次注册会生成一份演示数据（3 位球友、1 条好友申请、私信、附近公开球局、1 场待评价的球局），方便完整体验流程。设置页可“重置演示数据”。
+4. 模拟器定位建议设为北京（Features → Location → Custom：39.9219, 116.4433），可看到收录的球馆；其他城市会用 Apple 地图搜索附近球馆，搜不到时使用示例球馆。
 
-### 已实现
-- [x] 启动页 (羽毛球弹跳动画)
-- [x] 登录/注册 (水平选择)
-- [x] 主页 (地图 + 模式选择)
-- [x] 匹配中 (脉冲搜索动画)
-- [x] 匹配成功 (卡片碰撞特效 + 粒子爆炸)
-- [x] 个人资料页
-- [x] 约球确认页
+测试：`⌘U`，或
 
-### 动画性能指标
-| 动画 | 帧率目标 | 内存占用 |
-|------|---------|---------|
-| 卡片碰撞 | 60 FPS | < 50MB |
-| 脉冲搜索 | 60 FPS | < 30MB |
-| 页面转场 | 60 FPS | < 20MB |
-
-## 项目结构
-
-```
-BadmintonBuddy-iOS/
-├── BadmintonBuddy.xcodeproj/
-├── BadmintonBuddy/
-│   ├── BadmintonBuddyApp.swift    # App 入口 + 全局状态
-│   ├── ContentView.swift          # 主视图路由
-│   ├── Models.swift               # 数据模型
-│   ├── Theme.swift                # 设计系统 (颜色/字体/间距)
-│   ├── Components.swift           # 可复用组件
-│   ├── Views/
-│   │   ├── SplashView.swift       # 启动页
-│   │   ├── AuthView.swift         # 登录/注册
-│   │   ├── HomeView.swift         # 主页
-│   │   ├── MatchingView.swift     # 匹配中
-│   │   ├── MatchSuccessView.swift # 匹配成功 (碰撞特效)
-│   │   └── ProfileView.swift      # 个人资料
-│   └── Assets.xcassets/
-└── README.md
+```bash
+xcodebuild test -project BadmintonBuddy.xcodeproj -scheme BadmintonBuddy \
+  -destination 'platform=iOS Simulator,name=iPhone 16 Pro' CODE_SIGNING_ALLOWED=NO
 ```
 
-## 设计系统
+CI（`.github/workflows/ios.yml`）在 macOS 上编译、跑单元测试，并用 `-BBDemoScreen <页面>` 启动参数截取浅色/深色共 38 张界面截图（Actions 产物 `screenshots`）。
 
-### 颜色 Token
-```swift
-primary:    #00D4AA  // 主色 - 青绿
-secondary:  #6C5CE7  // 次要色 - 紫
-accent:     #FD79A8  // 强调色 - 粉
-bgDark:     #1A1A2E  // 深色背景
-bgCard:     #16213E  // 卡片背景
+## 功能
+
+- **快速匹配**：单打/双打，14 天内任意 1–8 小时时段，最多 3 个球馆，水平差 ±1/±2/不限；至少重叠 30 分钟，水平优先、距离其次；双打自动按水平平衡分组；无结果时只给出“确实能找到人”的放宽建议。
+- **找到搭子**：确认前可看到对方准时率、球品、履约率，不合适可“换一个”。
+- **球局**：球局票（倒计时）、Apple 地图 / 高德 / 百度导航、三次本地提醒（1 天 / 2 小时 / 15 分钟）、加入系统日历、开赛前 30 分钟签到、AA 明细与已付标记、开赛前 2 小时内取消计为临时取消、结束并记录比分。
+- **发起球局 / 房间**：私密房间（6 位房间码，30 分钟无活动自动关闭）或公开到附近（水平范围、氛围标签、满员候补自动递补）；邀请好友、房主踢人、满员开局。
+- **双盲互评**：到场情况、水平三选一校准、球品星级、标签；双方都提交或 48 小时后才计入；过期不计入、不可重复提交。
+- **等级体系**：1–7 级行为化自评，8–9 级需认证；评价满 5 次后按 30% 自评 + 70% 球友评价计算。
+- **社交**：好友申请/通过、搜索（昵称或 4 位 ID）、私信（已送达/已读、输入中、快捷回复、1000 字上限）、屏蔽（不通知对方）、举报、删除会话只对自己生效。
+- **我的**：资料编辑（本地照片头像）、口碑、履约记录与分级处理、常用时间（最多 5 个）、出行范围、球馆收藏、屏蔽名单、外观（跟随系统/浅色/深色）、退出登录、注销账号。
+
+## 结构
+
+```
+BadmintonBuddy/
+├── App/            入口、全局状态、路由、主框架、演示启动器
+├── DesignSystem/   设计 Token 与组件（Court Pop）
+├── Models/         领域模型（用户、球馆、时间段、球局、房间、消息、评价…）
+├── Services/       匹配算法、模拟后端、提醒、导航、持久化
+├── Managers/       各功能的 ObservableObject（订阅后端事件）
+└── Features/       按功能划分的界面
+BadmintonBuddyTests/  模型、匹配算法、后端业务规则测试
 ```
 
-### 动画时长
-```swift
-fast:      0.2s  // 按钮反馈
-normal:    0.3s  // 页面转场
-slow:      0.5s  // 复杂动画
-collision: 0.7s  // 卡片碰撞
-```
+### 关于后端
 
-## 运行方式
-
-1. 使用 Xcode 15+ 打开 `BadmintonBuddy.xcodeproj`
-2. 选择 iOS 17+ 模拟器或真机
-3. Command + R 运行
-
-## 依赖管理
-
-项目使用 Swift Package Manager，Lottie 会在首次构建时自动下载。
-
-如需手动添加:
-1. Xcode → File → Add Package Dependencies
-2. 输入: `https://github.com/airbnb/lottie-ios.git`
-3. 选择版本 4.4.0+
-
-## 后续规划
-
-- [ ] 集成 MapKit 真实地图
-- [ ] 添加 Lottie 动画文件 (匹配成功/加载中)
-- [ ] 接入后端 API
-- [ ] 推送通知
-- [ ] 聊天功能
+目前没有线上服务。`Services/Backend/MockBackend` 在本机扮演服务器：JSON 持久化账户与数据，模拟附近球友（有空时间、回复消息、通过好友申请、加入球局、签到、互评），并通过 `BackendEvent` 事件流推送变化。接入真实服务时，只需实现同样的接口与事件，Manager 和界面层不用改。

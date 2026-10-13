@@ -1,48 +1,22 @@
 # Tech Stack
 
-## Platform
-- **Language**: Swift 5.9
-- **UI Framework**: SwiftUI
-- **Minimum iOS**: 17.0
-- **IDE**: Xcode 15+
+- Swift 5 language mode, SwiftUI, iOS 17.0+
+- Xcode 16+ (project uses file-system synchronized groups — new files are picked up automatically)
+- Frameworks: SwiftUI, MapKit, CoreLocation, UserNotifications, EventKitUI, PhotosUI
+- No third-party dependencies
 
-## Dependencies
-| Package | Version | Purpose |
-|---------|---------|---------|
-| Lottie (Airbnb) | 4.4.0+ | Animation library |
-
-## Package Management
-Swift Package Manager (SPM) - dependencies auto-download on first build.
-
-### Manual Dependency Addition
-1. Xcode → File → Add Package Dependencies
-2. Enter package URL
-3. Select version
-
-## Build & Run
+## Build & Test
 ```bash
-# Open project
-open BadmintonBuddy-iOS/BadmintonBuddy.xcodeproj
-
-# Build: Cmd + B
-# Run: Cmd + R
-# Test: Cmd + U
+open BadmintonBuddy-iOS/BadmintonBuddy.xcodeproj   # ⌘R run, ⌘U test
 ```
+CI: `.github/workflows/ios.yml` builds, runs unit tests and captures light/dark screenshots via the DEBUG launch argument `-BBDemoScreen <screen>`.
 
-## Performance Targets
-| Animation | FPS | Memory |
-|-----------|-----|--------|
-| Card collision | 60 | < 50MB |
-| Pulse search | 60 | < 30MB |
-| Page transitions | 60 | < 20MB |
-
-## Animation Timing Constants
-- Fast (button feedback): 0.2s
-- Normal (page transitions): 0.3s
-- Slow (complex animations): 0.5s
-- Collision effect: 0.7s
+## State
+- `@MainActor` `ObservableObject` managers injected with `@EnvironmentObject`
+- `MockBackend` is the single source of truth; managers subscribe to `BackendEvent`s
+- Pure, testable `MatchingService`
 
 ## Accessibility
-- WCAG 2.1 AA compliant
-- Color contrast ratio ≥ 4.5:1 (primary/background)
-- Dark mode only (`.preferredColorScheme(.dark)`)
+- WCAG 2.1 AA contrast (see docs/DESIGN.md), Dynamic Type via text styles / `@ScaledMetric`
+- Reduce Motion respected; 44pt minimum targets; VoiceOver labels/traits
+- Light and dark appearance (user can override in Settings)

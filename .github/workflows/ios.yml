@@ -19,7 +19,7 @@ jobs:
   build-test:
     name: Build, test & screenshots
     runs-on: macos-15
-    timeout-minutes: 45
+    timeout-minutes: 50
     defaults:
       run:
         working-directory: BadmintonBuddy-iOS
@@ -33,23 +33,47 @@ jobs:
         id: sim
         run: echo "udid=$(python3 scripts/pick_simulator.py)" >> "$GITHUB_OUTPUT"
 
-      - name: Build and run unit tests
+      - name: Build app and tests
+        id: build
+        timeout-minutes: 25
         run: |
           set +e
-          xcodebuild test \
+          xcodebuild build-for-testing \
             -project BadmintonBuddy.xcodeproj \
             -scheme BadmintonBuddy \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO > xcodebuild.log 2>&1
+            CODE_SIGNING_ALLOWED=NO > build.log 2>&1
           STATUS=$?
-          echo "----- compiler errors / test failures -----"
-          grep -E "error:|: failed|with [0-9]+ failures?|\*\* (TEST|BUILD) " xcodebuild.log | sort -u | head -300
+          echo "----- compiler errors -----"
+          grep -E "error:" build.log | sort -u | head -300
           echo "----- tail -----"
-          tail -25 xcodebuild.log
+          tail -15 build.log
+          exit $STATUS
+
+      - name: Run unit tests
+        id: test
+        timeout-minutes: 15
+        run: |
+          set +e
+          xcodebuild test-without-building \
+            -project BadmintonBuddy.xcodeproj \
+            -scheme BadmintonBuddy \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            -test-timeouts-enabled YES \
+            -default-test-execution-time-allowance 60 \
+            CODE_SIGNING_ALLOWED=NO > test.log 2>&1
+          STATUS=$?
+          echo "----- failures -----"
+          grep -E "error:|: failed|Test Case .* failed|Executed [0-9]+ tests" test.log | sort -u | head -200
+          echo "----- tail -----"
+          tail -15 test.log
           exit $STATUS
 
       - name: Capture screenshots
+        if: always() && steps.build.outcome == 'success'
+        timeout-minutes: 15
         run: bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/BadmintonBuddy.app screenshots
 
       - name: Upload screenshots
@@ -61,10 +85,13 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-      - name: Upload build log
-        if: failure()
+      - name: Upload logs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xcodebuild-log
-          path: BadmintonBuddy-iOS/xcodebuild.log
+          name: xcodebuild-logs
+          path: |
+            BadmintonBuddy-iOS/build.log
+            BadmintonBuddy-iOS/test.log
+          if-no-files-found: ignore
           retention-days: 7

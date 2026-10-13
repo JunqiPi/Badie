@@ -24,7 +24,7 @@ enum AppTheme {
         static let inkTertiary = Color.dynamic(light: 0x8C8579, dark: 0x857D90)
 
         // 描边与硬投影
-        static let stroke = Color.dynamic(light: 0x17140F, dark: 0x4A4160)
+        static let stroke = Color.dynamic(light: 0x17140F, dark: 0x756A90)
         static let shadow = Color.dynamic(light: 0x17140F, dark: 0x07060A)
 
         /// 强调色（柠檬/马卡龙）上的文字与图标颜色，深浅模式一致
@@ -44,7 +44,7 @@ enum AppTheme {
 
         // 语义色（文字可用）
         static let danger = Color.dynamic(light: 0xC92A2F, dark: 0xFF6B6E)
-        static let dangerFill = Color(hex: 0xE5484D)
+        static let dangerFill = Color(hex: 0xD22F35)
         static let success = Color.dynamic(light: 0x1F7A47, dark: 0x5BD38F)
         static let star = Color(hex: 0xFFB800)
 
