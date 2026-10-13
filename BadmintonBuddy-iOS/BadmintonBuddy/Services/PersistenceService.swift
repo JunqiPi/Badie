@@ -83,10 +83,6 @@ final class PersistenceService: PersistenceServiceProtocol {
             }
             #endif
             
-        } catch let encodingError as EncodingError {
-            // 处理编码错误，提取详细位置信息
-            let position = extractEncodingErrorPosition(from: encodingError)
-            throw PersistenceError.encodingFailed(underlying: encodingError)
         } catch {
             throw PersistenceError.encodingFailed(underlying: error)
         }
@@ -160,18 +156,6 @@ final class PersistenceService: PersistenceServiceProtocol {
         return "\(keyPrefix)\(key)"
     }
     
-    /// 从编码错误中提取位置信息
-    /// - Parameter error: 编码错误
-    /// - Returns: 错误位置描述字符串
-    private func extractEncodingErrorPosition(from error: EncodingError) -> String? {
-        switch error {
-        case .invalidValue(_, let context):
-            let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
-            return path.isEmpty ? nil : "路径: \(path)"
-        @unknown default:
-            return nil
-        }
-    }
 }
 
 // MARK: - Convenience Extensions

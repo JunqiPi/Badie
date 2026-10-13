@@ -1,0 +1,188 @@
+import SwiftUI
+import Combine
+
+// MARK: - 外观设置
+
+enum AppAppearance: String, CaseIterable, Identifiable {
+    case system, light, dark
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .system: return "跟随系统"
+        case .light: return "浅色"
+        case .dark: return "深色"
+        }
+    }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+}
+
+// MARK: - 轻提示
+
+struct Toast: Identifiable, Equatable {
+    enum Style { case info, success, error }
+
+    let id = UUID()
+    let message: String
+    var style: Style = .info
+}
+
+/// 用于 sheet(item:) 的球友资料弹窗标识
+struct PlayerSheetItem: Identifiable, Hashable {
+    let id: String
+}
+
+// MARK: - 全局会话状态
+
+@MainActor
+final class AppState: ObservableObject {
+    enum Phase: Equatable {
+        case launching
+        case onboarding
+        case main
+    }
+
+    @Published var phase: Phase = .launching
+    @Published private(set) var currentUser: User?
+    @Published var toast: Toast?
+    @Published var presentedPlayer: PlayerSheetItem?
+    @Published var appearance: AppAppearance {
+        didSet { UserDefaults.standard.set(appearance.rawValue, forKey: Self.appearanceKey) }
+    }
+
+    let backend: MockBackend
+    /// 截图/演示模式下跳过启动动画
+    var skipsSplash = false
+    /// 登录流程的起始步骤（演示模式可直接打开手机号页）
+    var onboardingInitialStep: OnboardingStep = .welcome
+
+    private static let appearanceKey = "appearance"
+    private var toastTask: Task<Void, Never>?
+
+    init(backend: MockBackend) {
+        self.backend = backend
+        self.appearance = AppAppearance(rawValue: UserDefaults.standard.string(forKey: Self.appearanceKey) ?? "") ?? .system
+        self.currentUser = backend.currentUser
+        backend.subscribe { [weak self] event in
+            self?.handle(event)
+        }
+    }
+
+    var isSignedIn: Bool { currentUser != nil }
+
+    /// 启动动画结束后决定进入哪个流程
+    func finishLaunch() {
+        currentUser = backend.currentUser
+        withAnimation(AppTheme.Motion.gentle) {
+            phase = currentUser == nil ? .onboarding : .main
+        }
+    }
+
+    private func handle(_ event: BackendEvent) {
+        switch event {
+        case .sessionChanged:
+            currentUser = backend.currentUser
+            if phase != .launching {
+                withAnimation(AppTheme.Motion.gentle) {
+                    phase = currentUser == nil ? .onboarding : .main
+                }
+            }
+        case .userUpdated(let user):
+            if user.id == currentUser?.id { currentUser = user }
+        default:
+            break
+        }
+    }
+
+    // MARK: Auth
+
+    func requestCode(phone: String) async throws -> String {
+        try await backend.requestCode(phone: phone)
+    }
+
+    func verify(phone: String, code: String) async throws -> AuthOutcome {
+        try await backend.verify(phone: phone, code: code)
+    }
+
+    func register(
+        phone: String,
+        nickname: String,
+        gender: Gender,
+        avatar: Avatar,
+        level: Int,
+        preferredMode: GameMode?,
+        recurringSlots: [RecurringTimeSlot],
+        location: Coordinate?
+    ) async throws {
+        _ = try await backend.register(
+            phone: phone, nickname: nickname, gender: gender, avatar: avatar, level: level,
+            preferredMode: preferredMode, recurringSlots: recurringSlots, location: location
+        )
+        showToast("注册成功，欢迎加入 🏸", style: .success)
+    }
+
+    func updateProfile(_ user: User) async -> Bool {
+        do {
+            currentUser = try await backend.updateProfile(user)
+            showToast("资料已保存", style: .success)
+            return true
+        } catch {
+            showError(error)
+            return false
+        }
+    }
+
+    func signOut() {
+        backend.signOut()
+    }
+
+    func deleteAccount() {
+        AvatarStore.delete(for: currentUser?.id)
+        backend.deleteAccount()
+        showToast("账号与数据已删除")
+    }
+
+    func resetDemoData() {
+        backend.resetAll()
+        showToast("演示数据已重置")
+    }
+
+    // MARK: UI helpers
+
+    func showToast(_ message: String, style: Toast.Style = .info) {
+        toastTask?.cancel()
+        withAnimation(AppTheme.Motion.standard) {
+            toast = Toast(message: message, style: style)
+        }
+        toastTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 2_600_000_000)
+            guard !Task.isCancelled else { return }
+            withAnimation(AppTheme.Motion.gentle) {
+                self?.toast = nil
+            }
+        }
+        switch style {
+        case .success: Haptics.success()
+        case .error: Haptics.error()
+        case .info: break
+        }
+    }
+
+    func showError(_ error: Error) {
+        let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+        showToast(message, style: .error)
+    }
+
+    func showPlayer(_ userId: String) {
+        guard userId != currentUser?.id, backend.user(id: userId) != nil else { return }
+        presentedPlayer = PlayerSheetItem(id: userId)
+    }
+}

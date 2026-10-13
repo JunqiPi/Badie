@@ -1,0 +1,122 @@
+import SwiftUI
+import Combine
+
+// MARK: - 标签页
+
+enum MainTab: String, CaseIterable, Identifiable {
+    case home, games, messages, profile
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .home: return "首页"
+        case .games: return "球局"
+        case .messages: return "消息"
+        case .profile: return "我的"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .home: return "house"
+        case .games: return "ticket"
+        case .messages: return "bubble.left.and.bubble.right"
+        case .profile: return "person.crop.circle"
+        }
+    }
+
+    var selectedIcon: String {
+        switch self {
+        case .home: return "house.fill"
+        case .games: return "ticket.fill"
+        case .messages: return "bubble.left.and.bubble.right.fill"
+        case .profile: return "person.crop.circle.fill"
+        }
+    }
+}
+
+// MARK: - 导航目的地
+
+enum Route: Hashable {
+    case game(id: String)
+    case room(id: String)
+    case createRoom(GameMode?, invitee: String?)
+    case joinRoom(code: String?)
+    case publicGames
+    case chat(userId: String)
+    case friends
+    case addFriend
+    case surveys
+    case survey(pendingId: String)
+    case editProfile
+    case settings
+    case recurringSlots
+    case blockedUsers
+    case notifications
+    case courts
+    case gameHistory
+}
+
+// MARK: - 路由器：每个标签页一条独立的导航栈
+
+@MainActor
+final class Router: ObservableObject {
+    @Published var selectedTab: MainTab = .home
+    @Published var paths: [MainTab: [Route]] = [:]
+    /// 中间“+”按钮的创建菜单
+    @Published var isCreateMenuPresented = false
+    /// 快速匹配设置页
+    @Published var isMatchSetupPresented = false
+
+    func binding(for tab: MainTab) -> Binding<[Route]> {
+        Binding(
+            get: { self.paths[tab] ?? [] },
+            set: { self.paths[tab] = $0 }
+        )
+    }
+
+    /// 当前标签页处于根页面时显示悬浮标签栏
+    var isTabBarVisible: Bool {
+        (paths[selectedTab] ?? []).isEmpty
+    }
+
+    func select(_ tab: MainTab) {
+        if selectedTab == tab {
+            // 再次点击回到根页面
+            paths[tab] = []
+        } else {
+            selectedTab = tab
+        }
+    }
+
+    /// 在指定标签页（默认当前页）推入页面
+    func open(_ route: Route, in tab: MainTab? = nil) {
+        let target = tab ?? selectedTab
+        if target != selectedTab {
+            selectedTab = target
+        }
+        var path = paths[target] ?? []
+        if path.last != route {
+            path.append(route)
+        }
+        paths[target] = path
+    }
+
+    /// 切换到某个标签页并重置为指定页面
+    func show(_ route: Route, in tab: MainTab) {
+        selectedTab = tab
+        paths[tab] = [route]
+    }
+
+    func popToRoot(_ tab: MainTab? = nil) {
+        paths[tab ?? selectedTab] = []
+    }
+
+    func pop() {
+        var path = paths[selectedTab] ?? []
+        guard !path.isEmpty else { return }
+        path.removeLast()
+        paths[selectedTab] = path
+    }
+}

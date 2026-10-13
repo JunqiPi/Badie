@@ -1,0 +1,98 @@
+import SwiftUI
+
+// MARK: - 公开球局卡片（“我有场地缺人”）
+
+struct PublicRoomCard: View {
+    let room: Room
+    var distanceText: String?
+    var currentUserId: String?
+    var width: CGFloat? = 270
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack(spacing: 6) {
+                TagPill(text: room.mode.title, icon: room.mode.icon, fill: AppTheme.Colors.lavender)
+                TagPill(text: room.levelRangeText, fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
+                Spacer(minLength: 0)
+                seatsBadge
+            }
+            if let slot = room.slot {
+                Text("\(slot.formattedDate)")
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                Text(slot.formattedTimeRange)
+                    .scaledFont(size: 24, relativeTo: .title2)
+                    .monospacedDigit()
+                    .foregroundStyle(AppTheme.Colors.ink)
+            }
+            if let court = room.court {
+                HStack(spacing: 4) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .font(.system(size: 11, weight: .bold))
+                    Text(court.name)
+                        .lineLimit(1)
+                    if let distanceText {
+                        Text("· \(distanceText)")
+                    }
+                }
+                .font(AppTheme.Typography.footnote)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+            }
+            HStack(spacing: AppTheme.Spacing.sm) {
+                HStack(spacing: -8) {
+                    ForEach(room.participants) { participant in
+                        AvatarView(participant: participant, size: 28)
+                    }
+                    ForEach(0..<room.openSeats, id: \.self) { _ in
+                        Circle()
+                            .strokeBorder(AppTheme.Colors.stroke, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
+                            .background(Circle().fill(AppTheme.Colors.surface))
+                            .frame(width: 28, height: 28)
+                    }
+                }
+                Spacer(minLength: 0)
+                if let cost = room.costEstimate {
+                    Text("¥\(cost.perPerson)/人")
+                        .font(AppTheme.Typography.headline)
+                        .monospacedDigit()
+                        .foregroundStyle(AppTheme.Colors.ink)
+                }
+            }
+            if !room.tags.isEmpty {
+                HStack(spacing: 4) {
+                    ForEach(room.tags.prefix(2)) { tag in
+                        TagPill(text: tag.rawValue, icon: tag.icon, fill: AppTheme.Colors.mint)
+                    }
+                }
+            }
+        }
+        .padding(AppTheme.Spacing.lg)
+        .frame(width: width, alignment: .leading)
+        .frame(maxWidth: width == nil ? .infinity : nil, alignment: .leading)
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityText)
+    }
+
+    @ViewBuilder
+    private var seatsBadge: some View {
+        if let me = currentUserId, room.contains(me) {
+            TagPill(text: "已加入", icon: "checkmark", fill: AppTheme.Colors.lime)
+        } else if let me = currentUserId, room.isWaitlisted(me) {
+            TagPill(text: "候补中", fill: AppTheme.Colors.butter)
+        } else if room.isFull {
+            TagPill(text: "满员·可候补", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
+        } else {
+            TagPill(text: "缺 \(room.openSeats) 人", fill: AppTheme.Colors.pink)
+        }
+    }
+
+    private var accessibilityText: String {
+        var parts = ["\(room.mode.title)球局", room.levelRangeText]
+        if let slot = room.slot { parts.append(slot.formattedFull) }
+        if let court = room.court { parts.append(court.name) }
+        parts.append(room.isFull ? "已满员" : "还缺 \(room.openSeats) 人")
+        if let cost = room.costEstimate { parts.append("每人约 \(cost.perPerson) 元") }
+        return parts.joined(separator: "，")
+    }
+}

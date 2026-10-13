@@ -1,0 +1,284 @@
+import SwiftUI
+
+// MARK: - 头像
+
+struct AvatarView: View {
+    let text: String
+    var paletteIndex: Int = 0
+    var size: CGFloat = 44
+    /// 本人照片（可选）
+    var image: UIImage?
+    var showsBorder = true
+
+    var body: some View {
+        ZStack {
+            Circle().fill(AppTheme.Colors.paletteColor(paletteIndex))
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .clipShape(Circle())
+            } else {
+                Text(text)
+                    .font(.system(size: size * 0.42, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.onAccent)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                    .padding(size * 0.12)
+            }
+        }
+        .frame(width: size, height: size)
+        .overlay {
+            if showsBorder {
+                Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: size >= 56 ? 2.5 : 2)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+extension AvatarView {
+    init(user: User, size: CGFloat = 44, image: UIImage? = nil) {
+        self.init(text: user.avatarText, paletteIndex: user.avatar.paletteIndex, size: size, image: image)
+    }
+
+    init(participant: RoomParticipant, size: CGFloat = 44) {
+        self.init(text: participant.avatarText, paletteIndex: participant.avatar.paletteIndex, size: size)
+    }
+}
+
+/// 当前用户头像（自动读取本地照片）
+struct MyAvatarView: View {
+    @EnvironmentObject private var appState: AppState
+    var size: CGFloat = 44
+    /// 变更后强制刷新
+    var refreshToken: Int = 0
+
+    var body: some View {
+        if let user = appState.currentUser {
+            AvatarView(user: user, size: size, image: AvatarStore.image(for: user.id))
+                .id(refreshToken)
+        } else {
+            AvatarView(text: "🏸", size: size)
+        }
+    }
+}
+
+/// 重叠头像组
+struct AvatarStack: View {
+    let users: [User]
+    var size: CGFloat = 32
+    var maxCount = 4
+
+    var body: some View {
+        HStack(spacing: -size * 0.32) {
+            ForEach(Array(users.prefix(maxCount).enumerated()), id: \.element.id) { index, user in
+                AvatarView(user: user, size: size)
+                    .zIndex(Double(maxCount - index))
+            }
+            if users.count > maxCount {
+                Text("+\(users.count - maxCount)")
+                    .font(.system(size: size * 0.36, weight: .heavy, design: .rounded))
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .frame(width: size, height: size)
+                    .background(Circle().fill(AppTheme.Colors.surfaceMuted))
+                    .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: 2))
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(users.map(\.nickname).joined(separator: "、"))
+    }
+}
+
+// MARK: - 等级徽章
+
+struct LevelBadge: View {
+    let level: Int
+    var showsName = true
+    var compact = false
+
+    var body: some View {
+        Text(showsName ? SkillLevel.displayText(for: level) : "Lv.\(level)")
+            .font(compact ? .system(size: 10, weight: .heavy, design: .rounded) : AppTheme.Typography.caption.weight(.heavy))
+            .foregroundStyle(AppTheme.Colors.lime)
+            .lineLimit(1)
+            .fixedSize()
+            .padding(.horizontal, compact ? 5 : 7)
+            .padding(.vertical, compact ? 1.5 : 3)
+            .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color(hex: 0x17140F)))
+            .accessibilityLabel("等级 \(level) \(SkillLevel.name(for: level))")
+    }
+}
+
+/// 小标签（新球友、已认证等）
+struct TagPill: View {
+    let text: String
+    var icon: String?
+    var fill: Color = AppTheme.Colors.surface
+    var foreground: Color?
+
+    var body: some View {
+        HStack(spacing: 4) {
+            if let icon {
+                Image(systemName: icon)
+                    .font(.system(size: 10, weight: .bold))
+            }
+            Text(text)
+                .lineLimit(1)
+        }
+        .font(AppTheme.Typography.caption.weight(.bold))
+        .foregroundStyle(foreground ?? AppTheme.Colors.onAccent)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(Capsule().fill(fill))
+        .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+        .fixedSize()
+    }
+}
+
+struct NewPlayerBadge: View {
+    var body: some View {
+        TagPill(text: "新球友 · 待校准", icon: "sparkles", fill: AppTheme.Colors.butter)
+            .accessibilityLabel("新球友，评价不足 5 次，水平待校准")
+    }
+}
+
+struct VerifiedBadge: View {
+    let status: VerificationStatus
+
+    var body: some View {
+        if let text = status.badgeText {
+            TagPill(text: text, icon: "checkmark.seal.fill", fill: AppTheme.Colors.lime)
+        }
+    }
+}
+
+// MARK: - 选择胶囊
+
+struct ChoiceChip: View {
+    let title: String
+    var icon: String?
+    let isSelected: Bool
+    var tint: Color = AppTheme.Colors.lime
+    let action: () -> Void
+
+    var body: some View {
+        Button {
+            Haptics.selection()
+            action()
+        } label: {
+            HStack(spacing: 6) {
+                if let icon {
+                    Image(systemName: icon)
+                        .font(.system(size: 12, weight: .bold))
+                }
+                Text(title)
+                    .lineLimit(1)
+            }
+            .font(AppTheme.Typography.footnoteBold)
+            .foregroundStyle(isSelected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
+            .padding(.horizontal, 14)
+            .frame(minHeight: 38)
+            .background(Capsule().fill(isSelected ? tint : AppTheme.Colors.surface))
+            .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
+    }
+}
+
+/// 贴纸式分段控件
+struct SegmentedSticker<Option: Hashable>: View {
+    let options: [Option]
+    @Binding var selection: Option
+    let title: (Option) -> String
+    var badge: (Option) -> Int = { _ in 0 }
+
+    @Namespace private var namespace
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(options, id: \.self) { option in
+                let selected = option == selection
+                Button {
+                    Haptics.selection()
+                    withAnimation(AppTheme.Motion.standard) { selection = option }
+                } label: {
+                    HStack(spacing: 6) {
+                        Text(title(option))
+                        if badge(option) > 0 {
+                            CountBadge(count: badge(option))
+                        }
+                    }
+                    .font(AppTheme.Typography.subheadlineBold)
+                    .foregroundStyle(selected ? AppTheme.Colors.onInverse : AppTheme.Colors.inkSecondary)
+                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .background {
+                        if selected {
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(AppTheme.Colors.inverse)
+                                .matchedGeometryEffect(id: "segment", in: namespace)
+                        }
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
+            }
+        }
+        .padding(4)
+        .sticker(AppTheme.Colors.surface, radius: 16, shadow: .zero)
+    }
+}
+
+// MARK: - 评分（羽毛球拍图标）
+
+struct RatingPicker: View {
+    @Binding var rating: Int
+    var maximum = 5
+
+    var body: some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            ForEach(1...maximum, id: \.self) { value in
+                Button {
+                    Haptics.selection()
+                    rating = value
+                } label: {
+                    Image(systemName: value <= rating ? "star.fill" : "star")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundStyle(value <= rating ? AppTheme.Colors.star : AppTheme.Colors.inkTertiary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(PressableStyle(scale: 0.85))
+                .accessibilityLabel("\(value) 星")
+                .accessibilityAddTraits(value == rating ? [.isSelected, .isButton] : .isButton)
+            }
+        }
+    }
+}
+
+struct StarsView: View {
+    let rating: Double
+    var size: CGFloat = 14
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(1...5, id: \.self) { index in
+                Image(systemName: symbol(for: index))
+                    .font(.system(size: size, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.star)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(format: "%.1f 星", rating))
+    }
+
+    private func symbol(for index: Int) -> String {
+        let value = rating - Double(index - 1)
+        if value >= 0.75 { return "star.fill" }
+        if value >= 0.25 { return "star.leadinghalf.filled" }
+        return "star"
+    }
+}

@@ -1,0 +1,176 @@
+import Foundation
+
+// MARK: - 房间 / 球局招募
+
+/// 球局氛围标签（帮助新手找到合适的局，减少“新手被嫌弃”）
+enum RoomTag: String, CaseIterable, Identifiable, Codable, Hashable {
+    case beginnerFriendly = "新手友好"
+    case casual = "欢乐局"
+    case competitive = "竞技局"
+    case womenFriendly = "女生友好"
+    case coaching = "可指导"
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .beginnerFriendly: return "leaf.fill"
+        case .casual: return "face.smiling.inverse"
+        case .competitive: return "flame.fill"
+        case .womenFriendly: return "heart.fill"
+        case .coaching: return "graduationcap.fill"
+        }
+    }
+}
+
+enum RoomVisibility: String, Codable, Hashable {
+    /// 仅凭房间码 / 好友邀请加入
+    case privateRoom
+    /// 公开到“附近球局”，任何符合水平的人可加入
+    case publicListing
+}
+
+enum RoomCloseReason: String, Codable, Hashable {
+    case expired
+    case ownerClosed
+    case startTimePassed
+
+    var message: String {
+        switch self {
+        case .expired: return "房间 30 分钟无活动，已自动关闭"
+        case .ownerClosed: return "房主已解散房间"
+        case .startTimePassed: return "已过开始时间，房间已关闭"
+        }
+    }
+}
+
+enum RoomStatus: Codable, Hashable {
+    case open
+    case started(gameId: String)
+    case closed(RoomCloseReason)
+
+    var isOpen: Bool {
+        if case .open = self { return true }
+        return false
+    }
+}
+
+struct RoomParticipant: Identifiable, Codable, Hashable {
+    var id: String { userId }
+    let userId: String
+    var nickname: String
+    var skillLevel: Int
+    var avatar: Avatar
+    let joinedAt: Date
+
+    init(user: User, joinedAt: Date = Date()) {
+        self.userId = user.id
+        self.nickname = user.nickname
+        self.skillLevel = user.displayLevel
+        self.avatar = user.avatar
+        self.joinedAt = joinedAt
+    }
+
+    var avatarText: String {
+        avatar.symbol.isEmpty ? (nickname.first.map { String($0) } ?? "🏸") : avatar.symbol
+    }
+}
+
+struct Room: Identifiable, Codable, Hashable {
+    let id: String
+    let code: String
+    var ownerId: String
+    var mode: GameMode
+    var visibility: RoomVisibility
+    var participants: [RoomParticipant]
+    /// 已邀请但尚未加入的用户
+    var invitedUserIds: [String]
+    /// 候补名单（公开局满员后排队，有人退出自动递补）
+    var waitlist: [RoomParticipant]
+    var court: BadmintonCourt?
+    var slot: TimeSlot?
+    var levelRange: ClosedRange<Int>
+    var tags: [RoomTag]
+    var note: String
+    let createdAt: Date
+    var lastActivityAt: Date
+    var status: RoomStatus
+
+    static let expirationDuration: TimeInterval = 30 * 60
+    static let codeLength = 6
+    /// 去掉易混淆字符 0 O 1 I L
+    static let codeCharacters = Array("ABCDEFGHJKMNPQRSTUVWXYZ23456789")
+    static let maxWaitlist = 4
+
+    var requiredPlayerCount: Int { mode.requiredPlayers }
+    var isFull: Bool { participants.count >= requiredPlayerCount }
+    var isReady: Bool { participants.count == requiredPlayerCount }
+    var openSeats: Int { max(0, requiredPlayerCount - participants.count) }
+
+    /// 私密房间 30 分钟无活动过期；公开局在开始时间后过期
+    func isExpired(now: Date = Date()) -> Bool {
+        switch visibility {
+        case .privateRoom:
+            return now.timeIntervalSince(lastActivityAt) > Self.expirationDuration
+        case .publicListing:
+            guard let slot else { return now.timeIntervalSince(lastActivityAt) > Self.expirationDuration }
+            return now >= slot.startTime
+        }
+    }
+
+    /// 剩余自动关闭时间（私密房间）
+    func expiresAt() -> Date {
+        if visibility == .publicListing, let slot { return slot.startTime }
+        return lastActivityAt.addingTimeInterval(Self.expirationDuration)
+    }
+
+    func contains(_ userId: String) -> Bool {
+        participants.contains { $0.userId == userId }
+    }
+
+    func isWaitlisted(_ userId: String) -> Bool {
+        waitlist.contains { $0.userId == userId }
+    }
+
+    func accepts(level: Int) -> Bool { levelRange.contains(level) }
+
+    var levelRangeText: String {
+        if levelRange.lowerBound <= 1 && levelRange.upperBound >= 9 { return "不限水平" }
+        if levelRange.lowerBound == levelRange.upperBound { return "Lv.\(levelRange.lowerBound)" }
+        return "Lv.\(levelRange.lowerBound)–\(levelRange.upperBound)"
+    }
+
+    var costEstimate: CostSplit? {
+        guard let court, let slot else { return nil }
+        return CostSplit.estimate(court: court, slot: slot, mode: mode)
+    }
+
+    static func generateCode(excluding existing: Set<String> = []) -> String {
+        var code: String
+        repeat {
+            code = String((0..<codeLength).map { _ in codeCharacters.randomElement()! })
+        } while existing.contains(code)
+        return code
+    }
+
+    /// 校验房间码格式（6 位、仅含合法字符）
+    static func isValidCode(_ code: String) -> Bool {
+        let upper = code.uppercased()
+        return upper.count == codeLength && upper.allSatisfy { codeCharacters.contains($0) }
+    }
+
+    /// 规范化用户输入：转大写、去掉空格与连字符、最多 6 位
+    static func normalize(_ input: String) -> String {
+        let cleaned = input.uppercased().filter { $0 != " " && $0 != "-" }
+        return String(cleaned.prefix(codeLength))
+    }
+
+    var inviteText: String {
+        var text = "来「羽毛球搭子」一起打\(mode.title)！房间码：\(code)"
+        if let slot { text += "\n🕖 \(slot.formattedFull)" }
+        if let court { text += "\n📍 \(court.name)" }
+        return text
+    }
+}
+
+// ClosedRange<Int> 的 Codable 在标准库中已提供（Swift 5.x）
