@@ -128,7 +128,12 @@ enum DemoLauncher {
     private static func seedUpcomingGame(_ backend: MockBackend) -> Game {
         let me = backend.currentUserId ?? ""
         let calendar = Calendar.current
-        let start = Date().addingTimeInterval(2 * 3600 + 15 * 60).roundedUp(toMinutes: 30)
+        // 晚上 19:30 开打：今天来得及（至少还有 1 小时）就今天，否则明天
+        let now = Date()
+        let todayEvening = calendar.date(bySettingHour: 19, minute: 30, second: 0, of: now) ?? now
+        let start = todayEvening > now.addingTimeInterval(3600)
+            ? todayEvening
+            : (calendar.date(byAdding: .day, value: 1, to: todayEvening) ?? todayEvening)
         let slot = TimeSlot(date: calendar.startOfDay(for: start), startTime: start, endTime: start.addingTimeInterval(2 * 3600))
         let court = backend.venue(id: DemoVenue.labc) ?? BadmintonCourt.mock
         let players = [me, "bot-0", "bot-4", "bot-8"]

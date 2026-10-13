@@ -27,7 +27,8 @@ for appearance in light dark; do
   xcrun simctl ui "$UDID" appearance "$appearance" || true
   for screen in $SCREENS; do
     xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
-    xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen "$screen" >/dev/null
+    # App 使用洛杉矶时区（CI 机器是 UTC），时间显示与演示城市一致
+    SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen "$screen" >/dev/null
     sleep 5
     xcrun simctl io "$UDID" screenshot "$OUT/${appearance}-${screen}.png" >/dev/null 2>&1
     echo "captured ${appearance}-${screen}"
