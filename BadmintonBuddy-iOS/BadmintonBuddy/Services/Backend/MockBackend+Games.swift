@@ -156,6 +156,7 @@ extension MockBackend {
         await networkDelay()
         let now = Date()
         game.status = .completed
+        confirmVenueFromCheckIns(game)
         game.result = GameResult(didWin: didWin, score: String(score.prefix(40)))
         db.games[id] = game
 

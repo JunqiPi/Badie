@@ -185,8 +185,7 @@ struct User: Identifiable, Codable, Hashable {
     }
 
     var maskedPhone: String {
-        guard phone.count == 11 else { return phone }
-        return String(phone.prefix(3)) + "****" + String(phone.suffix(4))
+        PhoneNumber.parse(phone)?.masked ?? phone
     }
 
     /// 头像显示文字

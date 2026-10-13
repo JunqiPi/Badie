@@ -17,7 +17,13 @@ struct CalendarEventEditor: UIViewControllerRepresentable {
         event.title = "🏸 \(game.mode.title)球局"
         event.startDate = game.slot.startTime
         event.endDate = game.slot.endTime
-        event.location = "\(game.court.name) \(game.court.address)"
+        event.location = "\(game.court.name), \(game.court.address)"
+        // 带坐标的地点：日历里的“地图/出发时间提醒”会指向准确位置，而不是靠文字地址再搜一次
+        let location = EKStructuredLocation(title: "\(game.court.name), \(game.court.address)")
+        location.geoLocation = game.court.location.clLocation
+        location.radius = 100
+        event.structuredLocation = location
+        event.timeZone = game.court.timeZoneId.flatMap(TimeZone.init(identifier:))
         event.notes = game.shareText
         event.addAlarm(EKAlarm(relativeOffset: -2 * 3600))
         let controller = EKEventEditViewController()

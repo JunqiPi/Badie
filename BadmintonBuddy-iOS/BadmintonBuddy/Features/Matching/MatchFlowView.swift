@@ -315,10 +315,10 @@ struct MatchFoundView: View {
                 InsetDivider()
                 InfoRow(icon: "mappin.and.ellipse", tint: AppTheme.Colors.sky,
                         title: proposal.court.name,
-                        subtitle: "\(proposal.court.formattedCourtCount) · \(proposal.court.operatingHours.formattedTimeRange)")
+                        subtitle: proposal.court.address)
                 InsetDivider()
-                InfoRow(icon: "yensign.circle.fill", tint: AppTheme.Colors.butter,
-                        title: "AA 约 ¥\(proposal.cost.perPerson) / 人",
+                InfoRow(icon: Money.icon(for: proposal.cost.currencyCode), tint: AppTheme.Colors.butter,
+                        title: proposal.cost.perPerson == nil ? "费用待定" : "AA 约 \(proposal.cost.perPersonText)",
                         subtitle: proposal.cost.breakdownText)
                 if proposal.mode == .doubles {
                     InsetDivider()

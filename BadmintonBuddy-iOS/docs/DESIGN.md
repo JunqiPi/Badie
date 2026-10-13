@@ -183,9 +183,70 @@
 | 8 无障碍与本地化 | 见第 7 节；界面文案为简体中文 |
 | 9 数据持久化 | JSON 编码、解析失败给出路径信息、模型 Codable 往返测试 |
 
-## 9. 已知限制
+## 9. 球馆：怎么保证大家选的是同一家（首发美国，面向全球）
+
+> 问题来源：“我会选 LABC / Elite Rally 然后在地图上找，万一找不到呢？”匹配只有在两个人选中**同一个球馆**时才成立。
+
+### 9.1 先看真实情况（2026-10 实测）
+
+| 观察 | 证据 | 结论 |
+|---|---|---|
+| 同一家球馆，不同来源写着不同城市 | Elite Rally（4800 Rivergrade Rd Unit B）：Yelp 写 Baldwin Park，Atly 写 Irwindale，另一篇文章写 Santa Fe Springs | 名称、城市都不可靠，必须看**完整地址 + 地图位置** |
+| 按名称搜会搜到错的地方 | OpenStreetMap 搜 “Los Angeles Badminton Club” 返回 40 公里外 Manhattan Beach 的 “Badminton Club Pool”（游泳池）；Elite Rally 在 OSM 里不存在 | 不能只靠第三方地图的名称匹配 |
+| 地图平台没有“羽毛球”分类 | Apple `MKPointOfInterestCategory` 84 个分类里有网球、排球，没有羽毛球 | 只能关键词搜索 + **自建球馆库** |
+| 用户添加的球场目录容易变脏 | Pickleball+ App Store 评论 [用户]：信息过时、有人把自家房子加成球场；Places2Play 需要审核 [厂商] | 新球馆要有“待确认”状态和举报机制 |
+| 重复球馆来自“直接新建” | The Events Calendar 组织者 [用户]：“大量重复的场馆”，因为回车就新建 | “添加球馆”放在结果底部，先查重再新建 |
+| 只显示名字不够 | Baymard 自动补全研究：突出差异部分、移动端 4–8 条；Teevan 等 MobileHCI 2011：约 60% 的本地搜索不在身边 [论文] | 每行显示地址；按距离排序但**不限制**范围 |
+
+### 9.2 方案
+
+1. **平台球馆库是唯一标准**：匹配、房间、球局只比较我们自己的球馆 ID。Apple Place ID（iOS 18+）只作为附加字段用于查重（Apple 说明同一地点可能有多个 ID，因此连同 `alternateIdentifiers` 一起比较）。
+2. **一个搜索框，两层结果**：先“已选 / 常去 / 附近”，输入后先显示球馆库（名称、别名、英文缩写 LABC、中文拼音首字母、街道、城市、邮编都能搜），再显示 Apple 地图联想（最多 6 条）。
+3. **每一行都有地址**：名称（高亮匹配部分）+ 距离 / 街道·城市·州 / 可信度（已核实 · 球友确认 · 待确认）+ 场地数 + 常去人数。完整地址、地图在核对页和详情页。
+4. **地图结果先核对再入库**：地图预览 + 完整地址 + 查重（Place ID 相同 → 直接选已有；200 米内名称相近 → “是同一个吗？”；40 米内同一栋楼 → 让用户判断，不自动合并，因为同楼可能有不同场馆）。
+5. **找不到就添加**：移动地图让图钉对准入口 → 自动识别地址（可改）→ 名称 / 简称 / 单元 / 入口说明 / 场地数 → 查重 → 加入。也可粘贴 Google / Apple 地图链接（群聊里最常见的分享方式），自动解析坐标、名称或 Place ID。
+6. **可信度会成长**：新加入为“待确认”，3 位不同球友确认（或在此签到打过球）后变为“球友确认”；显示“最近确认”时间。一个人举报不会下架，2 人以上举报的待确认球馆暂时从搜索中隐藏、等待人工核实（添加者本人仍可见）。
+7. **少选几次**：常去球馆默认进入快速匹配；常去不受出行范围限制。
+
+### 9.3 全球化（数据层已就绪）
+
+| 项 | 做法 |
+|---|---|
+| 地址 | 结构化存储（街道、单元、城市、州/省、邮编、国家码），按国家习惯格式化（美式由小到大，中日韩台由大到小） |
+| 时区 | 球馆存 IANA 时区；营业时间按球馆当地时间判断，时区与设备不同时标注 |
+| 距离 | 跟随设备地区：美国、英国用英里，其他用公里；出行范围滑杆同步换算 |
+| 币种与收费方式 | 每个球馆存 ISO-4217 币种；支持“按场地小时”和美国常见的“按人次 drop-in”，价格未知时显示“费用待定”而不是编造 |
+| 手机号 | E.164 存储；13 个国家/地区的号码规则；默认跟随设备地区（首发 +1） |
+| 导航 | 按球馆所在国家给出常用 App：美国 Apple / Google / Waze（Universal Link，没装 App 也能打开网页）；国内高德 / 百度；韩国 Naver / KakaoMap |
+| 坐标系 | 每个球馆记录坐标系；中国大陆的地图数据按 GCJ-02 处理，导航到高德/百度时据此传参，避免 100–700 米偏移 |
+
+### 9.4 分阶段路线（基于数据许可与覆盖调研）
+
+| 阶段 | 地区 | 数据来源 | 可长期存储的内容 |
+|---|---|---|---|
+| 现在 | 美国 | 平台收录 + Apple 地图（免费、无需 Key） | Apple Place ID（Apple 明确豁免存储限制）；名称/地址/坐标以用户确认的版本入库 |
+| 下一步 | 加、英、澳、新、马、港、台、印 | 同上；用 Overture Places（`badminton_court` 分类，美国 213 / 印尼 1,343 / 马来西亚 975 / 台湾 508 条，CDLA-Permissive 许可）和 Foursquare OS Places（Apache-2.0）做种子，人工复核 | 开放数据可存；Google Places 只存 place_id（坐标最多缓存 30 天） |
+| 之后 | 韩国 | Kakao / Naver 本地搜索（Apple 地图在韩国受数据出口限制） | 只存对方的地点 ID |
+| 单独评估 | 中国大陆 | 需要本地主体与 ICP 备案；高德/百度条款禁止存储其数据 | 只存我们自己（用户确认）的数据 |
+
+> OpenStreetMap 的 `sport=badminton` 多数是露天场地（91.6% 为 `leisure=pitch`），且 ODbL 共享条款会传染到合并后的库，所以不并入球馆库。
+
+### 9.5 首批收录（美国 32 家）
+
+数据与来源在 `data/us_venues.json`（每家含 4 个以上来源链接、地址冲突说明、价格出处），用 `scripts/gen_us_venues.py` 生成 `Models/CuratedVenues+US.swift`。南加州 10 家：LABC、Elite Rally、SGVBC、Arena（Pomona）、Santa Fe Springs BC、OCBC、PickleBall Badminton Center（Lakewood）、Manhattan Beach BC（会员制）、SMASH! San Diego、OC SMASH（状态存疑，标为待确认）；其余为湾区、西雅图、纽约/新泽西、休斯顿/达拉斯、芝加哥、波士顿。已排除确认关门的球馆（Yan Long、Arcadia BC、IBC Irvine、Bintang 南旧金山等）。
+
+### 9.6 主要来源
+
+- 选择体验：[Meetup 添加场馆](https://help.meetup.com/hc/en-us/articles/30950090563597-How-to-add-a-location-or-venue-to-your-event) · [Luma](https://help.luma.com/p/featuring-your-event-on-luma) · [TeamSnap 场地](https://helpme.teamsnap.com/article/1342-add-schedule-locations) · [Reclub 手动添加](https://help.reclub.co/hc/reclub-help/articles/1770103887-improved-location-search-adding) · [Baymard 自动补全研究](https://baymard.com/research-articles/autocomplete-design) · [Teevan 等 MobileHCI 2011](https://www.microsoft.com/en-us/research/?p=161675) · [Yelp 去重工程博客](https://engineeringblog.yelp.com/2015/05/seeing-double-on-yelp.html) · [The Events Calendar 用户反馈](https://theeventscalendar.com/support/forums/topic/avoid-duplicate-organizers-and-venues/) · [Pickleball+ App Store 评论](https://apps.apple.com/us/app/pickleball/id1262785848)
+- 地图与数据：[Apple Place ID 说明](https://developer.apple.com/documentation/mapkit/identifying-unique-locations-with-place-ids) · [WWDC25 Go further with MapKit](https://developer.apple.com/videos/play/wwdc2025/204/) · [MKPointOfInterestCategory](https://developer.apple.com/documentation/mapkit/mkpointofinterestcategory) · [Google Places 政策](https://developers.google.com/maps/documentation/places/web-service/policies) · [Overture Places](https://docs.overturemaps.org/guides/places/) · [Foursquare OS Places](https://docs.foursquare.com/data-products/docs/access-fsq-os-places) · [OSM sport=badminton](https://taginfo.openstreetmap.org/tags/sport=badminton) · [韩国地图数据出口](https://www.maproomblog.com/2026/02/google-maps-granted-access-to-south-koreas-map-data-with-conditions/) · [高德 URI](https://lbs.amap.com/api/amap-mobile/guide/ios/route) · [百度 URI](https://lbsyun.baidu.com/faq/api?title=webapi/uri/ios)
+
+---
+
+## 10. 已知限制
 
 - **没有真实服务端**：附近球友、公开球局为本机模拟（设置页明确告知），可“重置演示数据”。`MockBackend` 以事件流对外，替换为真实 API 时 Manager 层无需改动。
 - **支付**：AA 只做“已付/待付”标记，未接入真实支付。
-- **地图搜索得到的球馆**：价格与营业时间为估算，界面已标注“（估）”。
+- **球馆库目前只在本机**：添加、确认、举报都写入本机模拟后端；多人共享需要真实服务端与人工审核队列。
+- **Apple 地图数据条款**：Place ID 可长期保存；其余地图内容（名称、地址、坐标）条款上只允许临时缓存，正式上线前需法务确认“用户确认后入库”的做法。
+- **Place ID 需要 iOS 18**：iOS 17 设备只能靠坐标 + 名称查重。
 - 8–9 级的赛事证明上传与审核需要后端支持，目前仅展示锁定说明。

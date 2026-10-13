@@ -10,7 +10,11 @@ enum OnboardingStep: Int, CaseIterable {
 
 /// 注册/登录表单数据
 struct OnboardingForm {
+    /// 国内号码（不含国家码）
     var phone = ""
+    /// 国家/地区（默认跟随设备地区，首发市场为美国）
+    var phoneCountry: CountryInfo = .deviceCountry
+    var phoneNumber: PhoneNumber { PhoneNumber(country: phoneCountry, national: phone) }
     var agreed = false
     var code = ""
     var issuedCode: String?
@@ -20,6 +24,8 @@ struct OnboardingForm {
     var level: Int?
     var preferredMode: GameMode?
     var timePresets: Set<TimePreset> = []
+    /// 常去球馆（注册后设为收藏，快速匹配默认选中）
+    var favoriteVenueIds: [String] = []
 }
 
 /// 常用时间快捷选项（注册时生成“常用时间”）
@@ -64,6 +70,7 @@ struct OnboardingFlow: View {
     @State private var isWorking = false
     @State private var errorText: String?
     @State private var resendRemaining = 0
+    @State private var showVenuePicker = false
     @FocusState private var codeFocused: Bool
     @FocusState private var phoneFocused: Bool
 
@@ -157,7 +164,7 @@ struct OnboardingFlow: View {
             }
             HStack(spacing: AppTheme.Spacing.sm) {
                 TagPill(text: "水平匹配", icon: "chart.bar.fill", fill: AppTheme.Colors.lavender)
-                TagPill(text: "AA 透明", icon: "yensign.circle.fill", fill: AppTheme.Colors.peach)
+                TagPill(text: "AA 透明", icon: Money.icon(for: CountryInfo.deviceCountry.currencyCode), fill: AppTheme.Colors.peach)
                 TagPill(text: "到场签到", icon: "checkmark.seal.fill", fill: AppTheme.Colors.mint)
             }
         }
@@ -169,12 +176,29 @@ struct OnboardingFlow: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
             stepTitle("先用手机号\n登录或注册", subtitle: "未注册的手机号验证后会自动创建账号")
             HStack(spacing: AppTheme.Spacing.sm) {
-                Text("+86")
-                    .font(AppTheme.Typography.bodyBold)
+                Menu {
+                    Picker("国家/地区", selection: $form.phoneCountry) {
+                        ForEach(CountryInfo.phoneCountries) { country in
+                            Text("\(country.flag) \(country.nameZh) +\(country.callingCode)").tag(country)
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("\(form.phoneCountry.flag) +\(form.phoneCountry.callingCode)")
+                            .font(AppTheme.Typography.bodyBold)
+                            .monospacedDigit()
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 11, weight: .heavy))
+                    }
                     .foregroundStyle(AppTheme.Colors.ink)
-                    .frame(minWidth: 64, minHeight: 52)
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .frame(minWidth: 84, minHeight: 52)
                     .sticker(AppTheme.Colors.surfaceMuted, radius: 14, shadow: .zero)
-                TextField("请输入手机号", text: $form.phone)
+                }
+                .accessibilityLabel("国家或地区")
+                .accessibilityValue("\(form.phoneCountry.nameZh)，+\(form.phoneCountry.callingCode)")
+                .onChange(of: form.phoneCountry) { _, _ in errorText = nil }
+                TextField(form.phoneCountry.phone.example.isEmpty ? "请输入手机号" : form.phoneCountry.phone.example, text: $form.phone)
                     .font(.system(.title3, design: .rounded, weight: .bold))
                     .monospacedDigit()
                     .keyboardType(.numberPad)
@@ -185,7 +209,7 @@ struct OnboardingFlow: View {
                     .sticker(AppTheme.Colors.surface, radius: 14, shadow: phoneFocused ? AppTheme.Elevation.low : .zero,
                              stroke: errorText == nil ? AppTheme.Colors.stroke : AppTheme.Colors.danger)
                     .onChange(of: form.phone) { _, value in
-                        let digits = String(value.filter { $0.isASCII && $0.isNumber }.prefix(11))
+                        let digits = String(value.filter { $0.isASCII && $0.isNumber }.prefix(15))
                         if digits != value { form.phone = digits }
                         errorText = nil
                     }
@@ -220,7 +244,7 @@ struct OnboardingFlow: View {
 
     private var codeStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle("输入验证码", subtitle: "已发送至 +86 \(masked(form.phone))")
+            stepTitle("输入验证码", subtitle: "已发送至 \(form.phoneNumber.masked)")
             ZStack {
                 TextField("", text: $form.code)
                     .keyboardType(.numberPad)
@@ -352,8 +376,50 @@ struct OnboardingFlow: View {
                     }
                 }
             }
+            favoriteVenuesCard
             locationCard
         }
+        .sheet(isPresented: $showVenuePicker) {
+            VenuePickerView(mode: .multiple(max: 3), selection: $form.favoriteVenueIds, allowsAdding: false)
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    /// 常去球馆：选一次，以后快速匹配默认就是它们（选同一家的人才会被匹配到一起）
+    private var favoriteVenuesCard: some View {
+        let venues = locationManager.courts(ids: form.favoriteVenueIds)
+        return Button {
+            showVenuePicker = true
+        } label: {
+            HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "figure.badminton", fill: AppTheme.Colors.lime, size: 48)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(venues.isEmpty ? "常去哪几个球馆？（选填）" : "常去球馆")
+                        .font(AppTheme.Typography.headline)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    if venues.isEmpty {
+                        Text("比如 LABC、Elite Rally。选好后快速匹配会默认用它们")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        ForEach(venues) { venue in
+                            Text("\(venue.name) · \(venue.postalAddress.city)")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    .padding(.top, 4)
+            }
+            .card()
+        }
+        .buttonStyle(PressableStyle(scale: 0.98))
     }
 
     private var locationCard: some View {
@@ -420,7 +486,7 @@ struct OnboardingFlow: View {
     private var canContinue: Bool {
         switch step {
         case .welcome: return true
-        case .phone: return form.phone.count == 11 && form.agreed
+        case .phone: return form.phoneNumber.national.count >= form.phoneCountry.phone.lengths.lowerBound && form.agreed
         case .code: return form.code.count == 6
         case .profile: return MockBackend.isValidNickname(form.nickname)
         case .level: return form.level != nil
@@ -436,7 +502,7 @@ struct OnboardingFlow: View {
         case .welcome:
             advance(to: .phone)
         case .phone:
-            guard MockBackend.isValidPhone(form.phone) else {
+            guard form.phoneNumber.isValid else {
                 errorText = BackendError.invalidPhone.errorDescription
                 return
             }
@@ -463,7 +529,7 @@ struct OnboardingFlow: View {
         isWorking = true
         defer { isWorking = false }
         do {
-            form.issuedCode = try await appState.requestCode(phone: form.phone)
+            form.issuedCode = try await appState.requestCode(phone: form.phoneNumber.e164)
             form.code = ""
             resendRemaining = 60
         } catch {
@@ -477,7 +543,7 @@ struct OnboardingFlow: View {
             isWorking = true
             defer { isWorking = false }
             do {
-                switch try await appState.verify(phone: form.phone, code: form.code) {
+                switch try await appState.verify(phone: form.phoneNumber.e164, code: form.code) {
                 case .signedIn(let user):
                     appState.showToast("欢迎回来，\(user.nickname)", style: .success)
                 case .needsProfile:
@@ -498,7 +564,7 @@ struct OnboardingFlow: View {
         let slots = Array(form.timePresets.sorted { $0.rawValue < $1.rawValue }.flatMap(\.slots).prefix(TimeSlotConstants.maximumRecurringSlots))
         do {
             try await appState.register(
-                phone: form.phone,
+                phone: form.phoneNumber.e164,
                 nickname: form.nickname,
                 gender: form.gender,
                 avatar: form.avatar,
@@ -507,6 +573,9 @@ struct OnboardingFlow: View {
                 recurringSlots: slots,
                 location: locationManager.currentLocation.map { Coordinate($0.coordinate) }
             )
+            for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
+                locationManager.toggleFavorite(venueId)
+            }
         } catch {
             appState.showError(error)
         }
@@ -544,10 +613,6 @@ struct OnboardingFlow: View {
         }
     }
 
-    private func masked(_ phone: String) -> String {
-        guard phone.count == 11 else { return phone }
-        return String(phone.prefix(3)) + " **** " + String(phone.suffix(4))
-    }
 }
 
 // MARK: - 欢迎页插画：扇形展开的球友卡片

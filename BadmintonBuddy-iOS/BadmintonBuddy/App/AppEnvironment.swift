@@ -43,7 +43,7 @@ struct AppEnvironment {
         backend.latencyEnabled = false
         backend.simulationEnabled = false
         if signedIn {
-            backend.createAccount(phone: "13800001234", nickname: "阿杰", avatar: Avatar(symbol: "", paletteIndex: 0), level: 4, preferredMode: .doubles)
+            backend.createAccount(phone: "+16265550123", nickname: "阿杰", avatar: Avatar(symbol: "", paletteIndex: 0), level: 4, preferredMode: .doubles)
         }
         let environment = AppEnvironment(backend: backend)
         environment.appState.phase = signedIn ? .main : .onboarding

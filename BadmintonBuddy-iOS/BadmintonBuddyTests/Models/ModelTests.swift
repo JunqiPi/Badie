@@ -21,8 +21,12 @@ final class ModelTests: XCTestCase {
     }
 
     func testDistanceFormatter() {
-        XCTAssertEqual(DistanceFormatter.string(km: 0.456), "460 米")
-        XCTAssertEqual(DistanceFormatter.string(km: 2.34), "2.3 公里")
+        XCTAssertEqual(DistanceFormatter.string(km: 0.456, unit: .kilometers), "460 米")
+        XCTAssertEqual(DistanceFormatter.string(km: 2.34, unit: .kilometers), "2.3 公里")
+        XCTAssertEqual(DistanceFormatter.string(km: 3.2187, unit: .miles), "2.0 英里")
+        XCTAssertEqual(DistanceFormatter.string(km: 0.05, unit: .miles), "150 英尺")
+        XCTAssertEqual(DistanceFormatter.radius(km: 16.09344, unit: .miles), "10 英里")
+        XCTAssertEqual(DistanceFormatter.radius(km: 10, unit: .kilometers), "10 公里")
     }
 
     // MARK: TimeSlot
@@ -137,10 +141,21 @@ final class ModelTests: XCTestCase {
     // MARK: Cost
 
     func testCostSplitRoundsUpPerPerson() {
-        let cost = CostSplit(courtFeePerHour: 80, hours: 2, shuttleFee: 15, players: 4)
+        let cost = CostSplit(basis: .courtHour, rate: 80, hours: 2, shuttleFee: 15, players: 4, currencyCode: "CNY")
         XCTAssertEqual(cost.total, 175)
         XCTAssertEqual(cost.perPerson, 44)
-        XCTAssertEqual(CostSplit(courtFeePerHour: 60, hours: 1.5, shuttleFee: 10, players: 2).perPerson, 50)
+        XCTAssertEqual(cost.perPersonText, "¥44/人")
+        XCTAssertEqual(CostSplit(basis: .courtHour, rate: 60, hours: 1.5, shuttleFee: 10, players: 2, currencyCode: "CNY").perPerson, 50)
+    }
+
+    func testDropInAndUnknownPricing() {
+        let dropIn = CostSplit(basis: .dropIn, rate: 15, hours: 2, shuttleFee: 8, players: 4, currencyCode: "USD")
+        XCTAssertEqual(dropIn.total, 68)
+        XCTAssertEqual(dropIn.perPerson, 17)
+        XCTAssertEqual(dropIn.perPersonText, "$17/人")
+        let unknown = CostSplit(basis: .unknown, rate: 0, hours: 2, shuttleFee: 8, players: 4, currencyCode: "USD")
+        XCTAssertNil(unknown.perPerson)
+        XCTAssertEqual(unknown.perPersonText, "费用待定")
     }
 
     // MARK: User level & reputation
@@ -226,7 +241,7 @@ final class ModelTests: XCTestCase {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let user = User(id: "a", nickname: "测试", phone: "13800001234", selfReportedLevel: 4,
+        let user = User(id: "a", nickname: "测试", phone: "+16265550123", selfReportedLevel: 4,
                         joinDate: Date(timeIntervalSince1970: 1_700_000_000),
                         lastActiveAt: Date(timeIntervalSince1970: 1_700_000_000))
         XCTAssertEqual(try decoder.decode(User.self, from: encoder.encode(user)), user)

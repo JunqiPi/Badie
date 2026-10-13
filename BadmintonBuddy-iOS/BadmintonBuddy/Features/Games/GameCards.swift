@@ -49,8 +49,8 @@ struct GameTicketCard: View {
                     .font(AppTheme.Typography.footnoteBold)
                     .lineLimit(1)
                 Spacer(minLength: 0)
-                if !compact {
-                    Text("¥\(game.cost.perPerson)/人")
+                if !compact, game.cost.perPerson != nil {
+                    Text(game.cost.perPersonText)
                         .font(AppTheme.Typography.headline)
                         .monospacedDigit()
                 }

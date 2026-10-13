@@ -78,57 +78,261 @@ struct OperatingHours: Codable, Hashable {
     static let standard = OperatingHours(openHour: 8, openMinute: 0, closeHour: 22, closeMinute: 0, daysOpen: Array(1...7))
 }
 
-// MARK: - 球馆
+// MARK: - 结构化地址
 
-enum CourtSource: String, Codable, Hashable {
-    /// 平台收录（含价格、设施等完整信息）
-    case curated
-    /// 来自 Apple 地图搜索，价格与营业时间为估算
-    case mapSearch
-    /// 无定位/无搜索结果时生成的示例球馆
-    case sample
-}
+/// 结构化地址：分字段存储，按国家习惯格式化。
+/// 选择球馆时始终展示完整地址，用户才能确认“是不是这一家”。
+struct PostalAddress: Codable, Hashable {
+    /// 门牌与街道，如 "10410 Valley Blvd"、"工体北路4号"
+    var street: String
+    /// 单元/楼层/场馆内位置，如 "Unit B"
+    var unit: String?
+    /// 城市（大陆地址里是区县）
+    var city: String
+    /// 州/省（大陆地址里是省市），如 "CA"、"北京市"
+    var region: String
+    var postalCode: String
+    /// ISO 3166-1 alpha-2，如 "US"
+    var countryCode: String
 
-struct BadmintonCourt: Identifiable, Codable, Hashable {
-    let id: String
-    let name: String
-    let location: Coordinate
-    let address: String
-    let amenities: [CourtAmenity]
-    let operatingHours: OperatingHours
-    let courtCount: Int
-    /// 每片场地每小时价格（元）
-    let pricePerHour: Int
-    let phone: String?
-    let source: CourtSource
-
-    init(
-        id: String = UUID().uuidString,
-        name: String,
-        location: Coordinate,
-        address: String,
-        amenities: [CourtAmenity] = [],
-        operatingHours: OperatingHours = .standard,
-        courtCount: Int = 1,
-        pricePerHour: Int = 60,
-        phone: String? = nil,
-        source: CourtSource = .curated
-    ) {
-        self.id = id
-        self.name = name
-        self.location = location
-        self.address = address
-        self.amenities = amenities
-        self.operatingHours = operatingHours
-        self.courtCount = max(1, courtCount)
-        self.pricePerHour = max(0, pricePerHour)
-        self.phone = phone
-        self.source = source
+    init(street: String, unit: String? = nil, city: String, region: String, postalCode: String = "", countryCode: String) {
+        self.street = street.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedUnit = unit?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.unit = (trimmedUnit?.isEmpty ?? true) ? nil : trimmedUnit
+        self.city = city.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.region = region.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.postalCode = postalCode.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.countryCode = countryCode.uppercased()
     }
 
-    var formattedCourtCount: String { "\(courtCount) 片场地" }
+    var style: AddressStyle { CountryInfo.info(for: countryCode).addressStyle }
 
-    var isEstimatedInfo: Bool { source != .curated }
+    /// 第一行：街道 + 单元（"10410 Valley Blvd, Unit B"）
+    var streetLine: String {
+        switch style {
+        case .smallToLarge: return [street, unit].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
+        case .largeToSmall: return street + (unit ?? "")
+        }
+    }
+
+    /// 第二行：城市 州 邮编（"El Monte, CA 91731"）
+    var cityLine: String {
+        switch style {
+        case .smallToLarge:
+            let regionPart = [region, postalCode].filter { !$0.isEmpty }.joined(separator: " ")
+            return [city, regionPart].filter { !$0.isEmpty }.joined(separator: ", ")
+        case .largeToSmall:
+            return region == city ? region : region + city
+        }
+    }
+
+    /// 列表用的紧凑地址：街道 + 城市 + 州（省略邮编与国家），足够分辨同名球馆
+    var compactLine: String {
+        switch style {
+        case .smallToLarge:
+            return [streetLine, city, region].filter { !$0.isEmpty }.joined(separator: ", ")
+        case .largeToSmall:
+            return (region == city ? "" : city) + streetLine
+        }
+    }
+
+    /// 单行完整地址
+    var singleLine: String {
+        switch style {
+        case .smallToLarge:
+            return [streetLine, cityLine].filter { !$0.isEmpty }.joined(separator: ", ")
+        case .largeToSmall:
+            return cityLine + streetLine
+        }
+    }
+
+    /// 至少要有街道和城市，才能让别人确认位置
+    var isComplete: Bool { !street.isEmpty && !city.isEmpty }
+}
+
+// MARK: - 球馆来源、可信度、价格
+
+enum VenueSource: String, Codable, Hashable {
+    /// 平台收录：经过人工核对
+    case curated
+    /// 用户从 Apple 地图结果中选择后加入
+    case appleMaps
+    /// 用户手动添加（放图钉/输入地址/粘贴地图链接）
+    case player
+}
+
+enum VenueStatus: String, Codable, Hashable {
+    /// 平台核实
+    case verified
+    /// 至少 3 位不同球友确认过（或在此签到打过球）
+    case confirmed
+    /// 新加入，等待确认
+    case unconfirmed
+
+    var title: String {
+        switch self {
+        case .verified: return "已核实"
+        case .confirmed: return "球友确认"
+        case .unconfirmed: return "待确认"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .verified: return "checkmark.seal.fill"
+        case .confirmed: return "person.2.fill"
+        case .unconfirmed: return "questionmark.circle.fill"
+        }
+    }
+}
+
+/// 收费方式：国内多为“按场地小时”，美国俱乐部常见“按人次 drop-in”
+enum VenuePricing: Codable, Hashable {
+    case perCourtHour(Int)
+    case dropIn(perPerson: Int)
+    case unknown
+
+    func text(currency: String) -> String {
+        switch self {
+        case .perCourtHour(let price): return "\(Money.format(price, currency: currency))/场·时"
+        case .dropIn(let price): return "\(Money.format(price, currency: currency))/人次"
+        case .unknown: return "价格未知"
+        }
+    }
+
+    var isKnown: Bool { if case .unknown = self { return false } else { return true } }
+}
+
+/// 坐标系：国际通用 WGS-84；中国大陆地图数据（高德/Apple 地图在大陆）为 GCJ-02
+enum CoordinateDatum: String, Codable, Hashable {
+    case wgs84
+    case gcj02
+}
+
+// MARK: - 球馆
+
+struct BadmintonCourt: Identifiable, Codable, Hashable {
+    /// 平台内的唯一 ID：匹配、房间、球局都只比较这个 ID，不比较名字或坐标
+    let id: String
+    var name: String
+    /// 别名与简称（"LABC"、中文俗称），用于搜索
+    var aliases: [String]
+    var location: Coordinate
+    /// 坐标来源的坐标系；导航到高德/百度时据此传参
+    var datum: CoordinateDatum
+    var postalAddress: PostalAddress
+    /// IANA 时区，如 "America/Los_Angeles"；营业时间按球馆当地时间判断
+    var timeZoneId: String?
+    /// Apple 地图 Place ID（iOS 18+ 可获得，长期有效），用于去重与打开地点卡片
+    var applePlaceId: String?
+    var amenities: [CourtAmenity]
+    /// nil = 营业时间未知
+    var operatingHours: OperatingHours?
+    /// nil = 场地数未知
+    var courtCount: Int?
+    var pricing: VenuePricing
+    /// 价格说明（如“散客 $15/人次 · 包场 $28/场·时”）
+    var pricingNote: String?
+    var currencyCode: String
+    var phone: String?
+    var website: String?
+    /// 入口/楼层/停车说明（与地址分开，如“后门进，2 楼”）
+    var entranceNote: String?
+    var source: VenueSource
+    var status: VenueStatus
+    var addedBy: String?
+    /// 确认过地址的球友（去重后的用户 ID）
+    var confirmedBy: [String]
+    /// 最近一次有人确认/签到的时间（信息新鲜度）
+    var lastConfirmedAt: Date?
+    var createdAt: Date
+
+    /// 达到这个人数的确认后，状态从“待确认”变为“球友确认”
+    static let confirmationsNeeded = 3
+
+    init(
+        id: String = "v-" + UUID().uuidString.prefix(8).lowercased(),
+        name: String,
+        aliases: [String] = [],
+        location: Coordinate,
+        datum: CoordinateDatum = .wgs84,
+        address: PostalAddress,
+        timeZoneId: String? = nil,
+        applePlaceId: String? = nil,
+        amenities: [CourtAmenity] = [],
+        operatingHours: OperatingHours? = nil,
+        courtCount: Int? = nil,
+        pricing: VenuePricing = .unknown,
+        pricingNote: String? = nil,
+        currencyCode: String? = nil,
+        phone: String? = nil,
+        website: String? = nil,
+        entranceNote: String? = nil,
+        source: VenueSource = .curated,
+        status: VenueStatus = .verified,
+        addedBy: String? = nil,
+        confirmedBy: [String] = [],
+        lastConfirmedAt: Date? = nil,
+        createdAt: Date = Date(timeIntervalSince1970: 1_767_225_600)
+    ) {
+        self.id = id
+        self.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.aliases = aliases
+        self.location = location
+        self.datum = datum
+        self.postalAddress = address
+        self.timeZoneId = timeZoneId
+        self.applePlaceId = applePlaceId
+        self.amenities = amenities
+        self.operatingHours = operatingHours
+        self.courtCount = courtCount.map { max(1, $0) }
+        self.pricing = pricing
+        self.pricingNote = pricingNote
+        self.currencyCode = currencyCode ?? CountryInfo.info(for: address.countryCode).currencyCode
+        self.phone = phone
+        self.website = website
+        let note = entranceNote?.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.entranceNote = (note?.isEmpty ?? true) ? nil : note
+        self.source = source
+        self.status = status
+        self.addedBy = addedBy
+        self.confirmedBy = confirmedBy
+        self.lastConfirmedAt = lastConfirmedAt
+        self.createdAt = createdAt
+    }
+
+    /// 单行完整地址
+    var address: String { postalAddress.singleLine }
+    var countryCode: String { postalAddress.countryCode }
+    var country: CountryInfo { CountryInfo.info(for: countryCode) }
+
+    /// 球馆当地日历（营业时间、球局时间都按当地时间计算）
+    var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZoneId.flatMap(TimeZone.init(identifier:)) ?? .current
+        return calendar
+    }
+
+    /// 球馆所在时区与设备不同（如出差）时，用于在时间旁标注
+    var timeZoneAbbreviation: String? {
+        guard let zone = timeZoneId.flatMap(TimeZone.init(identifier:)),
+              zone.secondsFromGMT() != TimeZone.current.secondsFromGMT() else { return nil }
+        return zone.abbreviation()
+    }
+
+    var formattedCourtCount: String? { courtCount.map { "\($0) 片场地" } }
+
+    var pricingText: String { pricing.text(currency: currencyCode) }
+
+    /// 该时段是否营业；营业时间未知时视为可用（无法判断）
+    func isOpen(for slot: TimeSlot) -> Bool {
+        operatingHours?.covers(slot, calendar: calendar) ?? true
+    }
+
+    var hoursText: String {
+        guard let hours = operatingHours else { return "营业时间未知" }
+        return hours.formattedTimeRange
+    }
 
     /// 到用户的距离（公里）
     func distance(from coordinate: Coordinate) -> Double {
@@ -138,101 +342,16 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
     func formattedDistance(from coordinate: Coordinate) -> String {
         DistanceFormatter.string(km: distance(from: coordinate))
     }
-}
 
-// MARK: - 收录球馆（北京示例数据）
-
-extension BadmintonCourt {
-    static let curatedBeijing: [BadmintonCourt] = [
-        BadmintonCourt(
-            id: "court-001",
-            name: "朝阳体育中心羽毛球馆",
-            location: Coordinate(latitude: 39.9219, longitude: 116.4433),
-            address: "北京市朝阳区工体北路4号",
-            amenities: [.parking, .shower, .locker, .cafe, .airConditioning],
-            operatingHours: OperatingHours(openHour: 7, openMinute: 0, closeHour: 22, closeMinute: 0, daysOpen: Array(1...7)),
-            courtCount: 12,
-            pricePerHour: 80,
-            phone: "010-65012345"
-        ),
-        BadmintonCourt(
-            id: "court-002",
-            name: "海淀羽毛球训练基地",
-            location: Coordinate(latitude: 39.9847, longitude: 116.3046),
-            address: "北京市海淀区中关村南大街27号",
-            amenities: [.parking, .shower, .locker, .rental, .airConditioning],
-            operatingHours: OperatingHours(openHour: 8, openMinute: 0, closeHour: 22, closeMinute: 0, daysOpen: Array(1...7)),
-            courtCount: 8,
-            pricePerHour: 60
-        ),
-        BadmintonCourt(
-            id: "court-003",
-            name: "望京羽毛球俱乐部",
-            location: Coordinate(latitude: 40.0028, longitude: 116.4716),
-            address: "北京市朝阳区望京西路50号",
-            amenities: [.shower, .locker, .rental, .cafe],
-            operatingHours: OperatingHours(openHour: 9, openMinute: 0, closeHour: 23, closeMinute: 0, daysOpen: Array(1...7)),
-            courtCount: 6,
-            pricePerHour: 70
-        ),
-        BadmintonCourt(
-            id: "court-004",
-            name: "东城体育馆路羽毛球馆",
-            location: Coordinate(latitude: 39.8808, longitude: 116.4192),
-            address: "北京市东城区体育馆路2号",
-            amenities: [.parking, .shower, .locker, .rental, .cafe, .airConditioning],
-            operatingHours: OperatingHours(openHour: 6, openMinute: 30, closeHour: 22, closeMinute: 0, daysOpen: Array(1...7)),
-            courtCount: 16,
-            pricePerHour: 90
-        ),
-        BadmintonCourt(
-            id: "court-005",
-            name: "通州运河羽毛球馆",
-            location: Coordinate(latitude: 39.9087, longitude: 116.6569),
-            address: "北京市通州区运河西大街88号",
-            amenities: [.parking, .shower, .airConditioning],
-            operatingHours: .standard,
-            courtCount: 10,
-            pricePerHour: 45
-        ),
-        BadmintonCourt(
-            id: "court-006",
-            name: "三里屯社区体育中心",
-            location: Coordinate(latitude: 39.9334, longitude: 116.4551),
-            address: "北京市朝阳区三里屯路19号",
-            amenities: [.locker, .airConditioning],
-            operatingHours: OperatingHours(openHour: 9, openMinute: 0, closeHour: 22, closeMinute: 0, daysOpen: Array(1...7)),
-            courtCount: 4,
-            pricePerHour: 50
-        )
-    ]
-
-    /// 在任意城市生成示例球馆（无定位权限或地图搜索无结果时使用）
-    static func samples(around center: Coordinate) -> [BadmintonCourt] {
-        let templates: [(String, Double, Double, Int, Int, [CourtAmenity])] = [
-            ("飞羽运动中心", 1.2, 0.8, 10, 60, [.parking, .shower, .locker, .airConditioning]),
-            ("城市全民健身馆", -2.1, 1.6, 8, 45, [.parking, .locker]),
-            ("星火羽毛球馆", 3.4, -1.9, 6, 55, [.shower, .rental, .airConditioning]),
-            ("大学城体育馆", -3.8, -2.7, 12, 35, [.parking, .rental]),
-            ("滨江羽毛球俱乐部", 5.6, 2.9, 7, 70, [.parking, .shower, .locker, .cafe, .airConditioning]),
-            ("社区活动中心羽毛球场", -0.6, -1.1, 3, 30, [.locker])
-        ]
-        return templates.enumerated().map { index, item in
-            BadmintonCourt(
-                id: "sample-\(index)",
-                name: item.0,
-                location: center.offsetBy(eastKm: item.1, northKm: item.2),
-                address: "距你约 \(DistanceFormatter.string(km: hypot(item.1, item.2)))（示例地址）",
-                amenities: item.5,
-                operatingHours: .standard,
-                courtCount: item.3,
-                pricePerHour: item.4,
-                source: .sample
-            )
+    /// 记录一位球友的确认；够数后升级为“球友确认”
+    mutating func addConfirmation(from userId: String, at date: Date = Date()) {
+        lastConfirmedAt = max(lastConfirmedAt ?? .distantPast, date)
+        guard !confirmedBy.contains(userId) else { return }
+        confirmedBy.append(userId)
+        if status == .unconfirmed && confirmedBy.count >= Self.confirmationsNeeded {
+            status = .confirmed
         }
     }
-
-    static let mock = curatedBeijing[0]
 }
 
 // MARK: - 用户偏好

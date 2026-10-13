@@ -117,8 +117,11 @@ final class MatchManager: ObservableObject {
         proposals.indices.contains(currentIndex) ? proposals[currentIndex] : nil
     }
 
-    /// 准备默认草稿：首次使用常用时间/偏好模式，并预选最近的球馆
-    func prepareDraft(user: User?, nearbyCourts: [BadmintonCourt], recurring: [RecurringTimeSlot], favorites: [String]) {
+    /// 准备默认草稿：首次使用常用时间/偏好模式，并预选常去球馆（其次最近的球馆）
+    /// - Parameter favorites: 常去球馆 ID（已按距离排序；不受出行范围限制）
+    /// - Parameter isValidCourt: 球馆是否仍在球馆库中
+    func prepareDraft(user: User?, nearbyCourts: [BadmintonCourt], recurring: [RecurringTimeSlot], favorites: [String],
+                      isValidCourt: (String) -> Bool = { _ in true }) {
         if let mode = user?.preferredMode, draft.courtIds.isEmpty { draft.mode = mode }
         if draft.validation.isValid == false {
             if let next = recurring.activeSlots.compactMap({ $0.nextOccurrence() }).min(by: { $0.startTime < $1.startTime }) {
@@ -127,10 +130,9 @@ final class MatchManager: ObservableObject {
                 draft.apply(TimeSlot.suggestedDefault())
             }
         }
-        let available = Set(nearbyCourts.map(\.id))
-        draft.courtIds = draft.courtIds.filter { available.contains($0) }
+        draft.courtIds = draft.courtIds.filter(isValidCourt)
         if draft.courtIds.isEmpty {
-            let preferred = favorites.filter { available.contains($0) }
+            let preferred = favorites.filter(isValidCourt)
             let fallback = nearbyCourts.map(\.id)
             draft.courtIds = Array((preferred + fallback.filter { !preferred.contains($0) }).prefix(2))
         }

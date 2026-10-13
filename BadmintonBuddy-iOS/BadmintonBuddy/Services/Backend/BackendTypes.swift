@@ -17,6 +17,7 @@ enum BackendEvent {
     case gameCreated(Game)
     case surveysChanged
     case inboxChanged
+    case venuesChanged
 }
 
 typealias BackendEventHandler = @MainActor (BackendEvent) -> Void
@@ -54,10 +55,13 @@ enum BackendError: LocalizedError, Equatable {
     case surveyInvalid
     case tooManyRecurringSlots
     case matchingSuspended
+    case venueNameInvalid
+    case venueAddressIncomplete
+    case venueNotFound
 
     var errorDescription: String? {
         switch self {
-        case .invalidPhone: return "请输入 11 位中国大陆手机号"
+        case .invalidPhone: return "手机号格式不正确，请检查国家/地区和号码"
         case .invalidCode: return "验证码不正确，请重新输入"
         case .codeExpired: return "验证码已过期，请重新获取"
         case .consentRequired: return "请先阅读并同意用户协议与隐私政策"
@@ -87,6 +91,9 @@ enum BackendError: LocalizedError, Equatable {
         case .surveyInvalid: return "评价内容无效"
         case .tooManyRecurringSlots: return "最多保存 \(TimeSlotConstants.maximumRecurringSlots) 个常用时间"
         case .matchingSuspended: return "因多次爽约，快速匹配暂停中"
+        case .venueNameInvalid: return "球馆名称需为 2–60 个字符"
+        case .venueAddressIncomplete: return "请补全街道和城市，方便其他球友确认位置"
+        case .venueNotFound: return "没有找到这个球馆"
         }
     }
 }
@@ -132,6 +139,25 @@ struct BotProfile: Codable, Hashable {
     var friendliness: Double
 }
 
+/// 球馆信息问题
+enum VenueIssue: String, Codable, CaseIterable, Identifiable {
+    case wrongLocation = "位置或地址不对"
+    case closed = "已关门/不再开放"
+    case duplicate = "和另一个球馆重复"
+    case notBadminton = "不是羽毛球场地"
+    case other = "其他"
+
+    var id: String { rawValue }
+}
+
+struct VenueReport: Codable, Hashable {
+    let venueId: String
+    let reporterId: String
+    let issue: VenueIssue
+    let detail: String
+    let createdAt: Date
+}
+
 /// 举报记录
 struct ReportRecord: Codable, Hashable {
     let reporterId: String
@@ -144,14 +170,18 @@ struct ReportRecord: Codable, Hashable {
 // MARK: - 数据库快照（JSON 持久化）
 
 struct Database: Codable {
-    var version: Int = 1
+    /// 结构变更时递增；旧版本数据直接丢弃（目前只有本机演示数据）
+    static let currentVersion = 2
+    var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
     var accounts: [String: String] = [:]
     var users: [String: User] = [:]
     var bots: [String: BotProfile] = [:]
     var worldCenter: Coordinate = .fallbackCenter
-    var knownCourts: [BadmintonCourt] = BadmintonCourt.curatedBeijing
+    /// 平台球馆库：ID -> 球馆（收录 + 球友添加）
+    var venues: [String: BadmintonCourt] = Dictionary(uniqueKeysWithValues: BadmintonCourt.curated.map { ($0.id, $0) })
+    var venueReports: [VenueReport] = []
     var friendships: [Friendship] = []
     var friendRequests: [FriendRequest] = []
     var threads: [String: MessageThread] = [:]

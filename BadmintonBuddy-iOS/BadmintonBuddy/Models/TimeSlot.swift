@@ -285,6 +285,18 @@ enum DateText {
         return shortDay(date)
     }
 
+    /// 过去时间的相对描述："刚刚" / "3 小时前" / "5 天前" / "2 个月前"
+    static func relative(_ date: Date, now: Date = Date()) -> String {
+        let seconds = max(0, Int(now.timeIntervalSince(date)))
+        switch seconds {
+        case ..<3600: return "刚刚"
+        case ..<86400: return "\(seconds / 3600) 小时前"
+        case ..<(30 * 86400): return "\(seconds / 86400) 天前"
+        case ..<(365 * 86400): return "\(seconds / (30 * 86400)) 个月前"
+        default: return "\(seconds / (365 * 86400)) 年前"
+        }
+    }
+
     /// 倒计时描述，例如 "还有 2 小时 15 分"
     static func countdown(to date: Date, now: Date = Date()) -> String {
         let seconds = Int(date.timeIntervalSince(now))

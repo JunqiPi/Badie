@@ -59,7 +59,7 @@ extension MockBackend {
             let user = User(
                 id: id,
                 nickname: entry.0,
-                phone: "13" + String(format: "%09d", Int.random(in: 0...999_999_999, using: &rng)),
+                phone: "+1626555" + String(format: "%04d", Int.random(in: 0...9999, using: &rng)),
                 gender: entry.3,
                 bio: entry.4,
                 avatar: Avatar(symbol: "", paletteIndex: index % 6),
@@ -94,24 +94,14 @@ extension MockBackend {
         refreshPublicRooms(force: true)
     }
 
-    /// 根据世界中心更新机器人坐标
+    /// 根据世界中心更新机器人坐标，并重新分配它们的常去球馆
     func relocateBots() {
         for (id, bot) in db.bots {
             guard var user = db.users[id] else { continue }
             user.location = db.worldCenter.offsetBy(eastKm: bot.eastKm, northKm: bot.northKm)
             db.users[id] = user
         }
-    }
-
-    /// 更新附近的球馆（由定位/地图搜索提供），并让公开球局使用这些球馆
-    func updateKnownCourts(_ courts: [BadmintonCourt]) {
-        guard !courts.isEmpty else { return }
-        let oldIds = Set(db.knownCourts.map(\.id))
-        db.knownCourts = courts
-        if oldIds != Set(courts.map(\.id)) {
-            refreshPublicRooms(force: false)
-        }
-        scheduleSave()
+        assignBotHomeVenues()
     }
 
     var isBotWorldReady: Bool { !db.bots.isEmpty }
@@ -208,7 +198,8 @@ extension MockBackend {
 
     func refreshPublicRooms(force: Bool) {
         let botRooms = db.rooms.values.filter { isBot($0.ownerId) && $0.visibility == .publicListing }
-        let knownIds = Set(db.knownCourts.map(\.id))
+        let pool = worldVenues
+        let knownIds = Set(pool.map(\.id))
         let stale = botRooms.filter { room in
             guard room.status.isOpen else { return true }
             if room.isExpired() { return true }
@@ -218,7 +209,7 @@ extension MockBackend {
             db.rooms[room.id] = nil
         }
         let openCount = db.rooms.values.filter { isBot($0.ownerId) && $0.visibility == .publicListing && $0.status.isOpen }.count
-        guard openCount < 4, !db.knownCourts.isEmpty else { return }
+        guard openCount < 4, !pool.isEmpty else { return }
         let templates: [(hostIndex: Int, mode: GameMode, dayOffset: Int, start: Int, end: Int, range: ClosedRange<Int>, tags: [RoomTag], note: String, filled: Int)] = [
             (24, .doubles, 0, 20, 22, 3...6, [.casual], "订好了 2 小时，还差 1 人，打完 AA", 3),
             (1, .doubles, 1, 19, 21, 4...7, [.competitive, .womenFriendly], "女双/混双都可以，节奏稍快", 2),
@@ -236,7 +227,7 @@ extension MockBackend {
                   let day = calendar.date(byAdding: .day, value: template.dayOffset, to: Date()),
                   let slot = TimeSlot.on(day, startHour: template.start, endHour: template.end),
                   slot.startTime > Date().addingTimeInterval(30 * 60) else { continue }
-            let court = db.knownCourts[offset % db.knownCourts.count]
+            let court = pool[offset % pool.count]
             var participants = [RoomParticipant(user: host)]
             let others = db.bots.keys.sorted()
                 .filter { $0 != hostId }
@@ -276,6 +267,7 @@ extension MockBackend {
         db.seededUserIds.append(userId)
         let now = Date()
         let calendar = Calendar.current
+        let seedVenues = nearestVenues(to: me.location ?? db.worldCenter, count: 2)
 
         // 已有球友
         for botId in ["bot-0", "bot-1", "bot-3"] {
@@ -303,7 +295,7 @@ extension MockBackend {
         // 一场昨天打完、等待互评的球局 + 一场更早的已完成球局
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: now),
            let slot = TimeSlot.on(yesterday, startHour: 19, endHour: 21) {
-            let court = db.knownCourts.first ?? BadmintonCourt.mock
+            let court = seedVenues.first ?? BadmintonCourt.mock
             let game = Game(
                 id: "seed-game-1-\(userId)", mode: .singles, court: court, slot: slot,
                 playerIds: [userId, "bot-2"], teams: [[userId], ["bot-2"]], hostId: userId,
@@ -330,7 +322,7 @@ extension MockBackend {
         }
         if let older = calendar.date(byAdding: .day, value: -5, to: now),
            let slot = TimeSlot.on(older, startHour: 20, endHour: 22) {
-            let court = db.knownCourts.dropFirst().first ?? BadmintonCourt.mock
+            let court = seedVenues.dropFirst().first ?? seedVenues.first ?? BadmintonCourt.mock
             let players = [userId, "bot-3", "bot-4", "bot-8"]
             let game = Game(
                 id: "seed-game-2-\(userId)", mode: .doubles, court: court, slot: slot,

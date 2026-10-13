@@ -84,8 +84,8 @@ struct CreateRoomView: View {
                                         characterLimit: 80, axis: .vertical)
                     }
                     if let cost = costPreview {
-                        InfoRow(icon: "yensign.circle.fill", tint: AppTheme.Colors.butter,
-                                title: "预计 AA ¥\(cost.perPerson)/人", subtitle: cost.breakdownText)
+                        InfoRow(icon: Money.icon(for: cost.currencyCode), tint: AppTheme.Colors.butter,
+                                title: cost.perPerson == nil ? "费用待定" : "预计 AA \(cost.perPersonText)", subtitle: cost.breakdownText)
                             .padding(.horizontal, AppTheme.Spacing.md)
                             .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
                     }
@@ -146,9 +146,19 @@ struct CreateRoomView: View {
                         Text(court?.name ?? "选择球馆")
                             .font(AppTheme.Typography.bodyBold)
                             .foregroundStyle(AppTheme.Colors.ink)
-                        Text(court.map { "\($0.formattedDistance(from: locationManager.coordinate)) · ¥\($0.pricePerHour)/时" } ?? "从出行范围内的球馆中选择")
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        if let court {
+                            Text(court.address)
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Text("\(court.formattedDistance(from: locationManager.coordinate)) · \(court.pricingText)")
+                                .font(AppTheme.Typography.caption)
+                                .foregroundStyle(AppTheme.Colors.inkTertiary)
+                        } else {
+                            Text("搜索球馆名、简称或地址")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        }
                     }
                     Spacer()
                     Image(systemName: "chevron.right")

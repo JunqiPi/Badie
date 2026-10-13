@@ -8,6 +8,7 @@ struct MatchSetupView: View {
     @EnvironmentObject private var locationManager: LocationManager
 
     @State private var recurring: [RecurringTimeSlot] = []
+    @State private var showVenuePicker = false
 
     private var days: [Date] {
         let calendar = Calendar.current
@@ -53,7 +54,13 @@ struct MatchSetupView: View {
         .onAppear {
             recurring = appState.backend.recurringSlots()
             matchManager.prepareDraft(user: appState.currentUser, nearbyCourts: locationManager.nearbyCourts,
-                                      recurring: recurring, favorites: locationManager.favoriteCourtIds)
+                                      recurring: recurring, favorites: locationManager.favoriteCourts.map(\.id),
+                                      isValidCourt: { locationManager.court(id: $0) != nil })
+        }
+        .sheet(isPresented: $showVenuePicker) {
+            VenuePickerView(mode: .multiple(max: MatchDraft.maxCourts), selection: $matchManager.draft.courtIds,
+                            slot: matchManager.draft.slot)
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -154,38 +161,69 @@ struct MatchSetupView: View {
     // MARK: Courts
 
     private var courtsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+        let selected = locationManager.courts(ids: matchManager.draft.courtIds)
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack {
                 label("球馆（最多 \(MatchDraft.maxCourts) 个）")
                 Spacer()
-                Text("\(matchManager.draft.courtIds.count)/\(MatchDraft.maxCourts)")
+                Text("\(selected.count)/\(MatchDraft.maxCourts)")
                     .font(AppTheme.Typography.footnoteBold)
                     .monospacedDigit()
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
-            if locationManager.nearbyCourts.isEmpty {
-                NoticeBanner(icon: "mappin.slash", text: "出行范围内没有球馆，试试在“我的-出行范围”调大半径")
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(locationManager.nearbyCourts.prefix(8).enumerated()), id: \.element.id) { index, court in
-                        if index > 0 { InsetDivider() }
-                        CourtSelectRow(
-                            court: court,
+            Text("只和选了同一个球馆的球友匹配")
+                .font(AppTheme.Typography.footnote)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+            VStack(spacing: 0) {
+                ForEach(Array(selected.enumerated()), id: \.element.id) { index, court in
+                    if index > 0 { InsetDivider() }
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        VenueRow(
+                            venue: court,
                             distance: court.formattedDistance(from: locationManager.coordinate),
-                            isSelected: matchManager.draft.courtIds.contains(court.id),
-                            isOpen: matchManager.draft.slot.map { court.operatingHours.covers($0) } ?? true
-                        ) {
-                            if !matchManager.draft.toggleCourt(court.id) {
-                                appState.showToast("最多选择 \(MatchDraft.maxCourts) 个球馆")
-                            } else {
-                                Haptics.selection()
-                            }
+                            regulars: appState.backend.regularsCount(for: court.id),
+                            isFavorite: locationManager.isFavorite(court.id),
+                            accessory: .none,
+                            isClosedForSlot: matchManager.draft.slot.map { !court.isOpen(for: $0) } ?? false
+                        )
+                        Button {
+                            Haptics.selection()
+                            _ = matchManager.draft.toggleCourt(court.id)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundStyle(AppTheme.Colors.inkTertiary)
+                                .frame(width: 44, height: 44)
                         }
+                        .accessibilityLabel("移除\(court.name)")
                     }
                 }
-                .padding(.horizontal, AppTheme.Spacing.md)
-                .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+                if !selected.isEmpty { InsetDivider() }
+                Button {
+                    showVenuePicker = true
+                } label: {
+                    HStack(spacing: AppTheme.Spacing.md) {
+                        IconTile(systemName: selected.isEmpty ? "magnifyingglass" : "plus", fill: AppTheme.Colors.lime, size: 42)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(selected.isEmpty ? "选择球馆" : "添加或更换球馆")
+                                .font(AppTheme.Typography.headline)
+                                .foregroundStyle(AppTheme.Colors.ink)
+                            Text("搜索名称、简称（如 LABC）或地址")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    }
+                    .padding(.vertical, AppTheme.Spacing.md)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
+            .padding(.horizontal, AppTheme.Spacing.md)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
         }
     }
 
@@ -219,8 +257,8 @@ struct MatchSetupView: View {
 
     private var footer: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
-            if let estimate = estimatedCost {
-                Text("预计 AA 约 ¥\(estimate)/人 · 平台不收服务费")
+            if let estimate = estimatedCostText {
+                Text(estimate)
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
@@ -239,18 +277,23 @@ struct MatchSetupView: View {
         .overlay(alignment: .top) { InsetDivider() }
     }
 
-    private var estimatedCost: Int? {
+    /// 所选球馆中最便宜的预计 AA；都未知价格时提示到场 AA
+    private var estimatedCostText: String? {
         guard let slot = matchManager.draft.slot, slot.isValidDuration else { return nil }
-        let courts = locationManager.courts.filter { matchManager.draft.courtIds.contains($0.id) }
-        guard let cheapest = courts.min(by: { $0.pricePerHour < $1.pricePerHour }) else { return nil }
-        return CostSplit.estimate(court: cheapest, slot: slot.trimmedForGame(), mode: matchManager.draft.mode).perPerson
+        let courts = locationManager.courts(ids: matchManager.draft.courtIds)
+        guard !courts.isEmpty else { return nil }
+        let estimates = courts.map { CostSplit.estimate(court: $0, slot: slot.trimmedForGame(), mode: matchManager.draft.mode) }
+        guard let cheapest = estimates.filter({ $0.perPerson != nil }).min(by: { $0.perPerson! < $1.perPerson! }) else {
+            return "球馆价格未知，到场后按实际费用 AA · 平台不收服务费"
+        }
+        return "预计每人约 \(cheapest.perPersonText) · 平台不收服务费"
     }
 
     private func start() {
         guard let user = appState.currentUser else { return }
         router.isMatchSetupPresented = false
         let coordinate = locationManager.coordinate
-        let courts = locationManager.courts
+        let courts = locationManager.courts(ids: matchManager.draft.courtIds)
         let radius = locationManager.preferences.travelRadiusKm
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 450_000_000)
@@ -324,49 +367,5 @@ struct TimeStepper: View {
         guard range.contains(next) else { return }
         Haptics.selection()
         minutes = next
-    }
-}
-
-// MARK: - 球馆选择行
-
-struct CourtSelectRow: View {
-    let court: BadmintonCourt
-    let distance: String
-    let isSelected: Bool
-    var isOpen = true
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: AppTheme.Spacing.md) {
-                Image(systemName: isSelected ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(isSelected ? AppTheme.Colors.ink : AppTheme.Colors.inkTertiary)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(court.name)
-                        .font(AppTheme.Typography.bodyBold)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                        .lineLimit(1)
-                    HStack(spacing: 6) {
-                        Text(distance)
-                        Text("·")
-                        Text("¥\(court.pricePerHour)/时\(court.isEstimatedInfo ? "（估）" : "")")
-                        if !isOpen {
-                            Text("· 该时段未营业")
-                                .foregroundStyle(AppTheme.Colors.danger)
-                        }
-                    }
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.vertical, AppTheme.Spacing.md)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
     }
 }

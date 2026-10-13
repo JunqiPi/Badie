@@ -73,11 +73,11 @@ struct GameDetailView: View {
         }
         .confirmationDialog("选择导航方式", isPresented: $showNavigationChoices, titleVisibility: .visible) {
             if let game {
-                ForEach(MapsLauncher.Provider.allCases) { provider in
-                    Button(provider.rawValue) {
+                ForEach(MapsLauncher.apps(for: game.court)) { app in
+                    Button(app.title) {
                         Task {
-                            let opened = await MapsLauncher.open(game.court, with: provider)
-                            if !opened { appState.showToast("未安装\(provider.rawValue)", style: .error) }
+                            let opened = await MapsLauncher.open(game.court, with: app)
+                            if !opened { appState.showToast("未安装\(app.title)", style: .error) }
                         }
                     }
                 }
@@ -108,6 +108,11 @@ struct GameDetailView: View {
 
                 if game.status == .confirmed {
                     actionGrid(game)
+                }
+
+                venueCard(game)
+
+                if game.status == .confirmed {
                     checkInCard(game)
                 }
 
@@ -128,6 +133,49 @@ struct GameDetailView: View {
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.bottom, AppTheme.Spacing.xxxl)
         }
+    }
+
+    // MARK: Venue
+
+    /// 球馆：完整地址 + 入口说明 + 球馆详情入口（地址是到场前最常被问的问题）
+    private func venueCard(_ game: Game) -> some View {
+        let venue = appState.backend.venue(id: game.court.id) ?? game.court
+        return Button {
+            router.open(.venue(id: venue.id))
+        } label: {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Text(venue.name)
+                        .font(AppTheme.Typography.headline)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    VenueStatusBadge(status: venue.status)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                }
+                Text(venue.address)
+                    .font(AppTheme.Typography.footnote)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let note = venue.entranceNote {
+                    Label(note, systemImage: "door.left.hand.open")
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if let zone = venue.timeZoneAbbreviation {
+                    Label("时间为球馆当地时间（\(zone)）", systemImage: "globe")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                }
+            }
+            .padding(AppTheme.Spacing.lg)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressableStyle(scale: 0.98))
+        .accessibilityHint("查看球馆详情、地图与导航")
     }
 
     // MARK: Actions grid
@@ -283,20 +331,25 @@ struct GameDetailView: View {
                 Text("AA 费用")
                     .font(AppTheme.Typography.headline)
                 Spacer()
-                Text("¥\(game.cost.perPerson)")
-                    .scaledFont(size: 26, relativeTo: .title2)
-                    .monospacedDigit()
-                Text("/人")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                if let perPerson = game.cost.perPerson {
+                    Text(game.cost.money(perPerson))
+                        .scaledFont(size: 26, relativeTo: .title2)
+                        .monospacedDigit()
+                    Text("/人")
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                } else {
+                    Text("待定")
+                        .font(AppTheme.Typography.headline)
+                }
             }
             .foregroundStyle(AppTheme.Colors.ink)
             Text(game.cost.breakdownText + " · 平台不收服务费")
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-            if game.court.isEstimatedInfo {
-                Text("场地价格为估算，以球馆实际收费为准")
+            if game.court.status == .unconfirmed || !game.court.pricing.isKnown {
+                Text("价格以球馆实际收费为准")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
             }

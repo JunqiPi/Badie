@@ -40,6 +40,57 @@ struct RouteDestination: View {
             CourtsView()
         case .gameHistory:
             GameHistoryView()
+        case .venue(let id):
+            VenueDetailPage(venueId: id)
+        case .matchVenues(let query):
+            MatchVenuesPage(initialQuery: query ?? "")
+        case .addVenue(let prefill):
+            AddVenuePage(prefill: prefill)
+        }
+    }
+}
+
+// MARK: - 球馆相关页面（导航栈版本）
+
+struct VenueDetailPage: View {
+    let venueId: String
+    @EnvironmentObject private var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScreenHeader(title: "球馆")
+            if let venue = appState.backend.venue(id: venueId) {
+                CourtDetailSheet(court: venue)
+            } else {
+                EmptyStateView(icon: "mappin.slash", title: "没有找到这个球馆")
+                Spacer()
+            }
+        }
+    }
+}
+
+struct MatchVenuesPage: View {
+    var initialQuery = ""
+    @EnvironmentObject private var matchManager: MatchManager
+
+    var body: some View {
+        VenuePickerView(mode: .multiple(max: MatchDraft.maxCourts), selection: $matchManager.draft.courtIds,
+                        slot: matchManager.draft.slot, initialQuery: initialQuery)
+    }
+}
+
+struct AddVenuePage: View {
+    var prefill: VenuePrefill?
+    @EnvironmentObject private var locationManager: LocationManager
+    @EnvironmentObject private var router: Router
+
+    var body: some View {
+        AddVenueView(initialName: prefill?.name ?? "",
+                     initialCoordinate: prefill?.coordinate ?? locationManager.coordinate,
+                     initialAddress: prefill?.address,
+                     checksDuplicatesOnAppear: prefill?.checksDuplicates ?? false) { venue in
+            router.pop()
+            router.open(.venue(id: venue.id))
         }
     }
 }

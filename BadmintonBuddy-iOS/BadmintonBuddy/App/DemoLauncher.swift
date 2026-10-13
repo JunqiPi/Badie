@@ -21,7 +21,7 @@ enum DemoLauncher {
         }
 
         backend.createAccount(
-            phone: "13800001234",
+            phone: "+16265550123",
             nickname: "阿杰",
             avatar: Avatar(symbol: "", paletteIndex: 4),
             level: 4,
@@ -31,15 +31,20 @@ enum DemoLauncher {
         )
         environment = AppEnvironment(backend: backend)
         environment.appState.skipsSplash = true
-        environment.locationManager.usesOnlyCuratedCourts = true
+        environment.locationManager.allowsMapSearch = false
         environment.matchManager.minimumSearchDuration = 0
+        // 常去球馆：LABC
+        environment.locationManager.refreshCourts()
+        if !environment.locationManager.isFavorite(DemoVenue.labc) {
+            environment.locationManager.toggleFavorite(DemoVenue.labc)
+        }
         let upcoming = seedUpcomingGame(backend)
         environment.matchManager.reloadGames()
         environment.matchManager.prepareDraft(
             user: backend.currentUser,
-            nearbyCourts: BadmintonCourt.curatedBeijing,
+            nearbyCourts: environment.locationManager.nearbyCourts,
             recurring: backend.recurringSlots(),
-            favorites: []
+            favorites: backend.favoriteCourtIds()
         )
 
         let router = environment.router
@@ -85,6 +90,19 @@ enum DemoLauncher {
             router.show(.notifications, in: .home)
         case "publicGames":
             router.show(.publicGames, in: .home)
+        case "venuePicker":
+            router.show(.matchVenues(query: nil), in: .home)
+        case "venueSearch":
+            router.show(.matchVenues(query: "labc"), in: .home)
+        case "venueDetail":
+            router.show(.venue(id: DemoVenue.eliteRally), in: .home)
+        case "addVenue":
+            // 演示查重：在 LABC 门口添加“LA Badminton Club”，会提示“是同一个吗？”
+            if let labc = backend.venue(id: DemoVenue.labc) {
+                router.show(.addVenue(prefill: VenuePrefill(name: "LA Badminton Club", coordinate: labc.location,
+                                                            address: labc.postalAddress, checksDuplicates: true)),
+                            in: .home)
+            }
         default:
             break
         }
@@ -96,7 +114,7 @@ enum DemoLauncher {
         environment.matchManager.startSearch(
             user: user,
             location: Coordinate.fallbackCenter,
-            courts: BadmintonCourt.curatedBeijing,
+            courts: environment.locationManager.courts(ids: environment.matchManager.draft.courtIds),
             radiusKm: UserPreferences.defaultTravelRadius
         )
     }
@@ -107,7 +125,7 @@ enum DemoLauncher {
         let calendar = Calendar.current
         let start = Date().addingTimeInterval(2 * 3600 + 15 * 60).roundedUp(toMinutes: 30)
         let slot = TimeSlot(date: calendar.startOfDay(for: start), startTime: start, endTime: start.addingTimeInterval(2 * 3600))
-        let court = BadmintonCourt.curatedBeijing[0]
+        let court = backend.venue(id: DemoVenue.labc) ?? BadmintonCourt.mock
         let players = [me, "bot-0", "bot-4", "bot-8"]
         let game = Game(
             id: "demo-upcoming", mode: .doubles, court: court, slot: slot,
@@ -129,11 +147,17 @@ enum DemoLauncher {
             id: "demo-room", code: "BX7K2M", ownerId: me.id, mode: .doubles, visibility: .privateRoom,
             participants: [RoomParticipant(user: me)] + ["bot-0", "bot-1"].compactMap { backend.user(id: $0) }.map { RoomParticipant(user: $0) },
             invitedUserIds: ["bot-3"], waitlist: [],
-            court: BadmintonCourt.curatedBeijing[1], slot: slot, levelRange: 3...7, tags: [.casual],
+            court: backend.venue(id: DemoVenue.eliteRally), slot: slot, levelRange: 3...7, tags: [.casual],
             note: "老地方，打完一起吃饭", createdAt: Date(), lastActivityAt: Date(), status: .open
         )
         backend.db.rooms[room.id] = room
         return room
     }
+}
+
+/// 演示用的两家洛杉矶球馆（见 CuratedVenues+US.swift）
+enum DemoVenue {
+    static let labc = "v-us-ca-labc"
+    static let eliteRally = "v-us-ca-elite-rally"
 }
 #endif

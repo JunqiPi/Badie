@@ -88,7 +88,7 @@ enum MatchRelaxation: Hashable, Identifiable {
         case .widenSkill(let value):
             return value >= MatchRequest.anySkill ? "不限水平差" : "放宽到 ±\(value) 级"
         case .widenTime(let hours): return "时间前后各放宽 \(hours) 小时"
-        case .widenRadius(let km): return "扩大到 \(Int(km)) 公里"
+        case .widenRadius(let km): return "扩大到 \(DistanceFormatter.radius(km: km))"
         case .otherDay(let date): return "改到\(DateText.relativeDay(date))"
         }
     }
@@ -240,7 +240,8 @@ enum MatchingService {
 
     /// 选择对所有人最方便、且在该时段营业的球馆
     static func bestCourt(for request: MatchRequest, locations: [Coordinate], slot: TimeSlot) -> BadmintonCourt? {
-        let open = request.courts.filter { $0.operatingHours.covers(slot) }
+        // 营业时间未知的球馆视为可用（无法判断），已知不营业的排除
+        let open = request.courts.filter { $0.isOpen(for: slot) }
         let pool = open.isEmpty ? request.courts : open
         return pool.min { lhs, rhs in
             totalDistance(lhs, locations) < totalDistance(rhs, locations)

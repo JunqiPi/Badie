@@ -12,7 +12,7 @@ enum LocationError: Error, Equatable {
 
     var message: String {
         switch self {
-        case .permissionDenied: return "未开启定位，显示的是示例城市的球馆"
+        case .permissionDenied: return "未开启定位，距离按默认城市计算；可直接搜索球馆"
         case .locationUnavailable: return "定位暂时不可用，显示上次位置"
         case .unknown(let message): return message
         }
@@ -26,17 +26,17 @@ final class LocationManager: NSObject, ObservableObject {
     @Published private(set) var currentLocation: CLLocation?
     @Published private(set) var lastLocationUpdate: Date?
     @Published private(set) var locationError: LocationError?
-    @Published private(set) var courts: [BadmintonCourt] = []
-    @Published private(set) var isSearchingCourts = false
+    /// 出行范围内的球馆（来自平台球馆库），按距离排序
+    @Published private(set) var nearbyCourts: [BadmintonCourt] = []
     @Published private(set) var favoriteCourtIds: [String] = []
     @Published var preferences: UserPreferences
 
     private let manager = CLLocationManager()
     private let backend: MockBackend
     private let defaults: UserDefaults
-    private var lastSearchLocation: CLLocation?
-    /// 截图/演示模式：不调用地图搜索，保证结果可复现
-    var usesOnlyCuratedCourts = false
+    private var lastRefreshLocation: CLLocation?
+    /// 截图/演示模式：不调用 Apple 地图搜索，保证结果可复现
+    var allowsMapSearch = true
 
     /// 位置变化超过 500 米时刷新附近球馆
     static let refreshThresholdMeters: CLLocationDistance = 500
@@ -55,13 +55,19 @@ final class LocationManager: NSObject, ObservableObject {
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         manager.distanceFilter = 100
-        courts = backend.db.knownCourts
         favoriteCourtIds = backend.favoriteCourtIds()
         backend.subscribe { [weak self] event in
-            if case .sessionChanged = event {
+            switch event {
+            case .sessionChanged:
                 self?.favoriteCourtIds = self?.backend.favoriteCourtIds() ?? []
+                self?.refreshCourts()
+            case .venuesChanged:
+                self?.refreshCourts()
+            default:
+                break
             }
         }
+        refreshCourts()
     }
 
     // MARK: Derived
@@ -80,17 +86,23 @@ final class LocationManager: NSObject, ObservableObject {
         return backend.db.worldCenter
     }
 
-    /// 出行半径内的球馆，按距离排序
-    var nearbyCourts: [BadmintonCourt] {
-        let center = coordinate
-        return courts
-            .filter { $0.distance(from: center) <= preferences.travelRadiusKm }
-            .sorted { $0.distance(from: center) < $1.distance(from: center) }
+    func court(id: String) -> BadmintonCourt? {
+        backend.venue(id: id)
     }
 
-    func court(id: String) -> BadmintonCourt? {
-        courts.first { $0.id == id }
+    func courts(ids: [String]) -> [BadmintonCourt] {
+        ids.compactMap { backend.venue(id: $0) }
     }
+
+    /// 常去球馆（收藏），按距离排序
+    var favoriteCourts: [BadmintonCourt] {
+        courts(ids: favoriteCourtIds).sorted { $0.distance(from: coordinate) < $1.distance(from: coordinate) }
+    }
+
+    var distanceUnit: DistanceUnit { .current }
+
+    /// "10 公里内" / "6 英里内"
+    var radiusText: String { DistanceFormatter.radius(km: preferences.travelRadiusKm) + "内" }
 
     func isFavorite(_ courtId: String) -> Bool { favoriteCourtIds.contains(courtId) }
 
@@ -112,7 +124,7 @@ final class LocationManager: NSObject, ObservableObject {
         case .authorizedAlways, .authorizedWhenInUse:
             manager.startUpdatingLocation()
         default:
-            Task { await refreshCourts() }
+            refreshCourts()
         }
     }
 
@@ -126,60 +138,16 @@ final class LocationManager: NSObject, ObservableObject {
         guard preferences.isValidTravelRadius(radius) else { return false }
         preferences.travelRadiusKm = radius
         defaults.set(radius, forKey: StorageKey.travelRadius)
+        refreshCourts()
         return true
     }
 
     // MARK: Court discovery
 
-    /// 刷新附近球馆：北京附近使用收录球馆；其他城市用 Apple 地图搜索，搜索不到时使用示例球馆
-    func refreshCourts() async {
-        let center = coordinate
-        let nearBeijing = center.distanceKm(to: .fallbackCenter) < 60
-        var result: [BadmintonCourt] = nearBeijing ? BadmintonCourt.curatedBeijing : []
-
-        if !usesOnlyCuratedCourts && isAuthorized {
-            isSearchingCourts = true
-            let found = await searchMapCourts(around: center)
-            isSearchingCourts = false
-            let existing = Set(result.map { "\($0.name)" })
-            result += found.filter { !existing.contains($0.name) }
-        }
-        if result.count < 3 && !nearBeijing {
-            result += BadmintonCourt.samples(around: center)
-        }
-        courts = result
-        backend.updateKnownCourts(result)
-    }
-
-    private func searchMapCourts(around center: Coordinate) async -> [BadmintonCourt] {
-        var found: [BadmintonCourt] = []
-        let span = max(preferences.travelRadiusKm, 5) * 2000
-        for query in ["羽毛球馆", "badminton"] {
-            let request = MKLocalSearch.Request()
-            request.naturalLanguageQuery = query
-            request.resultTypes = .pointOfInterest
-            request.region = MKCoordinateRegion(center: center.clCoordinate, latitudinalMeters: span, longitudinalMeters: span)
-            guard let response = try? await MKLocalSearch(request: request).start() else { continue }
-            for item in response.mapItems {
-                let coordinate = Coordinate(item.placemark.coordinate)
-                let name = item.name ?? "羽毛球馆"
-                guard !found.contains(where: { $0.name == name }) else { continue }
-                found.append(BadmintonCourt(
-                    id: "map-\(String(format: "%.4f,%.4f", coordinate.latitude, coordinate.longitude))",
-                    name: name,
-                    location: coordinate,
-                    address: item.placemark.title ?? "地址待确认",
-                    amenities: [],
-                    operatingHours: .standard,
-                    courtCount: 6,
-                    pricePerHour: 50,
-                    phone: item.phoneNumber,
-                    source: .mapSearch
-                ))
-            }
-            if found.count >= 3 { break }
-        }
-        return Array(found.prefix(15))
+    /// 从平台球馆库刷新出行范围内的球馆（不再自动把地图搜索结果写入球馆库：
+    /// 只有用户明确选中并确认的地点才会入库，避免重复和错误地点）
+    func refreshCourts() {
+        nearbyCourts = backend.venues(near: coordinate, radiusKm: preferences.travelRadiusKm)
     }
 
     // MARK: Delegate handling (main actor)
@@ -192,7 +160,7 @@ final class LocationManager: NSObject, ObservableObject {
             manager.startUpdatingLocation()
         case .denied, .restricted:
             locationError = .permissionDenied
-            Task { await refreshCourts() }
+            refreshCourts()
         default:
             break
         }
@@ -203,11 +171,11 @@ final class LocationManager: NSObject, ObservableObject {
         lastLocationUpdate = Date()
         locationError = nil
         backend.updateCurrentUserLocation(Coordinate(location.coordinate))
-        if let last = lastSearchLocation, location.distance(from: last) < Self.refreshThresholdMeters {
+        if let last = lastRefreshLocation, location.distance(from: last) < Self.refreshThresholdMeters {
             return
         }
-        lastSearchLocation = location
-        Task { await refreshCourts() }
+        lastRefreshLocation = location
+        refreshCourts()
     }
 
     fileprivate func handleFailure(_ error: Error) {

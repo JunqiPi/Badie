@@ -328,7 +328,8 @@ extension MockBackend {
     }
 
     func botReply(to text: String, botId: String) -> String {
-        let courtName = db.knownCourts.first?.name ?? "附近的球馆"
+        let center = currentUser?.location ?? db.worldCenter
+        let courtName = nearestVenues(to: center, count: 1).first?.name ?? "附近的球馆"
         let rules: [([String], String)] = [
             (["几点", "时间", "什么时候", "啥时候"], "我工作日晚上 7 点后都可以，周末更灵活，你定～"),
             (["哪", "球馆", "地方", "在哪"], "去\(courtName)吧，交通方便，场地也不错"),

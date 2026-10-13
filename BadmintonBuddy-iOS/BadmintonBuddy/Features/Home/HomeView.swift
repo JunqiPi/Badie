@@ -60,7 +60,7 @@ struct HomeView: View {
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
         .refreshable {
-            await locationManager.refreshCourts()
+            locationManager.refreshCourts()
             roomManager.reload()
             reloadPlayers()
         }
@@ -68,7 +68,7 @@ struct HomeView: View {
             reloadPlayers()
             prepareDraft()
         }
-        .onChange(of: locationManager.courts) { _, _ in
+        .onChange(of: locationManager.nearbyCourts) { _, _ in
             prepareDraft()
             reloadPlayers()
         }
@@ -185,7 +185,8 @@ struct HomeView: View {
         }
         Haptics.impact()
         matchManager.startSearch(user: user, location: locationManager.coordinate,
-                                 courts: locationManager.courts, radiusKm: locationManager.preferences.travelRadiusKm)
+                                 courts: locationManager.courts(ids: matchManager.draft.courtIds),
+                                 radiusKm: locationManager.preferences.travelRadiusKm)
     }
 
     // MARK: Date strip
@@ -350,7 +351,8 @@ struct HomeView: View {
             user: appState.currentUser,
             nearbyCourts: locationManager.nearbyCourts,
             recurring: appState.backend.recurringSlots(),
-            favorites: locationManager.favoriteCourtIds
+            favorites: locationManager.favoriteCourts.map(\.id),
+            isValidCourt: { locationManager.court(id: $0) != nil }
         )
     }
 

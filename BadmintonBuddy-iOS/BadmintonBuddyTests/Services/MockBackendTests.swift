@@ -16,31 +16,33 @@ final class MockBackendTests: XCTestCase {
     }
 
     private func signUp(seed: Bool = false) -> User {
-        backend.createAccount(phone: "13800001234", nickname: "阿杰", level: 4,
+        backend.createAccount(phone: "+16265550123", nickname: "阿杰", level: 4,
                               location: Coordinate.fallbackCenter, seedsDemoContent: seed)
     }
 
     // MARK: Auth
 
     func testPhoneValidation() {
-        XCTAssertTrue(MockBackend.isValidPhone("13800001234"))
-        XCTAssertFalse(MockBackend.isValidPhone("12800001234"))
-        XCTAssertFalse(MockBackend.isValidPhone("1380000123"))
-        XCTAssertFalse(MockBackend.isValidPhone("1380000123a"))
+        XCTAssertTrue(MockBackend.isValidPhone("+16265550123"))
+        XCTAssertTrue(MockBackend.isValidPhone("+8613800001234"))
+        XCTAssertFalse(MockBackend.isValidPhone("+11265550123"), "北美区号不能以 1 开头")
+        XCTAssertFalse(MockBackend.isValidPhone("+1626555012"))
+        XCTAssertFalse(MockBackend.isValidPhone("+8612800001234"))
+        XCTAssertFalse(MockBackend.isValidPhone("6265550123"), "存储必须是 E.164")
     }
 
     func testCodeLoginCreatesThenRestoresAccount() async throws {
-        let code = try await backend.requestCode(phone: "13912345678")
+        let code = try await backend.requestCode(phone: "+14155550188")
         do {
-            _ = try await backend.verify(phone: "13912345678", code: "000000" == code ? "111111" : "000000")
+            _ = try await backend.verify(phone: "+14155550188", code: "000000" == code ? "111111" : "000000")
             XCTFail("错误验证码应失败")
         } catch {
             XCTAssertEqual(error as? BackendError, .invalidCode)
         }
-        let outcome = try await backend.verify(phone: "13912345678", code: code)
-        XCTAssertEqual(outcome, .needsProfile(phone: "13912345678"))
+        let outcome = try await backend.verify(phone: "+14155550188", code: code)
+        XCTAssertEqual(outcome, .needsProfile(phone: "+14155550188"))
 
-        let user = try await backend.register(phone: "13912345678", nickname: "新球友", gender: .female,
+        let user = try await backend.register(phone: "+14155550188", nickname: "新球友", gender: .female,
                                               avatar: Avatar(symbol: "", paletteIndex: 1), level: 9,
                                               preferredMode: .singles, recurringSlots: [], location: nil)
         XCTAssertEqual(user.selfReportedLevel, 7, "自评最高 7 级")
@@ -48,8 +50,8 @@ final class MockBackendTests: XCTestCase {
 
         backend.signOut()
         XCTAssertNil(backend.currentUser)
-        let again = try await backend.requestCode(phone: "13912345678")
-        let restored = try await backend.verify(phone: "13912345678", code: again)
+        let again = try await backend.requestCode(phone: "+14155550188")
+        let restored = try await backend.verify(phone: "+14155550188", code: again)
         guard case .signedIn(let restoredUser) = restored else { return XCTFail("应直接登录") }
         XCTAssertEqual(restoredUser.id, user.id)
     }
@@ -147,7 +149,7 @@ final class MockBackendTests: XCTestCase {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
         var draft = RoomDraft()
         draft.mode = .singles
-        draft.court = BadmintonCourt.curatedBeijing[0]
+        draft.court = BadmintonCourt.curatedUS[0]
         draft.slot = TimeSlot.on(tomorrow, startHour: 19, endHour: 21)
         let room = try await backend.createRoom(draft)
         XCTAssertEqual(room.participants.map(\.userId), [me.id])
@@ -184,7 +186,7 @@ final class MockBackendTests: XCTestCase {
         let room = Room(
             id: "r1", code: "QWERTY", ownerId: host.id, mode: .singles, visibility: .publicListing,
             participants: [RoomParticipant(user: host), RoomParticipant(user: other)], invitedUserIds: [], waitlist: [],
-            court: BadmintonCourt.curatedBeijing[0], slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
+            court: BadmintonCourt.curatedUS[0], slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
             levelRange: 1...9, tags: [], note: "", createdAt: Date(), lastActivityAt: Date(), status: .open
         )
         backend.db.rooms[room.id] = room
@@ -209,7 +211,7 @@ final class MockBackendTests: XCTestCase {
         backend.db.rooms["r2"] = Room(
             id: "r2", code: "ZXCVBN", ownerId: host.id, mode: .doubles, visibility: .publicListing,
             participants: [RoomParticipant(user: host)], invitedUserIds: [], waitlist: [],
-            court: BadmintonCourt.curatedBeijing[0], slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
+            court: BadmintonCourt.curatedUS[0], slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
             levelRange: 6...9, tags: [], note: "", createdAt: Date(), lastActivityAt: Date(), status: .open
         )
         do {
@@ -240,7 +242,7 @@ final class MockBackendTests: XCTestCase {
         let request = MatchRequest(
             mode: .singles,
             slot: try XCTUnwrap(TimeSlot.on(nextWeekday(), startHour: 19, endHour: 21)),
-            courts: Array(BadmintonCourt.curatedBeijing.prefix(3)),
+            courts: Array(BadmintonCourt.curatedUS.prefix(3)),
             skillTolerance: MatchRequest.anySkill, userId: me.id, userLevel: me.displayLevel,
             userLocation: Coordinate.fallbackCenter, radiusKm: 50, excludedUserIds: []
         )
@@ -333,11 +335,97 @@ final class MockBackendTests: XCTestCase {
         XCTAssertEqual(backend.recurringSlots().count, 5)
     }
 
+    // MARK: Venues
+
+    private func candidate(_ name: String, at location: Coordinate, placeId: String? = nil) -> VenueCandidate {
+        VenueCandidate(name: name, location: location,
+                       address: PostalAddress(street: "123 Test Ave", city: "Arcadia", region: "CA", postalCode: "91006", countryCode: "US"),
+                       applePlaceId: placeId, timeZoneId: "America/Los_Angeles")
+    }
+
+    func testAddVenueStartsUnconfirmedAndIsSearchable() throws {
+        let me = signUp()
+        let spot = Coordinate.fallbackCenter.offsetBy(eastKm: 12, northKm: 9)
+        let venue = try backend.addVenue(candidate("Shuttle Garage", at: spot), source: .player, aliases: ["SG"], courtCount: 6,
+                                         entranceNote: "从后门进")
+        XCTAssertEqual(venue.status, .unconfirmed)
+        XCTAssertEqual(venue.addedBy, me.id)
+        XCTAssertEqual(venue.confirmedBy, [me.id])
+        XCTAssertEqual(venue.currencyCode, "USD")
+        XCTAssertEqual(venue.entranceNote, "从后门进")
+        XCTAssertEqual(backend.searchVenues("shuttle garage", near: spot).first?.venue.id, venue.id)
+        XCTAssertEqual(backend.searchVenues("SG", near: spot).first?.venue.id, venue.id)
+    }
+
+    func testAddVenueValidatesNameAndAddress() {
+        _ = signUp()
+        XCTAssertThrowsError(try backend.addVenue(candidate("A", at: .fallbackCenter), source: .player)) {
+            XCTAssertEqual($0 as? BackendError, .venueNameInvalid)
+        }
+        var noStreet = candidate("No Street Gym", at: .fallbackCenter)
+        noStreet.address.street = ""
+        XCTAssertThrowsError(try backend.addVenue(noStreet, source: .player)) {
+            XCTAssertEqual($0 as? BackendError, .venueAddressIncomplete)
+        }
+    }
+
+    func testSamePlaceIdReturnsExistingVenue() throws {
+        _ = signUp()
+        let spot = Coordinate.fallbackCenter.offsetBy(eastKm: 20, northKm: 0)
+        let first = try backend.addVenue(candidate("Rally Hall", at: spot, placeId: "IABC"), source: .appleMaps)
+        let count = backend.allVenues.count
+        let second = try backend.addVenue(candidate("Rally Hall (dup)", at: spot.offsetBy(eastKm: 0.5, northKm: 0), placeId: "IABC"),
+                                          source: .appleMaps)
+        XCTAssertEqual(second.id, first.id)
+        XCTAssertEqual(backend.allVenues.count, count)
+        XCTAssertEqual(first.id, "v-ap-IABC")
+    }
+
+    func testThreeConfirmationsPromoteAndCheckInsCount() async throws {
+        let me = signUp()
+        let venue = try backend.addVenue(candidate("Community Gym", at: .fallbackCenter.offsetBy(eastKm: 3, northKm: 3)), source: .player)
+        backend.currentUserIdOverride("bot-0")
+        try backend.confirmVenue(venue.id)
+        XCTAssertEqual(backend.venue(id: venue.id)?.status, .unconfirmed)
+        backend.currentUserIdOverride(me.id)
+
+        // 在这里签到打过球的人自动算作确认
+        let start = Date().addingTimeInterval(-3 * 3600)
+        var game = makeGame(id: "g-venue", players: [me.id, "bot-1"], start: start)
+        game.court = try XCTUnwrap(backend.venue(id: venue.id))
+        game.checkIns = [me.id: start, "bot-1": start]
+        backend.db.games[game.id] = game
+        try await backend.completeGame(id: game.id, didWin: true, score: "21:10")
+        XCTAssertEqual(backend.venue(id: venue.id)?.status, .confirmed)
+        XCTAssertEqual(Set(backend.venue(id: venue.id)?.confirmedBy ?? []), [me.id, "bot-0", "bot-1"])
+    }
+
+    func testReportsHideUnconfirmedVenueOnlyAfterTwoReporters() throws {
+        let me = signUp()
+        let spot = Coordinate.fallbackCenter.offsetBy(eastKm: 30, northKm: 0)
+        let venue = try backend.addVenue(candidate("Somebody's Garage", at: spot), source: .player)
+        backend.currentUserIdOverride("bot-0")
+        try backend.reportVenue(venue.id, issue: .notBadminton)
+        XCTAssertFalse(backend.searchVenues("garage", near: spot).isEmpty, "一个人的报告不会下架")
+        backend.currentUserIdOverride("bot-1")
+        try backend.reportVenue(venue.id, issue: .notBadminton)
+        XCTAssertTrue(backend.searchVenues("garage", near: spot).isEmpty, "两人报告后进入人工核实")
+        backend.currentUserIdOverride(me.id)
+        XCTAssertFalse(backend.searchVenues("garage", near: spot).isEmpty, "添加者本人仍能看到")
+    }
+
+    func testVenuesNearbyAreSortedByDistance() {
+        let near = backend.venues(near: .beijing, radiusKm: 50)
+        XCTAssertFalse(near.isEmpty)
+        let distances = near.map { $0.distance(from: .beijing) }
+        XCTAssertEqual(distances, distances.sorted())
+    }
+
     // MARK: Helpers
 
     private func makeGame(id: String, players: [String], start: Date) -> Game {
         let slot = TimeSlot(date: start, startTime: start, endTime: start.addingTimeInterval(2 * 3600))
-        let court = BadmintonCourt.curatedBeijing[0]
+        let court = BadmintonCourt.curatedUS[0]
         return Game(
             id: id, mode: .singles, court: court, slot: slot, playerIds: players, teams: players.map { [$0] },
             hostId: players[0], origin: .quickMatch, status: .confirmed, createdAt: Date(), checkIns: [:],

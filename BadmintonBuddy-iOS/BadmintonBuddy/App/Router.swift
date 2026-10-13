@@ -56,6 +56,20 @@ enum Route: Hashable {
     case notifications
     case courts
     case gameHistory
+    /// 球馆详情
+    case venue(id: String)
+    /// 快速匹配的球馆多选（可带初始搜索词）
+    case matchVenues(query: String?)
+    /// 添加球馆（演示时可预填，并自动检查重复）
+    case addVenue(prefill: VenuePrefill?)
+}
+
+/// 添加球馆的预填内容（地图链接、演示截图）
+struct VenuePrefill: Hashable {
+    var name: String
+    var coordinate: Coordinate
+    var address: PostalAddress?
+    var checksDuplicates = false
 }
 
 // MARK: - 路由器：每个标签页一条独立的导航栈

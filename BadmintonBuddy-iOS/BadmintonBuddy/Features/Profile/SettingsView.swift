@@ -38,7 +38,7 @@ struct SettingsView: View {
                             }
                             InsetDivider()
                             settingRow(icon: "map.fill", tint: AppTheme.Colors.mint, title: "出行范围",
-                                       value: "\(Int(locationManager.preferences.travelRadiusKm)) 公里") {
+                                       value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
                                 showRadius = true
                             }
                         }
@@ -64,7 +64,7 @@ struct SettingsView: View {
                     section("隐私与安全") {
                         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                             privacyLine("手机号只用于登录与安全验证，不会展示给任何球友")
-                            privacyLine("位置只用于计算距离，球友看到的是“约 2 公里”而非精确位置")
+                            privacyLine("位置只用于计算距离，球友看到的是大概距离而非精确位置")
                             privacyLine("评价匿名汇总，不展示单条评价与评价人")
                             privacyLine("屏蔽对方不会通知对方")
                         }

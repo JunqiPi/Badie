@@ -178,7 +178,7 @@ struct ProfileView: View {
             }
             InsetDivider()
             MenuRow(icon: "location.circle.fill", tint: AppTheme.Colors.sky, title: "出行范围",
-                    value: "\(Int(locationManager.preferences.travelRadiusKm)) 公里") {
+                    value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
                 showRadius = true
             }
             InsetDivider()

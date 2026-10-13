@@ -175,8 +175,8 @@ struct RoomLobbyView: View {
                     subtitle: room.tags.isEmpty ? nil : room.tags.map(\.rawValue).joined(separator: " · "))
             if let cost = room.costEstimate {
                 InsetDivider()
-                InfoRow(icon: "yensign.circle.fill", tint: AppTheme.Colors.butter,
-                        title: "AA 约 ¥\(cost.perPerson)/人", subtitle: cost.breakdownText)
+                InfoRow(icon: Money.icon(for: cost.currencyCode), tint: AppTheme.Colors.butter,
+                        title: cost.perPerson == nil ? "费用待定" : "AA 约 \(cost.perPersonText)", subtitle: cost.breakdownText)
             }
             if !room.note.isEmpty {
                 InsetDivider()
@@ -345,7 +345,7 @@ struct RoomLobbyView: View {
         } label: {
             HStack(spacing: AppTheme.Spacing.sm) {
                 if isWorking { LoadingDots() }
-                Text(room.isFull ? "加入候补" : "加入球局" + (room.costEstimate.map { " · ¥\($0.perPerson)/人" } ?? ""))
+                Text(room.isFull ? "加入候补" : "加入球局" + (room.costEstimate.flatMap { $0.perPerson == nil ? nil : " · \($0.perPersonText)" } ?? ""))
             }
         }
         .buttonStyle(.brutalPrimary)

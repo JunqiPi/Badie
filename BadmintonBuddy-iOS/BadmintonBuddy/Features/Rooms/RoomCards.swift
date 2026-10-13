@@ -51,8 +51,8 @@ struct PublicRoomCard: View {
                     }
                 }
                 Spacer(minLength: 0)
-                if let cost = room.costEstimate {
-                    Text("¥\(cost.perPerson)/人")
+                if let cost = room.costEstimate, cost.perPerson != nil {
+                    Text(cost.perPersonText)
                         .font(AppTheme.Typography.headline)
                         .monospacedDigit()
                         .foregroundStyle(AppTheme.Colors.ink)
@@ -92,7 +92,7 @@ struct PublicRoomCard: View {
         if let slot = room.slot { parts.append(slot.formattedFull) }
         if let court = room.court { parts.append(court.name) }
         parts.append(room.isFull ? "已满员" : "还缺 \(room.openSeats) 人")
-        if let cost = room.costEstimate { parts.append("每人约 \(cost.perPerson) 元") }
+        if let cost = room.costEstimate, cost.perPerson != nil { parts.append("每人约 \(cost.perPersonText)") }
         return parts.joined(separator: "，")
     }
 }

@@ -33,7 +33,8 @@ struct DatabaseStore {
     func load() -> Database? {
         guard let url, let data = try? Data(contentsOf: url) else { return nil }
         do {
-            return try Self.decoder.decode(Database.self, from: data)
+            let database = try Self.decoder.decode(Database.self, from: data)
+            return database.version == Database.currentVersion ? database : nil
         } catch let error as DecodingError {
             #if DEBUG
             print("[DatabaseStore] 解析失败 \(JSONErrorLocationExtractor.extractPosition(from: error) ?? "")：\(error)")

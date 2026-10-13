@@ -7,13 +7,14 @@ UDID="$1"
 APP="$2"
 OUT="$3"
 BUNDLE="com.badmintonbuddy.app"
-SCREENS="${SCREENS:-welcome login home matchSetup courts matching matchFound ticket games messages chat friends room joinRoom survey profile editProfile settings notifications}"
+SCREENS="${SCREENS:-welcome login home matchSetup venuePicker venueSearch venueDetail addVenue courts matching matchFound ticket games messages chat friends room joinRoom survey profile editProfile settings notifications}"
 
 mkdir -p "$OUT"
 xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b
 xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
-xcrun simctl location "$UDID" set 39.9219,116.4433 || true
+# 首发市场：洛杉矶圣盖博谷（与 Coordinate.fallbackCenter 一致）
+xcrun simctl location "$UDID" set 34.0686,-118.0276 || true
 xcrun simctl install "$UDID" "$APP"
 xcrun simctl privacy "$UDID" grant location "$BUNDLE" || true
 

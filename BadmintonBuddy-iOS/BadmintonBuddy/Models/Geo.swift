@@ -10,8 +10,10 @@ struct Coordinate: Codable, Hashable {
     static let earthRadiusKm = 6371.0088
     static let kilometersPerMile = 1.609344
 
-    /// 默认城市中心（北京·工体），在无定位权限时使用
-    static let fallbackCenter = Coordinate(latitude: 39.9219, longitude: 116.4433)
+    /// 默认城市中心（首发市场：洛杉矶圣盖博谷），在无定位权限时使用
+    static let fallbackCenter = Coordinate(latitude: 34.0686, longitude: -118.0276)
+    /// 北京（国内演示与测试用）
+    static let beijing = Coordinate(latitude: 39.9219, longitude: 116.4433)
 
     /// Haversine 距离（公里）
     func distanceKm(to other: Coordinate) -> Double {
@@ -50,12 +52,45 @@ struct Coordinate: Codable, Hashable {
     }
 }
 
-enum DistanceFormatter {
-    /// 1 公里以内显示米，否则显示一位小数公里
-    static func string(km: Double) -> String {
-        if km < 1 {
-            return "\(max(10, Int((km * 1000 / 10).rounded()) * 10)) 米"
+// MARK: - 距离单位：跟随设备地区（美国、英国用英里，其他用公里）
+
+enum DistanceUnit: String, Codable {
+    case kilometers, miles
+
+    static var current: DistanceUnit {
+        switch Locale.current.measurementSystem {
+        case .us, .uk: return .miles
+        default: return .kilometers
         }
-        return String(format: "%.1f 公里", km)
+    }
+
+    var title: String { self == .miles ? "英里" : "公里" }
+
+    func value(fromKm km: Double) -> Double { self == .miles ? km / Coordinate.kilometersPerMile : km }
+    func km(from value: Double) -> Double { self == .miles ? value * Coordinate.kilometersPerMile : value }
+}
+
+enum DistanceFormatter {
+    /// 公里制：1 公里以内显示米；英里制：0.1 英里以内显示英尺，其余一位小数
+    static func string(km: Double, unit: DistanceUnit = .current) -> String {
+        switch unit {
+        case .kilometers:
+            if km < 1 {
+                return "\(max(10, Int((km * 1000 / 10).rounded()) * 10)) 米"
+            }
+            return String(format: "%.1f 公里", km)
+        case .miles:
+            let miles = km / Coordinate.kilometersPerMile
+            if miles < 0.1 {
+                let feet = max(50, Int((miles * 5280 / 50).rounded()) * 50)
+                return "\(feet) 英尺"
+            }
+            return String(format: "%.1f 英里", miles)
+        }
+    }
+
+    /// 出行范围等整数距离："10 公里" / "6 英里"
+    static func radius(km: Double, unit: DistanceUnit = .current) -> String {
+        "\(Int(unit.value(fromKm: km).rounded())) \(unit.title)"
     }
 }

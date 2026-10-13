@@ -119,9 +119,9 @@ final class MockBackend {
 
     func user(id: String) -> User? { db.users[id] }
 
+    /// 手机号以 E.164 存储（"+16265550123"），按国家规则校验
     static func isValidPhone(_ phone: String) -> Bool {
-        phone.count == 11 && phone.first == "1" && phone.allSatisfy { $0.isASCII && $0.isNumber } &&
-            ("3"..."9").contains(String(phone[phone.index(after: phone.startIndex)]))
+        phone.hasPrefix("+") && PhoneNumber.parse(phone)?.isValid == true
     }
 
     static func isValidNickname(_ nickname: String) -> Bool {

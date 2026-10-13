@@ -3,7 +3,7 @@ import XCTest
 
 final class MatchingServiceTests: XCTestCase {
 
-    private let center = Coordinate.fallbackCenter
+    private let center = Coordinate.beijing
     private lazy var tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
 
     private func player(_ id: String, level: Int, eastKm: Double, slots: [TimeSlot], evaluations: Int = 10) -> PlayerAvailability {
@@ -96,11 +96,23 @@ final class MatchingServiceTests: XCTestCase {
 
     func testBestCourtPrefersOpenCourt() {
         var request = request()
-        let closed = BadmintonCourt(id: "closed", name: "闭馆", location: center, address: "",
+        let address = PostalAddress(street: "测试路1号", city: "朝阳区", region: "北京市", countryCode: "CN")
+        let closed = BadmintonCourt(id: "closed", name: "闭馆", location: center, address: address,
                                     operatingHours: OperatingHours(openHour: 8, openMinute: 0, closeHour: 12, closeMinute: 0, daysOpen: Array(1...7)))
-        let open = BadmintonCourt(id: "open", name: "营业", location: center.offsetBy(eastKm: 5, northKm: 0), address: "")
+        let open = BadmintonCourt(id: "open", name: "营业", location: center.offsetBy(eastKm: 5, northKm: 0), address: address,
+                                  operatingHours: .standard)
         request.courts = [closed, open]
         let court = MatchingService.bestCourt(for: request, locations: [center], slot: slot(19, 21))
         XCTAssertEqual(court?.id, "open")
+    }
+
+    func testUnknownHoursCountAsOpenButKnownClosedIsSkipped() {
+        var request = request()
+        let address = PostalAddress(street: "测试路1号", city: "朝阳区", region: "北京市", countryCode: "CN")
+        let closed = BadmintonCourt(id: "closed", name: "闭馆", location: center, address: address,
+                                    operatingHours: OperatingHours(openHour: 8, openMinute: 0, closeHour: 12, closeMinute: 0, daysOpen: Array(1...7)))
+        let unknown = BadmintonCourt(id: "unknown", name: "未知", location: center.offsetBy(eastKm: 8, northKm: 0), address: address)
+        request.courts = [closed, unknown]
+        XCTAssertEqual(MatchingService.bestCourt(for: request, locations: [center], slot: slot(19, 21))?.id, "unknown")
     }
 }

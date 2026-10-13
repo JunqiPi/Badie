@@ -30,46 +30,78 @@ enum GameMode: String, CaseIterable, Identifiable, Codable, Hashable {
         case .doubles: return 4
         }
     }
-
-    /// 每场用球费用估算（元）
-    var shuttleFee: Int {
-        switch self {
-        case .singles: return 10
-        case .doubles: return 15
-        }
-    }
 }
 
 // MARK: - 费用 AA
 
-/// 费用明细：场地费 + 用球费，平台不收服务费
+/// 费用明细：场地费 + 用球费，平台不收服务费。币种跟随球馆所在国家。
 struct CostSplit: Codable, Hashable {
-    var courtFeePerHour: Int
+    enum Basis: String, Codable {
+        /// 按场地小时收费，参与者平摊
+        case courtHour
+        /// 球馆按人次收费（美国俱乐部常见的 drop-in）
+        case dropIn
+        /// 球馆价格未知
+        case unknown
+    }
+
+    var basis: Basis
+    /// courtHour：每片场地每小时；dropIn：每人次
+    var rate: Int
     var hours: Double
     var shuttleFee: Int
     var players: Int
+    var currencyCode: String
 
-    var courtFee: Int { Int((Double(courtFeePerHour) * hours).rounded()) }
-    var total: Int { courtFee + shuttleFee }
+    var courtFee: Int? {
+        switch basis {
+        case .courtHour: return Int((Double(rate) * hours).rounded())
+        case .dropIn: return rate * players
+        case .unknown: return nil
+        }
+    }
 
-    /// 每人应付（向上取整到元）
-    var perPerson: Int {
+    var total: Int? { courtFee.map { $0 + shuttleFee } }
+
+    /// 每人应付（向上取整）；价格未知时为 nil
+    var perPerson: Int? {
+        guard let total else { return nil }
         guard players > 0 else { return total }
         return Int((Double(total) / Double(players)).rounded(.up))
     }
 
+    func money(_ amount: Int) -> String { Money.format(amount, currency: currencyCode) }
+
+    /// "$17/人" 或 "费用待定"
+    var perPersonText: String { perPerson.map { "\(money($0))/人" } ?? "费用待定" }
+
     var breakdownText: String {
         let hoursText = hours == hours.rounded() ? "\(Int(hours))" : String(format: "%.1f", hours)
-        return "场地 ¥\(courtFeePerHour)/时 × \(hoursText) 小时 + 用球 ¥\(shuttleFee) = ¥\(total)"
+        let shuttle = shuttleFee > 0 ? " + 用球 \(money(shuttleFee))" : ""
+        switch basis {
+        case .courtHour:
+            return "场地 \(money(rate))/时 × \(hoursText) 小时\(shuttle) = \(money(total ?? 0))，\(players) 人 AA"
+        case .dropIn:
+            return "球馆按人次收费 \(money(rate))/人\(shuttleFee > 0 ? "，用球 \(money(shuttleFee)) 平摊" : "")"
+        case .unknown:
+            return "球馆价格未知，到场后按实际费用 AA"
+        }
     }
 
     static func estimate(court: BadmintonCourt, slot: TimeSlot, mode: GameMode) -> CostSplit {
-        CostSplit(
-            courtFeePerHour: court.pricePerHour,
-            hours: slot.duration / 3600,
-            shuttleFee: mode.shuttleFee,
-            players: mode.requiredPlayers
-        )
+        let shuttle = court.country.shuttleFee(for: mode)
+        let hours = slot.duration / 3600
+        switch court.pricing {
+        case .perCourtHour(let price):
+            return CostSplit(basis: .courtHour, rate: price, hours: hours, shuttleFee: shuttle,
+                             players: mode.requiredPlayers, currencyCode: court.currencyCode)
+        case .dropIn(let price):
+            return CostSplit(basis: .dropIn, rate: price, hours: hours, shuttleFee: shuttle,
+                             players: mode.requiredPlayers, currencyCode: court.currencyCode)
+        case .unknown:
+            return CostSplit(basis: .unknown, rate: 0, hours: hours, shuttleFee: shuttle,
+                             players: mode.requiredPlayers, currencyCode: court.currencyCode)
+        }
     }
 }
 
@@ -171,6 +203,6 @@ struct Game: Identifiable, Codable, Hashable {
     }
 
     var shareText: String {
-        "🏸 \(mode.title)球局 · \(slot.formattedFull)\n📍 \(court.name)\n\(court.address)\n💰 AA 约 ¥\(cost.perPerson)/人 —— 来自「羽毛球搭子」"
+        "🏸 \(mode.title)球局 · \(slot.formattedFull)\n📍 \(court.name)\n\(court.address)\n💰 AA \(cost.perPersonText) —— 来自「羽毛球搭子」"
     }
 }
