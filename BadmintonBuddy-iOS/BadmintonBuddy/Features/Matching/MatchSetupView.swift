@@ -9,6 +9,7 @@ struct MatchSetupView: View {
 
     @State private var recurring: [RecurringTimeSlot] = []
     @State private var showVenuePicker = false
+    static let venuesAnchor = "venues"
 
     private var days: [Date] {
         let calendar = Calendar.current
@@ -34,19 +35,29 @@ struct MatchSetupView: View {
             .padding(.top, AppTheme.Spacing.xl)
             .padding(.bottom, AppTheme.Spacing.md)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
-                    modeSection
-                        .padding(.horizontal, AppTheme.Spacing.screen)
-                    dateSection
-                    timeSection
-                        .padding(.horizontal, AppTheme.Spacing.screen)
-                    courtsSection
-                        .padding(.horizontal, AppTheme.Spacing.screen)
-                    skillSection
-                        .padding(.horizontal, AppTheme.Spacing.screen)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
+                        modeSection
+                            .padding(.horizontal, AppTheme.Spacing.screen)
+                        dateSection
+                        timeSection
+                            .padding(.horizontal, AppTheme.Spacing.screen)
+                        courtsSection
+                            .padding(.horizontal, AppTheme.Spacing.screen)
+                            .id(Self.venuesAnchor)
+                        skillSection
+                            .padding(.horizontal, AppTheme.Spacing.screen)
+                    }
+                    .padding(.bottom, AppTheme.Spacing.xxl)
                 }
-                .padding(.bottom, AppTheme.Spacing.xxl)
+                .onAppear {
+                    // 演示/截图：直接滚到“球馆”部分
+                    if router.matchSetupAnchor == Self.venuesAnchor {
+                        router.matchSetupAnchor = nil
+                        DispatchQueue.main.async { proxy.scrollTo(Self.venuesAnchor, anchor: .top) }
+                    }
+                }
             }
             footer
         }

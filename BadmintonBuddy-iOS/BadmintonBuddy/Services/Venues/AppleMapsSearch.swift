@@ -93,7 +93,7 @@ final class AppleMapsSearch: NSObject, ObservableObject {
     /// 把联想结果解析成完整地点（坐标、结构化地址、Place ID）
     func resolve(_ completion: MKLocalSearchCompletion) async throws -> VenueCandidate {
         let response = try await MKLocalSearch(request: MKLocalSearch.Request(completion: completion)).start()
-        guard let item = response.mapItems.first else { throw BackendError.notFound }
+        guard let item = response.mapItems.first else { throw BackendError.venueNotFound }
         return VenueCandidate(mapItem: item)
     }
 

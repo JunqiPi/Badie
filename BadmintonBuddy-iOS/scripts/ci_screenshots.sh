@@ -7,7 +7,7 @@ UDID="$1"
 APP="$2"
 OUT="$3"
 BUNDLE="com.badmintonbuddy.app"
-SCREENS="${SCREENS:-welcome login home matchSetup venuePicker venueSearch venueDetail addVenue courts matching matchFound ticket games messages chat friends room joinRoom survey profile editProfile settings notifications}"
+SCREENS="${SCREENS:-welcome login home createMenu matchSetup matchSetupVenues venuePicker venueSearch venueDetail addVenue courts matching matchFound ticket games messages chat friends room joinRoom survey profile editProfile settings notifications}"
 
 mkdir -p "$OUT"
 xcrun simctl boot "$UDID" 2>/dev/null || true

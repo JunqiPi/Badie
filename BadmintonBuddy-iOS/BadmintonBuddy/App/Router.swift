@@ -82,6 +82,8 @@ final class Router: ObservableObject {
     @Published var isCreateMenuPresented = false
     /// 快速匹配设置页
     @Published var isMatchSetupPresented = false
+    /// 打开匹配设置时滚动到的位置（演示截图用）
+    var matchSetupAnchor: String?
 
     func binding(for tab: MainTab) -> Binding<[Route]> {
         Binding(

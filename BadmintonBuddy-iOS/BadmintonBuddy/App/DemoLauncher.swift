@@ -49,7 +49,12 @@ enum DemoLauncher {
 
         let router = environment.router
         switch screen {
+        case "createMenu":
+            router.isCreateMenuPresented = true
         case "matchSetup":
+            router.isMatchSetupPresented = true
+        case "matchSetupVenues":
+            router.matchSetupAnchor = MatchSetupView.venuesAnchor
             router.isMatchSetupPresented = true
         case "courts":
             router.show(.courts, in: .home)
