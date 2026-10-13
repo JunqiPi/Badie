@@ -45,6 +45,16 @@ enum VenueSearch {
         return String(words.compactMap(\.first))
     }
 
+    /// 展开大写缩写后的首字母："LA Badminton Club" / "L.A. Badminton Club" / "Los Angeles Badminton Club" → "labc"
+    static func expandedAcronym(_ name: String) -> String {
+        let words = name.components(separatedBy: CharacterSet.alphanumerics.inverted).filter { !$0.isEmpty }
+        guard words.count >= 2, words.allSatisfy({ $0.unicodeScalars.allSatisfy(\.isASCII) }) else { return "" }
+        return words.map { word -> String in
+            let isShortCaps = (2...4).contains(word.count) && word == word.uppercased() && word.allSatisfy(\.isLetter)
+            return isShortCaps ? word.lowercased() : String(word.prefix(1)).lowercased()
+        }.joined()
+    }
+
     /// 中文拼音（全拼, 首字母）："朝阳体育中心" → ("chaoyangtiyuzhongxin", "cytyzx")
     static func pinyin(_ text: String) -> (full: String, initials: String) {
         guard text.unicodeScalars.contains(where: { $0.properties.isIdeographic }) else { return ("", "") }
@@ -58,7 +68,7 @@ enum VenueSearch {
     /// 名称里不区分球馆的通用词
     static let genericWords: Set<String> = [
         "badminton", "club", "center", "centre", "sports", "sport", "academy", "bc", "the", "inc", "llc",
-        "gym", "court", "courts", "facility", "arena", "and", "of",
+        "gym", "court", "courts", "facility", "and", "of",
         "羽毛球", "羽毛球馆", "馆", "俱乐部", "中心", "体育", "体育馆", "球馆"
     ]
 
@@ -121,10 +131,13 @@ enum VenueSearch {
         if compactA == compactB { return 1 }
         if !acronym(a).isEmpty && acronym(a) == compactB { return 1 }
         if !acronym(b).isEmpty && acronym(b) == compactA { return 1 }
+        let expandedA = expandedAcronym(a), expandedB = expandedAcronym(b)
+        if expandedA.count >= 3 && expandedA == expandedB { return 0.9 }
+        let hasIdeographs = (a + b).unicodeScalars.contains { $0.properties.isIdeographic }
         let setA = Set(tokens(a)).subtracting(genericWords)
         let setB = Set(tokens(b)).subtracting(genericWords)
-        if setA.isEmpty || setB.isEmpty {
-            // 纯中文名没有空格分词：用去掉通用词后的包含关系
+        if hasIdeographs || setA.isEmpty || setB.isEmpty {
+            // 中文名没有空格分词：去掉“羽毛球馆/中心/体育”等通用词后看是否互相包含
             let coreA = stripGeneric(compactA), coreB = stripGeneric(compactB)
             guard !coreA.isEmpty, !coreB.isEmpty else { return 0 }
             return coreA.contains(coreB) || coreB.contains(coreA) ? 0.8 : 0

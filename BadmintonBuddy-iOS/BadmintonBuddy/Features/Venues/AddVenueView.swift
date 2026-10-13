@@ -295,6 +295,7 @@ struct AddVenueView: View {
 
     private func apply(_ resolved: PostalAddress) {
         address = resolved
+        if let resolvedUnit = resolved.unit { unit = resolvedUnit }
         street = resolved.street
         city = resolved.city
         region = resolved.region
