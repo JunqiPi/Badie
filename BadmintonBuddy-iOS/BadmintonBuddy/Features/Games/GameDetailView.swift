@@ -250,6 +250,7 @@ struct GameDetailView: View {
                 ForEach(players(game)) { player in
                     HStack(spacing: AppTheme.Spacing.md) {
                         AvatarView(user: player, size: 32)
+                            .opensProfile(player.id)
                         Text(player.id == me ? "我" : player.nickname)
                             .font(AppTheme.Typography.bodyBold)
                             .foregroundStyle(AppTheme.Colors.ink)
@@ -298,6 +299,7 @@ struct GameDetailView: View {
                             if let user = lookup[userId] {
                                 HStack(spacing: 6) {
                                     AvatarView(user: user, size: 26)
+                                        .opensProfile(user.id)
                                     Text(user.id == me ? "我" : user.nickname)
                                         .font(AppTheme.Typography.footnoteBold)
                                         .lineLimit(1)
@@ -359,6 +361,7 @@ struct GameDetailView: View {
                 let canToggle = player.id == me || game.hostId == me
                 HStack(spacing: AppTheme.Spacing.md) {
                     AvatarView(user: player, size: 30)
+                        .opensProfile(player.id)
                     Text(player.id == me ? "我" : player.nickname)
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
@@ -430,6 +433,7 @@ struct GameDetailView: View {
                     } label: {
                         HStack(spacing: AppTheme.Spacing.md) {
                             AvatarView(text: survey.opponentAvatarText, paletteIndex: survey.opponentAvatar.paletteIndex, size: 40)
+                                .opensProfile(survey.opponentId)
                             Text("评价 \(survey.opponentNickname)")
                                 .font(AppTheme.Typography.headline)
                                 .foregroundStyle(AppTheme.Colors.ink)

@@ -51,6 +51,19 @@ final class FriendManager: ObservableObject {
 
     func isFriend(_ userId: String) -> Bool { friends.contains { $0.id == userId } }
 
+    /// 我和 TA 共同的球友
+    func mutualFriends(with userId: String) -> [User] {
+        let theirs = Set(backend.friendIds(of: userId))
+        return friends.filter { theirs.contains($0.id) }
+    }
+
+    /// 我和 TA 一起打完的球局（最近的在前）
+    func gamesTogether(with userId: String) -> [Game] {
+        backend.games()
+            .filter { $0.status == .completed && $0.playerIds.contains(userId) }
+            .sorted { $0.slot.startTime > $1.slot.startTime }
+    }
+
     func hasPendingRequest(to userId: String) -> Bool {
         outgoingRequests.contains { $0.toUserId == userId }
     }

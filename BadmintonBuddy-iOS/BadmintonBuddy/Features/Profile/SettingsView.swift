@@ -339,6 +339,7 @@ struct BlockedUsersView: View {
                         HStack(spacing: AppTheme.Spacing.md) {
                             if let user = messageManager.user(id: blocked.blockedUserId) {
                                 AvatarView(user: user, size: 40)
+                                    .opensProfile(user.id, allowsInvite: false)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(user.nickname)
                                         .font(AppTheme.Typography.headline)

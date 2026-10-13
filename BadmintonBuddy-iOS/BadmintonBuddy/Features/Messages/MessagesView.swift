@@ -99,6 +99,7 @@ private struct ThreadRow: View {
             HStack(spacing: AppTheme.Spacing.md) {
                 if let other {
                     AvatarView(user: other, size: 50)
+                        .opensProfile(other.id)
                 } else {
                     AvatarView(text: "?", size: 50)
                 }

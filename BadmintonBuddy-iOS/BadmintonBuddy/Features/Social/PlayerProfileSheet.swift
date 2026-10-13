@@ -22,6 +22,7 @@ struct PlayerProfileSheet: View {
                     header(user)
                     statsRow(user)
                     reputationCard(user)
+                    connectionCard(user)
                     if !user.bio.isEmpty {
                         Text("“\(user.bio)”")
                             .font(AppTheme.Typography.body)
@@ -93,6 +94,45 @@ struct PlayerProfileSheet: View {
                  : "等级由自评与球友评价综合得出")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
+        }
+        .card()
+    }
+
+    /// 你们的交集：一起打过几场、共同球友（帮助判断“这个人靠不靠谱、是不是圈子里的人”）
+    private func connectionCard(_ user: User) -> some View {
+        let together = friendManager.gamesTogether(with: user.id)
+        let mutual = friendManager.mutualFriends(with: user.id)
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            Text("你们的交集")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.ink)
+            HStack(spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "sportscourt.fill", fill: AppTheme.Colors.lime, size: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(together.isEmpty ? "还没一起打过" : "一起打过 \(together.count) 场")
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    if let last = together.first {
+                        Text("最近一次：\(DateText.relativeDay(last.slot.startTime)) · \(last.court.name)")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            HStack(spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "person.2.fill", fill: AppTheme.Colors.lavender, size: 36)
+                Text(mutual.isEmpty ? "没有共同球友" : "共同球友 \(mutual.count) 位")
+                    .font(AppTheme.Typography.bodyBold)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                Spacer(minLength: 0)
+                HStack(spacing: -8) {
+                    ForEach(mutual.prefix(4)) { friend in
+                        AvatarView(user: friend, size: 30)
+                            .opensProfile(friend.id)
+                    }
+                }
+            }
         }
         .card()
     }

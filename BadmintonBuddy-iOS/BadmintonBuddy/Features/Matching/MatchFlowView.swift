@@ -444,6 +444,7 @@ struct OfferView: View {
                 statusPill("补位中", icon: "arrow.triangle.2.circlepath", fill: AppTheme.Colors.surfaceMuted)
             } else if let user = matchManager.user(id: seat.userId) {
                 AvatarView(user: user, size: 32, image: user.id == me?.id ? AvatarStore.image(for: user.id) : nil)
+                    .opensProfile(user.id, allowsInvite: false)
                 Text(user.id == ticket.userId ? "我" : user.nickname)
                     .font(AppTheme.Typography.subheadlineBold)
                     .lineLimit(1)

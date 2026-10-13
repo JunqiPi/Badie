@@ -93,6 +93,12 @@ struct ChatView: View {
 
     private var header: some View {
         ScreenHeader(title: other?.nickname ?? "聊天") {
+            if let other {
+                AvatarView(user: other, size: 36)
+                    .frame(width: 44, height: 44)
+                    .opensProfile(other.id)
+                    .accessibilityLabel("\(other.nickname)的资料")
+            }
             Menu {
                 Button {
                     appState.showPlayer(userId)

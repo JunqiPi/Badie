@@ -278,6 +278,7 @@ struct RoomLobbyView: View {
                         .monospacedDigit()
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                     AvatarView(participant: participant, size: 32)
+                        .opensProfile(participant.userId)
                     Text(participant.userId == me ? "我" : participant.nickname)
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)

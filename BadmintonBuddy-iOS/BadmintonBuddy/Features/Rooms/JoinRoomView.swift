@@ -239,6 +239,7 @@ struct FriendPickerSheet: View {
                         } label: {
                             HStack(spacing: AppTheme.Spacing.md) {
                                 AvatarView(user: friend, size: 44)
+                                    .opensProfile(friend.id, allowsInvite: false)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(friend.nickname)
                                         .font(AppTheme.Typography.bodyBold)
