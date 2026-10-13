@@ -387,7 +387,7 @@ struct AddFriendView: View {
 
     private func subtitle(for user: User) -> String {
         var parts: [String] = []
-        if let distance = friendManager.distance(to: user.id) { parts.append(DistanceFormatter.string(km: distance)) }
+        if let distance = friendManager.distance(to: user.id) { parts.append(DistanceFormatter.approximate(km: distance)) }
         parts.append(user.publicSummary)
         return parts.joined(separator: " · ")
     }

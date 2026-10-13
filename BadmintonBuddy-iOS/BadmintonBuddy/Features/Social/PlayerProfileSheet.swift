@@ -62,7 +62,7 @@ struct PlayerProfileSheet: View {
                     }
                 }
                 if let distance = friendManager.distance(to: user.id) {
-                    Text("距你 \(DistanceFormatter.string(km: distance)) · ID \(user.shortId)")
+                    Text("离你 \(DistanceFormatter.approximate(km: distance)) · ID \(user.shortId)")
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
@@ -73,8 +73,8 @@ struct PlayerProfileSheet: View {
 
     private func statsRow(_ user: User) -> some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            StatTile(value: "\(user.totalGames)", label: "场次")
-            StatTile(value: "\(Int(user.winRate.rounded()))%", label: "胜率")
+            StatTile(value: user.gamesBand, label: "打过")
+            StatTile(value: user.preferredMode?.title ?? "都可以", label: "偏好")
         }
     }
 

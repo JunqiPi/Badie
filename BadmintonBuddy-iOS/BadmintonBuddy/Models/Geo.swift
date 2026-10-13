@@ -89,6 +89,17 @@ enum DistanceFormatter {
         }
     }
 
+    /// 别人离我多远：只给大概范围（"5 英里内"），不给精确距离——
+    /// 精确距离可以从几个位置三角定位出对方住址（Hassan 等，USENIX Security 2018）
+    static func approximate(km: Double, unit: DistanceUnit = .current) -> String {
+        let bands: [Double] = unit == .miles ? [3, 5, 10, 25] : [5, 10, 20, 40]
+        let value = unit.value(fromKm: km)
+        if let band = bands.first(where: { value <= $0 }) {
+            return "\(Int(band)) \(unit.title)内"
+        }
+        return "\(Int(bands.last ?? 25)) \(unit.title)外"
+    }
+
     /// 出行范围等整数距离："10 公里" / "6 英里"
     static func radius(km: Double, unit: DistanceUnit = .current) -> String {
         "\(Int(unit.value(fromKm: km).rounded())) \(unit.title)"

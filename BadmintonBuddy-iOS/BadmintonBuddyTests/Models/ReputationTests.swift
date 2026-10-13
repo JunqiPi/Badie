@@ -54,6 +54,16 @@ final class ReputationTests: XCTestCase {
         XCTAssertFalse(user.publicSummary.contains("★"), "对外摘要不含任何评分")
     }
 
+    func testOtherPlayersSeeApproximateDistanceAndBandedGames() {
+        XCTAssertEqual(DistanceFormatter.approximate(km: 2.1, unit: .miles), "3 英里内")
+        XCTAssertEqual(DistanceFormatter.approximate(km: 12, unit: .miles), "10 英里内")
+        XCTAssertEqual(DistanceFormatter.approximate(km: 80, unit: .miles), "25 英里外")
+        XCTAssertEqual(DistanceFormatter.approximate(km: 7, unit: .kilometers), "10 公里内")
+        var user = User(id: "u", nickname: "测试", phone: "", selfReportedLevel: 4)
+        user.totalGames = 23
+        XCTAssertEqual(user.gamesBand, "20+ 场")
+    }
+
     func testPrivateNudgeIsSentOnceAndPublishedTagsRefreshMonthly() {
         let backend = MockBackend(store: .inMemory)
         backend.latencyEnabled = false

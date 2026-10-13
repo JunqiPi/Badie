@@ -506,7 +506,7 @@ struct OfferView: View {
         default: level = "低 \(-difference) 级"
         }
         guard let location = user.location else { return level }
-        return "\(level) · \(DistanceFormatter.string(km: location.distanceKm(to: ticket.origin)))"
+        return "\(level) · \(DistanceFormatter.approximate(km: location.distanceKm(to: ticket.origin)))"
     }
 
     // MARK: Actions

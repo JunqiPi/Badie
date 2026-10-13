@@ -184,11 +184,22 @@ struct User: Identifiable, Codable, Hashable {
         attendance.gamesPlayed >= 3 && attendance.noShows == 0 && attendance.lateCancellations <= 1
     }
 
-    /// 列表里对别人展示的一句话：只有正面信息，没有分数（"靠谱 · 24 场"）
+    /// 对别人显示的场次：分档（"20+ 场"），不给精确数字
+    var gamesBand: String {
+        switch totalGames {
+        case 0: return "还没打过"
+        case 1..<5: return "1–4 场"
+        case 5..<20: return "5+ 场"
+        case 20..<50: return "20+ 场"
+        default: return "50+ 场"
+        }
+    }
+
+    /// 列表里对别人展示的一句话：只有正面信息，没有分数（"靠谱 · 20+ 场"）
     var publicSummary: String {
         var parts: [String] = []
         if isNewPlayer { parts.append("新球友") } else if isReliable { parts.append("靠谱") }
-        parts.append("\(totalGames) 场")
+        parts.append(gamesBand)
         if let tag = reputation.publicTags.first { parts.append(tag.rawValue) }
         return parts.joined(separator: " · ")
     }
