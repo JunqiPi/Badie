@@ -1,0 +1,70 @@
+name: iOS CI
+
+on:
+  push:
+    branches: [ main, "claude/**" ]
+    paths:
+      - "BadmintonBuddy-iOS/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "BadmintonBuddy-iOS/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build, test & screenshots
+    runs-on: macos-15
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: BadmintonBuddy-iOS
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Pick iPhone simulator
+        id: sim
+        run: echo "udid=$(python3 scripts/pick_simulator.py)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and run unit tests
+        run: |
+          set +e
+          xcodebuild test \
+            -project BadmintonBuddy.xcodeproj \
+            -scheme BadmintonBuddy \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO > xcodebuild.log 2>&1
+          STATUS=$?
+          echo "----- compiler errors / test failures -----"
+          grep -E "error:|: failed|with [0-9]+ failures?|\*\* (TEST|BUILD) " xcodebuild.log | sort -u | head -300
+          echo "----- tail -----"
+          tail -25 xcodebuild.log
+          exit $STATUS
+
+      - name: Capture screenshots
+        run: bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/BadmintonBuddy.app screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: BadmintonBuddy-iOS/screenshots
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: BadmintonBuddy-iOS/xcodebuild.log
+          retention-days: 7
