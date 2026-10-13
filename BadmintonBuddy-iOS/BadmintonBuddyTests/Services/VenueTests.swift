@@ -94,9 +94,11 @@ final class VenueTests: XCTestCase {
     }
 
     func testPinyinSearchForChineseNames() {
-        let chaoyang = BadmintonCourt.curatedBeijing[0]
-        let hits = VenueSearch.search(BadmintonCourt.curatedBeijing, query: "cyty", near: .beijing)
-        XCTAssertEqual(hits.first?.venue.id, chaoyang.id)
+        // “海淀”读音唯一，避免多音字（如“朝”）影响断言
+        XCTAssertEqual(VenueSearch.search(BadmintonCourt.curatedBeijing, query: "hdym", near: .beijing).first?.venue.id,
+                       "v-cn-bj-haidian")
+        XCTAssertEqual(VenueSearch.search(BadmintonCourt.curatedBeijing, query: "haidian", near: .beijing).first?.venue.id,
+                       "v-cn-bj-haidian")
     }
 
     func testCloserVenueRanksFirstForEqualMatches() {
