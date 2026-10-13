@@ -8,20 +8,37 @@ import Foundation
 
 extension MockBackend {
 
-    var allVenues: [BadmintonCourt] { Array(db.venues.values) }
+    /// 球馆库（不含已合并到别处的旧条目）
+    var allVenues: [BadmintonCourt] { db.venues.values.filter { $0.mergedInto == nil } }
 
-    func venue(id: String) -> BadmintonCourt? { db.venues[id] }
+    /// 按 ID 取球馆；已合并的旧 ID 自动跳到保留的那一家
+    func venue(id: String) -> BadmintonCourt? {
+        var current = db.venues[id]
+        var hops = 0
+        while let target = current?.mergedInto, let next = db.venues[target], hops < 5 {
+            current = next
+            hops += 1
+        }
+        return current
+    }
+
+    /// 每人每天最多添加的球馆数（防刷）
+    static let dailyVenueAddLimit = 3
+
+    func venuesAddedToday(by userId: String, now: Date = Date()) -> Int {
+        db.venues.values.filter { $0.addedBy == userId && now.timeIntervalSince($0.createdAt) < 24 * 3600 }.count
+    }
 
     /// 半径内的球馆，按距离排序
     func venues(near center: Coordinate, radiusKm: Double) -> [BadmintonCourt] {
-        db.venues.values
+        allVenues
             .filter { $0.distance(from: center) <= radiusKm }
             .sorted { $0.distance(from: center) < $1.distance(from: center) }
     }
 
     /// 离某处最近的若干球馆（不限半径）
     func nearestVenues(to center: Coordinate, count: Int) -> [BadmintonCourt] {
-        Array(db.venues.values.sorted { $0.distance(from: center) < $1.distance(from: center) }.prefix(count))
+        Array(allVenues.sorted { $0.distance(from: center) < $1.distance(from: center) }.prefix(count))
     }
 
     /// 模拟世界（机器人所在城市）附近、对外开放的球馆
@@ -47,17 +64,25 @@ extension MockBackend {
                                in: allVenues)
     }
 
-    /// 加入球馆库。Place ID 已存在时直接返回已有球馆，不会重复创建。
+    /// 加入球馆库。
+    /// - Place ID 相同：直接返回已有球馆，不重复创建
+    /// - 200 米内名称相近：拒绝（只能选已有的），避免同一家出现多个条目、匹配被拆散
+    /// - 同一栋楼但名称不同：允许（可能是不同场馆），标记给人工复核
     @discardableResult
     func addVenue(_ candidate: VenueCandidate, source: VenueSource, aliases: [String] = [], courtCount: Int? = nil,
-                  entranceNote: String? = nil) throws -> BadmintonCourt {
+                  entranceNote: String? = nil, now: Date = Date()) throws -> BadmintonCourt {
         let me = try requireUser()
         let name = candidate.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard (2...60).contains(name.count) else { throw BackendError.venueNameInvalid }
         guard candidate.address.isComplete else { throw BackendError.venueAddressIncomplete }
-        if let existing = duplicates(for: candidate).first(where: { $0.kind == .samePlace }) {
+        let found = duplicates(for: candidate)
+        if let existing = found.first(where: { $0.kind == .samePlace }) {
             return existing.venue
         }
+        if let existing = found.first(where: { $0.kind.blocksAdding }) {
+            throw BackendError.venueDuplicate(existingName: existing.venue.name)
+        }
+        guard venuesAddedToday(by: me.id, now: now) < Self.dailyVenueAddLimit else { throw BackendError.venueRateLimited }
         let cleanedAliases = aliases
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty && $0 != name }
@@ -67,7 +92,7 @@ extension MockBackend {
         } else {
             id = "v-" + UUID().uuidString.prefix(8).lowercased()
         }
-        let venue = BadmintonCourt(
+        var venue = BadmintonCourt(
             id: id,
             name: name,
             aliases: Array(Set(cleanedAliases)).sorted(),
@@ -84,14 +109,45 @@ extension MockBackend {
             status: .unconfirmed,
             addedBy: me.id,
             confirmedBy: [me.id],
-            lastConfirmedAt: Date(),
-            createdAt: Date()
+            lastConfirmedAt: now,
+            createdAt: now
         )
+        if let neighbor = found.first(where: { $0.kind == .sameBuilding }) {
+            venue.reviewFlag = "同一栋楼已有：\(neighbor.venue.name)"
+        }
         db.venues[venue.id] = venue
         assignBotHomeVenues()
         scheduleSave()
         emit(.venuesChanged)
         return venue
+    }
+
+    /// 合并重复条目（审核操作）：旧条目指向保留的球馆，名称记为别名，确认人与收藏一并转过去
+    func mergeVenue(_ duplicateId: String, into targetId: String) throws {
+        guard duplicateId != targetId, var duplicate = db.venues[duplicateId], var target = venue(id: targetId),
+              target.id != duplicateId else { throw BackendError.venueNotFound }
+        if duplicate.name != target.name && !target.aliases.contains(duplicate.name) {
+            target.aliases.append(duplicate.name)
+        }
+        target.aliases = Array(Set(target.aliases + duplicate.aliases).subtracting([target.name])).sorted()
+        for userId in duplicate.confirmedBy { target.addConfirmation(from: userId) }
+        duplicate.mergedInto = target.id
+        db.venues[duplicate.id] = duplicate
+        db.venues[target.id] = target
+        for (userId, favorites) in db.favoriteCourtIds where favorites.contains(duplicateId) {
+            var updated = favorites.map { $0 == duplicateId ? target.id : $0 }
+            var seen = Set<String>()
+            updated = updated.filter { seen.insert($0).inserted }
+            db.favoriteCourtIds[userId] = updated
+        }
+        for (ticketId, ticket) in db.tickets where ticket.courtIds.contains(duplicateId) {
+            var updated = ticket
+            var seen = Set<String>()
+            updated.courtIds = ticket.courtIds.map { $0 == duplicateId ? target.id : $0 }.filter { seen.insert($0).inserted }
+            db.tickets[ticketId] = updated
+        }
+        scheduleSave()
+        emit(.venuesChanged)
     }
 
     /// 球友确认“地址正确”

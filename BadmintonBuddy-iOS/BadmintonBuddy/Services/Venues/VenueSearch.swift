@@ -1,5 +1,22 @@
 import Foundation
 
+// MARK: - 匹配时的“同一个地方”
+//
+// 匹配只在双方都能去的球馆之间进行。以下视为同一处：
+// 同一 ID；其中一个已合并到另一个；或相距 150 米以内（同一栋楼/同一园区，
+// 例如有人新加了“LABC 2 号馆”，而别人选的是 LABC）。
+
+enum VenueCluster {
+    static let radiusMeters: Double = 150
+
+    static func same(_ a: BadmintonCourt, _ b: BadmintonCourt) -> Bool {
+        if a.id == b.id { return true }
+        if a.mergedInto == b.id || b.mergedInto == a.id { return true }
+        if let target = a.mergedInto, target == b.mergedInto { return true }
+        return a.location.distanceKm(to: b.location) * 1000 <= radiusMeters
+    }
+}
+
 // MARK: - 球馆搜索与查重（纯函数，便于测试）
 //
 // 搜索：名称、别名、英文首字母缩写（LABC）、中文拼音与首字母、地址（街道/城市/邮编）。
@@ -163,6 +180,9 @@ enum VenueSearch {
         case sameBuilding = 2
 
         static func < (lhs: DuplicateKind, rhs: DuplicateKind) -> Bool { lhs.rawValue < rhs.rawValue }
+
+        /// 同一地点 / 很可能同一家：不允许新建，只能选已有的
+        var blocksAdding: Bool { self != .sameBuilding }
     }
 
     struct Duplicate: Hashable {
@@ -177,7 +197,7 @@ enum VenueSearch {
     static func duplicates(name: String, location: Coordinate, applePlaceId: String?, alternatePlaceIds: [String] = [],
                            in venues: [BadmintonCourt]) -> [Duplicate] {
         let placeIds = Set(([applePlaceId].compactMap { $0 } + alternatePlaceIds).filter { !$0.isEmpty })
-        return venues.compactMap { venue -> Duplicate? in
+        return venues.filter { $0.mergedInto == nil }.compactMap { venue -> Duplicate? in
             let meters = venue.location.distanceKm(to: location) * 1000
             if let venueId = venue.applePlaceId, placeIds.contains(venueId) {
                 return Duplicate(venue: venue, kind: .samePlace, distanceMeters: meters)

@@ -47,13 +47,19 @@ extension MockBackend {
             let evaluations = index == 2 ? 3 : Int.random(in: 5...40, using: &rng)
             let level = entry.1
             let peerAverage = min(9, max(1, Double(level) + Double.random(in: -0.6...0.4, using: &rng)))
-            let reputation = ReputationScore(
+            var reputation = ReputationScore(
                 evaluationCount: evaluations,
                 peerLevelAverage: peerAverage,
                 averageSkillDeviation: Double.random(in: 0.1...1.0, using: &rng),
                 punctualityPercentage: Double(Int.random(in: 78...100, using: &rng)),
                 averageCharacterRating: Double.random(in: 3.8...4.9, using: &rng)
             )
+            // 正面标签用独立随机源，不影响其他属性的生成
+            var tagRng = SeededGenerator("\(id)-tags")
+            if evaluations >= ReputationScore.publicMinimumRaters {
+                reputation.publicTags = Array(SurveyTag.allCases.shuffled(using: &tagRng).prefix(Int.random(in: 1...3, using: &tagRng)))
+                reputation.publishedAt = Date()
+            }
             let games = evaluations + Int.random(in: 2...30, using: &rng)
             let noShows = index % 9 == 4 ? 1 : 0
             let user = User(

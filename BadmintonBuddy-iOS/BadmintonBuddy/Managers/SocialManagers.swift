@@ -276,11 +276,12 @@ final class SurveyManager: ObservableObject {
         skillRating: Int,
         attendance: AttendanceAnswer,
         characterRating: Int,
-        tags: [SurveyTag]
+        tags: [SurveyTag],
+        issues: [SurveyIssue] = []
     ) async throws {
         try await backend.submitSurvey(
             pendingId: pending.id, skillRating: skillRating, attendance: attendance,
-            characterRating: characterRating, tags: tags
+            characterRating: characterRating, tags: tags, issues: issues
         )
         reload()
     }

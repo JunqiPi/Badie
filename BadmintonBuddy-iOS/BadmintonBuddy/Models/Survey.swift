@@ -42,6 +42,27 @@ enum SurveyTag: String, CaseIterable, Identifiable, Codable, Hashable {
     var id: String { rawValue }
 }
 
+/// 需要对方注意的地方：不公开、不计分。
+/// 60 天内有 ≥3 位不同球友提到同一点时，只私下提醒本人（不告诉是谁说的）。
+enum SurveyIssue: String, CaseIterable, Identifiable, Codable, Hashable {
+    case unsafePlay = "动作危险/不注意安全"
+    case rude = "言语不友善"
+    case hogging = "抢球/不轮换"
+    case unpaid = "AA 没结清"
+
+    var id: String { rawValue }
+
+    /// 私下提醒的措辞（建议式，不指责）
+    var nudge: String {
+        switch self {
+        case .unsafePlay: return "打球时多留意身边的人，动作幅度注意安全。"
+        case .rude: return "场上沟通可以再温和一点，大家都是来开心打球的。"
+        case .hogging: return "双打时注意轮换和分工，让搭档也有球打。"
+        case .unpaid: return "打完记得及时结清 AA，可以在球局里标记已付。"
+        }
+    }
+}
+
 struct MatchSurvey: Identifiable, Codable, Hashable {
     let id: String
     /// 对应的球局 ID
@@ -56,6 +77,8 @@ struct MatchSurvey: Identifiable, Codable, Hashable {
     let characterRating: Int
     let tags: [SurveyTag]
     let submittedAt: Date
+    /// 需要对方注意的地方（只用于私下提醒）
+    var issues: [SurveyIssue] = []
 
     static let skillRatingRange = 1...9
     static let characterRatingRange = 1...5

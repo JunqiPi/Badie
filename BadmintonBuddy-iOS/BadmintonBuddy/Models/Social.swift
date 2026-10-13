@@ -69,6 +69,10 @@ struct InboxItem: Identifiable, Codable, Hashable {
         case gameCancelled
         case gameReminder
         case reviewReceived
+        /// 找到搭子，等待确认
+        case matchOffer
+        /// 匹配进展（补位、没凑成、请求结束）
+        case matchUpdate
         case system
     }
 

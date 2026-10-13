@@ -1,67 +1,8 @@
 import Foundation
 
-// MARK: - 匹配、球局、签到、互评
+// MARK: - 球局、签到、互评（匹配见 MockBackend+Matchmaking）
 
 extension MockBackend {
-
-    // MARK: Matching
-
-    func findMatches(_ request: MatchRequest) async throws -> MatchSearchResult {
-        let me = try requireUser()
-        guard me.attendance.standing != .suspended else { throw BackendError.matchingSuspended }
-        await networkDelay(0.5...1.0)
-        var request = request
-        request.excludedUserIds.formUnion(blockedIds())
-        request.excludedUserIds.formUnion(db.bots.keys.filter { blockedIds(of: $0).contains(me.id) })
-        let pool = availabilityPool(on: request.slot.date)
-        let proposals = MatchingService.proposals(for: request, pool: pool)
-        if proposals.isEmpty {
-            return .none(suggestions: MatchingService.suggestions(for: request, pool: pool))
-        }
-        return .proposals(proposals)
-    }
-
-    func confirm(_ proposal: MatchProposal) async throws -> Game {
-        let me = try requireUser()
-        guard proposal.slot.endTime > Date() else { throw BackendError.invalidSlot("这个时间段已经过去了") }
-        await networkDelay()
-        let ids = [me.id] + proposal.others.map(\.user.id)
-        let game = Game(
-            id: UUID().uuidString,
-            mode: proposal.mode,
-            court: proposal.court,
-            slot: proposal.slot,
-            playerIds: ids,
-            teams: proposal.teams,
-            hostId: me.id,
-            origin: .quickMatch,
-            status: .confirmed,
-            createdAt: Date(),
-            checkIns: [:],
-            paidPlayerIds: [],
-            cost: proposal.cost,
-            result: nil,
-            cancelledBy: nil,
-            cancelledLate: false,
-            reminderEnabled: false
-        )
-        db.games[game.id] = game
-        scheduleSave()
-        emit(.gameCreated(game))
-        emit(.gamesChanged)
-
-        // 对手发来确认消息，自然开启聊天
-        if let first = proposal.others.first?.user.id, isBot(first) {
-            let threadId = MessageThread.id(for: me.id, first)
-            let text = "收到约球！\(proposal.slot.formattedDate) \(DateText.time(proposal.slot.startTime)) \(proposal.court.name) 见～"
-            simulate(after: Double.random(in: 2...4)) { [weak self] in
-                guard let self else { return }
-                self.appendMessage(Message(threadId: threadId, senderId: first, content: text, deliveredAt: Date()),
-                                   participants: [me.id, first], countsAsUnread: true)
-            }
-        }
-        return game
-    }
 
     // MARK: Games
 
@@ -223,7 +164,8 @@ extension MockBackend {
         skillRating: Int,
         attendance: AttendanceAnswer,
         characterRating: Int,
-        tags: [SurveyTag]
+        tags: [SurveyTag],
+        issues: [SurveyIssue] = []
     ) async throws {
         let me = try requireUser()
         guard let pending = db.pendingSurveys.first(where: { $0.id == pendingId && $0.evaluatorId == me.id }) else {
@@ -249,7 +191,8 @@ extension MockBackend {
             attendance: attendance,
             characterRating: characterRating,
             tags: tags,
-            submittedAt: Date()
+            submittedAt: Date(),
+            issues: issues
         )
         guard survey.isValid else { throw BackendError.surveyInvalid }
         await networkDelay()
@@ -284,10 +227,41 @@ extension MockBackend {
             target.attendance.gamesPlayed = max(0, target.attendance.gamesPlayed - 1)
         }
         db.users[target.id] = target
+        sendPrivateNudges(to: target.id, now: survey.submittedAt)
+    }
+
+    /// 同一问题在 60 天内被 ≥3 位不同球友提到：私下提醒本人（不公开、不扣分、不说是谁）
+    func sendPrivateNudges(to userId: String, now: Date = Date()) {
+        let received = db.surveys.filter { $0.evaluatedUserId == userId }
+        var sent = db.nudges[userId] ?? [:]
+        for issue in ReputationScore.recurringIssues(in: received, now: now) {
+            if let last = sent[issue.rawValue], now.timeIntervalSince(last) < 60 * 86400 { continue }
+            sent[issue.rawValue] = now
+            addInbox(InboxItem(kind: .system, title: "来自球友的一个小建议",
+                               body: "最近有几位球友提到“\(issue.rawValue)”。\(issue.nudge)这条提醒只有你能看到，不会公开，也不影响匹配。",
+                               relatedId: nil), to: userId)
+        }
+        db.nudges[userId] = sent
+    }
+
+    /// 每月统一刷新一次对外展示的正面标签（避免从变化反推出是谁评的）
+    func publishReputationIfNeeded(now: Date = Date()) {
+        let parts = Calendar.current.dateComponents([.year, .month], from: now)
+        let month = String(format: "%04d-%02d", parts.year ?? 0, parts.month ?? 0)
+        guard db.reputationPublishedMonth != month else { return }
+        db.reputationPublishedMonth = month
+        for (userId, var user) in db.users where !isBot(userId) {
+            let received = db.surveys.filter { $0.evaluatedUserId == userId }
+            user.reputation.publicTags = ReputationScore.publicTags(from: received)
+            user.reputation.publishedAt = now
+            db.users[userId] = user
+        }
+        scheduleSave()
     }
 
     /// 处理过期：未在 48 小时内提交的问卷作废；暂存的评价在窗口结束后揭晓
     func processSurveyExpirations(now: Date = Date()) {
+        publishReputationIfNeeded(now: now)
         let before = db.pendingSurveys.count
         db.pendingSurveys.removeAll { $0.isExpired(now: now) }
         var changed = before != db.pendingSurveys.count

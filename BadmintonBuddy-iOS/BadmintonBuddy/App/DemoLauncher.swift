@@ -64,6 +64,19 @@ enum DemoLauncher {
         case "matchFound":
             environment.matchManager.draft.skillTolerance = 2
             startSearch(environment)
+        case "ticketWaiting":
+            if let ticket = seedDemoTicket(environment, mode: .singles, tolerance: 1, autoAccept: false, state: .waiting) {
+                environment.matchManager.openTicket(ticket.id)
+            }
+        case "offerWaiting":
+            if let ticket = seedDemoTicket(environment, mode: .doubles, tolerance: MatchRequest.anySkill, autoAccept: true,
+                                           state: .othersConfirming) {
+                environment.matchManager.openTicket(ticket.id)
+            }
+        case "homeTicket":
+            // 首页“约球请求”卡片：找到了，等我确认
+            _ = seedDemoTicket(environment, mode: .singles, tolerance: 2, autoAccept: false, state: .offered)
+            environment.matchManager.reloadTickets()
         case "ticket":
             router.show(.game(id: upcoming.id), in: .games)
         case "games":
@@ -116,12 +129,65 @@ enum DemoLauncher {
 
     private static func startSearch(_ environment: AppEnvironment) {
         guard let user = environment.backend.currentUser else { return }
+        // 固定为下一个工作日晚上（普通局），截图不受 CI 运行时刻影响
+        if let slot = nextWeekdayEvening() { environment.matchManager.draft.apply(slot) }
         environment.matchManager.startSearch(
             user: user,
             location: Coordinate.fallbackCenter,
             courts: environment.locationManager.courts(ids: environment.matchManager.draft.courtIds),
             radiusKm: UserPreferences.defaultTravelRadius
         )
+    }
+
+    /// 明天起的第一个周一至周四晚上 19:00–21:00
+    private static func nextWeekdayEvening() -> TimeSlot? {
+        let calendar = Calendar.current
+        for offset in 1...7 {
+            guard let day = calendar.date(byAdding: .day, value: offset, to: Date()) else { continue }
+            if (2...5).contains(calendar.component(.weekday, from: day)) {
+                return TimeSlot.on(day, startHour: 19, endHour: 21)
+            }
+        }
+        return nil
+    }
+
+    private enum DemoTicketState { case waiting, offered, othersConfirming }
+
+    /// 直接写入一个约球请求（同步，便于截图）
+    private static func seedDemoTicket(_ environment: AppEnvironment, mode: GameMode, tolerance: Int, autoAccept: Bool,
+                                       state: DemoTicketState) -> MatchTicket? {
+        let backend = environment.backend
+        guard let me = backend.currentUser, let slot = nextWeekdayEvening() else { return nil }
+        let now = Date()
+        var ticket = MatchTicket(
+            id: "demo-ticket", userId: me.id, mode: mode, slot: slot,
+            courtIds: environment.matchManager.draft.courtIds, skillTolerance: tolerance,
+            radiusKm: UserPreferences.defaultTravelRadius, origin: Coordinate.fallbackCenter,
+            autoAccept: autoAccept, isLastMinute: false, status: .searching, createdAt: now,
+            deadline: MatchTiming.lock(start: slot.startTime, lastMinute: false),
+            hasPriority: false, excludedUserIds: []
+        )
+        if state == .waiting {
+            // 演示“还在找”：当下能匹配的人都已排除（相当于之前没约成）
+            let request = backend.matchRequest(for: ticket, owner: me)
+            ticket.excludedUserIds = MatchingService.candidates(for: request, pool: backend.matchmakingPool(for: ticket, now: now))
+                .map(\.user.id)
+        }
+        backend.db.tickets[ticket.id] = ticket
+        guard state != .waiting, let offer = backend.runMatchmaking(ticketId: ticket.id, now: now) else {
+            return backend.ticket(id: ticket.id)
+        }
+        if state == .othersConfirming, var current = backend.db.offers[offer.id] {
+            // 一位已确认、一位这次来不了（显示“补位中”）、其余还没回复
+            let others = current.seats.indices.filter { current.seats[$0].ticketId == nil }
+            if let first = others.first {
+                current.seats[first].response = .accepted
+                current.seats[first].respondedAt = now
+            }
+            if others.count > 1 { current.seats[others[1]].response = .declined }
+            backend.db.offers[offer.id] = current
+        }
+        return backend.ticket(id: ticket.id)
     }
 
     /// 今晚的一场双打（用于球局详情截图）

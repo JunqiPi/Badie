@@ -71,21 +71,30 @@ struct AddVenueView: View {
             .padding(.top, AppTheme.Spacing.xl)
             .padding(.bottom, AppTheme.Spacing.md)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                    locateSection
-                    addressCard
-                    detailsSection
-                    if !duplicates.isEmpty {
-                        DuplicateChoiceList(duplicates: duplicates) { venue in
-                            onAdded(venue)
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                        // 查重结果放在最上面：点“检查并添加”后第一眼就能看到
+                        if !duplicates.isEmpty {
+                            DuplicateChoiceList(duplicates: duplicates) { venue in
+                                onAdded(venue)
+                            }
+                            .id(Self.duplicatesAnchor)
+                            .transition(.move(edge: .top).combined(with: .opacity))
                         }
+                        locateSection
+                        addressCard
+                        detailsSection
                     }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                    .padding(.bottom, AppTheme.Spacing.xl)
                 }
-                .padding(.horizontal, AppTheme.Spacing.screen)
-                .padding(.bottom, AppTheme.Spacing.xl)
+                .scrollDismissesKeyboard(.interactively)
+                .onChange(of: duplicates.map(\.venue.id)) { _, ids in
+                    guard !ids.isEmpty else { return }
+                    withAnimation(AppTheme.Motion.standard) { proxy.scrollTo(Self.duplicatesAnchor, anchor: .top) }
+                }
             }
-            .scrollDismissesKeyboard(.interactively)
 
             footer
         }
@@ -101,6 +110,13 @@ struct AddVenueView: View {
                 let candidate = VenueCandidate(name: trimmedName, location: pin, address: finalAddress)
                 duplicates = appState.backend.duplicates(for: candidate)
                 checkedDuplicates = true
+            }
+        }
+        .onChange(of: name) { _, _ in
+            // 改了名称要重新查重
+            if checkedDuplicates {
+                checkedDuplicates = false
+                duplicates = []
             }
         }
         .onChange(of: addressQuery) { _, value in
@@ -256,10 +272,10 @@ struct AddVenueView: View {
             Button {
                 submit()
             } label: {
-                Text(checkedDuplicates && !duplicates.isEmpty ? "都不是，添加为新球馆" : "检查并添加")
+                Text(isBlocked ? "请选择上面已有的球馆" : (checkedDuplicates && !duplicates.isEmpty ? "都不是，添加为新球馆" : "检查并添加"))
             }
             .buttonStyle(.brutalPrimary)
-            .disabled(!canSubmit)
+            .disabled(!canSubmit || isBlocked)
             if let hint = submitHint {
                 Text(hint)
                     .font(AppTheme.Typography.caption)
@@ -278,7 +294,13 @@ struct AddVenueView: View {
         (2...60).contains(trimmedName.count) && (composedAddress?.isComplete ?? false) && !isGeocoding
     }
 
+    private static let duplicatesAnchor = "duplicates"
+
+    /// 名称和位置都和已有球馆太接近：只能选已有的
+    private var isBlocked: Bool { duplicates.contains { $0.kind.blocksAdding } }
+
     private var submitHint: String? {
+        if isBlocked { return "如果确实是另一家，请改用能区分的名称（如分店名）" }
         if trimmedName.count < 2 { return "填写球馆名称" }
         if !(composedAddress?.isComplete ?? false) { return "需要街道和城市，方便别人确认位置" }
         return nil
@@ -377,6 +399,7 @@ struct AddVenueView: View {
                 return
             }
         }
+        guard !isBlocked else { return }
         do {
             let venue = try appState.backend.addVenue(candidate, source: .player, aliases: [alias],
                                                       courtCount: courtCount > 0 ? courtCount : nil,

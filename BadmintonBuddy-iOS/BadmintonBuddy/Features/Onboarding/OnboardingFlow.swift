@@ -157,7 +157,7 @@ struct OnboardingFlow: View {
                     .foregroundStyle(AppTheme.Colors.ink)
                     .lineSpacing(4)
                     .accessibilityLabel("今晚，找个搭子打一场。")
-                Text("按水平、时间、距离帮你匹配附近球友；费用 AA 透明，到场签到，球品看得见。")
+                Text("按水平、时间、距离帮你匹配附近球友；费用 AA 透明，到场签到，靠谱的人更容易约到球。")
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)

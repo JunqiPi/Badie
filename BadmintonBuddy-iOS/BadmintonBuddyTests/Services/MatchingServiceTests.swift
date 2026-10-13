@@ -80,6 +80,36 @@ final class MatchingServiceTests: XCTestCase {
         XCTAssertEqual(first.teams.flatMap { $0 }.count, 4)
     }
 
+    func testCandidatesMustShareAVenue() {
+        let courts = Array(BadmintonCourt.curatedBeijing.prefix(2))
+        let address = PostalAddress(street: "测试路1号", city: "朝阳区", region: "北京市", countryCode: "CN")
+        var sameVenue = player("same-venue", level: 4, eastKm: 1, slots: [slot(19, 21)])
+        sameVenue.venues = [courts[0]]
+        var elsewhere = player("elsewhere", level: 4, eastKm: 1, slots: [slot(19, 21)])
+        elsewhere.venues = [BadmintonCourt(id: "far", name: "远处球馆", location: courts[0].location.offsetBy(eastKm: 6, northKm: 6),
+                                           address: address)]
+        var annex = player("annex", level: 4, eastKm: 2, slots: [slot(19, 21)])
+        // 别人加的“隔壁馆”，离我选的球馆 100 米：算同一处
+        annex.venues = [BadmintonCourt(id: "annex", name: "隔壁馆", location: courts[1].location.offsetBy(eastKm: 0.1, northKm: 0),
+                                       address: address)]
+        let candidates = MatchingService.candidates(for: request(), pool: [sameVenue, elsewhere, annex])
+        XCTAssertEqual(Set(candidates.map(\.id)), ["same-venue", "annex"])
+        XCTAssertEqual(candidates.first { $0.id == "annex" }?.courtIds, [courts[1].id])
+        let proposal = MatchingService.proposals(for: request(), pool: [annex]).first
+        XCTAssertEqual(proposal?.court.id, courts[1].id, "只在双方都能去的球馆约")
+    }
+
+    func testDoublesUsesVenueEveryoneCanReach() {
+        let courts = Array(BadmintonCourt.curatedBeijing.prefix(2))
+        var a = player("a", level: 4, eastKm: 0.5, slots: [slot(19, 21)])
+        a.venues = courts
+        var b = player("b", level: 4, eastKm: 0.5, slots: [slot(19, 21)])
+        b.venues = [courts[1]]
+        let c = player("c", level: 4, eastKm: 0.5, slots: [slot(19, 21)])
+        let proposal = MatchingService.proposals(for: request(mode: .doubles), pool: [a, b, c]).first
+        XCTAssertEqual(proposal?.court.id, courts[1].id)
+    }
+
     func testBalancedTeams() {
         let teams = MatchingService.balancedTeams(players: [(id: "a", level: 7), (id: "b", level: 2), (id: "c", level: 5), (id: "d", level: 4)])
         // 7+2 vs 5+4

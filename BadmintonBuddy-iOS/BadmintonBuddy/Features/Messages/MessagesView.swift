@@ -314,8 +314,7 @@ struct PlayerRow<Trailing: View>: View {
     }
 
     private var defaultSubtitle: String {
-        if user.isNewPlayer { return "新球友 · \(user.totalGames) 场" }
-        return "准时率 \(user.reputation.punctualityText) · 球品 \(user.reputation.characterText) · \(user.totalGames) 场"
+        "\(user.displayLevelText) · \(user.publicSummary)"
     }
 }
 
@@ -388,7 +387,7 @@ struct AddFriendView: View {
     private func subtitle(for user: User) -> String {
         var parts: [String] = []
         if let distance = friendManager.distance(to: user.id) { parts.append(DistanceFormatter.string(km: distance)) }
-        parts.append(user.isNewPlayer ? "新球友" : "准时率 \(user.reputation.punctualityText)")
+        parts.append(user.publicSummary)
         return parts.joined(separator: " · ")
     }
 }

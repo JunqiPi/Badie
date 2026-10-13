@@ -246,6 +246,10 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
     /// 最近一次有人确认/签到的时间（信息新鲜度）
     var lastConfirmedAt: Date?
     var createdAt: Date
+    /// 重复条目合并后指向保留的球馆：旧 ID 的收藏、房间、请求继续有效
+    var mergedInto: String?
+    /// 需要人工看一眼的原因（如“同一栋楼已有另一家球馆”）；不影响使用
+    var reviewFlag: String?
 
     /// 达到这个人数的确认后，状态从“待确认”变为“球友确认”
     static let confirmationsNeeded = 3

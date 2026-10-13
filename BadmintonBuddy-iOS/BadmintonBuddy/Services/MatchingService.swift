@@ -23,6 +23,8 @@ struct PlayerAvailability: Hashable {
     let user: User
     let location: Coordinate
     let slots: [TimeSlot]
+    /// 对方能去的球馆；空 = 没有限制（发起者选的球馆都可以）
+    var venues: [BadmintonCourt] = []
 }
 
 struct MatchCandidate: Identifiable, Hashable {
@@ -34,6 +36,8 @@ struct MatchCandidate: Identifiable, Hashable {
     let skillDifference: Int
     /// 与发起者时间段的重叠部分
     let overlap: TimeSlot
+    /// 发起者所选球馆中，对方也能去的（同一家、已合并或 150 米内的同一处）
+    var courtIds: [String] = []
 
     /// 排序分：水平差优先，其次距离（越小越好）
     var matchScore: Double {
@@ -139,7 +143,13 @@ enum MatchingService {
             guard abs(difference) <= request.skillTolerance else { return nil }
             let overlaps = entry.slots.compactMap { $0.overlaps(with: request.slot) }
             guard let best = overlaps.max(by: { $0.duration < $1.duration }) else { return nil }
-            return MatchCandidate(user: user, distanceKm: distance, skillDifference: difference, overlap: best)
+            // 球馆对不上就约不成：只看双方都能去的球馆
+            let shared = request.courts.filter { court in
+                entry.venues.isEmpty || entry.venues.contains { VenueCluster.same(court, $0) }
+            }
+            guard !shared.isEmpty else { return nil }
+            return MatchCandidate(user: user, distanceKm: distance, skillDifference: difference, overlap: best,
+                                  courtIds: shared.map(\.id))
         }
         .sorted { lhs, rhs in
             if lhs.matchScore != rhs.matchScore { return lhs.matchScore < rhs.matchScore }
@@ -165,7 +175,8 @@ enum MatchingService {
                 for j in (i + 1)..<top.count {
                     for k in (j + 1)..<top.count {
                         let group = [top[i], top[j], top[k]]
-                        guard let overlap = commonOverlap(of: group.map(\.overlap)) else { continue }
+                        guard let overlap = commonOverlap(of: group.map(\.overlap)),
+                              !sharedCourts(request: request, others: group).isEmpty else { continue }
                         let score = group.reduce(0) { $0 + $1.matchScore } + spread(of: group, userLevel: request.userLevel) * 5
                         groups.append((score, group, overlap))
                     }
@@ -238,11 +249,18 @@ enum MatchingService {
         return [[sorted[0].id, sorted[3].id], [sorted[1].id, sorted[2].id]]
     }
 
+    /// 所有人都能去的球馆
+    static func sharedCourts(request: MatchRequest, others: [MatchCandidate]) -> [BadmintonCourt] {
+        request.courts.filter { court in others.allSatisfy { $0.courtIds.isEmpty || $0.courtIds.contains(court.id) } }
+    }
+
     /// 选择对所有人最方便、且在该时段营业的球馆
-    static func bestCourt(for request: MatchRequest, locations: [Coordinate], slot: TimeSlot) -> BadmintonCourt? {
+    static func bestCourt(for request: MatchRequest, locations: [Coordinate], slot: TimeSlot,
+                          among courts: [BadmintonCourt]? = nil) -> BadmintonCourt? {
+        let candidates = courts ?? request.courts
         // 营业时间未知的球馆视为可用（无法判断），已知不营业的排除
-        let open = request.courts.filter { $0.isOpen(for: slot) }
-        let pool = open.isEmpty ? request.courts : open
+        let open = candidates.filter { $0.isOpen(for: slot) }
+        let pool = open.isEmpty ? candidates : open
         return pool.min { lhs, rhs in
             totalDistance(lhs, locations) < totalDistance(rhs, locations)
         }
@@ -261,7 +279,8 @@ enum MatchingService {
     private static func makeProposal(request: MatchRequest, others: [MatchCandidate], overlap: TimeSlot) -> MatchProposal? {
         let gameSlot = overlap.trimmedForGame()
         let locations = [request.userLocation] + others.compactMap { $0.user.location }
-        guard let court = bestCourt(for: request, locations: locations, slot: gameSlot) else { return nil }
+        let shared = sharedCourts(request: request, others: others)
+        guard let court = bestCourt(for: request, locations: locations, slot: gameSlot, among: shared) else { return nil }
 
         let teams: [[String]]
         if request.mode == .doubles {

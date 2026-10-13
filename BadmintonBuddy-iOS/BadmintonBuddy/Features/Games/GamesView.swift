@@ -40,6 +40,21 @@ struct GamesView: View {
                     .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
+                if !matchManager.openTickets.isEmpty {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        SectionTitle(title: "等待匹配", detail: "所有人确认后会出现在下面")
+                        ForEach(matchManager.openTickets) { ticket in
+                            Button {
+                                matchManager.openTicket(ticket.id)
+                            } label: {
+                                TicketStatusCard(ticket: ticket, offer: matchManager.offer(for: ticket))
+                            }
+                            .buttonStyle(PressableStyle(scale: 0.98))
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                }
+
                 if !roomManager.myRooms.isEmpty {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                         SectionTitle(title: "我的房间", detail: "\(roomManager.myRooms.count) 个进行中")

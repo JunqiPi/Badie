@@ -237,21 +237,6 @@ final class MockBackendTests: XCTestCase {
 
     // MARK: Matching & games
 
-    func testFindMatchesReturnsProposalsForWeekdayEvening() async throws {
-        let me = signUp()
-        let request = MatchRequest(
-            mode: .singles,
-            slot: try XCTUnwrap(TimeSlot.on(nextWeekday(), startHour: 19, endHour: 21)),
-            courts: Array(BadmintonCourt.curatedUS.prefix(3)),
-            skillTolerance: MatchRequest.anySkill, userId: me.id, userLevel: me.displayLevel,
-            userLocation: Coordinate.fallbackCenter, radiusKm: 50, excludedUserIds: []
-        )
-        let result = try await backend.findMatches(request)
-        guard case .proposals(let proposals) = result else { return XCTFail("工作日晚上应能匹配到人") }
-        let game = try await backend.confirm(try XCTUnwrap(proposals.first))
-        XCTAssertTrue(backend.games().contains { $0.id == game.id })
-    }
-
     func testLateCancellationCountsAgainstAttendance() async throws {
         let me = signUp()
         let start = Date().addingTimeInterval(3600)
@@ -412,6 +397,52 @@ final class MockBackendTests: XCTestCase {
         XCTAssertTrue(backend.searchVenues("garage", near: spot).isEmpty, "两人报告后进入人工核实")
         backend.currentUserIdOverride(me.id)
         XCTAssertFalse(backend.searchVenues("garage", near: spot).isEmpty, "添加者本人仍能看到")
+    }
+
+    func testLikelyDuplicateIsBlocked() throws {
+        _ = signUp()
+        let labc = try XCTUnwrap(backend.venue(id: "v-us-ca-labc"))
+        XCTAssertThrowsError(try backend.addVenue(candidate("LA Badminton Club", at: labc.location.offsetBy(eastKm: 0.05, northKm: 0)),
+                                                  source: .player)) {
+            XCTAssertEqual($0 as? BackendError, .venueDuplicate(existingName: labc.name))
+        }
+    }
+
+    func testSameBuildingDifferentNameIsAllowedButFlagged() throws {
+        _ = signUp()
+        let labc = try XCTUnwrap(backend.venue(id: "v-us-ca-labc"))
+        let neighbor = try backend.addVenue(candidate("Pacific Table Tennis", at: labc.location.offsetBy(eastKm: 0.02, northKm: 0)),
+                                            source: .player)
+        XCTAssertNotEqual(neighbor.id, labc.id)
+        XCTAssertEqual(neighbor.reviewFlag, "同一栋楼已有：\(labc.name)")
+    }
+
+    func testDailyVenueAddLimit() throws {
+        _ = signUp()
+        for index in 0..<MockBackend.dailyVenueAddLimit {
+            try backend.addVenue(candidate("Garage Court \(index)", at: .fallbackCenter.offsetBy(eastKm: 40 + Double(index) * 5, northKm: 0)),
+                                 source: .player)
+        }
+        XCTAssertThrowsError(try backend.addVenue(candidate("One More Gym", at: .fallbackCenter.offsetBy(eastKm: 70, northKm: 0)),
+                                                  source: .player)) {
+            XCTAssertEqual($0 as? BackendError, .venueRateLimited)
+        }
+        // 24 小时后恢复
+        XCTAssertNoThrow(try backend.addVenue(candidate("One More Gym", at: .fallbackCenter.offsetBy(eastKm: 70, northKm: 0)),
+                                              source: .player, now: Date().addingTimeInterval(25 * 3600)))
+    }
+
+    func testMergeRedirectsOldIdFavoritesAndSearch() throws {
+        _ = signUp()
+        let labc = try XCTUnwrap(backend.venue(id: "v-us-ca-labc"))
+        let duplicate = try backend.addVenue(candidate("Shuttle Barn", at: .fallbackCenter.offsetBy(eastKm: 33, northKm: 0)),
+                                             source: .player)
+        backend.toggleFavoriteCourt(duplicate.id)
+        try backend.mergeVenue(duplicate.id, into: labc.id)
+        XCTAssertEqual(backend.venue(id: duplicate.id)?.id, labc.id, "旧 ID 跳到保留的球馆")
+        XCTAssertEqual(backend.favoriteCourtIds(), [labc.id])
+        XCTAssertFalse(backend.allVenues.contains { $0.id == duplicate.id })
+        XCTAssertEqual(backend.searchVenues("shuttle barn", near: labc.location).first?.venue.id, labc.id, "旧名称成为别名")
     }
 
     func testVenuesNearbyAreSortedByDistance() {

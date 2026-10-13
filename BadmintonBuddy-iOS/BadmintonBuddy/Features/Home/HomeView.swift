@@ -41,6 +41,8 @@ struct HomeView: View {
                     .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
+                ticketsSection
+
                 quickMatchCard
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
@@ -109,6 +111,27 @@ struct HomeView: View {
         case 11..<13: return "中午好"
         case 13..<18: return "下午好"
         default: return "晚上好"
+        }
+    }
+
+    // MARK: Match requests
+
+    @ViewBuilder
+    private var ticketsSection: some View {
+        let open = matchManager.openTickets
+        if !open.isEmpty {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                SectionTitle(title: "约球请求", detail: "\(open.count) 个进行中")
+                ForEach(open) { ticket in
+                    Button {
+                        matchManager.openTicket(ticket.id)
+                    } label: {
+                        TicketStatusCard(ticket: ticket, offer: matchManager.offer(for: ticket))
+                    }
+                    .buttonStyle(PressableStyle(scale: 0.98))
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
         }
     }
 

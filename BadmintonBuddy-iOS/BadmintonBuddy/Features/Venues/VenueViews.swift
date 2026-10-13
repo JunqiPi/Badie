@@ -278,7 +278,9 @@ struct DuplicateChoiceList: View {
             Label(title, systemImage: "exclamationmark.triangle.fill")
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
-            Text("选同一个球馆，大家才能匹配到一起。")
+            Text(blocksAdding
+                 ? "名称和位置都跟已有球馆太接近，请直接选择它。大家选同一个球馆才能匹配到一起。"
+                 : "选同一个球馆，大家才能匹配到一起。如果是同楼的另一家，可以继续添加。")
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
             VStack(spacing: 0) {
@@ -308,7 +310,9 @@ struct DuplicateChoiceList: View {
         }
     }
 
+    private var blocksAdding: Bool { duplicates.contains { $0.kind.blocksAdding } }
+
     private var title: String {
-        duplicates.contains { $0.kind == .likely } ? "附近已有这个球馆，是同一个吗？" : "同一位置已有球馆，是同一个吗？"
+        blocksAdding ? "球馆库里已有这家球馆" : "同一位置已有球馆，是同一个吗？"
     }
 }

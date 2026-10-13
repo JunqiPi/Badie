@@ -32,6 +32,12 @@ struct VenueCandidateSheet: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+                    // 查重结果放在最上面：已有同一家时，先看到它
+                    if !duplicates.isEmpty {
+                        DuplicateChoiceList(duplicates: duplicates) { venue in
+                            onChosen(venue)
+                        }
+                    }
                     VenueMapPreview(name: candidate.name, coordinate: candidate.location, height: 200, interactive: true)
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                         Text(candidate.name)
@@ -59,12 +65,6 @@ struct VenueCandidateSheet: View {
                                      text: "这个地点缺少街道地址，别人很难确认位置。请改用“添加球馆”放图钉并补全地址。")
                     }
 
-                    if !duplicates.isEmpty {
-                        DuplicateChoiceList(duplicates: duplicates) { venue in
-                            onChosen(venue)
-                        }
-                    }
-
                     BrutalTextField(label: "常用简称（选填）", placeholder: "例：LABC、洛羽", text: $alias, characterLimit: 20)
                     BrutalTextField(label: "入口说明（选填）", placeholder: "例：工业区里，从后门进，2 楼", text: $entranceNote,
                                     characterLimit: 80)
@@ -79,12 +79,14 @@ struct VenueCandidateSheet: View {
                 } label: {
                     if isSaving {
                         LoadingDots()
+                    } else if isBlocked {
+                        Text("请选择上面已有的球馆")
                     } else {
                         Text(duplicates.isEmpty ? "就是这里，加入并选择" : "都不是，加入为新球馆")
                     }
                 }
                 .buttonStyle(.brutalPrimary)
-                .disabled(isSaving || !candidate.address.isComplete)
+                .disabled(isSaving || isBlocked || !candidate.address.isComplete)
                 Text("加入后显示“待确认”，3 位球友确认（或在这里签到打球）后显示“球友确认”。")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
@@ -97,6 +99,8 @@ struct VenueCandidateSheet: View {
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
+
+    private var isBlocked: Bool { duplicates.contains { $0.kind.blocksAdding } }
 
     private func save() {
         isSaving = true

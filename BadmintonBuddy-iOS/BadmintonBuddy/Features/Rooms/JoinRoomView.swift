@@ -243,7 +243,7 @@ struct FriendPickerSheet: View {
                                     Text(friend.nickname)
                                         .font(AppTheme.Typography.bodyBold)
                                         .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("\(friend.displayLevelText) · 准时率 \(friend.reputation.punctualityText)")
+                                    Text("\(friend.displayLevelText) · \(friend.publicSummary)")
                                         .font(AppTheme.Typography.footnote)
                                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                                 }

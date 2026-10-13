@@ -143,6 +143,38 @@ struct NewPlayerBadge: View {
     }
 }
 
+/// “靠谱”徽章：只看客观履约记录（打满 3 场、没有爽约、临时取消 ≤1 次）
+struct ReliableBadge: View {
+    var body: some View {
+        TagPill(text: "靠谱", icon: "checkmark.shield.fill", fill: AppTheme.Colors.mint)
+            .accessibilityLabel("靠谱：打满 3 场，没有爽约")
+    }
+}
+
+/// 球友给得最多的正面标签（月度快照）；没有达到展示门槛时显示说明
+struct PraiseTagsView: View {
+    let tags: [SurveyTag]
+    var emptyText: String? = "5 位以上球友评价后显示"
+
+    var body: some View {
+        if tags.isEmpty {
+            if let emptyText {
+                Text(emptyText)
+                    .font(AppTheme.Typography.footnote)
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+            }
+        } else {
+            FlowLayout(spacing: 6) {
+                ForEach(tags) { tag in
+                    TagPill(text: tag.rawValue, icon: "hand.thumbsup.fill", fill: AppTheme.Colors.lime)
+                }
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("球友印象：" + tags.map(\.rawValue).joined(separator: "、"))
+        }
+    }
+}
+
 struct VerifiedBadge: View {
     let status: VerificationStatus
 

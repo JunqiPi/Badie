@@ -18,6 +18,8 @@ enum BackendEvent {
     case surveysChanged
     case inboxChanged
     case venuesChanged
+    /// 约球请求或匹配提议有变化
+    case matchmakingChanged
 }
 
 typealias BackendEventHandler = @MainActor (BackendEvent) -> Void
@@ -58,6 +60,11 @@ enum BackendError: LocalizedError, Equatable {
     case venueNameInvalid
     case venueAddressIncomplete
     case venueNotFound
+    case ticketOverlap
+    case tooLateToRequest
+    case offerClosed
+    case venueDuplicate(existingName: String)
+    case venueRateLimited
 
     var errorDescription: String? {
         switch self {
@@ -94,6 +101,11 @@ enum BackendError: LocalizedError, Equatable {
         case .venueNameInvalid: return "球馆名称需为 2–60 个字符"
         case .venueAddressIncomplete: return "请补全街道和城市，方便其他球友确认位置"
         case .venueNotFound: return "没有找到这个球馆"
+        case .ticketOverlap: return "这个时间段你已经在找人了，可以先修改或取消那个请求"
+        case .tooLateToRequest: return "离开赛不到 30 分钟，来不及凑人了，换个时间试试"
+        case .offerClosed: return "这个匹配已经结束了"
+        case .venueDuplicate(let name): return "球馆库里已有“\(name)”，请直接选择它"
+        case .venueRateLimited: return "今天添加的球馆有点多，明天再来吧"
         }
     }
 }
@@ -112,11 +124,6 @@ struct RoomDraft: Hashable {
     var levelRange: ClosedRange<Int> = 1...9
     var tags: [RoomTag] = []
     var note: String = ""
-}
-
-enum MatchSearchResult {
-    case proposals([MatchProposal])
-    case none(suggestions: [MatchRelaxation])
 }
 
 // MARK: - 模拟球友（机器人）画像
@@ -171,7 +178,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；旧版本数据直接丢弃（目前只有本机演示数据）
-    static let currentVersion = 2
+    static let currentVersion = 3
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
@@ -182,6 +189,13 @@ struct Database: Codable {
     /// 平台球馆库：ID -> 球馆（收录 + 球友添加）
     var venues: [String: BadmintonCourt] = Dictionary(uniqueKeysWithValues: BadmintonCourt.curated.map { ($0.id, $0) })
     var venueReports: [VenueReport] = []
+    /// 约球请求与匹配提议
+    var tickets: [String: MatchTicket] = [:]
+    var offers: [String: MatchOffer] = [:]
+    /// 上次统一刷新对外口碑的月份（"2026-10"）
+    var reputationPublishedMonth = ""
+    /// 私下提醒记录：用户 ID → 问题 → 上次提醒时间（60 天内不重复提醒）
+    var nudges: [String: [String: Date]] = [:]
     var friendships: [Friendship] = []
     var friendRequests: [FriendRequest] = []
     var threads: [String: MessageThread] = [:]

@@ -61,10 +61,11 @@ struct MainTabView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
         }
-        .onChange(of: matchManager.justConfirmedGame) { _, game in
-            guard let game else { return }
-            router.show(.game(id: game.id), in: .games)
-            matchManager.justConfirmedGame = nil
+        .onChange(of: matchManager.notice) { _, notice in
+            // 请求在后台有进展（约成了 / 等你确认）
+            guard let notice else { return }
+            appState.showToast(notice, style: .success)
+            matchManager.notice = nil
         }
         .onChange(of: roomManager.startedGameId) { _, gameId in
             guard let gameId else { return }

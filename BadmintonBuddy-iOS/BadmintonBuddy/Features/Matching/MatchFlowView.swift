@@ -1,32 +1,28 @@
 import SwiftUI
 
-/// 全屏匹配流程：搜索中 → 找到搭子 / 没找到（给出放宽建议）
+/// 全屏匹配流程：提交请求 → 挂起等待 / 找到搭子（多方确认）→ 约成；或暂停、结束
 struct MatchFlowView: View {
     @EnvironmentObject private var matchManager: MatchManager
-    @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var router: Router
     @State private var presentedPlayer: PlayerSheetItem?
 
     var body: some View {
         ZStack {
             switch matchManager.phase {
-            case .searching, .idle:
+            case .submitting:
                 SearchingView()
-                    .transition(.opacity)
-            case .results:
-                if let proposal = matchManager.currentProposal {
-                    MatchFoundView(proposal: proposal, presentedPlayer: $presentedPlayer)
-                        .id(proposal.id)
-                        .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
-                }
-            case .empty:
-                NoMatchView()
                     .transition(.opacity)
             case .failed(let message):
                 failure(message)
+            case .idle:
+                if let ticket = matchManager.flowTicket {
+                    content(for: ticket)
+                } else {
+                    SearchingView()
+                }
             }
         }
         .animation(AppTheme.Motion.standard, value: matchManager.phase)
+        .animation(AppTheme.Motion.standard, value: matchManager.flowTicket?.status)
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .sheet(item: $presentedPlayer) { item in
             PlayerProfileSheet(userId: item.id, allowsInvite: false)
@@ -35,12 +31,32 @@ struct MatchFlowView: View {
         }
     }
 
+    @ViewBuilder
+    private func content(for ticket: MatchTicket) -> some View {
+        switch ticket.status {
+        case .searching:
+            TicketWaitingView(ticket: ticket)
+                .transition(.opacity)
+        case .offered, .matched:
+            if let offer = matchManager.offer(for: ticket) {
+                OfferView(ticket: ticket, offer: offer, presentedPlayer: $presentedPlayer)
+                    .id(offer.id)
+                    .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity), removal: .opacity))
+            } else {
+                TicketWaitingView(ticket: ticket)
+            }
+        case .paused, .expired, .cancelled:
+            TicketEndedView(ticket: ticket)
+                .transition(.opacity)
+        }
+    }
+
     private func failure(_ message: String) -> some View {
         VStack(spacing: AppTheme.Spacing.xl) {
             Spacer()
-            EmptyStateView(icon: "exclamationmark.triangle.fill", title: "匹配没有完成", message: message, tint: AppTheme.Colors.pink)
+            EmptyStateView(icon: "exclamationmark.triangle.fill", title: "没能发起请求", message: message, tint: AppTheme.Colors.pink)
             Spacer()
-            Button("返回") { matchManager.cancelSearch() }
+            Button("返回") { matchManager.closeFlow() }
                 .buttonStyle(.brutalSecondary)
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xl)
@@ -67,7 +83,7 @@ struct SearchingView: View {
             "正在查看 \(draft.courtIds.count) 个球馆附近的球友…",
             "筛选 \(draft.skillTolerance >= MatchRequest.anySkill ? "所有水平" : "水平 ±\(draft.skillTolerance) 级") 的球友…",
             "比对你们都有空的时间…",
-            "优先推荐准时率高的球友…"
+            "只匹配也能去这些球馆的球友…"
         ]
     }
 
@@ -75,8 +91,8 @@ struct SearchingView: View {
         VStack(spacing: AppTheme.Spacing.xl) {
             HStack {
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "取消匹配") {
-                    matchManager.cancelSearch()
+                IconButton(systemName: "xmark", accessibilityLabel: "关闭") {
+                    matchManager.closeFlow()
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
@@ -129,8 +145,9 @@ struct SearchingView: View {
 
             Spacer(minLength: 0)
 
-            Button("取消匹配") { matchManager.cancelSearch() }
-                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium, fullWidth: false))
+            Text("关掉也没关系，请求会在后台继续")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.7))
                 .padding(.bottom, AppTheme.Spacing.xl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -154,10 +171,13 @@ struct SearchingView: View {
     }
 }
 
-// MARK: - 找到搭子
 
-struct MatchFoundView: View {
-    let proposal: MatchProposal
+// MARK: - 找到搭子：多方确认
+
+/// 一个匹配提议。所有人确认才成局；有人没确认时显示“补位中”，不显示是谁。
+struct OfferView: View {
+    let ticket: MatchTicket
+    let offer: MatchOffer
     @Binding var presentedPlayer: PlayerSheetItem?
 
     @EnvironmentObject private var matchManager: MatchManager
@@ -167,18 +187,24 @@ struct MatchFoundView: View {
 
     @State private var collided = false
     @State private var showDetails = false
-    @State private var confirmedGame: Game?
+    @State private var confirmsCancel = false
 
     private var me: User? { appState.currentUser }
+    private var mySeat: MatchOffer.Seat? { offer.seat(of: ticket.userId) }
+    private var isMatched: Bool { offer.gameId != nil }
+    private var awaitsMe: Bool { offer.isOpen && mySeat?.response == .pending }
+
+    /// 局中其他人（不含已离开的座位）
+    private var others: [User] {
+        offer.seats.filter { $0.userId != ticket.userId && !$0.isVacant }.compactMap { matchManager.user(id: $0.userId) }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") {
-                    matchManager.cancelSearch()
-                }
+                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { matchManager.closeFlow() }
                 Spacer()
-                Text("\(proposal.mode.title) · 匹配度 \(proposal.compatibility)%")
+                Text("\(offer.mode.title) · 匹配度 \(offer.compatibility)%")
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Spacer()
@@ -189,14 +215,15 @@ struct MatchFoundView: View {
 
             ScrollView {
                 VStack(spacing: AppTheme.Spacing.xl) {
-                    (Text(confirmedGame == nil ? "找到" : "约好") + Text(markedText: "搭子") + Text("了！"))
+                    headline
                         .font(AppTheme.Typography.display)
                         .foregroundStyle(AppTheme.Colors.ink)
+                        .multilineTextAlignment(.center)
                         .padding(.top, AppTheme.Spacing.md)
                         .accessibilityAddTraits(.isHeader)
 
                     collisionStage
-                        .frame(height: proposal.mode == .doubles ? 250 : 210)
+                        .frame(height: offer.mode == .doubles ? 250 : 210)
 
                     if showDetails {
                         details
@@ -213,13 +240,25 @@ struct MatchFoundView: View {
             }
         }
         .onAppear(perform: animateIn)
+        .confirmationDialog("取消这个约球请求？", isPresented: $confirmsCancel, titleVisibility: .visible) {
+            Button("取消请求", role: .destructive) { matchManager.cancelTicket(ticket.id) }
+            Button("再等等", role: .cancel) {}
+        } message: {
+            Text("还没约成，取消不影响任何记录；其他人会继续帮 TA 们找人。")
+        }
+    }
+
+    private var headline: Text {
+        if isMatched { return Text("约好") + Text(markedText: "搭子") + Text("了！") }
+        if awaitsMe { return Text("找到") + Text(markedText: "搭子") + Text("了！") }
+        return Text("等") + Text(markedText: "大家") + Text("确认")
     }
 
     // MARK: Collision animation
 
     private var collisionStage: some View {
         ZStack {
-            if proposal.mode == .singles, let me, let opponent = proposal.primary?.user {
+            if offer.mode == .singles, let me, let opponent = others.first {
                 playerCard(me, title: "我", fill: AppTheme.Colors.surface)
                     .rotationEffect(.degrees(collided ? -7 : -20))
                     .offset(x: collided ? -82 : -260, y: 0)
@@ -236,25 +275,29 @@ struct MatchFoundView: View {
                     .scaleEffect(collided ? 1 : 0.1)
                     .opacity(collided ? 1 : 0)
                     .offset(y: 66)
-            } else if let me {
-                doublesStage(me: me)
+            } else {
+                doublesStage
             }
         }
     }
 
-    private func doublesStage(me: User) -> some View {
-        let lookup = Dictionary(uniqueKeysWithValues: ([me] + proposal.others.map(\.user)).map { ($0.id, $0) })
-        let teams = proposal.teams.map { $0.compactMap { lookup[$0] } }
+    private var doublesStage: some View {
+        let vacant = Set(offer.seats.filter(\.isVacant).map(\.userId))
         return HStack(spacing: AppTheme.Spacing.md) {
-            ForEach(Array(teams.enumerated()), id: \.offset) { index, team in
+            ForEach(Array(offer.teams.enumerated()), id: \.offset) { index, team in
                 VStack(spacing: AppTheme.Spacing.sm) {
-                    ForEach(team) { user in
-                        Button {
-                            if user.id != me.id { presentedPlayer = PlayerSheetItem(id: user.id) }
-                        } label: {
-                            miniPlayerCard(user, isMe: user.id == me.id, fill: index == 0 ? AppTheme.Colors.lavender : AppTheme.Colors.lime)
+                    ForEach(team, id: \.self) { userId in
+                        if vacant.contains(userId) {
+                            vacantCard
+                        } else if let user = matchManager.user(id: userId) {
+                            Button {
+                                if user.id != ticket.userId { presentedPlayer = PlayerSheetItem(id: user.id) }
+                            } label: {
+                                miniPlayerCard(user, isMe: user.id == ticket.userId,
+                                               fill: index == 0 ? AppTheme.Colors.lavender : AppTheme.Colors.lime)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
                 .rotationEffect(.degrees(collided ? (index == 0 ? -4 : 4) : 0))
@@ -299,28 +342,49 @@ struct MatchFoundView: View {
         .sticker(fill, radius: 16, shadow: AppTheme.Elevation.low)
     }
 
+    /// 有人这次来不了：只显示“补位中”，不显示是谁
+    private var vacantCard: some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            Image(systemName: "person.fill.questionmark")
+                .font(.system(size: 16, weight: .bold))
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(AppTheme.Colors.surfaceMuted))
+            Text("补位中…")
+                .font(AppTheme.Typography.subheadlineBold)
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(AppTheme.Colors.inkSecondary)
+        .padding(AppTheme.Spacing.sm)
+        .frame(width: 132)
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
+            .foregroundStyle(AppTheme.Colors.inkTertiary))
+        .accessibilityLabel("有一个位置正在找人补上")
+    }
+
     // MARK: Details
 
     private var details: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
-            if let candidate = proposal.primary {
-                reputationRow(candidate)
+            if !isMatched {
+                confirmationCard
             }
+            playersCard
             VStack(spacing: 0) {
                 InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
-                        title: proposal.slot.formattedFull,
-                        subtitle: proposal.commonOverlap.duration > proposal.slot.duration
-                            ? "你们共同有空 \(proposal.commonOverlap.formattedTimeRange)，已安排 \(proposal.slot.formattedDuration)"
-                            : "你们都有空的 \(proposal.slot.formattedDuration)")
+                        title: offer.slot.formattedFull,
+                        subtitle: offer.commonOverlap.duration > offer.slot.duration
+                            ? "你们共同有空 \(offer.commonOverlap.formattedTimeRange)，已安排 \(offer.slot.formattedDuration)"
+                            : "你们都有空的 \(offer.slot.formattedDuration)")
                 InsetDivider()
                 InfoRow(icon: "mappin.and.ellipse", tint: AppTheme.Colors.sky,
-                        title: proposal.court.name,
-                        subtitle: proposal.court.address)
+                        title: offer.court.name,
+                        subtitle: offer.court.address)
                 InsetDivider()
-                InfoRow(icon: Money.icon(for: proposal.cost.currencyCode), tint: AppTheme.Colors.butter,
-                        title: proposal.cost.perPerson == nil ? "费用待定" : "AA 约 \(proposal.cost.perPersonText)",
-                        subtitle: proposal.cost.breakdownText)
-                if proposal.mode == .doubles {
+                InfoRow(icon: Money.icon(for: offer.cost.currencyCode), tint: AppTheme.Colors.butter,
+                        title: offer.cost.perPerson == nil ? "费用待定" : "AA 约 \(offer.cost.perPersonText)",
+                        subtitle: offer.cost.breakdownText)
+                if offer.mode == .doubles {
                     InsetDivider()
                     InfoRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender,
                             title: "已按水平平衡分队",
@@ -332,81 +396,169 @@ struct MatchFoundView: View {
         }
     }
 
-    private func reputationRow(_ candidate: MatchCandidate) -> some View {
-        let reputation = candidate.user.reputation
-        return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            HStack(spacing: 6) {
-                Text(candidate.user.nickname)
-                    .font(AppTheme.Typography.headline)
-                    .foregroundStyle(AppTheme.Colors.ink)
-                Text("\(candidate.formattedSkillDifference) · \(DistanceFormatter.string(km: candidate.distanceKm))")
+    /// 确认进度：谁确认了、还在等谁；拒绝/超时的座位只显示“补位中”
+    private var confirmationCard: some View {
+        TimelineView(.periodic(from: .now, by: 30)) { context in
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                HStack {
+                    Text("确认进度")
+                        .font(AppTheme.Typography.headline)
+                    Spacer()
+                    Text("\(offer.acceptedCount)/\(offer.seats.count) 已确认")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                }
+                ForEach(Array(offer.seats.enumerated()), id: \.offset) { _, seat in
+                    seatRow(seat)
+                }
+                Label(deadlineText(now: context.date), systemImage: "clock.badge.exclamationmark.fill")
                     .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(awaitsMe ? AppTheme.Colors.ink : AppTheme.Colors.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .foregroundStyle(AppTheme.Colors.ink)
+            .padding(AppTheme.Spacing.lg)
+            .sticker(awaitsMe ? AppTheme.Colors.butter : AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+        }
+    }
+
+    private func deadlineText(now: Date) -> String {
+        if awaitsMe, let seat = mySeat {
+            return "请在 \(DateText.time(seat.respondBy)) 前确认（\(MatchTiming.remainingText(until: seat.respondBy, now: now))）"
+        }
+        return "最晚 \(DateText.time(offer.lockAt)) 前全部确认，否则自动取消，不计入任何记录"
+    }
+
+    @ViewBuilder
+    private func seatRow(_ seat: MatchOffer.Seat) -> some View {
+        HStack(spacing: AppTheme.Spacing.md) {
+            if seat.isVacant {
+                Image(systemName: "person.fill.questionmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .frame(width: 32, height: 32)
+                    .background(Circle().fill(AppTheme.Colors.surfaceMuted))
+                Text("一位球友这次来不了")
+                    .font(AppTheme.Typography.subheadlineBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Spacer()
-                if candidate.user.isNewPlayer { NewPlayerBadge() }
+                statusPill("补位中", icon: "arrow.triangle.2.circlepath", fill: AppTheme.Colors.surfaceMuted)
+            } else if let user = matchManager.user(id: seat.userId) {
+                AvatarView(user: user, size: 32, image: user.id == me?.id ? AvatarStore.image(for: user.id) : nil)
+                Text(user.id == ticket.userId ? "我" : user.nickname)
+                    .font(AppTheme.Typography.subheadlineBold)
+                    .lineLimit(1)
+                Spacer()
+                if seat.response == .accepted {
+                    statusPill("已确认", icon: "checkmark", fill: AppTheme.Colors.mint)
+                } else {
+                    statusPill("等待确认", icon: "hourglass", fill: AppTheme.Colors.surface)
+                }
             }
-            HStack(spacing: AppTheme.Spacing.sm) {
-                StatTile(value: reputation.punctualityText, label: "准时率")
-                StatTile(value: reputation.characterText, label: "球品 ★")
-                StatTile(value: "\(candidate.user.attendance.reliabilityPercentage)%", label: "履约率")
-            }
-            Text(candidate.user.isNewPlayer
-                 ? "评价不足 5 次，等级为自评，仅供参考"
-                 : "基于 \(reputation.evaluationCount) 位球友的匿名评价")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
         }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func statusPill(_ text: String, icon: String, fill: Color) -> some View {
+        TagPill(text: text, icon: icon, fill: fill, foreground: AppTheme.Colors.ink)
+    }
+
+    /// 其他球友：水平差、距离、靠谱徽章与球友印象（不显示任何评分数字）
+    private var playersCard: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            ForEach(others) { user in
+                Button {
+                    presentedPlayer = PlayerSheetItem(id: user.id)
+                } label: {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        HStack(spacing: 6) {
+                            Text(user.nickname)
+                                .font(AppTheme.Typography.headline)
+                                .foregroundStyle(AppTheme.Colors.ink)
+                            Text(subtitle(for: user))
+                                .font(AppTheme.Typography.footnoteBold)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
+                            Spacer(minLength: 0)
+                            if user.isNewPlayer {
+                                NewPlayerBadge()
+                            } else if user.isReliable {
+                                ReliableBadge()
+                            }
+                        }
+                        PraiseTagsView(tags: Array(user.reputation.publicTags.prefix(2)), emptyText: nil)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("查看资料")
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func subtitle(for user: User) -> String {
+        let difference = user.displayLevel - (me?.displayLevel ?? user.displayLevel)
+        let level: String
+        switch difference {
+        case 0: level = "同水平"
+        case let diff where diff > 0: level = "高 \(diff) 级"
+        default: level = "低 \(-difference) 级"
+        }
+        guard let location = user.location else { return level }
+        return "\(level) · \(DistanceFormatter.string(km: location.distanceKm(to: ticket.origin)))"
     }
 
     // MARK: Actions
 
     private var actions: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
-            if let game = confirmedGame {
+            if let gameId = offer.gameId {
                 Button {
-                    matchManager.finishFlow()
-                    router.show(.game(id: game.id), in: .games)
+                    matchManager.closeFlow()
+                    router.show(.game(id: gameId), in: .games)
                 } label: {
                     Label("查看球局", systemImage: "ticket.fill")
                 }
                 .buttonStyle(.brutalPrimary)
-                if let opponent = proposal.primary?.user {
+                if let opponent = others.first {
                     Button("给 \(opponent.nickname) 发消息") {
-                        matchManager.finishFlow()
+                        matchManager.closeFlow()
                         router.show(.chat(userId: opponent.id), in: .messages)
                     }
                     .buttonStyle(TextActionStyle())
                 }
-            } else {
+            } else if awaitsMe {
                 HStack(spacing: AppTheme.Spacing.md) {
-                    Button("换一个") {
+                    Button("这次不行") {
                         Haptics.tap()
-                        matchManager.declineCurrent()
+                        Task { await matchManager.respond(accept: false) }
                     }
                     .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .large, fullWidth: false))
-                    .frame(width: 120)
-                    .accessibilityHint("跳过这个方案，看看其他球友")
+                    .frame(width: 128)
+                    .disabled(matchManager.isResponding)
+                    .accessibilityHint("不扣分，会继续帮你找其他人")
 
                     Button {
-                        Task {
-                            if let game = await matchManager.confirmCurrent() {
-                                Haptics.success()
-                                withAnimation(AppTheme.Motion.bouncy) { confirmedGame = game }
-                            }
-                        }
+                        Task { await matchManager.respond(accept: true) }
                     } label: {
                         HStack(spacing: AppTheme.Spacing.sm) {
-                            if matchManager.isConfirming { LoadingDots() }
+                            if matchManager.isResponding { LoadingDots() }
                             Text("确认约球")
                         }
                     }
                     .buttonStyle(.brutalPrimary)
-                    .disabled(matchManager.isConfirming)
+                    .disabled(matchManager.isResponding)
                 }
-                Text("确认后会通知对方，开赛前 2 小时内取消将计入履约记录")
+                Text("所有人都确认才成局，谁没确认不会告诉其他人。确认后，开赛前 2 小时内取消会计入履约记录。")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Button("好的，有消息通知我") { matchManager.closeFlow() }
+                    .buttonStyle(.brutalPrimary)
+                Button("取消请求") { confirmsCancel = true }
+                    .buttonStyle(TextActionStyle())
             }
         }
         .padding(.horizontal, AppTheme.Spacing.screen)
@@ -416,7 +568,7 @@ struct MatchFoundView: View {
     }
 
     private func animateIn() {
-        if reduceMotion {
+        if reduceMotion || !(awaitsMe || isMatched) {
             collided = true
             showDetails = true
             return
@@ -429,76 +581,6 @@ struct MatchFoundView: View {
             Haptics.impact()
             try? await Task.sleep(nanoseconds: 300_000_000)
             withAnimation(AppTheme.Motion.standard) { showDetails = true }
-        }
-    }
-}
-
-// MARK: - 没有找到
-
-struct NoMatchView: View {
-    @EnvironmentObject private var matchManager: MatchManager
-    @EnvironmentObject private var router: Router
-
-    var body: some View {
-        VStack(spacing: AppTheme.Spacing.xl) {
-            HStack {
-                Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { matchManager.cancelSearch() }
-            }
-            .padding(.horizontal, AppTheme.Spacing.screen)
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text("这个时间段\n暂时没有合适的搭子")
-                            .font(AppTheme.Typography.title)
-                            .foregroundStyle(AppTheme.Colors.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text("我们算过了，下面这些调整能找到人：")
-                            .font(AppTheme.Typography.subheadline)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    }
-                    if matchManager.suggestions.isEmpty {
-                        NoticeBanner(icon: "lightbulb.fill", text: "附近球友这几天都比较忙，试试发起公开球局，让大家来找你。")
-                    } else {
-                        VStack(spacing: AppTheme.Spacing.md) {
-                            ForEach(matchManager.suggestions) { suggestion in
-                                Button {
-                                    Haptics.tap()
-                                    matchManager.apply(suggestion)
-                                } label: {
-                                    HStack(spacing: AppTheme.Spacing.md) {
-                                        IconTile(systemName: suggestion.icon, fill: AppTheme.Colors.lime, size: 44)
-                                        Text(suggestion.title)
-                                            .font(AppTheme.Typography.headline)
-                                            .foregroundStyle(AppTheme.Colors.ink)
-                                        Spacer()
-                                        Image(systemName: "arrow.right")
-                                            .font(.system(size: 15, weight: .heavy))
-                                            .foregroundStyle(AppTheme.Colors.ink)
-                                    }
-                                    .padding(AppTheme.Spacing.lg)
-                                    .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
-                                }
-                                .buttonStyle(PressableStyle())
-                            }
-                        }
-                    }
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text("或者")
-                            .font(AppTheme.Typography.footnoteBold)
-                            .foregroundStyle(AppTheme.Colors.inkTertiary)
-                        Button {
-                            matchManager.cancelSearch()
-                            router.open(.createRoom(matchManager.draft.mode, invitee: nil), in: .games)
-                        } label: {
-                            ArrowButtonLabel(title: "发起公开球局，让球友来找你")
-                        }
-                        .buttonStyle(.brutalInverse)
-                    }
-                }
-                .padding(.horizontal, AppTheme.Spacing.screen)
-            }
         }
     }
 }

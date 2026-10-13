@@ -179,6 +179,20 @@ struct User: Identifiable, Codable, Hashable {
 
     var isNewPlayer: Bool { reputation.isNewPlayer }
 
+    /// “靠谱”徽章：打满 3 场、没有爽约、临时取消不超过 1 次（只看客观履约记录）
+    var isReliable: Bool {
+        attendance.gamesPlayed >= 3 && attendance.noShows == 0 && attendance.lateCancellations <= 1
+    }
+
+    /// 列表里对别人展示的一句话：只有正面信息，没有分数（"靠谱 · 24 场"）
+    var publicSummary: String {
+        var parts: [String] = []
+        if isNewPlayer { parts.append("新球友") } else if isReliable { parts.append("靠谱") }
+        parts.append("\(totalGames) 场")
+        if let tag = reputation.publicTags.first { parts.append(tag.rawValue) }
+        return parts.joined(separator: " · ")
+    }
+
     var winRate: Double {
         guard totalGames > 0 else { return 0 }
         return Double(wins) / Double(totalGames) * 100

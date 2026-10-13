@@ -48,6 +48,8 @@ struct MatchSetupView: View {
                             .id(Self.venuesAnchor)
                         skillSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
+                        confirmSection
+                            .padding(.horizontal, AppTheme.Spacing.screen)
                     }
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
@@ -264,6 +266,52 @@ struct MatchSetupView: View {
         return "你的等级 Lv.\(userLevel)，将匹配 Lv.\(low)–\(high) 的球友，水平越接近排得越前"
     }
 
+    // MARK: Confirmation
+
+    private var confirmSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            label("找到人以后")
+            Toggle(isOn: $matchManager.draft.autoAccept) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("符合条件就直接替我接受")
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    Text("其他人确认后就约成，不用再点一次")
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                }
+            }
+            .tint(AppTheme.Colors.success)
+            if let text = timingText {
+                Label(text, systemImage: isLastMinute ? "bolt.fill" : "clock.badge.checkmark.fill")
+                    .font(AppTheme.Typography.footnote)
+                    .foregroundStyle(canRequest ? AppTheme.Colors.inkSecondary : AppTheme.Colors.danger)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private var canRequest: Bool {
+        guard let slot = matchManager.draft.slot else { return false }
+        return MatchTiming.canRequest(start: slot.startTime)
+    }
+
+    private var isLastMinute: Bool {
+        guard let slot = matchManager.draft.slot else { return false }
+        return MatchTiming.isLastMinute(start: slot.startTime)
+    }
+
+    private var timingText: String? {
+        guard let slot = matchManager.draft.slot, slot.endTime > Date() else { return nil }
+        if !canRequest { return "离开赛不到 30 分钟，来不及凑人了，换个时间试试" }
+        if isLastMinute {
+            return "临时局：只找 \(DistanceFormatter.radius(km: MatchTiming.lastMinuteRadiusKm)) 内此刻也在找人的球友，"
+                + "找到后要在 5–10 分钟内确认，建议打开上面的开关。"
+        }
+        let lock = MatchTiming.lock(start: slot.startTime, lastMinute: false)
+        return "所有人都确认才成局，最晚 \(DateText.relativeDay(lock)) \(DateText.time(lock))（开赛前 2 小时）前确认完，否则自动取消，不计入记录。"
+    }
+
     // MARK: Footer
 
     private var footer: some View {
@@ -279,7 +327,7 @@ struct MatchSetupView: View {
                 Label("开始匹配", systemImage: "bolt.fill")
             }
             .buttonStyle(.brutalPrimary)
-            .disabled(!matchManager.draft.canSearch)
+            .disabled(!matchManager.draft.canSearch || !canRequest)
         }
         .padding(.horizontal, AppTheme.Spacing.screen)
         .padding(.top, AppTheme.Spacing.md)

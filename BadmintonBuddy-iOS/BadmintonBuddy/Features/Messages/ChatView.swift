@@ -137,7 +137,7 @@ struct ChatView: View {
         }
         .overlay(alignment: .bottom) {
             if let other {
-                Text("\(other.displayLevelText) · 准时率 \(other.reputation.punctualityText)")
+                Text("\(other.displayLevelText) · \(other.publicSummary)")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .offset(y: -2)

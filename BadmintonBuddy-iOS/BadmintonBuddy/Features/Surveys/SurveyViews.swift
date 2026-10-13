@@ -63,6 +63,7 @@ struct SurveyFormView: View {
     @State private var skillRating = 4
     @State private var characterRating = 5
     @State private var tags: Set<SurveyTag> = []
+    @State private var issues: Set<SurveyIssue> = []
     @State private var isSubmitting = false
     @State private var didSetup = false
     /// 提交前保存一份，避免提交后列表刷新导致页面消失
@@ -81,6 +82,7 @@ struct SurveyFormView: View {
                         levelQuestion(survey)
                         characterQuestion
                         tagsQuestion
+                        issuesQuestion
                         Text("评价匿名，只展示汇总；双方都提交后（或 48 小时后）才会计入。")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
@@ -188,17 +190,29 @@ struct SurveyFormView: View {
     }
 
     private var characterQuestion: some View {
-        question("球品如何？", hint: characterHint) {
+        question("球品如何？", hint: "\(characterHint) · 只用于匹配排序，不会显示分数") {
             RatingPicker(rating: $characterRating)
         }
     }
 
     private var tagsQuestion: some View {
-        question("印象标签（可选）", hint: "只做匿名汇总") {
+        question("TA 的优点（可选）", hint: "5 位以上球友评价后，大家给得最多的会显示在 TA 的主页") {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(SurveyTag.allCases) { tag in
                     ChoiceChip(title: tag.rawValue, isSelected: tags.contains(tag), tint: AppTheme.Colors.mint) {
                         if tags.contains(tag) { tags.remove(tag) } else { tags.insert(tag) }
+                    }
+                }
+            }
+        }
+    }
+
+    private var issuesQuestion: some View {
+        question("有什么需要 TA 注意的？（可选）", hint: "不公开、不扣分；多位球友都提到时，我们会私下提醒 TA，不说是谁") {
+            FlowLayout(spacing: AppTheme.Spacing.sm) {
+                ForEach(SurveyIssue.allCases) { issue in
+                    ChoiceChip(title: issue.rawValue, isSelected: issues.contains(issue), tint: AppTheme.Colors.peach) {
+                        if issues.contains(issue) { issues.remove(issue) } else { issues.insert(issue) }
                     }
                 }
             }
@@ -301,7 +315,8 @@ struct SurveyFormView: View {
                 skillRating: skillRating,
                 attendance: attendance,
                 characterRating: characterRating,
-                tags: SurveyTag.allCases.filter { tags.contains($0) }
+                tags: SurveyTag.allCases.filter { tags.contains($0) },
+                issues: SurveyIssue.allCases.filter { issues.contains($0) }
             )
             appState.showToast("评价已提交，谢谢！", style: .success)
             router.pop()

@@ -53,6 +53,7 @@ struct PlayerProfileSheet: View {
                     .foregroundStyle(AppTheme.Colors.ink)
                 FlowLayout(spacing: 6) {
                     LevelBadge(level: user.displayLevel)
+                    if user.isReliable { ReliableBadge() }
                     if user.isNewPlayer { NewPlayerBadge() }
                     VerifiedBadge(status: user.verificationStatus)
                     if user.gender != .unspecified {
@@ -73,48 +74,25 @@ struct PlayerProfileSheet: View {
         HStack(spacing: AppTheme.Spacing.sm) {
             StatTile(value: "\(user.totalGames)", label: "场次")
             StatTile(value: "\(Int(user.winRate.rounded()))%", label: "胜率")
-            StatTile(value: "\(user.attendance.reliabilityPercentage)%", label: "履约率")
         }
     }
 
+    /// 别人只看到正面印象和“靠谱”徽章；评分数字只在内部用于匹配排序
     private func reputationCard(_ user: User) -> some View {
-        let reputation = user.reputation
-        return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("球友口碑")
+                Text("球友印象")
                     .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
                 Spacer()
-                Text(reputation.evaluationCount == 0 ? "暂无评价" : "\(reputation.evaluationCount) 人匿名评价")
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                if user.isReliable { ReliableBadge() }
             }
-            .foregroundStyle(AppTheme.Colors.ink)
-            if reputation.evaluationCount > 0 {
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    StarsView(rating: reputation.averageCharacterRating, size: 16)
-                    Text(reputation.characterText)
-                        .font(AppTheme.Typography.headline)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    Spacer()
-                    Text("信誉分 \(reputation.compositeScore)")
-                        .font(AppTheme.Typography.footnoteBold)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                }
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    StatTile(value: reputation.punctualityText, label: "准时率")
-                    StatTile(value: reputation.deviationText, label: "水平偏差")
-                }
-            }
+            PraiseTagsView(tags: user.reputation.publicTags, emptyText: "评价的球友还不到 5 位，暂不显示印象")
             Text(user.isNewPlayer
-                 ? "评价不足 5 次，显示的是自评等级 Lv.\(user.selfReportedLevel)"
-                 : String(format: "综合等级 %.1f = 自评 30%% + 球友评价 70%%", user.calculatedLevel))
+                 ? "评价不足 5 次，等级为自评 Lv.\(user.selfReportedLevel)，仅供参考"
+                 : "等级由自评与球友评价综合得出")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
-            if user.attendance.noShows > 0 || user.attendance.lateCancellations > 0 {
-                Label("爽约 \(user.attendance.noShows) 次 · 临时取消 \(user.attendance.lateCancellations) 次", systemImage: "exclamationmark.triangle.fill")
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.danger)
-            }
         }
         .card()
     }
@@ -225,6 +203,7 @@ struct NotificationsView: View {
     @EnvironmentObject private var roomManager: RoomManager
     @EnvironmentObject private var surveyManager: SurveyManager
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var matchManager: MatchManager
 
     var body: some View {
         VStack(spacing: 0) {
@@ -308,6 +287,8 @@ struct NotificationsView: View {
             if let id = item.relatedId { router.open(.game(id: id)) }
         case .reviewReceived:
             router.select(.profile)
+        case .matchOffer, .matchUpdate:
+            if let id = item.relatedId { matchManager.openTicket(id) }
         case .kicked, .roomClosed, .system:
             break
         }
@@ -320,6 +301,8 @@ struct NotificationsView: View {
         case .kicked, .roomClosed: return "door.left.hand.open"
         case .surveyDue, .reviewReceived: return "star.fill"
         case .gameConfirmed, .gameReminder: return "sportscourt.fill"
+        case .matchOffer: return "bolt.fill"
+        case .matchUpdate: return "arrow.triangle.2.circlepath"
         case .gameCancelled: return "xmark.circle.fill"
         case .system: return "megaphone.fill"
         }
@@ -331,7 +314,8 @@ struct NotificationsView: View {
         case .roomInvite, .roomJoined, .waitlistPromoted: return AppTheme.Colors.peach
         case .kicked, .roomClosed, .gameCancelled: return AppTheme.Colors.surfaceMuted
         case .surveyDue, .reviewReceived: return AppTheme.Colors.pink
-        case .gameConfirmed, .gameReminder: return AppTheme.Colors.lime
+        case .gameConfirmed, .gameReminder, .matchOffer: return AppTheme.Colors.lime
+        case .matchUpdate: return AppTheme.Colors.butter
         case .system: return AppTheme.Colors.sky
         }
     }

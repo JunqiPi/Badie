@@ -58,6 +58,7 @@ struct ProfileView: View {
                         .opacity(0.7)
                     FlowLayout(spacing: 6) {
                         LevelBadge(level: user.displayLevel)
+                        if user.isReliable { ReliableBadge() }
                         if user.isNewPlayer { NewPlayerBadge() }
                         VerifiedBadge(status: user.verificationStatus)
                         if let mode = user.preferredMode {
@@ -80,36 +81,28 @@ struct ProfileView: View {
 
     // MARK: Reputation
 
+    /// 本人看到客观记录（准时、水平校准）和别人看到的印象；球品分对任何人都不显示
     private func reputationCard(_ user: User) -> some View {
         let reputation = user.reputation
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack {
-                Text("球友口碑")
+                Text("我的口碑")
                     .font(AppTheme.Typography.headline)
                 Spacer()
-                Text(reputation.evaluationCount == 0 ? "还没有评价" : "\(reputation.evaluationCount) 人匿名评价")
+                Text(reputation.evaluationCount == 0 ? "还没有评价" : "\(reputation.evaluationCount) 次匿名评价")
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
             if reputation.evaluationCount > 0 {
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    StarsView(rating: reputation.averageCharacterRating, size: 18)
-                    Text(reputation.characterText)
-                        .scaledFont(size: 22, relativeTo: .title3)
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 0) {
-                        Text("\(reputation.compositeScore)")
-                            .scaledFont(size: 22, relativeTo: .title3)
-                            .monospacedDigit()
-                        Text("信誉分")
-                            .font(AppTheme.Typography.caption)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    }
+                    StatTile(value: reputation.punctualityText, label: "准时到场")
+                    StatTile(value: reputation.deviationText, label: "等级偏差")
                 }
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    StatTile(value: reputation.punctualityText, label: "准时率")
-                    StatTile(value: reputation.deviationText, label: "水平偏差")
-                }
+            }
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                Text("球友眼中的你")
+                    .font(AppTheme.Typography.subheadlineBold)
+                PraiseTagsView(tags: reputation.publicTags, emptyText: "5 位以上球友评价后显示，每月更新一次")
             }
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                 if user.isNewPlayer {
@@ -129,6 +122,10 @@ struct ProfileView: View {
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
             }
+            Label("球品评分只用于匹配排序，任何人（包括你自己）都看不到分数", systemImage: "eye.slash.fill")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.inkTertiary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(AppTheme.Colors.ink)
         .card()
