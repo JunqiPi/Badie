@@ -6,6 +6,7 @@ struct RootView: View {
     @EnvironmentObject private var locationManager: LocationManager
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var surveyManager: SurveyManager
+    @EnvironmentObject private var router: Router
 
     var body: some View {
         ZStack {
@@ -40,7 +41,14 @@ struct RootView: View {
             }
         }
         .onChange(of: appState.phase) { _, phase in
-            if phase == .main { locationManager.start() }
+            switch phase {
+            case .main: locationManager.start()
+            case .onboarding: router.reset()
+            case .launching: break
+            }
+        }
+        .onAppear {
+            NotificationRouter.shared.router = router
         }
     }
 }

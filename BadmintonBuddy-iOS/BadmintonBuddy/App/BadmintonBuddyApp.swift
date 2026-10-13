@@ -24,6 +24,7 @@ struct BadmintonBuddyApp: App {
         _roomManager = StateObject(wrappedValue: environment.roomManager)
         _surveyManager = StateObject(wrappedValue: environment.surveyManager)
         _inboxManager = StateObject(wrappedValue: environment.inboxManager)
+        NotificationRouter.shared.install()
     }
 
     var body: some Scene {

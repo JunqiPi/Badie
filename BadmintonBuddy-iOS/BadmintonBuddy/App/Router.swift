@@ -109,6 +109,14 @@ final class Router: ObservableObject {
         paths[tab] = [route]
     }
 
+    /// 退出登录时清空所有导航状态
+    func reset() {
+        paths = [:]
+        selectedTab = .home
+        isCreateMenuPresented = false
+        isMatchSetupPresented = false
+    }
+
     func popToRoot(_ tab: MainTab? = nil) {
         paths[tab ?? selectedTab] = []
     }
