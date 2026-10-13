@@ -14,6 +14,10 @@ xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b
 xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
 xcrun simctl location "$UDID" set 39.9219,116.4433 || true
+# 跳过系统键盘的“滑行输入”引导气泡，避免遮挡带键盘的页面
+for key in DidShowContinuousPathIntroduction DidShowGestureKeyboardIntroduction; do
+  xcrun simctl spawn "$UDID" defaults write com.apple.Preferences "$key" -bool true || true
+done
 xcrun simctl install "$UDID" "$APP"
 xcrun simctl privacy "$UDID" grant location "$BUNDLE" || true
 

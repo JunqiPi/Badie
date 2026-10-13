@@ -55,7 +55,7 @@ struct RootView: View {
 
 // MARK: - 隐藏系统导航栏后仍保留右滑返回手势
 
-extension UINavigationController: UIGestureRecognizerDelegate {
+extension UINavigationController: @retroactive UIGestureRecognizerDelegate {
     override open func viewDidLoad() {
         super.viewDidLoad()
         interactivePopGestureRecognizer?.delegate = self

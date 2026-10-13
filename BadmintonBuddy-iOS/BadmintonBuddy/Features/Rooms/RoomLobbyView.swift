@@ -183,8 +183,10 @@ struct RoomLobbyView: View {
                 InfoRow(icon: "text.bubble.fill", tint: AppTheme.Colors.mint, title: room.note)
             }
             if isOwner && room.status.isOpen {
-                Button("编辑时间和球馆") { showEditDetails = true }
-                    .buttonStyle(TextActionStyle(color: AppTheme.Colors.ink))
+                InsetDivider()
+                MenuRow(icon: "pencil", tint: AppTheme.Colors.lime, title: "编辑时间和球馆") {
+                    showEditDetails = true
+                }
             }
         }
         .padding(.horizontal, AppTheme.Spacing.lg)

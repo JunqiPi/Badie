@@ -90,7 +90,7 @@ final class MessageManager: ObservableObject {
     private let backend: MockBackend
 
     static let maxMessageLength = Message.maxContentLength
-    static let defaultMessageLimit = 50
+    nonisolated static let defaultMessageLimit = 50
 
     init(backend: MockBackend) {
         self.backend = backend

@@ -271,8 +271,9 @@ struct NotificationsView: View {
                                 }
                             }
                             .padding(AppTheme.Spacing.md)
-                            .sticker(item.isRead ? AppTheme.Colors.surface : AppTheme.Colors.butter.opacity(0.35),
-                                     radius: AppTheme.Radius.md, shadow: .zero)
+                            .sticker(item.isRead ? AppTheme.Colors.surfaceMuted : AppTheme.Colors.surface,
+                                     radius: AppTheme.Radius.md,
+                                     shadow: item.isRead ? .zero : CGSize(width: 0, height: 3))
                         }
                         .buttonStyle(PressableStyle(scale: 0.98))
                         .accessibilityElement(children: .combine)
