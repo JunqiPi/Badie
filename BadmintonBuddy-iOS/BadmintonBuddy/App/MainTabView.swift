@@ -138,23 +138,22 @@ struct FloatingTabBar: View {
         .sticker(AppTheme.Colors.surface, radius: 26, shadow: CGSize(width: 0, height: 4))
         .padding(.horizontal, AppTheme.Spacing.lg)
         .padding(.bottom, AppTheme.Spacing.sm)
-        .background(alignment: .bottom) { scrim }
+        .background { scrim }
     }
 
-    /// 标签栏后方的渐隐底色：滚动内容在标签栏上方淡出，不会从标签栏四周露出来
+    /// 标签栏后方的底色：实色铺到屏幕底边（含 Home 指示条区域），上方再接一段渐隐，
+    /// 滚动内容在标签栏上方淡出，不会从标签栏四周或下方露出来
     private var scrim: some View {
-        LinearGradient(
-            stops: [
-                .init(color: AppTheme.Colors.canvas.opacity(0), location: 0),
-                .init(color: AppTheme.Colors.canvas.opacity(0.94), location: 0.42),
-                .init(color: AppTheme.Colors.canvas, location: 1)
-            ],
-            startPoint: .top, endPoint: .bottom
-        )
-        .frame(height: 124)
-        .ignoresSafeArea(edges: .bottom)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+        AppTheme.Colors.canvas
+            .ignoresSafeArea(edges: .bottom)
+            .overlay(alignment: .top) {
+                LinearGradient(colors: [AppTheme.Colors.canvas.opacity(0), AppTheme.Colors.canvas],
+                               startPoint: .top, endPoint: .bottom)
+                    .frame(height: 36)
+                    .offset(y: -36)
+                    .allowsHitTesting(false)
+            }
+            .accessibilityHidden(true)
     }
 
     private func tabButton(_ tab: MainTab) -> some View {

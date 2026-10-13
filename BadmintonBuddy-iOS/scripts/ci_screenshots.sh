@@ -14,12 +14,13 @@ xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b
 xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
 xcrun simctl location "$UDID" set 39.9219,116.4433 || true
-# 跳过系统键盘的“滑行输入”引导气泡，避免遮挡带键盘的页面
-for key in DidShowContinuousPathIntroduction DidShowGestureKeyboardIntroduction; do
-  xcrun simctl spawn "$UDID" defaults write com.apple.Preferences "$key" -bool true || true
-done
 xcrun simctl install "$UDID" "$APP"
 xcrun simctl privacy "$UDID" grant location "$BUNDLE" || true
+
+# 预热一次带键盘的页面：系统键盘首次弹出时会显示“滑行输入”引导气泡，只出现一次
+xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen joinRoom >/dev/null || true
+sleep 6
+xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 
 for appearance in light dark; do
   xcrun simctl ui "$UDID" appearance "$appearance" || true
