@@ -4,33 +4,34 @@ import Foundation
 //
 // 3–6 级每一级多了一个维度：
 //   3：技术会不会（3+ = 全部都会，一两项不错，但不稳定）
-//   4：技术好不好（4+ = 全部不错，一两项精通，稳定性略有提升）
-//   5：稳不稳、会不会用战术（5 = 多拍很稳；5+ = 战术和技巧开始结合）
+//   4：主动球好不好（4 = 舒服位置的球全部不错，但被动球、极限球做不到；4+ = 一两项精通，稳定性略有提升）
+//   5：被动球能不能摆脱（5− 有时能过渡出来；5 多数能摆脱，技术特点和战术开始明显；5+ 战术和技巧明显结合）
 //   6：在俱乐部里的位置（6− 崭露头角，6 佼佼者，6+ 顶尖）
 // 7 起是州级、全国、国际水平，只凭证据认证（见 VerificationStatus）。
-//
-// 技术在 4 级就该全部熟练（包括反手），5 级以上不再按“会不会某个技术”分，只看稳定、战术和在俱乐部里的位置。
+// 技术“会不会”在 4 级就该全部解决（包括反手）；4、5 级在技术上比的是被动球和极限球。
 //
 // 为什么还要问具体动作：自评和实际表现相关只有 r≈0.29（Mabe & West 1982），水平越低越容易高估（Heck 等 2025）；
-// 题目越具体、越“可数”，自评越准（Zell & Krizan 2014）。所以“技术都不错”“很稳”这类说法，
-// 要用高远、反手、杀球、接杀、双打这几道动作题核对，做不到就按动作题封顶。
+// 题目越具体、越“可数”，自评越准（Zell & Krizan 2014）。所以“技术都不错”这类说法，
+// 要用高远、反手、杀球、双打这几道动作题核对，做不到就按动作题封顶。
 //
 // 计分：
-// 1. 台阶：技术掌握面给起点；全部不错且一两项精通后看稳定性；稳了再看战术；会用战术再看俱乐部里的位置
-// 2. 动作核对：5 道动作题的中位数 + 1 级是上限；4 级的硬门槛是正手高远 ≥7/10 到后场、反手能回到中后场、双打会轮转
+// 1. 台阶：技术掌握面给起点 → 稳定性决定 4+ → 被动球决定 5−/5（5 还要会用落点和节奏）→ 战术决定 5+ → 俱乐部位置决定 6 级
+// 2. 动作核对：4 道动作题的中位数 + 1 级是上限（动作都到位后不再封顶）；
+//    4 级硬门槛：正手高远 ≥7/10 到后场、反手不被动时能回到中后场、双打会轮转
 // 3. 比赛、训练经历给保底；保底比结果高 2 级以上时标记“待校准”；最近一年不常打：保底减 1 级
 // 4. 问卷最高 6+；球友评价最多推到 7−；7 起凭赛果、排名、证书认证
 
 struct AssessmentOption: Identifiable, Hashable {
     let id: Int
     let text: String
-    /// 这个答案对应的分值（4+ = 4.33）；经历题是保底分值（nil = 不保底）
+    /// 这个答案对应的分值（4+ = 4.33）；经历题是保底分值（nil = 不保底）；
+    /// 稳定性、被动球、战术按选项序号走台阶，不用分值（nil）
     let value: Double?
 }
 
 struct AssessmentQuestion: Identifiable, Hashable {
     enum Kind: Hashable {
-        /// 定义等级的维度：技术掌握面、稳定性、战术、俱乐部里的位置（按台阶计分）
+        /// 定义等级的维度：技术掌握面、稳定性、被动球、战术、俱乐部里的位置（按台阶计分）
         case ladder
         /// 具体动作（用来核对，取中位数封顶）
         case skill
@@ -91,8 +92,8 @@ enum SkillAssessment {
     // MARK: Questions
 
     static let questions: [AssessmentQuestion] = [
-        AssessmentQuestion(id: "breadth", kind: .ladder, title: "技术掌握",
-                           hint: "发球、高远、吊球、杀球、搓放网、挑球、推扑、接杀、平抽挡——你现在：",
+        AssessmentQuestion(id: "breadth", kind: .ladder, title: "技术掌握（主动球）",
+                           hint: "在舒服的位置打这些技术：发球、正反手高远、吊球、杀球、搓放网、挑球、推扑、平抽挡——你现在：",
                            options: [
                             AssessmentOption(id: 0, text: "只会其中几项（比如发球、高远）", value: 2),
                             AssessmentOption(id: 1, text: "大部分会做，还有几项不会", value: 3 - third),
@@ -115,7 +116,7 @@ enum SkillAssessment {
                            options: [
                             AssessmentOption(id: 0, text: "只能绕头打，或者放弃", value: 2),
                             AssessmentOption(id: 1, text: "只能挡过网", value: 3),
-                            AssessmentOption(id: 2, text: "能回到对方中后场", value: 4),
+                            AssessmentOption(id: 2, text: "不被动时能回到对方中后场", value: 4),
                             AssessmentOption(id: 3, text: "反手直线后场、吊球都有质量", value: 5 - third),
                             AssessmentOption(id: 4, text: "反手高远能从底线打到底线", value: 5 + third)
                            ]),
@@ -127,15 +128,6 @@ enum SkillAssessment {
                             AssessmentOption(id: 2, text: "后场能连续杀，并跟进网前", value: 4),
                             AssessmentOption(id: 3, text: "杀球上网 5 个回合至少 4 次无失误", value: 5),
                             AssessmentOption(id: 4, text: "起跳杀、点杀、劈杀都会", value: 6 - third)
-                           ]),
-        AssessmentQuestion(id: "defense", kind: .skill, title: "接杀",
-                           hint: "对方用力杀球时，你能怎么接？",
-                           options: [
-                            AssessmentOption(id: 0, text: "基本接不到", value: 2),
-                            AssessmentOption(id: 1, text: "能挡过网", value: 3),
-                            AssessmentOption(id: 2, text: "能挑到对方后场", value: 4),
-                            AssessmentOption(id: 3, text: "接重杀能抽挡、变线", value: 5),
-                            AssessmentOption(id: 4, text: "能把防守转成进攻", value: 6 - third)
                            ]),
         AssessmentQuestion(id: "doubles", kind: .skill, title: "双打",
                            hint: "打双打时，你对站位和配合的掌握？",
@@ -149,21 +141,30 @@ enum SkillAssessment {
         AssessmentQuestion(id: "stability", kind: .ladder, title: "稳定性",
                            hint: "对拉和实战里，你的失误多不多？",
                            options: [
-                            AssessmentOption(id: 0, text: "对拉不到 5 拍就断", value: 1),
-                            AssessmentOption(id: 1, text: "慢速能对拉 5–10 拍", value: 2),
-                            AssessmentOption(id: 2, text: "能连续对拉十几拍，但实战一快就失误多", value: 3 + third),
-                            AssessmentOption(id: 3, text: "实战失误比以前少了，但关键分还会紧", value: 4 + third),
-                            AssessmentOption(id: 4, text: "多拍相持很稳，很少主动失误", value: 5),
-                            AssessmentOption(id: 5, text: "高强度打到第三局也很稳", value: 5)
+                            AssessmentOption(id: 0, text: "对拉不到 5 拍就断", value: nil),
+                            AssessmentOption(id: 1, text: "慢速能对拉 5–10 拍", value: nil),
+                            AssessmentOption(id: 2, text: "能连续对拉十几拍，但实战一快就失误多", value: nil),
+                            AssessmentOption(id: 3, text: "实战失误比以前少了，但关键分还会紧", value: nil),
+                            AssessmentOption(id: 4, text: "多拍相持很稳，很少主动失误", value: nil),
+                            AssessmentOption(id: 5, text: "高强度打到第三局也很稳", value: nil)
+                           ]),
+        AssessmentQuestion(id: "passive", kind: .ladder, title: "被动球、极限球",
+                           hint: "被压到底线、被调到网前或后场死角、接对方重杀时，你通常：",
+                           options: [
+                            AssessmentOption(id: 0, text: "基本接不到，或者直接失误", value: nil),
+                            AssessmentOption(id: 1, text: "能勉强挑高、挡过去，但对方很容易得分", value: nil),
+                            AssessmentOption(id: 2, text: "有时能过渡出来：回到对方后场或网前，让自己回位", value: nil),
+                            AssessmentOption(id: 3, text: "多数能摆脱被动，转入相持（接重杀能抽挡、变线）", value: nil),
+                            AssessmentOption(id: 4, text: "被动中也能打出有威胁的球，甚至转守为攻", value: nil)
                            ]),
         AssessmentQuestion(id: "tactics", kind: .ladder, title: "战术",
                            hint: "比赛时你主要怎么得分？",
                            options: [
-                            AssessmentOption(id: 0, text: "主要是把球打过去，等对方失误", value: 3 - third),
-                            AssessmentOption(id: 1, text: "会找对方的弱点打（比如反手）", value: 4),
-                            AssessmentOption(id: 2, text: "会用落点和节奏调动对手", value: 5 - third),
-                            AssessmentOption(id: 3, text: "战术和技巧结合：用假动作、变线组织连续进攻，随对手调整", value: 5 + third),
-                            AssessmentOption(id: 4, text: "能针对不同对手提前定打法，并在场上执行", value: 5 + third)
+                            AssessmentOption(id: 0, text: "主要是把球打过去，等对方失误", value: nil),
+                            AssessmentOption(id: 1, text: "会找对方的弱点打（比如反手）", value: nil),
+                            AssessmentOption(id: 2, text: "会用落点和节奏调动对手", value: nil),
+                            AssessmentOption(id: 3, text: "战术和技巧结合：用假动作、变线组织连续进攻，随对手调整", value: nil),
+                            AssessmentOption(id: 4, text: "能针对不同对手提前定打法，并在场上执行", value: nil)
                            ]),
         AssessmentQuestion(id: "standing", kind: .ladder, title: "在俱乐部里的位置",
                            hint: "和你常一起打的俱乐部或固定局比，你大概在什么位置？",
@@ -229,35 +230,40 @@ enum SkillAssessment {
         } else {
             claimed = value("breadth") ?? 2
         }
-        // 全部不错、一两项精通：稳定性有提升才是 4+，很稳才到 5
+        // 主动球全部不错、一两项精通：稳定性有提升才是 4+
         if option("breadth") == 5 {
-            claimed = option("stability") >= 3 ? max(claimed, value("stability") ?? claimed) : 4
+            claimed = option("stability") >= 3 ? 4 + third : 4
         }
-        // 多拍很稳（5）后，战术决定 5+
-        if claimed >= 5 - 0.01, option("tactics") >= 3, let tactics = value("tactics") {
-            claimed = max(claimed, tactics)
+        // 4+ 之后看被动球：有时能过渡出来 → 5−；多数能摆脱、并且会用落点和节奏调动对手 → 5
+        if claimed >= 4 + third - 0.01, option("passive") >= 2 {
+            claimed = 5 - third
+            if option("passive") >= 3 && option("tactics") >= 2 { claimed = 5 }
+        }
+        // 5 之后，战术和技巧明显结合 → 5+
+        if claimed >= 5 - 0.01, option("tactics") >= 3 {
+            claimed = 5 + third
         }
         // 战术和技巧结合（5+）后，俱乐部里的位置决定 6 级
         if claimed >= 5 + third - 0.01, let standing = value("standing") {
             claimed = max(claimed, standing)
         }
 
-        // 2. 动作核对：中位数 + 1 级为上限（技术题最高在 5 级左右，再往上靠稳定、战术、俱乐部位置区分）
+        // 2. 动作核对：中位数 + 1 级为上限；动作都到位（中位数 ≥ 4.5）后不再封顶，往上看被动球、战术、俱乐部位置
         let skillValues = questions.filter { $0.kind == .skill }.compactMap { value($0.id) }.sorted()
         let middle = skillValues.count / 2
         let median = skillValues.count % 2 == 0
             ? (skillValues[middle - 1] + skillValues[middle]) / 2
             : skillValues[middle]
-        var cap = median + 1
+        var cap = median >= 4.5 ? maxTier.rating : median + 1
         var limitingGate: String?
-        if claimed > cap + 0.01 { limitingGate = "高远、反手、杀球、接杀、双打这几项动作还要跟上" }
+        if claimed > cap + 0.01 { limitingGate = "高远、反手、杀球、双打这几项动作还要跟上" }
 
         // 硬门槛：到某一档必须做到的具体动作
         let gates: [(rating: Double, passed: Bool, need: String)] = [
-            // 4 级：全部技术都要到位，包括反手
+            // 4 级：主动球全部到位，包括反手
             (4, option("clear") >= 3 && option("backhand") >= 2 && option("doubles") >= 2,
-             "全部技术到位：正手高远 ≥7/10 到后场，反手能回到对方中后场，双打会轮转"),
-            (6 - third, option("smash") >= 3 && option("defense") >= 3, "高强度下也稳：杀球上网不失误，接重杀能抽挡变线"),
+             "主动球全部到位：正手高远 ≥7/10 到后场，反手不被动时能回到中后场，双打会轮转"),
+            (6 - third, option("smash") >= 3 && option("stability") >= 4, "高强度下也稳：多拍很少失误，杀球上网不失误"),
             (6 + third, option("experience") >= 3, "有比赛或青训经历")
         ]
         for gate in gates where !gate.passed && gate.rating - third < cap - 0.01 {
@@ -279,9 +285,9 @@ enum SkillAssessment {
     }
 
     #if DEBUG
-    /// 演示：典型的中级球友（技术都不错，还没有精通的，截图用）
+    /// 演示：典型的中级球友（主动球都不错，被动球还处理不了，截图用）
     static let demoAnswers: [String: Int] = [
-        "breadth": 4, "clear": 3, "backhand": 2, "smash": 2, "defense": 2, "doubles": 2,
+        "breadth": 4, "clear": 3, "backhand": 2, "smash": 2, "passive": 1, "doubles": 2,
         "stability": 2, "tactics": 1, "standing": 1, "experience": 2, "recency": 0
     ]
     #endif
