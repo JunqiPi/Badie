@@ -24,8 +24,10 @@ struct OnboardingForm {
     /// 定级问卷答案（题目 ID → 选项）
     var assessmentAnswers: [String: Int] = [:]
     var assessmentResult: SkillAssessmentResult? { SkillAssessment.evaluate(assessmentAnswers) }
-    /// 问卷自动算出的等级
-    var level: Int? { assessmentResult?.level }
+    /// 暂时跳过定级（先按 Lv.3 匹配）
+    var skippedAssessment = false
+    /// 问卷自动算出的等级；跳过时暂用 Lv.3
+    var level: Int? { assessmentResult?.level ?? (skippedAssessment ? SkillAssessment.provisionalLevel : nil) }
     var preferredMode: GameMode?
     var timePresets: Set<TimePreset> = []
     /// 常去球馆（注册后设为收藏，快速匹配默认选中）
@@ -336,6 +338,20 @@ struct OnboardingFlow: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
             stepTitle("测一下你的水平", subtitle: "\(SkillAssessment.questions.count) 道题，按你能稳定做到的选，自动算出你的等级（细分到 −、本级、+）")
             SkillAssessmentView(answers: $form.assessmentAnswers)
+            if form.assessmentResult == nil {
+                Button {
+                    form.skippedAssessment = true
+                    advance(to: .preferences)
+                } label: {
+                    Text("暂时跳过，先按 Lv.\(SkillAssessment.provisionalLevel) 匹配")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .underline()
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.plain)
+                .accessibilityHint("之后可以在资料页完成定级")
+            }
             Text("问卷最高到 6+（俱乐部顶尖）；7 起是州级以上，凭赛果、全国排名、运动员等级证书或 BWF 世界排名认证。打满 5 场后会按球友评价自动校准。")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
@@ -563,7 +579,8 @@ struct OnboardingFlow: View {
     }
 
     private func finish() async {
-        guard let level = form.level, let result = form.assessmentResult else { return }
+        guard let level = form.level else { return }
+        let result = form.assessmentResult
         isWorking = true
         defer { isWorking = false }
         let slots = Array(form.timePresets.sorted { $0.rawValue < $1.rawValue }.flatMap(\.slots).prefix(TimeSlotConstants.maximumRecurringSlots))
@@ -577,10 +594,12 @@ struct OnboardingFlow: View {
                 preferredMode: form.preferredMode,
                 recurringSlots: slots,
                 location: locationManager.currentLocation.map { Coordinate($0.coordinate) },
-                assessment: SkillAssessmentSummary(level: level, needsCalibration: result.needsCalibration,
-                                                   isReturning: result.isReturning, assessedAt: Date(),
-                                                   rating: result.tier.rating)
+                assessment: result.map {
+                    SkillAssessmentSummary(level: level, needsCalibration: $0.needsCalibration,
+                                           isReturning: $0.isReturning, assessedAt: Date(), rating: $0.tier.rating)
+                }
             )
+            if result == nil { appState.backend.markAssessmentSkipped() }
             for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
                 locationManager.toggleFavorite(venueId)
             }

@@ -20,6 +20,11 @@ struct ProfileView: View {
                 }
                 if let user = appState.currentUser {
                     Group {
+                        if user.needsAssessment {
+                            NoticeBanner(icon: "checklist",
+                                         text: "还没定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配",
+                                         actionTitle: "去定级") { router.open(.editProfile) }
+                        }
                         identityCard(user)
                         HStack(spacing: AppTheme.Spacing.sm) {
                             StatTile(value: "\(user.totalGames)", label: "场次")

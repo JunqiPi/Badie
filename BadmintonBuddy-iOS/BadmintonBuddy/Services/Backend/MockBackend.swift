@@ -257,6 +257,15 @@ final class MockBackend {
         emit(.sessionChanged)
     }
 
+    /// 注册时跳过了定级：暂按 Lv.3 匹配，资料页提示补测
+    func markAssessmentSkipped(now: Date = Date()) {
+        guard var user = currentUser, user.assessment == nil else { return }
+        user.assessmentSkippedAt = now
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+    }
+
     /// 重新测评：更新问卷等级（每 90 天一次）
     @discardableResult
     func updateAssessment(_ result: SkillAssessmentResult, now: Date = Date()) throws -> User {

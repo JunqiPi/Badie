@@ -131,7 +131,9 @@ struct EditProfileView: View {
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .lineLimit(2)
                 }
-                Text(user.isNewPlayer
+                Text(user.needsAssessment
+                     ? "你跳过了定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配。花一分钟做完定级，匹配会准很多。"
+                     : user.isNewPlayer
                      ? "等级来自定级问卷；打满 5 场并获得评价后会按球友评价自动校准。"
                      : "你已有 \(user.reputation.evaluationCount) 次球友评价，等级主要由球友评价决定。")
                     .font(AppTheme.Typography.caption)
@@ -152,7 +154,8 @@ struct EditProfileView: View {
                         Button {
                             showReassess = true
                         } label: {
-                            Label("重新测评", systemImage: "arrow.counterclockwise")
+                            Label(user.assessment == nil ? "开始定级" : "重新测评",
+                                  systemImage: user.assessment == nil ? "checklist" : "arrow.counterclockwise")
                         }
                         .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
                     }

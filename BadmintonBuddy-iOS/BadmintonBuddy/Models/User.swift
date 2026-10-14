@@ -307,6 +307,11 @@ struct User: Identifiable, Codable, Hashable {
     var selfReportedRating: Double?
     /// 认证通过的档位分值（7+ 起）；认证后它代替问卷分值，也是显示的上限
     var verifiedRating: Double?
+    /// 注册时跳过了定级问卷（暂按 Lv.3 匹配，之后在资料页补测）
+    var assessmentSkippedAt: Date?
+
+    /// 跳过了定级、还没补测
+    var needsAssessment: Bool { assessment == nil && assessmentSkippedAt != nil }
 
     init(
         id: String,
@@ -358,6 +363,7 @@ struct User: Identifiable, Codable, Hashable {
         // 问卷顶到 6+：要靠球友评价确认，同样加快校准
         let atQuestionnaireCap = verifiedRating == nil && selfRating >= SkillAssessment.maxTier.rating - 0.01
         let calibrating = assessment?.needsCalibration == true || assessment?.isReturning == true || atQuestionnaireCap
+            || needsAssessment
         return calibrating ? User.calibratingPeerWeight : User.peerEvaluationWeight
     }
 

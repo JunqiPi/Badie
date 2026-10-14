@@ -3,8 +3,9 @@ import Foundation
 // MARK: - 定级问卷：技术分项 + 台阶，自动算出 1− 到 6+
 //
 // 两层结合：
-// 1. 技术分项（参考中羽在线论坛流传的 1–9 级分项描述）：正手后场、反手后场、网前、步法、发力、进攻，
-//    每题的选项就是该分项在某一级的样子（比如发力：挥大臂 → 手腕 → 前臂内外旋 → 手指）。
+// 1. 技术题（一题只问一个技术，选项是能不能做到某个具体动作，参考中羽在线论坛流传的 1–9 级分项描述）：
+//    正手高远、正手杀球、正手吊球（会不会劈吊、滑板）、反手后场、网前搓放、平抽挡、步法；另有接杀和被动球。
+//    不问“你觉得自己某方面怎么样”，避免让用户自己总结水平。
 // 2. 我们的台阶：
 //    3：技术会不会（3 = 所有分项到 3 级；3+ = 再有一两项到 4 级，但稳定性不足）
 //    4：主动球好不好（4 = 所有分项到 4 级，但被动球、极限球做不到；4+ = 一两项到 5 级（精通），稳定性略有提升）
@@ -101,70 +102,82 @@ enum SkillAssessment {
 
     private static let third = 1.0 / 3
 
-    /// 技术分项（问卷题目 ID）
-    static let techniqueIds = ["forehand", "backhand", "net", "footwork", "power", "attack"]
+    /// 技术题（一题一个技术）
+    static let techniqueIds = ["clear", "smash", "drop", "backhand", "net", "drive", "footwork"]
+
+    /// 跳过定级时暂用的等级（之后在资料页补测）
+    static let provisionalLevel = 3
 
     // MARK: Questions
 
     static let questions: [AssessmentQuestion] = [
-        AssessmentQuestion(id: "forehand", kind: .technique, title: "正手后场",
-                           hint: "高远、吊球、杀球，你现在打得怎么样？",
+        AssessmentQuestion(id: "clear", kind: .technique, title: "正手高远球",
+                           hint: "站在后场打高远球：",
                            options: [
-                            AssessmentOption(id: 0, text: "挥拍还不对，高远到不了中场", value: 1),
-                            AssessmentOption(id: 1, text: "挥拍对了，但发力、时机、击球点还不对，多靠挥手臂", value: 2),
-                            AssessmentOption(id: 2, text: "高远能底线到底线但球速慢；吊、杀能做出来，质量有限", value: 3),
-                            AssessmentOption(id: 3, text: "拉、吊、杀在打球中都能轻松完成，球速一般，落点凭感觉", value: 4),
-                            AssessmentOption(id: 4, text: "平高、高远、直线斜线吊、劈吊、劈杀都熟练，落点基本到位", value: 5),
-                            AssessmentOption(id: 5, text: "拉吊杀动作一致，对手很难提前判断你打什么", value: 6)
+                            AssessmentOption(id: 0, text: "到不了中场", value: 1),
+                            AssessmentOption(id: 1, text: "大多落在中场", value: 2),
+                            AssessmentOption(id: 2, text: "能到后场，但到不了底线、球速慢", value: 3),
+                            AssessmentOption(id: 3, text: "打球中能稳定底线到底线", value: 4),
+                            AssessmentOption(id: 4, text: "平高球、高远球都会，能控制弧度和落点", value: 5),
+                            AssessmentOption(id: 5, text: "和吊球、杀球动作一致，对手判断不出你打什么", value: 6)
+                           ]),
+        AssessmentQuestion(id: "smash", kind: .technique, title: "正手杀球",
+                           hint: "后场有机会时杀球：",
+                           options: [
+                            AssessmentOption(id: 0, text: "不会杀，或者一杀就下网、出界", value: 2),
+                            AssessmentOption(id: 1, text: "能往下压，但没什么力量", value: 3),
+                            AssessmentOption(id: 2, text: "能杀下去、有角度，但对方不难接", value: 4),
+                            AssessmentOption(id: 3, text: "直线、斜线都能杀，有威胁，杀完能跟上网前", value: 5),
+                            AssessmentOption(id: 4, text: "重杀、劈杀、点杀都会，按对方站位选用", value: 6)
+                           ]),
+        AssessmentQuestion(id: "drop", kind: .technique, title: "正手吊球",
+                           hint: "会不会吊球？会不会劈吊、滑板？",
+                           options: [
+                            AssessmentOption(id: 0, text: "还不会吊", value: 2),
+                            AssessmentOption(id: 1, text: "能吊过网，但常偏高、偏远", value: 3),
+                            AssessmentOption(id: 2, text: "直线、斜线能吊到前发球线附近", value: 4),
+                            AssessmentOption(id: 3, text: "会劈吊或滑板其中一种", value: 5),
+                            AssessmentOption(id: 4, text: "劈吊、滑板都熟练，和高远、杀球动作一致", value: 6)
                            ]),
         AssessmentQuestion(id: "backhand", kind: .technique, title: "反手后场",
-                           hint: "球被打到你的反手后场时：",
+                           hint: "球到了反手后场：",
                            options: [
-                            AssessmentOption(id: 0, text: "基本不会，只能绕头打或者放弃", value: 2),
-                            AssessmentOption(id: 1, text: "能正确挥拍但常出错，回球只到中场或略偏后", value: 3),
-                            AssessmentOption(id: 2, text: "能回到对方中后场，但不能底线到底线；反手吊不稳", value: 4),
-                            AssessmentOption(id: 3, text: "反手直线、斜线吊都会，后场回后场比较轻松", value: 5),
-                            AssessmentOption(id: 4, text: "底线到底线轻松，反手劈吊熟练，机会好时反手杀也有威力", value: 6)
+                            AssessmentOption(id: 0, text: "只能绕头打，或者放弃", value: 2),
+                            AssessmentOption(id: 1, text: "能用反手打，但只到中场", value: 3),
+                            AssessmentOption(id: 2, text: "不被动时能回到对方中后场", value: 4),
+                            AssessmentOption(id: 3, text: "会反手吊直线、斜线，后场回后场比较轻松", value: 5),
+                            AssessmentOption(id: 4, text: "反手高远底线到底线，反手劈吊熟练", value: 6)
                            ]),
-        AssessmentQuestion(id: "net", kind: .technique, title: "网前",
-                           hint: "放网、搓球、勾对角、挑球、推扑：",
+        AssessmentQuestion(id: "net", kind: .technique, title: "网前搓放",
+                           hint: "放网、搓球、勾对角：",
                            options: [
-                            AssessmentOption(id: 0, text: "基本是轻放过去，时高时远，常不过网", value: 2),
-                            AssessmentOption(id: 1, text: "放网质量基本能控制，搓球、勾对角刚开始用，失误多", value: 3),
-                            AssessmentOption(id: 2, text: "挑球能到底线，正反手搓球正确，勾对角常用但质量一般", value: 4),
-                            AssessmentOption(id: 3, text: "挑、搓都熟练，开始会展搓和推球", value: 5),
-                            AssessmentOption(id: 4, text: "搓、勾、推、扑都熟练并用在实战里，动作一致", value: 6)
+                            AssessmentOption(id: 0, text: "轻放过去，时高时远，常不过网", value: 2),
+                            AssessmentOption(id: 1, text: "放网能贴网，搓球、勾对角刚开始用", value: 3),
+                            AssessmentOption(id: 2, text: "正反手都会搓，勾对角常用但不够贴网", value: 4),
+                            AssessmentOption(id: 3, text: "搓球熟练，会展搓和推后场", value: 5),
+                            AssessmentOption(id: 4, text: "搓、勾、推、扑都熟练，动作一致", value: 6)
+                           ]),
+        AssessmentQuestion(id: "drive", kind: .technique, title: "平抽挡",
+                           hint: "中场来了快的平球：",
+                           options: [
+                            AssessmentOption(id: 0, text: "基本接不住", value: 2),
+                            AssessmentOption(id: 1, text: "能挡回去，但没有速度", value: 3),
+                            AssessmentOption(id: 2, text: "能平抽对攻几拍", value: 4),
+                            AssessmentOption(id: 3, text: "平抽挡比较好，能主动加速", value: 5),
+                            AssessmentOption(id: 4, text: "快速平抽对抗不吃亏，被动低位也能抽到底线", value: 6)
                            ]),
         AssessmentQuestion(id: "footwork", kind: .technique, title: "步法",
                            hint: "你在场上的移动：",
                            options: [
-                            AssessmentOption(id: 0, text: "走着够球，还没有步法", value: 1),
-                            AssessmentOption(id: 1, text: "知道要移动，但没有固定的步法", value: 2),
-                            AssessmentOption(id: 2, text: "能区分垫步、跨步，全场六个点能走到但不流畅", value: 3),
-                            AssessmentOption(id: 3, text: "全场步法正确并能用在打球中，但启动和移动速度不够", value: 4),
-                            AssessmentOption(id: 4, text: "全场多点步法轻松，启动和移动速度中上", value: 5),
-                            AssessmentOption(id: 5, text: "步法像本能一样自然，全场没有盲点", value: 6)
+                            AssessmentOption(id: 0, text: "走着够球", value: 1),
+                            AssessmentOption(id: 1, text: "会跑去接，但没有固定步法", value: 2),
+                            AssessmentOption(id: 2, text: "会垫步、跨步，六个点能走到但不流畅", value: 3),
+                            AssessmentOption(id: 3, text: "全场步法正确，但启动和移动不够快", value: 4),
+                            AssessmentOption(id: 4, text: "全场步法轻松，启动和移动速度中上", value: 5),
+                            AssessmentOption(id: 5, text: "步法像本能一样，全场没有盲点", value: 6)
                            ]),
-        AssessmentQuestion(id: "power", kind: .technique, title: "发力",
-                           hint: "击球时主要靠哪里发力？",
-                           options: [
-                            AssessmentOption(id: 0, text: "主要靠挥大臂", value: 2),
-                            AssessmentOption(id: 1, text: "能区分手臂和手腕发力，对内旋、外旋有基本概念", value: 3),
-                            AssessmentOption(id: 2, text: "打球中能用上手腕和内外旋，但力量有限", value: 4),
-                            AssessmentOption(id: 3, text: "前臂内外旋和手腕发力熟练，开始体会手指发力", value: 5),
-                            AssessmentOption(id: 4, text: "手指发力熟练：网前精细控制、杀球的额外爆发都靠它", value: 6)
-                           ]),
-        AssessmentQuestion(id: "attack", kind: .technique, title: "进攻",
-                           hint: "杀球和组织进攻：",
-                           options: [
-                            AssessmentOption(id: 0, text: "不会杀，或者一杀就下网、出界", value: 2),
-                            AssessmentOption(id: 1, text: "能往下压，但力量和落点都不够", value: 3),
-                            AssessmentOption(id: 2, text: "能根据对方回球组织进攻，但速度和角度一般，很难一拍致命", value: 4),
-                            AssessmentOption(id: 3, text: "直线、斜线进攻规范，力量速度中上，有一定威胁", value: 5),
-                            AssessmentOption(id: 4, text: "杀球有暴击音，能按对方站位用重杀、劈杀、点杀", value: 6)
-                           ]),
-        AssessmentQuestion(id: "passive", kind: .ladder, title: "被动球、防守",
-                           hint: "被压到底线、被调到网前或后场死角、接对方重杀时，你通常：",
+        AssessmentQuestion(id: "passive", kind: .ladder, title: "接杀和被动球",
+                           hint: "接对方重杀，或被压到底线、调到死角时：",
                            options: [
                             AssessmentOption(id: 0, text: "基本接不到，或者直接失误", value: nil),
                             AssessmentOption(id: 1, text: "只能挡直线网前或挑高，不能变线，对方很容易得分", value: nil),
@@ -247,15 +260,15 @@ enum SkillAssessment {
             return AssessmentDimension(id: id, name: question.title, level: Int(level))
         }
 
-        // 0. 完全的新手：正手挥拍不对、还没有步法
-        if option("forehand") == 0 && option("footwork") == 0 {
+        // 0. 完全的新手：高远到不了中场、还没有步法
+        if option("clear") == 0 && option("footwork") == 0 {
             let untouched = option("net") == 0 && option("doubles") == 0
             return SkillAssessmentResult(tier: SkillTier(level: 1, modifier: untouched ? .minus : .base),
                                          needsCalibration: false, isReturning: isReturning,
                                          suggestsVerification: false, limitingGate: nil, dimensions: dimensions)
         }
 
-        // 1. 技术分项：“全部”看最弱的，“多数”看第 3 弱的（6 项里至少 4 项），“一两项”看第 2 强的
+        // 1. 技术题：“全部”看最弱的，“多数”看第 3 弱的（7 项里至少 5 项），“一两项”看第 2 强的
         let levels = dimensions.map(\.level).sorted()
         let all = levels.first ?? 1
         let most = levels.count >= 3 ? levels[2] : all
@@ -325,9 +338,9 @@ enum SkillAssessment {
     }
 
     #if DEBUG
-    /// 演示：典型的中级球友（所有分项到 4 级，被动球还处理不了，截图用）
+    /// 演示：典型的中级球友（每个技术都到 4 级，被动球还处理不了，截图用）
     static let demoAnswers: [String: Int] = [
-        "forehand": 3, "backhand": 2, "net": 2, "footwork": 3, "power": 2, "attack": 2,
+        "clear": 3, "smash": 2, "drop": 2, "backhand": 2, "net": 2, "drive": 2, "footwork": 3,
         "passive": 1, "doubles": 2, "stability": 2, "tactics": 1, "standing": 1, "experience": 2, "recency": 0
     ]
     #endif
