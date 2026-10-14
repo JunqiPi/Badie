@@ -7,7 +7,7 @@
 
 ## Build & Test
 ```bash
-open BadmintonBuddy-iOS/BadmintonBuddy.xcodeproj   # ⌘R run, ⌘U test
+open Badie-iOS/Badie.xcodeproj   # ⌘R run, ⌘U test
 ```
 CI: `.github/workflows/ios.yml` builds, runs unit tests and captures light/dark screenshots via the DEBUG launch argument `-BBDemoScreen <screen>`.
 

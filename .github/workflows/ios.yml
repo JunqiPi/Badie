@@ -4,11 +4,11 @@ on:
   push:
     branches: [ main, "claude/**" ]
     paths:
-      - "BadmintonBuddy-iOS/**"
+      - "Badie-iOS/**"
       - ".github/workflows/ios.yml"
   pull_request:
     paths:
-      - "BadmintonBuddy-iOS/**"
+      - "Badie-iOS/**"
   workflow_dispatch:
 
 concurrency:
@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 60
     defaults:
       run:
-        working-directory: BadmintonBuddy-iOS
+        working-directory: Badie-iOS
     steps:
       - uses: actions/checkout@v4
 
@@ -39,8 +39,8 @@ jobs:
         run: |
           set +e
           xcodebuild build-for-testing \
-            -project BadmintonBuddy.xcodeproj \
-            -scheme BadmintonBuddy \
+            -project Badie.xcodeproj \
+            -scheme Badie \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO > build.log 2>&1
@@ -53,14 +53,14 @@ jobs:
 
       - name: Package simulator app
         if: steps.build.outcome == 'success'
-        run: ditto -c -k --sequesterRsrc --keepParent build/Build/Products/Debug-iphonesimulator/BadmintonBuddy.app BadmintonBuddy-sim.zip
+        run: ditto -c -k --sequesterRsrc --keepParent build/Build/Products/Debug-iphonesimulator/Badie.app Badie-sim.zip
 
       - name: Upload simulator app
         if: steps.build.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: simulator-app
-          path: BadmintonBuddy-iOS/BadmintonBuddy-sim.zip
+          path: Badie-iOS/Badie-sim.zip
           retention-days: 14
 
       # 设置了 APPETIZE_API_TOKEN（Secret）时，把这次构建更新到 Appetize 在线试玩；
@@ -73,7 +73,7 @@ jobs:
         run: |
           if [ -z "$APPETIZE_API_TOKEN" ]; then echo "未设置 APPETIZE_API_TOKEN，跳过"; exit 0; fi
           curl -sS --fail -X POST "https://api.appetize.io/v1/apps${APPETIZE_PUBLIC_KEY:+/$APPETIZE_PUBLIC_KEY}" \
-            -H "X-API-KEY: $APPETIZE_API_TOKEN" -F "file=@BadmintonBuddy-sim.zip" -F "platform=ios" \
+            -H "X-API-KEY: $APPETIZE_API_TOKEN" -F "file=@Badie-sim.zip" -F "platform=ios" \
             | python3 -c 'import sys, json; print("https://appetize.io/app/" + json.load(sys.stdin)["publicKey"])'
 
       - name: Run unit tests
@@ -82,8 +82,8 @@ jobs:
         run: |
           set +e
           xcodebuild test-without-building \
-            -project BadmintonBuddy.xcodeproj \
-            -scheme BadmintonBuddy \
+            -project Badie.xcodeproj \
+            -scheme Badie \
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -derivedDataPath build \
             -test-timeouts-enabled YES \
@@ -99,14 +99,14 @@ jobs:
       - name: Capture screenshots
         if: always() && steps.build.outcome == 'success'
         timeout-minutes: 25
-        run: bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/BadmintonBuddy.app screenshots
+        run: bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/Badie.app screenshots
 
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: screenshots
-          path: BadmintonBuddy-iOS/screenshots
+          path: Badie-iOS/screenshots
           if-no-files-found: ignore
           retention-days: 14
 
@@ -116,7 +116,7 @@ jobs:
         with:
           name: xcodebuild-logs
           path: |
-            BadmintonBuddy-iOS/build.log
-            BadmintonBuddy-iOS/test.log
+            Badie-iOS/build.log
+            Badie-iOS/test.log
           if-no-files-found: ignore
           retention-days: 7

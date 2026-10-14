@@ -1,9 +1,9 @@
 # Project Structure
 
 ```
-BadmintonBuddy-iOS/
-├── BadmintonBuddy.xcodeproj/         # synchronized groups + shared scheme
-├── BadmintonBuddy/
+Badie-iOS/
+├── Badie.xcodeproj/         # synchronized groups + shared scheme
+├── Badie/
 │   ├── App/            # @main, AppState, Router, RootView, MainTabView, RouteDestination, DemoLauncher
 │   ├── DesignSystem/   # Theme tokens, surfaces, buttons, identity (avatar/badges/chips), shapes, feedback, FlowLayout
 │   ├── Models/         # User, Reputation, Court, TimeSlot, Game, Room, Messaging, Social, Survey, Geo
@@ -11,7 +11,7 @@ BadmintonBuddy-iOS/
 │   ├── Managers/       # LocationManager, MatchManager, RoomManager, Friend/Message/Inbox/Survey managers
 │   ├── Features/       # Onboarding, Home, Matching, Games, Rooms, Courts, Messages, Social, Surveys, Profile
 │   └── Assets.xcassets
-├── BadmintonBuddyTests/ # Models, MatchingService, MockBackend, PersistenceService
+├── BadieTests/ # Models, MatchingService, MockBackend, PersistenceService
 ├── docs/DESIGN.md       # design process, research, tokens, IA, requirement mapping
 └── scripts/             # CI helpers (simulator picker, screenshots)
 ```

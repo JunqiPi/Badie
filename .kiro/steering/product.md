@@ -1,6 +1,6 @@
 # Product Overview
 
-**羽毛球搭子 (Badie / BadmintonBuddy)** — iOS app for finding badminton partners nearby by skill level, time slot and distance.
+**羽毛球搭子 (Badie / Badie)** — iOS app for finding badminton partners nearby by skill level, time slot and distance.
 
 ## Core Value
 Get a reliable game tonight: matched skill, overlapping free time, a court you can reach, transparent AA cost, and visible trust (check-in based attendance + double-blind peer reviews).
