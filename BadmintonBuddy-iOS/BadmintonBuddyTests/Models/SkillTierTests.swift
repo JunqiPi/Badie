@@ -39,6 +39,16 @@ final class SkillTierTests: XCTestCase {
         XCTAssertEqual(SkillTier.differenceText(4), "高 1 级 1 档")
     }
 
+    func testEliteTiersHaveTheirOwnNames() {
+        XCTAssertEqual(SkillTier(level: 4, modifier: .plus).displayText, "Lv.4+ 中级")
+        XCTAssertEqual(SkillTier(level: 7).displayText, "Lv.7 地区高手")
+        XCTAssertEqual(SkillTier(level: 9, modifier: .plus).displayText, "Lv.9+ 世界顶尖")
+        // 每一档都有具体标准
+        for tier in SkillTier.all {
+            XCTAssertFalse(SkillLevel.tierCriteria(for: tier).isEmpty, tier.code)
+        }
+    }
+
     func testMatchingToleranceUsesTiers() {
         // 容忍 1 级 = 上下 3 档：4+ 能匹配 3+ 到 5+，匹配不到 3
         let me = SkillTier(level: 4, modifier: .plus)

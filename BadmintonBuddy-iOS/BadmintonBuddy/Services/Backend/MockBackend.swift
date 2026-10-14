@@ -202,9 +202,8 @@ final class MockBackend {
             preferredMode: preferredMode
         )
         user.assessment = assessment
-        if let assessment, assessment.rating != nil {
-            user.selfReportedRating = min(assessment.tier, SkillAssessment.maxTier).rating
-        }
+        // 问卷最高 7−：老入口直接传整数等级时也按这个上限记
+        user.selfReportedRating = min(assessment?.tier ?? SkillTier(level: level), SkillAssessment.maxTier).rating
         db.users[id] = user
         db.accounts[phone] = id
         db.currentUserId = id

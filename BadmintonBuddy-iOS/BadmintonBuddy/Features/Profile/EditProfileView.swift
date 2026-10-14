@@ -166,7 +166,7 @@ struct EditProfileView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(verificationTitle(user))
                                 .font(AppTheme.Typography.subheadlineBold)
-                            Text("打过 A / Open 组、有全国排名或 BWF 球员资料，可以凭证据认证 7+ 到 9+")
+                            Text("问卷最高 7−。打过 A / Open 组、有全国排名、运动员等级证书或 BWF 世界排名，可以凭证据认证 7 到 9+")
                                 .font(AppTheme.Typography.caption)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                                 .fixedSize(horizontal: false, vertical: true)

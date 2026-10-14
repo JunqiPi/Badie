@@ -79,11 +79,11 @@ struct VerificationView: View {
                     Spacer(minLength: 0)
                 }
             }
-            Text("问卷最高到 7−，球友评价最多推到 Lv.7。7+ 起只看能公开查到的证据：赛事成绩、全国排名或运动员等级、BWF 球员资料。")
+            Text("问卷和球友评价最多到 7−。7 起只看能公开查到的证据：赛事成绩、全国排名或运动员等级证书、BWF 世界排名。")
                 .font(AppTheme.Typography.subheadline)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("认证后，等级以认证档位为上限，仍会参考球友评价（比如伤病、状态下滑）。")
+            Text("认证后以认证档位为准；球友评价最多往下调 1 档（比如伤病、状态下滑）。")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -187,7 +187,8 @@ struct VerificationView: View {
 
     private var evidenceFields: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            BrutalTextField(label: "证据链接", placeholder: VerificationEvidence.placeholder(for: kind), text: $link,
+            BrutalTextField(label: kind == .national ? "证据链接或证书编号" : "证据链接",
+                            placeholder: VerificationEvidence.placeholder(for: kind), text: $link,
                             keyboard: .URL, contentType: .URL, errorText: linkProblem)
             BrutalTextField(label: "成绩 / 证书上的姓名", placeholder: "和证件一致，例如 Wei Zhang", text: $nameOnRecord,
                             contentType: .name, characterLimit: 40)

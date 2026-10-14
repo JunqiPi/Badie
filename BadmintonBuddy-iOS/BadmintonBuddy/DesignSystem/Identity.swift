@@ -116,7 +116,7 @@ struct LevelBadge: View {
             .padding(.horizontal, compact ? 5 : 7)
             .padding(.vertical, compact ? 1.5 : 3)
             .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color(hex: 0x17140F)))
-            .accessibilityLabel("等级 \(tier.spokenText)，\(SkillLevel.name(for: tier.level))")
+            .accessibilityLabel("等级 \(tier.spokenText)，\(tier.name)")
     }
 }
 

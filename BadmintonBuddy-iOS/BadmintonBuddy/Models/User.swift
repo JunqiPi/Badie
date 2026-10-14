@@ -4,8 +4,9 @@ import Foundation
 //
 // 业内没有通用的业余等级标准（中国羽协等级“九级最低”、方向和我们相反；美国赛事 A–E 组没有书面定义）。
 // 1–7 级用“可观察的动作”定义（参考打球吧“业余 1–9 级”的可数测试、中羽在线 0–9 级、USTA NTRP 的写法），
-// 新用户回答问卷自动算出 1− 到 7−；7+ 起只凭能查到的证据认证：
-// 7+–8− 赛事成绩，8−–8+ 全国排名 / 运动员等级，9−–9+ 必须是 BWF 官网能查到的注册球员。依据见 docs/DESIGN.md §13。
+// 新用户回答问卷自动算出 1− 到 7−；7 起只凭能查到的证据认证：
+// 7–8 赛事成绩，7–8+ 全国排名 / 运动员技术等级证书，9−–9+ 只认 BWF 世界排名和赛果（只有 BWF ID 不够）。
+// 依据见 docs/DESIGN.md §13。
 
 enum SkillLevel {
     static let range = 1...9
@@ -21,8 +22,8 @@ enum SkillLevel {
         case 5: return "中高级"
         case 6: return "高级"
         case 7: return "业余高手"
-        case 8: return "竞技精英"
-        case 9: return "国际球员"
+        case 8: return "国家级"
+        case 9: return "国际级"
         default: return "初级"
         }
     }
@@ -42,8 +43,8 @@ enum SkillLevel {
         case 5: return ["反手不被动时能回到对方中后场", "能连续杀球并跟进网前", "双打会封网、补位"]
         case 6: return ["杀球或吊球上网 5 个回合至少 4 次无失误", "接重杀能抽挡变线", "会用假动作"]
         case 7: return ["反手高远能从底线打到底线", "会起跳杀球", "高强度多拍下步法不乱"]
-        case 8: return ["Open 组能打进前四，或有全国排名", "多为体校、省队出身，或国家二级以上运动员", "需要上传证据审核"]
-        case 9: return ["BWF 注册球员：bwfbadminton.com 能查到本人的球员页", "有 BWF 世界排名，打过 BWF 认可的国际赛", "需要上传证据审核"]
+        case 8: return ["USAB 认证赛最高组正赛能赢球，或有全国排名", "或国家二级以上运动员", "需要上传证据审核"]
+        case 9: return ["bwfbadminton.com 能查到本人的世界排名或国际赛赢球记录", "只有 BWF ID 不够（老将赛也要 BWF ID）", "需要上传证据审核"]
         default: return []
         }
     }
@@ -55,8 +56,8 @@ enum SkillLevel {
         case 4: return "D 组"
         case 5: return "C 组"
         case 6: return "B 组"
-        case 7: return "A 组"
-        case 8: return "Open 组"
+        case 7: return "A 组 / 次高组"
+        case 8: return "Open 组 / 全国排名"
         case 9: return "BWF 国际赛"
         default: return nil
         }
@@ -77,18 +78,37 @@ enum SkillLevel {
         }
     }
 
-    /// 7− 起每一档的具体标准（高水平之间差距大，所以每档单独定义）；1–6 级的 −/+ 用通用含义
+    /// 每一档的具体标准（1–7− 看动作，喂球 10 次数到位个数；7 起看证据）。
+    /// 1–6 级的测验由打球吧“5 个中 3 个”折算；女子在高远、反手类测验上门槛降低 1–2 个。
     static func tierCriteria(for tier: SkillTier) -> [String] {
         switch (tier.level, tier.modifier) {
-        case (7, .minus): return ["B 组拿过冠军，或在 A 组能赢下比赛", "问卷最高到这一档"]
-        case (7, .base): return ["A 组的常规选手", "没认证时最高到这一档（要球友评价确认）"]
-        case (7, .plus): return ["A 组打进过四强，或在 Open 组赢过正赛", "凭赛果认证"]
-        case (8, .minus): return ["Open 组打进过四强，或拿过州 / 地区公开赛冠军", "或国家二级运动员", "凭赛果或证书认证"]
-        case (8, .base): return ["有全国排名，或打过全国锦标赛正赛", "或国家一级运动员、省队队员", "凭排名或证书认证"]
-        case (8, .plus): return ["全国锦标赛八强，或进过国家队集训", "或运动健将", "凭排名或证书认证"]
-        case (9, .minus): return ["BWF 注册球员，有 BWF 世界排名", "打过 BWF 认可的国际赛（如 Future Series、International Series）", "凭 BWF 球员页认证"]
-        case (9, .base): return ["国际赛常客：International Challenge 八强，或打进 Super 100 / 300 正赛", "世界排名大约前 150", "凭 BWF 球员页认证"]
-        case (9, .plus): return ["世界一流：世界排名前 50", "或打过世锦赛、奥运会、汤尤杯 / 苏迪曼杯", "凭 BWF 球员页认证"]
+        case (1, .minus): return ["正手发球 10 个里 ≤3 个进区"]
+        case (1, .base): return ["正手发球 10 个里 4–6 个进区"]
+        case (1, .plus): return ["正手发球 ≥7 个进区，慢速对拉 ≥5 拍"]
+        case (2, .minus): return ["中后场正手高远 10 个里 1–2 个过后场第一条线"]
+        case (2, .base): return ["高远 10 个里 3–4 个到后场"]
+        case (2, .plus): return ["高远 10 个里 ≥5 个到后场"]
+        case (3, .minus): return ["后场杀球压进界内、网前放网有质量：10 个里 3–4 个（两项取低）"]
+        case (3, .base): return ["杀球 / 放网 10 个里 5–6 个"]
+        case (3, .plus): return ["杀球 / 放网 ≥7 个，且正手高远 ≥7 个到后场"]
+        case (4, .minus): return ["后场吊球落到前发球线附近、定点推勾：10 个里 4–5 个（两项取低）"]
+        case (4, .base): return ["吊球 / 推勾 6–7 个；双打会攻守轮转"]
+        case (4, .plus): return ["吊球 / 推勾 ≥8 个，且正手高远 ≥8 个到后场"]
+        case (5, .minus): return ["步法结合后场吊、前场推勾：10 个里 4–5 个（两项取低）"]
+        case (5, .base): return ["步法组合 6–7 个；双打会封网、补位"]
+        case (5, .plus): return ["步法组合 ≥8 个，且反手不被动时 ≥5 个回到对方中后场"]
+        case (6, .minus): return ["全场杀上网 / 吊上网，5 个回合里 3 个无失误"]
+        case (6, .base): return ["5 个回合里 4 个无失误"]
+        case (6, .plus): return ["5 个回合全部无失误，且反手高远 ≥5 个到对方后场"]
+        case (7, .minus): return ["反手高远到对方后场两线之间：男 ≥8 个、女 ≥6 个", "问卷最高到这一档，要球友评价确认"]
+        case (7, .base): return ["次高组（A 或 B 组）打进 4 强", "或地区赛最高组正赛赢过 1 场", "或 2025 年前的三级运动员证书"]
+        case (7, .plus): return ["次高组拿过冠军，或地区赛最高组 8 强", "或三级运动员（2025 新标准）、旧二级"]
+        case (8, .minus): return ["USAB 认证赛最高组（Open）正赛赢过 1 场，进入 USAB 排名表", "或二级运动员、旧一级"]
+        case (8, .base): return ["USAB 全国排名有正式名次，或认证赛最高组 8 强", "或一级运动员"]
+        case (8, .plus): return ["USAB 任一项目前 5，或全国成年锦标赛 4 强", "或运动健将"]
+        case (9, .minus): return ["BWF 世界排名任一项目前 500", "或单站 ≥1,370 积分：International Series 8 强，或 IC / Super 100 正赛赢 1 场"]
+        case (9, .base): return ["BWF 世界排名前 100", "或 Super 300 及以上赛事正赛赢过 1 场"]
+        case (9, .plus): return ["BWF 世界排名前 20", "或奥运会 / 世锦赛 8 强、Super 750 及以上 4 强"]
         default: return [tier.modifier.meaning]
         }
     }
@@ -97,9 +117,9 @@ enum SkillLevel {
     static func evidenceSummary(for kind: VerificationStatus) -> String {
         switch kind {
         case .unverified: return ""
-        case .tournament: return "USAB 认可赛事 A / Open 组的成绩页（tournamentsoftware.com），按名次认证 7+ 或 8−"
-        case .national: return "全国排名、全国锦标赛成绩，或国家二级 / 一级运动员、运动健将证书"
-        case .bwf: return "bwfbadminton.com 上本人的球员页，按世界排名和参加过的赛事认证 9− 到 9+"
+        case .tournament: return "tournamentsoftware.com 上公开的签表和成绩（签位 ≥8，7+ 起 ≥16）：次高组 4 强 → 7，次高组冠军 → 7+，USAB 认证赛最高组正赛赢球 → 8−，8 强 → 8"
+        case .national: return "USAB 全国排名，或运动员技术等级电子证书：三级 → 7+，二级 → 8−，一级 → 8，运动健将 → 8+（2025 年前的证书低一档）"
+        case .bwf: return "bwfbadminton.com 上本人的球员页，看近 24 个月的世界排名和赛果。只有 BWF ID 不够"
         }
     }
 
@@ -118,23 +138,23 @@ enum SkillLevel {
 /// rawValue 沿用旧值，老数据可以直接解码。
 enum VerificationStatus: String, Codable, Hashable, CaseIterable, Identifiable {
     case unverified
-    /// 赛事认证：USAB 认可赛事 A / Open 组的成绩（tournamentsoftware 可查）
+    /// 赛事成绩：tournamentsoftware.com 上公开的签表和成绩
     case tournament = "regionalChampion"
-    /// 全国认证：全国排名、全国锦标赛，或国家二级以上运动员
+    /// 全国排名（USAB）或运动员技术等级证书
     case national = "nationalChampion"
-    /// BWF 注册球员：bwfbadminton.com 能查到的球员资料和世界排名
+    /// BWF 世界排名 / 国际赛赛果（bwfbadminton.com 球员页）
     case bwf = "bwfPlayer"
 
     var id: String { rawValue }
 
-    /// 没有认证时最高显示的档位（问卷最高 7−，球友评价最多推到 7）
-    static let unverifiedMaxTier = SkillTier(level: 7)
+    /// 没有认证时最高显示的档位：问卷和球友评价最多到 7−
+    static let unverifiedMaxTier = SkillTier(level: 7, modifier: .minus)
 
     /// 这类证据最多能认证到哪一档
     var maxTier: SkillTier {
         switch self {
         case .unverified: return Self.unverifiedMaxTier
-        case .tournament: return SkillTier(level: 8, modifier: .minus)
+        case .tournament: return SkillTier(level: 8)
         case .national: return SkillTier(level: 8, modifier: .plus)
         case .bwf: return SkillTier(level: 9, modifier: .plus)
         }
@@ -144,8 +164,7 @@ enum VerificationStatus: String, Codable, Hashable, CaseIterable, Identifiable {
     var minTier: SkillTier {
         switch self {
         case .unverified: return SkillTier(level: 1, modifier: .minus)
-        case .tournament: return SkillTier(level: 7, modifier: .plus)
-        case .national: return SkillTier(level: 8, modifier: .minus)
+        case .tournament, .national: return SkillTier(level: 7)
         case .bwf: return SkillTier(level: 9, modifier: .minus)
         }
     }
@@ -156,16 +175,16 @@ enum VerificationStatus: String, Codable, Hashable, CaseIterable, Identifiable {
         switch self {
         case .unverified: return "未认证"
         case .tournament: return "赛事成绩"
-        case .national: return "全国排名 / 运动员等级"
-        case .bwf: return "BWF 注册球员"
+        case .national: return "全国排名 / 运动员等级证书"
+        case .bwf: return "BWF 世界排名"
         }
     }
 
     var badgeText: String? {
         switch self {
         case .unverified: return nil
-        case .tournament: return "赛事认证"
-        case .national: return "全国认证"
+        case .tournament: return "赛果认证"
+        case .national: return "等级认证"
         case .bwf: return "BWF 认证"
         }
     }
@@ -282,7 +301,9 @@ struct User: Identifiable, Codable, Hashable {
 
     /// 球友评价占的权重
     var peerWeight: Double {
-        let calibrating = assessment?.needsCalibration == true || assessment?.isReturning == true
+        // 问卷顶到 7−：要靠球友评价确认，同样加快校准
+        let atQuestionnaireCap = verifiedRating == nil && selfRating >= SkillAssessment.maxTier.rating - 0.01
+        let calibrating = assessment?.needsCalibration == true || assessment?.isReturning == true || atQuestionnaireCap
         return calibrating ? User.calibratingPeerWeight : User.peerEvaluationWeight
     }
 
@@ -298,15 +319,17 @@ struct User: Identifiable, Codable, Hashable {
         return (1 - peerWeight) * baseRating + peerWeight * reputation.peerLevelAverage
     }
 
-    /// 显示的上限：没认证最高 Lv.7；认证后最高就是认证的那一档（球友评价只能往下校准，比如状态下滑）
+    /// 显示的上限：没认证最高 7−；认证后最高就是认证的那一档
     var tierCap: SkillTier {
         if let verifiedRating { return SkillTier(rating: verifiedRating) }
         return VerificationStatus.unverifiedMaxTier
     }
 
-    /// 显示的细分档位
+    /// 显示的细分档位：认证过的人，球友评价最多往下拉 1 档（伤病、状态下滑），不会被一两场打低
     var displayTier: SkillTier {
-        min(SkillTier(rating: calculatedLevel), tierCap)
+        let tier = min(SkillTier(rating: calculatedLevel), tierCap)
+        guard verifiedRating != nil else { return tier }
+        return max(tier, tierCap.offset(by: -1))
     }
 
     /// 认证通过：记录证据类型和档位（档位限制在这类证据的范围内）

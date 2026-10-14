@@ -24,6 +24,9 @@ extension MockBackend {
         if let problem = VerificationEvidence.problem(with: evidenceURL, for: kind) {
             throw BackendError.verificationInvalid(problem)
         }
+        if kind == .national, let certificateCap = VerificationEvidence.certificateMaxTier(evidenceURL), tier > certificateCap {
+            throw BackendError.verificationInvalid("这张证书最高可以认证到 \(certificateCap.code)")
+        }
         let name = nameOnRecord.trimmingCharacters(in: .whitespacesAndNewlines)
         guard name.count >= 2 else { throw BackendError.verificationInvalid("请填写成绩或证书上的姓名") }
         let request = VerificationRequest(

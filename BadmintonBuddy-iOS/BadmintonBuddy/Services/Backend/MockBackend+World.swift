@@ -79,9 +79,11 @@ extension MockBackend {
                 preferredMode: index % 3 == 0 ? .singles : .doubles
             )
             db.users[id] = user
+            // 有证据的模拟球友：前省队（一级运动员 → 8），业余比赛常客（次高组 4 强 → 7）
             if level >= 8 {
-                // 前省队：全国认证 Lv.8
                 db.users[id]?.applyVerification(.national, tier: SkillTier(level: level))
+            } else if entry.4.contains("比赛常客") {
+                db.users[id]?.applyVerification(.tournament, tier: SkillTier(level: 7))
             }
             // 约六成模拟球友愿意出现在“同馆常客”里（真实用户默认关闭）
             db.users[id]?.privacy.showsAsRegular = index % 5 != 1 && index % 5 != 3

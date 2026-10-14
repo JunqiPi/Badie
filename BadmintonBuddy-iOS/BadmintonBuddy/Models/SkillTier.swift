@@ -66,8 +66,23 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
     /// “Lv.4+”
     var text: String { "Lv.\(code)" }
 
-    /// “Lv.4+ 中级”
-    var displayText: String { "\(text) \(SkillLevel.name(for: level))" }
+    /// 档位名称：1–6 级用本级名称；7 级起每档差距大，单独命名
+    var name: String {
+        switch (level, modifier) {
+        case (7, .base): return "地区高手"
+        case (7, .plus): return "地区精英"
+        case (8, .minus): return "州级精英"
+        case (8, .base): return "国家级"
+        case (8, .plus): return "国家顶尖"
+        case (9, .minus): return "国际选手"
+        case (9, .base): return "国际职业"
+        case (9, .plus): return "世界顶尖"
+        default: return SkillLevel.name(for: level)
+        }
+    }
+
+    /// “Lv.4+ 中级”“Lv.9+ 世界顶尖”
+    var displayText: String { "\(text) \(name)" }
 
     /// 读屏：“4 级加”
     var spokenText: String {

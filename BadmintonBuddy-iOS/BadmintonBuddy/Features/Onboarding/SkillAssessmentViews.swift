@@ -135,7 +135,7 @@ struct AssessmentResultCard: View {
             HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
                 Text(result.tier.text)
                     .scaledFont(size: 44, relativeTo: .largeTitle)
-                Text(SkillLevel.name(for: result.level))
+                Text(result.tier.name)
                     .font(AppTheme.Typography.title2)
             }
             .foregroundStyle(AppTheme.Colors.onAccent)
@@ -163,8 +163,11 @@ struct AssessmentResultCard: View {
             if result.isReturning {
                 notice("arrow.uturn.backward.circle.fill", "回归球友：按现在的状态定级，球友评价会帮你更快回到原来的水平。")
             }
+            if result.tier == SkillAssessment.maxTier {
+                notice("person.2.fill", "7− 是问卷能给的最高档，打几场后由球友评价确认。")
+            }
             if result.suggestsVerification {
-                notice("checkmark.seal.fill", "参加过 A 组或 Open 组？问卷最高到 7−，注册后可以凭赛果在资料页申请 7+ 以上的认证。")
+                notice("checkmark.seal.fill", "打过 A 组或 Open 组？7 起凭赛果、全国排名或运动员等级证书认证，注册后在资料页申请。")
             }
             Text("打满 5 场并获得评价后，等级会按球友评价自动校准。")
                 .font(AppTheme.Typography.caption)
@@ -216,7 +219,7 @@ struct SkillLevelGuideView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                        Text("1–9 级，每级再分 −、本级、+ 三档，共 27 档。对照“能稳定做到”的那一级，而不是偶尔打出来的球。")
+                        Text("1–9 级，每级再分 −、本级、+ 三档，共 27 档。1–7− 看动作（喂球 10 个数到位几个），对照“能稳定做到”的，而不是偶尔打出来的球；7 起只看能查到的赛果、排名和证书。")
                             .font(AppTheme.Typography.subheadline)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -225,7 +228,7 @@ struct SkillLevelGuideView: View {
                             levelCard(level)
                                 .id(level)
                         }
-                        Text("1–7 级参考打球吧“业余 1–9 级”、中羽在线 0–9 级、USTA NTRP 的写法；7+ 起按可查证的赛果、全国排名、运动员技术等级和 BWF 世界排名划分。中国羽协的等级是“九级最低”，方向和这里相反；美国赛事组别各赛事不同，仅作大致对应。")
+                        Text("1–7− 参考打球吧“业余 1–9 级”的计数测验、中羽在线 0–9 级的子档写法和 USTA NTRP；7 起按 tournamentsoftware 公开成绩、USAB 全国排名、《运动员技术等级标准》（2025 版）和 BWF 世界排名划分。中国羽协的业余等级是“九级最低”，方向和这里相反；美国各赛事的组别强度不同，所以按“最高组 / 次高组”的相对位置认定。")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -259,7 +262,7 @@ struct SkillLevelGuideView: View {
                 }
                 .foregroundStyle(AppTheme.Colors.ink)
             }
-            Text("7 级起差距大，每一档单独定义（见下方）。")
+            Text("7 级起差距大，每一档单独命名，按证据定档。")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
         }
@@ -271,7 +274,6 @@ struct SkillLevelGuideView: View {
     private func levelCard(_ level: Int) -> some View {
         let isCurrent = level == highlight?.level
         let tiers = [SkillTier.Modifier.minus, .base, .plus].map { SkillTier(level: level, modifier: $0) }
-        let detailed = level >= SkillLevel.maxSelfSelectable
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack(spacing: AppTheme.Spacing.sm) {
                 Text("\(level)")
@@ -296,7 +298,7 @@ struct SkillLevelGuideView: View {
                     TagPill(text: "需认证", icon: "lock.fill", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
                 }
             }
-            if !detailed {
+            if level <= SkillLevel.maxSelfSelectable {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(SkillLevel.anchors(for: level), id: \.self) { anchor in
                         Label(anchor, systemImage: "circle.fill")
@@ -305,26 +307,10 @@ struct SkillLevelGuideView: View {
                             .foregroundStyle(AppTheme.Colors.ink)
                     }
                 }
-                HStack(spacing: 6) {
-                    ForEach(tiers) { tier in
-                        tierChip(tier)
-                    }
-                }
-            } else {
-                if level == SkillLevel.maxSelfSelectable {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(SkillLevel.anchors(for: level), id: \.self) { anchor in
-                            Label(anchor, systemImage: "circle.fill")
-                                .labelStyle(BulletLabelStyle())
-                                .font(AppTheme.Typography.subheadline)
-                                .foregroundStyle(AppTheme.Colors.ink)
-                        }
-                    }
-                }
-                VStack(spacing: 6) {
-                    ForEach(tiers) { tier in
-                        tierRow(tier)
-                    }
+            }
+            VStack(spacing: 6) {
+                ForEach(tiers) { tier in
+                    tierRow(tier)
                 }
             }
         }
@@ -335,21 +321,7 @@ struct SkillLevelGuideView: View {
         .accessibilityElement(children: .combine)
     }
 
-    /// 1–6 级：三个小胶囊，标出你在哪一档
-    private func tierChip(_ tier: SkillTier) -> some View {
-        let selected = tier == highlight
-        return Text(tier.code)
-            .font(AppTheme.Typography.footnoteBold)
-            .monospacedDigit()
-            .foregroundStyle(selected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 4)
-            .background(Capsule().fill(selected ? AppTheme.Colors.lime : AppTheme.Colors.surfaceMuted))
-            .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: selected ? 1.5 : 0))
-            .accessibilityLabel(tier.spokenText + (selected ? "，你在这里" : ""))
-    }
-
-    /// 7–9 级：每一档单独的标准
+    /// 每一档的标准（7 起需认证的档位带锁）
     private func tierRow(_ tier: SkillTier) -> some View {
         let selected = tier == highlight
         let locked = tier > VerificationStatus.unverifiedMaxTier
@@ -362,6 +334,11 @@ struct SkillLevelGuideView: View {
                 .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
                     .fill(selected ? AppTheme.Colors.lime : AppTheme.Colors.surfaceMuted))
             VStack(alignment: .leading, spacing: 2) {
+                if tier.level >= SkillLevel.maxSelfSelectable && tier.name != SkillLevel.name(for: tier.level) {
+                    Text(tier.name)
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                }
                 ForEach(SkillLevel.tierCriteria(for: tier), id: \.self) { line in
                     Text(line)
                         .font(AppTheme.Typography.footnote)

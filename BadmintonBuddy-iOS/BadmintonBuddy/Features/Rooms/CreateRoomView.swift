@@ -310,7 +310,7 @@ struct TierStepper: View {
             }
             .disabled(tier == range.lowerBound)
             VStack(spacing: 0) {
-                Text(SkillLevel.name(for: tier.level))
+                Text(tier.name)
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Text(tier.text)

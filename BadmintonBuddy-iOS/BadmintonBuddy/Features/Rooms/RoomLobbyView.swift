@@ -337,7 +337,7 @@ struct RoomLobbyView: View {
     private func joinButton(_ room: Room) -> some View {
         let level = appState.currentUser?.displayLevel ?? 0
         if room.visibility == .publicListing && !room.accepts(level: level) {
-            Text("这个局要求 \(room.levelRangeText)，你的等级是 Lv.\(level)")
+            Text("这个局要求 \(room.levelRangeText)，你的等级是 \(appState.currentUser?.displayTier.text ?? "Lv.\(level)")")
                 .font(AppTheme.Typography.footnoteBold)
                 .foregroundStyle(AppTheme.Colors.danger)
         }

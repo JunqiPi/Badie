@@ -2,11 +2,11 @@ import Foundation
 
 // MARK: - 高水平认证申请
 //
-// 7+ 起的档位只看能公开查到的证据，由人工审核：
-// - 赛事成绩：USAB 认可赛事的 A / Open 组成绩（tournamentsoftware.com 上可查）
-// - 全国排名 / 运动员等级：全国排名页、全国锦标赛成绩，或国家二级以上运动员证书
-// - BWF 注册球员：bwfbadminton.com 的球员页（有 BWF ID 和世界排名）
-// 审核时核对证据上的姓名与本人证件，避免冒用别人的成绩。
+// 7 起的档位只看能公开查到的证据，由人工审核：
+// - 赛事成绩：tournamentsoftware.com 上公开的签表和成绩（按“最高组 / 次高组”的相对位置认定）
+// - 全国排名 / 运动员等级：USAB 全国排名，或《运动员技术等级标准》电子证书（15 位编号，末位是等级码）
+// - BWF：bwfbadminton.com 的球员页，看世界排名和赛果；只有 BWF ID 不够（报老将赛也要 BWF ID）
+// 审核时核对证据上的姓名与本人证件，避免冒用别人的成绩。bwfbadminton.com 拒绝自动抓取，只能人工打开核验。
 
 struct VerificationRequest: Identifiable, Codable, Hashable {
     enum Status: String, Codable, Hashable {
@@ -40,6 +40,20 @@ struct VerificationRequest: Identifiable, Codable, Hashable {
 
 enum VerificationEvidence {
 
+    /// 运动员技术等级电子证书（2025 起）：15 位，最后一位是等级码
+    /// X = 国际级运动健将，0 = 运动健将，1 = 一级，2 = 二级，3 = 三级
+    static func certificateMaxTier(_ text: String) -> SkillTier? {
+        let code = text.trimmingCharacters(in: .whitespaces).uppercased()
+        guard code.count == 15, code.dropLast().allSatisfy { $0.isASCII && $0.isNumber }, let last = code.last else { return nil }
+        switch last {
+        case "X", "0": return SkillTier(level: 8, modifier: .plus)
+        case "1": return SkillTier(level: 8)
+        case "2": return SkillTier(level: 8, modifier: .minus)
+        case "3": return SkillTier(level: 7, modifier: .plus)
+        default: return nil
+        }
+    }
+
     /// 每类证据接受的链接（为空表示任何 https 链接都可以，由人工判断）
     static func acceptedHosts(for kind: VerificationStatus) -> [String] {
         switch kind {
@@ -54,7 +68,7 @@ enum VerificationEvidence {
         switch kind {
         case .bwf: return "bwfbadminton.com/player/12345/your-name"
         case .tournament: return "usab.tournamentsoftware.com/… 的成绩页"
-        case .national: return "全国排名页 / 成绩公告 / 证书查询页链接"
+        case .national: return "USAB 排名页链接，或 15 位电子证书编号"
         case .unverified: return ""
         }
     }
@@ -63,6 +77,7 @@ enum VerificationEvidence {
     static func problem(with link: String, for kind: VerificationStatus) -> String? {
         let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return "请填写证据链接" }
+        if kind == .national, certificateMaxTier(trimmed) != nil { return nil }
         let withScheme = trimmed.contains("://") ? trimmed : "https://" + trimmed
         guard let url = URL(string: withScheme), let host = url.host?.lowercased(),
               url.scheme?.lowercased() == "https", host.contains(".") else {
@@ -83,9 +98,10 @@ enum VerificationEvidence {
         return nil
     }
 
-    /// 补全 https://
+    /// 补全 https://（证书编号原样保留）
     static func normalized(_ link: String) -> String {
         let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
+        if certificateMaxTier(trimmed) != nil { return trimmed.uppercased() }
         return trimmed.contains("://") ? trimmed : "https://" + trimmed
     }
 }

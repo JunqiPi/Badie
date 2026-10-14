@@ -184,13 +184,15 @@ final class ModelTests: XCTestCase {
         var user = User(id: "a", nickname: "测试", phone: "", selfReportedLevel: 7)
         user.reputation = ReputationScore(evaluationCount: 10, peerLevelAverage: 9, averageSkillDeviation: 2,
                                           punctualityPercentage: 100, averageCharacterRating: 5)
-        XCTAssertEqual(user.displayTier, SkillTier(level: 7), "没认证最高 Lv.7")
+        XCTAssertEqual(user.displayTier, SkillTier(level: 7, modifier: .minus), "没认证最高 7−")
+        XCTAssertEqual(user.displayLevelText, "Lv.7− 业余高手")
         // 认证 8 级：0.3 × 8 + 0.7 × 9 = 8.7，但不超过认证的那一档
         user.applyVerification(.national, tier: SkillTier(level: 8))
         XCTAssertEqual(user.displayTier, SkillTier(level: 8))
-        // 认证档位超出这类证据的范围时，按上限算
+        XCTAssertEqual(user.displayLevelText, "Lv.8 国家级")
+        // 认证档位超出这类证据的范围时，按上限算：赛果最多到 8
         user.applyVerification(.tournament, tier: SkillTier(level: 9, modifier: .plus))
-        XCTAssertEqual(user.verifiedRating ?? 0, SkillTier(level: 8, modifier: .minus).rating, accuracy: 0.001)
+        XCTAssertEqual(user.verifiedRating ?? 0, SkillTier(level: 8).rating, accuracy: 0.001)
     }
 
     func testVerifiedPlayerCanBeCalibratedDownByPeers() {
@@ -199,8 +201,9 @@ final class ModelTests: XCTestCase {
         XCTAssertEqual(user.displayTier, SkillTier(level: 9), "新球友：直接显示认证档位")
         user.reputation = ReputationScore(evaluationCount: 8, peerLevelAverage: 8, averageSkillDeviation: 1,
                                           punctualityPercentage: 100, averageCharacterRating: 5)
-        // 0.3 × 9 + 0.7 × 8 = 8.3 → 8+
-        XCTAssertEqual(user.displayTier, SkillTier(level: 8, modifier: .plus))
+        // 0.3 × 9 + 0.7 × 8 = 8.3 → 8+，但认证过的人最多往下调 1 档 → 9−
+        XCTAssertEqual(user.displayTier, SkillTier(level: 9, modifier: .minus))
+        XCTAssertEqual(user.displayLevelText, "Lv.9− 国际选手")
     }
 
     func testReputationIncrementalAverage() {

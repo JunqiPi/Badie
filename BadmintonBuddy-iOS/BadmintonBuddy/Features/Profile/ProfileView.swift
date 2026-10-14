@@ -118,7 +118,8 @@ struct ProfileView: View {
                     Text("综合等级 \(user.displayTier.text)")
                         .font(AppTheme.Typography.subheadlineBold)
                     ProgressBar(progress: Double(user.displayTier.index + 1) / Double(SkillTier.count))
-                    Text("问卷 \(SkillTier(rating: user.selfRating).text) × \(selfPercent(user))% + 球友评价 \(SkillTier(rating: reputation.peerLevelAverage).text) × \(100 - selfPercent(user))%")
+                    Text("\(user.verifiedRating == nil ? "问卷" : "认证") \(SkillTier(rating: user.baseRating).text) × \(selfPercent(user))% + 球友评价 \(SkillTier(rating: reputation.peerLevelAverage).text) × \(100 - selfPercent(user))%"
+                         + (user.verifiedRating == nil ? "" : "，不超过认证档位"))
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
