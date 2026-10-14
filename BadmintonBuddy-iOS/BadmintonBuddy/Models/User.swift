@@ -298,9 +298,9 @@ struct User: Identifiable, Codable, Hashable {
     var attendance: AttendanceRecord
     var preferredMode: GameMode?
     var privacy = PrivacySettings()
-    /// 定级问卷结果（老数据可能没有）
+    /// 定级问卷结果；跳过定级时为空
     var assessment: SkillAssessmentSummary?
-    /// 问卷给出的细分分值（4+ = 4.33）；老数据为空时用整数等级
+    /// 问卷给出的细分分值（4+ = 4.33）；为空时按整数等级
     var selfReportedRating: Double?
     /// 认证通过的档位分值（7+ 起）；认证后它代替问卷分值，也是显示的上限
     var verifiedRating: Double?

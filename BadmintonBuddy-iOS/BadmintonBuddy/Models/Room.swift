@@ -60,7 +60,7 @@ struct RoomParticipant: Identifiable, Codable, Hashable {
     let userId: String
     var nickname: String
     var skillLevel: Int
-    /// 加入时的细分档位分值（老数据为空）
+    /// 加入时的细分档位分值；为空时按整数等级
     var skillRating: Double?
     var avatar: Avatar
     let joinedAt: Date

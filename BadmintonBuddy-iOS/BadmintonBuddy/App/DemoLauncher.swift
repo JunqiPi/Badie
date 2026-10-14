@@ -205,7 +205,7 @@ enum DemoLauncher {
             hasPriority: false, excludedUserIds: []
         )
         if state == .waiting {
-            // 演示“还在找”：当下能匹配的人都已排除（相当于之前没约成）
+            // 演示“还在找”：当下能匹配的人都已排除
             let request = backend.matchRequest(for: ticket, owner: me)
             ticket.excludedUserIds = MatchingService.candidates(for: request, pool: backend.matchmakingPool(for: ticket, now: now))
                 .map(\.user.id)

@@ -65,7 +65,7 @@ struct SkillAssessmentSummary: Codable, Hashable {
     var needsCalibration: Bool
     var isReturning: Bool
     var assessedAt: Date
-    /// 细分档位分值（老数据为空）
+    /// 细分档位分值；为空时按整数等级
     var rating: Double?
 
     var tier: SkillTier { SkillTier(rating: rating ?? Double(level)) }

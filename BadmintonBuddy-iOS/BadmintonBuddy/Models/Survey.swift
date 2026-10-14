@@ -80,7 +80,7 @@ struct MatchSurvey: Identifiable, Codable, Hashable {
     var issues: [SurveyIssue] = []
     /// 还想再约 TA（双方都选了才告诉双方）
     var wantsRematch = false
-    /// 精确到档的分值（4+ = 4.33）；老数据为空时用整数级
+    /// 精确到档的分值（4+ = 4.33）；为空时按整数级
     var skillRatingValue: Double?
 
     var ratingValue: Double { skillRatingValue ?? Double(skillRating) }

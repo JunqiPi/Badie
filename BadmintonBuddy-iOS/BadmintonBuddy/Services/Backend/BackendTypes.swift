@@ -207,7 +207,7 @@ struct ReportRecord: Codable, Hashable {
 // MARK: - 数据库快照（JSON 持久化）
 
 struct Database: Codable {
-    /// 结构变更时递增；旧版本数据直接丢弃（目前只有本机演示数据）
+    /// 结构变更时递增；版本不符的本地数据直接丢弃
     static let currentVersion = 5
     var version: Int = Database.currentVersion
     var currentUserId: String?
