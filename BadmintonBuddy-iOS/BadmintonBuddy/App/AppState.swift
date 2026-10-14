@@ -63,6 +63,8 @@ final class AppState: ObservableObject {
     var skipsSplash = false
     /// 登录流程的起始步骤（演示模式可直接打开手机号页）
     var onboardingInitialStep: OnboardingStep = .welcome
+    /// 演示/截图：注册时预填的定级答案
+    var onboardingDemoAnswers: [String: Int] = [:]
 
     private static let appearanceKey = "appearance"
     private var toastTask: Task<Void, Never>?
@@ -120,11 +122,12 @@ final class AppState: ObservableObject {
         level: Int,
         preferredMode: GameMode?,
         recurringSlots: [RecurringTimeSlot],
-        location: Coordinate?
+        location: Coordinate?,
+        assessment: SkillAssessmentSummary? = nil
     ) async throws {
         _ = try await backend.register(
             phone: phone, nickname: nickname, gender: gender, avatar: avatar, level: level,
-            preferredMode: preferredMode, recurringSlots: recurringSlots, location: location
+            preferredMode: preferredMode, recurringSlots: recurringSlots, location: location, assessment: assessment
         )
         showToast("注册成功，欢迎加入 🏸", style: .success)
     }

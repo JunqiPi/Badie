@@ -70,6 +70,8 @@ enum Route: Hashable {
     case groups
     /// 创建球群（可预选球馆）
     case createGroup(venueId: String?)
+    /// 1–9 级对照表
+    case levelGuide
 }
 
 /// 添加球馆的预填内容（地图链接、演示截图）

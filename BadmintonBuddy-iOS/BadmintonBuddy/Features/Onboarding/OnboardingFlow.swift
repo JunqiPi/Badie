@@ -21,7 +21,11 @@ struct OnboardingForm {
     var nickname = ""
     var gender: Gender = .unspecified
     var avatar = Avatar(symbol: "", paletteIndex: 0)
-    var level: Int?
+    /// 定级问卷答案（题目 ID → 选项）
+    var assessmentAnswers: [String: Int] = [:]
+    var assessmentResult: SkillAssessmentResult? { SkillAssessment.evaluate(assessmentAnswers) }
+    /// 问卷自动算出的等级
+    var level: Int? { assessmentResult?.level }
     var preferredMode: GameMode?
     var timePresets: Set<TimePreset> = []
     /// 常去球馆（注册后设为收藏，快速匹配默认选中）
@@ -95,6 +99,7 @@ struct OnboardingFlow: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .onAppear {
             step = appState.onboardingInitialStep
+            if !appState.onboardingDemoAnswers.isEmpty { form.assessmentAnswers = appState.onboardingDemoAnswers }
         }
         .task(id: resendRemaining) {
             guard resendRemaining > 0 else { return }
@@ -329,9 +334,9 @@ struct OnboardingFlow: View {
 
     private var levelStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-            stepTitle("你现在打到什么水平？", subtitle: "按描述如实选择即可，打几场后会根据球友评价自动校准")
-            SkillLevelList(selection: $form.level)
-            Text("等级描述参考民间常用的业余自评标准，并非羽协官方等级。8-9 级需上传赛事证明审核。")
+            stepTitle("测一下你的水平", subtitle: "8 道题，按你能稳定做到的动作选，自动算出 1–9 级里的等级")
+            SkillAssessmentView(answers: $form.assessmentAnswers)
+            Text("问卷最多到 7 级；8–9 级需要上传赛果认证。打满 5 场后会按球友评价自动校准。")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -558,7 +563,7 @@ struct OnboardingFlow: View {
     }
 
     private func finish() async {
-        guard let level = form.level else { return }
+        guard let level = form.level, let result = form.assessmentResult else { return }
         isWorking = true
         defer { isWorking = false }
         let slots = Array(form.timePresets.sorted { $0.rawValue < $1.rawValue }.flatMap(\.slots).prefix(TimeSlotConstants.maximumRecurringSlots))
@@ -571,7 +576,9 @@ struct OnboardingFlow: View {
                 level: level,
                 preferredMode: form.preferredMode,
                 recurringSlots: slots,
-                location: locationManager.currentLocation.map { Coordinate($0.coordinate) }
+                location: locationManager.currentLocation.map { Coordinate($0.coordinate) },
+                assessment: SkillAssessmentSummary(level: level, needsCalibration: result.needsCalibration,
+                                                   isReturning: result.isReturning, assessedAt: Date())
             )
             for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
                 locationManager.toggleFavorite(venueId)
@@ -698,59 +705,6 @@ struct AvatarPaletteEditor: View {
                     }
                 }
                 .padding(.vertical, 4)
-            }
-        }
-    }
-}
-
-// MARK: - 技能等级列表（1-7 可选，8-9 锁定）
-
-struct SkillLevelList: View {
-    @Binding var selection: Int?
-
-    var body: some View {
-        VStack(spacing: AppTheme.Spacing.sm) {
-            ForEach(Array(SkillLevel.range), id: \.self) { level in
-                let locked = level > SkillLevel.maxSelfSelectable
-                let selected = selection == level
-                Button {
-                    guard !locked else { return }
-                    Haptics.selection()
-                    withAnimation(AppTheme.Motion.standard) { selection = level }
-                } label: {
-                    HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
-                        Text("\(level)")
-                            .scaledFont(size: 22, relativeTo: .title3)
-                            .foregroundStyle(selected ? AppTheme.Colors.lime : AppTheme.Colors.onAccent)
-                            .frame(width: 44, height: 44)
-                            .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .fill(selected ? Color(hex: 0x17140F) : AppTheme.Colors.paletteColor(level)))
-                            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(AppTheme.Colors.stroke, lineWidth: 2))
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(SkillLevel.name(for: level))
-                                .font(AppTheme.Typography.headline)
-                                .foregroundStyle(locked ? AppTheme.Colors.inkTertiary : AppTheme.Colors.ink)
-                            Text(SkillLevel.descriptor(for: level))
-                                .font(AppTheme.Typography.footnote)
-                                .foregroundStyle(locked ? AppTheme.Colors.inkTertiary : AppTheme.Colors.inkSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .multilineTextAlignment(.leading)
-                        }
-                        Spacer(minLength: 0)
-                        Image(systemName: locked ? "lock.fill" : (selected ? "checkmark.circle.fill" : "circle"))
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(locked ? AppTheme.Colors.inkTertiary : AppTheme.Colors.ink)
-                    }
-                    .padding(AppTheme.Spacing.md)
-                    .sticker(selected ? AppTheme.Colors.lime.opacity(0.35) : AppTheme.Colors.surface,
-                             radius: AppTheme.Radius.md, shadow: selected ? AppTheme.Elevation.low : .zero)
-                    .opacity(locked ? 0.7 : 1)
-                }
-                .buttonStyle(.plain)
-                .disabled(locked)
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("等级 \(level) \(SkillLevel.name(for: level))，\(SkillLevel.descriptor(for: level))\(locked ? "，需赛事认证" : "")")
-                .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
             }
         }
     }

@@ -54,6 +54,8 @@ struct RouteDestination: View {
             GroupsView()
         case .createGroup(let venueId):
             CreateGroupView(initialVenueId: venueId)
+        case .levelGuide:
+            LevelGuidePage()
         }
     }
 }
@@ -74,6 +76,18 @@ struct VenueDetailPage: View {
                 Spacer()
             }
         }
+    }
+}
+
+struct LevelGuidePage: View {
+    @EnvironmentObject private var appState: AppState
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ScreenHeader(title: "等级")
+            SkillLevelGuideView(highlight: appState.currentUser?.displayLevel, showsCloseButton: false)
+        }
+        .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
 }
 

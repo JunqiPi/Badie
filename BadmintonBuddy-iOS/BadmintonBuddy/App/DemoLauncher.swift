@@ -13,9 +13,16 @@ enum DemoLauncher {
         Haptics.isEnabled = false
 
         let environment: AppEnvironment
-        if screen == "welcome" || screen == "login" {
+        if ["welcome", "login", "levelQuiz", "levelResult"].contains(screen) {
             environment = AppEnvironment(backend: backend)
-            environment.appState.onboardingInitialStep = screen == "login" ? .phone : .welcome
+            switch screen {
+            case "login": environment.appState.onboardingInitialStep = .phone
+            case "levelQuiz": environment.appState.onboardingInitialStep = .level
+            case "levelResult":
+                environment.appState.onboardingInitialStep = .level
+                environment.appState.onboardingDemoAnswers = SkillAssessment.demoAnswers
+            default: environment.appState.onboardingInitialStep = .welcome
+            }
             environment.appState.skipsSplash = true
             return environment
         }
@@ -73,6 +80,8 @@ enum DemoLauncher {
                                            state: .othersConfirming) {
                 environment.matchManager.openTicket(ticket.id)
             }
+        case "levelGuide":
+            router.show(.levelGuide, in: .profile)
         case "groups":
             router.show(.groups, in: .games)
         case "groupDetail":

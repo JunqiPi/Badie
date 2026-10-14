@@ -164,14 +164,15 @@ final class MockBackend {
         level: Int,
         preferredMode: GameMode?,
         recurringSlots: [RecurringTimeSlot],
-        location: Coordinate?
+        location: Coordinate?,
+        assessment: SkillAssessmentSummary? = nil
     ) async throws -> User {
         guard Self.isValidPhone(phone) else { throw BackendError.invalidPhone }
         guard Self.isValidNickname(nickname) else { throw BackendError.invalidNickname }
         await networkDelay()
         return createAccount(
-            phone: phone, nickname: nickname, gender: gender, avatar: avatar, level: level,
-            preferredMode: preferredMode, recurringSlots: recurringSlots, location: location
+            phone: phone, nickname: nickname, gender: gender, avatar: avatar, level: assessment?.level ?? level,
+            preferredMode: preferredMode, recurringSlots: recurringSlots, location: location, assessment: assessment
         )
     }
 
@@ -186,10 +187,11 @@ final class MockBackend {
         preferredMode: GameMode? = nil,
         recurringSlots: [RecurringTimeSlot] = [],
         location: Coordinate? = nil,
-        seedsDemoContent: Bool = true
+        seedsDemoContent: Bool = true,
+        assessment: SkillAssessmentSummary? = nil
     ) -> User {
         let id = "u-" + UUID().uuidString.prefix(8).lowercased()
-        let user = User(
+        var user = User(
             id: id,
             nickname: nickname.trimmingCharacters(in: .whitespacesAndNewlines),
             phone: phone,
@@ -199,6 +201,7 @@ final class MockBackend {
             location: location ?? db.worldCenter,
             preferredMode: preferredMode
         )
+        user.assessment = assessment
         db.users[id] = user
         db.accounts[phone] = id
         db.currentUserId = id
@@ -251,6 +254,22 @@ final class MockBackend {
         emit(.sessionChanged)
     }
 
+    /// 重新测评：更新问卷等级（每 90 天一次）
+    @discardableResult
+    func updateAssessment(_ result: SkillAssessmentResult, now: Date = Date()) throws -> User {
+        guard var user = currentUser else { throw BackendError.notSignedIn }
+        if let previous = user.assessment, !previous.canRetake(now: now) {
+            throw BackendError.assessmentTooSoon(previous.nextRetakeDate())
+        }
+        user.selfReportedLevel = min(SkillLevel.clamp(result.level), SkillLevel.maxSelfSelectable)
+        user.assessment = SkillAssessmentSummary(level: user.selfReportedLevel, needsCalibration: result.needsCalibration,
+                                                 isReturning: result.isReturning, assessedAt: now)
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+        return user
+    }
+
     func updatePrivacy(_ privacy: PrivacySettings) {
         guard var user = currentUser else { return }
         user.privacy = privacy
@@ -268,8 +287,7 @@ final class MockBackend {
         user.gender = updated.gender
         user.avatar = updated.avatar
         user.preferredMode = updated.preferredMode
-        // 自评只能在 1-7 之间修改，8-9 需要认证
-        user.selfReportedLevel = min(SkillLevel.clamp(updated.selfReportedLevel), max(SkillLevel.maxSelfSelectable, user.verificationStatus.maxLevel))
+        // 等级不能在这里直接改：只能通过定级问卷（每 90 天一次）或球友评价校准
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))

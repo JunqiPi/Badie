@@ -10,7 +10,8 @@ struct EditProfileView: View {
     @State private var gender: Gender = .unspecified
     @State private var preferredMode: GameMode?
     @State private var avatar = Avatar(symbol: "", paletteIndex: 0)
-    @State private var level: Int?
+    @State private var showReassess = false
+    @State private var showGuide = false
     @State private var photoItem: PhotosPickerItem?
     @State private var photoVersion = 0
     @State private var hasPhoto = false
@@ -41,14 +42,8 @@ struct EditProfileView: View {
                             ChoiceChip(title: "都行", isSelected: preferredMode == nil) { preferredMode = nil }
                         }
                     }
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        fieldLabel("自评等级")
-                        if let user = appState.currentUser, !user.isNewPlayer {
-                            Text("你已有 \(user.reputation.evaluationCount) 次球友评价，显示等级按“自评 30% + 球友评价 70%”计算。")
-                                .font(AppTheme.Typography.caption)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        }
-                        SkillLevelList(selection: $level)
+                    if let user = appState.currentUser {
+                        levelSection(user)
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -63,11 +58,19 @@ struct EditProfileView: View {
                 }
             }
             .buttonStyle(.brutalPrimary)
-            .disabled(!MockBackend.isValidNickname(nickname) || level == nil || isSaving)
+            .disabled(!MockBackend.isValidNickname(nickname) || isSaving)
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.vertical, AppTheme.Spacing.md)
         }
         .onAppear(perform: load)
+        .sheet(isPresented: $showReassess) {
+            ReassessSheet()
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showGuide) {
+            SkillLevelGuideView(highlight: appState.currentUser?.displayLevel)
+                .presentationDragIndicator(.visible)
+        }
         .onChange(of: photoItem) { _, item in
             guard let item else { return }
             Task { await loadPhoto(item) }
@@ -114,6 +117,50 @@ struct EditProfileView: View {
         }
     }
 
+    // MARK: 等级（只能通过问卷或球友评价改变）
+
+    private func levelSection(_ user: User) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            fieldLabel("等级")
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    LevelBadge(level: user.displayLevel)
+                    Text(SkillLevel.descriptor(for: user.displayLevel))
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .lineLimit(2)
+                }
+                Text(user.isNewPlayer
+                     ? "等级来自定级问卷；打满 5 场并获得评价后会按球友评价自动校准。"
+                     : "你已有 \(user.reputation.evaluationCount) 次球友评价，等级主要由球友评价决定。")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Button {
+                        showGuide = true
+                    } label: {
+                        Label("对照表", systemImage: "list.number")
+                    }
+                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
+                    if let assessment = user.assessment, !assessment.canRetake() {
+                        Text("下次可重测：\(DateText.shortDay(assessment.nextRetakeDate()))")
+                            .font(AppTheme.Typography.caption)
+                            .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    } else {
+                        Button {
+                            showReassess = true
+                        } label: {
+                            Label("重新测评", systemImage: "arrow.counterclockwise")
+                        }
+                        .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
+                    }
+                }
+            }
+            .card(AppTheme.Colors.surface, shadow: .zero)
+        }
+    }
+
     private func fieldLabel(_ text: String) -> some View {
         Text(text)
             .font(AppTheme.Typography.footnoteBold)
@@ -128,7 +175,6 @@ struct EditProfileView: View {
         gender = user.gender
         preferredMode = user.preferredMode
         avatar = user.avatar
-        level = min(user.selfReportedLevel, SkillLevel.maxSelfSelectable)
         hasPhoto = AvatarStore.image(for: user.id) != nil
     }
 
@@ -145,7 +191,7 @@ struct EditProfileView: View {
     }
 
     private func save() async {
-        guard var user = appState.currentUser, let level else { return }
+        guard var user = appState.currentUser else { return }
         isSaving = true
         defer { isSaving = false }
         user.nickname = nickname
@@ -153,7 +199,6 @@ struct EditProfileView: View {
         user.gender = gender
         user.preferredMode = preferredMode
         user.avatar = avatar
-        user.selfReportedLevel = level
         if await appState.updateProfile(user) {
             router.pop()
         }

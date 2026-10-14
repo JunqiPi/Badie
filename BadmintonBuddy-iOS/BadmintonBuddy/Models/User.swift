@@ -1,8 +1,11 @@
 import Foundation
 
 // MARK: - 技能等级（9 级）
+//
+// 业内没有通用的业余等级标准（中国羽协等级“九级最低”、方向和我们相反；美国赛事 A–E 组没有书面定义）。
+// 我们用“可观察的动作”定义每一级（参考打球吧“业余 1–9 级”的可数测试、中羽在线 0–9 级、USTA NTRP 的写法），
+// 新用户回答问卷自动算出 1–7 级；8–9 级只凭赛果认证。依据见 docs/DESIGN.md §13。
 
-/// 9 级技能体系：1-7 级可自评，8-9 级需要赛事认证
 enum SkillLevel {
     static let range = 1...9
     static let selfSelectableRange = 1...7
@@ -10,32 +13,66 @@ enum SkillLevel {
 
     static func name(for level: Int) -> String {
         switch level {
-        case 1: return "入门"
-        case 2: return "初学"
-        case 3: return "业余"
-        case 4: return "进阶"
-        case 5: return "中级"
+        case 1: return "萌新"
+        case 2: return "入门"
+        case 3: return "初级"
+        case 4: return "中级"
+        case 5: return "中高级"
         case 6: return "高级"
-        case 7: return "专业"
-        case 8: return "地区冠军"
-        case 9: return "全国冠军"
-        default: return "业余"
+        case 7: return "业余高手"
+        case 8: return "地区精英"
+        case 9: return "竞技精英"
+        default: return "初级"
         }
     }
 
-    /// 可观察的行为描述，帮助用户如实自评（减少“水平虚报”）
+    /// 一句话概括（列表、徽章说明）
     static func descriptor(for level: Int) -> String {
+        anchors(for: level).first ?? ""
+    }
+
+    /// 可观察的行为锚点：对照这些动作判断自己在哪一级
+    static func anchors(for level: Int) -> [String] {
         switch level {
-        case 1: return "刚接触羽毛球，能把球打过网"
-        case 2: return "能和球友连续对拉高远球 5 拍以上"
-        case 3: return "会高远、吊球、搓球，步法初步成型"
-        case 4: return "能稳定打到底线，开始有杀球和网前意识"
-        case 5: return "技术较全面，双打轮转熟练，常打业余赛"
-        case 6: return "杀球有威胁，业余比赛常进前八"
-        case 7: return "校队或业余顶尖水平，受过系统训练"
-        case 8: return "省市级比赛冠军，需上传证明审核"
-        case 9: return "全国级比赛冠军，需上传证明审核"
-        default: return ""
+        case 1: return ["对拉不到 5 拍", "高远球到不了中场"]
+        case 2: return ["发球基本能进区", "慢速对拉 5–10 拍", "走着够球，还没有步法"]
+        case 3: return ["正手高远 10 个里 3–6 个到后场", "会挑球、放网", "反手只能挡过网"]
+        case 4: return ["正手高远 10 个里至少 7 个到后场", "会吊球，杀球有角度，打完能回中", "双打会攻守轮转"]
+        case 5: return ["反手不被动时能回到对方中后场", "能连续杀球并跟进网前", "双打会封网、补位"]
+        case 6: return ["杀球或吊球上网 5 个回合至少 4 次无失误", "接重杀能抽挡变线", "会用假动作"]
+        case 7: return ["反手高远能从底线打到底线", "会起跳杀球", "高强度多拍下步法不乱"]
+        case 8: return ["A 组比赛进前四，或在 Open 组赢过正赛", "需要上传赛果审核"]
+        case 9: return ["Open 组获奖牌、有 USAB / BWF 排名，或前专业球员", "需要上传证明审核"]
+        default: return []
+        }
+    }
+
+    /// 大致对应的美国赛事组别（各赛事分组不同，仅供参考）
+    static func usFlight(for level: Int) -> String? {
+        switch level {
+        case 3: return "E 组"
+        case 4: return "D 组"
+        case 5: return "C 组"
+        case 6: return "B 组"
+        case 7: return "B+ / A− 组"
+        case 8: return "A 组"
+        case 9: return "Open 组"
+        default: return nil
+        }
+    }
+
+    /// 球龄（弱参考：练得多的人进步快，不能只看年限）
+    static func typicalExperience(for level: Int) -> String {
+        switch level {
+        case 1: return "通常不到 3 个月"
+        case 2: return "通常不到 1 年"
+        case 3: return "通常 1–2 年"
+        case 4: return "通常 2–4 年"
+        case 5: return "通常 3–6 年"
+        case 6: return "通常 5 年以上且受过训练"
+        case 7: return "多有青训背景"
+        case 8: return "体校 / 青训出身"
+        default: return "专业背景"
         }
     }
 
@@ -67,8 +104,8 @@ enum VerificationStatus: String, Codable, Hashable {
     var badgeText: String? {
         switch self {
         case .unverified: return nil
-        case .regionalChampion: return "地区冠军认证"
-        case .nationalChampion: return "全国冠军认证"
+        case .regionalChampion: return "地区精英认证"
+        case .nationalChampion: return "竞技精英认证"
         }
     }
 }
@@ -130,6 +167,8 @@ struct User: Identifiable, Codable, Hashable {
     var preferredMode: GameMode?
     /// 隐私设置（别人能看到 / 能联系到我的方式）
     var privacy = PrivacySettings()
+    /// 定级问卷结果（老数据可能没有）
+    var assessment: SkillAssessmentSummary?
 
     init(
         id: String,
@@ -173,11 +212,19 @@ struct User: Identifiable, Codable, Hashable {
     static let peerEvaluationWeight = 0.7
     static let minimumEvaluationsForWeightedLevel = ReputationScore.newPlayerThreshold
 
-    /// 综合等级：评价满 5 次后 = 30% 自评 + 70% 球友评价；否则为自评等级
+    /// 待校准（经历和技术对不上）或回归球友：球友评价占 85%，更快校准到真实水平
+    static let calibratingPeerWeight = 0.85
+
+    /// 球友评价占的权重
+    var peerWeight: Double {
+        let calibrating = assessment?.needsCalibration == true || assessment?.isReturning == true
+        return calibrating ? User.calibratingPeerWeight : User.peerEvaluationWeight
+    }
+
+    /// 综合等级：评价满 5 次后 = 30% 自评 + 70% 球友评价（待校准 / 回归球友为 15% + 85%）；否则为自评等级
     var calculatedLevel: Double {
         guard !reputation.isNewPlayer else { return Double(selfReportedLevel) }
-        return User.selfReportedWeight * Double(selfReportedLevel) +
-            User.peerEvaluationWeight * reputation.peerLevelAverage
+        return (1 - peerWeight) * Double(selfReportedLevel) + peerWeight * reputation.peerLevelAverage
     }
 
     /// 显示等级（整数），未认证用户最高显示 7 级

@@ -109,7 +109,8 @@ struct ProfileView: View {
                     Text("水平校准中 \(reputation.evaluationCount)/\(ReputationScore.newPlayerThreshold)")
                         .font(AppTheme.Typography.subheadlineBold)
                     ProgressBar(progress: Double(reputation.evaluationCount) / Double(ReputationScore.newPlayerThreshold))
-                    Text("再打 \(ReputationScore.newPlayerThreshold - reputation.evaluationCount) 场并获得评价后，等级将按“自评 30% + 球友评价 70%”计算")
+                    Text("再打 \(ReputationScore.newPlayerThreshold - reputation.evaluationCount) 场并获得评价后，等级将按“问卷 \(selfPercent(user))% + 球友评价 \(100 - selfPercent(user))%”计算"
+                         + (user.peerWeight > User.peerEvaluationWeight ? "（你的等级待校准，球友评价占比更高）" : ""))
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -117,7 +118,7 @@ struct ProfileView: View {
                     Text(String(format: "综合等级 Lv.%.1f", user.calculatedLevel))
                         .font(AppTheme.Typography.subheadlineBold)
                     ProgressBar(progress: user.calculatedLevel / 9)
-                    Text("自评 Lv.\(user.selfReportedLevel) × 30% + 球友评价 Lv.\(String(format: "%.1f", reputation.peerLevelAverage)) × 70%")
+                    Text("问卷 Lv.\(user.selfReportedLevel) × \(selfPercent(user))% + 球友评价 Lv.\(String(format: "%.1f", reputation.peerLevelAverage)) × \(100 - selfPercent(user))%")
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
@@ -129,6 +130,10 @@ struct ProfileView: View {
         }
         .foregroundStyle(AppTheme.Colors.ink)
         .card()
+    }
+
+    private func selfPercent(_ user: User) -> Int {
+        Int(((1 - user.peerWeight) * 100).rounded())
     }
 
     private func attendanceCard(_ user: User) -> some View {
@@ -162,6 +167,11 @@ struct ProfileView: View {
             MenuRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender, title: "我的球友",
                     value: "\(friendManager.friends.count)", badge: friendManager.incomingRequests.count) {
                 router.open(.friends)
+            }
+            InsetDivider()
+            MenuRow(icon: "list.number", tint: AppTheme.Colors.lime, title: "等级对照表",
+                    value: "Lv.\(user.displayLevel)") {
+                router.open(.levelGuide)
             }
             InsetDivider()
             MenuRow(icon: "clock.arrow.circlepath", tint: AppTheme.Colors.peach, title: "历史球局",

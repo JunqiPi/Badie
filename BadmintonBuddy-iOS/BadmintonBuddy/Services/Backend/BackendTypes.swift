@@ -79,6 +79,7 @@ enum BackendError: LocalizedError, Equatable {
     case groupScheduleInvalid
     case sessionClosed
     case ownerCannotLeave
+    case assessmentTooSoon(Date)
 
     var errorDescription: String? {
         switch self {
@@ -132,6 +133,7 @@ enum BackendError: LocalizedError, Equatable {
         case .groupScheduleInvalid: return "固定场次需要 1–8 小时，名额 4–40 人"
         case .sessionClosed: return "这一场已经结束或取消了"
         case .ownerCannotLeave: return "群主不能直接退出，可以先把群交给其他组织者"
+        case .assessmentTooSoon(let date): return "每 90 天可以重测一次，下次：\(DateText.shortDay(date))"
         }
     }
 }
