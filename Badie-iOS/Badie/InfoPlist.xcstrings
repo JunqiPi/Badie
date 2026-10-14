@@ -35,10 +35,58 @@
             "value" : "Used to show nearby badminton venues and players, and to calculate distances to venues."
           }
         },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आसपास के बैडमिंटन वेन्यू और खिलाड़ी दिखाने, और वेन्यू तक की दूरी जानने के लिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digunakan untuk menampilkan GOR badminton dan pemain terdekat, serta menghitung jarak ke GOR."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くのバドミントン会場とプレイヤーを表示し、会場までの距離を計算するために使用します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주변 배드민턴 체육관과 플레이어를 표시하고, 체육관까지의 거리를 계산하는 데 사용돼요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digunakan untuk menunjukkan dewan badminton dan pemain berdekatan, serta mengira jarak ke dewan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้เพื่อแสดงสนามแบดมินตันและผู้เล่นใกล้คุณ และคำนวณระยะทางไปยังสนาม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dùng để hiển thị sân cầu lông và người chơi gần bạn, và tính khoảng cách đến sân."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "用于显示附近的羽毛球馆与球友，并计算到球馆的距离。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用於顯示附近的羽毛球館與球友，並計算到球館的距離。"
           }
         }
       }

@@ -45,3 +45,7 @@ capture() {
 capture light light zh-Hans zh_CN "$SCREENS"
 capture dark dark zh-Hans zh_CN "$DARK_SCREENS"
 capture en light en en_US "$EN_SCREENS"
+# 其他语言各抽两页，检查排版与字体
+for pair in zh-Hant:zh_TW ja:ja_JP ko:ko_KR id:id_ID ms:ms_MY th:th_TH vi:vi_VN hi:hi_IN; do
+  capture "${pair%%:*}" light "${pair%%:*}" "${pair##*:}" "home levelResult"
+done
