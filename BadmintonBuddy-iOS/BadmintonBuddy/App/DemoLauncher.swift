@@ -83,7 +83,7 @@ enum DemoLauncher {
         case "levelGuide":
             router.show(.levelGuide, in: .profile)
         case "levelGuideElite":
-            // 对照表滚到 8–9 级：每一档单独的标准
+            // 对照表滚到 8、9 级：每一档单独的标准
             environment.appState.guideScrollLevel = 9
             router.show(.levelGuide, in: .profile)
         case "verification":

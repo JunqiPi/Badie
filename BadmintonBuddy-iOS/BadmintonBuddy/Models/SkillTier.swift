@@ -95,6 +95,11 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
 
     func offset(by steps: Int) -> SkillTier { SkillTier(index: index + steps) }
 
+    /// “7 到 8+”（不用连字符，避免和 − 混在一起）
+    static func rangeText(_ lower: SkillTier, _ upper: SkillTier) -> String {
+        lower == upper ? lower.code : "\(lower.code) 到 \(upper.code)"
+    }
+
     /// 差几档（对方 − 我）
     func steps(to other: SkillTier) -> Int { other.index - index }
 

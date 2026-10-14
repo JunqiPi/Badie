@@ -178,7 +178,9 @@ final class SocialRulesTests: XCTestCase {
         XCTAssertThrowsError(try backend.joinGroup(id: strict.id), "水平不在范围内") {
             guard case .levelOutOfRange = $0 as? BackendError else { return XCTFail("应提示水平不符") }
         }
+        // 和重新测评一样，整数等级和细分分值一起更新
         backend.db.users[me.id]?.selfReportedLevel = strict.levelRange.lowerBound
+        backend.db.users[me.id]?.selfReportedRating = Double(strict.levelRange.lowerBound)
         try backend.joinGroup(id: strict.id)
         XCTAssertEqual(backend.group(id: strict.id)?.pendingIds, [me.id])
         try backend.approveMember(me.id, groupId: strict.id, asOrganizer: strict.ownerId)

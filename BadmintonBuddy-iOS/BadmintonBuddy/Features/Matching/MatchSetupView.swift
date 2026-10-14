@@ -263,7 +263,7 @@ struct MatchSetupView: View {
         guard tolerance < MatchRequest.anySkill else { return "你的等级 \(userTier.text)，将匹配所有水平的球友" }
         let low = userTier.offset(by: -tolerance * 3)
         let high = userTier.offset(by: tolerance * 3)
-        return "你的等级 \(userTier.text)，将匹配 \(low.code)–\(high.code) 的球友，水平越接近排得越前"
+        return "你的等级 \(userTier.text)，将匹配 \(SkillTier.rangeText(low, high)) 的球友，水平越接近排得越前"
     }
 
     // MARK: Confirmation

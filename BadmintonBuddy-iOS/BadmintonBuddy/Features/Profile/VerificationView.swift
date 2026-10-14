@@ -137,7 +137,7 @@ struct VerificationView: View {
                                 Text(option.title)
                                     .font(AppTheme.Typography.headline)
                                 Spacer()
-                                Text("\(option.minTier.code)–\(option.maxTier.code)")
+                                Text(SkillTier.rangeText(option.minTier, option.maxTier))
                                     .font(AppTheme.Typography.footnoteBold)
                                     .monospacedDigit()
                             }

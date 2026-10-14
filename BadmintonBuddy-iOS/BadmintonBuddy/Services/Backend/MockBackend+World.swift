@@ -79,6 +79,12 @@ extension MockBackend {
                 preferredMode: index % 3 == 0 ? .singles : .doubles
             )
             db.users[id] = user
+            // 细分档位：同一级里有 −/本级/+（独立随机源，不影响其他属性）
+            var tierRng = SeededGenerator("\(id)-tier")
+            let shift = Double(Int.random(in: -1...1, using: &tierRng)) / 3
+            let selfRating = min(Double(min(level, 7)) + shift, SkillAssessment.maxTier.rating)
+            db.users[id]?.selfReportedRating = selfRating
+            db.users[id]?.reputation.peerLevelAverage = min(9.33, max(0.67, peerAverage + shift))
             // 有证据的模拟球友：前省队（一级运动员 → 8），业余比赛常客（次高组 4 强 → 7）
             if level >= 8 {
                 db.users[id]?.applyVerification(.national, tier: SkillTier(level: level))

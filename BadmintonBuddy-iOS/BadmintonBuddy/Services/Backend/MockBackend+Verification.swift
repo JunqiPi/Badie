@@ -19,7 +19,7 @@ extension MockBackend {
             throw BackendError.verificationInvalid("你已有一份申请在审核中（\(pending.claimedTier.text)）")
         }
         guard tier >= kind.minTier, tier <= kind.maxTier else {
-            throw BackendError.verificationInvalid("\(kind.title)可以认证 \(kind.minTier.code)–\(kind.maxTier.code)")
+            throw BackendError.verificationInvalid("\(kind.title)可以认证 \(SkillTier.rangeText(kind.minTier, kind.maxTier))")
         }
         if let problem = VerificationEvidence.problem(with: evidenceURL, for: kind) {
             throw BackendError.verificationInvalid(problem)
