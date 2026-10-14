@@ -41,7 +41,8 @@ final class SkillTierTests: XCTestCase {
 
     func testEliteTiersHaveTheirOwnNames() {
         XCTAssertEqual(SkillTier(level: 4, modifier: .plus).displayText, "Lv.4+ 中级")
-        XCTAssertEqual(SkillTier(level: 7).displayText, "Lv.7 地区高手")
+        XCTAssertEqual(SkillTier(level: 6, modifier: .minus).displayText, "Lv.6− 崭露头角")
+        XCTAssertEqual(SkillTier(level: 7).displayText, "Lv.7 州级选手")
         XCTAssertEqual(SkillTier(level: 9, modifier: .plus).displayText, "Lv.9+ 世界顶尖")
         // 每一档都有具体标准
         for tier in SkillTier.all {

@@ -45,7 +45,7 @@ final class MockBackendTests: XCTestCase {
         let user = try await backend.register(phone: "+14155550188", nickname: "新球友", gender: .female,
                                               avatar: Avatar(symbol: "", paletteIndex: 1), level: 9,
                                               preferredMode: .singles, recurringSlots: [], location: nil)
-        XCTAssertEqual(user.selfReportedLevel, 7, "自评最高 7 级")
+        XCTAssertEqual(user.selfReportedLevel, SkillLevel.maxSelfSelectable, "问卷最高 6 级")
         XCTAssertEqual(backend.currentUserId, user.id)
 
         backend.signOut()

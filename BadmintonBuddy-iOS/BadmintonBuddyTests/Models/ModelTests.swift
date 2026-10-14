@@ -185,7 +185,7 @@ final class ModelTests: XCTestCase {
         user.reputation = ReputationScore(evaluationCount: 10, peerLevelAverage: 9, averageSkillDeviation: 2,
                                           punctualityPercentage: 100, averageCharacterRating: 5)
         XCTAssertEqual(user.displayTier, SkillTier(level: 7, modifier: .minus), "没认证最高 7−")
-        XCTAssertEqual(user.displayLevelText, "Lv.7− 业余高手")
+        XCTAssertEqual(user.displayLevelText, "Lv.7− 准州级")
         // 认证 8 级：0.3 × 8 + 0.7 × 9 = 8.7，但不超过认证的那一档
         user.applyVerification(.national, tier: SkillTier(level: 8))
         XCTAssertEqual(user.displayTier, SkillTier(level: 8))

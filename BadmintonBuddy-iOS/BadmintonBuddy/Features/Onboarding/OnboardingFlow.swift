@@ -336,7 +336,7 @@ struct OnboardingFlow: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
             stepTitle("测一下你的水平", subtitle: "8 道题，按你能稳定做到的动作选，自动算出你的等级（细分到 −、本级、+）")
             SkillAssessmentView(answers: $form.assessmentAnswers)
-            Text("问卷最高到 7−；7 起凭赛果、全国排名、运动员等级证书或 BWF 世界排名认证。打满 5 场后会按球友评价自动校准。")
+            Text("问卷最高到 6+（俱乐部顶尖）；7 起是州级以上，凭赛果、全国排名、运动员等级证书或 BWF 世界排名认证。打满 5 场后会按球友评价自动校准。")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
                 .fixedSize(horizontal: false, vertical: true)

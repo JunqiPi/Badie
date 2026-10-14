@@ -1,96 +1,123 @@
 import XCTest
 @testable import BadmintonBuddy
 
-/// 定级问卷：中位数、门槛封顶、经历保底、回归球友、上限 7 级
+/// 定级问卷：按“会不会 → 好不好 → 稳不稳 → 战术 → 俱乐部里的位置”的台阶计分，动作题封顶，经历保底，最高 6+
 final class SkillAssessmentTests: XCTestCase {
 
-    /// 选项按题目顺序：clear, backhand, smash, defense, footwork, doubles, experience, recency
-    private func answers(_ clear: Int, _ backhand: Int, _ smash: Int, _ defense: Int, _ footwork: Int, _ doubles: Int,
+    /// 选项序号对应 SkillAssessment.questions 里的顺序
+    private func answers(breadth: Int, clear: Int, backhand: Int, smash: Int, defense: Int, doubles: Int,
+                         stability: Int, tactics: Int = 0, standing: Int = 0,
                          experience: Int = 0, returning: Bool = false) -> [String: Int] {
-        ["clear": clear, "backhand": backhand, "smash": smash, "defense": defense, "footwork": footwork,
-         "doubles": doubles, "experience": experience, "recency": returning ? 1 : 0]
+        ["breadth": breadth, "clear": clear, "backhand": backhand, "smash": smash, "defense": defense,
+         "doubles": doubles, "stability": stability, "tactics": tactics, "standing": standing,
+         "experience": experience, "recency": returning ? 1 : 0]
     }
 
     func testIncompleteAnswersHaveNoResult() {
-        var partial = answers(2, 2, 2, 2, 2, 2)
-        partial["recency"] = nil
+        var partial = SkillAssessment.demoAnswers
+        partial["standing"] = nil
         XCTAssertNil(SkillAssessment.evaluate(partial))
     }
 
-    func testBrandNewPlayerIsLevelOne() {
-        XCTAssertEqual(SkillAssessment.evaluate(answers(0, 0, 0, 0, 0, 0))?.level, 1)
+    func testBrandNewPlayerIsOneMinus() {
+        let result = SkillAssessment.evaluate(answers(breadth: 0, clear: 0, backhand: 0, smash: 0, defense: 0, doubles: 0, stability: 0))
+        XCTAssertEqual(result?.tier.code, "1−")
     }
 
     func testTypicalIntermediateIsLevelFour() {
         let result = SkillAssessment.evaluate(SkillAssessment.demoAnswers)
-        XCTAssertEqual(result?.level, 4)
-        XCTAssertEqual(result?.limitingGate, "反手能回到中后场，双打会轮转", "告诉用户升到 5 级还差什么")
+        XCTAssertEqual(result?.tier.code, "4")
+        XCTAssertNil(result?.limitingGate, "没有被动作题卡住，结果页提示下一档的标准")
         XCTAssertEqual(result?.needsCalibration, false)
     }
 
-    func testGateCapsInflatedAnswers() {
-        // 其他题都选很高，但正手高远只有 3–6 个到后场 → 最多 3 级
-        let result = SkillAssessment.evaluate(answers(2, 4, 4, 4, 4, 4))
-        XCTAssertEqual(result?.level, 3)
-        XCTAssertEqual(result?.limitingGate, "正手高远 10 个里至少 7 个到后场")
+    func testThreePlusKnowsEverythingButIsUnstable() {
+        // 全部会、一两项不错、不稳定 → 3+
+        let result = SkillAssessment.evaluate(answers(breadth: 3, clear: 2, backhand: 1, smash: 1, defense: 2, doubles: 1, stability: 2))
+        XCTAssertEqual(result?.tier.code, "3+")
     }
 
-    func testTopAnswersReachSevenOnlyWithExperience() {
-        XCTAssertEqual(SkillAssessment.evaluate(answers(4, 4, 4, 4, 4, 4, experience: 3))?.level, 7)
-        // 没有比赛或青训经历：卡在 6 级
-        XCTAssertEqual(SkillAssessment.evaluate(answers(4, 4, 4, 4, 4, 4, experience: 0))?.level, 6)
+    func testFourPlusNeedsMasteryAndBetterStability() {
+        let mastered = answers(breadth: 5, clear: 3, backhand: 2, smash: 2, defense: 2, doubles: 2, stability: 3)
+        XCTAssertEqual(SkillAssessment.evaluate(mastered)?.tier.code, "4+")
+        // 有精通的技术，但实战一快就失误多：只算 4
+        var unstable = mastered
+        unstable["stability"] = 2
+        XCTAssertEqual(SkillAssessment.evaluate(unstable)?.tier.code, "4")
     }
 
-    func testQuestionnaireNeverGivesEightOrNine() {
-        let result = SkillAssessment.evaluate(answers(4, 4, 4, 4, 4, 4, experience: 4))
-        XCTAssertEqual(result?.level, 7)
+    func testFiveIsStableAndFivePlusAddsTactics() {
+        let stable = answers(breadth: 5, clear: 4, backhand: 2, smash: 2, defense: 3, doubles: 3, stability: 4, tactics: 2)
+        XCTAssertEqual(SkillAssessment.evaluate(stable)?.tier.code, "5")
+        var tactical = stable
+        tactical["tactics"] = 3
+        XCTAssertEqual(SkillAssessment.evaluate(tactical)?.tier.code, "5+")
+    }
+
+    func testSixIsDecidedByStandingInTheClub() {
+        let standout = answers(breadth: 5, clear: 4, backhand: 3, smash: 3, defense: 3, doubles: 4,
+                               stability: 4, tactics: 3, standing: 4)
+        XCTAssertEqual(SkillAssessment.evaluate(standout)?.tier.code, "6")
+        var rising = standout
+        rising["standing"] = 3
+        XCTAssertEqual(SkillAssessment.evaluate(rising)?.tier.code, "6−")
+    }
+
+    func testClubTopWithoutTheSkillsIsNotSix() {
+        // 在自己的局里很少输，但技术只到 4 级：俱乐部位置不算数
+        let result = SkillAssessment.evaluate(answers(breadth: 4, clear: 3, backhand: 1, smash: 2, defense: 2, doubles: 2,
+                                                      stability: 2, tactics: 1, standing: 5))
+        XCTAssertEqual(result?.tier.code, "4")
+    }
+
+    func testInflatedClaimsAreCappedByActions() {
+        // 自称样样精通、很稳、俱乐部顶尖，但具体动作做不到
+        let result = SkillAssessment.evaluate(answers(breadth: 5, clear: 1, backhand: 1, smash: 1, defense: 1, doubles: 1,
+                                                      stability: 5, tactics: 4, standing: 5))
+        XCTAssertEqual(result?.tier.code, "4−")
+        XCTAssertNotNil(result?.limitingGate, "告诉用户卡在哪里")
+    }
+
+    func testQuestionnaireTopsOutAtSixPlus() {
+        let top = answers(breadth: 5, clear: 4, backhand: 4, smash: 4, defense: 4, doubles: 4,
+                          stability: 5, tactics: 4, standing: 5, experience: 4)
+        let result = SkillAssessment.evaluate(top)
+        XCTAssertEqual(result?.tier, SkillAssessment.maxTier)
+        XCTAssertEqual(result?.tier.code, "6+")
         XCTAssertEqual(result?.suggestsVerification, true, "参加过 A/Open 组：提示申请认证")
+        // 6+ 要有比赛或青训经历
+        var noExperience = top
+        noExperience["experience"] = 0
+        let capped = SkillAssessment.evaluate(noExperience)
+        XCTAssertEqual(capped?.tier.code, "6")
+        XCTAssertEqual(capped?.limitingGate, "反手底线到底线，并有比赛或青训经历")
     }
 
     func testExperienceFloorRaisesLevelAndFlagsCalibration() {
-        // 技术题像 2 级，但说自己 C/B 组进过前四 → 保底 5 级，标记待校准
-        let result = SkillAssessment.evaluate(answers(1, 0, 0, 1, 1, 1, experience: 3))
-        XCTAssertEqual(result?.level, 5)
+        // 技术题像 3−，但说自己 C/B 组进过前四 → 保底 5−，标记待校准
+        let result = SkillAssessment.evaluate(answers(breadth: 1, clear: 1, backhand: 0, smash: 0, defense: 1, doubles: 1,
+                                                      stability: 1, experience: 3))
+        XCTAssertEqual(result?.tier.code, "5−")
         XCTAssertEqual(result?.needsCalibration, true)
     }
 
     func testReturningPlayerFloorIsOneLower() {
-        let active = SkillAssessment.evaluate(answers(1, 0, 0, 1, 1, 1, experience: 3))
-        let returning = SkillAssessment.evaluate(answers(1, 0, 0, 1, 1, 1, experience: 3, returning: true))
+        let active = SkillAssessment.evaluate(answers(breadth: 1, clear: 1, backhand: 0, smash: 0, defense: 1, doubles: 1,
+                                                      stability: 1, experience: 3))
+        let returning = SkillAssessment.evaluate(answers(breadth: 1, clear: 1, backhand: 0, smash: 0, defense: 1, doubles: 1,
+                                                         stability: 1, experience: 3, returning: true))
         XCTAssertEqual(returning?.level, (active?.level ?? 0) - 1)
         XCTAssertEqual(returning?.isReturning, true)
-    }
-
-    func testMedianRoundsDown() {
-        // 分值 2,3,3,4,4,4 → 中位数 (3+4)/2 = 3.5 → 3
-        XCTAssertEqual(SkillAssessment.evaluate(answers(1, 1, 1, 2, 2, 2))?.level, 3)
-    }
-
-    func testModifiersWithinLevel() {
-        // 什么都不会：1−
-        XCTAssertEqual(SkillAssessment.evaluate(answers(0, 0, 0, 0, 0, 0))?.tier.code, "1−")
-        // 典型中级：本级
-        XCTAssertEqual(SkillAssessment.evaluate(SkillAssessment.demoAnswers)?.tier.code, "4")
-        // 被正手高远卡在 3 级、其他都很高：3+
-        XCTAssertEqual(SkillAssessment.evaluate(answers(2, 4, 4, 4, 4, 4))?.tier.code, "3+")
-        // 中位数在 3 和 4 之间：3+
-        XCTAssertEqual(SkillAssessment.evaluate(answers(1, 1, 1, 2, 2, 2))?.tier.code, "3+")
-        // 靠经历保底到 5 级、技术还没跟上：5−
-        XCTAssertEqual(SkillAssessment.evaluate(answers(1, 0, 0, 1, 1, 1, experience: 3))?.tier.code, "5−")
-    }
-
-    func testQuestionnaireTopsOutAtSevenMinus() {
-        let result = SkillAssessment.evaluate(answers(4, 4, 4, 4, 4, 4, experience: 4))
-        XCTAssertEqual(result?.tier, SkillAssessment.maxTier)
-        XCTAssertEqual(result?.tier.code, "7−")
     }
 
     func testEveryLevelHasAnchorsAndNames() {
         for level in SkillLevel.range {
             XCTAssertFalse(SkillLevel.name(for: level).isEmpty)
-            XCTAssertGreaterThanOrEqual(SkillLevel.anchors(for: level).count, 2, "Lv.\(level) 至少 2 条可观察的动作")
+            XCTAssertGreaterThanOrEqual(SkillLevel.anchors(for: level).count, 2, "Lv.\(level) 至少 2 条描述")
         }
         XCTAssertEqual(SkillLevel.usFlight(for: 4), "D 组")
+        XCTAssertEqual(SkillTier(level: 3, modifier: .plus).displayText, "Lv.3+ 初级")
+        XCTAssertEqual(SkillTier(level: 6).displayText, "Lv.6 俱乐部高手")
     }
 
     func testCalibratingPlayersWeighPeersMore() {
@@ -111,7 +138,8 @@ final class SkillAssessmentTests: XCTestCase {
         backend.createAccount(phone: "+16265550123", nickname: "阿杰", level: 4, seedsDemoContent: false,
                               assessment: SkillAssessmentSummary(level: 4, needsCalibration: false, isReturning: false,
                                                                  assessedAt: now))
-        let higher = try XCTUnwrap(SkillAssessment.evaluate(answers(3, 2, 2, 2, 3, 3)))
+        let higher = try XCTUnwrap(SkillAssessment.evaluate(
+            answers(breadth: 5, clear: 3, backhand: 2, smash: 2, defense: 2, doubles: 2, stability: 3)))
         XCTAssertThrowsError(try backend.updateAssessment(higher, now: now.addingTimeInterval(30 * 86400)))
         let updated = try backend.updateAssessment(higher, now: now.addingTimeInterval(91 * 86400))
         XCTAssertEqual(updated.selfReportedLevel, higher.level)

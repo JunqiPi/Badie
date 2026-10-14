@@ -139,9 +139,10 @@ struct AssessmentResultCard: View {
                     .font(AppTheme.Typography.title2)
             }
             .foregroundStyle(AppTheme.Colors.onAccent)
-            Text("\(result.tier.modifier == .base ? "本级" : result.tier.modifier.symbol)：\(result.tier.modifier.meaning)")
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.8))
+            Text("\(result.tier.code)：\(SkillLevel.tierCriteria(for: result.tier).first ?? result.tier.modifier.meaning)")
+                .font(AppTheme.Typography.subheadlineBold)
+                .foregroundStyle(AppTheme.Colors.onAccent)
+                .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(SkillLevel.anchors(for: result.level), id: \.self) { anchor in
                     Label(anchor, systemImage: "checkmark")
@@ -154,8 +155,10 @@ struct AssessmentResultCard: View {
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
             }
-            if let gate = result.limitingGate, result.level < SkillLevel.maxSelfSelectable {
-                notice("arrow.up.circle.fill", "想到 Lv.\(result.level + 1)：\(gate)")
+            if let gate = result.limitingGate {
+                notice("arrow.up.circle.fill", "还差一步：\(gate)")
+            } else if result.tier < SkillAssessment.maxTier, let next = SkillLevel.tierCriteria(for: result.tier.offset(by: 1)).first {
+                notice("arrow.up.circle.fill", "想到 \(result.tier.offset(by: 1).code)：\(next)")
             }
             if result.needsCalibration {
                 notice("scope", "你的比赛经历比技术题的结果高，先按经历定级；打几场后会按球友评价更快校准。")
@@ -164,7 +167,7 @@ struct AssessmentResultCard: View {
                 notice("arrow.uturn.backward.circle.fill", "回归球友：按现在的状态定级，球友评价会帮你更快回到原来的水平。")
             }
             if result.tier == SkillAssessment.maxTier {
-                notice("person.2.fill", "7− 是问卷能给的最高档，打几场后由球友评价确认。")
+                notice("person.2.fill", "\(SkillAssessment.maxTier.code) 是问卷能给的最高档；球友评价最多推到 \(VerificationStatus.unverifiedMaxTier.code)，7 起凭证据认证。")
             }
             if result.suggestsVerification {
                 notice("checkmark.seal.fill", "打过 A 组或 Open 组？7 起凭赛果、全国排名或运动员等级证书认证，注册后在资料页申请。")
@@ -219,7 +222,7 @@ struct SkillLevelGuideView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                        Text("1–9 级，每级再分 −、本级、+ 三档，共 27 档。1–7− 看动作（喂球 10 个数到位几个），对照“能稳定做到”的，而不是偶尔打出来的球；7 起只看能查到的赛果、排名和证书。")
+                        Text("1–9 级，每级再分 −、本级、+ 三档，共 27 档。3–6 级一级比一级多一个维度：技术会不会 → 好不好 → 稳不稳、会不会用战术 → 在俱乐部里的位置。对照“能稳定做到”的，而不是偶尔打出来的球；7 起是州级、全国、国际水平，只看能查到的赛果、排名和证书。")
                             .font(AppTheme.Typography.subheadline)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -228,7 +231,7 @@ struct SkillLevelGuideView: View {
                             levelCard(level)
                                 .id(level)
                         }
-                        Text("1–7− 参考打球吧“业余 1–9 级”的计数测验、中羽在线 0–9 级的子档写法和 USTA NTRP；7 起按 tournamentsoftware 公开成绩、USAB 全国排名、《运动员技术等级标准》（2025 版）和 BWF 世界排名划分。中国羽协的业余等级是“九级最低”，方向和这里相反；美国各赛事的组别强度不同，所以按“最高组 / 次高组”的相对位置认定。")
+                        Text("1–6 级参考打球吧“业余 1–9 级”、中羽在线 0–9 级的子档写法和 USTA NTRP；7 起按 tournamentsoftware 公开成绩、USAB 全国排名、《运动员技术等级标准》（2025 版）和 BWF 世界排名划分。中国羽协的业余等级是“九级最低”，方向和这里相反；美国各赛事的组别强度不同，所以按“最高组 / 次高组”的相对位置认定。")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                             .fixedSize(horizontal: false, vertical: true)

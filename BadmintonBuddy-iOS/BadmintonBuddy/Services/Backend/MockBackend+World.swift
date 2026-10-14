@@ -69,7 +69,7 @@ extension MockBackend {
                 gender: entry.3,
                 bio: entry.4,
                 avatar: Avatar(symbol: "", paletteIndex: index % 6),
-                selfReportedLevel: min(level, 7),
+                selfReportedLevel: min(level, SkillLevel.maxSelfSelectable),
                 totalGames: games,
                 wins: Int(Double(games) * Double.random(in: 0.35...0.7, using: &rng)),
                 joinDate: Date().addingTimeInterval(-Double(Int.random(in: 20...600, using: &rng)) * 86400),
@@ -82,14 +82,14 @@ extension MockBackend {
             // 细分档位：同一级里有 −/本级/+（独立随机源，不影响其他属性）
             var tierRng = SeededGenerator("\(id)-tier")
             let shift = Double(Int.random(in: -1...1, using: &tierRng)) / 3
-            let selfRating = min(Double(min(level, 7)) + shift, SkillAssessment.maxTier.rating)
+            let selfRating = min(Double(level) + shift, SkillAssessment.maxTier.rating)
             db.users[id]?.selfReportedRating = selfRating
             db.users[id]?.reputation.peerLevelAverage = min(9.33, max(0.67, peerAverage + shift))
-            // 有证据的模拟球友：前省队（一级运动员 → 8），业余比赛常客（次高组 4 强 → 7）
+            // 有证据的模拟球友：前省队（一级运动员 → 8），业余比赛常客（次高组冠军 → 7−）
             if level >= 8 {
                 db.users[id]?.applyVerification(.national, tier: SkillTier(level: level))
             } else if entry.4.contains("比赛常客") {
-                db.users[id]?.applyVerification(.tournament, tier: SkillTier(level: 7))
+                db.users[id]?.applyVerification(.tournament, tier: SkillTier(level: 7, modifier: .minus))
             }
             // 约六成模拟球友愿意出现在“同馆常客”里（真实用户默认关闭）
             db.users[id]?.privacy.showsAsRegular = index % 5 != 1 && index % 5 != 3

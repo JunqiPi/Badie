@@ -48,8 +48,8 @@ enum VerificationEvidence {
         switch last {
         case "X", "0": return SkillTier(level: 8, modifier: .plus)
         case "1": return SkillTier(level: 8)
-        case "2": return SkillTier(level: 8, modifier: .minus)
-        case "3": return SkillTier(level: 7, modifier: .plus)
+        case "2": return SkillTier(level: 7)
+        case "3": return SkillTier(level: 7, modifier: .minus)
         default: return nil
         }
     }

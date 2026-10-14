@@ -75,9 +75,9 @@ final class VerificationTests: XCTestCase {
     }
 
     func testCertificateNumberCapsTier() throws {
-        // 15 位电子证书，末位 2 = 二级 → 最高 8−
+        // 15 位电子证书，末位 2 = 二级 → 最高 7（州级）
         XCTAssertEqual(VerificationEvidence.certificateMaxTier("20250440100012"), nil, "位数不对")
-        XCTAssertEqual(VerificationEvidence.certificateMaxTier("202504401000122"), SkillTier(level: 8, modifier: .minus))
+        XCTAssertEqual(VerificationEvidence.certificateMaxTier("202504401000122"), SkillTier(level: 7))
         XCTAssertEqual(VerificationEvidence.certificateMaxTier("20250440100012x"), SkillTier(level: 8, modifier: .plus))
         XCTAssertNil(VerificationEvidence.problem(with: "202504401000122", for: .national))
         XCTAssertNotNil(VerificationEvidence.problem(with: "202504401000122", for: .bwf))
@@ -86,7 +86,7 @@ final class VerificationTests: XCTestCase {
             kind: .national, tier: SkillTier(level: 8), evidenceURL: "202504401000122", nameOnRecord: "王杰"
         ), "二级证书认证不到 8")
         let request = try backend.submitVerification(
-            kind: .national, tier: SkillTier(level: 8, modifier: .minus), evidenceURL: "202504401000122", nameOnRecord: "王杰"
+            kind: .national, tier: SkillTier(level: 7), evidenceURL: "202504401000122", nameOnRecord: "王杰"
         )
         XCTAssertEqual(request.evidenceURL, "202504401000122")
     }

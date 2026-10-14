@@ -79,7 +79,7 @@ struct VerificationView: View {
                     Spacer(minLength: 0)
                 }
             }
-            Text("问卷和球友评价最多到 7−。7 起只看能公开查到的证据：赛事成绩、全国排名或运动员等级证书、BWF 世界排名。")
+            Text("问卷最高 6+，球友评价最多到 7−。7 起（州级以上）只看能公开查到的证据：赛事成绩、全国排名或运动员等级证书、BWF 世界排名。")
                 .font(AppTheme.Typography.subheadline)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .fixedSize(horizontal: false, vertical: true)

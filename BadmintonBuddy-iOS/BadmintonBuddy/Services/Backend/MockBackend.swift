@@ -202,7 +202,7 @@ final class MockBackend {
             preferredMode: preferredMode
         )
         user.assessment = assessment
-        // 问卷最高 7−：老入口直接传整数等级时也按这个上限记
+        // 问卷最高 6+：老入口直接传整数等级时也按这个上限记
         user.selfReportedRating = min(assessment?.tier ?? SkillTier(level: level), SkillAssessment.maxTier).rating
         db.users[id] = user
         db.accounts[phone] = id
