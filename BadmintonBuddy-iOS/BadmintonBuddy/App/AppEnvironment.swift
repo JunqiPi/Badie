@@ -13,6 +13,7 @@ struct AppEnvironment {
     let roomManager: RoomManager
     let surveyManager: SurveyManager
     let inboxManager: InboxManager
+    let groupManager: GroupManager
 
     init(backend: MockBackend) {
         self.backend = backend
@@ -25,6 +26,7 @@ struct AppEnvironment {
         roomManager = RoomManager(backend: backend)
         surveyManager = SurveyManager(backend: backend)
         inboxManager = InboxManager(backend: backend)
+        groupManager = GroupManager(backend: backend)
     }
 
     /// 正常启动；DEBUG 构建中支持 `-BBDemoScreen <name>` 直接打开某个页面（用于截图与设计走查）
@@ -64,5 +66,6 @@ extension View {
             .environmentObject(environment.roomManager)
             .environmentObject(environment.surveyManager)
             .environmentObject(environment.inboxManager)
+            .environmentObject(environment.groupManager)
     }
 }

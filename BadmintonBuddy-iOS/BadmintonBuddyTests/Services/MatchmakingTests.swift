@@ -48,10 +48,17 @@ final class MatchmakingTests: XCTestCase {
 
     // MARK: Timing rules
 
+    private var utc: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC")!
+        return calendar
+    }
+
     func testConfirmationWindowScalesWithLeadTime() {
+        // 2027-01-15 08:00 UTC：白天，不触发夜间顺延
         let now = Date(timeIntervalSince1970: 1_800_000_000)
         func window(_ hours: Double) -> TimeInterval {
-            MatchTiming.respondBy(start: now.addingTimeInterval(hours * 3600), now: now).timeIntervalSince(now)
+            MatchTiming.respondBy(start: now.addingTimeInterval(hours * 3600), now: now, calendar: utc).timeIntervalSince(now)
         }
         XCTAssertEqual(window(48), 12 * 3600)
         XCTAssertEqual(window(26), 12 * 3600)
@@ -62,6 +69,19 @@ final class MatchmakingTests: XCTestCase {
         // 临时局（2.5 小时内）：1 小时以上给 10 分钟，1 小时内给 5 分钟
         XCTAssertEqual(window(2), 10 * 60)
         XCTAssertEqual(window(0.75), 5 * 60)
+    }
+
+    func testOvernightDeadlinesMoveToMorning() {
+        // 19:00 UTC 发出、开赛在两天后：12 小时窗口落在早上 07:00 → 顺延到 09:00
+        let evening = utc.date(from: DateComponents(year: 2027, month: 1, day: 15, hour: 19))!
+        let start = evening.addingTimeInterval(48 * 3600)
+        let respondBy = MatchTiming.respondBy(start: start, now: evening, calendar: utc)
+        XCTAssertEqual(utc.component(.hour, from: respondBy), 9)
+        XCTAssertEqual(respondBy.timeIntervalSince(evening), 14 * 3600)
+        // 顺延也不能晚于锁定时间
+        let soon = evening.addingTimeInterval(7 * 3600)
+        XCTAssertLessThanOrEqual(MatchTiming.respondBy(start: soon, now: evening, calendar: utc),
+                                 MatchTiming.lock(start: soon, lastMinute: false))
     }
 
     func testConfirmationNeverRunsPastTheLock() {

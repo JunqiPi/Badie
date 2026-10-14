@@ -271,6 +271,16 @@ enum DateText {
 
     static func shortDay(_ date: Date) -> String { shortDayFormatter.string(from: date) }
 
+    /// 截止时间：“今天 17:00” / “明天 09:00” / “周五 09:00”
+    static func deadline(_ date: Date, now: Date = Date()) -> String {
+        let calendar = Calendar.current
+        if calendar.isDate(date, inSameDayAs: now) { return "今天 \(time(date))" }
+        if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now), calendar.isDate(date, inSameDayAs: tomorrow) {
+            return "明天 \(time(date))"
+        }
+        return "\(weekday(date)) \(time(date))"
+    }
+
     static func weekday(_ date: Date) -> String {
         RecurringTimeSlot.weekdayNames[Calendar.current.component(.weekday, from: date) - 1]
     }

@@ -7,7 +7,9 @@ UDID="$1"
 APP="$2"
 OUT="$3"
 BUNDLE="com.badmintonbuddy.app"
-SCREENS="${SCREENS:-welcome login home createMenu matchSetup matchSetupVenues venuePicker venueSearch venueDetail addVenue courts matching matchFound ticketWaiting offerWaiting homeTicket ticket games messages chat friends room joinRoom survey profile editProfile settings notifications}"
+SCREENS="${SCREENS:-welcome login home createMenu matchSetup matchSetupVenues venuePicker venueSearch venueDetail addVenue courts matching matchFound ticketWaiting offerWaiting homeTicket ticket games groups groupDetail groupChat playerProfile messages chat friends room joinRoom survey profile editProfile settings notifications}"
+# 深色模式只截关键页面（CI 模拟器较慢，全部截两遍会超时）
+DARK_SCREENS="${DARK_SCREENS:-home matchFound offerWaiting groupDetail playerProfile chat profile}"
 
 mkdir -p "$OUT"
 xcrun simctl boot "$UDID" 2>/dev/null || true
@@ -25,7 +27,8 @@ xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 
 for appearance in light dark; do
   xcrun simctl ui "$UDID" appearance "$appearance" || true
-  for screen in $SCREENS; do
+  if [ "$appearance" = "dark" ]; then LIST="$DARK_SCREENS"; else LIST="$SCREENS"; fi
+  for screen in $LIST; do
     xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
     # App 使用洛杉矶时区（CI 机器是 UTC），时间显示与演示城市一致
     SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen "$screen" >/dev/null

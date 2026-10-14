@@ -73,6 +73,22 @@ enum DemoLauncher {
                                            state: .othersConfirming) {
                 environment.matchManager.openTicket(ticket.id)
             }
+        case "groups":
+            router.show(.groups, in: .games)
+        case "groupDetail":
+            if let group = backend.myGroups().first {
+                router.show(.group(id: group.id), in: .games)
+            }
+        case "groupChat":
+            if let group = backend.myGroups().first {
+                let thread = backend.ensureGroupThread(for: group)
+                environment.messageManager.reload()
+                router.show(.groupChat(threadId: thread.id), in: .messages)
+            }
+        case "playerProfile":
+            // 昨天一起打过单打的球友：资料页显示“你们的交集”
+            router.selectedTab = .home
+            environment.appState.presentedPlayer = PlayerSheetItem(id: "bot-2")
         case "homeTicket":
             // 首页“约球请求”卡片：找到了，等我确认
             _ = seedDemoTicket(environment, mode: .singles, tolerance: 2, autoAccept: false, state: .offered)
@@ -212,6 +228,11 @@ enum DemoLauncher {
             result: nil, cancelledBy: nil, cancelledLate: false, reminderEnabled: true
         )
         backend.db.games[game.id] = game
+        // 球局群聊：成局后所有人在这里沟通
+        let thread = backend.ensureGameThread(for: game)
+        backend.appendMessage(Message(threadId: thread.id, senderId: "bot-0", content: "我今晚 7 点就到，先去占场～",
+                                      sentAt: Date().addingTimeInterval(-40 * 60), deliveredAt: Date().addingTimeInterval(-40 * 60)),
+                              participants: thread.participantIds, countsAsUnread: true)
         return game
     }
 

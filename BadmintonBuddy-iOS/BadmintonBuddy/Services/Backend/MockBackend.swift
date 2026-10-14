@@ -233,9 +233,30 @@ final class MockBackend {
         db.inbox[user.id] = nil
         db.recurringSlots[user.id] = nil
         db.blocks[user.id] = nil
+        for (id, group) in db.groups where group.isMember(user.id) || group.pendingIds.contains(user.id) {
+            var updated = group
+            updated.memberIds.removeAll { $0 == user.id }
+            updated.organizerIds.removeAll { $0 == user.id }
+            updated.pendingIds.removeAll { $0 == user.id }
+            db.groups[id] = updated.memberIds.isEmpty ? nil : updated
+        }
+        for (id, session) in db.groupSessions where session.status(of: user.id) != .none {
+            var updated = session
+            updated.signedUp.removeAll { $0 == user.id }
+            updated.waitlist.removeAll { $0 == user.id }
+            db.groupSessions[id] = updated
+        }
         db.currentUserId = nil
         saveNow()
         emit(.sessionChanged)
+    }
+
+    func updatePrivacy(_ privacy: PrivacySettings) {
+        guard var user = currentUser else { return }
+        user.privacy = privacy
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
     }
 
     func updateProfile(_ updated: User) async throws -> User {

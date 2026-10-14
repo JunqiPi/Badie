@@ -10,8 +10,9 @@ struct HomeView: View {
     @EnvironmentObject private var friendManager: FriendManager
     @EnvironmentObject private var surveyManager: SurveyManager
     @EnvironmentObject private var inboxManager: InboxManager
+    @EnvironmentObject private var groupManager: GroupManager
 
-    @State private var nearbyPlayers: [User] = []
+    @State private var regulars: [VenueRegular] = []
 
     private var days: [Date] {
         let calendar = Calendar.current
@@ -53,6 +54,8 @@ struct HomeView: View {
                         .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
+                groupsSection
+                    .padding(.horizontal, AppTheme.Spacing.screen)
                 publicGamesSection
                 playersSection
                 courtsSection
@@ -72,6 +75,9 @@ struct HomeView: View {
         }
         .onChange(of: locationManager.nearbyCourts) { _, _ in
             prepareDraft()
+            reloadPlayers()
+        }
+        .onChange(of: locationManager.favoriteCourtIds) { _, _ in
             reloadPlayers()
         }
     }
@@ -300,41 +306,125 @@ struct HomeView: View {
 
     // MARK: Nearby players
 
+    /// 同馆常客：和我常去同一家球馆、并且本人开启了展示的球友（不按距离、不显示在线状态）
+    @ViewBuilder
     private var playersSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "附近球友", detail: "\(nearbyPlayers.count) 人")
+            SectionTitle(title: "同馆常客", detail: regulars.isEmpty ? nil : "\(regulars.count) 人")
                 .padding(.horizontal, AppTheme.Spacing.screen)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
-                    ForEach(nearbyPlayers) { player in
-                        Button {
-                            appState.showPlayer(player.id)
-                        } label: {
-                            VStack(spacing: 6) {
-                                AvatarView(user: player, size: 58)
-                                    .overlay(alignment: .bottomTrailing) {
-                                        if player.lastActiveAt > Date().addingTimeInterval(-30 * 60) {
-                                            Circle()
-                                                .fill(AppTheme.Colors.success)
-                                                .frame(width: 14, height: 14)
-                                                .overlay(Circle().strokeBorder(AppTheme.Colors.canvas, lineWidth: 2.5))
-                                        }
-                                    }
-                                Text(player.nickname)
-                                    .font(AppTheme.Typography.footnoteBold)
-                                    .foregroundStyle(AppTheme.Colors.ink)
-                                    .lineLimit(1)
-                                LevelBadge(level: player.displayLevel, showsName: false, compact: true)
-                            }
-                            .frame(width: 68)
-                        }
-                        .buttonStyle(PressableStyle())
-                        .accessibilityLabel("\(player.nickname)，\(player.displayLevelText)")
-                    }
+            if locationManager.favoriteCourtIds.isEmpty {
+                NoticeBanner(icon: "heart.fill", text: "设置常去球馆后，这里会显示也常去那里的球友（对方开启了才会出现）。",
+                             tint: AppTheme.Colors.surfaceMuted, actionTitle: "去设置") {
+                    router.open(.courts)
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
-                .padding(.vertical, 4)
+            } else if regulars.isEmpty {
+                Text("还没有球友公开自己是这些球馆的常客")
+                    .font(AppTheme.Typography.footnote)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                        ForEach(regulars) { entry in
+                            Button {
+                                appState.showPlayer(entry.user.id)
+                            } label: {
+                                VStack(spacing: 6) {
+                                    AvatarView(user: entry.user, size: 58)
+                                    Text(entry.user.nickname)
+                                        .font(AppTheme.Typography.footnoteBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                        .lineLimit(1)
+                                    LevelBadge(level: entry.user.displayLevel, showsName: false, compact: true)
+                                    Text(VenueSearch.acronym(entry.venue.name).uppercased().isEmpty
+                                         ? entry.venue.name : VenueSearch.acronym(entry.venue.name).uppercased())
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                        .lineLimit(1)
+                                }
+                                .frame(width: 72)
+                            }
+                            .buttonStyle(PressableStyle())
+                            .accessibilityLabel("\(entry.user.nickname)，\(entry.user.displayLevelText)，常去\(entry.venue.name)")
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                    .padding(.vertical, 4)
+                }
             }
+        }
+    }
+
+    // MARK: Groups
+
+    /// 我的固定局（已报名 / 候补）+ 找球群入口
+    private var groupsSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            SectionTitle(title: "固定局", detail: groupManager.myGroups.isEmpty ? "不用再在群里接龙" : "\(groupManager.myGroups.count) 个球群",
+                         actionTitle: "全部") {
+                router.open(.groups)
+            }
+            if groupManager.mySessions.isEmpty {
+                Button {
+                    router.open(.groups)
+                } label: {
+                    HStack(spacing: AppTheme.Spacing.md) {
+                        IconTile(systemName: "person.3.fill", fill: AppTheme.Colors.lavender, size: 44)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("找个固定局")
+                                .font(AppTheme.Typography.headline)
+                                .foregroundStyle(AppTheme.Colors.ink)
+                            Text("每周固定时间和球馆，一键报名，满了自动候补")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    }
+                    .padding(AppTheme.Spacing.lg)
+                    .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+                }
+                .buttonStyle(PressableStyle(scale: 0.98))
+            } else {
+                ForEach(groupManager.mySessions.prefix(2)) { session in
+                    if let group = groupManager.group(id: session.groupId) {
+                        Button {
+                            router.open(.group(id: group.id))
+                        } label: {
+                            HStack(spacing: AppTheme.Spacing.md) {
+                                IconTile(systemName: "calendar.badge.checkmark", fill: AppTheme.Colors.lime, size: 44)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(group.name)
+                                        .font(AppTheme.Typography.overline)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                    Text(session.slot.formattedFull)
+                                        .font(AppTheme.Typography.headline)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text(sessionStatus(session))
+                                        .font(AppTheme.Typography.footnoteBold)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                                Spacer(minLength: 0)
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                            }
+                            .padding(AppTheme.Spacing.lg)
+                            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+                        }
+                        .buttonStyle(PressableStyle(scale: 0.98))
+                    }
+                }
+            }
+        }
+    }
+
+    private func sessionStatus(_ session: GroupSession) -> String {
+        switch session.status(of: appState.currentUser?.id ?? "") {
+        case .signedUp: return "已报名 · \(session.signedUp.count)/\(session.capacity) 人"
+        case .waitlisted(let position): return "候补第 \(position) 位 · 有人退出自动递补"
+        case .none: return "\(session.signedUp.count)/\(session.capacity) 人"
         }
     }
 
@@ -367,7 +457,7 @@ struct HomeView: View {
     }
 
     private func reloadPlayers() {
-        nearbyPlayers = friendManager.nearbyPlayers(radiusKm: locationManager.preferences.travelRadiusKm, limit: 12)
+        regulars = friendManager.venueRegulars(limit: 12)
     }
 
     private func prepareDraft() {

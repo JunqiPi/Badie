@@ -95,6 +95,7 @@ final class MockBackendTests: XCTestCase {
 
     func testMessagingLimitsAndReceipts() async throws {
         let me = signUp()
+        backend.makeFriends(me.id, "bot-0")
         do {
             _ = try await backend.sendMessage(String(repeating: "a", count: 1001), to: "bot-0")
             XCTFail("超长消息应失败")
@@ -104,12 +105,14 @@ final class MockBackendTests: XCTestCase {
         let message = try await backend.sendMessage("周末打球吗", to: "bot-0")
         XCTAssertTrue(message.isDelivered)
         let threadId = MessageThread.id(for: me.id, "bot-0")
-        XCTAssertEqual(backend.messages(threadId: threadId).count, 1)
+        // 成为球友时的系统提示 + 我发的一条
+        XCTAssertEqual(backend.messages(threadId: threadId).filter { $0.kind == .text }.count, 1)
         XCTAssertEqual(backend.db.threads[threadId]?.unreadCount(for: "bot-0"), 1)
     }
 
     func testBlockPreventsSendingAndHidesThread() async throws {
-        _ = signUp()
+        let me = signUp()
+        backend.makeFriends(me.id, "bot-0")
         _ = try await backend.sendMessage("你好", to: "bot-0")
         XCTAssertEqual(backend.threads().count, 1)
         backend.block("bot-0")
@@ -126,6 +129,7 @@ final class MockBackendTests: XCTestCase {
 
     func testMessageFromBlockedUserIsNotDelivered() async throws {
         let me = signUp()
+        backend.makeFriends(me.id, "bot-0")
         backend.db.blocks["bot-0"] = [BlockedUser(blockedUserId: me.id, blockedAt: Date())]
         let message = try await backend.sendMessage("你好", to: "bot-0")
         XCTAssertFalse(message.isDelivered, "被对方屏蔽时消息不送达，但也不提示")
@@ -133,6 +137,7 @@ final class MockBackendTests: XCTestCase {
 
     func testDeleteThreadIsSoftDelete() async throws {
         let me = signUp()
+        backend.makeFriends(me.id, "bot-0")
         _ = try await backend.sendMessage("你好", to: "bot-0")
         let threadId = MessageThread.id(for: me.id, "bot-0")
         backend.deleteThread(threadId)

@@ -8,6 +8,7 @@ struct GameDetailView: View {
     @EnvironmentObject private var matchManager: MatchManager
     @EnvironmentObject private var friendManager: FriendManager
     @EnvironmentObject private var surveyManager: SurveyManager
+    @EnvironmentObject private var messageManager: MessageManager
 
     @State private var showNavigationChoices = false
     @State private var showCalendar = false
@@ -185,9 +186,10 @@ struct GameDetailView: View {
             actionTile(icon: "location.north.line.fill", title: "导航", tint: AppTheme.Colors.sky) {
                 showNavigationChoices = true
             }
-            actionTile(icon: "bubble.left.and.bubble.right.fill", title: "聊天", tint: AppTheme.Colors.lavender) {
-                if let other = game.otherPlayerIds(excluding: me ?? "").first {
-                    router.open(.chat(userId: other))
+            // 球局群聊：所有人一起沟通，不需要先加好友；赛后 48 小时关闭
+            actionTile(icon: "bubble.left.and.bubble.right.fill", title: "群聊", tint: AppTheme.Colors.lavender) {
+                if let threadId = messageManager.gameChatId(for: game.id) {
+                    router.open(.groupChat(threadId: threadId))
                 }
             }
             actionTile(icon: game.reminderEnabled ? "bell.badge.fill" : "bell.fill",

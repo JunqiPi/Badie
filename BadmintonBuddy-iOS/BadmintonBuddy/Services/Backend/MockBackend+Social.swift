@@ -202,7 +202,9 @@ extension MockBackend {
         return db.threads.values
             .filter { $0.participantIds.contains(me) && $0.isVisible(to: me) }
             .filter { thread in
+                if thread.isGroup { return true }
                 guard let other = thread.otherParticipantId(currentUserId: me) else { return false }
+                // 我发出的、对方还没接受的请求不占列表（避免一直显示“未回复”）
                 return !blocked.contains(other)
             }
             .sorted { $0.lastActivityAt > $1.lastActivityAt }
@@ -232,18 +234,65 @@ extension MockBackend {
         case .tooLong: throw BackendError.messageTooLong
         case .valid: break
         }
-        guard !blockedIds(of: me.id).contains(userId) else { throw BackendError.blocked }
+        let threadId = MessageThread.id(for: me.id, userId)
+        let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        var isRequest = false
+        switch messagePermission(with: userId) {
+        case .allowed:
+            break
+        case .request:
+            // 消息请求：一条纯文字，不能带链接或站外联系方式
+            guard kind == .text else { throw BackendError.notFriends }
+            guard !ContactInfoDetector.containsLink(trimmed), !ContactInfoDetector.mentionsOffPlatformContact(trimmed) else {
+                throw BackendError.requestContainsContact
+            }
+            isRequest = true
+        case .pendingRequest: throw BackendError.messageRequestPending
+        case .gameChat: throw BackendError.useGameChat
+        case .friendsOnly: throw BackendError.notFriends
+        case .newAccount: throw BackendError.newAccountMessageLimit
+        case .blocked: throw BackendError.blocked
+        }
         await networkDelay(0.1...0.3)
 
-        let threadId = MessageThread.id(for: me.id, userId)
-        var message = Message(threadId: threadId, senderId: me.id,
-                              content: content.trimmingCharacters(in: .whitespacesAndNewlines), kind: kind)
+        // 回复对方的请求即视为接受
+        if var thread = db.threads[threadId], thread.isPendingRequest, thread.requestFrom == userId {
+            thread.isPendingRequest = false
+            db.threads[threadId] = thread
+        }
+        var message = Message(threadId: threadId, senderId: me.id, content: trimmed, kind: kind)
         // 被对方屏蔽：消息对自己显示为已发送，但不会送达（不暴露屏蔽状态）
         let blockedByOther = blockedIds(of: userId).contains(me.id)
         if !blockedByOther {
             message.deliveredAt = Date()
         }
         appendMessage(message, participants: [me.id, userId], countsAsUnread: !blockedByOther)
+
+        if isRequest, var thread = db.threads[threadId] {
+            thread.isPendingRequest = true
+            thread.requestFrom = me.id
+            db.threads[threadId] = thread
+            if !blockedByOther {
+                let groupName = sharedGroups(with: userId).first?.name ?? "同一个球群"
+                addInbox(InboxItem(kind: .messageRequest, title: "\(me.nickname) 想和你聊天",
+                                   body: "来自「\(groupName)」。接受后才能继续聊，忽略对方不会知道。", relatedId: me.id), to: userId)
+            }
+            scheduleSave()
+            emit(.threadsChanged)
+            if !blockedByOther, isBot(userId), let bot = db.bots[userId] {
+                // 模拟球友：多数会接受并回复
+                let accepts = Double.random(in: 0..<1) < bot.friendliness
+                simulate(after: Double.random(in: 4...9)) { [weak self] in
+                    guard let self, accepts, var current = self.db.threads[threadId], current.isPendingRequest else { return }
+                    current.isPendingRequest = false
+                    self.db.threads[threadId] = current
+                    self.appendMessage(Message(threadId: threadId, senderId: userId, content: "你好呀，群里见过～有什么事？",
+                                               deliveredAt: Date()),
+                                       participants: [me.id, userId], countsAsUnread: true)
+                }
+            }
+            return message
+        }
 
         if !blockedByOther, isBot(userId) {
             simulateBotConversation(botId: userId, threadId: threadId, incoming: message)

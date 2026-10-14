@@ -44,7 +44,21 @@ struct MessagesView: View {
 
     @ViewBuilder
     private var chats: some View {
-        if messageManager.threads.isEmpty {
+        if !messageManager.incomingRequests.isEmpty {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                SectionTitle(title: "消息请求", detail: "同球群的人想和你聊 · 忽略对方不会知道")
+                VStack(spacing: 0) {
+                    ForEach(Array(messageManager.incomingRequests.enumerated()), id: \.element.id) { index, thread in
+                        if index > 0 { InsetDivider().padding(.leading, 72) }
+                        ThreadRow(thread: thread)
+                    }
+                }
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .sticker(AppTheme.Colors.butter, radius: AppTheme.Radius.lg)
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
+        }
+        if messageManager.conversations.isEmpty {
             EmptyStateView(icon: "bubble.left.and.bubble.right", title: "还没有聊天",
                            message: "匹配成功或添加球友后，就可以在这里约时间、约球馆。",
                            actionTitle: "添加球友") { router.open(.addFriend) }
@@ -52,11 +66,17 @@ struct MessagesView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
         } else {
             VStack(spacing: 0) {
-                ForEach(Array(messageManager.threads.enumerated()), id: \.element.id) { index, thread in
+                ForEach(Array(messageManager.conversations.enumerated()), id: \.element.id) { index, thread in
                     if index > 0 { InsetDivider().padding(.leading, 72) }
                     ThreadRow(thread: thread)
                         .contextMenu {
-                            if let other = thread.otherParticipantId(currentUserId: messageManager.currentUserId ?? "") {
+                            if thread.isGroup {
+                                Button(role: .destructive) {
+                                    messageManager.deleteThread(thread)
+                                } label: {
+                                    Label("清空并隐藏", systemImage: "trash")
+                                }
+                            } else if let other = thread.otherParticipantId(currentUserId: messageManager.currentUserId ?? "") {
                                 Button(role: .destructive) {
                                     messageManager.deleteThread(thread)
                                 } label: {
@@ -91,13 +111,15 @@ private struct ThreadRow: View {
     var body: some View {
         let me = messageManager.currentUserId ?? ""
         let otherId = thread.otherParticipantId(currentUserId: me) ?? ""
-        let other = messageManager.user(id: otherId)
+        let other = thread.isGroup ? nil : messageManager.user(id: otherId)
         let unread = thread.unreadCount(for: me)
         Button {
-            router.open(.chat(userId: otherId))
+            router.open(thread.isGroup ? .groupChat(threadId: thread.id) : .chat(userId: otherId))
         } label: {
             HStack(spacing: AppTheme.Spacing.md) {
-                if let other {
+                if thread.isGroup {
+                    IconTile(systemName: groupIcon, fill: groupTint, size: 50)
+                } else if let other {
                     AvatarView(user: other, size: 50)
                         .opensProfile(other.id)
                 } else {
@@ -105,11 +127,15 @@ private struct ThreadRow: View {
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     HStack {
-                        Text(other?.nickname ?? "球友")
+                        Text(thread.isGroup ? (thread.title ?? "群聊") : (other?.nickname ?? "球友"))
                             .font(AppTheme.Typography.headline)
                             .foregroundStyle(AppTheme.Colors.ink)
+                            .lineLimit(1)
                         if let other {
                             LevelBadge(level: other.displayLevel, showsName: false, compact: true)
+                        }
+                        if thread.isPendingRequest && thread.requestFrom == me {
+                            TagPill(text: "等对方接受", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
                         }
                         Spacer()
                         Text(DateText.compact(thread.lastActivityAt))
@@ -134,8 +160,22 @@ private struct ThreadRow: View {
         .accessibilityHint("打开聊天")
     }
 
+    private var groupIcon: String {
+        if case .game = thread.context { return "ticket.fill" }
+        return "person.3.fill"
+    }
+
+    private var groupTint: Color {
+        if case .game = thread.context { return AppTheme.Colors.lime }
+        return AppTheme.Colors.lavender
+    }
+
     private var preview: String {
         guard let message = thread.lastMessage else { return "" }
+        if thread.isGroup, message.kind != .system, message.senderId != messageManager.currentUserId,
+           let sender = messageManager.user(id: message.senderId) {
+            return "\(sender.nickname)：\(message.content)"
+        }
         switch message.kind {
         case .roomInvite: return "[房间邀请] \(message.content)"
         case .gameShare: return "[球局] \(message.content)"
@@ -328,7 +368,8 @@ struct AddFriendView: View {
 
     @State private var query = ""
     @State private var results: [User] = []
-    @State private var nearby: [User] = []
+    @State private var coPlayers: [User] = []
+    @State private var regulars: [User] = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -346,15 +387,16 @@ struct AddFriendView: View {
                     if !query.isEmpty {
                         section(title: "搜索结果", users: results, emptyText: "没有找到“\(query)”")
                     }
-                    section(title: "附近的球友", users: nearby, emptyText: "附近暂时没有球友")
+                    section(title: "一起打过球的人", users: coPlayers, emptyText: "打完球后，这里会出现一起打过的人")
+                    section(title: "同馆常客", users: regulars, emptyText: "设置常去球馆后，这里会显示公开了自己是常客的球友")
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
         }
         .onAppear {
-            nearby = friendManager.nearbyPlayers(radiusKm: locationManager.preferences.travelRadiusKm, limit: 20)
-                .filter { !friendManager.isFriend($0.id) }
+            coPlayers = friendManager.recentCoPlayers()
+            regulars = friendManager.venueRegulars().map(\.user).filter { !friendManager.isFriend($0.id) }
         }
         .onChange(of: query) { _, value in
             results = friendManager.searchDirectory(query: value)

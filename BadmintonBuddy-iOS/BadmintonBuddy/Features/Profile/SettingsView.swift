@@ -61,10 +61,39 @@ struct SettingsView: View {
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
                     }
 
+                    section("谁能看到我、联系我") {
+                        VStack(spacing: AppTheme.Spacing.md) {
+                            Toggle(isOn: privacyBinding(\.showsAsRegular)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("在常去球馆的“同馆常客”里显示我")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("只显示昵称、等级和球馆，不显示时间和位置")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
+                            InsetDivider()
+                            Toggle(isOn: privacyBinding(\.allowsMessageRequests)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("允许同球群的人给我发消息请求")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("关闭后只有球友能私信你；球局群聊不受影响")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
+                        }
+                        .tint(AppTheme.Colors.success)
+                        .card(AppTheme.Colors.surface, shadow: .zero)
+                    }
+
                     section("隐私与安全") {
                         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                             privacyLine("手机号只用于登录与安全验证，不会展示给任何球友")
-                            privacyLine("位置只用于计算距离，球友看到的是大概距离而非精确位置")
+                            privacyLine("位置只用于计算距离，球友看到的是大概范围（如“5 英里内”），不是精确距离")
+                            privacyLine("陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求")
                             privacyLine("评价匿名汇总，不展示单条评价与评价人")
                             privacyLine("屏蔽对方不会通知对方")
                         }
@@ -128,6 +157,17 @@ struct SettingsView: View {
     }
 
     // MARK: Helpers
+
+    private func privacyBinding(_ keyPath: WritableKeyPath<PrivacySettings, Bool>) -> Binding<Bool> {
+        Binding(
+            get: { appState.currentUser?.privacy[keyPath: keyPath] ?? false },
+            set: { value in
+                guard var privacy = appState.currentUser?.privacy else { return }
+                privacy[keyPath: keyPath] = value
+                appState.backend.updatePrivacy(privacy)
+            }
+        )
+    }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {

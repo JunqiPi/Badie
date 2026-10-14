@@ -79,6 +79,8 @@ struct MatchSurvey: Identifiable, Codable, Hashable {
     let submittedAt: Date
     /// 需要对方注意的地方（只用于私下提醒）
     var issues: [SurveyIssue] = []
+    /// 还想再约 TA（双方都选了才告诉双方）
+    var wantsRematch = false
 
     static let skillRatingRange = 1...9
     static let characterRatingRange = 1...5

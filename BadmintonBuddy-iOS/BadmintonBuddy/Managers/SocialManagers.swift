@@ -41,6 +41,15 @@ final class FriendManager: ObservableObject {
         backend.searchUsers(query: query)
     }
 
+    /// 同馆常客（对方开启了才显示）
+    func venueRegulars(limit: Int = 20) -> [VenueRegular] {
+        backend.venueRegulars(limit: limit)
+    }
+
+    func recentCoPlayers(limit: Int = 20) -> [User] {
+        backend.recentCoPlayers(limit: limit)
+    }
+
     func nearbyPlayers(radiusKm: Double, limit: Int = 20) -> [User] {
         backend.nearbyPlayers(radiusKm: radiusKm, limit: limit)
     }
@@ -177,6 +186,83 @@ final class MessageManager: ObservableObject {
         reload()
     }
 
+    // MARK: 私信规则与消息请求
+
+    func permission(with userId: String) -> MessagePermission { backend.messagePermission(with: userId) }
+
+    /// 我和对方的私信会话（可能还不存在）
+    func thread(with userId: String) -> MessageThread? {
+        threadId(with: userId).flatMap { backend.thread(id: $0) }
+    }
+
+    /// 别人发来、我还没处理的消息请求
+    var incomingRequests: [MessageThread] {
+        threads.filter { $0.isPendingRequest && $0.requestFrom != currentUserId }
+    }
+
+    /// 普通会话（不含待处理的请求）
+    var conversations: [MessageThread] {
+        threads.filter { !($0.isPendingRequest && $0.requestFrom != currentUserId) }
+    }
+
+    func acceptRequest(from userId: String) {
+        guard let id = threadId(with: userId) else { return }
+        backend.acceptMessageRequest(threadId: id)
+        reload()
+    }
+
+    func declineRequest(from userId: String) {
+        guard let id = threadId(with: userId) else { return }
+        backend.declineMessageRequest(threadId: id)
+        messagesByThread[id] = nil
+        reload()
+    }
+
+    // MARK: 群聊（球局群 / 球群）
+
+    func thread(id: String) -> MessageThread? { backend.thread(id: id) }
+
+    func messages(threadId: String) -> [Message] { messagesByThread[threadId] ?? [] }
+
+    func openThread(_ threadId: String) {
+        activeThreadId = threadId
+        backend.markThreadRead(threadId)
+        loadMessages(threadId: threadId)
+        reload()
+    }
+
+    func closeThread(_ threadId: String) {
+        if activeThreadId == threadId { activeThreadId = nil }
+    }
+
+    func canPost(in threadId: String) -> Bool {
+        guard let thread = backend.thread(id: threadId) else { return false }
+        return backend.canPost(in: thread)
+    }
+
+    func sendGroup(_ text: String, threadId: String) async throws {
+        _ = try await backend.sendGroupMessage(text, threadId: threadId)
+        loadMessages(threadId: threadId)
+        reload()
+    }
+
+    /// 打开球局群聊（没有就创建），返回会话 ID
+    func gameChatId(for gameId: String) -> String? {
+        guard let game = backend.game(id: gameId) else { return nil }
+        let thread = backend.ensureGameThread(for: game)
+        reload()
+        return thread.id
+    }
+
+    func groupChatId(for groupId: String) -> String? {
+        guard let group = backend.group(id: groupId), let me = currentUserId, group.isMember(me) else { return nil }
+        let thread = backend.ensureGroupThread(for: group)
+        reload()
+        return thread.id
+    }
+
+    func user(_ id: String) -> User? { backend.user(id: id) }
+
     func deleteThread(_ thread: MessageThread) {
         backend.deleteThread(thread.id)
         messagesByThread[thread.id] = nil
@@ -290,12 +376,108 @@ final class SurveyManager: ObservableObject {
         attendance: AttendanceAnswer,
         characterRating: Int,
         tags: [SurveyTag],
-        issues: [SurveyIssue] = []
+        issues: [SurveyIssue] = [],
+        wantsRematch: Bool = false
     ) async throws {
         try await backend.submitSurvey(
             pendingId: pending.id, skillRating: skillRating, attendance: attendance,
-            characterRating: characterRating, tags: tags, issues: issues
+            characterRating: characterRating, tags: tags, issues: issues, wantsRematch: wantsRematch
         )
+        reload()
+    }
+}
+
+// MARK: - 球群（固定局）
+
+@MainActor
+final class GroupManager: ObservableObject {
+    @Published private(set) var myGroups: [PlayGroup] = []
+    /// 我报名或候补的未来场次
+    @Published private(set) var mySessions: [GroupSession] = []
+    /// 变化计数（球群详情等页面据此刷新）
+    @Published private(set) var revision = 0
+
+    private let backend: MockBackend
+
+    init(backend: MockBackend) {
+        self.backend = backend
+        reload()
+        backend.subscribe { [weak self] event in
+            switch event {
+            case .groupsChanged, .sessionChanged, .venuesChanged:
+                self?.reload()
+            default:
+                break
+            }
+        }
+    }
+
+    var currentUserId: String? { backend.currentUserId }
+
+    func reload() {
+        myGroups = backend.myGroups()
+        mySessions = backend.mySessions()
+        revision += 1
+    }
+
+    func group(id: String) -> PlayGroup? { backend.group(id: id) }
+
+    func group(code: String) -> PlayGroup? { backend.group(code: code) }
+
+    func groups(near center: Coordinate, radiusKm: Double) -> [PlayGroup] { backend.groups(near: center, radiusKm: radiusKm) }
+
+    func groups(atVenue venueId: String) -> [PlayGroup] { backend.groups(atVenue: venueId) }
+
+    func activity(of groupId: String) -> GroupActivity { backend.activity(of: groupId) }
+
+    func sessions(groupId: String) -> [GroupSession] { backend.upcomingSessions(groupId: groupId) }
+
+    func session(id: String) -> GroupSession? { backend.session(id: id) }
+
+    func venue(of group: PlayGroup) -> BadmintonCourt? { backend.venue(id: group.venueId) }
+
+    func user(_ id: String) -> User? { backend.user(id: id) }
+
+    @discardableResult
+    func create(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+                joinPolicy: PlayGroup.JoinPolicy, summary: String) throws -> PlayGroup {
+        let group = try backend.createGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
+                                            joinPolicy: joinPolicy, summary: summary)
+        reload()
+        return group
+    }
+
+    @discardableResult
+    func join(_ groupId: String) throws -> PlayGroup {
+        let group = try backend.joinGroup(id: groupId)
+        reload()
+        return group
+    }
+
+    func leave(_ groupId: String) throws {
+        try backend.leaveGroup(id: groupId)
+        reload()
+    }
+
+    func approve(_ userId: String, in groupId: String) throws {
+        try backend.approveMember(userId, groupId: groupId)
+        reload()
+    }
+
+    @discardableResult
+    func signUp(_ sessionId: String) throws -> MockBackend.SignupResult {
+        let result = try backend.signUp(sessionId: sessionId)
+        reload()
+        return result
+    }
+
+    func cancelSignup(_ sessionId: String) throws {
+        try backend.cancelSignup(sessionId: sessionId)
+        reload()
+    }
+
+    func cancelSession(_ sessionId: String) throws {
+        try backend.cancelSession(sessionId)
         reload()
     }
 }

@@ -20,6 +20,8 @@ enum BackendEvent {
     case venuesChanged
     /// 约球请求或匹配提议有变化
     case matchmakingChanged
+    /// 球群、场次报名有变化
+    case groupsChanged
 }
 
 typealias BackendEventHandler = @MainActor (BackendEvent) -> Void
@@ -65,6 +67,18 @@ enum BackendError: LocalizedError, Equatable {
     case offerClosed
     case venueDuplicate(existingName: String)
     case venueRateLimited
+    case notFriends
+    case newAccountMessageLimit
+    case messageRequestPending
+    case useGameChat
+    case requestContainsContact
+    case chatClosed
+    case groupNotFound
+    case notGroupMember
+    case groupNameInvalid
+    case groupScheduleInvalid
+    case sessionClosed
+    case ownerCannotLeave
 
     var errorDescription: String? {
         switch self {
@@ -106,6 +120,18 @@ enum BackendError: LocalizedError, Equatable {
         case .offerClosed: return "这个匹配已经结束了"
         case .venueDuplicate(let name): return "球馆库里已有“\(name)”，请直接选择它"
         case .venueRateLimited: return "今天添加的球馆有点多，明天再来吧"
+        case .notFriends: return "加为球友后才能私信。可以先发好友申请，或在球局、球群里聊"
+        case .newAccountMessageLimit: return "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求"
+        case .messageRequestPending: return "已发出消息请求，对方接受后才能继续聊"
+        case .useGameChat: return "你们在同一场球局里，请在球局群聊里沟通"
+        case .requestContainsContact: return "消息请求里不能留链接或站外联系方式（手机号、微信等），对方接受后再聊"
+        case .chatClosed: return "这个群聊已经结束了"
+        case .groupNotFound: return "没有找到这个球群"
+        case .notGroupMember: return "加入球群后才能报名和聊天"
+        case .groupNameInvalid: return "球群名称需要 2–20 个字"
+        case .groupScheduleInvalid: return "固定场次需要 1–8 小时，名额 4–40 人"
+        case .sessionClosed: return "这一场已经结束或取消了"
+        case .ownerCannotLeave: return "群主不能直接退出，可以先把群交给其他组织者"
         }
     }
 }
@@ -178,7 +204,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；旧版本数据直接丢弃（目前只有本机演示数据）
-    static let currentVersion = 3
+    static let currentVersion = 4
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
@@ -212,6 +238,9 @@ struct Database: Codable {
     var favoriteCourtIds: [String: [String]] = [:]
     var reports: [ReportRecord] = []
     var seededUserIds: [String] = []
+    /// 球群与场次
+    var groups: [String: PlayGroup] = [:]
+    var groupSessions: [String: GroupSession] = [:]
 }
 
 // MARK: - 可复现的伪随机数（保证模拟世界在每次启动时一致）

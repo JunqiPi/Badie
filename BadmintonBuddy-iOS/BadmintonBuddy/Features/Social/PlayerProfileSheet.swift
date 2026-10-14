@@ -98,6 +98,41 @@ struct PlayerProfileSheet: View {
         .card()
     }
 
+    /// 私信按钮：按关系决定能不能聊、在哪聊（陌生人不能直接私信）
+    @ViewBuilder
+    private func messageButton(_ user: User) -> some View {
+        switch messageManager.permission(with: user.id) {
+        case .allowed, .pendingRequest:
+            Button {
+                dismiss()
+                router.open(.chat(userId: user.id), in: .messages)
+            } label: {
+                Label("私信", systemImage: "bubble.left.fill")
+            }
+            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+        case .request:
+            Button {
+                dismiss()
+                router.open(.chat(userId: user.id), in: .messages)
+            } label: {
+                Label("发消息请求", systemImage: "envelope.fill")
+            }
+            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+        case .gameChat(let gameId):
+            Button {
+                if let threadId = messageManager.gameChatId(for: gameId) {
+                    dismiss()
+                    router.open(.groupChat(threadId: threadId), in: .messages)
+                }
+            } label: {
+                Label("球局群聊", systemImage: "person.3.fill")
+            }
+            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+        case .friendsOnly, .newAccount, .blocked:
+            EmptyView()
+        }
+    }
+
     /// 你们的交集：一起打过几场、共同球友（帮助判断“这个人靠不靠谱、是不是圈子里的人”）
     private func connectionCard(_ user: User) -> some View {
         let together = friendManager.gamesTogether(with: user.id)
@@ -149,13 +184,7 @@ struct PlayerProfileSheet: View {
                 .buttonStyle(.brutalSecondary)
             } else {
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    Button {
-                        dismiss()
-                        router.open(.chat(userId: user.id), in: .messages)
-                    } label: {
-                        Label("私信", systemImage: "bubble.left.fill")
-                    }
-                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+                    messageButton(user)
                     if friendManager.isFriend(user.id) {
                         if allowsInvite {
                             Button {
@@ -329,6 +358,12 @@ struct NotificationsView: View {
             router.select(.profile)
         case .matchOffer, .matchUpdate:
             if let id = item.relatedId { matchManager.openTicket(id) }
+        case .messageRequest:
+            if let id = item.relatedId { router.open(.chat(userId: id), in: .messages) }
+        case .groupUpdate:
+            if let id = item.relatedId { router.open(.group(id: id)) }
+        case .rematch:
+            if let id = item.relatedId { appState.showPlayer(id) }
         case .kicked, .roomClosed, .system:
             break
         }
@@ -343,6 +378,9 @@ struct NotificationsView: View {
         case .gameConfirmed, .gameReminder: return "sportscourt.fill"
         case .matchOffer: return "bolt.fill"
         case .matchUpdate: return "arrow.triangle.2.circlepath"
+        case .messageRequest: return "envelope.badge.fill"
+        case .groupUpdate: return "person.3.fill"
+        case .rematch: return "arrow.uturn.left.circle.fill"
         case .gameCancelled: return "xmark.circle.fill"
         case .system: return "megaphone.fill"
         }
@@ -355,7 +393,9 @@ struct NotificationsView: View {
         case .kicked, .roomClosed, .gameCancelled: return AppTheme.Colors.surfaceMuted
         case .surveyDue, .reviewReceived: return AppTheme.Colors.pink
         case .gameConfirmed, .gameReminder, .matchOffer: return AppTheme.Colors.lime
-        case .matchUpdate: return AppTheme.Colors.butter
+        case .matchUpdate, .messageRequest: return AppTheme.Colors.butter
+        case .groupUpdate: return AppTheme.Colors.lavender
+        case .rematch: return AppTheme.Colors.mint
         case .system: return AppTheme.Colors.sky
         }
     }

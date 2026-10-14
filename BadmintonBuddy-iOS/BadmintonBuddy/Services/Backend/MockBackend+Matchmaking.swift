@@ -298,7 +298,7 @@ extension MockBackend {
                                body: "\(summary)。等其他人确认后就约成了。", relatedId: ticket.id), to: owner.id)
         } else {
             addInbox(InboxItem(kind: .matchOffer, title: "找到搭子了，等你确认",
-                               body: "\(summary)。请在 \(DateText.time(respondBy)) 前确认。", relatedId: ticket.id), to: owner.id)
+                               body: "\(summary)。请在\(DateText.deadline(respondBy, now: now))前确认。", relatedId: ticket.id), to: owner.id)
         }
         for seat in otherSeats { scheduleBotResponse(offerId: offer.id, botId: seat.userId) }
         return offer
@@ -520,7 +520,7 @@ extension MockBackend {
                 ticket.status = .offered(offerId: singles.id)
                 db.tickets[ticketId] = ticket
                 addInbox(InboxItem(kind: .matchOffer, title: "双打没凑齐，改打单打吗？",
-                                   body: "\(offer.slot.formattedFull) · \(offer.court.name)。请在 \(DateText.time(respondBy)) 前确认，不想打也不影响记录。",
+                                   body: "\(offer.slot.formattedFull) · \(offer.court.name)。请在\(DateText.deadline(respondBy, now: now))前确认，不想打也不影响记录。",
                                    relatedId: ticketId), to: seat.userId)
             } else {
                 scheduleBotResponse(offerId: singles.id, botId: seat.userId)
@@ -569,15 +569,12 @@ extension MockBackend {
         emit(.gameCreated(game))
         emit(.gamesChanged)
 
-        // 对方发来消息，自然开启聊天
+        // 球局群聊：成局后所有人在这里沟通（不需要先加好友），赛后 48 小时关闭
+        let thread = ensureGameThread(for: game)
         if let me = currentUserId, offer.playerIds.contains(me),
            let first = offer.playerIds.first(where: { $0 != me && isBot($0) }) {
-            let threadId = MessageThread.id(for: me, first)
-            let text = "约上了！\(offer.slot.formattedDate) \(DateText.time(offer.slot.startTime)) \(offer.court.name) 见～"
-            simulate(after: Double.random(in: 2...4)) { [weak self] in
-                self?.appendMessage(Message(threadId: threadId, senderId: first, content: text, deliveredAt: Date()),
-                                    participants: [me, first], countsAsUnread: true)
-            }
+            postBotMessage("约上了！\(offer.slot.formattedDate) \(DateText.time(offer.slot.startTime)) \(offer.court.name) 见～",
+                           from: first, in: thread.id)
         }
         return game
     }

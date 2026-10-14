@@ -80,6 +80,8 @@ extension MockBackend {
                 preferredMode: index % 3 == 0 ? .singles : .doubles
             )
             db.users[id] = user
+            // 约六成模拟球友愿意出现在“同馆常客”里（真实用户默认关闭）
+            db.users[id]?.privacy.showsAsRegular = index % 5 != 1 && index % 5 != 3
             db.bots[id] = BotProfile(
                 userId: id,
                 eastKm: cos(angle) * radius,
@@ -108,6 +110,7 @@ extension MockBackend {
             db.users[id] = user
         }
         assignBotHomeVenues()
+        ensureGroups()
     }
 
     var isBotWorldReady: Bool { !db.bots.isEmpty }
@@ -180,6 +183,41 @@ extension MockBackend {
             guard !blocked.contains(id), let location = db.users[id]?.location else { return false }
             return location.distanceKm(to: center) <= radiusKm && !availability(for: id, on: day).isEmpty
         }.count
+    }
+
+    /// 同馆常客：和我有相同常去球馆、并且本人开启了“显示在常客里”的球友。
+    /// 不按距离、不显示在线状态（“附近的人”和在线状态容易被用来定位、骚扰，见 docs/DESIGN.md §12）
+    func venueRegulars(limit: Int = 20) -> [VenueRegular] {
+        guard let me = currentUserId else { return [] }
+        let mine = favoriteCourtIds().compactMap { venue(id: $0) }
+        guard !mine.isEmpty else { return [] }
+        let blocked = blockedIds().union(db.bots.keys.filter { blockedIds(of: $0).contains(me) })
+        var results: [(user: User, venue: BadmintonCourt, shared: Int)] = []
+        for (userId, favorites) in db.favoriteCourtIds where userId != me && !blocked.contains(userId) {
+            guard let user = db.users[userId], user.privacy.showsAsRegular else { continue }
+            let theirs = favorites.compactMap { venue(id: $0) }
+            let shared = mine.filter { court in theirs.contains { VenueCluster.same($0, court) } }
+            guard let first = shared.first else { continue }
+            results.append((user, first, shared.count))
+        }
+        return results
+            .sorted { $0.shared != $1.shared ? $0.shared > $1.shared : $0.user.nickname < $1.user.nickname }
+            .prefix(limit)
+            .map { VenueRegular(user: $0.user, venue: $0.venue) }
+    }
+
+    /// 最近一起打过球、但还不是好友的人（加好友最自然的来源）
+    func recentCoPlayers(limit: Int = 20) -> [User] {
+        guard let me = currentUserId else { return [] }
+        let blocked = blockedIds()
+        var seen = Set<String>()
+        return games()
+            .filter { $0.status == .completed }
+            .sorted { $0.slot.startTime > $1.slot.startTime }
+            .flatMap { $0.otherPlayerIds(excluding: me) }
+            .filter { !blocked.contains($0) && !isFriend($0) && seen.insert($0).inserted }
+            .prefix(limit)
+            .compactMap { db.users[$0] }
     }
 
     /// 附近球友（按距离排序）
@@ -285,6 +323,23 @@ extension MockBackend {
             note: "上周在朝阳馆一起打过双打～", sentAt: now.addingTimeInterval(-3 * 3600), status: .pending
         ))
 
+        // 加入附近的一个球群，并报名下一场
+        if let group = groups(near: me.location ?? db.worldCenter, radiusKm: 40).first(where: { $0.joinPolicy == .open }),
+           var joined = db.groups[group.id] {
+            if !joined.memberIds.contains(userId) { joined.memberIds.append(userId) }
+            db.groups[group.id] = joined
+            ensureGroupThread(for: joined, at: now)
+            materializeSessions(for: joined, from: now, days: GroupSession.daysAhead)
+            if let next = db.groupSessions.values
+                .filter({ $0.groupId == joined.id && $0.slot.startTime > now.addingTimeInterval(3 * 3600) })
+                .min(by: { $0.slot.startTime < $1.slot.startTime }), !next.signedUp.contains(userId) {
+                var session = next
+                if session.isFull { session.capacity += 1 }
+                session.signedUp.append(userId)
+                db.groupSessions[session.id] = session
+            }
+        }
+
         // 私信
         let threadA = MessageThread.id(for: userId, "bot-0")
         appendSeedMessage(threadA, participants: [userId, "bot-0"], from: userId, text: "上次打得太爽了，下周再约？", at: now.addingTimeInterval(-26 * 3600), read: true)
@@ -322,7 +377,7 @@ extension MockBackend {
                 db.heldSurveys.append(MatchSurvey(
                     id: UUID().uuidString, matchId: game.id, evaluatorId: opponent.id, evaluatedUserId: userId,
                     skillRating: me.selfReportedLevel, wasPunctual: true, attendance: .onTime, characterRating: 5,
-                    tags: [.friendly, .punctual], submittedAt: slot.endTime.addingTimeInterval(1800)
+                    tags: [.friendly, .punctual], submittedAt: slot.endTime.addingTimeInterval(1800), wantsRematch: true
                 ))
             }
         }

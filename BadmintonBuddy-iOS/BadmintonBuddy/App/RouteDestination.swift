@@ -46,6 +46,14 @@ struct RouteDestination: View {
             MatchVenuesPage(initialQuery: query ?? "")
         case .addVenue(let prefill):
             AddVenuePage(prefill: prefill)
+        case .groupChat(let threadId):
+            GroupChatView(threadId: threadId)
+        case .group(let id):
+            GroupDetailView(groupId: id)
+        case .groups:
+            GroupsView()
+        case .createGroup(let venueId):
+            CreateGroupView(initialVenueId: venueId)
         }
     }
 }
@@ -60,7 +68,7 @@ struct VenueDetailPage: View {
         VStack(spacing: 0) {
             ScreenHeader(title: "球馆")
             if let venue = appState.backend.venue(id: venueId) {
-                CourtDetailSheet(court: venue)
+                CourtDetailSheet(court: venue, isSheet: false)
             } else {
                 EmptyStateView(icon: "mappin.slash", title: "没有找到这个球馆")
                 Spacer()

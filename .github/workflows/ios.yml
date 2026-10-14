@@ -19,7 +19,7 @@ jobs:
   build-test:
     name: Build, test & screenshots
     runs-on: macos-15
-    timeout-minutes: 50
+    timeout-minutes: 60
     defaults:
       run:
         working-directory: BadmintonBuddy-iOS
@@ -73,7 +73,7 @@ jobs:
 
       - name: Capture screenshots
         if: always() && steps.build.outcome == 'success'
-        timeout-minutes: 15
+        timeout-minutes: 25
         run: bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/BadmintonBuddy.app screenshots
 
       - name: Upload screenshots

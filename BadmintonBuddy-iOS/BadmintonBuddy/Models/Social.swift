@@ -55,6 +55,15 @@ enum ReportReason: String, CaseIterable, Identifiable, Codable, Hashable {
 
 // MARK: - 站内通知
 
+/// 同馆常客：和我常去同一家球馆、并且本人开启了展示的球友
+struct VenueRegular: Identifiable, Hashable {
+    let user: User
+    /// 我们共同常去的球馆（之一）
+    let venue: BadmintonCourt
+
+    var id: String { user.id }
+}
+
 struct InboxItem: Identifiable, Codable, Hashable {
     enum Kind: String, Codable, Hashable {
         case friendRequest
@@ -73,6 +82,12 @@ struct InboxItem: Identifiable, Codable, Hashable {
         case matchOffer
         /// 匹配进展（补位、没凑成、请求结束）
         case matchUpdate
+        /// 有人想和你聊天（同球群的消息请求）
+        case messageRequest
+        /// 球群动态（候补转正、加入申请通过、场次取消）
+        case groupUpdate
+        /// 你们都想再约一场
+        case rematch
         case system
     }
 

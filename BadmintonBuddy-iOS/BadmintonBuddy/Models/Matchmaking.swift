@@ -36,8 +36,11 @@ enum MatchTiming {
         lastMinute ? 3 * 60 : 10 * 60
     }
 
+    /// 夜里（23:00–8:00）到期的确认顺延到早上 9 点，不让人半夜被催（仍不晚于锁定时间）
+    static let quietHours = (start: 23, end: 8, resume: 9)
+
     /// 确认期限：开赛越远给得越长，但不晚于锁定时间
-    static func respondBy(start: Date, now: Date = Date()) -> Date {
+    static func respondBy(start: Date, now: Date = Date(), calendar: Calendar = .current) -> Date {
         let lead = start.timeIntervalSince(now)
         if isLastMinute(start: start, now: now) {
             let window: TimeInterval = lead < 3600 ? 5 * 60 : 10 * 60
@@ -49,7 +52,16 @@ enum MatchTiming {
         case (6 * 3600)...: window = 2 * 3600
         default: window = 30 * 60
         }
-        return min(now.addingTimeInterval(window), start.addingTimeInterval(-lockLead))
+        let lock = start.addingTimeInterval(-lockLead)
+        return min(skippingQuietHours(now.addingTimeInterval(window), calendar: calendar), lock)
+    }
+
+    /// 落在夜里的时间顺延到早上 9 点
+    static func skippingQuietHours(_ date: Date, calendar: Calendar = .current) -> Date {
+        let hour = calendar.component(.hour, from: date)
+        guard hour >= quietHours.start || hour < quietHours.end else { return date }
+        let day = hour >= quietHours.start ? calendar.date(byAdding: .day, value: 1, to: date) ?? date : date
+        return calendar.date(bySettingHour: quietHours.resume, minute: 0, second: 0, of: day) ?? date
     }
 
     /// 剩余时间文案："还剩 1 小时 52 分" / "还剩 4 分钟"

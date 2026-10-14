@@ -65,6 +65,7 @@ struct SurveyFormView: View {
     @State private var characterRating = 5
     @State private var tags: Set<SurveyTag> = []
     @State private var issues: Set<SurveyIssue> = []
+    @State private var wantsRematch = false
     @State private var isSubmitting = false
     @State private var didSetup = false
     /// 提交前保存一份，避免提交后列表刷新导致页面消失
@@ -84,6 +85,7 @@ struct SurveyFormView: View {
                         characterQuestion
                         tagsQuestion
                         issuesQuestion
+                        rematchQuestion
                         Text("评价匿名，只展示汇总；双方都提交后（或 48 小时后）才会计入。")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
@@ -221,6 +223,20 @@ struct SurveyFormView: View {
         }
     }
 
+    private var rematchQuestion: some View {
+        Toggle(isOn: $wantsRematch) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("下次还想和 TA 打")
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                Text("只有你们都选了才会告诉双方；只有一方选，谁也不会知道")
+                    .font(AppTheme.Typography.footnote)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+            }
+        }
+        .tint(AppTheme.Colors.success)
+    }
+
     private var characterHint: String {
         switch characterRating {
         case 1: return "很差：言语冒犯或危险动作"
@@ -318,7 +334,8 @@ struct SurveyFormView: View {
                 attendance: attendance,
                 characterRating: characterRating,
                 tags: SurveyTag.allCases.filter { tags.contains($0) },
-                issues: SurveyIssue.allCases.filter { issues.contains($0) }
+                issues: SurveyIssue.allCases.filter { issues.contains($0) },
+                wantsRematch: wantsRematch
             )
             appState.showToast("评价已提交，谢谢！", style: .success)
             router.pop()

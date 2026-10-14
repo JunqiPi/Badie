@@ -12,7 +12,7 @@ struct TicketStatus {
     init(ticket: MatchTicket, offer: MatchOffer?, now: Date = Date()) {
         switch ticket.status {
         case .searching:
-            title = ticket.isLastMinute ? "临时局 · 正在找附近的人" : "正在找 · 最晚 \(DateText.time(ticket.deadline)) 前约成"
+            title = ticket.isLastMinute ? "临时局 · 正在找附近的人" : "正在找 · 最晚\(DateText.deadline(ticket.deadline))前约成"
             icon = "hourglass"
             tint = AppTheme.Colors.sky
             needsAction = false
@@ -112,7 +112,7 @@ struct TicketSummaryCard: View {
                     subtitle: "只和也能去这些球馆（或 150 米内同一处）的球友匹配")
             InsetDivider()
             InfoRow(icon: "location.circle.fill", tint: AppTheme.Colors.peach,
-                    title: "\(DistanceFormatter.radius(km: ticket.radiusKm)) 内的球友",
+                    title: "\(DistanceFormatter.radius(km: ticket.radiusKm))内的球友",
                     subtitle: ticket.isLastMinute ? "临时局只找附近此刻也在找人的球友" : nil)
         }
         .padding(.horizontal, AppTheme.Spacing.lg)
@@ -226,7 +226,7 @@ struct TicketWaitingView: View {
                 .foregroundStyle(AppTheme.Colors.ink)
             Text(ticket.isLastMinute
                  ? "临时局：找到人后需要在 5–10 分钟内确认，最晚开赛前 20 分钟约成。到点没约成会自动结束，不计入任何记录。"
-                 : "最晚 \(DateText.time(ticket.deadline))（开赛前 2 小时）前所有人都要确认。到点没约成会自动结束，不计入任何记录。")
+                 : "最晚\(DateText.deadline(ticket.deadline))（开赛前 2 小时）前所有人都要确认。到点没约成会自动结束，不计入任何记录。")
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)

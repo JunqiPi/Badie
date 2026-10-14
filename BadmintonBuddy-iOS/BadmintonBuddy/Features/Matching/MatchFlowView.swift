@@ -153,7 +153,8 @@ struct SearchingView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.Colors.lime.ignoresSafeArea())
         .onAppear {
-            orbiters = friendManager.nearbyPlayers(radiusKm: locationManager.preferences.travelRadiusKm, limit: 6)
+            // 装饰用的头像：只用好友和公开了的同馆常客，不展示“附近的陌生人”
+            orbiters = Array((friendManager.friends + friendManager.venueRegulars(limit: 6).map(\.user)).prefix(6))
             pulse = true
         }
         .task {
@@ -424,9 +425,9 @@ struct OfferView: View {
 
     private func deadlineText(now: Date) -> String {
         if awaitsMe, let seat = mySeat {
-            return "请在 \(DateText.time(seat.respondBy)) 前确认（\(MatchTiming.remainingText(until: seat.respondBy, now: now))）"
+            return "请在\(DateText.deadline(seat.respondBy, now: now))前确认（\(MatchTiming.remainingText(until: seat.respondBy, now: now))）"
         }
-        return "最晚 \(DateText.time(offer.lockAt)) 前全部确认，否则自动取消，不计入任何记录"
+        return "最晚\(DateText.deadline(offer.lockAt, now: now))前全部确认，否则自动取消，不计入任何记录"
     }
 
     @ViewBuilder

@@ -7,6 +7,7 @@ struct JoinRoomView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var roomManager: RoomManager
+    @EnvironmentObject private var groupManager: GroupManager
 
     @State private var code = ""
     @State private var errorText: String?
@@ -15,11 +16,11 @@ struct JoinRoomView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "加入房间")
+            ScreenHeader(title: "房间码 / 群号")
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text("输入好友发来的\n6 位房间码")
+                        Text("输入好友发来的\n6 位房间码或群号")
                             .font(AppTheme.Typography.title)
                             .foregroundStyle(AppTheme.Colors.ink)
                             .fixedSize(horizontal: false, vertical: true)
@@ -101,6 +102,13 @@ struct JoinRoomView: View {
         guard Room.isValidCode(code) else {
             errorText = "房间码格式不对，请检查是否输入了 0/O/1/I/L"
             Haptics.error()
+            return
+        }
+        // 群号：打开球群页面（在那里加入）
+        if let group = groupManager.group(code: code) {
+            Haptics.success()
+            router.pop()
+            router.open(.group(id: group.id))
             return
         }
         isWorking = true

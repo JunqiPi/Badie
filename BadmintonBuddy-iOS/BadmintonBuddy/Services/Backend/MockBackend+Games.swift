@@ -31,13 +31,14 @@ extension MockBackend {
         for other in game.otherPlayerIds(excluding: me.id) {
             addInbox(InboxItem(kind: .gameCancelled, title: "\(me.nickname) 取消了球局",
                                body: "\(game.slot.formattedFull) · \(game.court.name)", relatedId: game.id), to: other)
-            if isBot(other) {
-                let threadId = MessageThread.id(for: me.id, other)
-                simulate(after: Double.random(in: 2...5)) { [weak self] in
-                    self?.appendMessage(Message(threadId: threadId, senderId: other, content: "好的，那下次再约～", deliveredAt: Date()),
-                                        participants: [me.id, other], countsAsUnread: true)
-                }
-            }
+        }
+        // 在球局群聊里说明，并有球友回应
+        let thread = ensureGameThread(for: game)
+        appendMessage(Message(threadId: thread.id, senderId: "system", content: "\(me.nickname) 取消了这场球局",
+                              deliveredAt: Date(), kind: .system),
+                      participants: thread.participantIds, countsAsUnread: false)
+        if let bot = game.otherPlayerIds(excluding: me.id).first(where: { isBot($0) }) {
+            postBotMessage("好的，那下次再约～", from: bot, in: thread.id, after: 2...5)
         }
         scheduleSave()
         emit(.gamesChanged)
@@ -134,7 +135,8 @@ extension MockBackend {
                     skillRating: SkillLevel.clamp(me.displayLevel + drift), wasPunctual: attendance.wasPunctual,
                     attendance: attendance, characterRating: [5, 5, 4].randomElement(using: &rng) ?? 5,
                     tags: [SurveyTag.friendly, .punctual, .fairPlay].shuffled(using: &rng).prefix(2).map { $0 },
-                    submittedAt: now
+                    submittedAt: now,
+                    wantsRematch: Double.random(in: 0..<1, using: &rng) < 0.6
                 ))
             }
         }
@@ -165,7 +167,8 @@ extension MockBackend {
         attendance: AttendanceAnswer,
         characterRating: Int,
         tags: [SurveyTag],
-        issues: [SurveyIssue] = []
+        issues: [SurveyIssue] = [],
+        wantsRematch: Bool = false
     ) async throws {
         let me = try requireUser()
         guard let pending = db.pendingSurveys.first(where: { $0.id == pendingId && $0.evaluatorId == me.id }) else {
@@ -192,7 +195,8 @@ extension MockBackend {
             characterRating: characterRating,
             tags: tags,
             submittedAt: Date(),
-            issues: issues
+            issues: issues,
+            wantsRematch: wantsRematch
         )
         guard survey.isValid else { throw BackendError.surveyInvalid }
         await networkDelay()
@@ -212,10 +216,25 @@ extension MockBackend {
             addInbox(InboxItem(kind: .reviewReceived, title: "你收到了新的球友评价",
                                body: "评价已匿名计入你的口碑与综合水平。", relatedId: me.id), to: me.id)
         }
+        notifyMutualRematchIfNeeded(survey)
         scheduleSave()
         emit(.surveysChanged)
         if let updated = currentUser { emit(.userUpdated(updated)) }
         if let opponent = db.users[pending.opponentId] { emit(.userUpdated(opponent)) }
+    }
+
+    /// “想再约”双盲：只有双方都选了才告诉双方；只有一方选时谁也不知道
+    private func notifyMutualRematchIfNeeded(_ survey: MatchSurvey) {
+        guard survey.wantsRematch else { return }
+        let theirs = (db.surveys + db.heldSurveys).first {
+            $0.matchId == survey.matchId && $0.evaluatorId == survey.evaluatedUserId && $0.evaluatedUserId == survey.evaluatorId
+        }
+        guard theirs?.wantsRematch == true,
+              let first = db.users[survey.evaluatorId], let second = db.users[survey.evaluatedUserId] else { return }
+        for (user, other) in [(first, second), (second, first)] {
+            addInbox(InboxItem(kind: .rematch, title: "你和 \(other.nickname) 都想再约一场",
+                               body: "加个球友，下次直接约。", relatedId: other.id), to: user.id)
+        }
     }
 
     /// 把一份评价计入被评价者的声誉与履约记录

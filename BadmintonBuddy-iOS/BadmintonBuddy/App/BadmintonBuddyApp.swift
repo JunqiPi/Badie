@@ -12,6 +12,7 @@ struct BadmintonBuddyApp: App {
     @StateObject private var roomManager: RoomManager
     @StateObject private var surveyManager: SurveyManager
     @StateObject private var inboxManager: InboxManager
+    @StateObject private var groupManager: GroupManager
 
     init() {
         let environment = AppEnvironment.makeForLaunch()
@@ -24,6 +25,7 @@ struct BadmintonBuddyApp: App {
         _roomManager = StateObject(wrappedValue: environment.roomManager)
         _surveyManager = StateObject(wrappedValue: environment.surveyManager)
         _inboxManager = StateObject(wrappedValue: environment.inboxManager)
+        _groupManager = StateObject(wrappedValue: environment.groupManager)
         NotificationRouter.shared.install()
     }
 
@@ -39,6 +41,7 @@ struct BadmintonBuddyApp: App {
                 .environmentObject(roomManager)
                 .environmentObject(surveyManager)
                 .environmentObject(inboxManager)
+                .environmentObject(groupManager)
         }
     }
 }

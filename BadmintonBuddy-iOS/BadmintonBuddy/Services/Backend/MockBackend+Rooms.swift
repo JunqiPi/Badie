@@ -251,6 +251,7 @@ extension MockBackend {
         room.status = .started(gameId: game.id)
         db.rooms[id] = room
         db.games[game.id] = game
+        ensureGameThread(for: game)
         scheduleSave()
         emit(.roomsChanged)
         emit(.gameCreated(game))
@@ -375,6 +376,7 @@ extension MockBackend {
         room.status = .started(gameId: game.id)
         db.rooms[roomId] = room
         db.games[game.id] = game
+        ensureGameThread(for: game)
         scheduleSave()
         emit(.roomsChanged)
         if let me = currentUserId, game.playerIds.contains(me) {

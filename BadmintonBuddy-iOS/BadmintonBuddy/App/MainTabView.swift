@@ -43,7 +43,7 @@ struct MainTabView: View {
                 pendingCreateAction = action
                 router.isCreateMenuPresented = false
             }
-            .presentationDetents([.height(430)])
+            .presentationDetents([.height(520)])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(28)
         }
@@ -113,6 +113,8 @@ struct MainTabView: View {
             router.isMatchSetupPresented = true
         case .createRoom:
             router.open(.createRoom(nil, invitee: nil), in: .games)
+        case .groups:
+            router.open(.groups, in: .games)
         case .joinRoom:
             router.open(.joinRoom(code: nil), in: .games)
         }
@@ -212,7 +214,7 @@ struct FloatingTabBar: View {
 // MARK: - “+”创建菜单
 
 enum CreateAction {
-    case quickMatch, createRoom, joinRoom
+    case quickMatch, createRoom, groups, joinRoom
 }
 
 struct CreateMenuSheet: View {
@@ -228,8 +230,10 @@ struct CreateMenuSheet: View {
                    subtitle: "按水平、时间和距离自动找搭子", action: .quickMatch)
             option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: "发起球局",
                    subtitle: "我有场地缺人 / 约好友组局，可公开招募", action: .createRoom)
-            option(icon: "number", tint: AppTheme.Colors.lavender, title: "输入房间码",
-                   subtitle: "好友发来了 6 位房间码", action: .joinRoom)
+            option(icon: "person.3.fill", tint: AppTheme.Colors.sky, title: "固定局 · 球群",
+                   subtitle: "每周固定时间和球馆，一键报名、自动候补", action: .groups)
+            option(icon: "number", tint: AppTheme.Colors.lavender, title: "输入房间码 / 群号",
+                   subtitle: "好友发来的 6 位房间码或群号", action: .joinRoom)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppTheme.Spacing.screen)

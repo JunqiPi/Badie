@@ -19,6 +19,24 @@ struct ChatView: View {
     private var messages: [Message] { messageManager.messages(with: userId) }
     private var isBlocked: Bool { messageManager.isBlocked(userId) }
     private var me: String? { messageManager.currentUserId }
+    private var permission: MessagePermission {
+        _ = messageManager.threads
+        return messageManager.permission(with: userId)
+    }
+    private var thread: MessageThread? {
+        _ = messageManager.threads
+        return messageManager.thread(with: userId)
+    }
+    /// 对方发来的消息请求，等我处理
+    private var isIncomingRequest: Bool {
+        guard let thread else { return false }
+        return thread.isPendingRequest && thread.requestFrom == userId
+    }
+    /// 非好友提到了站外联系方式 / 转账方式：提醒防骗
+    private var showsContactWarning: Bool {
+        !friendManager.isFriend(userId)
+            && messages.contains { $0.senderId == userId && ContactInfoDetector.mentionsOffPlatformContact($0.content) }
+    }
 
     private let quickReplies = ["几点开始？", "去哪个球馆？", "我带球", "我到了", "AA 就行"]
 
@@ -155,55 +173,42 @@ struct ChatView: View {
 
     private var inputBar: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
-            if isBlocked {
+            if showsContactWarning {
+                NoticeBanner(icon: "exclamationmark.shield.fill",
+                             text: "对方提到了站外联系方式或转账。见面打球前不需要转账、代付或提供验证码，遇到这类要求请举报。",
+                             tint: AppTheme.Colors.pink)
+            }
+            if isIncomingRequest {
+                requestCard
+            }
+            switch permission {
+            case .blocked:
                 NoticeBanner(icon: "hand.raised.fill", text: "你已屏蔽对方，解除后才能继续聊天", tint: AppTheme.Colors.surfaceMuted,
                              actionTitle: "解除") {
                     messageManager.unblock(userId)
                 }
-            } else {
-                if messages.count < 6 {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: AppTheme.Spacing.sm) {
-                            ForEach(quickReplies, id: \.self) { reply in
-                                ChoiceChip(title: reply, isSelected: false) {
-                                    Task { await send(reply) }
-                                }
-                            }
-                        }
-                        .padding(.vertical, 4)
+            case .pendingRequest:
+                NoticeBanner(icon: "paperplane.fill", text: "已发出消息请求，对方接受后才能继续聊", tint: AppTheme.Colors.sky)
+            case .gameChat(let gameId):
+                NoticeBanner(icon: "person.3.fill", text: "你们在同一场球局里，在球局群聊里沟通就行（赛后 48 小时关闭）",
+                             tint: AppTheme.Colors.lime, actionTitle: "去群聊") {
+                    if let threadId = messageManager.gameChatId(for: gameId) {
+                        router.open(.groupChat(threadId: threadId))
                     }
                 }
-                HStack(alignment: .bottom, spacing: AppTheme.Spacing.sm) {
-                    TextField("发消息…", text: $draft, axis: .vertical)
-                        .font(AppTheme.Typography.body)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                        .lineLimit(1...5)
-                        .focused($inputFocused)
-                        .padding(.horizontal, AppTheme.Spacing.lg)
-                        .padding(.vertical, AppTheme.Spacing.md)
-                        .sticker(AppTheme.Colors.surface, radius: 20, shadow: .zero,
-                                 stroke: draft.count > MessageManager.maxMessageLength ? AppTheme.Colors.danger : AppTheme.Colors.stroke)
-                    Button {
-                        Task { await send(draft) }
-                    } label: {
-                        Image(systemName: "arrow.up")
-                            .font(.system(size: 18, weight: .black))
-                            .foregroundStyle(AppTheme.Colors.onAccent)
-                            .frame(width: 48, height: 48)
-                            .background(Circle().fill(canSend ? AppTheme.Colors.lime : AppTheme.Colors.surfaceMuted))
-                            .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: 2))
-                    }
-                    .buttonStyle(PressableStyle(scale: 0.9))
-                    .disabled(!canSend)
-                    .accessibilityLabel("发送")
+            case .friendsOnly:
+                VStack(spacing: AppTheme.Spacing.sm) {
+                    NoticeBanner(icon: "person.crop.circle.badge.plus",
+                                 text: "加为球友后才能私信。陌生人不能直接发消息，是为了少一点骚扰和骗局。",
+                                 tint: AppTheme.Colors.surfaceMuted)
+                    FriendActionButton(userId: userId)
                 }
-                if draft.count > MessageManager.maxMessageLength - 100 {
-                    Text("\(draft.count)/\(MessageManager.maxMessageLength)")
-                        .font(AppTheme.Typography.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(draft.count > MessageManager.maxMessageLength ? AppTheme.Colors.danger : AppTheme.Colors.inkTertiary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
+            case .newAccount:
+                NoticeBanner(icon: "hourglass",
+                             text: "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求；可以先在球群群聊里打招呼",
+                             tint: AppTheme.Colors.surfaceMuted)
+            case .allowed, .request:
+                composer
             }
         }
         .padding(.horizontal, AppTheme.Spacing.screen)
@@ -211,6 +216,89 @@ struct ChatView: View {
         .padding(.bottom, AppTheme.Spacing.sm)
         .background(AppTheme.Colors.canvas.ignoresSafeArea(edges: .bottom))
         .overlay(alignment: .top) { InsetDivider() }
+    }
+
+    /// 对方发来的消息请求：接受 / 忽略（忽略对方不会知道）
+    private var requestCard: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            Label("\(other?.nickname ?? "TA") 想和你聊天", systemImage: "envelope.badge.fill")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.ink)
+            Text("你们在同一个球群。接受后才能互相发消息；忽略的话对方不会知道。")
+                .font(AppTheme.Typography.footnote)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: AppTheme.Spacing.sm) {
+                Button("忽略") {
+                    messageManager.declineRequest(from: userId)
+                    router.pop()
+                }
+                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
+                Button("接受") {
+                    messageManager.acceptRequest(from: userId)
+                    Haptics.success()
+                }
+                .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small))
+            }
+        }
+        .padding(AppTheme.Spacing.md)
+        .sticker(AppTheme.Colors.butter, radius: AppTheme.Radius.md, shadow: .zero)
+    }
+
+    @ViewBuilder
+    private var composer: some View {
+        if case .request(let groupName) = permission {
+            Text("你们同在「\(groupName)」。可以先发一条消息请求：纯文字，不能留链接或联系方式，对方接受后再聊。")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        VStack(spacing: AppTheme.Spacing.sm) {
+            if messages.count < 6, permission == .allowed {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        ForEach(quickReplies, id: \.self) { reply in
+                            ChoiceChip(title: reply, isSelected: false) {
+                                Task { await send(reply) }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+            HStack(alignment: .bottom, spacing: AppTheme.Spacing.sm) {
+                TextField("发消息…", text: $draft, axis: .vertical)
+                    .font(AppTheme.Typography.body)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .lineLimit(1...5)
+                    .focused($inputFocused)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    .padding(.vertical, AppTheme.Spacing.md)
+                    .sticker(AppTheme.Colors.surface, radius: 20, shadow: .zero,
+                             stroke: draft.count > MessageManager.maxMessageLength ? AppTheme.Colors.danger : AppTheme.Colors.stroke)
+                Button {
+                    Task { await send(draft) }
+                } label: {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 18, weight: .black))
+                        .foregroundStyle(AppTheme.Colors.onAccent)
+                        .frame(width: 48, height: 48)
+                        .background(Circle().fill(canSend ? AppTheme.Colors.lime : AppTheme.Colors.surfaceMuted))
+                        .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: 2))
+                }
+                .buttonStyle(PressableStyle(scale: 0.9))
+                .disabled(!canSend)
+                .accessibilityLabel("发送")
+            }
+            if draft.count > MessageManager.maxMessageLength - 100 {
+                Text("\(draft.count)/\(MessageManager.maxMessageLength)")
+                    .font(AppTheme.Typography.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(draft.count > MessageManager.maxMessageLength ? AppTheme.Colors.danger : AppTheme.Colors.inkTertiary)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+            }
+        }
     }
 
     private var canSend: Bool {

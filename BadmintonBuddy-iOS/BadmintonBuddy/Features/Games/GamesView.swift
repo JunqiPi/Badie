@@ -9,6 +9,7 @@ struct GamesView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var matchManager: MatchManager
+    @EnvironmentObject private var groupManager: GroupManager
     @EnvironmentObject private var roomManager: RoomManager
     @EnvironmentObject private var surveyManager: SurveyManager
     @EnvironmentObject private var friendManager: FriendManager
@@ -50,6 +51,30 @@ struct GamesView: View {
                                 TicketStatusCard(ticket: ticket, offer: matchManager.offer(for: ticket))
                             }
                             .buttonStyle(PressableStyle(scale: 0.98))
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                }
+
+                if !groupManager.mySessions.isEmpty {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        SectionTitle(title: "我报名的固定局", detail: "开场前 2 小时内退出算临时取消")
+                        ForEach(groupManager.mySessions) { session in
+                            if let group = groupManager.group(id: session.groupId) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Button {
+                                        router.open(.group(id: group.id))
+                                    } label: {
+                                        Label(group.name, systemImage: "person.3.fill")
+                                            .font(AppTheme.Typography.footnoteBold)
+                                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                    SessionRow(session: session, userId: appState.currentUser?.id ?? "") {
+                                        router.open(.group(id: group.id))
+                                    }
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal, AppTheme.Spacing.screen)
@@ -101,7 +126,10 @@ struct GamesView: View {
             quickAction(icon: "sportscourt.fill", title: "发起球局", subtitle: "有场地缺人", tint: AppTheme.Colors.peach) {
                 router.open(.createRoom(nil, invitee: nil))
             }
-            quickAction(icon: "number", title: "房间码", subtitle: "加入好友房间", tint: AppTheme.Colors.lavender) {
+            quickAction(icon: "person.3.fill", title: "固定局", subtitle: "每周固定的球群", tint: AppTheme.Colors.sky) {
+                router.open(.groups)
+            }
+            quickAction(icon: "number", title: "房间码", subtitle: "房间码或群号", tint: AppTheme.Colors.lavender) {
                 router.open(.joinRoom(code: nil))
             }
         }

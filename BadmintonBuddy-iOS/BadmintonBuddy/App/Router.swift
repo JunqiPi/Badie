@@ -62,6 +62,14 @@ enum Route: Hashable {
     case matchVenues(query: String?)
     /// 添加球馆（演示时可预填，并自动检查重复）
     case addVenue(prefill: VenuePrefill?)
+    /// 群聊（球局群 / 球群）
+    case groupChat(threadId: String)
+    /// 球群详情
+    case group(id: String)
+    /// 找球群（附近的固定局）
+    case groups
+    /// 创建球群（可预选球馆）
+    case createGroup(venueId: String?)
 }
 
 /// 添加球馆的预填内容（地图链接、演示截图）

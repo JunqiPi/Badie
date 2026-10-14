@@ -120,8 +120,12 @@ struct CourtsView: View {
 
 struct CourtDetailSheet: View {
     let court: BadmintonCourt
+    /// 作为弹窗展示时，跳转到其他页面前先关闭弹窗
+    var isSheet = true
 
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var router: Router
+    @EnvironmentObject private var groupManager: GroupManager
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var matchManager: MatchManager
     @Environment(\.dismiss) private var dismiss
@@ -207,6 +211,8 @@ struct CourtDetailSheet: View {
 
                 trustSection
 
+                groupsSection
+
                 if !venue.amenities.isEmpty {
                     FlowLayout(spacing: AppTheme.Spacing.sm) {
                         ForEach(venue.amenities, id: \.self) { amenity in
@@ -263,6 +269,45 @@ struct CourtDetailSheet: View {
             }
         } message: {
             Text("一个人的报告不会让球馆下架；多位球友报告后会进入人工核实。")
+        }
+    }
+
+    // MARK: 这里的固定局
+
+    private var groupsSection: some View {
+        let groups = groupManager.groups(atVenue: venue.id)
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            SectionTitle(title: "这里的固定局", detail: groups.isEmpty ? nil : "\(groups.count) 个球群",
+                         actionTitle: "建一个") {
+                navigate(to: .createGroup(venueId: venue.id))
+            }
+            if groups.isEmpty {
+                Text("还没有人在这里建球群。常和固定的人打的话，建一个，报名不用再在群里接龙。")
+                    .font(AppTheme.Typography.footnote)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            ForEach(groups) { group in
+                Button {
+                    navigate(to: .group(id: group.id))
+                } label: {
+                    GroupCard(group: group, venue: nil, activity: groupManager.activity(of: group.id),
+                              status: appState.currentUser.map { group.isMember($0.id) } == true ? "已加入" : nil)
+                }
+                .buttonStyle(PressableStyle(scale: 0.98))
+            }
+        }
+    }
+
+    private func navigate(to route: Route) {
+        if isSheet {
+            dismiss()
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 350_000_000)
+                router.open(route)
+            }
+        } else {
+            router.open(route)
         }
     }
 

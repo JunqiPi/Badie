@@ -98,6 +98,15 @@ struct Avatar: Codable, Hashable {
     }
 }
 
+// MARK: - 隐私设置
+
+struct PrivacySettings: Codable, Hashable {
+    /// 在常去球馆的“同馆常客”里显示我（默认关闭）
+    var showsAsRegular = false
+    /// 允许同球群的球友给我发消息请求（默认开启；关闭后只有好友能私信）
+    var allowsMessageRequests = true
+}
+
 // MARK: - 用户
 
 struct User: Identifiable, Codable, Hashable {
@@ -119,6 +128,8 @@ struct User: Identifiable, Codable, Hashable {
     /// 客观履约记录（签到/爽约/临时取消）
     var attendance: AttendanceRecord
     var preferredMode: GameMode?
+    /// 隐私设置（别人能看到 / 能联系到我的方式）
+    var privacy = PrivacySettings()
 
     init(
         id: String,
@@ -178,6 +189,9 @@ struct User: Identifiable, Codable, Hashable {
     var displayLevelText: String { SkillLevel.displayText(for: displayLevel) }
 
     var isNewPlayer: Bool { reputation.isNewPlayer }
+
+    /// 打满几场才能给同球群的人发消息请求（防小号骚扰）
+    static let gamesBeforeMessageRequests = 3
 
     /// “靠谱”徽章：打满 3 场、没有爽约、临时取消不超过 1 次（只看客观履约记录）
     var isReliable: Bool {
