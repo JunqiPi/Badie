@@ -56,7 +56,6 @@ enum Route: Hashable {
     case notifications
     case courts
     case gameHistory
-    /// 球馆详情
     case venue(id: String)
     /// 快速匹配的球馆多选（可带初始搜索词）
     case matchVenues(query: String?)
@@ -64,7 +63,6 @@ enum Route: Hashable {
     case addVenue(prefill: VenuePrefill?)
     /// 群聊（球局群 / 球群）
     case groupChat(threadId: String)
-    /// 球群详情
     case group(id: String)
     /// 找球群（附近的固定局）
     case groups
@@ -143,10 +141,6 @@ final class Router: ObservableObject {
         selectedTab = .home
         isCreateMenuPresented = false
         isMatchSetupPresented = false
-    }
-
-    func popToRoot(_ tab: MainTab? = nil) {
-        paths[tab ?? selectedTab] = []
     }
 
     func pop() {

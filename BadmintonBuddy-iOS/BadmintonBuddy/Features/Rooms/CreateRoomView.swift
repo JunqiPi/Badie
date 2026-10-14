@@ -35,9 +35,7 @@ struct CreateRoomView: View {
     private var court: BadmintonCourt? { courtId.flatMap { locationManager.court(id: $0) } }
 
     private var validationMessage: String? {
-        if visibility == .publicListing || hasSchedule {
-            if let message = slot?.validate().errorMessage { return message }
-        }
+        if let message = slot?.validate().errorMessage { return message }
         if visibility == .publicListing && court == nil { return "公开球局需要选择球馆" }
         return nil
     }

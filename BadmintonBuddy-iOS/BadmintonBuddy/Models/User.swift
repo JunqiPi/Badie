@@ -2,15 +2,11 @@ import Foundation
 
 // MARK: - 技能等级（9 级，每级再分 −/本级/+，共 27 档，见 SkillTier）
 //
-// 业内没有通用的业余等级标准（中国羽协等级“九级最低”、方向和我们相反；美国赛事 A–E 组没有书面定义）。
-// 1–2 级看基本动作；3–6 级每一级多一个维度：3 技术会不会 → 4 主动球好不好（被动球做不到）
-// → 5 被动球能不能摆脱、技术特点和战术开始明显 → 6 在俱乐部里的位置。
-// 新用户回答问卷自动算出 1− 到 6+，球友评价最多推到 7−；7 起只凭能查到的证据认证：
-// 7 州级（二级运动员），8 国家级，9 国际级（只认 BWF 世界排名和赛果，只有 BWF ID 不够）。依据见 docs/DESIGN.md §13。
+// 1–2 级看基本动作；3 技术会不会 → 4 主动球好不好 → 5 被动球能否摆脱 → 6 俱乐部里的位置。
+// 问卷最高 6+，球友评价最多推到 7−；7 州级、8 国家级、9 国际级只凭证据认证。见 docs/DESIGN.md §13。
 
 enum SkillLevel {
     static let range = 1...9
-    static let selfSelectableRange = 1...6
     /// 问卷能给到的最高级（俱乐部高手）
     static let maxSelfSelectable = 6
 
@@ -50,7 +46,7 @@ enum SkillLevel {
         }
     }
 
-    /// 分项标准（参考中羽在线论坛流传的 1–9 级分项描述，按我们的定义整理）：每级各分项是什么样子
+    /// 每级各技术分项的标准
     static func dimensionNotes(for level: Int) -> [(name: String, text: String)] {
         switch level {
         case 1: return [("握拍", "苍蝇拍式握法"), ("意识", "知道要把球打到对方难接的地方，但多数时候还做不到")]
@@ -133,7 +129,7 @@ enum SkillLevel {
         }
     }
 
-    /// 每一档的具体标准。1–2 级看基本动作；3–6 级按“会不会 → 好不好 → 稳不稳 → 战术 → 俱乐部里的位置”；7 起看证据
+    /// 每一档的具体标准
     static func tierCriteria(for tier: SkillTier) -> [String] {
         switch (tier.level, tier.modifier) {
         case (1, .minus): return ["正手发球 10 个里 ≤3 个进区"]
@@ -188,8 +184,8 @@ enum SkillLevel {
 
 // MARK: - 高水平认证
 
-/// 7+ 起的档位只凭能查到的证据认证（赛果、全国排名、BWF 球员资料），问卷和球友评价都到不了。
-/// rawValue 沿用旧值，老数据可以直接解码。
+/// 7 级起只凭能查到的证据认证，问卷和球友评价都到不了。
+/// rawValue 与 case 名不同，已存数据按 rawValue 解码，不能改。
 enum VerificationStatus: String, Codable, Hashable, CaseIterable, Identifiable {
     case unverified
     /// 赛事成绩：tournamentsoftware.com 上公开的签表和成绩
@@ -222,8 +218,6 @@ enum VerificationStatus: String, Codable, Hashable, CaseIterable, Identifiable {
         case .bwf: return SkillTier(level: 9, modifier: .minus)
         }
     }
-
-    var maxRating: Double { maxTier.rating }
 
     var title: String {
         switch self {
@@ -267,6 +261,10 @@ struct Avatar: Codable, Hashable {
     static func `default`(for seed: String) -> Avatar {
         Avatar(symbol: "", paletteIndex: abs(seed.stableHash) % 6)
     }
+
+    func text(nickname: String) -> String {
+        symbol.isEmpty ? (nickname.first.map { String($0) } ?? "🏸") : symbol
+    }
 }
 
 // MARK: - 隐私设置
@@ -299,7 +297,6 @@ struct User: Identifiable, Codable, Hashable {
     /// 客观履约记录（签到/爽约/临时取消）
     var attendance: AttendanceRecord
     var preferredMode: GameMode?
-    /// 隐私设置（别人能看到 / 能联系到我的方式）
     var privacy = PrivacySettings()
     /// 定级问卷结果（老数据可能没有）
     var assessment: SkillAssessmentSummary?
@@ -351,9 +348,7 @@ struct User: Identifiable, Codable, Hashable {
 
     // MARK: 等级计算
 
-    static let selfReportedWeight = 0.3
     static let peerEvaluationWeight = 0.7
-    static let minimumEvaluationsForWeightedLevel = ReputationScore.newPlayerThreshold
 
     /// 待校准（经历和技术对不上）或回归球友：球友评价占 85%，更快校准到真实水平
     static let calibratingPeerWeight = 0.85
@@ -444,15 +439,7 @@ struct User: Identifiable, Codable, Hashable {
         return Double(wins) / Double(totalGames) * 100
     }
 
-    var maskedPhone: String {
-        PhoneNumber.parse(phone)?.masked ?? phone
-    }
-
-    /// 头像显示文字
-    var avatarText: String {
-        if !avatar.symbol.isEmpty { return avatar.symbol }
-        return nickname.first.map { String($0) } ?? "🏸"
-    }
+    var avatarText: String { avatar.text(nickname: nickname) }
 
     /// 短 ID（展示用）
     var shortId: String {

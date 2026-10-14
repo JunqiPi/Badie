@@ -128,8 +128,7 @@ struct VenuePickerView: View {
 
     private var title: String {
         switch mode {
-        case .multiple: return "选择球馆"
-        case .single: return "选择球馆"
+        case .multiple, .single: return "选择球馆"
         case .browse: return "搜索球馆"
         }
     }

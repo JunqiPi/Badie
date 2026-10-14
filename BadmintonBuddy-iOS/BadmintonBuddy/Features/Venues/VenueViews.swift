@@ -62,14 +62,12 @@ struct VenueRow: View {
     var isFavorite = false
     var query = ""
     var accessory: Accessory = .chevron
-    /// 该时段已知不营业
     var isClosedForSlot = false
 
     var body: some View {
         HStack(alignment: .center, spacing: AppTheme.Spacing.md) {
             IconTile(systemName: "figure.badminton", fill: tileFill, size: 42)
             VStack(alignment: .leading, spacing: 4) {
-                // 第 1 行：名称（高亮搜索词）+ 距离
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(venue.name, highlighting: query)
                         .font(AppTheme.Typography.headline)
@@ -93,12 +91,11 @@ struct VenueRow: View {
                         .font(AppTheme.Typography.caption.weight(.bold))
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
-                // 第 2 行：街道 + 城市 + 州，用来确认“是不是这一家”
+                // 完整地址，用来确认“是不是这一家”
                 Text(venue.postalAddress.compactLine, highlighting: query)
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                // 第 3 行：可信度 + 场地数 + 常去人数
                 HStack(spacing: 6) {
                     VenueStatusBadge(status: venue.status)
                     if !metaText.isEmpty {

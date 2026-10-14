@@ -2,11 +2,8 @@ import Foundation
 
 // MARK: - 高水平认证申请
 //
-// 7 起的档位只看能公开查到的证据，由人工审核：
-// - 赛事成绩：tournamentsoftware.com 上公开的签表和成绩（按“最高组 / 次高组”的相对位置认定）
-// - 全国排名 / 运动员等级：USAB 全国排名，或《运动员技术等级标准》电子证书（15 位编号，末位是等级码）
-// - BWF：bwfbadminton.com 的球员页，看世界排名和赛果；只有 BWF ID 不够（报老将赛也要 BWF ID）
-// 审核时核对证据上的姓名与本人证件，避免冒用别人的成绩。bwfbadminton.com 拒绝自动抓取，只能人工打开核验。
+// 7 级起只凭公开可查的证据（赛果、全国排名 / 等级证书、BWF 球员页）由人工审核，
+// 并核对证据上的姓名与本人证件。见 docs/DESIGN.md §13。
 
 struct VerificationRequest: Identifiable, Codable, Hashable {
     enum Status: String, Codable, Hashable {
@@ -18,9 +15,8 @@ struct VerificationRequest: Identifiable, Codable, Hashable {
     let id: String
     let userId: String
     let kind: VerificationStatus
-    /// 申请的档位分值
     let claimedRating: Double
-    /// 证据链接
+    /// 链接，或 15 位电子证书编号
     let evidenceURL: String
     /// 证据上的姓名（和证件核对）
     let nameOnRecord: String
@@ -63,7 +59,6 @@ enum VerificationEvidence {
         }
     }
 
-    /// 填写提示
     static func placeholder(for kind: VerificationStatus) -> String {
         switch kind {
         case .bwf: return "bwfbadminton.com/player/12345/your-name"
@@ -98,7 +93,7 @@ enum VerificationEvidence {
         return nil
     }
 
-    /// 补全 https://（证书编号原样保留）
+    /// 补全 https://；证书编号只转大写
     static func normalized(_ link: String) -> String {
         let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
         if certificateMaxTier(trimmed) != nil { return trimmed.uppercased() }

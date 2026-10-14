@@ -11,16 +11,10 @@ struct GroupChatView: View {
     @State private var draft = ""
     @State private var isSending = false
 
-    private var thread: MessageThread? {
-        _ = messageManager.threads
-        return messageManager.thread(id: threadId)
-    }
+    private var thread: MessageThread? { messageManager.thread(id: threadId) }
     private var messages: [Message] { messageManager.messages(threadId: threadId) }
     private var me: String? { messageManager.currentUserId }
-    private var canPost: Bool {
-        _ = messageManager.threads
-        return messageManager.canPost(in: threadId)
-    }
+    private var canPost: Bool { messageManager.canPost(in: threadId) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -97,6 +91,7 @@ struct GroupChatView: View {
         } else {
             let sender = messageManager.user(message.senderId)
             let showsSender = previous?.senderId != message.senderId
+            let mentionsContact = ContactInfoDetector.mentionsOffPlatformContact(message.content)
             HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
                 if showsSender, let sender {
                     AvatarView(user: sender, size: 32)
@@ -114,14 +109,14 @@ struct GroupChatView: View {
                 }
             }
             .overlay(alignment: .bottomLeading) {
-                if ContactInfoDetector.mentionsOffPlatformContact(message.content) {
+                if mentionsContact {
                     Label("提到了站外联系方式，转账、代付要谨慎", systemImage: "exclamationmark.shield.fill")
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.danger)
                         .offset(x: 40, y: 16)
                 }
             }
-            .padding(.bottom, ContactInfoDetector.mentionsOffPlatformContact(message.content) ? 16 : 0)
+            .padding(.bottom, mentionsContact ? 16 : 0)
         }
     }
 

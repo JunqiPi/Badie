@@ -13,8 +13,7 @@ struct EditProfileView: View {
     @State private var showReassess = false
     @State private var showGuide = false
     @State private var photoItem: PhotosPickerItem?
-    @State private var photoVersion = 0
-    @State private var hasPhoto = false
+    @State private var photo: UIImage?
     @State private var isSaving = false
     @State private var didLoad = false
 
@@ -80,14 +79,13 @@ struct EditProfileView: View {
     private var avatarSection: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
             ZStack(alignment: .bottomTrailing) {
-                if let user = appState.currentUser {
+                if appState.currentUser != nil {
                     AvatarView(
                         text: avatar.symbol.isEmpty ? (nickname.first.map { String($0) } ?? "🏸") : avatar.symbol,
                         paletteIndex: avatar.paletteIndex,
                         size: 104,
-                        image: AvatarStore.image(for: user.id)
+                        image: photo
                     )
-                    .id(photoVersion)
                     .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
                 }
                 PhotosPicker(selection: $photoItem, matching: .images) {
@@ -101,11 +99,10 @@ struct EditProfileView: View {
                 .accessibilityLabel("从相册选择头像")
             }
             .frame(maxWidth: .infinity)
-            if hasPhoto {
+            if photo != nil {
                 Button("移除照片，使用文字头像") {
                     AvatarStore.delete(for: appState.currentUser?.id)
-                    hasPhoto = false
-                    photoVersion += 1
+                    photo = nil
                 }
                 .buttonStyle(TextActionStyle())
             } else {
@@ -207,7 +204,7 @@ struct EditProfileView: View {
         gender = user.gender
         preferredMode = user.preferredMode
         avatar = user.avatar
-        hasPhoto = AvatarStore.image(for: user.id) != nil
+        photo = AvatarStore.image(for: user.id)
     }
 
     private func loadPhoto(_ item: PhotosPickerItem) async {
@@ -218,8 +215,7 @@ struct EditProfileView: View {
             return
         }
         AvatarStore.save(image, for: user.id)
-        hasPhoto = true
-        photoVersion += 1
+        photo = AvatarStore.image(for: user.id)
     }
 
     private func save() async {

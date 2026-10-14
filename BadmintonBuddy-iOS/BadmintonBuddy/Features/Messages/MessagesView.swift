@@ -319,7 +319,6 @@ struct FriendRequestRow: View {
     }
 }
 
-/// 球友行（头像 + 昵称 + 等级 + 口碑）
 struct PlayerRow<Trailing: View>: View {
     let user: User
     var subtitle: String?
@@ -364,7 +363,6 @@ struct PlayerRow<Trailing: View>: View {
 struct AddFriendView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var friendManager: FriendManager
-    @EnvironmentObject private var locationManager: LocationManager
 
     @State private var query = ""
     @State private var results: [User] = []

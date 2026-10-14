@@ -62,7 +62,6 @@ extension VenueCandidate {
 final class AppleMapsSearch: NSObject, ObservableObject {
     /// 输入联想结果：title 是名称，subtitle 是地址
     @Published private(set) var completions: [MKLocalSearchCompletion] = []
-    @Published private(set) var isSearching = false
 
     private let completer = MKLocalSearchCompleter()
 

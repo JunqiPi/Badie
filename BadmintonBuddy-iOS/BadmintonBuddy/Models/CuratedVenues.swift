@@ -2,11 +2,9 @@ import Foundation
 
 // MARK: - 平台收录的球馆
 //
-// 收录标准：地址至少有 2 个独立来源互相印证（官网、Yelp、地图条目、俱乐部目录等），
-// 坐标来自门牌地址地理编码。来源与冲突记录见 docs/DESIGN.md「球馆」一节。
+// 地址至少有 2 个独立来源互相印证，坐标来自门牌地址地理编码。见 docs/DESIGN.md §9。
 
 extension BadmintonCourt {
-    /// 全部收录球馆
     static var curated: [BadmintonCourt] { curatedUS + curatedBeijing }
 
     /// 北京（国内演示与测试用）

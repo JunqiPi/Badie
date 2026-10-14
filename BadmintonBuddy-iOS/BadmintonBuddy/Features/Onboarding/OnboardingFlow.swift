@@ -8,7 +8,6 @@ enum OnboardingStep: Int, CaseIterable {
     static let progressTotal = 5
 }
 
-/// 注册/登录表单数据
 struct OnboardingForm {
     /// 国内号码（不含国家码）
     var phone = ""
@@ -266,8 +265,8 @@ struct OnboardingFlow: View {
                     }
                     .accessibilityLabel("验证码")
                 HStack(spacing: AppTheme.Spacing.sm) {
+                    let characters = Array(form.code)
                     ForEach(0..<6, id: \.self) { index in
-                        let characters = Array(form.code)
                         let filled = index < characters.count
                         Text(filled ? String(characters[index]) : "")
                             .font(.system(.title, design: .rounded, weight: .black))
@@ -618,8 +617,7 @@ struct OnboardingFlow: View {
         let previous: OnboardingStep
         switch step {
         case .welcome, .phone: previous = .welcome
-        case .code: previous = .phone
-        case .profile: previous = .phone
+        case .code, .profile: previous = .phone
         case .level: previous = .profile
         case .preferences: previous = .level
         }
@@ -639,7 +637,6 @@ struct OnboardingFlow: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
-
 }
 
 // MARK: - 欢迎页插画：扇形展开的球友卡片

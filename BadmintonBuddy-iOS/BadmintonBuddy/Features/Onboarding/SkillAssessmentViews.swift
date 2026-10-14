@@ -445,7 +445,6 @@ struct SkillLevelGuideView: View {
     }
 }
 
-/// 小圆点列表
 private struct BulletLabelStyle: LabelStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - 房间 / 球局招募
 
-/// 球局氛围标签（帮助新手找到合适的局，减少“新手被嫌弃”）
+/// 球局氛围标签
 enum RoomTag: String, CaseIterable, Identifiable, Codable, Hashable {
     case beginnerFriendly = "新手友好"
     case casual = "欢乐局"
@@ -76,9 +76,7 @@ struct RoomParticipant: Identifiable, Codable, Hashable {
 
     var tier: SkillTier { SkillTier(rating: skillRating ?? Double(skillLevel)) }
 
-    var avatarText: String {
-        avatar.symbol.isEmpty ? (nickname.first.map { String($0) } ?? "🏸") : avatar.symbol
-    }
+    var avatarText: String { avatar.text(nickname: nickname) }
 }
 
 struct Room: Identifiable, Codable, Hashable {
@@ -123,7 +121,7 @@ struct Room: Identifiable, Codable, Hashable {
         }
     }
 
-    /// 剩余自动关闭时间（私密房间）
+    /// 自动关闭的时间：有时间的公开局在开始时，其余在最后活动 30 分钟后
     func expiresAt() -> Date {
         if visibility == .publicListing, let slot { return slot.startTime }
         return lastActivityAt.addingTimeInterval(Self.expirationDuration)
@@ -177,5 +175,3 @@ struct Room: Identifiable, Codable, Hashable {
         return text
     }
 }
-
-// ClosedRange<Int> 的 Codable 在标准库中已提供（Swift 5.x）

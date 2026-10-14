@@ -6,20 +6,21 @@ struct FlowLayout: Layout {
     var lineSpacing: CGFloat?
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let maxWidth = proposal.width ?? .infinity
-        let rows = arrange(subviews: subviews, maxWidth: maxWidth)
+        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+        let rows = arrange(sizes: sizes, maxWidth: proposal.width ?? .infinity)
         let height = rows.reduce(0) { $0 + $1.height } + CGFloat(max(0, rows.count - 1)) * (lineSpacing ?? spacing)
         let width = rows.map(\.width).max() ?? 0
         return CGSize(width: proposal.width ?? width, height: height)
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let rows = arrange(subviews: subviews, maxWidth: bounds.width)
+        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+        let rows = arrange(sizes: sizes, maxWidth: bounds.width)
         var y = bounds.minY
         for row in rows {
             var x = bounds.minX
             for index in row.indices {
-                let size = subviews[index].sizeThatFits(.unspecified)
+                let size = sizes[index]
                 subviews[index].place(at: CGPoint(x: x, y: y + (row.height - size.height) / 2), proposal: ProposedViewSize(size))
                 x += size.width + spacing
             }
@@ -33,17 +34,15 @@ struct FlowLayout: Layout {
         var height: CGFloat = 0
     }
 
-    private func arrange(subviews: Subviews, maxWidth: CGFloat) -> [Row] {
+    private func arrange(sizes: [CGSize], maxWidth: CGFloat) -> [Row] {
         var rows: [Row] = []
         var current = Row()
-        for index in subviews.indices {
-            let size = subviews[index].sizeThatFits(.unspecified)
-            let needed = current.indices.isEmpty ? size.width : current.width + spacing + size.width
-            if needed > maxWidth, !current.indices.isEmpty {
+        for (index, size) in sizes.enumerated() {
+            if !current.indices.isEmpty, current.width + spacing + size.width > maxWidth {
                 rows.append(current)
                 current = Row()
             }
-            current.width = current.indices.isEmpty ? size.width : current.width + spacing + size.width
+            current.width += current.indices.isEmpty ? size.width : spacing + size.width
             current.height = max(current.height, size.height)
             current.indices.append(index)
         }

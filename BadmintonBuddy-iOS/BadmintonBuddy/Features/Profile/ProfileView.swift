@@ -214,17 +214,15 @@ struct ProfileView: View {
     }
 }
 
-/// 进度条（贴纸风格）
 struct ProgressBar: View {
     let progress: Double
-    var fill: Color = AppTheme.Colors.lime
 
     var body: some View {
         GeometryReader { proxy in
             ZStack(alignment: .leading) {
                 Capsule().fill(AppTheme.Colors.surfaceMuted)
                 Capsule()
-                    .fill(fill)
+                    .fill(AppTheme.Colors.lime)
                     .frame(width: max(12, proxy.size.width * CGFloat(min(max(progress, 0), 1))))
                 Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 2)
             }

@@ -34,9 +34,7 @@ struct VenueCandidateSheet: View {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                     // 查重结果放在最上面：已有同一家时，先看到它
                     if !duplicates.isEmpty {
-                        DuplicateChoiceList(duplicates: duplicates) { venue in
-                            onChosen(venue)
-                        }
+                        DuplicateChoiceList(duplicates: duplicates, onChoose: onChosen)
                     }
                     VenueMapPreview(name: candidate.name, coordinate: candidate.location, height: 200, interactive: true)
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {

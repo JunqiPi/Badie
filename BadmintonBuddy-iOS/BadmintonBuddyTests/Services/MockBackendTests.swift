@@ -469,20 +469,10 @@ final class MockBackendTests: XCTestCase {
             cancelledBy: nil, cancelledLate: false, reminderEnabled: false
         )
     }
-
-    /// 下一个周二（工作日晚上大部分模拟球友有空）
-    private func nextWeekday() -> Date {
-        let calendar = Calendar.current
-        var day = calendar.date(byAdding: .day, value: 1, to: Date())!
-        while calendar.component(.weekday, from: day) != 3 {
-            day = calendar.date(byAdding: .day, value: 1, to: day)!
-        }
-        return day
-    }
 }
 
 extension MockBackend {
-    /// 测试辅助：切换当前身份（模拟房主操作）
+    /// 测试辅助：切换当前身份，模拟其他用户操作
     func currentUserIdOverride(_ id: String) {
         db.currentUserId = id
     }

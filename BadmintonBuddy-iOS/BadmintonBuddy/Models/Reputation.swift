@@ -2,13 +2,8 @@ import Foundation
 
 // MARK: - 声誉评分
 
-/// 由赛后评价聚合得到的声誉数据。
-///
-/// 展示规则（见 docs/DESIGN.md §12）：
-/// - 球品分、信誉分只在内部用于排序和审核，任何人（包括本人）都看不到数字；
-/// - 本人看到自己的客观记录：准时率、爽约、临时取消、水平校准；
-/// - 别人只看到正面标签和“靠谱”徽章；标签要 ≥5 位不同球友、≥3 场后才出现，每月统一刷新一次，
-///   避免从变化反推出是谁评的。
+/// 由赛后评价聚合得到的声誉数据。分数只在内部用于排序和审核，不对任何人展示；
+/// 对外只显示正面标签（月度快照，避免从变化反推出是谁评的）。见 docs/DESIGN.md §11。
 struct ReputationScore: Codable, Hashable {
     /// 有效评价次数（过期问卷不计入）
     var evaluationCount: Int
@@ -64,10 +59,7 @@ struct ReputationScore: Codable, Hashable {
         evaluationCount == 0 ? "—" : String(format: "±%.1f", averageSkillDeviation)
     }
 
-    /// 加入一次新的评价（增量平均）
-    /// - Parameters:
-    ///   - survey: 新问卷
-    ///   - selfRating: 被评价者当时的问卷分值
+    /// 增量平均加入一次评价；selfRating 是被评价者当时的问卷分值
     func adding(_ survey: MatchSurvey, selfRating: Double) -> ReputationScore {
         let n = Double(evaluationCount)
         let next = n + 1

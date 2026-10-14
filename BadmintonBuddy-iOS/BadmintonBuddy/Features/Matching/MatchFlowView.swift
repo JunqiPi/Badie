@@ -69,7 +69,6 @@ struct MatchFlowView: View {
 struct SearchingView: View {
     @EnvironmentObject private var matchManager: MatchManager
     @EnvironmentObject private var friendManager: FriendManager
-    @EnvironmentObject private var locationManager: LocationManager
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var pulse = false
@@ -171,7 +170,6 @@ struct SearchingView: View {
         }
     }
 }
-
 
 // MARK: - 找到搭子：多方确认
 

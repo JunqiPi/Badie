@@ -194,7 +194,7 @@ final class SocialRulesTests: XCTestCase {
     func testVenueRegularsAreOptInAndShareAVenue() throws {
         let me = signUp()
         let venueId = try XCTUnwrap(backend.db.favoriteCourtIds.first { entry in
-            isBot(entry.key) && !entry.value.isEmpty && backend.db.users[entry.key]?.privacy.showsAsRegular == true
+            backend.isBot(entry.key) && !entry.value.isEmpty && backend.db.users[entry.key]?.privacy.showsAsRegular == true
         }?.value.first)
         backend.toggleFavoriteCourt(venueId)
         let regulars = backend.venueRegulars()
@@ -206,8 +206,6 @@ final class SocialRulesTests: XCTestCase {
         backend.db.users[first.user.id]?.privacy.showsAsRegular = false
         XCTAssertFalse(backend.venueRegulars().contains { $0.user.id == first.user.id }, "关闭后不再出现")
     }
-
-    private func isBot(_ id: String) -> Bool { backend.isBot(id) }
 
     // MARK: Rematch
 

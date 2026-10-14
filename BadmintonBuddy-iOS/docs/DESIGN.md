@@ -135,7 +135,7 @@
 
 ### 5.4 组件
 
-`StickerBackground`（`.sticker()` / `.card()`）、`BrutalButtonStyle`（primary / inverse / secondary / destructive / accent × large / medium / small）、`IconTile`、`IconButton`、`CountBadge`、`AvatarView` / `AvatarStack`、`LevelBadge`、`TagPill`、`NewPlayerBadge`、`ChoiceChip`、`SegmentedSticker`、`DateStrip`、`TimeStepper`、`LevelStepper`、`RatingPicker` / `StarsView`、`BrutalTextField`、`SearchField`、`StatTile`、`InfoRow`、`MenuRow`、`SectionTitle`、`ScreenHeader` / `LargeTitleHeader`、`TicketShape`、`Starburst(Badge)`、`ShuttlecockMark`、`Wordmark`、`ToastView`、`NoticeBanner`、`EmptyStateView`、`LoadingDots`、`ProgressBar`、`FlowLayout`、`FloatingTabBar`。
+`StickerBackground`（`.sticker()` / `.card()`）、`BrutalButtonStyle`（primary / inverse / secondary / destructive / accent × large / medium / small）、`IconTile`、`IconButton`、`CountBadge`、`AvatarView` / `AvatarStack`、`LevelBadge`、`TagPill`、`NewPlayerBadge`、`ChoiceChip`、`SegmentedSticker`、`DateStrip`、`TimeStepper`、`LevelStepper`、`RatingPicker`、`BrutalTextField`、`SearchField`、`StatTile`、`InfoRow`、`MenuRow`、`SectionTitle`、`ScreenHeader` / `LargeTitleHeader`、`TicketShape`、`Starburst(Badge)`、`ShuttlecockMark`、`Wordmark`、`ToastView`、`NoticeBanner`、`EmptyStateView`、`LoadingDots`、`ProgressBar`、`FlowLayout`、`FloatingTabBar`。
 
 ---
 

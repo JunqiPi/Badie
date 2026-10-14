@@ -4,12 +4,12 @@ import MapKit
 /// 手动添加球馆：移动地图让图钉对准入口 → 自动识别地址（可改）→ 填名称 → 查重 → 加入。
 /// 也可以搜地址跳转，或粘贴 Google / Apple 地图链接。
 struct AddVenueView: View {
-    var initialName = ""
-    var initialCoordinate: Coordinate
+    let initialName: String
+    let initialCoordinate: Coordinate
     /// 演示/截图用：预填地址，不做反向地理编码
-    var initialAddress: PostalAddress?
+    let initialAddress: PostalAddress?
     /// 演示/截图用：打开即检查附近是否已有同一家
-    var checksDuplicatesOnAppear = false
+    let checksDuplicatesOnAppear: Bool
     let onAdded: (BadmintonCourt) -> Void
 
     @EnvironmentObject private var appState: AppState
@@ -76,11 +76,9 @@ struct AddVenueView: View {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                         // 查重结果放在最上面：点“检查并添加”后第一眼就能看到
                         if !duplicates.isEmpty {
-                            DuplicateChoiceList(duplicates: duplicates) { venue in
-                                onAdded(venue)
-                            }
-                            .id(Self.duplicatesAnchor)
-                            .transition(.move(edge: .top).combined(with: .opacity))
+                            DuplicateChoiceList(duplicates: duplicates, onChoose: onAdded)
+                                .id(Self.duplicatesAnchor)
+                                .transition(.move(edge: .top).combined(with: .opacity))
                         }
                         locateSection
                         addressCard

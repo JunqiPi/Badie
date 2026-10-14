@@ -121,7 +121,6 @@ private struct BrutalButtonBody: View {
 
 extension ButtonStyle where Self == BrutalButtonStyle {
     static var brutalPrimary: BrutalButtonStyle { BrutalButtonStyle(kind: .primary) }
-    static var brutalInverse: BrutalButtonStyle { BrutalButtonStyle(kind: .inverse) }
     static var brutalSecondary: BrutalButtonStyle { BrutalButtonStyle(kind: .secondary) }
 
     static func brutal(
@@ -148,7 +147,7 @@ struct TextActionStyle: ButtonStyle {
     }
 }
 
-// MARK: - 行动按钮内容：文字 + 右侧圆角箭头块（参考 "Save and Continue" 样式）
+// MARK: - 行动按钮内容：文字 + 右侧圆角箭头块
 
 struct ArrowButtonLabel: View {
     let title: String

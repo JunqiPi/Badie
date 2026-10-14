@@ -330,6 +330,7 @@ struct HomeView: View {
                             Button {
                                 appState.showPlayer(entry.user.id)
                             } label: {
+                                let acronym = VenueSearch.acronym(entry.venue.name).uppercased()
                                 VStack(spacing: 6) {
                                     AvatarView(user: entry.user, size: 58)
                                     Text(entry.user.nickname)
@@ -337,8 +338,7 @@ struct HomeView: View {
                                         .foregroundStyle(AppTheme.Colors.ink)
                                         .lineLimit(1)
                                     LevelBadge(tier: entry.user.displayTier, showsName: false, compact: true)
-                                    Text(VenueSearch.acronym(entry.venue.name).uppercased().isEmpty
-                                         ? entry.venue.name : VenueSearch.acronym(entry.venue.name).uppercased())
+                                    Text(acronym.isEmpty ? entry.venue.name : acronym)
                                         .font(AppTheme.Typography.caption)
                                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                                         .lineLimit(1)

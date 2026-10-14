@@ -59,13 +59,14 @@ struct GameTicketCard: View {
         .foregroundStyle(AppTheme.Colors.onAccent)
         .padding(compact ? AppTheme.Spacing.lg : AppTheme.Spacing.xl)
         .background {
+            let shape = TicketShape(notchPosition: compact ? 0.52 : 0.55)
             ZStack {
-                TicketShape(notchPosition: compact ? 0.52 : 0.55)
+                shape
                     .fill(AppTheme.Colors.shadow)
                     .offset(x: 3, y: 4)
-                TicketShape(notchPosition: compact ? 0.52 : 0.55)
+                shape
                     .fill(tint)
-                TicketShape(notchPosition: compact ? 0.52 : 0.55)
+                shape
                     .strokeBorder(AppTheme.Colors.stroke, lineWidth: 2)
             }
         }

@@ -7,26 +7,18 @@ struct ChatView: View {
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var messageManager: MessageManager
     @EnvironmentObject private var friendManager: FriendManager
-    @EnvironmentObject private var roomManager: RoomManager
 
     @State private var draft = ""
     @State private var isSending = false
     @State private var showReport = false
     @State private var showBlockConfirm = false
-    @FocusState private var inputFocused: Bool
 
     private var other: User? { messageManager.user(id: userId) }
     private var messages: [Message] { messageManager.messages(with: userId) }
     private var isBlocked: Bool { messageManager.isBlocked(userId) }
     private var me: String? { messageManager.currentUserId }
-    private var permission: MessagePermission {
-        _ = messageManager.threads
-        return messageManager.permission(with: userId)
-    }
-    private var thread: MessageThread? {
-        _ = messageManager.threads
-        return messageManager.thread(with: userId)
-    }
+    private var permission: MessagePermission { messageManager.permission(with: userId) }
+    private var thread: MessageThread? { messageManager.thread(with: userId) }
     /// 对方发来的消息请求，等我处理
     private var isIncomingRequest: Bool {
         guard let thread else { return false }
@@ -46,15 +38,16 @@ struct ChatView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: AppTheme.Spacing.sm) {
+                        let receiptId = lastMineId
                         if messages.isEmpty {
                             EmptyStateView(icon: "hand.wave.fill", title: "打个招呼吧",
                                            message: "约时间、约球馆、约 AA，都可以在这里说。", tint: AppTheme.Colors.butter)
                         }
                         ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                             if showsTimestamp(at: index) {
-                                Text(DateText.compact(message.sentAt) == DateText.time(message.sentAt)
-                                     ? DateText.time(message.sentAt)
-                                     : "\(DateText.compact(message.sentAt)) \(DateText.time(message.sentAt))")
+                                let day = DateText.compact(message.sentAt)
+                                let time = DateText.time(message.sentAt)
+                                Text(day == time ? time : "\(day) \(time)")
                                     .font(AppTheme.Typography.caption)
                                     .foregroundStyle(AppTheme.Colors.inkTertiary)
                                     .padding(.top, AppTheme.Spacing.sm)
@@ -62,7 +55,7 @@ struct ChatView: View {
                             MessageBubble(
                                 message: message,
                                 isMine: message.senderId == me,
-                                showsReceipt: message.id == lastMineId,
+                                showsReceipt: message.id == receiptId,
                                 onJoinRoom: { code in router.open(.joinRoom(code: code)) }
                             )
                             .id(message.id)
@@ -272,7 +265,6 @@ struct ChatView: View {
                     .font(AppTheme.Typography.body)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .lineLimit(1...5)
-                    .focused($inputFocused)
                     .padding(.horizontal, AppTheme.Spacing.lg)
                     .padding(.vertical, AppTheme.Spacing.md)
                     .sticker(AppTheme.Colors.surface, radius: 20, shadow: .zero,

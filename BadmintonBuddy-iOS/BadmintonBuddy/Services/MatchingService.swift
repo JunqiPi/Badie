@@ -47,8 +47,6 @@ struct MatchCandidate: Identifiable, Hashable {
     var matchScore: Double {
         Double(abs(skillDifference)) * 10 / 3 + distanceKm
     }
-
-    var formattedSkillDifference: String { SkillTier.differenceText(skillDifference) }
 }
 
 /// 一个可确认的约球方案（单打 1 位对手，双打 3 位球友）
@@ -65,8 +63,6 @@ struct MatchProposal: Identifiable, Hashable {
     let cost: CostSplit
     /// 匹配度 0-100
     let compatibility: Int
-
-    var primary: MatchCandidate? { others.first }
 }
 
 /// 无结果时的放宽建议

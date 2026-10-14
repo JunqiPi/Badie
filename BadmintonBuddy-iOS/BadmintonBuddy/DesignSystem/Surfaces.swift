@@ -48,11 +48,6 @@ extension View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .sticker(fill, radius: radius, shadow: shadow)
     }
-
-    /// 页面画布背景
-    func canvasBackground() -> some View {
-        background(AppTheme.Colors.canvas.ignoresSafeArea())
-    }
 }
 
 // MARK: - 图标贴片（马卡龙底色 + 描边 + SF Symbol）

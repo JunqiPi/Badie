@@ -4,7 +4,7 @@ import Foundation
 //
 // 普通局：开赛前 2 小时锁定（与“开赛前 2 小时内取消算临时取消”一致），确认期限随距开赛的时间放宽。
 // 临时局：开赛不到 2.5 小时，只匹配附近此刻也在找人的球友，确认期限 5–10 分钟，最晚开赛前 20 分钟确认完。
-// 依据见 docs/DESIGN.md §11（Niederle & Roth：期限太短逼人仓促决定、无限期又会占着名额）。
+// 见 docs/DESIGN.md §10。
 
 enum MatchTiming {
     /// 普通局锁定：开赛前 2 小时必须全部确认
@@ -183,8 +183,6 @@ struct MatchOffer: Identifiable, Codable, Hashable {
     var activePlayerIds: [String] { seats.filter { !$0.isVacant }.map(\.userId) }
 
     var vacantCount: Int { seats.filter(\.isVacant).count }
-
-    var pendingCount: Int { seats.filter { $0.response == .pending }.count }
 
     func seat(of userId: String) -> Seat? { seats.first { $0.userId == userId } }
 

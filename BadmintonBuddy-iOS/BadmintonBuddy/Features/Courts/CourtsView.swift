@@ -394,8 +394,8 @@ struct TravelRadiusSheet: View {
     private var unit: DistanceUnit { locationManager.distanceUnit }
 
     private var range: ClosedRange<Double> {
-        let low = (unit.value(fromKm: UserPreferences.minimumTravelRadius)).rounded(.up)
-        let high = (unit.value(fromKm: UserPreferences.maximumTravelRadius)).rounded(.down)
+        let low = unit.value(fromKm: UserPreferences.minimumTravelRadius).rounded(.up)
+        let high = unit.value(fromKm: UserPreferences.maximumTravelRadius).rounded(.down)
         return max(1, low)...high
     }
 

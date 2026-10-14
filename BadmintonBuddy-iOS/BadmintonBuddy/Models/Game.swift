@@ -89,19 +89,16 @@ struct CostSplit: Codable, Hashable {
     }
 
     static func estimate(court: BadmintonCourt, slot: TimeSlot, mode: GameMode) -> CostSplit {
-        let shuttle = court.country.shuttleFee(for: mode)
-        let hours = slot.duration / 3600
+        let basis: Basis
+        let rate: Int
         switch court.pricing {
-        case .perCourtHour(let price):
-            return CostSplit(basis: .courtHour, rate: price, hours: hours, shuttleFee: shuttle,
-                             players: mode.requiredPlayers, currencyCode: court.currencyCode)
-        case .dropIn(let price):
-            return CostSplit(basis: .dropIn, rate: price, hours: hours, shuttleFee: shuttle,
-                             players: mode.requiredPlayers, currencyCode: court.currencyCode)
-        case .unknown:
-            return CostSplit(basis: .unknown, rate: 0, hours: hours, shuttleFee: shuttle,
-                             players: mode.requiredPlayers, currencyCode: court.currencyCode)
+        case .perCourtHour(let price): basis = .courtHour; rate = price
+        case .dropIn(let price): basis = .dropIn; rate = price
+        case .unknown: basis = .unknown; rate = 0
         }
+        return CostSplit(basis: basis, rate: rate, hours: slot.duration / 3600,
+                         shuttleFee: court.country.shuttleFee(for: mode),
+                         players: mode.requiredPlayers, currencyCode: court.currencyCode)
     }
 }
 
@@ -182,16 +179,6 @@ struct Game: Identifiable, Codable, Hashable {
 
     func otherPlayerIds(excluding userId: String) -> [String] {
         playerIds.filter { $0 != userId }
-    }
-
-    func teamIndex(of userId: String) -> Int? {
-        teams.firstIndex { $0.contains(userId) }
-    }
-
-    /// 双打中的搭档
-    func partnerId(of userId: String) -> String? {
-        guard mode == .doubles, let index = teamIndex(of: userId) else { return nil }
-        return teams[index].first { $0 != userId }
     }
 
     var statusText: String {

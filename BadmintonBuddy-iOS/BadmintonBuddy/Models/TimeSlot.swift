@@ -50,7 +50,7 @@ struct TimeSlot: Codable, Hashable {
         "\(DateText.time(startTime))–\(DateText.time(endTime))"
     }
 
-    /// 例："今天" / "明天" / "10月15日 周三"
+    /// 例："今天 · 周三" / "10月15日 周三"
     var formattedDate: String { DateText.relativeDay(date) }
 
     var formattedFull: String { "\(formattedDate) \(formattedTimeRange)" }
@@ -63,10 +63,6 @@ struct TimeSlot: Codable, Hashable {
             return nil
         }
         return TimeSlot(date: start, startTime: start, endTime: end)
-    }
-
-    func hasOverlap(with other: TimeSlot) -> Bool {
-        overlaps(with: other) != nil
     }
 
     func contains(_ moment: Date) -> Bool {
@@ -125,11 +121,7 @@ struct TimeSlot: Codable, Hashable {
         return TimeSlot(date: day, startTime: start, endTime: end)
     }
 
-    static func today(startHour: Int, startMinute: Int = 0, endHour: Int, endMinute: Int = 0) -> TimeSlot? {
-        on(Date(), startHour: startHour, startMinute: startMinute, endHour: endHour, endMinute: endMinute)
-    }
-
-    /// 默认推荐：今晚 19-21 点；若已过 20 点则为明晚
+    /// 默认推荐：18 点前为今晚 19–21 点；20 点前从下个整半点再过 30 分钟开始，最多 2 小时、不晚于 23:30；否则明晚 19–21 点
     static func suggestedDefault(now: Date = Date()) -> TimeSlot {
         let calendar = Calendar.current
         let hour = calendar.component(.hour, from: now)
@@ -212,7 +204,7 @@ struct RecurringTimeSlot: Identifiable, Codable, Hashable {
         return seconds >= TimeSlotConstants.minimumDuration && seconds <= TimeSlotConstants.maximumDuration
     }
 
-    /// 从 from 开始（含当天）找到下一次出现的具体时间段
+    /// 从 now 起（含当天）14 天内下一次还没结束的具体时间段
     func nextOccurrence(from now: Date = Date()) -> TimeSlot? {
         let calendar = Calendar.current
         for offset in 0..<TimeSlotConstants.maximumDaysAhead {
@@ -234,26 +226,16 @@ extension Array where Element == RecurringTimeSlot {
 // MARK: - 日期文本
 
 enum DateText {
-    private static let timeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "HH:mm"
-        return formatter
-    }()
+    private static let timeFormatter = makeFormatter("HH:mm")
+    private static let dayFormatter = makeFormatter("M月d日 EEE")
+    private static let shortDayFormatter = makeFormatter("M/d")
 
-    private static let dayFormatter: DateFormatter = {
+    private static func makeFormatter(_ format: String) -> DateFormatter {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M月d日 EEE"
+        formatter.dateFormat = format
         return formatter
-    }()
-
-    private static let shortDayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = "M/d"
-        return formatter
-    }()
+    }
 
     static func time(_ date: Date) -> String { timeFormatter.string(from: date) }
 

@@ -13,7 +13,7 @@ enum AttendanceAnswer: String, Codable, CaseIterable, Identifiable, Hashable {
     var wasPunctual: Bool { self == .onTime }
 }
 
-/// 对“水平是否如实”的三选一校准（参考 Playtomic 对手校准）：高低各一档（1/3 级），差得多可以精确调
+/// 对“水平是否如实”的三选一校准：高低各移动一档（1/3 级）
 enum LevelCalibration: String, CaseIterable, Identifiable, Hashable {
     case lower = "比标的低"
     case accurate = "差不多"
@@ -65,7 +65,6 @@ enum SurveyIssue: String, CaseIterable, Identifiable, Codable, Hashable {
 
 struct MatchSurvey: Identifiable, Codable, Hashable {
     let id: String
-    /// 对应的球局 ID
     let matchId: String
     let evaluatorId: String
     let evaluatedUserId: String
@@ -115,9 +114,7 @@ struct PendingSurvey: Identifiable, Codable, Hashable {
 
     func isExpired(now: Date = Date()) -> Bool { now > expiresAt }
 
-    var opponentAvatarText: String {
-        opponentAvatar.symbol.isEmpty ? (opponentNickname.first.map { String($0) } ?? "🏸") : opponentAvatar.symbol
-    }
+    var opponentAvatarText: String { opponentAvatar.text(nickname: opponentNickname) }
 }
 
 // MARK: - 履约档案（客观数据：签到 / 爽约 / 临时取消）

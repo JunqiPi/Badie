@@ -8,7 +8,6 @@ final class FriendManager: ObservableObject {
     @Published private(set) var friends: [User] = []
     @Published private(set) var incomingRequests: [FriendRequest] = []
     @Published private(set) var outgoingRequests: [FriendRequest] = []
-    @Published private(set) var isLoading = false
 
     private let backend: MockBackend
 
@@ -48,10 +47,6 @@ final class FriendManager: ObservableObject {
 
     func recentCoPlayers(limit: Int = 20) -> [User] {
         backend.recentCoPlayers(limit: limit)
-    }
-
-    func nearbyPlayers(radiusKm: Double, limit: Int = 20) -> [User] {
-        backend.nearbyPlayers(radiusKm: radiusKm, limit: limit)
     }
 
     func user(id: String) -> User? { backend.user(id: id) }
@@ -322,11 +317,6 @@ final class InboxManager: ObservableObject {
         backend.markInboxRead(id: item?.id)
         reload()
     }
-
-    func clear() {
-        backend.clearInbox()
-        reload()
-    }
 }
 
 // MARK: - 赛后评价
@@ -336,8 +326,6 @@ final class SurveyManager: ObservableObject {
     @Published private(set) var pendingSurveys: [PendingSurvey] = []
 
     private let backend: MockBackend
-
-    static let surveyExpirationHours: TimeInterval = 48
 
     init(backend: MockBackend) {
         self.backend = backend

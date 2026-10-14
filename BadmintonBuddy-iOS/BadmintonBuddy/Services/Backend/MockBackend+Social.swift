@@ -204,7 +204,6 @@ extension MockBackend {
             .filter { thread in
                 if thread.isGroup { return true }
                 guard let other = thread.otherParticipantId(currentUserId: me) else { return false }
-                // 我发出的、对方还没接受的请求不占列表（避免一直显示“未回复”）
                 return !blocked.contains(other)
             }
             .sorted { $0.lastActivityAt > $1.lastActivityAt }

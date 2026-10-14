@@ -138,7 +138,6 @@ struct GameDetailView: View {
 
     // MARK: Venue
 
-    /// 球馆：完整地址 + 入口说明 + 球馆详情入口（地址是到场前最常被问的问题）
     private func venueCard(_ game: Game) -> some View {
         let venue = appState.backend.venue(id: game.court.id) ?? game.court
         return Button {

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 应用的全部状态对象（App 启动、SwiftUI 预览共用）
+/// 应用的全部状态对象
 @MainActor
 struct AppEnvironment {
     let backend: MockBackend
@@ -38,34 +38,5 @@ struct AppEnvironment {
         #endif
         return AppEnvironment(backend: .shared)
     }
-
-    /// 预览使用：内存数据库 + 已登录的演示用户
-    static func preview(signedIn: Bool = true) -> AppEnvironment {
-        let backend = MockBackend(store: .inMemory)
-        backend.latencyEnabled = false
-        backend.simulationEnabled = false
-        if signedIn {
-            backend.createAccount(phone: "+16265550123", nickname: "阿杰", avatar: Avatar(symbol: "", paletteIndex: 0), level: 4, preferredMode: .doubles)
-        }
-        let environment = AppEnvironment(backend: backend)
-        environment.appState.phase = signedIn ? .main : .onboarding
-        return environment
-    }
 }
 
-extension View {
-    /// 注入所有环境对象
-    func injecting(_ environment: AppEnvironment) -> some View {
-        self
-            .environmentObject(environment.appState)
-            .environmentObject(environment.router)
-            .environmentObject(environment.locationManager)
-            .environmentObject(environment.matchManager)
-            .environmentObject(environment.friendManager)
-            .environmentObject(environment.messageManager)
-            .environmentObject(environment.roomManager)
-            .environmentObject(environment.surveyManager)
-            .environmentObject(environment.inboxManager)
-            .environmentObject(environment.groupManager)
-    }
-}

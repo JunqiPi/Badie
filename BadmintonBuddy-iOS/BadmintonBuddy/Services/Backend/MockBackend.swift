@@ -1,10 +1,8 @@
 import Foundation
 
 // MARK: - 本地模拟后端
-/// 应用目前没有真实服务端。MockBackend 在进程内扮演“服务器”：
-/// - 持久化账户、好友、私信、房间、球局、评价（JSON 文件）
-/// - 模拟附近的其他球友（机器人），会回复消息、通过好友申请、加入球局、签到和互评
-/// - 通过事件（BackendEvent）把变化推送给各个 Manager，接口形态与真实后端保持一致，便于后续替换
+/// 进程内的模拟服务器：持久化全部数据（JSON 文件），模拟附近的机器人球友，
+/// 并通过 BackendEvent 把变化推送给各个 Manager
 @MainActor
 final class MockBackend {
 
@@ -28,11 +26,7 @@ final class MockBackend {
 
     init(store: DatabaseStore) {
         self.store = store
-        if let saved = store.load() {
-            db = saved
-        } else {
-            db = Database()
-        }
+        db = store.load() ?? Database()
         ensureWorld()
     }
 
@@ -43,10 +37,6 @@ final class MockBackend {
         let id = UUID()
         listeners[id] = handler
         return id
-    }
-
-    func unsubscribe(_ id: UUID) {
-        listeners[id] = nil
     }
 
     func emit(_ event: BackendEvent) {
@@ -202,7 +192,7 @@ final class MockBackend {
             preferredMode: preferredMode
         )
         user.assessment = assessment
-        // 问卷最高 6+：老入口直接传整数等级时也按这个上限记
+        // 问卷等级上限 6+，直接传整数等级时同样封顶
         user.selfReportedRating = min(assessment?.tier ?? SkillTier(level: level), SkillAssessment.maxTier).rating
         db.users[id] = user
         db.accounts[phone] = id
@@ -343,13 +333,6 @@ final class MockBackend {
             items[index].isRead = true
         }
         db.inbox[userId] = items
-        scheduleSave()
-        emit(.inboxChanged)
-    }
-
-    func clearInbox() {
-        guard let userId = currentUserId else { return }
-        db.inbox[userId] = []
         scheduleSave()
         emit(.inboxChanged)
     }

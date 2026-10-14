@@ -84,8 +84,6 @@ final class AppState: ObservableObject {
         }
     }
 
-    var isSignedIn: Bool { currentUser != nil }
-
     /// 启动动画结束后决定进入哪个流程
     func finishLaunch() {
         currentUser = backend.currentUser

@@ -2,9 +2,8 @@ import Foundation
 
 // MARK: - 球群（固定局）
 //
-// 美国华人羽毛球现在主要靠微信 / WhatsApp 群“接龙”报名：消息多、新人难融入、候补靠人工。
-// 球群把它变成工具：组织者建群并绑定球馆 → 每周固定场次 → 一键报名、满员自动候补、有人退出自动递补。
-// 对外只显示“近 30 天开了几场、平均几人到场”，不显示成员总数（Meetup 上千人的群每场只来几个人）。
+// 绑定球馆的每周固定场次：一键报名、满员候补、有人退出自动递补。
+// 对外只显示近 30 天的活跃度，不显示成员总数。见 docs/DESIGN.md §12。
 
 struct PlayGroup: Identifiable, Codable, Hashable {
     enum JoinPolicy: String, Codable, CaseIterable, Identifiable, Hashable {
@@ -73,10 +72,7 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
 
     static let capacityRange = 4...40
 
-    var weekdayTitle: String {
-        let names = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
-        return "每\(names[(weekday - 1 + 7) % 7])"
-    }
+    var weekdayTitle: String { "每\(RecurringTimeSlot.weekdayNames[(weekday - 1 + 7) % 7])" }
 
     var timeText: String {
         String(format: "%02d:%02d–%02d:%02d", startMinutes / 60, startMinutes % 60, endMinutes / 60, endMinutes % 60)
@@ -119,8 +115,6 @@ struct GroupSession: Identifiable, Codable, Hashable {
         let stamp = String(format: "%04d%02d%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
         return "\(groupId)|\(scheduleId)|\(stamp)"
     }
-
-    var spotsLeft: Int { max(0, capacity - signedUp.count) }
 
     var isFull: Bool { signedUp.count >= capacity }
 

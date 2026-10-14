@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - 约球请求与多方确认
 //
-// 1. 用户提交请求（MatchTicket）后挂在后台持续匹配，不需要一直盯着屏幕。
+// 1. 用户提交请求（MatchTicket）后挂在后台持续匹配。
 // 2. 找到合适的人生成提议（MatchOffer），每个人在期限内确认；全部确认才成局。
 // 3. 有人拒绝或超时：双打在锁定前找人补位；单打或补不上就作废，已确认的人优先重新排队。
 //    谁拒绝的不告诉其他人；拒绝和超时都不公开扣分（超时只会让本人的请求暂停）。
@@ -414,12 +414,10 @@ extension MockBackend {
         while let vacant = offer.seats.firstIndex(where: \.isVacant) {
             guard offer.backfillCount < MatchOffer.maximumBackfills,
                   let replacement = backfillCandidate(for: offer, now: now) else { break }
-            let leaving = offer.seats[vacant].userId
             let respondBy = MatchTiming.respondBy(start: offer.slot.startTime, now: now)
             guard respondBy.timeIntervalSince(now) >= MatchTiming.minimumResponseWindow(lastMinute: offer.isLastMinute) else { break }
             offer.seats[vacant] = MatchOffer.Seat(userId: replacement.id, ticketId: nil, response: .pending,
                                                   respondBy: respondBy, respondedAt: nil)
-            offer.teams = offer.teams.map { $0.map { $0 == leaving ? replacement.id : $0 } }
             offer.teams = MatchingService.balancedTeams(players: offer.playerIds.compactMap { id in
                 db.users[id].map { (id: id, level: $0.displayTier.rating) }
             })

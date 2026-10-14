@@ -292,7 +292,7 @@ struct GroupDetailView: View {
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
             ForEach(sessions) { session in
-                SessionRow(session: session, userId: me ?? "", isOrganizer: group.isOrganizer(me ?? "")) {
+                SessionRow(session: session, userId: me ?? "") {
                     sessionDetail = session
                 }
             }
@@ -361,7 +361,6 @@ struct GroupDetailView: View {
 struct SessionRow: View {
     let session: GroupSession
     let userId: String
-    var isOrganizer = false
     let onOpen: () -> Void
 
     @EnvironmentObject private var appState: AppState

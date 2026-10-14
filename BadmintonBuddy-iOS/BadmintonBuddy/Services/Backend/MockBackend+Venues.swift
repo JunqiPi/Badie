@@ -134,17 +134,17 @@ extension MockBackend {
         duplicate.mergedInto = target.id
         db.venues[duplicate.id] = duplicate
         db.venues[target.id] = target
-        for (userId, favorites) in db.favoriteCourtIds where favorites.contains(duplicateId) {
-            var updated = favorites.map { $0 == duplicateId ? target.id : $0 }
+        let keptId = target.id
+        // 旧 ID 换成保留的 ID，并去掉因此产生的重复（保持原顺序）
+        func redirected(_ ids: [String]) -> [String] {
             var seen = Set<String>()
-            updated = updated.filter { seen.insert($0).inserted }
-            db.favoriteCourtIds[userId] = updated
+            return ids.map { $0 == duplicateId ? keptId : $0 }.filter { seen.insert($0).inserted }
+        }
+        for (userId, favorites) in db.favoriteCourtIds where favorites.contains(duplicateId) {
+            db.favoriteCourtIds[userId] = redirected(favorites)
         }
         for (ticketId, ticket) in db.tickets where ticket.courtIds.contains(duplicateId) {
-            var updated = ticket
-            var seen = Set<String>()
-            updated.courtIds = ticket.courtIds.map { $0 == duplicateId ? target.id : $0 }.filter { seen.insert($0).inserted }
-            db.tickets[ticketId] = updated
+            db.tickets[ticketId]?.courtIds = redirected(ticket.courtIds)
         }
         scheduleSave()
         emit(.venuesChanged)

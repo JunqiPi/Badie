@@ -22,20 +22,24 @@ extension MockBackend {
     /// 某个球馆的球群
     func groups(atVenue venueId: String) -> [PlayGroup] {
         guard let target = venue(id: venueId) else { return [] }
-        return db.groups.values
-            .filter { venue(id: $0.venueId).map { VenueCluster.same($0, target) } ?? false }
-            .sorted { activity(of: $0.id).sessionsLast30Days > activity(of: $1.id).sessionsLast30Days }
+        return sortedByActivity(db.groups.values.filter { venue(id: $0.venueId).map { VenueCluster.same($0, target) } ?? false })
     }
 
     /// 附近的球群（按真实活跃度排序）
     func groups(near center: Coordinate, radiusKm: Double) -> [PlayGroup] {
         let blocked = blockedIds()
-        return db.groups.values
-            .filter { group in
-                guard !blocked.contains(group.ownerId), let venue = venue(id: group.venueId) else { return false }
-                return venue.distance(from: center) <= radiusKm
-            }
-            .sorted { activity(of: $0.id).sessionsLast30Days > activity(of: $1.id).sessionsLast30Days }
+        return sortedByActivity(db.groups.values.filter { group in
+            guard !blocked.contains(group.ownerId), let venue = venue(id: group.venueId) else { return false }
+            return venue.distance(from: center) <= radiusKm
+        })
+    }
+
+    /// 按近 30 天场次数降序（每个群只统计一次）
+    private func sortedByActivity(_ groups: [PlayGroup]) -> [PlayGroup] {
+        groups
+            .map { (group: $0, sessions: activity(of: $0.id).sessionsLast30Days) }
+            .sorted { $0.sessions > $1.sessions }
+            .map { $0.group }
     }
 
     /// 近 30 天开了几场、平均每场几人（对外只显示这个，不显示成员总数）

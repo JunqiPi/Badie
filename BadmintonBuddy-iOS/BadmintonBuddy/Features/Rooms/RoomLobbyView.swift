@@ -425,6 +425,7 @@ struct RoomDetailsEditor: View {
 
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var roomManager: RoomManager
+    @EnvironmentObject private var locationManager: LocationManager
     @Environment(\.dismiss) private var dismiss
 
     @State private var day = Calendar.current.startOfDay(for: Date())
@@ -432,7 +433,6 @@ struct RoomDetailsEditor: View {
     @State private var endMinutes = 21 * 60
     @State private var courtId: String?
     @State private var showCourtPicker = false
-    @EnvironmentObject private var locationManager: LocationManager
 
     private var slot: TimeSlot? {
         TimeSlot.on(day, startHour: startMinutes / 60, startMinute: startMinutes % 60, endHour: endMinutes / 60, endMinute: endMinutes % 60)

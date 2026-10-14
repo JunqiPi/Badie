@@ -120,12 +120,11 @@ extension MockBackend {
                     opponentRating: other.displayTier.rating
                 ))
             }
-            // 机器人对我的评价：到场是否准时以签到数据为准（客观），暂存等待双盲揭晓
+            // 机器人对我的评价：准时与否以签到为准（晚于开赛 5 分钟算迟到），暂存等待双盲揭晓
             if isBot(otherId) {
-                let checkIn = game.checkIns[me.id]
                 let attendance: AttendanceAnswer
-                if let checkIn {
-                    attendance = checkIn <= game.slot.startTime.addingTimeInterval(5 * 60) ? .onTime : .late
+                if let checkIn = game.checkIns[me.id], checkIn > game.slot.startTime.addingTimeInterval(5 * 60) {
+                    attendance = .late
                 } else {
                     attendance = .onTime
                 }
@@ -214,7 +213,8 @@ extension MockBackend {
         // 双盲：我提交后，对方对我的评价随之生效
         let released = db.heldSurveys.filter { $0.matchId == pending.matchId && $0.evaluatedUserId == me.id && $0.evaluatorId == pending.opponentId }
         if !released.isEmpty {
-            db.heldSurveys.removeAll { held in released.contains { $0.id == held.id } }
+            let releasedIds = Set(released.map(\.id))
+            db.heldSurveys.removeAll { releasedIds.contains($0.id) }
             for item in released {
                 db.surveys.append(item)
                 apply(item)
@@ -296,7 +296,8 @@ extension MockBackend {
             return now > game.slot.endTime.addingTimeInterval(PendingSurvey.validityDuration)
         }
         if !due.isEmpty {
-            db.heldSurveys.removeAll { held in due.contains { $0.id == held.id } }
+            let dueIds = Set(due.map(\.id))
+            db.heldSurveys.removeAll { dueIds.contains($0.id) }
             for item in due {
                 db.surveys.append(item)
                 apply(item)

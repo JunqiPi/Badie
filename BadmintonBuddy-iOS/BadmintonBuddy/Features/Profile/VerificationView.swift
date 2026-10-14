@@ -4,7 +4,6 @@ import SwiftUI
 
 struct VerificationView: View {
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var router: Router
 
     @State private var kind: VerificationStatus = .tournament
     @State private var tier = VerificationStatus.tournament.minTier

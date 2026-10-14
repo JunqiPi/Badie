@@ -38,13 +38,9 @@ extension MockBackend {
 
     func createRoom(_ draft: RoomDraft) async throws -> Room {
         let me = try requireUser()
-        if let slot = draft.slot {
-            if case .invalid(let reason) = slot.validate() { throw BackendError.invalidSlot(reason) }
-        }
-        if draft.visibility == .publicListing {
-            guard draft.court != nil, draft.slot != nil else {
-                throw BackendError.invalidSlot("公开球局需要设置球馆和时间")
-            }
+        if let slot = draft.slot, case .invalid(let reason) = slot.validate() { throw BackendError.invalidSlot(reason) }
+        if draft.visibility == .publicListing, draft.court == nil || draft.slot == nil {
+            throw BackendError.invalidSlot("公开球局需要设置球馆和时间")
         }
         await networkDelay()
         // 房主自己的水平必须在范围内
@@ -257,14 +253,6 @@ extension MockBackend {
         emit(.gameCreated(game))
         emit(.gamesChanged)
         return game
-    }
-
-    func closeRoom(id: String) async throws {
-        let me = try requireUser()
-        guard var room = db.rooms[id] else { throw BackendError.roomNotFound }
-        guard room.ownerId == me.id else { throw BackendError.notRoomOwner }
-        await networkDelay()
-        closeRoom(&room, reason: .ownerClosed)
     }
 
     func closeRoom(_ room: inout Room, reason: RoomCloseReason) {

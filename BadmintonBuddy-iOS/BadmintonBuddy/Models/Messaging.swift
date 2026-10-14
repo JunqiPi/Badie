@@ -75,7 +75,6 @@ enum ContactInfoDetector {
         return text.range(of: #"(?:\d[\s\-\.]?){7,}"#, options: .regularExpression) != nil
     }
 
-    /// 是否包含链接
     static func containsLink(_ text: String) -> Bool {
         guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else { return false }
         return detector.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)) != nil

@@ -2,8 +2,7 @@ import Foundation
 
 // MARK: - 国家/地区信息
 //
-// 全球化的单一事实来源：币种、手机号规则、地址书写顺序、距离单位、常用导航 App。
-// 新增一个国家只需要在 `CountryInfo.all` 里加一行。
+// 每个国家的币种、手机号规则、地址书写顺序和常用导航 App；新增国家在 `CountryInfo.all` 里加一行。
 
 enum AddressStyle: String, Codable, Hashable {
     /// 由小到大：门牌 街道, 城市, 州 邮编（美、加、英、澳、新、马…）
@@ -59,7 +58,7 @@ struct CountryInfo: Identifiable, Hashable {
 
     var id: String { code }
 
-    /// 国旗 emoji（由地区码计算）
+    /// 国旗 emoji：地区码字母映射到区域指示符号
     var flag: String {
         code.uppercased().unicodeScalars.compactMap { UnicodeScalar(127_397 + $0.value) }.map(String.init).joined()
     }

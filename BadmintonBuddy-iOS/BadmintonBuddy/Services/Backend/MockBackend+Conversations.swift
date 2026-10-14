@@ -1,9 +1,7 @@
 import Foundation
 
-// MARK: - 谁能给谁发消息
+// MARK: - 谁能给谁发消息（依据见 docs/DESIGN.md §12）
 //
-// 依据见 docs/DESIGN.md §12：陌生人随意私信是骚扰和诈骗的主要入口（Pew 2023：50 岁以下用约会应用的女性
-// 56% 收到过不请自来的露骨信息；RacketPal 用户反映有人一上来就要 WhatsApp）。
 // - 好友：随便聊
 // - 同一场已确认的球局：用球局群聊（确认后开放，赛后 48 小时关闭）
 // - 同一个球群：可以发一条纯文字的“消息请求”，对方接受后才能继续；新账号打满 3 场前不能发
@@ -173,7 +171,8 @@ extension MockBackend {
                               content: content.trimmingCharacters(in: .whitespacesAndNewlines), deliveredAt: Date())
         appendMessage(message, participants: thread.participantIds, countsAsUnread: true)
         // 群里有人回应
-        if let responder = thread.participantIds.filter({ isBot($0) && !blockedIds(of: me.id).contains($0) })
+        let blocked = blockedIds(of: me.id)
+        if let responder = thread.participantIds.filter({ isBot($0) && !blocked.contains($0) })
             .min(by: { "\($0)\(content)".stableHash < "\($1)\(content)".stableHash }) {
             let reply = botReply(to: content, botId: responder)
             simulate(after: Double.random(in: 3...7)) { [weak self] in

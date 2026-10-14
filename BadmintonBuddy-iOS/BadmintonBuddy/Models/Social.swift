@@ -53,9 +53,9 @@ enum ReportReason: String, CaseIterable, Identifiable, Codable, Hashable {
     var id: String { rawValue }
 }
 
-// MARK: - 站内通知
+// MARK: - 同馆常客
 
-/// 同馆常客：和我常去同一家球馆、并且本人开启了展示的球友
+/// 和我常去同一家球馆、并且本人开启了展示的球友
 struct VenueRegular: Identifiable, Hashable {
     let user: User
     /// 我们共同常去的球馆（之一）
@@ -63,6 +63,8 @@ struct VenueRegular: Identifiable, Hashable {
 
     var id: String { user.id }
 }
+
+// MARK: - 站内通知
 
 struct InboxItem: Identifiable, Codable, Hashable {
     enum Kind: String, Codable, Hashable {

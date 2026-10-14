@@ -25,9 +25,8 @@ enum CourtAmenity: String, Codable, CaseIterable, Hashable {
 // MARK: - 营业时间
 
 struct OperatingHours: Codable, Hashable {
-    /// 开门时间（小时与分钟）
+    /// 开 / 关门时间，只用 hour、minute
     let openTime: DateComponents
-    /// 关门时间（小时与分钟）
     let closeTime: DateComponents
     /// 营业日（1=周日 … 7=周六，与 Calendar.weekday 一致）
     let daysOpen: [Int]
@@ -48,23 +47,14 @@ struct OperatingHours: Codable, Hashable {
     }
 
     var formattedDaysOpen: String {
-        let names = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
         let days = daysOpen.sorted()
         if days.count == 7 { return "每天" }
         if days == [2, 3, 4, 5, 6] { return "周一至周五" }
         if days == [1, 7] { return "周末" }
-        return days.compactMap { (1...7).contains($0) ? names[$0 - 1] : nil }.joined(separator: "、")
+        return days.compactMap { (1...7).contains($0) ? RecurringTimeSlot.weekdayNames[$0 - 1] : nil }.joined(separator: "、")
     }
 
-    /// 指定时刻是否营业
-    func isOpen(at date: Date, calendar: Calendar = .current) -> Bool {
-        let weekday = calendar.component(.weekday, from: date)
-        guard daysOpen.contains(weekday) else { return false }
-        let minutes = calendar.component(.hour, from: date) * 60 + calendar.component(.minute, from: date)
-        return minutes >= openMinutes && minutes < closeMinutes
-    }
-
-    /// 时间段是否完全落在营业时间内
+    /// 时间段是否完全落在营业时间内（跨午夜结束的按 24 点之后计）
     func covers(_ slot: TimeSlot, calendar: Calendar = .current) -> Bool {
         let weekday = calendar.component(.weekday, from: slot.startTime)
         guard daysOpen.contains(weekday) else { return false }
@@ -80,8 +70,7 @@ struct OperatingHours: Codable, Hashable {
 
 // MARK: - 结构化地址
 
-/// 结构化地址：分字段存储，按国家习惯格式化。
-/// 选择球馆时始终展示完整地址，用户才能确认“是不是这一家”。
+/// 分字段存储，按国家习惯（AddressStyle）格式化
 struct PostalAddress: Codable, Hashable {
     /// 门牌与街道，如 "10410 Valley Blvd"、"工体北路4号"
     var street: String
@@ -136,7 +125,6 @@ struct PostalAddress: Codable, Hashable {
         }
     }
 
-    /// 单行完整地址
     var singleLine: String {
         switch style {
         case .smallToLarge:
@@ -324,8 +312,6 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
         return zone.abbreviation()
     }
 
-    var formattedCourtCount: String? { courtCount.map { "\($0) 片场地" } }
-
     var pricingText: String { pricing.text(currency: currencyCode) }
 
     /// 该时段是否营业；营业时间未知时视为可用（无法判断）
@@ -333,10 +319,7 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
         operatingHours?.covers(slot, calendar: calendar) ?? true
     }
 
-    var hoursText: String {
-        guard let hours = operatingHours else { return "营业时间未知" }
-        return hours.formattedTimeRange
-    }
+    var hoursText: String { operatingHours?.formattedTimeRange ?? "营业时间未知" }
 
     /// 到用户的距离（公里）
     func distance(from coordinate: Coordinate) -> Double {

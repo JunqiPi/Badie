@@ -144,8 +144,7 @@ struct FloatingTabBar: View {
         .background { scrim }
     }
 
-    /// 标签栏后方的底色：实色铺到屏幕底边（含 Home 指示条区域），上方再接一段渐隐，
-    /// 滚动内容在标签栏上方淡出，不会从标签栏四周或下方露出来
+    /// 标签栏后方实色铺到屏幕底边，上方渐隐，避免滚动内容从标签栏四周露出
     private var scrim: some View {
         AppTheme.Colors.canvas
             .ignoresSafeArea(edges: .bottom)

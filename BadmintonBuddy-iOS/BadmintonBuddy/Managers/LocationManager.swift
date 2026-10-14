@@ -7,16 +7,8 @@ import Combine
 
 enum LocationError: Error, Equatable {
     case permissionDenied
-    case locationUnavailable
-    case unknown(String)
 
-    var message: String {
-        switch self {
-        case .permissionDenied: return "未开启定位，距离按默认城市计算；可直接搜索球馆"
-        case .locationUnavailable: return "定位暂时不可用，显示上次位置"
-        case .unknown(let message): return message
-        }
-    }
+    var message: String { "未开启定位，距离按默认城市计算；可直接搜索球馆" }
 }
 
 @MainActor
@@ -24,8 +16,6 @@ final class LocationManager: NSObject, ObservableObject {
 
     @Published private(set) var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published private(set) var currentLocation: CLLocation?
-    @Published private(set) var lastLocationUpdate: Date?
-    @Published private(set) var locationError: LocationError?
     /// 出行范围内的球馆（来自平台球馆库），按距离排序
     @Published private(set) var nearbyCourts: [BadmintonCourt] = []
     @Published private(set) var favoriteCourtIds: [String] = []
@@ -128,10 +118,6 @@ final class LocationManager: NSObject, ObservableObject {
         }
     }
 
-    func stop() {
-        manager.stopUpdatingLocation()
-    }
-
     /// 更新出行半径（1-50 公里）并持久化
     @discardableResult
     func updateTravelRadius(_ radius: Double) -> Bool {
@@ -144,8 +130,7 @@ final class LocationManager: NSObject, ObservableObject {
 
     // MARK: Court discovery
 
-    /// 从平台球馆库刷新出行范围内的球馆（不再自动把地图搜索结果写入球馆库：
-    /// 只有用户明确选中并确认的地点才会入库，避免重复和错误地点）
+    /// 从平台球馆库刷新出行范围内的球馆
     func refreshCourts() {
         nearbyCourts = backend.venues(near: coordinate, radiusKm: preferences.travelRadiusKm)
     }
@@ -156,10 +141,8 @@ final class LocationManager: NSObject, ObservableObject {
         authorizationStatus = status
         switch status {
         case .authorizedWhenInUse, .authorizedAlways:
-            locationError = nil
             manager.startUpdatingLocation()
         case .denied, .restricted:
-            locationError = .permissionDenied
             refreshCourts()
         default:
             break
@@ -168,22 +151,12 @@ final class LocationManager: NSObject, ObservableObject {
 
     fileprivate func handleLocation(_ location: CLLocation) {
         currentLocation = location
-        lastLocationUpdate = Date()
-        locationError = nil
         backend.updateCurrentUserLocation(Coordinate(location.coordinate))
         if let last = lastRefreshLocation, location.distance(from: last) < Self.refreshThresholdMeters {
             return
         }
         lastRefreshLocation = location
         refreshCourts()
-    }
-
-    fileprivate func handleFailure(_ error: Error) {
-        if let clError = error as? CLError, clError.code == .denied {
-            locationError = .permissionDenied
-        } else {
-            locationError = currentLocation == nil ? .unknown("暂时无法获取位置") : .locationUnavailable
-        }
     }
 }
 
@@ -199,12 +172,6 @@ extension LocationManager: CLLocationManagerDelegate {
         guard let location = locations.last else { return }
         Task { @MainActor in
             self.handleLocation(location)
-        }
-    }
-
-    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        Task { @MainActor in
-            self.handleFailure(error)
         }
     }
 }

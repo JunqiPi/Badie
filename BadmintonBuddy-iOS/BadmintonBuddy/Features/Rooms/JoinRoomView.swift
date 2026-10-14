@@ -4,7 +4,6 @@ import SwiftUI
 struct JoinRoomView: View {
     var initialCode: String = ""
 
-    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var roomManager: RoomManager
     @EnvironmentObject private var groupManager: GroupManager
@@ -280,7 +279,6 @@ struct FriendPickerSheet: View {
     }
 }
 
-/// 搜索框
 struct SearchField: View {
     @Binding var text: String
     var placeholder: String

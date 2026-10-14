@@ -148,7 +148,7 @@ struct MatchSetupView: View {
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    ForEach(presets, id: \.0) { preset in
+                    ForEach(Self.presets, id: \.0) { preset in
                         ChoiceChip(title: preset.0, isSelected: matchManager.draft.startMinutes == preset.1 && matchManager.draft.endMinutes == preset.2,
                                    tint: AppTheme.Colors.peach) {
                             matchManager.draft.startMinutes = preset.1
@@ -166,10 +166,10 @@ struct MatchSetupView: View {
         }
     }
 
-    private var presets: [(String, Int, Int)] {
-        [("早场 7–9", 7 * 60, 9 * 60), ("午间 12–14", 12 * 60, 14 * 60), ("下午 14–17", 14 * 60, 17 * 60),
-         ("晚上 19–21", 19 * 60, 21 * 60), ("夜场 21–23", 21 * 60, 23 * 60)]
-    }
+    private static let presets: [(String, Int, Int)] = [
+        ("早场 7–9", 7 * 60, 9 * 60), ("午间 12–14", 12 * 60, 14 * 60), ("下午 14–17", 14 * 60, 17 * 60),
+        ("晚上 19–21", 19 * 60, 21 * 60), ("夜场 21–23", 21 * 60, 23 * 60)
+    ]
 
     // MARK: Courts
 

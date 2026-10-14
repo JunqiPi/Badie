@@ -222,7 +222,6 @@ struct PlayerProfileSheet: View {
     }
 }
 
-/// 资料卡里的大号加好友按钮
 private struct FriendActionButtonLarge: View {
     let userId: String
 

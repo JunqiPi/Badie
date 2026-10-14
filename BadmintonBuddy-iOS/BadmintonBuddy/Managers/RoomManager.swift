@@ -7,7 +7,6 @@ import Combine
 final class RoomManager: ObservableObject {
     @Published private(set) var myRooms: [Room] = []
     @Published private(set) var publicRooms: [Room] = []
-    @Published private(set) var isLoading = false
     /// 被踢出或房间关闭时的提示（供界面弹出）
     @Published var notice: String?
     /// 别人开局后，需要跳转到的新球局
@@ -16,8 +15,6 @@ final class RoomManager: ObservableObject {
     private let backend: MockBackend
     private var expirationTask: Task<Void, Never>?
     var radiusKm: Double = UserPreferences.defaultTravelRadius
-
-    static let roomExpirationSeconds = Room.expirationDuration
 
     init(backend: MockBackend) {
         self.backend = backend
@@ -51,10 +48,6 @@ final class RoomManager: ObservableObject {
 
     func room(id: String) -> Room? { backend.room(id: id) }
 
-    var currentUserId: String? { backend.currentUserId }
-
-    func isOwner(_ room: Room) -> Bool { room.ownerId == backend.currentUserId }
-
     /// 每 30 秒检查一次过期房间（私密房间 30 分钟无活动自动关闭）
     private func startExpirationChecks() {
         expirationTask?.cancel()
@@ -70,24 +63,18 @@ final class RoomManager: ObservableObject {
     // MARK: Actions
 
     func create(_ draft: RoomDraft) async throws -> Room {
-        isLoading = true
-        defer { isLoading = false }
         let room = try await backend.createRoom(draft)
         reload()
         return room
     }
 
     func join(code: String) async throws -> Room {
-        isLoading = true
-        defer { isLoading = false }
         let room = try await backend.joinRoom(code: code)
         reload()
         return room
     }
 
     func joinPublic(_ room: Room) async throws -> Room {
-        isLoading = true
-        defer { isLoading = false }
         let joined = try await backend.joinPublicRoom(id: room.id)
         reload()
         return joined
@@ -117,10 +104,5 @@ final class RoomManager: ObservableObject {
         let game = try await backend.startRoom(id: room.id)
         reload()
         return game
-    }
-
-    func close(_ room: Room) async throws {
-        try await backend.closeRoom(id: room.id)
-        reload()
     }
 }

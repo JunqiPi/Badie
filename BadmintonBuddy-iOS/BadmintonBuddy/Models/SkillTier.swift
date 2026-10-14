@@ -2,10 +2,7 @@ import Foundation
 
 // MARK: - 细分档位：每级分 −、本级、+ 三档（1− … 9+，共 27 档）
 //
-// 等级之间差距太大时（尤其是高水平），同一级里的人也打不到一起。
-// 和 NTRP（0.5 一档）、UTR / DUPR（小数）一样，我们用连续分值记录水平，
-// 显示时取最近的三分之一档：4− = 3.67，4 = 4.00，4+ = 4.33。
-// −：刚达到本级的标准，还不稳定；+：本级的动作很稳定，并开始具备下一级的部分能力。
+// 水平用连续分值记录，显示时取最近的三分之一档：4− = 3.67，4 = 4.00，4+ = 4.33。
 
 struct SkillTier: Hashable, Comparable, Codable, Identifiable {
     enum Modifier: Int, Codable, Hashable {

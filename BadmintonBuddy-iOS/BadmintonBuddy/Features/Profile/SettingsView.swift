@@ -23,13 +23,13 @@ struct SettingsView: View {
 
                     section("权限") {
                         VStack(spacing: 0) {
-                            settingRow(icon: "bell.badge.fill", tint: AppTheme.Colors.butter, title: "球局提醒",
-                                       value: notificationText) {
+                            MenuRow(icon: "bell.badge.fill", tint: AppTheme.Colors.butter, title: "球局提醒",
+                                    value: notificationText) {
                                 Task { await handleNotificationTap() }
                             }
                             InsetDivider()
-                            settingRow(icon: "location.fill", tint: AppTheme.Colors.sky, title: "定位",
-                                       value: locationText) {
+                            MenuRow(icon: "location.fill", tint: AppTheme.Colors.sky, title: "定位",
+                                    value: locationText) {
                                 if locationManager.authorizationStatus == .notDetermined {
                                     locationManager.requestAuthorization()
                                 } else {
@@ -37,8 +37,8 @@ struct SettingsView: View {
                                 }
                             }
                             InsetDivider()
-                            settingRow(icon: "map.fill", tint: AppTheme.Colors.mint, title: "出行范围",
-                                       value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
+                            MenuRow(icon: "map.fill", tint: AppTheme.Colors.mint, title: "出行范围",
+                                    value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
                                 showRadius = true
                             }
                         }
@@ -177,10 +177,6 @@ struct SettingsView: View {
                 .accessibilityAddTraits(.isHeader)
             content()
         }
-    }
-
-    private func settingRow(icon: String, tint: Color, title: String, value: String, action: @escaping () -> Void) -> some View {
-        MenuRow(icon: icon, tint: tint, title: title, value: value, action: action)
     }
 
     private func privacyLine(_ text: String) -> some View {

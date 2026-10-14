@@ -124,8 +124,6 @@ extension MockBackend {
         ensureGroups()
     }
 
-    var isBotWorldReady: Bool { !db.bots.isEmpty }
-
     func isBot(_ userId: String) -> Bool { db.bots[userId] != nil }
 
     // MARK: 空闲时间
@@ -178,14 +176,6 @@ extension MockBackend {
         return result.compactMap { $0 }
     }
 
-    /// 匹配池：所有机器人在请求日期的空闲情况
-    func availabilityPool(on day: Date) -> [PlayerAvailability] {
-        db.bots.keys.sorted().compactMap { id in
-            guard let user = db.users[id], let location = user.location else { return nil }
-            return PlayerAvailability(user: user, location: location, slots: availability(for: id, on: day))
-        }
-    }
-
     /// 某天有空的附近球友数量（用于首页日期条）
     func availableCount(on day: Date, radiusKm: Double) -> Int {
         let center = currentUser?.location ?? db.worldCenter
@@ -197,7 +187,7 @@ extension MockBackend {
     }
 
     /// 同馆常客：和我有相同常去球馆、并且本人开启了“显示在常客里”的球友。
-    /// 不按距离、不显示在线状态（“附近的人”和在线状态容易被用来定位、骚扰，见 docs/DESIGN.md §12）
+    /// 不按距离、不显示在线状态（防定位与骚扰，见 docs/DESIGN.md §12）
     func venueRegulars(limit: Int = 20) -> [VenueRegular] {
         guard let me = currentUserId else { return [] }
         let mine = favoriteCourtIds().compactMap { venue(id: $0) }
@@ -229,18 +219,6 @@ extension MockBackend {
             .filter { !blocked.contains($0) && !isFriend($0) && seen.insert($0).inserted }
             .prefix(limit)
             .compactMap { db.users[$0] }
-    }
-
-    /// 附近球友（按距离排序）
-    func nearbyPlayers(radiusKm: Double, limit: Int = 20) -> [User] {
-        let center = currentUser?.location ?? db.worldCenter
-        let blocked = blockedIds()
-        return db.bots.keys.compactMap { db.users[$0] }
-            .filter { !blocked.contains($0.id) }
-            .filter { ($0.location?.distanceKm(to: center) ?? .infinity) <= radiusKm }
-            .sorted { ($0.location?.distanceKm(to: center) ?? 0) < ($1.location?.distanceKm(to: center) ?? 0) }
-            .prefix(limit)
-            .map { $0 }
     }
 
     func distanceToCurrentUser(_ userId: String) -> Double? {

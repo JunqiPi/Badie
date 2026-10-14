@@ -274,7 +274,7 @@ struct SegmentedSticker<Option: Hashable>: View {
     }
 }
 
-// MARK: - 评分（羽毛球拍图标）
+// MARK: - 评分（星级）
 
 struct RatingPicker: View {
     @Binding var rating: Int
@@ -298,29 +298,5 @@ struct RatingPicker: View {
                 .accessibilityAddTraits(value == rating ? [.isSelected, .isButton] : .isButton)
             }
         }
-    }
-}
-
-struct StarsView: View {
-    let rating: Double
-    var size: CGFloat = 14
-
-    var body: some View {
-        HStack(spacing: 2) {
-            ForEach(1...5, id: \.self) { index in
-                Image(systemName: symbol(for: index))
-                    .font(.system(size: size, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.star)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(format: "%.1f 星", rating))
-    }
-
-    private func symbol(for index: Int) -> String {
-        let value = rating - Double(index - 1)
-        if value >= 0.75 { return "star.fill" }
-        if value >= 0.25 { return "star.leadinghalf.filled" }
-        return "star"
     }
 }
