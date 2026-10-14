@@ -143,13 +143,6 @@ struct AssessmentResultCard: View {
                 .font(AppTheme.Typography.subheadlineBold)
                 .foregroundStyle(AppTheme.Colors.onAccent)
                 .fixedSize(horizontal: false, vertical: true)
-            VStack(alignment: .leading, spacing: 6) {
-                ForEach(SkillLevel.anchors(for: result.level), id: \.self) { anchor in
-                    Label(anchor, systemImage: "checkmark")
-                        .font(AppTheme.Typography.subheadline)
-                        .foregroundStyle(AppTheme.Colors.onAccent)
-                }
-            }
             if let flight = SkillLevel.usFlight(for: result.level) {
                 Text("大致相当于美国业余赛 \(flight)")
                     .font(AppTheme.Typography.footnote)
