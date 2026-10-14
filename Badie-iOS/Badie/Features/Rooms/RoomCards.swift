@@ -92,7 +92,7 @@ struct PublicRoomCard: View {
         if let slot = room.slot { parts.append(slot.formattedFull) }
         if let court = room.court { parts.append(court.name) }
         parts.append(room.isFull ? String(localized: "已满员") : String(localized: "还缺 \(room.openSeats) 人"))
-        if let cost = room.costEstimate, cost.perPerson != nil { parts.append(String(localized: "每人约 \(cost.perPersonText)")) }
+        if let cost = room.costEstimate, cost.perPerson != nil { parts.append(String(localized: "约 \(cost.perPersonText)")) }
         return parts.joined(separator: "，")
     }
 }

@@ -87,7 +87,7 @@ struct GameTicketCard: View {
         guard !others.isEmpty else { return String(localized: "等待球友加入") }
         if others.count == 1 { return String(localized: "你和 \(others[0])") }
         let more = others.count > 2 ? String(localized: " 等 \(others.count) 人") : ""
-        return String(localized: "你和 \(others.prefix(2).joined(separator: "、"))\(more)")
+        return String(localized: "你和 \(others.prefix(2).joined(separator: String(localized: "、", comment: "名单分隔符")))\(more)")
     }
 
     @ViewBuilder

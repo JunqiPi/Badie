@@ -89,7 +89,7 @@ struct AvatarStack: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(users.map(\.nickname).joined(separator: "、"))
+        .accessibilityLabel(users.map(\.nickname).joined(separator: String(localized: "、", comment: "名单分隔符")))
     }
 }
 

@@ -345,7 +345,7 @@ struct MatchSetupView: View {
         guard let cheapest = estimates.filter({ $0.perPerson != nil }).min(by: { $0.perPerson! < $1.perPerson! }) else {
             return String(localized: "球馆价格未知，到场后按实际费用 AA · 平台不收服务费")
         }
-        return String(localized: "预计每人约 \(cheapest.perPersonText) · 平台不收服务费")
+        return String(localized: "预计 \(cheapest.perPersonText) · 平台不收服务费")
     }
 
     private func start() {
