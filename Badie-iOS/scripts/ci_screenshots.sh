@@ -10,6 +10,8 @@ BUNDLE="com.badie.app"
 SCREENS="${SCREENS:-welcome login levelQuiz levelResult levelGuide levelGuideElite verification home createMenu matchSetup matchSetupVenues venuePicker venueSearch venueDetail addVenue courts matching matchFound ticketWaiting offerWaiting homeTicket ticket games groups groupDetail groupChat playerProfile messages chat friends room joinRoom survey profile editProfile settings notifications}"
 # 深色模式只截关键页面（CI 模拟器较慢，全部截两遍会超时）
 DARK_SCREENS="${DARK_SCREENS:-home matchFound offerWaiting groupDetail playerProfile chat profile}"
+# 英文界面抽查
+EN_SCREENS="${EN_SCREENS:-welcome levelQuiz levelResult home matchSetup matchFound games groupDetail playerProfile survey profile settings}"
 
 mkdir -p "$OUT"
 xcrun simctl boot "$UDID" 2>/dev/null || true
@@ -25,15 +27,21 @@ xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen joinRoom >/dev/null || true
 sleep 6
 xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 
-for appearance in light dark; do
+# 每一轮：文件名前缀 外观 语言 区域 页面列表
+capture() {
+  local prefix="$1" appearance="$2" language="$3" locale="$4" list="$5"
   xcrun simctl ui "$UDID" appearance "$appearance" || true
-  if [ "$appearance" = "dark" ]; then LIST="$DARK_SCREENS"; else LIST="$SCREENS"; fi
-  for screen in $LIST; do
+  for screen in $list; do
     xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
     # App 使用洛杉矶时区（CI 机器是 UTC），时间显示与演示城市一致
-    SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen "$screen" >/dev/null
+    SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" "$BUNDLE" \
+      -BBDemoScreen "$screen" -AppleLanguages "($language)" -AppleLocale "$locale" >/dev/null
     sleep 5
-    xcrun simctl io "$UDID" screenshot "$OUT/${appearance}-${screen}.png" >/dev/null 2>&1
-    echo "captured ${appearance}-${screen}"
+    xcrun simctl io "$UDID" screenshot "$OUT/${prefix}-${screen}.png" >/dev/null 2>&1
+    echo "captured ${prefix}-${screen}"
   done
-done
+}
+
+capture light light zh-Hans zh_CN "$SCREENS"
+capture dark dark zh-Hans zh_CN "$DARK_SCREENS"
+capture en light en en_US "$EN_SCREENS"

@@ -88,6 +88,7 @@ jobs:
             -derivedDataPath build \
             -test-timeouts-enabled YES \
             -default-test-execution-time-allowance 60 \
+            -testLanguage zh-Hans -testRegion CN \
             CODE_SIGNING_ALLOWED=NO > test.log 2>&1
           STATUS=$?
           echo "----- failures -----"
@@ -95,6 +96,25 @@ jobs:
           echo "----- tail -----"
           tail -15 test.log
           exit $STATUS
+
+      # 从源码提取全部待翻译文案（同时同步 String Catalog），供翻译使用
+      - name: Export localizations
+        if: always() && steps.build.outcome == 'success'
+        timeout-minutes: 15
+        run: |
+          xcodebuild -exportLocalizations -project Badie.xcodeproj -localizationPath localizations \
+            -exportLanguage en > export.log 2>&1 || { tail -30 export.log; exit 1; }
+          mkdir -p localizations/catalogs
+          find Badie -name "*.xcstrings" -exec cp {} localizations/catalogs/ \;
+
+      - name: Upload localizations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: localizations
+          path: Badie-iOS/localizations
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Capture screenshots
         if: always() && steps.build.outcome == 'success'
