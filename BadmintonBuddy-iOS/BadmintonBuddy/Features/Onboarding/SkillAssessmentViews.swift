@@ -113,8 +113,9 @@ struct SkillAssessmentView: View {
             }
             .padding(AppTheme.Spacing.md)
             .frame(maxWidth: .infinity, alignment: .leading)
+            // 半透明底色不能叠实心投影（投影会透出来变成深色），选中态不加投影
             .sticker(selected ? AppTheme.Colors.lime.opacity(0.35) : AppTheme.Colors.surface,
-                     radius: AppTheme.Radius.md, shadow: selected ? AppTheme.Elevation.low : .zero)
+                     radius: AppTheme.Radius.md, shadow: .zero)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
@@ -273,7 +274,7 @@ struct SkillLevelGuideView: View {
         .padding(AppTheme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .sticker(isCurrent ? AppTheme.Colors.lime.opacity(0.35) : AppTheme.Colors.surface, radius: AppTheme.Radius.md,
-                 shadow: isCurrent ? AppTheme.Elevation.low : .zero)
+                 shadow: .zero)
         .accessibilityElement(children: .combine)
     }
 }
