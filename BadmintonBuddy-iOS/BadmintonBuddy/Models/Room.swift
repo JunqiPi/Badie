@@ -60,6 +60,8 @@ struct RoomParticipant: Identifiable, Codable, Hashable {
     let userId: String
     var nickname: String
     var skillLevel: Int
+    /// 加入时的细分档位分值（老数据为空）
+    var skillRating: Double?
     var avatar: Avatar
     let joinedAt: Date
 
@@ -67,9 +69,12 @@ struct RoomParticipant: Identifiable, Codable, Hashable {
         self.userId = user.id
         self.nickname = user.nickname
         self.skillLevel = user.displayLevel
+        self.skillRating = user.displayTier.rating
         self.avatar = user.avatar
         self.joinedAt = joinedAt
     }
+
+    var tier: SkillTier { SkillTier(rating: skillRating ?? Double(skillLevel)) }
 
     var avatarText: String {
         avatar.symbol.isEmpty ? (nickname.first.map { String($0) } ?? "🏸") : avatar.symbol

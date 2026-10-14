@@ -61,7 +61,7 @@ struct SurveyFormView: View {
 
     @State private var attendance: AttendanceAnswer = .onTime
     @State private var calibration: LevelCalibration? = .accurate
-    @State private var skillRating = 4
+    @State private var skillRating = SkillTier(level: 4)
     @State private var characterRating = 5
     @State private var tags: Set<SurveyTag> = []
     @State private var issues: Set<SurveyIssue> = []
@@ -125,7 +125,7 @@ struct SurveyFormView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(survey.opponentNickname)
                     .font(AppTheme.Typography.title3)
-                LevelBadge(level: survey.opponentLevel)
+                LevelBadge(tier: survey.opponentTier)
                 Text("\(DateText.relativeDay(survey.matchDate)) · \(survey.courtName)")
                     .font(AppTheme.Typography.footnote)
                     .opacity(0.75)
@@ -161,33 +161,33 @@ struct SurveyFormView: View {
     }
 
     private func levelQuestion(_ survey: PendingSurvey) -> some View {
-        question("TA 的实际水平和标注的 Lv.\(survey.opponentLevel) 比？", hint: "用于校准等级，越如实越好") {
+        question("TA 的实际水平和标注的 \(survey.opponentTier.text) 比？", hint: "高低各一档（1/3 级）；差得多就精确调，越如实越好") {
             HStack(spacing: AppTheme.Spacing.sm) {
                 ForEach(LevelCalibration.allCases) { option in
                     optionCard(
                         title: option.rawValue,
-                        subtitle: "Lv.\(option.rating(from: survey.opponentLevel))",
+                        subtitle: option.rating(from: survey.opponentTier).text,
                         icon: icon(for: option),
                         isSelected: calibration == option,
                         tint: AppTheme.Colors.lime
                     ) {
                         calibration = option
-                        skillRating = option.rating(from: survey.opponentLevel)
+                        skillRating = option.rating(from: survey.opponentTier)
                     }
                 }
             }
             HStack {
-                Text("精确到等级")
+                Text("精确到档")
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Spacer()
-                LevelStepper(title: SkillLevel.name(for: skillRating), level: Binding(
+                TierStepper(tier: Binding(
                     get: { skillRating },
                     set: { value in
                         skillRating = value
-                        calibration = LevelCalibration.allCases.first { $0.rating(from: survey.opponentLevel) == value }
+                        calibration = LevelCalibration.allCases.first { $0.rating(from: survey.opponentTier) == value }
                     }
-                ), range: MatchSurvey.skillRatingRange)
+                ))
                 .frame(width: 180)
             }
         }
@@ -321,7 +321,7 @@ struct SurveyFormView: View {
         guard !didSetup, let survey = surveyManager.survey(id: pendingId) else { return }
         didSetup = true
         snapshot = survey
-        skillRating = survey.opponentLevel
+        skillRating = survey.opponentTier
     }
 
     private func submit(_ survey: PendingSurvey) async {

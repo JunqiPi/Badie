@@ -116,7 +116,8 @@ extension MockBackend {
                 db.pendingSurveys.append(PendingSurvey(
                     id: UUID().uuidString, matchId: id, evaluatorId: me.id, opponentId: otherId,
                     opponentNickname: other.nickname, opponentLevel: other.displayLevel, opponentAvatar: other.avatar,
-                    courtName: game.court.name, matchDate: game.slot.startTime, expiresAt: expiresAt
+                    courtName: game.court.name, matchDate: game.slot.startTime, expiresAt: expiresAt,
+                    opponentRating: other.displayTier.rating
                 ))
             }
             // 机器人对我的评价：到场是否准时以签到数据为准（客观），暂存等待双盲揭晓
@@ -130,13 +131,15 @@ extension MockBackend {
                 }
                 var rng = SeededGenerator("\(id)-\(otherId)")
                 let drift = [0, 0, 0, -1, 1].randomElement(using: &rng) ?? 0
+                let rated = me.displayTier.offset(by: drift)
                 db.heldSurveys.append(MatchSurvey(
                     id: UUID().uuidString, matchId: id, evaluatorId: otherId, evaluatedUserId: me.id,
-                    skillRating: SkillLevel.clamp(me.displayLevel + drift), wasPunctual: attendance.wasPunctual,
+                    skillRating: rated.level, wasPunctual: attendance.wasPunctual,
                     attendance: attendance, characterRating: [5, 5, 4].randomElement(using: &rng) ?? 5,
                     tags: [SurveyTag.friendly, .punctual, .fairPlay].shuffled(using: &rng).prefix(2).map { $0 },
                     submittedAt: now,
-                    wantsRematch: Double.random(in: 0..<1, using: &rng) < 0.6
+                    wantsRematch: Double.random(in: 0..<1, using: &rng) < 0.6,
+                    skillRatingValue: rated.rating
                 ))
             }
         }
@@ -161,9 +164,10 @@ extension MockBackend {
         db.surveys.contains { $0.matchId == matchId && $0.evaluatorId == evaluatorId && $0.evaluatedUserId == evaluatedUserId }
     }
 
+    /// - Parameter skillRating: 认为对方的水平（可精确到档：4+ = 4.33）
     func submitSurvey(
         pendingId: String,
-        skillRating: Int,
+        skillRating: Double,
         attendance: AttendanceAnswer,
         characterRating: Int,
         tags: [SurveyTag],
@@ -184,19 +188,21 @@ extension MockBackend {
             db.pendingSurveys.removeAll { $0.id == pendingId }
             throw BackendError.surveyDuplicate
         }
+        let rated = SkillTier(rating: skillRating)
         let survey = MatchSurvey(
             id: UUID().uuidString,
             matchId: pending.matchId,
             evaluatorId: me.id,
             evaluatedUserId: pending.opponentId,
-            skillRating: skillRating,
+            skillRating: rated.level,
             wasPunctual: attendance.wasPunctual,
             attendance: attendance,
             characterRating: characterRating,
             tags: tags,
             submittedAt: Date(),
             issues: issues,
-            wantsRematch: wantsRematch
+            wantsRematch: wantsRematch,
+            skillRatingValue: rated.rating
         )
         guard survey.isValid else { throw BackendError.surveyInvalid }
         await networkDelay()
@@ -240,7 +246,7 @@ extension MockBackend {
     /// 把一份评价计入被评价者的声誉与履约记录
     private func apply(_ survey: MatchSurvey) {
         guard var target = db.users[survey.evaluatedUserId] else { return }
-        target.reputation = target.reputation.adding(survey, selfReportedLevel: target.selfReportedLevel)
+        target.reputation = target.reputation.adding(survey, selfRating: target.selfRating)
         if survey.attendance == .noShow {
             target.attendance.noShows += 1
             target.attendance.gamesPlayed = max(0, target.attendance.gamesPlayed - 1)

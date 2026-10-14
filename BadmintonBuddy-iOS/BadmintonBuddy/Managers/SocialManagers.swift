@@ -372,7 +372,7 @@ final class SurveyManager: ObservableObject {
 
     func submit(
         _ pending: PendingSurvey,
-        skillRating: Int,
+        skillRating: SkillTier,
         attendance: AttendanceAnswer,
         characterRating: Int,
         tags: [SurveyTag],
@@ -380,7 +380,7 @@ final class SurveyManager: ObservableObject {
         wantsRematch: Bool = false
     ) async throws {
         try await backend.submitSurvey(
-            pendingId: pending.id, skillRating: skillRating, attendance: attendance,
+            pendingId: pending.id, skillRating: skillRating.rating, attendance: attendance,
             characterRating: characterRating, tags: tags, issues: issues, wantsRematch: wantsRematch
         )
         reload()

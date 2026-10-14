@@ -17,7 +17,7 @@ struct MatchSetupView: View {
         return (0..<TimeSlotConstants.maximumDaysAhead).compactMap { calendar.date(byAdding: .day, value: $0, to: today) }
     }
 
-    private var userLevel: Int { appState.currentUser?.displayLevel ?? 4 }
+    private var userTier: SkillTier { appState.currentUser?.displayTier ?? SkillTier(level: 4) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -260,10 +260,10 @@ struct MatchSetupView: View {
 
     private var toleranceExplanation: String {
         let tolerance = matchManager.draft.skillTolerance
-        guard tolerance < MatchRequest.anySkill else { return "你的等级 Lv.\(userLevel)，将匹配所有水平的球友" }
-        let low = max(1, userLevel - tolerance)
-        let high = min(9, userLevel + tolerance)
-        return "你的等级 Lv.\(userLevel)，将匹配 Lv.\(low)–\(high) 的球友，水平越接近排得越前"
+        guard tolerance < MatchRequest.anySkill else { return "你的等级 \(userTier.text)，将匹配所有水平的球友" }
+        let low = userTier.offset(by: -tolerance * 3)
+        let high = userTier.offset(by: tolerance * 3)
+        return "你的等级 \(userTier.text)，将匹配 \(low.code)–\(high.code) 的球友，水平越接近排得越前"
     }
 
     // MARK: Confirmation

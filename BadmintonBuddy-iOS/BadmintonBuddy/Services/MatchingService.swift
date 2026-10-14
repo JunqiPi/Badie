@@ -14,6 +14,10 @@ struct MatchRequest: Hashable {
     var userLocation: Coordinate
     var radiusKm: Double
     var excludedUserIds: Set<String>
+    /// 发起者的细分档位分值（为空时用整数等级）
+    var userRating: Double?
+
+    var userTier: SkillTier { SkillTier(rating: userRating ?? Double(userLevel)) }
 
     static let anySkill = 8
 }
@@ -32,25 +36,19 @@ struct MatchCandidate: Identifiable, Hashable {
     let user: User
     /// 与发起者的距离（公里）
     let distanceKm: Double
-    /// 对方等级 - 我的等级
+    /// 对方比我高几档（1 档 = 1/3 级）
     let skillDifference: Int
     /// 与发起者时间段的重叠部分
     let overlap: TimeSlot
     /// 发起者所选球馆中，对方也能去的（同一家、已合并或 150 米内的同一处）
     var courtIds: [String] = []
 
-    /// 排序分：水平差优先，其次距离（越小越好）
+    /// 排序分：水平差优先（每差 1 级 10 分），其次距离（越小越好）
     var matchScore: Double {
-        Double(abs(skillDifference)) * 10 + distanceKm
+        Double(abs(skillDifference)) * 10 / 3 + distanceKm
     }
 
-    var formattedSkillDifference: String {
-        switch skillDifference {
-        case 0: return "同水平"
-        case let diff where diff > 0: return "高 \(diff) 级"
-        default: return "低 \(-skillDifference) 级"
-        }
-    }
+    var formattedSkillDifference: String { SkillTier.differenceText(skillDifference) }
 }
 
 /// 一个可确认的约球方案（单打 1 位对手，双打 3 位球友）
@@ -139,8 +137,9 @@ enum MatchingService {
             guard user.id != request.userId, !request.excludedUserIds.contains(user.id) else { return nil }
             let distance = entry.location.distanceKm(to: request.userLocation)
             guard distance <= request.radiusKm else { return nil }
-            let difference = user.displayLevel - request.userLevel
-            guard abs(difference) <= request.skillTolerance else { return nil }
+            // 按细分档位比较：容忍 1 级 = 上下 3 档
+            let difference = request.userTier.steps(to: user.displayTier)
+            guard abs(difference) <= request.skillTolerance * 3 else { return nil }
             let overlaps = entry.slots.compactMap { $0.overlaps(with: request.slot) }
             guard let best = overlaps.max(by: { $0.duration < $1.duration }) else { return nil }
             // 球馆对不上就约不成：只看双方都能去的球馆
@@ -177,7 +176,7 @@ enum MatchingService {
                         let group = [top[i], top[j], top[k]]
                         guard let overlap = commonOverlap(of: group.map(\.overlap)),
                               !sharedCourts(request: request, others: group).isEmpty else { continue }
-                        let score = group.reduce(0) { $0 + $1.matchScore } + spread(of: group, userLevel: request.userLevel) * 5
+                        let score = group.reduce(0) { $0 + $1.matchScore } + spread(of: group, userRating: request.userTier.rating) * 5
                         groups.append((score, group, overlap))
                     }
                 }
@@ -243,7 +242,7 @@ enum MatchingService {
     }
 
     /// 双打分组：按水平排序后 1+4 vs 2+3，保证两队总水平接近
-    static func balancedTeams(players: [(id: String, level: Int)]) -> [[String]] {
+    static func balancedTeams(players: [(id: String, level: Double)]) -> [[String]] {
         guard players.count == 4 else { return players.map { [$0.id] } }
         let sorted = players.sorted { $0.level > $1.level }
         return [[sorted[0].id, sorted[3].id], [sorted[1].id, sorted[2].id]]
@@ -270,10 +269,10 @@ enum MatchingService {
         locations.reduce(0) { $0 + court.location.distanceKm(to: $1) }
     }
 
-    private static func spread(of group: [MatchCandidate], userLevel: Int) -> Double {
-        let levels = group.map(\.user.displayLevel) + [userLevel]
-        guard let high = levels.max(), let low = levels.min() else { return 0 }
-        return Double(high - low)
+    private static func spread(of group: [MatchCandidate], userRating: Double) -> Double {
+        let ratings = group.map(\.user.displayTier.rating) + [userRating]
+        guard let high = ratings.max(), let low = ratings.min() else { return 0 }
+        return high - low
     }
 
     private static func makeProposal(request: MatchRequest, others: [MatchCandidate], overlap: TimeSlot) -> MatchProposal? {
@@ -284,13 +283,14 @@ enum MatchingService {
 
         let teams: [[String]]
         if request.mode == .doubles {
-            let players = [(id: request.userId, level: request.userLevel)] + others.map { (id: $0.user.id, level: $0.user.displayLevel) }
+            let players = [(id: request.userId, level: request.userTier.rating)]
+                + others.map { (id: $0.user.id, level: $0.user.displayTier.rating) }
             teams = balancedTeams(players: players)
         } else {
             teams = [[request.userId], others.map(\.user.id)]
         }
 
-        let averageDiff = Double(others.reduce(0) { $0 + abs($1.skillDifference) }) / Double(others.count)
+        let averageDiff = Double(others.reduce(0) { $0 + abs($1.skillDifference) }) / 3 / Double(others.count)
         let averageDistance = others.reduce(0) { $0 + $1.distanceKm } / Double(others.count)
         let reputation = Double(others.reduce(0) { $0 + ($1.user.isNewPlayer ? 80 : $1.user.reputation.compositeScore) }) / Double(others.count)
         let raw = 100 - averageDiff * 14 - averageDistance * 1.5 - (100 - reputation) * 0.2

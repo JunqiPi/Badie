@@ -172,9 +172,11 @@ final class ModelTests: XCTestCase {
         var user = User(id: "a", nickname: "测试", phone: "", selfReportedLevel: 6)
         user.reputation = ReputationScore(evaluationCount: 5, peerLevelAverage: 4, averageSkillDeviation: 2,
                                           punctualityPercentage: 100, averageCharacterRating: 5)
-        // 0.3 × 6 + 0.7 × 4 = 4.6
+        // 0.3 × 6 + 0.7 × 4 = 4.6 → 最近的一档是 5−（4.67）
         XCTAssertEqual(user.calculatedLevel, 4.6, accuracy: 0.0001)
+        XCTAssertEqual(user.displayTier, SkillTier(level: 5, modifier: .minus))
         XCTAssertEqual(user.displayLevel, 5)
+        XCTAssertEqual(user.displayLevelText, "Lv.5− 中高级")
         XCTAssertFalse(user.isNewPlayer)
     }
 
@@ -182,9 +184,23 @@ final class ModelTests: XCTestCase {
         var user = User(id: "a", nickname: "测试", phone: "", selfReportedLevel: 7)
         user.reputation = ReputationScore(evaluationCount: 10, peerLevelAverage: 9, averageSkillDeviation: 2,
                                           punctualityPercentage: 100, averageCharacterRating: 5)
-        XCTAssertEqual(user.displayLevel, 7)
-        user.verificationStatus = .nationalChampion
-        XCTAssertEqual(user.displayLevel, 8)
+        XCTAssertEqual(user.displayTier, SkillTier(level: 7), "没认证最高 Lv.7")
+        // 认证 8 级：0.3 × 8 + 0.7 × 9 = 8.7，但不超过认证的那一档
+        user.applyVerification(.national, tier: SkillTier(level: 8))
+        XCTAssertEqual(user.displayTier, SkillTier(level: 8))
+        // 认证档位超出这类证据的范围时，按上限算
+        user.applyVerification(.tournament, tier: SkillTier(level: 9, modifier: .plus))
+        XCTAssertEqual(user.verifiedRating ?? 0, SkillTier(level: 8, modifier: .minus).rating, accuracy: 0.001)
+    }
+
+    func testVerifiedPlayerCanBeCalibratedDownByPeers() {
+        var user = User(id: "a", nickname: "测试", phone: "", selfReportedLevel: 6)
+        user.applyVerification(.bwf, tier: SkillTier(level: 9))
+        XCTAssertEqual(user.displayTier, SkillTier(level: 9), "新球友：直接显示认证档位")
+        user.reputation = ReputationScore(evaluationCount: 8, peerLevelAverage: 8, averageSkillDeviation: 1,
+                                          punctualityPercentage: 100, averageCharacterRating: 5)
+        // 0.3 × 9 + 0.7 × 8 = 8.3 → 8+
+        XCTAssertEqual(user.displayTier, SkillTier(level: 8, modifier: .plus))
     }
 
     func testReputationIncrementalAverage() {
@@ -194,7 +210,7 @@ final class ModelTests: XCTestCase {
             MatchSurvey(id: "2", matchId: "m", evaluatorId: "y", evaluatedUserId: "a", skillRating: 3, wasPunctual: false,
                         attendance: .late, characterRating: 3, tags: [], submittedAt: Date())
         ]
-        let score = ReputationScore.aggregate(surveys, selfReportedLevel: 4)
+        let score = ReputationScore.aggregate(surveys, selfRating: 4)
         XCTAssertEqual(score.evaluationCount, 2)
         XCTAssertEqual(score.peerLevelAverage, 4, accuracy: 0.0001)
         XCTAssertEqual(score.averageSkillDeviation, 1, accuracy: 0.0001)
@@ -212,11 +228,13 @@ final class ModelTests: XCTestCase {
         XCTAssertEqual(AttendanceRecord(gamesPlayed: 3, noShows: 1, lateCancellations: 0).reliabilityPercentage, 75)
     }
 
-    func testLevelCalibrationMapping() {
-        XCTAssertEqual(LevelCalibration.lower.rating(from: 5), 4)
-        XCTAssertEqual(LevelCalibration.accurate.rating(from: 5), 5)
-        XCTAssertEqual(LevelCalibration.higher.rating(from: 9), 9)
-        XCTAssertEqual(LevelCalibration.lower.rating(from: 1), 1)
+    func testLevelCalibrationMovesOneTier() {
+        let five = SkillTier(level: 5)
+        XCTAssertEqual(LevelCalibration.lower.rating(from: five), SkillTier(level: 5, modifier: .minus))
+        XCTAssertEqual(LevelCalibration.accurate.rating(from: five), five)
+        XCTAssertEqual(LevelCalibration.higher.rating(from: five), SkillTier(level: 5, modifier: .plus))
+        XCTAssertEqual(LevelCalibration.higher.rating(from: SkillTier(level: 9, modifier: .plus)), SkillTier(level: 9, modifier: .plus))
+        XCTAssertEqual(LevelCalibration.lower.rating(from: SkillTier(level: 1, modifier: .minus)), SkillTier(level: 1, modifier: .minus))
     }
 
     // MARK: Messages

@@ -336,7 +336,7 @@ struct HomeView: View {
                                         .font(AppTheme.Typography.footnoteBold)
                                         .foregroundStyle(AppTheme.Colors.ink)
                                         .lineLimit(1)
-                                    LevelBadge(level: entry.user.displayLevel, showsName: false, compact: true)
+                                    LevelBadge(tier: entry.user.displayTier, showsName: false, compact: true)
                                     Text(VenueSearch.acronym(entry.venue.name).uppercased().isEmpty
                                          ? entry.venue.name : VenueSearch.acronym(entry.venue.name).uppercased())
                                         .font(AppTheme.Typography.caption)

@@ -306,7 +306,7 @@ struct GameDetailView: View {
                                         .font(AppTheme.Typography.footnoteBold)
                                         .lineLimit(1)
                                     Spacer(minLength: 0)
-                                    Text("Lv.\(user.displayLevel)")
+                                    Text(user.displayTier.text)
                                         .font(AppTheme.Typography.caption)
                                 }
                             }

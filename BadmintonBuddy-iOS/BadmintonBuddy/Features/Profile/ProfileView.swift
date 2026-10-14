@@ -57,7 +57,7 @@ struct ProfileView: View {
                         .font(AppTheme.Typography.footnoteBold)
                         .opacity(0.7)
                     FlowLayout(spacing: 6) {
-                        LevelBadge(level: user.displayLevel)
+                        LevelBadge(tier: user.displayTier)
                         if user.isReliable { ReliableBadge() }
                         if user.isNewPlayer { NewPlayerBadge() }
                         VerifiedBadge(status: user.verificationStatus)
@@ -115,10 +115,10 @@ struct ProfileView: View {
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
-                    Text(String(format: "综合等级 Lv.%.1f", user.calculatedLevel))
+                    Text("综合等级 \(user.displayTier.text)")
                         .font(AppTheme.Typography.subheadlineBold)
-                    ProgressBar(progress: user.calculatedLevel / 9)
-                    Text("问卷 Lv.\(user.selfReportedLevel) × \(selfPercent(user))% + 球友评价 Lv.\(String(format: "%.1f", reputation.peerLevelAverage)) × \(100 - selfPercent(user))%")
+                    ProgressBar(progress: Double(user.displayTier.index + 1) / Double(SkillTier.count))
+                    Text("问卷 \(SkillTier(rating: user.selfRating).text) × \(selfPercent(user))% + 球友评价 \(SkillTier(rating: reputation.peerLevelAverage).text) × \(100 - selfPercent(user))%")
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
@@ -170,7 +170,7 @@ struct ProfileView: View {
             }
             InsetDivider()
             MenuRow(icon: "list.number", tint: AppTheme.Colors.lime, title: "等级对照表",
-                    value: "Lv.\(user.displayLevel)") {
+                    value: user.displayTier.text) {
                 router.open(.levelGuide)
             }
             InsetDivider()

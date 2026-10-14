@@ -578,7 +578,8 @@ struct OnboardingFlow: View {
                 recurringSlots: slots,
                 location: locationManager.currentLocation.map { Coordinate($0.coordinate) },
                 assessment: SkillAssessmentSummary(level: level, needsCalibration: result.needsCalibration,
-                                                   isReturning: result.isReturning, assessedAt: Date())
+                                                   isReturning: result.isReturning, assessedAt: Date(),
+                                                   rating: result.tier.rating)
             )
             for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
                 locationManager.toggleFavorite(venueId)
@@ -628,10 +629,10 @@ private struct WelcomeCardFan: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var spread = false
 
-    private let cards: [(String, Int, Color, Double)] = [
-        ("小红", 7, AppTheme.Colors.lavender, -14),
-        ("阿杰", 4, AppTheme.Colors.peach, 0),
-        ("小明", 6, AppTheme.Colors.sky, 14)
+    private let cards: [(String, SkillTier, Color, Double)] = [
+        ("小红", SkillTier(level: 7, modifier: .minus), AppTheme.Colors.lavender, -14),
+        ("阿杰", SkillTier(level: 4, modifier: .plus), AppTheme.Colors.peach, 0),
+        ("小明", SkillTier(level: 6), AppTheme.Colors.sky, 14)
     ]
 
     var body: some View {
@@ -642,7 +643,7 @@ private struct WelcomeCardFan: View {
                     Text(card.0)
                         .font(AppTheme.Typography.headline)
                         .foregroundStyle(AppTheme.Colors.onAccent)
-                    LevelBadge(level: card.1)
+                    LevelBadge(tier: card.1)
                 }
                 .frame(width: 128, height: 168)
                 .sticker(card.2, radius: 22)

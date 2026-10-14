@@ -66,6 +66,25 @@ final class SkillAssessmentTests: XCTestCase {
         XCTAssertEqual(SkillAssessment.evaluate(answers(1, 1, 1, 2, 2, 2))?.level, 3)
     }
 
+    func testModifiersWithinLevel() {
+        // 什么都不会：1−
+        XCTAssertEqual(SkillAssessment.evaluate(answers(0, 0, 0, 0, 0, 0))?.tier.code, "1−")
+        // 典型中级：本级
+        XCTAssertEqual(SkillAssessment.evaluate(SkillAssessment.demoAnswers)?.tier.code, "4")
+        // 被正手高远卡在 3 级、其他都很高：3+
+        XCTAssertEqual(SkillAssessment.evaluate(answers(2, 4, 4, 4, 4, 4))?.tier.code, "3+")
+        // 中位数在 3 和 4 之间：3+
+        XCTAssertEqual(SkillAssessment.evaluate(answers(1, 1, 1, 2, 2, 2))?.tier.code, "3+")
+        // 靠经历保底到 5 级、技术还没跟上：5−
+        XCTAssertEqual(SkillAssessment.evaluate(answers(1, 0, 0, 1, 1, 1, experience: 3))?.tier.code, "5−")
+    }
+
+    func testQuestionnaireTopsOutAtSevenMinus() {
+        let result = SkillAssessment.evaluate(answers(4, 4, 4, 4, 4, 4, experience: 4))
+        XCTAssertEqual(result?.tier, SkillAssessment.maxTier)
+        XCTAssertEqual(result?.tier.code, "7−")
+    }
+
     func testEveryLevelHasAnchorsAndNames() {
         for level in SkillLevel.range {
             XCTAssertFalse(SkillLevel.name(for: level).isEmpty)
@@ -96,5 +115,7 @@ final class SkillAssessmentTests: XCTestCase {
         XCTAssertThrowsError(try backend.updateAssessment(higher, now: now.addingTimeInterval(30 * 86400)))
         let updated = try backend.updateAssessment(higher, now: now.addingTimeInterval(91 * 86400))
         XCTAssertEqual(updated.selfReportedLevel, higher.level)
+        XCTAssertEqual(updated.selfReportedRating ?? 0, higher.tier.rating, accuracy: 0.001)
+        XCTAssertEqual(updated.displayTier, higher.tier)
     }
 }

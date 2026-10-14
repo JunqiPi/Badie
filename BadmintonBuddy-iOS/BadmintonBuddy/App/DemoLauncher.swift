@@ -82,6 +82,18 @@ enum DemoLauncher {
             }
         case "levelGuide":
             router.show(.levelGuide, in: .profile)
+        case "levelGuideElite":
+            // 对照表滚到 8–9 级：每一档单独的标准
+            environment.appState.guideScrollLevel = 9
+            router.show(.levelGuide, in: .profile)
+        case "verification":
+            // 认证申请：BWF 球员页（演示用的链接，不对应真实球员）
+            environment.appState.verificationDemo = (
+                kind: .bwf, tier: SkillTier(level: 9, modifier: .minus),
+                link: "bwfbadminton.com/player/00000/demo-player", name: "Jie Wang",
+                note: "2025 Pan Am 青年锦标赛男双八强，2026 年打过两站 Future Series"
+            )
+            router.show(.verification, in: .profile)
         case "groups":
             router.show(.groups, in: .games)
         case "groupDetail":

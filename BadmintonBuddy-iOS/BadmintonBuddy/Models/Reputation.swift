@@ -67,14 +67,14 @@ struct ReputationScore: Codable, Hashable {
     /// 加入一次新的评价（增量平均）
     /// - Parameters:
     ///   - survey: 新问卷
-    ///   - selfReportedLevel: 被评价者当时的自评等级
-    func adding(_ survey: MatchSurvey, selfReportedLevel: Int) -> ReputationScore {
+    ///   - selfRating: 被评价者当时的问卷分值
+    func adding(_ survey: MatchSurvey, selfRating: Double) -> ReputationScore {
         let n = Double(evaluationCount)
         let next = n + 1
-        let deviation = abs(Double(survey.skillRating - selfReportedLevel))
+        let deviation = abs(survey.ratingValue - selfRating)
         return ReputationScore(
             evaluationCount: evaluationCount + 1,
-            peerLevelAverage: (peerLevelAverage * n + Double(survey.skillRating)) / next,
+            peerLevelAverage: (peerLevelAverage * n + survey.ratingValue) / next,
             averageSkillDeviation: (averageSkillDeviation * n + deviation) / next,
             punctualityPercentage: (punctualityPercentage * n + (survey.wasPunctual ? 100 : 0)) / next,
             averageCharacterRating: (averageCharacterRating * n + Double(survey.characterRating)) / next,
@@ -84,8 +84,8 @@ struct ReputationScore: Codable, Hashable {
     }
 
     /// 由一组问卷完整计算声誉
-    static func aggregate(_ surveys: [MatchSurvey], selfReportedLevel: Int) -> ReputationScore {
-        surveys.reduce(.empty) { $0.adding($1, selfReportedLevel: selfReportedLevel) }
+    static func aggregate(_ surveys: [MatchSurvey], selfRating: Double) -> ReputationScore {
+        surveys.reduce(.empty) { $0.adding($1, selfRating: selfRating) }
     }
 
     /// 计算对外展示的正面标签：满足人数/场次门槛后，取至少 2 位不同球友给过的前 3 个

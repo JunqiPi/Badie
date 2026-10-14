@@ -65,6 +65,12 @@ final class AppState: ObservableObject {
     var onboardingInitialStep: OnboardingStep = .welcome
     /// 演示/截图：注册时预填的定级答案
     var onboardingDemoAnswers: [String: Int] = [:]
+    #if DEBUG
+    /// 演示/截图：认证申请页预填的内容
+    var verificationDemo: (kind: VerificationStatus, tier: SkillTier, link: String, name: String, note: String)?
+    /// 演示/截图：等级对照表打开时滚到哪一级
+    var guideScrollLevel: Int?
+    #endif
 
     private static let appearanceKey = "appearance"
     private var toastTask: Task<Void, Never>?

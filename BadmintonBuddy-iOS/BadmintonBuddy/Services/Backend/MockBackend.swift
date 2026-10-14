@@ -202,6 +202,9 @@ final class MockBackend {
             preferredMode: preferredMode
         )
         user.assessment = assessment
+        if let assessment, assessment.rating != nil {
+            user.selfReportedRating = min(assessment.tier, SkillAssessment.maxTier).rating
+        }
         db.users[id] = user
         db.accounts[phone] = id
         db.currentUserId = id
@@ -234,6 +237,7 @@ final class MockBackend {
         db.games = db.games.filter { !$0.value.playerIds.contains(user.id) }
         db.pendingSurveys.removeAll { $0.evaluatorId == user.id }
         db.inbox[user.id] = nil
+        db.verificationRequests.removeAll { $0.userId == user.id }
         db.recurringSlots[user.id] = nil
         db.blocks[user.id] = nil
         for (id, group) in db.groups where group.isMember(user.id) || group.pendingIds.contains(user.id) {
@@ -261,9 +265,11 @@ final class MockBackend {
         if let previous = user.assessment, !previous.canRetake(now: now) {
             throw BackendError.assessmentTooSoon(previous.nextRetakeDate())
         }
-        user.selfReportedLevel = min(SkillLevel.clamp(result.level), SkillLevel.maxSelfSelectable)
-        user.assessment = SkillAssessmentSummary(level: user.selfReportedLevel, needsCalibration: result.needsCalibration,
-                                                 isReturning: result.isReturning, assessedAt: now)
+        let tier = min(result.tier, SkillAssessment.maxTier)
+        user.selfReportedLevel = tier.level
+        user.selfReportedRating = tier.rating
+        user.assessment = SkillAssessmentSummary(level: tier.level, needsCalibration: result.needsCalibration,
+                                                 isReturning: result.isReturning, assessedAt: now, rating: tier.rating)
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))

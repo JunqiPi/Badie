@@ -44,7 +44,7 @@ struct SkillAssessmentView: View {
             if result != nil { index = questions.count }
         }
         .sheet(isPresented: $showGuide) {
-            SkillLevelGuideView(highlight: result?.level)
+            SkillLevelGuideView(highlight: result?.tier)
                 .presentationDragIndicator(.visible)
         }
     }
@@ -133,12 +133,15 @@ struct AssessmentResultCard: View {
                 .font(AppTheme.Typography.footnoteBold)
                 .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
             HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
-                Text("Lv.\(result.level)")
+                Text(result.tier.text)
                     .scaledFont(size: 44, relativeTo: .largeTitle)
                 Text(SkillLevel.name(for: result.level))
                     .font(AppTheme.Typography.title2)
             }
             .foregroundStyle(AppTheme.Colors.onAccent)
+            Text("\(result.tier.modifier == .base ? "本级" : result.tier.modifier.symbol)：\(result.tier.modifier.meaning)")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.8))
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(SkillLevel.anchors(for: result.level), id: \.self) { anchor in
                     Label(anchor, systemImage: "checkmark")
@@ -161,7 +164,7 @@ struct AssessmentResultCard: View {
                 notice("arrow.uturn.backward.circle.fill", "回归球友：按现在的状态定级，球友评价会帮你更快回到原来的水平。")
             }
             if result.suggestsVerification {
-                notice("checkmark.seal.fill", "参加过 A 组或 Open 组？注册后可以在资料页申请 8–9 级认证。")
+                notice("checkmark.seal.fill", "参加过 A 组或 Open 组？问卷最高到 7−，注册后可以凭赛果在资料页申请 7+ 以上的认证。")
             }
             Text("打满 5 场并获得评价后，等级会按球友评价自动校准。")
                 .font(AppTheme.Typography.caption)
@@ -185,18 +188,20 @@ struct AssessmentResultCard: View {
     }
 }
 
-// MARK: - 1–9 级对照表
+// MARK: - 1–9 级对照表（27 档）
 
 struct SkillLevelGuideView: View {
-    var highlight: Int?
+    var highlight: SkillTier?
     var showsCloseButton = true
+    /// 打开时滚到哪一级（默认是当前所在的级）
+    var scrollLevel: Int?
 
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("1–9 级对照表")
+                Text("等级对照表")
                     .font(AppTheme.Typography.title)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
@@ -211,15 +216,16 @@ struct SkillLevelGuideView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                        Text("每一级都用能观察到的动作来描述，对照“能稳定做到”的那一级，而不是偶尔打出来的球。")
+                        Text("1–9 级，每级再分 −、本级、+ 三档，共 27 档。对照“能稳定做到”的那一级，而不是偶尔打出来的球。")
                             .font(AppTheme.Typography.subheadline)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        modifierLegend
                         ForEach(Array(SkillLevel.range), id: \.self) { level in
                             levelCard(level)
                                 .id(level)
                         }
-                        Text("参考：打球吧“业余 1–9 级”、中羽在线 0–9 级、USTA NTRP 的写法。注意中国羽协的等级是“九级最低”，方向和这里相反；美国赛事组别各赛事不同，仅作大致对应。")
+                        Text("1–7 级参考打球吧“业余 1–9 级”、中羽在线 0–9 级、USTA NTRP 的写法；7+ 起按可查证的赛果、全国排名、运动员技术等级和 BWF 世界排名划分。中国羽协的等级是“九级最低”，方向和这里相反；美国赛事组别各赛事不同，仅作大致对应。")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -228,16 +234,44 @@ struct SkillLevelGuideView: View {
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
                 .onAppear {
-                    if let highlight { proxy.scrollTo(highlight, anchor: .center) }
+                    if let scrollLevel {
+                        proxy.scrollTo(scrollLevel, anchor: .top)
+                    } else if let highlight {
+                        proxy.scrollTo(highlight.level, anchor: .center)
+                    }
                 }
             }
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
 
+    /// −/本级/+ 的通用含义
+    private var modifierLegend: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach([SkillTier.Modifier.minus, .base, .plus], id: \.self) { modifier in
+                HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
+                    Text(modifier == .base ? "本级" : modifier.symbol)
+                        .font(AppTheme.Typography.footnoteBold)
+                        .frame(width: 36, alignment: .leading)
+                    Text(modifier.meaning)
+                        .font(AppTheme.Typography.footnote)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .foregroundStyle(AppTheme.Colors.ink)
+            }
+            Text("7 级起差距大，每一档单独定义（见下方）。")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+        }
+        .padding(AppTheme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .sticker(AppTheme.Colors.surfaceMuted, radius: AppTheme.Radius.md, shadow: .zero)
+    }
+
     private func levelCard(_ level: Int) -> some View {
-        let isCurrent = level == highlight
-        let locked = level > SkillLevel.maxSelfSelectable
+        let isCurrent = level == highlight?.level
+        let tiers = [SkillTier.Modifier.minus, .base, .plus].map { SkillTier(level: level, modifier: $0) }
+        let detailed = level >= SkillLevel.maxSelfSelectable
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack(spacing: AppTheme.Spacing.sm) {
                 Text("\(level)")
@@ -250,7 +284,7 @@ struct SkillLevelGuideView: View {
                     Text(SkillLevel.name(for: level))
                         .font(AppTheme.Typography.headline)
                         .foregroundStyle(AppTheme.Colors.ink)
-                    Text([SkillLevel.usFlight(for: level).map { "≈ 美国 \($0)" }, SkillLevel.typicalExperience(for: level)]
+                    Text([SkillLevel.usFlight(for: level).map { "≈ \($0)" }, SkillLevel.typicalExperience(for: level)]
                         .compactMap { $0 }.joined(separator: " · "))
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -258,16 +292,39 @@ struct SkillLevelGuideView: View {
                 Spacer(minLength: 0)
                 if isCurrent {
                     TagPill(text: "你在这里", fill: AppTheme.Colors.lime)
-                } else if locked {
+                } else if level > SkillLevel.maxSelfSelectable {
                     TagPill(text: "需认证", icon: "lock.fill", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
                 }
             }
-            VStack(alignment: .leading, spacing: 4) {
-                ForEach(SkillLevel.anchors(for: level), id: \.self) { anchor in
-                    Label(anchor, systemImage: "circle.fill")
-                        .labelStyle(BulletLabelStyle())
-                        .font(AppTheme.Typography.subheadline)
-                        .foregroundStyle(AppTheme.Colors.ink)
+            if !detailed {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(SkillLevel.anchors(for: level), id: \.self) { anchor in
+                        Label(anchor, systemImage: "circle.fill")
+                            .labelStyle(BulletLabelStyle())
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundStyle(AppTheme.Colors.ink)
+                    }
+                }
+                HStack(spacing: 6) {
+                    ForEach(tiers) { tier in
+                        tierChip(tier)
+                    }
+                }
+            } else {
+                if level == SkillLevel.maxSelfSelectable {
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(SkillLevel.anchors(for: level), id: \.self) { anchor in
+                            Label(anchor, systemImage: "circle.fill")
+                                .labelStyle(BulletLabelStyle())
+                                .font(AppTheme.Typography.subheadline)
+                                .foregroundStyle(AppTheme.Colors.ink)
+                        }
+                    }
+                }
+                VStack(spacing: 6) {
+                    ForEach(tiers) { tier in
+                        tierRow(tier)
+                    }
                 }
             }
         }
@@ -276,6 +333,50 @@ struct SkillLevelGuideView: View {
         .sticker(isCurrent ? AppTheme.Colors.lime.opacity(0.35) : AppTheme.Colors.surface, radius: AppTheme.Radius.md,
                  shadow: .zero)
         .accessibilityElement(children: .combine)
+    }
+
+    /// 1–6 级：三个小胶囊，标出你在哪一档
+    private func tierChip(_ tier: SkillTier) -> some View {
+        let selected = tier == highlight
+        return Text(tier.code)
+            .font(AppTheme.Typography.footnoteBold)
+            .monospacedDigit()
+            .foregroundStyle(selected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(selected ? AppTheme.Colors.lime : AppTheme.Colors.surfaceMuted))
+            .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: selected ? 1.5 : 0))
+            .accessibilityLabel(tier.spokenText + (selected ? "，你在这里" : ""))
+    }
+
+    /// 7–9 级：每一档单独的标准
+    private func tierRow(_ tier: SkillTier) -> some View {
+        let selected = tier == highlight
+        let locked = tier > VerificationStatus.unverifiedMaxTier
+        return HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
+            Text(tier.code)
+                .font(AppTheme.Typography.subheadlineBold)
+                .monospacedDigit()
+                .foregroundStyle(selected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
+                .frame(width: 40, height: 28)
+                .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(selected ? AppTheme.Colors.lime : AppTheme.Colors.surfaceMuted))
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(SkillLevel.tierCriteria(for: tier), id: \.self) { line in
+                    Text(line)
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 0)
+            if locked {
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    .accessibilityLabel("需认证")
+            }
+        }
     }
 }
 
@@ -318,11 +419,11 @@ struct ReassessSheet: View {
             }
             if let result = SkillAssessment.evaluate(answers) {
                 VStack(spacing: AppTheme.Spacing.xs) {
-                    Button("使用 Lv.\(result.level) \(SkillLevel.name(for: result.level))") {
+                    Button("使用 \(result.tier.displayText)") {
                         do {
                             try appState.backend.updateAssessment(result)
                             Haptics.success()
-                            appState.showToast("等级已更新为 Lv.\(result.level)", style: .success)
+                            appState.showToast("问卷等级已更新为 \(result.tier.text)", style: .success)
                             dismiss()
                         } catch {
                             appState.showError(error)

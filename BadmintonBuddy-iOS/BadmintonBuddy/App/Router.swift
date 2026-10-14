@@ -72,6 +72,8 @@ enum Route: Hashable {
     case createGroup(venueId: String?)
     /// 1–9 级对照表
     case levelGuide
+    /// 高水平认证申请
+    case verification
 }
 
 /// 添加球馆的预填内容（地图链接、演示截图）

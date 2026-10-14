@@ -53,7 +53,7 @@ struct PlayerProfileSheet: View {
                     .font(AppTheme.Typography.title2)
                     .foregroundStyle(AppTheme.Colors.ink)
                 FlowLayout(spacing: 6) {
-                    LevelBadge(level: user.displayLevel)
+                    LevelBadge(tier: user.displayTier)
                     if user.isReliable { ReliableBadge() }
                     if user.isNewPlayer { NewPlayerBadge() }
                     VerifiedBadge(status: user.verificationStatus)
@@ -86,8 +86,8 @@ struct PlayerProfileSheet: View {
                 .foregroundStyle(AppTheme.Colors.ink)
             PraiseTagsView(tags: user.reputation.publicTags, emptyText: "评价的球友还不到 5 位，暂不显示印象")
             Text(user.isNewPlayer
-                 ? "评价不足 5 次，等级为自评 Lv.\(user.selfReportedLevel)，仅供参考"
-                 : "等级由自评与球友评价综合得出")
+                 ? "评价不足 5 次，等级为问卷定级 \(SkillTier(rating: user.selfRating).text)，仅供参考"
+                 : "等级由问卷与球友评价综合得出")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
         }

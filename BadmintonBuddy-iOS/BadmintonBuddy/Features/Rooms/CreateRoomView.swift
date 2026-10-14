@@ -288,6 +288,59 @@ struct CreateRoomView: View {
     }
 }
 
+// MARK: - 细分档位步进器（1− … 9+）
+
+struct TierStepper: View {
+    @Binding var tier: SkillTier
+    var range: ClosedRange<SkillTier> = SkillTier(index: 0)...SkillTier(index: SkillTier.count - 1)
+
+    private func step(_ delta: Int) {
+        let next = tier.offset(by: delta)
+        guard next != tier, range.contains(next) else { return }
+        tier = next
+        Haptics.selection()
+    }
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button { step(-1) } label: {
+                Image(systemName: "minus")
+                    .font(.system(size: 14, weight: .heavy))
+                    .frame(width: 40, height: 44)
+            }
+            .disabled(tier == range.lowerBound)
+            VStack(spacing: 0) {
+                Text(SkillLevel.name(for: tier.level))
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                Text(tier.text)
+                    .font(AppTheme.Typography.headline)
+                    .monospacedDigit()
+            }
+            .frame(maxWidth: .infinity)
+            Button { step(1) } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 14, weight: .heavy))
+                    .frame(width: 40, height: 44)
+            }
+            .disabled(tier == range.upperBound)
+        }
+        .foregroundStyle(AppTheme.Colors.ink)
+        .padding(.vertical, 4)
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("水平")
+        .accessibilityValue(tier.spokenText)
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: step(1)
+            case .decrement: step(-1)
+            @unknown default: break
+            }
+        }
+    }
+}
+
 // MARK: - 等级步进器
 
 struct LevelStepper: View {

@@ -93,12 +93,22 @@ struct AvatarStack: View {
 // MARK: - 等级徽章
 
 struct LevelBadge: View {
-    let level: Int
+    let tier: SkillTier
     var showsName = true
     var compact = false
 
+    init(tier: SkillTier, showsName: Bool = true, compact: Bool = false) {
+        self.tier = tier
+        self.showsName = showsName
+        self.compact = compact
+    }
+
+    init(level: Int, showsName: Bool = true, compact: Bool = false) {
+        self.init(tier: SkillTier(level: level), showsName: showsName, compact: compact)
+    }
+
     var body: some View {
-        Text(showsName ? SkillLevel.displayText(for: level) : "Lv.\(level)")
+        Text(showsName ? tier.displayText : tier.text)
             .font(compact ? .system(size: 10, weight: .heavy, design: .rounded) : AppTheme.Typography.caption.weight(.heavy))
             .foregroundStyle(AppTheme.Colors.lime)
             .lineLimit(1)
@@ -106,7 +116,7 @@ struct LevelBadge: View {
             .padding(.horizontal, compact ? 5 : 7)
             .padding(.vertical, compact ? 1.5 : 3)
             .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(Color(hex: 0x17140F)))
-            .accessibilityLabel("等级 \(level) \(SkillLevel.name(for: level))")
+            .accessibilityLabel("等级 \(tier.spokenText)，\(SkillLevel.name(for: tier.level))")
     }
 }
 

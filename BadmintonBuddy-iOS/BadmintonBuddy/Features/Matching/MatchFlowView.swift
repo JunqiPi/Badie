@@ -319,7 +319,7 @@ struct OfferView: View {
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.onAccent)
                 .lineLimit(1)
-            LevelBadge(level: user.displayLevel)
+            LevelBadge(tier: user.displayTier)
         }
         .frame(width: 140, height: 170)
         .sticker(fill, radius: 22)
@@ -334,7 +334,7 @@ struct OfferView: View {
                     .font(AppTheme.Typography.subheadlineBold)
                     .foregroundStyle(AppTheme.Colors.onAccent)
                     .lineLimit(1)
-                LevelBadge(level: user.displayLevel, showsName: false, compact: true)
+                LevelBadge(tier: user.displayTier, showsName: false, compact: true)
             }
             Spacer(minLength: 0)
         }
@@ -499,13 +499,7 @@ struct OfferView: View {
     }
 
     private func subtitle(for user: User) -> String {
-        let difference = user.displayLevel - (me?.displayLevel ?? user.displayLevel)
-        let level: String
-        switch difference {
-        case 0: level = "同水平"
-        case let diff where diff > 0: level = "高 \(diff) 级"
-        default: level = "低 \(-difference) 级"
-        }
+        let level = SkillTier.differenceText((me?.displayTier ?? user.displayTier).steps(to: user.displayTier))
         guard let location = user.location else { return level }
         return "\(level) · \(DistanceFormatter.approximate(km: location.distanceKm(to: ticket.origin)))"
     }

@@ -4,7 +4,7 @@ import Foundation
 
 extension MockBackend {
 
-    /// 机器人球友名单（昵称、等级、空闲模式、性别、简介）
+    /// 机器人球友名单（昵称、等级、空闲模式、性别、简介）；8 级以上的按认证档位处理
     private static let botRoster: [(String, Int, AvailabilityPattern, Gender, String)] = [
         ("小明", 6, .weekdayEvenings, .male, "反手还在练，求虐"),
         ("小红", 7, .flexible, .female, "前校队，双打找固定搭档"),
@@ -74,12 +74,15 @@ extension MockBackend {
                 wins: Int(Double(games) * Double.random(in: 0.35...0.7, using: &rng)),
                 joinDate: Date().addingTimeInterval(-Double(Int.random(in: 20...600, using: &rng)) * 86400),
                 lastActiveAt: Date().addingTimeInterval(-Double(Int.random(in: 1...300, using: &rng)) * 60),
-                verificationStatus: level >= 8 ? .regionalChampion : .unverified,
                 reputation: reputation,
                 attendance: AttendanceRecord(gamesPlayed: games, noShows: noShows, lateCancellations: index % 7 == 3 ? 1 : 0),
                 preferredMode: index % 3 == 0 ? .singles : .doubles
             )
             db.users[id] = user
+            if level >= 8 {
+                // 前省队：全国认证 Lv.8
+                db.users[id]?.applyVerification(.national, tier: SkillTier(level: level))
+            }
             // 约六成模拟球友愿意出现在“同馆常客”里（真实用户默认关闭）
             db.users[id]?.privacy.showsAsRegular = index % 5 != 1 && index % 5 != 3
             db.bots[id] = BotProfile(
@@ -408,7 +411,7 @@ extension MockBackend {
                             tags: [.greatPartner], submittedAt: slot.endTime.addingTimeInterval(7200))
             ]
             db.surveys.append(contentsOf: past)
-            me.reputation = ReputationScore.aggregate(past, selfReportedLevel: me.selfReportedLevel)
+            me.reputation = ReputationScore.aggregate(past, selfRating: me.selfRating)
         }
         me.totalGames = 2
         me.wins = 1

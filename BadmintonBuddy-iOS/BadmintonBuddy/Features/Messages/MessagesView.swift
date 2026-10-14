@@ -132,7 +132,7 @@ private struct ThreadRow: View {
                             .foregroundStyle(AppTheme.Colors.ink)
                             .lineLimit(1)
                         if let other {
-                            LevelBadge(level: other.displayLevel, showsName: false, compact: true)
+                            LevelBadge(tier: other.displayTier, showsName: false, compact: true)
                         }
                         if thread.isPendingRequest && thread.requestFrom == me {
                             TagPill(text: "等对方接受", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
@@ -282,7 +282,7 @@ struct FriendRequestRow: View {
                                 Text(user.nickname)
                                     .font(AppTheme.Typography.headline)
                                     .foregroundStyle(AppTheme.Colors.ink)
-                                LevelBadge(level: user.displayLevel, showsName: false, compact: true)
+                                LevelBadge(tier: user.displayTier, showsName: false, compact: true)
                             }
                             Text(request.note.isEmpty ? "想加你为球友" : "“\(request.note)”")
                                 .font(AppTheme.Typography.footnote)
@@ -337,7 +337,7 @@ struct PlayerRow<Trailing: View>: View {
                                 .font(AppTheme.Typography.headline)
                                 .foregroundStyle(AppTheme.Colors.ink)
                                 .lineLimit(1)
-                            LevelBadge(level: user.displayLevel, showsName: false, compact: true)
+                            LevelBadge(tier: user.displayTier, showsName: false, compact: true)
                         }
                         Text(subtitle ?? defaultSubtitle)
                             .font(AppTheme.Typography.footnote)

@@ -13,7 +13,7 @@ enum AttendanceAnswer: String, Codable, CaseIterable, Identifiable, Hashable {
     var wasPunctual: Bool { self == .onTime }
 }
 
-/// 对“水平是否如实”的三选一校准（参考 Playtomic 对手校准）
+/// 对“水平是否如实”的三选一校准（参考 Playtomic 对手校准）：高低各一档（1/3 级），差得多可以精确调
 enum LevelCalibration: String, CaseIterable, Identifiable, Hashable {
     case lower = "比标的低"
     case accurate = "差不多"
@@ -21,11 +21,11 @@ enum LevelCalibration: String, CaseIterable, Identifiable, Hashable {
 
     var id: String { rawValue }
 
-    func rating(from displayed: Int) -> Int {
+    func rating(from displayed: SkillTier) -> SkillTier {
         switch self {
-        case .lower: return SkillLevel.clamp(displayed - 1)
-        case .accurate: return SkillLevel.clamp(displayed)
-        case .higher: return SkillLevel.clamp(displayed + 1)
+        case .lower: return displayed.offset(by: -1)
+        case .accurate: return displayed
+        case .higher: return displayed.offset(by: 1)
         }
     }
 }
@@ -69,7 +69,7 @@ struct MatchSurvey: Identifiable, Codable, Hashable {
     let matchId: String
     let evaluatorId: String
     let evaluatedUserId: String
-    /// 评价者认为对方的水平 (1-9)
+    /// 评价者认为对方的水平 (1-9，整数级)
     let skillRating: Int
     let wasPunctual: Bool
     let attendance: AttendanceAnswer
@@ -81,6 +81,10 @@ struct MatchSurvey: Identifiable, Codable, Hashable {
     var issues: [SurveyIssue] = []
     /// 还想再约 TA（双方都选了才告诉双方）
     var wantsRematch = false
+    /// 精确到档的分值（4+ = 4.33）；老数据为空时用整数级
+    var skillRatingValue: Double?
+
+    var ratingValue: Double { skillRatingValue ?? Double(skillRating) }
 
     static let skillRatingRange = 1...9
     static let characterRatingRange = 1...5
@@ -102,6 +106,10 @@ struct PendingSurvey: Identifiable, Codable, Hashable {
     let courtName: String
     let matchDate: Date
     let expiresAt: Date
+    /// 对方当时显示的细分档位分值
+    var opponentRating: Double?
+
+    var opponentTier: SkillTier { SkillTier(rating: opponentRating ?? Double(opponentLevel)) }
 
     static let validityDuration: TimeInterval = 48 * 3600
 

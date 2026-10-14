@@ -317,7 +317,8 @@ extension MockBackend {
             userLevel: owner.displayLevel,
             userLocation: ticket.origin,
             radiusKm: ticket.radiusKm,
-            excludedUserIds: excluded
+            excludedUserIds: excluded,
+            userRating: owner.displayTier.rating
         )
     }
 
@@ -420,7 +421,7 @@ extension MockBackend {
                                                   respondBy: respondBy, respondedAt: nil)
             offer.teams = offer.teams.map { $0.map { $0 == leaving ? replacement.id : $0 } }
             offer.teams = MatchingService.balancedTeams(players: offer.playerIds.compactMap { id in
-                db.users[id].map { (id: id, level: $0.displayLevel) }
+                db.users[id].map { (id: id, level: $0.displayTier.rating) }
             })
             offer.backfillCount += 1
             db.offers[offerId] = offer

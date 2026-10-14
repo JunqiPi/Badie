@@ -80,6 +80,7 @@ enum BackendError: LocalizedError, Equatable {
     case sessionClosed
     case ownerCannotLeave
     case assessmentTooSoon(Date)
+    case verificationInvalid(String)
 
     var errorDescription: String? {
         switch self {
@@ -134,6 +135,7 @@ enum BackendError: LocalizedError, Equatable {
         case .sessionClosed: return "这一场已经结束或取消了"
         case .ownerCannotLeave: return "群主不能直接退出，可以先把群交给其他组织者"
         case .assessmentTooSoon(let date): return "每 90 天可以重测一次，下次：\(DateText.shortDay(date))"
+        case .verificationInvalid(let reason): return reason
         }
     }
 }
@@ -206,7 +208,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；旧版本数据直接丢弃（目前只有本机演示数据）
-    static let currentVersion = 4
+    static let currentVersion = 5
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
@@ -243,6 +245,8 @@ struct Database: Codable {
     /// 球群与场次
     var groups: [String: PlayGroup] = [:]
     var groupSessions: [String: GroupSession] = [:]
+    /// 高水平认证申请
+    var verificationRequests: [VerificationRequest] = []
 }
 
 // MARK: - 可复现的伪随机数（保证模拟世界在每次启动时一致）

@@ -117,7 +117,7 @@ extension MockBackend {
         guard !isBlockedEitherWay(me.id, group.ownerId) else { throw BackendError.groupNotFound }
         guard !group.isMember(me.id) else { return group }
         guard group.levelRange.contains(me.displayLevel) else {
-            throw BackendError.levelOutOfRange("这个球群适合 \(group.levelText)，你目前是 Lv.\(me.displayLevel)")
+            throw BackendError.levelOutOfRange("这个球群适合 \(group.levelText)，你目前是 \(me.displayTier.text)")
         }
         switch group.joinPolicy {
         case .open:

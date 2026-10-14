@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - 定级问卷：回答动作题，自动算出 1–7 级
+// MARK: - 定级问卷：回答动作题，自动算出 1− 到 7− 的细分档位
 //
 // 为什么不让人直接挑等级：自评和实际表现的相关只有 r≈0.29（Mabe & West 1982），
 // 水平越低的人越容易高估（Heck 等 2025，棋手平均高估 89 Elo 分）；
@@ -14,7 +14,9 @@ import Foundation
 //    6 级要杀上网稳定且接杀能变线；7 级要反手底线到底线且有比赛/青训经历
 // 4. 比赛、训练经历给保底；保底比技术结果高 2 级以上时标记“待校准”
 // 5. 最近一年不常打（回归球友）：保底减 1，并让球友评价更快校准
-// 6. 问卷最多到 7 级；8–9 级只凭赛果认证
+// 6. 同一级内的 −/+：6 道技术题里至少一半高于这一级 → “+”（被某个门槛卡住、或在两级之间）；
+//    至少一半低于这一级 → “−”（靠经历保底上来的，技术还没跟上）
+// 7. 问卷最高 7−：Lv.7 要球友评价确认；7+ 起只凭赛果 / 排名 / BWF 资料认证
 
 struct AssessmentOption: Identifiable, Hashable {
     let id: Int
@@ -41,12 +43,13 @@ struct AssessmentQuestion: Identifiable, Hashable {
 }
 
 struct SkillAssessmentResult: Equatable {
-    let level: Int
+    let tier: SkillTier
+    var level: Int { tier.level }
     /// 经历和技术对不上（保底比技术结果高 2 级以上）
     let needsCalibration: Bool
     /// 最近一年不常打
     let isReturning: Bool
-    /// 选了参加过 A / Open 组：提示申请 8–9 级认证
+    /// 选了参加过 A / Open 组：提示申请认证
     let suggestsVerification: Bool
     /// 哪一项把等级限制住了（用于提示“再进一步需要什么”）
     let limitingGate: String?
@@ -58,6 +61,10 @@ struct SkillAssessmentSummary: Codable, Hashable {
     var needsCalibration: Bool
     var isReturning: Bool
     var assessedAt: Date
+    /// 细分档位分值（老数据为空）
+    var rating: Double?
+
+    var tier: SkillTier { SkillTier(rating: rating ?? Double(level)) }
 
     /// 多久可以重测一次（避免反复刷等级）
     static let retakeInterval: TimeInterval = 90 * 86400
@@ -70,6 +77,9 @@ struct SkillAssessmentSummary: Codable, Hashable {
 }
 
 enum SkillAssessment {
+
+    /// 问卷能给到的最高档
+    static let maxTier = SkillTier(level: SkillLevel.maxSelfSelectable, modifier: .minus)
 
     // MARK: Questions
 
@@ -161,14 +171,18 @@ enum SkillAssessment {
         let isReturning = option("recency") == 1
         let suggestsVerification = option("experience") == 4
 
-        // 1. 完全的新手
+        let skillQuestions = questions.filter { $0.kind == .skill }
+
+        // 1. 完全的新手（所有技术题都选最低：1−）
         if option("clear") == 0 && option("footwork") == 0 {
-            return SkillAssessmentResult(level: 1, needsCalibration: false, isReturning: isReturning,
+            let untouched = skillQuestions.allSatisfy { option($0.id) == 0 }
+            return SkillAssessmentResult(tier: SkillTier(level: 1, modifier: untouched ? .minus : .base),
+                                         needsCalibration: false, isReturning: isReturning,
                                          suggestsVerification: false, limitingGate: nil)
         }
 
         // 2. 技术题中位数（向下取整）
-        let skillValues = questions.filter { $0.kind == .skill }.compactMap { value($0.id) }.sorted()
+        let skillValues = skillQuestions.compactMap { value($0.id) }.sorted()
         let middle = skillValues.count / 2
         let median = skillValues.count % 2 == 0
             ? (skillValues[middle - 1] + skillValues[middle]) / 2
@@ -199,7 +213,21 @@ enum SkillAssessment {
         let level = min(SkillLevel.maxSelfSelectable, max(1, max(gated, floor)))
         let needsCalibration = floor - gated >= 2
 
-        return SkillAssessmentResult(level: level, needsCalibration: needsCalibration, isReturning: isReturning,
+        // 5. 同一级里的 −/+
+        let above = skillValues.filter { $0 > level }.count
+        let below = skillValues.filter { $0 < level }.count
+        let half = (skillValues.count + 1) / 2
+        let modifier: SkillTier.Modifier
+        if above >= half && above > below {
+            modifier = .plus
+        } else if below >= half && below > above {
+            modifier = .minus
+        } else {
+            modifier = .base
+        }
+        let tier = min(SkillTier(level: level, modifier: modifier), maxTier)
+
+        return SkillAssessmentResult(tier: tier, needsCalibration: needsCalibration, isReturning: isReturning,
                                      suggestsVerification: suggestsVerification,
                                      limitingGate: level < cap ? nil : limitingGate)
     }

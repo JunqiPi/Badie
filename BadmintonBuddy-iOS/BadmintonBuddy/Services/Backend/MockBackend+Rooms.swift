@@ -294,7 +294,7 @@ extension MockBackend {
         let ids = room.participants.map(\.userId)
         let teams: [[String]]
         if room.mode == .doubles {
-            teams = MatchingService.balancedTeams(players: room.participants.map { (id: $0.userId, level: $0.skillLevel) })
+            teams = MatchingService.balancedTeams(players: room.participants.map { (id: $0.userId, level: $0.tier.rating) })
         } else {
             teams = ids.map { [$0] }
         }

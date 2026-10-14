@@ -238,7 +238,7 @@ struct RoomLobbyView: View {
                 .foregroundStyle(AppTheme.Colors.onAccent)
                 .lineLimit(1)
             HStack(spacing: 4) {
-                LevelBadge(level: participant.skillLevel, showsName: false, compact: true)
+                LevelBadge(tier: participant.tier, showsName: false, compact: true)
                 if isRoomOwner { TagPill(text: "房主", fill: AppTheme.Colors.butter) }
             }
         }
@@ -283,7 +283,7 @@ struct RoomLobbyView: View {
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
                     Spacer()
-                    LevelBadge(level: participant.skillLevel, showsName: false, compact: true)
+                    LevelBadge(tier: participant.tier, showsName: false, compact: true)
                 }
                 .padding(AppTheme.Spacing.md)
                 .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)

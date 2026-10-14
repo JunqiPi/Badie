@@ -68,7 +68,7 @@ struct EditProfileView: View {
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showGuide) {
-            SkillLevelGuideView(highlight: appState.currentUser?.displayLevel)
+            SkillLevelGuideView(highlight: appState.currentUser?.displayTier)
                 .presentationDragIndicator(.visible)
         }
         .onChange(of: photoItem) { _, item in
@@ -124,7 +124,8 @@ struct EditProfileView: View {
             fieldLabel("等级")
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    LevelBadge(level: user.displayLevel)
+                    LevelBadge(tier: user.displayTier)
+                    VerifiedBadge(status: user.verificationStatus)
                     Text(SkillLevel.descriptor(for: user.displayLevel))
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -156,9 +157,37 @@ struct EditProfileView: View {
                         .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
                     }
                 }
+                Divider()
+                Button {
+                    router.open(.verification)
+                } label: {
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        Image(systemName: "checkmark.seal.fill")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(verificationTitle(user))
+                                .font(AppTheme.Typography.subheadlineBold)
+                            Text("打过 A / Open 组、有全国排名或 BWF 球员资料，可以凭证据认证 7+ 到 9+")
+                                .font(AppTheme.Typography.caption)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .bold))
+                    }
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .card(AppTheme.Colors.surface, shadow: .zero)
         }
+    }
+
+    private func verificationTitle(_ user: User) -> String {
+        if appState.backend.myVerificationRequest()?.status == .pending { return "高水平认证 · 审核中" }
+        if user.verificationStatus != .unverified { return "已认证 \(user.tierCap.text) · 申请更高档位" }
+        return "申请高水平认证"
     }
 
     private func fieldLabel(_ text: String) -> some View {
