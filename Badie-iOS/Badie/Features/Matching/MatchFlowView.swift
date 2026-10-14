@@ -251,9 +251,9 @@ struct OfferView: View {
     }
 
     private var headline: Text {
-        if isMatched { return Text("约好") + Text(markedText: String(localized: "搭子")) + Text("了！") }
-        if awaitsMe { return Text("找到") + Text(markedText: String(localized: "搭子")) + Text("了！") }
-        return Text("等") + Text(markedText: String(localized: "大家")) + Text("确认")
+        if isMatched { return Text(marking: String(localized: "约好*搭子*了！")) }
+        if awaitsMe { return Text(marking: String(localized: "找到*搭子*了！")) }
+        return Text(marking: String(localized: "等*大家*确认"))
     }
 
     // MARK: Collision animation

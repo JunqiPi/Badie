@@ -103,7 +103,7 @@ struct HomeView: View {
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel("我的资料")
             }
-            (Text("今晚，\n打") + Text(markedText: String(localized: "一场")) + Text("？"))
+            Text(marking: String(localized: "今晚，\n打*一场*？"))
                 .font(AppTheme.Typography.display)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .accessibilityLabel("今晚，打一场？")

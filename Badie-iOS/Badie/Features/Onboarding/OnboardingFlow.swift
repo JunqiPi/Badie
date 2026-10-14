@@ -168,7 +168,7 @@ struct OnboardingFlow: View {
                 .frame(height: 230)
                 .frame(maxWidth: .infinity)
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                (Text("今晚，\n找个") + Text(markedText: String(localized: "搭子")) + Text("\n打一场。"))
+                Text(marking: String(localized: "今晚，\n找个*搭子*\n打一场。"))
                     .font(AppTheme.Typography.display)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .lineSpacing(4)
@@ -741,10 +741,17 @@ struct AvatarPaletteEditor: View {
 
 extension Text {
     /// 柠檬绿底色 + 墨色文字（深浅模式都可读）
-    init(markedText: String) {
-        var attributed = AttributedString(markedText)
-        attributed.backgroundColor = AppTheme.Colors.lime
-        attributed.foregroundColor = AppTheme.Colors.onAccent
-        self.init(attributed)
+    /// *星号* 之间的部分高亮，如 "找个*搭子*打一场"；整句一起翻译，高亮词位置随语言变
+    init(marking text: String) {
+        var result = AttributedString()
+        for (index, part) in text.split(separator: "*", omittingEmptySubsequences: false).enumerated() {
+            var piece = AttributedString(String(part))
+            if !index.isMultiple(of: 2) {
+                piece.backgroundColor = AppTheme.Colors.lime
+                piece.foregroundColor = AppTheme.Colors.onAccent
+            }
+            result += piece
+        }
+        self.init(result)
     }
 }

@@ -149,7 +149,7 @@ struct TicketWaitingView: View {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                         TagPill(text: ticket.isLastMinute ? String(localized: "临时局 · 正在找") : String(localized: "后台匹配中"),
                                 icon: "dot.radiowaves.left.and.right", fill: AppTheme.Colors.lime)
-                        (Text("已经在帮你\n") + Text(markedText: String(localized: "找搭子")) + Text("了"))
+                        Text(marking: String(localized: "已经在帮你\n*找搭子*了"))
                             .font(AppTheme.Typography.display)
                             .foregroundStyle(AppTheme.Colors.ink)
                             .fixedSize(horizontal: false, vertical: true)

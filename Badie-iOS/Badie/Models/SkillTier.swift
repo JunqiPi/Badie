@@ -106,15 +106,15 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
     /// “同水平”“高 1 档”“低 1 级”“高 1 级 1 档”
     static func differenceText(_ steps: Int) -> String {
         guard steps != 0 else { return String(localized: "同水平") }
-        let direction = steps > 0
-            ? String(localized: "高", comment: "水平差：对方比我高")
-            : String(localized: "低", comment: "水平差：对方比我低")
         let levels = abs(steps) / 3
         let rest = abs(steps) % 3
-        switch (levels, rest) {
-        case (0, _): return String(localized: "\(direction) \(rest) 档")
-        case (_, 0): return String(localized: "\(direction) \(levels) 级")
-        default: return String(localized: "\(direction) \(levels) 级 \(rest) 档")
+        switch (steps > 0, levels, rest) {
+        case (true, 0, _): return String(localized: "高 \(rest) 档")
+        case (true, _, 0): return String(localized: "高 \(levels) 级")
+        case (true, _, _): return String(localized: "高 \(levels) 级 \(rest) 档")
+        case (false, 0, _): return String(localized: "低 \(rest) 档")
+        case (false, _, 0): return String(localized: "低 \(levels) 级")
+        case (false, _, _): return String(localized: "低 \(levels) 级 \(rest) 档")
         }
     }
 
