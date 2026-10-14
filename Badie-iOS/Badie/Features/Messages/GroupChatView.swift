@@ -18,7 +18,7 @@ struct GroupChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: thread?.title ?? "群聊") {
+            ScreenHeader(title: thread?.title ?? String(localized: "群聊")) {
                 if let destination {
                     IconButton(systemName: destination.icon, accessibilityLabel: destination.label) {
                         router.open(destination.route)
@@ -56,8 +56,8 @@ struct GroupChatView: View {
 
     private var destination: (icon: String, label: String, route: Route)? {
         switch thread?.context {
-        case .game(let gameId): return ("ticket.fill", "查看球局", .game(id: gameId))
-        case .group(let groupId): return ("person.3.fill", "查看球群", .group(id: groupId))
+        case .game(let gameId): return ("ticket.fill", String(localized: "查看球局"), .game(id: gameId))
+        case .group(let groupId): return ("person.3.fill", String(localized: "查看球群"), .group(id: groupId))
         case nil: return nil
         }
     }
@@ -101,7 +101,7 @@ struct GroupChatView: View {
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     if showsSender {
-                        Text(sender?.nickname ?? "球友")
+                        Text(sender?.nickname ?? String(localized: "球友"))
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                     }
@@ -161,9 +161,9 @@ struct GroupChatView: View {
 
     private var closedText: String {
         switch thread?.context {
-        case .game: return "球局群聊在赛后 48 小时关闭了。想再约的话，加个球友吧。"
-        case .group: return "加入球群后才能在群里发言"
-        case nil: return "这个群聊已经结束了"
+        case .game: return String(localized: "球局群聊在赛后 48 小时关闭了。想再约的话，加个球友吧。")
+        case .group: return String(localized: "加入球群后才能在群里发言")
+        case nil: return String(localized: "这个群聊已经结束了")
         }
     }
 

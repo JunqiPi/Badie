@@ -20,26 +20,26 @@ struct EditProfileView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "编辑资料")
+            ScreenHeader(title: String(localized: "编辑资料"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
                     avatarSection
-                    BrutalTextField(label: "昵称", placeholder: "2-12 个字", text: $nickname,
+                    BrutalTextField(label: String(localized: "昵称"), placeholder: String(localized: "2-12 个字"), text: $nickname,
                                     contentType: .nickname,
-                                    errorText: nickname.isEmpty || MockBackend.isValidNickname(nickname) ? nil : "昵称需为 2-12 个字符",
+                                    errorText: nickname.isEmpty || MockBackend.isValidNickname(nickname) ? nil : String(localized: "昵称需为 2-12 个字符"),
                                     characterLimit: 12)
-                    BrutalTextField(label: "一句话介绍", placeholder: "例：双打找固定搭档，周末有空", text: $bio,
+                    BrutalTextField(label: String(localized: "一句话介绍"), placeholder: String(localized: "例：双打找固定搭档，周末有空"), text: $bio,
                                     characterLimit: 60, axis: .vertical)
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        fieldLabel("性别（仅用于球局筛选）")
+                        fieldLabel(String(localized: "性别（仅用于球局筛选）"))
                         SegmentedSticker(options: Gender.allCases, selection: $gender, title: { $0.label })
                     }
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        fieldLabel("常打")
+                        fieldLabel(String(localized: "常打"))
                         HStack(spacing: AppTheme.Spacing.sm) {
-                            ChoiceChip(title: "单打", isSelected: preferredMode == .singles) { preferredMode = .singles }
-                            ChoiceChip(title: "双打", isSelected: preferredMode == .doubles) { preferredMode = .doubles }
-                            ChoiceChip(title: "都行", isSelected: preferredMode == nil) { preferredMode = nil }
+                            ChoiceChip(title: String(localized: "单打"), isSelected: preferredMode == .singles) { preferredMode = .singles }
+                            ChoiceChip(title: String(localized: "双打"), isSelected: preferredMode == .doubles) { preferredMode = .doubles }
+                            ChoiceChip(title: String(localized: "都行"), isSelected: preferredMode == nil) { preferredMode = nil }
                         }
                     }
                     if let user = appState.currentUser {
@@ -125,7 +125,7 @@ struct EditProfileView: View {
 
     private func levelSection(_ user: User) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            fieldLabel("等级")
+            fieldLabel(String(localized: "等级"))
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     LevelBadge(tier: user.displayTier)
@@ -136,10 +136,10 @@ struct EditProfileView: View {
                         .lineLimit(2)
                 }
                 Text(user.needsAssessment
-                     ? "你跳过了定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配。花一分钟做完定级，匹配会准很多。"
+                     ? String(localized: "你跳过了定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配。花一分钟做完定级，匹配会准很多。")
                      : user.isNewPlayer
-                     ? "等级来自定级问卷；打满 5 场并获得评价后会按球友评价自动校准。"
-                     : "你已有 \(user.reputation.evaluationCount) 次球友评价，等级主要由球友评价决定。")
+                     ? String(localized: "等级来自定级问卷；打满 5 场并获得评价后会按球友评价自动校准。")
+                     : String(localized: "你已有 \(user.reputation.evaluationCount) 次球友评价，等级主要由球友评价决定。"))
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -158,7 +158,7 @@ struct EditProfileView: View {
                         Button {
                             showReassess = true
                         } label: {
-                            Label(user.assessment == nil ? "开始定级" : "重新测评",
+                            Label(user.assessment == nil ? String(localized: "开始定级") : String(localized: "重新测评"),
                                   systemImage: user.assessment == nil ? "checklist" : "arrow.counterclockwise")
                         }
                         .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
@@ -192,9 +192,9 @@ struct EditProfileView: View {
     }
 
     private func verificationTitle(_ user: User) -> String {
-        if appState.backend.myVerificationRequest()?.status == .pending { return "高水平认证 · 审核中" }
-        if user.verificationStatus != .unverified { return "已认证 \(user.tierCap.text) · 申请更高档位" }
-        return "申请高水平认证"
+        if appState.backend.myVerificationRequest()?.status == .pending { return String(localized: "高水平认证 · 审核中") }
+        if user.verificationStatus != .unverified { return String(localized: "已认证 \(user.tierCap.text) · 申请更高档位") }
+        return String(localized: "申请高水平认证")
     }
 
     private func fieldLabel(_ text: String) -> some View {
@@ -218,7 +218,7 @@ struct EditProfileView: View {
         guard let data = try? await item.loadTransferable(type: Data.self),
               let image = UIImage(data: data),
               let jpeg = AvatarPhotos.jpegData(from: image) else {
-            appState.showToast("无法读取这张照片", style: .error)
+            appState.showToast(String(localized: "无法读取这张照片"), style: .error)
             return
         }
         isUploadingPhoto = true
@@ -226,7 +226,7 @@ struct EditProfileView: View {
         do {
             let user = try await appState.backend.uploadAvatarPhoto(jpeg)
             photo = AvatarPhotos.image(userId: user.id, avatar: user.avatar)
-            appState.showToast("头像已更新", style: .success)
+            appState.showToast(String(localized: "头像已更新"), style: .success)
         } catch {
             appState.showError(error)
         }

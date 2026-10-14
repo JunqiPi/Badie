@@ -10,10 +10,10 @@ enum MainTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .home: return "首页"
-        case .games: return "球局"
-        case .messages: return "消息"
-        case .profile: return "我的"
+        case .home: return String(localized: "首页")
+        case .games: return String(localized: "球局")
+        case .messages: return String(localized: "消息")
+        case .profile: return String(localized: "我的")
         }
     }
 

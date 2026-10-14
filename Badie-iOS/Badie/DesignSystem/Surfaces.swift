@@ -93,7 +93,7 @@ struct IconButton: View {
         }
         .buttonStyle(PressableStyle())
         .accessibilityLabel(accessibilityLabel)
-        .accessibilityValue(badge > 0 ? "\(badge) 条未读" : "")
+        .accessibilityValue(badge > 0 ? String(localized: "\(badge) 条未读") : "")
     }
 }
 
@@ -143,7 +143,7 @@ struct ScreenHeader<Trailing: View>: View {
                 .accessibilityAddTraits(.isHeader)
             HStack {
                 if showsBack {
-                    IconButton(systemName: "chevron.left", accessibilityLabel: "返回") {
+                    IconButton(systemName: "chevron.left", accessibilityLabel: String(localized: "返回")) {
                         if let onBack { onBack() } else { dismiss() }
                     }
                 }

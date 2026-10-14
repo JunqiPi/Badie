@@ -84,10 +84,10 @@ enum MatchRelaxation: Hashable, Identifiable {
     var title: String {
         switch self {
         case .widenSkill(let value):
-            return value >= MatchRequest.anySkill ? "不限水平差" : "放宽到 ±\(value) 级"
-        case .widenTime(let hours): return "时间前后各放宽 \(hours) 小时"
-        case .widenRadius(let km): return "扩大到 \(DistanceFormatter.radius(km: km))"
-        case .otherDay(let date): return "改到\(DateText.relativeDay(date))"
+            return value >= MatchRequest.anySkill ? String(localized: "不限水平差") : String(localized: "放宽到 ±\(value) 级")
+        case .widenTime(let hours): return String(localized: "时间前后各放宽 \(hours) 小时")
+        case .widenRadius(let km): return String(localized: "扩大到 \(DistanceFormatter.radius(km: km))")
+        case .otherDay(let date): return String(localized: "改到\(DateText.relativeDay(date))")
         }
     }
 

@@ -27,7 +27,7 @@ struct MatchSetupView: View {
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") {
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) {
                     router.isMatchSetupPresented = false
                 }
             }
@@ -81,7 +81,7 @@ struct MatchSetupView: View {
 
     private var modeSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label("模式")
+            label(String(localized: "模式"))
             HStack(spacing: AppTheme.Spacing.md) {
                 ForEach(GameMode.allCases) { mode in
                     let selected = matchManager.draft.mode == mode
@@ -115,7 +115,7 @@ struct MatchSetupView: View {
 
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label("日期（未来 14 天）")
+            label(String(localized: "日期（未来 14 天）"))
                 .padding(.horizontal, AppTheme.Spacing.screen)
             DateStrip(
                 days: days,
@@ -129,13 +129,13 @@ struct MatchSetupView: View {
 
     private var timeSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            label("时间段（1–8 小时）")
+            label(String(localized: "时间段（1–8 小时）"))
             HStack(spacing: AppTheme.Spacing.md) {
-                TimeStepper(title: "开始", minutes: $matchManager.draft.startMinutes, range: (6 * 60)...(23 * 60))
+                TimeStepper(title: String(localized: "开始"), minutes: $matchManager.draft.startMinutes, range: (6 * 60)...(23 * 60))
                 Image(systemName: "arrow.right")
                     .font(.system(size: 14, weight: .heavy))
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
-                TimeStepper(title: "结束", minutes: $matchManager.draft.endMinutes, range: (7 * 60)...(24 * 60))
+                TimeStepper(title: String(localized: "结束"), minutes: $matchManager.draft.endMinutes, range: (7 * 60)...(24 * 60))
             }
             if let message = matchManager.draft.validation.errorMessage {
                 Label(message, systemImage: "exclamationmark.circle.fill")
@@ -156,7 +156,7 @@ struct MatchSetupView: View {
                         }
                     }
                     ForEach(recurring.activeSlots) { slot in
-                        ChoiceChip(title: "常用 · \(slot.displayText)", icon: "star.fill", isSelected: false, tint: AppTheme.Colors.butter) {
+                        ChoiceChip(title: String(localized: "常用 · \(slot.displayText)"), icon: "star.fill", isSelected: false, tint: AppTheme.Colors.butter) {
                             if let next = slot.nextOccurrence() { matchManager.draft.apply(next) }
                         }
                     }
@@ -167,8 +167,9 @@ struct MatchSetupView: View {
     }
 
     private static let presets: [(String, Int, Int)] = [
-        ("早场 7–9", 7 * 60, 9 * 60), ("午间 12–14", 12 * 60, 14 * 60), ("下午 14–17", 14 * 60, 17 * 60),
-        ("晚上 19–21", 19 * 60, 21 * 60), ("夜场 21–23", 21 * 60, 23 * 60)
+        (String(localized: "早场 7–9"), 7 * 60, 9 * 60), (String(localized: "午间 12–14"), 12 * 60, 14 * 60),
+        (String(localized: "下午 14–17"), 14 * 60, 17 * 60),
+        (String(localized: "晚上 19–21"), 19 * 60, 21 * 60), (String(localized: "夜场 21–23"), 21 * 60, 23 * 60)
     ]
 
     // MARK: Courts
@@ -177,7 +178,7 @@ struct MatchSetupView: View {
         let selected = locationManager.courts(ids: matchManager.draft.courtIds)
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack {
-                label("球馆（最多 \(MatchDraft.maxCourts) 个）")
+                label(String(localized: "球馆（最多 \(MatchDraft.maxCourts) 个）"))
                 Spacer()
                 Text("\(selected.count)/\(MatchDraft.maxCourts)")
                     .font(AppTheme.Typography.footnoteBold)
@@ -218,7 +219,7 @@ struct MatchSetupView: View {
                     HStack(spacing: AppTheme.Spacing.md) {
                         IconTile(systemName: selected.isEmpty ? "magnifyingglass" : "plus", fill: AppTheme.Colors.lime, size: 42)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(selected.isEmpty ? "选择球馆" : "添加或更换球馆")
+                            Text(selected.isEmpty ? String(localized: "选择球馆") : String(localized: "添加或更换球馆"))
                                 .font(AppTheme.Typography.headline)
                                 .foregroundStyle(AppTheme.Colors.ink)
                             Text("搜索名称、简称（如 LABC）或地址")
@@ -244,11 +245,11 @@ struct MatchSetupView: View {
 
     private var skillSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label("可接受的水平差")
+            label(String(localized: "可接受的水平差"))
             HStack(spacing: AppTheme.Spacing.sm) {
-                ChoiceChip(title: "±1 级", isSelected: matchManager.draft.skillTolerance == 1) { matchManager.draft.skillTolerance = 1 }
-                ChoiceChip(title: "±2 级", isSelected: matchManager.draft.skillTolerance == 2) { matchManager.draft.skillTolerance = 2 }
-                ChoiceChip(title: "不限", isSelected: matchManager.draft.skillTolerance >= MatchRequest.anySkill) {
+                ChoiceChip(title: String(localized: "±1 级"), isSelected: matchManager.draft.skillTolerance == 1) { matchManager.draft.skillTolerance = 1 }
+                ChoiceChip(title: String(localized: "±2 级"), isSelected: matchManager.draft.skillTolerance == 2) { matchManager.draft.skillTolerance = 2 }
+                ChoiceChip(title: String(localized: "不限"), isSelected: matchManager.draft.skillTolerance >= MatchRequest.anySkill) {
                     matchManager.draft.skillTolerance = MatchRequest.anySkill
                 }
             }
@@ -260,17 +261,17 @@ struct MatchSetupView: View {
 
     private var toleranceExplanation: String {
         let tolerance = matchManager.draft.skillTolerance
-        guard tolerance < MatchRequest.anySkill else { return "你的等级 \(userTier.text)，将匹配所有水平的球友" }
+        guard tolerance < MatchRequest.anySkill else { return String(localized: "你的等级 \(userTier.text)，将匹配所有水平的球友") }
         let low = userTier.offset(by: -tolerance * 3)
         let high = userTier.offset(by: tolerance * 3)
-        return "你的等级 \(userTier.text)，将匹配 \(SkillTier.rangeText(low, high)) 的球友，水平越接近排得越前"
+        return String(localized: "你的等级 \(userTier.text)，将匹配 \(SkillTier.rangeText(low, high)) 的球友，水平越接近排得越前")
     }
 
     // MARK: Confirmation
 
     private var confirmSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label("找到人以后")
+            label(String(localized: "找到人以后"))
             Toggle(isOn: $matchManager.draft.autoAccept) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("符合条件就直接替我接受")
@@ -303,13 +304,12 @@ struct MatchSetupView: View {
 
     private var timingText: String? {
         guard let slot = matchManager.draft.slot, slot.endTime > Date() else { return nil }
-        if !canRequest { return "离开赛不到 30 分钟，来不及凑人了，换个时间试试" }
+        if !canRequest { return String(localized: "离开赛不到 30 分钟，来不及凑人了，换个时间试试") }
         if isLastMinute {
-            return "临时局：只找 \(DistanceFormatter.radius(km: MatchTiming.lastMinuteRadiusKm)) 内此刻也在找人的球友，"
-                + "找到后要在 5–10 分钟内确认，建议打开上面的开关。"
+            return String(localized: "临时局：只找 \(DistanceFormatter.radius(km: MatchTiming.lastMinuteRadiusKm)) 内此刻也在找人的球友，找到后要在 5–10 分钟内确认，建议打开上面的开关。")
         }
         let lock = MatchTiming.lock(start: slot.startTime, lastMinute: false)
-        return "所有人都确认才成局，最晚 \(DateText.relativeDay(lock)) \(DateText.time(lock))（开赛前 2 小时）前确认完，否则自动取消，不计入记录。"
+        return String(localized: "所有人都确认才成局，最晚 \(DateText.relativeDay(lock)) \(DateText.time(lock))（开赛前 2 小时）前确认完，否则自动取消，不计入记录。")
     }
 
     // MARK: Footer
@@ -343,9 +343,9 @@ struct MatchSetupView: View {
         guard !courts.isEmpty else { return nil }
         let estimates = courts.map { CostSplit.estimate(court: $0, slot: slot.trimmedForGame(), mode: matchManager.draft.mode) }
         guard let cheapest = estimates.filter({ $0.perPerson != nil }).min(by: { $0.perPerson! < $1.perPerson! }) else {
-            return "球馆价格未知，到场后按实际费用 AA · 平台不收服务费"
+            return String(localized: "球馆价格未知，到场后按实际费用 AA · 平台不收服务费")
         }
-        return "预计每人约 \(cheapest.perPersonText) · 平台不收服务费"
+        return String(localized: "预计每人约 \(cheapest.perPersonText) · 平台不收服务费")
     }
 
     private func start() {
@@ -397,7 +397,7 @@ struct TimeStepper: View {
         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title)时间")
-        .accessibilityValue(String(format: "%d 点 %02d 分", minutes / 60, minutes % 60))
+        .accessibilityValue(String(localized: "\(minutes / 60) 点 \(String(format: "%02d", minutes % 60)) 分"))
         .accessibilityAdjustableAction { direction in
             switch direction {
             case .increment: adjust(30)

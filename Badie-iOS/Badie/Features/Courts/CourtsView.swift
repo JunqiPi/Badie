@@ -15,12 +15,12 @@ struct CourtsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "附近球馆") {
+            ScreenHeader(title: String(localized: "附近球馆")) {
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    IconButton(systemName: "magnifyingglass", accessibilityLabel: "搜索球馆") {
+                    IconButton(systemName: "magnifyingglass", accessibilityLabel: String(localized: "搜索球馆")) {
                         showSearch = true
                     }
-                    IconButton(systemName: "slider.horizontal.3", accessibilityLabel: "出行范围") {
+                    IconButton(systemName: "slider.horizontal.3", accessibilityLabel: String(localized: "出行范围")) {
                         showRadius = true
                     }
                 }
@@ -53,11 +53,11 @@ struct CourtsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    SectionTitle(title: "\(locationManager.nearbyCourts.count) 家球馆", detail: locationManager.radiusText)
+                    SectionTitle(title: String(localized: "\(locationManager.nearbyCourts.count) 家球馆"), detail: locationManager.radiusText)
                     if locationManager.nearbyCourts.isEmpty {
-                        EmptyStateView(icon: "mappin.slash", title: "\(locationManager.radiusText)还没有收录的球馆",
-                                       message: "搜索球馆名或地址，也可以自己添加常去的球馆。",
-                                       actionTitle: "搜索球馆") { showSearch = true }
+                        EmptyStateView(icon: "mappin.slash", title: String(localized: "\(locationManager.radiusText)还没有收录的球馆"),
+                                       message: String(localized: "搜索球馆名或地址，也可以自己添加常去的球馆。"),
+                                       actionTitle: String(localized: "搜索球馆")) { showSearch = true }
                     } else {
                         VStack(spacing: 0) {
                             ForEach(Array(locationManager.nearbyCourts.enumerated()), id: \.element.id) { index, court in
@@ -146,7 +146,7 @@ struct CourtDetailSheet: View {
                             .foregroundStyle(AppTheme.Colors.ink)
                             .fixedSize(horizontal: false, vertical: true)
                         if !venue.aliases.isEmpty {
-                            Text("又名 " + venue.aliases.joined(separator: " · "))
+                            Text("又名 \(venue.aliases.joined(separator: " · "))")
                                 .font(AppTheme.Typography.footnoteBold)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                         }
@@ -154,7 +154,7 @@ struct CourtDetailSheet: View {
                     }
                     Spacer()
                     IconButton(systemName: locationManager.isFavorite(venue.id) ? "heart.fill" : "heart",
-                               accessibilityLabel: locationManager.isFavorite(venue.id) ? "取消常去" : "设为常去",
+                               accessibilityLabel: locationManager.isFavorite(venue.id) ? String(localized: "取消常去") : String(localized: "设为常去"),
                                accent: locationManager.isFavorite(venue.id) ? AppTheme.Colors.pink : nil) {
                         Haptics.selection()
                         locationManager.toggleFavorite(venue.id)
@@ -176,25 +176,25 @@ struct CourtDetailSheet: View {
                 .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
 
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    StatTile(value: venue.formattedDistance(from: locationManager.coordinate), label: "距离")
-                    StatTile(value: venue.courtCount.map { "\($0)" } ?? "–", label: "场地数")
-                    StatTile(value: "\(appState.backend.regularsCount(for: venue.id))", label: "人常去")
+                    StatTile(value: venue.formattedDistance(from: locationManager.coordinate), label: String(localized: "距离"))
+                    StatTile(value: venue.courtCount.map { "\($0)" } ?? "–", label: String(localized: "场地数"))
+                    StatTile(value: "\(appState.backend.regularsCount(for: venue.id))", label: String(localized: "人常去"))
                 }
 
                 VStack(alignment: .leading, spacing: 0) {
                     InfoRow(icon: Money.icon(for: venue.currencyCode), tint: AppTheme.Colors.butter,
                             title: venue.pricingText,
-                            subtitle: venue.pricingNote ?? (venue.pricing.isKnown ? "以球馆实际收费为准" : "去过的球友可以告诉大家"))
+                            subtitle: venue.pricingNote ?? (venue.pricing.isKnown ? String(localized: "以球馆实际收费为准") : String(localized: "去过的球友可以告诉大家")))
                     InsetDivider()
                     InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
                             title: venue.hoursText,
-                            subtitle: venue.operatingHours.map { $0.formattedDaysOpen + timeZoneSuffix } ?? "出发前建议先电话确认")
+                            subtitle: venue.operatingHours.map { $0.formattedDaysOpen + timeZoneSuffix } ?? String(localized: "出发前建议先电话确认"))
                     if let phone = venue.phone {
                         InsetDivider()
                         Button {
                             Task { _ = await MapsLauncher.call(phone) }
                         } label: {
-                            InfoRow(icon: "phone.fill", tint: AppTheme.Colors.mint, title: phone, subtitle: "致电球馆预订场地")
+                            InfoRow(icon: "phone.fill", tint: AppTheme.Colors.mint, title: phone, subtitle: String(localized: "致电球馆预订场地"))
                         }
                         .buttonStyle(.plain)
                     }
@@ -202,7 +202,7 @@ struct CourtDetailSheet: View {
                         InsetDivider()
                         Link(destination: url) {
                             InfoRow(icon: "safari.fill", tint: AppTheme.Colors.sky,
-                                    title: url.host ?? website, subtitle: "官网 / 预订页面")
+                                    title: url.host ?? website, subtitle: String(localized: "官网 / 预订页面"))
                         }
                     }
                 }
@@ -216,7 +216,7 @@ struct CourtDetailSheet: View {
                 if !venue.amenities.isEmpty {
                     FlowLayout(spacing: AppTheme.Spacing.sm) {
                         ForEach(venue.amenities, id: \.self) { amenity in
-                            TagPill(text: amenity.rawValue, icon: amenity.icon, fill: AppTheme.Colors.sky)
+                            TagPill(text: amenity.title, icon: amenity.icon, fill: AppTheme.Colors.sky)
                         }
                     }
                 }
@@ -224,12 +224,12 @@ struct CourtDetailSheet: View {
                 let selected = matchManager.draft.courtIds.contains(venue.id)
                 Button {
                     if !matchManager.draft.toggleCourt(venue.id) {
-                        appState.showToast("快速匹配最多选择 \(MatchDraft.maxCourts) 个球馆")
+                        appState.showToast(String(localized: "快速匹配最多选择 \(MatchDraft.maxCourts) 个球馆"))
                     } else {
                         Haptics.selection()
                     }
                 } label: {
-                    Label(selected ? "已加入快速匹配（点按移除）" : "加入快速匹配的球馆", systemImage: selected ? "checkmark.circle.fill" : "plus.circle.fill")
+                    Label(selected ? String(localized: "已加入快速匹配（点按移除）") : String(localized: "加入快速匹配的球馆"), systemImage: selected ? "checkmark.circle.fill" : "plus.circle.fill")
                 }
                 .buttonStyle(.brutal(selected ? .secondary : .primary, size: .medium))
 
@@ -250,7 +250,7 @@ struct CourtDetailSheet: View {
                 Button(app.title) {
                     Task {
                         if !(await MapsLauncher.open(venue, with: app)) {
-                            appState.showToast("未安装\(app.title)", style: .error)
+                            appState.showToast(String(localized: "未安装\(app.title)"), style: .error)
                         }
                     }
                 }
@@ -258,10 +258,10 @@ struct CourtDetailSheet: View {
         }
         .confirmationDialog("这个球馆有什么问题？", isPresented: $showReport, titleVisibility: .visible) {
             ForEach(VenueIssue.allCases) { issue in
-                Button(issue.rawValue) {
+                Button(issue.title) {
                     do {
                         try appState.backend.reportVenue(venue.id, issue: issue)
-                        appState.showToast("谢谢，我们会尽快核实", style: .success)
+                        appState.showToast(String(localized: "谢谢，我们会尽快核实"), style: .success)
                     } catch {
                         appState.showError(error)
                     }
@@ -277,8 +277,8 @@ struct CourtDetailSheet: View {
     private var groupsSection: some View {
         let groups = groupManager.groups(atVenue: venue.id)
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "这里的固定局", detail: groups.isEmpty ? nil : "\(groups.count) 个球群",
-                         actionTitle: "建一个") {
+            SectionTitle(title: String(localized: "这里的固定局"), detail: groups.isEmpty ? nil : String(localized: "\(groups.count) 个球群"),
+                         actionTitle: String(localized: "建一个")) {
                 navigate(to: .createGroup(venueId: venue.id))
             }
             if groups.isEmpty {
@@ -292,7 +292,7 @@ struct CourtDetailSheet: View {
                     navigate(to: .group(id: group.id))
                 } label: {
                     GroupCard(group: group, venue: nil, activity: groupManager.activity(of: group.id),
-                              status: appState.currentUser.map { group.isMember($0.id) } == true ? "已加入" : nil)
+                              status: appState.currentUser.map { group.isMember($0.id) } == true ? String(localized: "已加入") : nil)
                 }
                 .buttonStyle(PressableStyle(scale: 0.98))
             }
@@ -312,7 +312,7 @@ struct CourtDetailSheet: View {
     }
 
     private var timeZoneSuffix: String {
-        venue.timeZoneAbbreviation.map { " · 当地时间（\($0)）" } ?? ""
+        venue.timeZoneAbbreviation.map { String(localized: " · 当地时间（\($0)）") } ?? ""
     }
 
     // MARK: 可信度
@@ -330,12 +330,12 @@ struct CourtDetailSheet: View {
                             try appState.backend.confirmVenue(venue.id)
                             hasConfirmed = true
                             Haptics.success()
-                            appState.showToast("谢谢确认！", style: .success)
+                            appState.showToast(String(localized: "谢谢确认！"), style: .success)
                         } catch {
                             appState.showError(error)
                         }
                     } label: {
-                        Label(hasConfirmed ? "你已确认过" : "我去过，地址正确", systemImage: "checkmark.circle.fill")
+                        Label(hasConfirmed ? String(localized: "你已确认过") : String(localized: "我去过，地址正确"), systemImage: "checkmark.circle.fill")
                     }
                     .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: true))
                     .disabled(hasConfirmed)
@@ -353,15 +353,15 @@ struct CourtDetailSheet: View {
     }
 
     private var sourceText: String {
-        let freshness = venue.lastConfirmedAt.map { " · 最近确认 \(DateText.relative($0))" } ?? ""
+        let freshness = venue.lastConfirmedAt.map { String(localized: " · 最近确认 \(DateText.relative($0))") } ?? ""
         switch venue.status {
         case .verified:
-            return "平台已核实地址\(freshness)"
+            return String(localized: "平台已核实地址\(freshness)")
         case .confirmed:
-            return "\(venue.confirmedBy.count) 位球友确认过地址\(freshness)"
+            return String(localized: "\(venue.confirmedBy.count) 位球友确认过地址\(freshness)")
         case .unconfirmed:
-            let origin = venue.source == .appleMaps ? "来自 Apple 地图，由球友加入" : "由球友添加"
-            return "\(origin) · \(venue.confirmedBy.count)/\(BadmintonCourt.confirmationsNeeded) 位确认\(freshness)"
+            let origin = venue.source == .appleMaps ? String(localized: "来自 Apple 地图，由球友加入") : String(localized: "由球友添加")
+            return String(localized: "\(origin) · \(venue.confirmedBy.count)/\(BadmintonCourt.confirmationsNeeded) 位确认\(freshness)")
         }
     }
 }

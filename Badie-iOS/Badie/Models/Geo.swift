@@ -64,7 +64,7 @@ enum DistanceUnit: String, Codable {
         }
     }
 
-    var title: String { self == .miles ? "英里" : "公里" }
+    var title: String { self == .miles ? String(localized: "英里") : String(localized: "公里") }
 
     func value(fromKm km: Double) -> Double { self == .miles ? km / Coordinate.kilometersPerMile : km }
     func km(from value: Double) -> Double { self == .miles ? value * Coordinate.kilometersPerMile : value }
@@ -76,16 +76,19 @@ enum DistanceFormatter {
         switch unit {
         case .kilometers:
             if km < 1 {
-                return "\(max(10, Int((km * 1000 / 10).rounded()) * 10)) 米"
+                let meters = max(10, Int((km * 1000 / 10).rounded()) * 10)
+                return String(localized: "\(meters) 米")
             }
-            return String(format: "%.1f 公里", km)
+            let value = String(format: "%.1f", km)
+            return String(localized: "\(value) 公里")
         case .miles:
             let miles = km / Coordinate.kilometersPerMile
             if miles < 0.1 {
                 let feet = max(50, Int((miles * 5280 / 50).rounded()) * 50)
-                return "\(feet) 英尺"
+                return String(localized: "\(feet) 英尺")
             }
-            return String(format: "%.1f 英里", miles)
+            let value = String(format: "%.1f", miles)
+            return String(localized: "\(value) 英里")
         }
     }
 
@@ -93,10 +96,13 @@ enum DistanceFormatter {
     static func approximate(km: Double, unit: DistanceUnit = .current) -> String {
         let bands: [Double] = unit == .miles ? [3, 5, 10, 25] : [5, 10, 20, 40]
         let value = unit.value(fromKm: km)
+        let unitTitle = unit.title
         if let band = bands.first(where: { value <= $0 }) {
-            return "\(Int(band)) \(unit.title)内"
+            let bandValue = Int(band)
+            return String(localized: "\(bandValue) \(unitTitle)内")
         }
-        return "\(Int(bands.last ?? 25)) \(unit.title)外"
+        let maxBand = Int(bands.last ?? 25)
+        return String(localized: "\(maxBand) \(unitTitle)外")
     }
 
     /// 出行范围等整数距离："10 公里" / "6 英里"

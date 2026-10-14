@@ -69,8 +69,11 @@ enum MatchTiming {
         let seconds = max(0, Int(date.timeIntervalSince(now)))
         let hours = seconds / 3600
         let minutes = (seconds % 3600) / 60
-        if hours > 0 { return "还剩 \(hours) 小时" + (minutes > 0 ? " \(minutes) 分" : "") }
-        return "还剩 \(max(1, minutes)) 分钟"
+        if hours > 0 {
+            return minutes > 0 ? String(localized: "还剩 \(hours) 小时 \(minutes) 分") : String(localized: "还剩 \(hours) 小时")
+        }
+        let shownMinutes = max(1, minutes)
+        return String(localized: "还剩 \(shownMinutes) 分钟")
     }
 }
 

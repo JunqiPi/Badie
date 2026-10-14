@@ -118,7 +118,7 @@ struct VenuePickerView: View {
                 Button("完成") { dismiss() }
                     .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
             } else {
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { dismiss() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
         }
         .padding(.horizontal, AppTheme.Spacing.screen)
@@ -128,8 +128,8 @@ struct VenuePickerView: View {
 
     private var title: String {
         switch mode {
-        case .multiple, .single: return "选择球馆"
-        case .browse: return "搜索球馆"
+        case .multiple, .single: return String(localized: "选择球馆")
+        case .browse: return String(localized: "搜索球馆")
         }
     }
 
@@ -178,22 +178,22 @@ struct VenuePickerView: View {
     private var idleContent: some View {
         let selected = locationManager.courts(ids: selection)
         if case .multiple = mode, !selected.isEmpty {
-            section("已选", detail: nil, venues: selected)
+            section(String(localized: "已选"), detail: nil, venues: selected)
         }
         let favorites = locationManager.favoriteCourts.filter { !selection.contains($0.id) || mode == .browse }
         if !favorites.isEmpty {
-            section("常去", detail: nil, venues: favorites)
+            section(String(localized: "常去"), detail: nil, venues: favorites)
         }
         let shown = Set(selected.map(\.id) + favorites.map(\.id))
         let nearby = locationManager.nearbyCourts.filter { !shown.contains($0.id) }
         if !nearby.isEmpty {
-            section("附近", detail: locationManager.radiusText, venues: nearby)
+            section(String(localized: "附近"), detail: locationManager.radiusText, venues: nearby)
         } else if favorites.isEmpty {
             NoticeBanner(icon: "mappin.slash",
-                         text: "\(locationManager.radiusText)还没有收录的球馆。搜索名称或地址，或从下面 Apple 地图的结果里选。")
+                         text: String(localized: "\(locationManager.radiusText)还没有收录的球馆。搜索名称或地址，或从下面 Apple 地图的结果里选。"))
         }
         if allowsAdding && !suggestions.isEmpty {
-            mapSection(title: "Apple 地图上的附近结果",
+            mapSection(title: String(localized: "Apple 地图上的附近结果"),
                        rows: suggestions.map { MapRowItem(id: $0.id, title: $0.name, subtitle: $0.address.compactLine) }) { id in
                 if let candidate = suggestions.first(where: { $0.id == id }) { review(candidate, source: .appleMaps) }
             }
@@ -205,14 +205,14 @@ struct VenuePickerView: View {
     @ViewBuilder
     private var searchContent: some View {
         if hits.isEmpty && visibleCompletions.isEmpty {
-            EmptyStateView(icon: "magnifyingglass", title: "没有找到“\(query)”",
-                           message: "试试球馆的英文名、简称或街道地址；也可以粘贴 Google / Apple 地图链接。")
+            EmptyStateView(icon: "magnifyingglass", title: String(localized: "没有找到“\(query)”"),
+                           message: String(localized: "试试球馆的英文名、简称或街道地址；也可以粘贴 Google / Apple 地图链接。"))
         }
         if !hits.isEmpty {
-            section("Badie 球馆库", detail: "\(hits.count) 个", venues: hits.map(\.venue))
+            section(String(localized: "Badie 球馆库"), detail: String(localized: "\(hits.count) 个"), venues: hits.map(\.venue))
         }
         if allowsAdding && !visibleCompletions.isEmpty {
-            mapSection(title: "Apple 地图",
+            mapSection(title: String(localized: "Apple 地图"),
                        rows: visibleCompletions.map { MapRowItem(id: completionId($0), title: $0.title, subtitle: $0.subtitle) }) { id in
                 if let completion = visibleCompletions.first(where: { completionId($0) == id }) { resolve(completion) }
             }
@@ -271,7 +271,7 @@ struct VenuePickerView: View {
 
     private func mapSection(title: String, rows: [MapRowItem], onTap: @escaping (String) -> Void) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: title, detail: "选中后核对位置")
+            SectionTitle(title: title, detail: String(localized: "选中后核对位置"))
             VStack(spacing: 0) {
                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                     if index > 0 { InsetDivider() }
@@ -374,7 +374,7 @@ struct VenuePickerView: View {
             } else if selection.count < max {
                 selection.append(venue.id)
             } else {
-                appState.showToast("最多选择 \(max) 个球馆，先取消一个")
+                appState.showToast(String(localized: "最多选择 \(max) 个球馆，先取消一个"))
             }
         case .single:
             selection = [venue.id]
@@ -393,7 +393,7 @@ struct VenuePickerView: View {
                 let candidate = try await mapSearch.resolve(completion)
                 review(candidate, source: .appleMaps)
             } catch {
-                appState.showToast("暂时无法获取这个地点，请稍后再试", style: .error)
+                appState.showToast(String(localized: "暂时无法获取这个地点，请稍后再试"), style: .error)
             }
         }
     }
@@ -402,7 +402,7 @@ struct VenuePickerView: View {
     private func review(_ candidate: VenueCandidate, source: VenueSource) {
         let duplicates = backend.duplicates(for: candidate)
         if let same = duplicates.first(where: { $0.kind == .samePlace }) {
-            appState.showToast("球馆库里已有：\(same.venue.name)", style: .success)
+            appState.showToast(String(localized: "球馆库里已有：\(same.venue.name)"), style: .success)
             choose(same.venue)
             return
         }
@@ -418,13 +418,13 @@ struct VenuePickerView: View {
         }
         if MapLinkParser.needsExpansion(url) {
             guard let expanded = await AppleMapsSearch.expand(url) else {
-                appState.showToast("链接打不开，试试直接搜索名称", style: .error)
+                appState.showToast(String(localized: "链接打不开，试试直接搜索名称"), style: .error)
                 return
             }
             url = expanded
         }
         guard let link = MapLinkParser.parse(url) else {
-            appState.showToast("没能识别这个地图链接，试试直接搜索名称", style: .error)
+            appState.showToast(String(localized: "没能识别这个地图链接，试试直接搜索名称"), style: .error)
             return
         }
         if let placeId = link.applePlaceId, let item = await AppleMapsSearch.mapItem(placeId: placeId) {
@@ -444,7 +444,7 @@ struct VenuePickerView: View {
             addDraft = AddVenueDraft(name: link.name ?? "", coordinate: coordinate)
             return
         }
-        appState.showToast("没能定位这个链接，试试直接搜索名称", style: .error)
+        appState.showToast(String(localized: "没能定位这个链接，试试直接搜索名称"), style: .error)
     }
 }
 

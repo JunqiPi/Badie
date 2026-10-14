@@ -25,10 +25,10 @@ final class RoomManager: ObservableObject {
             case .roomsChanged, .sessionChanged, .friendsChanged:
                 self.reload()
             case .kicked(let code):
-                self.notice = "你已被移出房间 \(code)"
+                self.notice = String(localized: "你已被移出房间 \(code)")
                 self.reload()
             case .roomClosed(let code, let reason):
-                self.notice = "房间 \(code)：\(reason.message)"
+                self.notice = String(localized: "房间 \(code)：\(reason.message)")
                 self.reload()
             case .gameCreated(let game):
                 if case .room = game.origin, game.hostId != self.backend.currentUserId {

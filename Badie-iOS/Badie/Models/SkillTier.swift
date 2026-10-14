@@ -21,9 +21,9 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
         /// 1–7 级里 −/本级/+ 的通用含义
         var meaning: String {
             switch self {
-            case .minus: return "刚达到这一级，部分动作还不稳定"
-            case .base: return "这一级的动作都能稳定做到"
-            case .plus: return "这一级很稳定，已经有下一级的部分能力"
+            case .minus: return String(localized: "刚达到这一级，部分动作还不稳定")
+            case .base: return String(localized: "这一级的动作都能稳定做到")
+            case .plus: return String(localized: "这一级很稳定，已经有下一级的部分能力")
             }
         }
     }
@@ -66,17 +66,17 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
     /// 档位名称：1–5 级用本级名称；6 级起每档差距大，单独命名
     var name: String {
         switch (level, modifier) {
-        case (6, .minus): return "崭露头角"
-        case (6, .plus): return "俱乐部顶尖"
-        case (7, .minus): return "准州级"
-        case (7, .base): return "州级选手"
-        case (7, .plus): return "州级精英"
-        case (8, .minus): return "准国家级"
-        case (8, .base): return "国家级"
-        case (8, .plus): return "国家顶尖"
-        case (9, .minus): return "国际选手"
-        case (9, .base): return "国际职业"
-        case (9, .plus): return "世界顶尖"
+        case (6, .minus): return String(localized: "崭露头角")
+        case (6, .plus): return String(localized: "俱乐部顶尖")
+        case (7, .minus): return String(localized: "准州级")
+        case (7, .base): return String(localized: "州级选手")
+        case (7, .plus): return String(localized: "州级精英")
+        case (8, .minus): return String(localized: "准国家级")
+        case (8, .base): return String(localized: "国家级")
+        case (8, .plus): return String(localized: "国家顶尖")
+        case (9, .minus): return String(localized: "国际选手")
+        case (9, .base): return String(localized: "国际职业")
+        case (9, .plus): return String(localized: "世界顶尖")
         default: return SkillLevel.name(for: level)
         }
     }
@@ -87,9 +87,9 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
     /// 读屏：“4 级加”
     var spokenText: String {
         switch modifier {
-        case .minus: return "\(level) 级减"
-        case .base: return "\(level) 级"
-        case .plus: return "\(level) 级加"
+        case .minus: return String(localized: "\(level) 级减")
+        case .base: return String(localized: "\(level) 级")
+        case .plus: return String(localized: "\(level) 级加")
         }
     }
 
@@ -97,7 +97,7 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
 
     /// “7 到 8+”（不用连字符，避免和 − 混在一起）
     static func rangeText(_ lower: SkillTier, _ upper: SkillTier) -> String {
-        lower == upper ? lower.code : "\(lower.code) 到 \(upper.code)"
+        lower == upper ? lower.code : String(localized: "\(lower.code) 到 \(upper.code)")
     }
 
     /// 差几档（对方 − 我）
@@ -105,14 +105,16 @@ struct SkillTier: Hashable, Comparable, Codable, Identifiable {
 
     /// “同水平”“高 1 档”“低 1 级”“高 1 级 1 档”
     static func differenceText(_ steps: Int) -> String {
-        guard steps != 0 else { return "同水平" }
-        let direction = steps > 0 ? "高" : "低"
+        guard steps != 0 else { return String(localized: "同水平") }
+        let direction = steps > 0
+            ? String(localized: "高", comment: "水平差：对方比我高")
+            : String(localized: "低", comment: "水平差：对方比我低")
         let levels = abs(steps) / 3
         let rest = abs(steps) % 3
         switch (levels, rest) {
-        case (0, _): return "\(direction) \(rest) 档"
-        case (_, 0): return "\(direction) \(levels) 级"
-        default: return "\(direction) \(levels) 级 \(rest) 档"
+        case (0, _): return String(localized: "\(direction) \(rest) 档")
+        case (_, 0): return String(localized: "\(direction) \(levels) 级")
+        default: return String(localized: "\(direction) \(levels) 级 \(rest) 档")
         }
     }
 

@@ -57,7 +57,7 @@ extension MockBackend {
                       origin: Coordinate, autoAccept: Bool, now: Date = Date()) async throws -> MatchTicket {
         let me = try requireUser()
         guard me.attendance.standing != .suspended else { throw BackendError.matchingSuspended }
-        guard slot.endTime > now else { throw BackendError.invalidSlot("这个时间段已经过去了") }
+        guard slot.endTime > now else { throw BackendError.invalidSlot(String(localized: "这个时间段已经过去了")) }
         guard MatchTiming.canRequest(start: slot.startTime, now: now) else { throw BackendError.tooLateToRequest }
         var resolved: [String] = []
         for id in courtIds {
@@ -212,8 +212,8 @@ extension MockBackend {
                 if let ticketId = offer.seats[index].ticketId, var ticket = db.tickets[ticketId] {
                     ticket.status = .paused
                     db.tickets[ticketId] = ticket
-                    addInbox(InboxItem(kind: .matchUpdate, title: "你错过了一个匹配",
-                                       body: "\(offer.slot.formattedFull) · \(offer.court.name)。请求已暂停，点开可以继续找。",
+                    addInbox(InboxItem(kind: .matchUpdate, title: String(localized: "你错过了一个匹配"),
+                                       body: String(localized: "\(offer.slot.formattedFull) · \(offer.court.name)。请求已暂停，点开可以继续找。"),
                                        relatedId: ticketId), to: ticket.userId)
                 }
             }
@@ -232,9 +232,9 @@ extension MockBackend {
                 ticket.status = .expired
                 db.tickets[ticketId] = ticket
                 let canGoLastMinute = !ticket.isLastMinute && MatchTiming.canRequest(start: ticket.slot.startTime, now: now)
-                addInbox(InboxItem(kind: .matchUpdate, title: "这次没约到人",
-                                   body: "\(ticket.slot.formattedFull) 的请求已结束，不计入任何记录。"
-                                       + (canGoLastMinute ? "还想打的话，可以转成临时局找附近正在找人的球友。" : ""),
+                addInbox(InboxItem(kind: .matchUpdate, title: String(localized: "这次没约到人"),
+                                   body: String(localized: "\(ticket.slot.formattedFull) 的请求已结束，不计入任何记录。")
+                                       + (canGoLastMinute ? String(localized: "还想打的话，可以转成临时局找附近正在找人的球友。") : ""),
                                    relatedId: ticketId), to: ticket.userId)
                 changed = true
             case .searching:
@@ -294,11 +294,11 @@ extension MockBackend {
 
         let summary = "\(offer.slot.formattedFull) · \(offer.court.name)"
         if ticket.autoAccept {
-            addInbox(InboxItem(kind: .matchOffer, title: "找到搭子了，已替你接受",
-                               body: "\(summary)。等其他人确认后就约成了。", relatedId: ticket.id), to: owner.id)
+            addInbox(InboxItem(kind: .matchOffer, title: String(localized: "找到搭子了，已替你接受"),
+                               body: String(localized: "\(summary)。等其他人确认后就约成了。"), relatedId: ticket.id), to: owner.id)
         } else {
-            addInbox(InboxItem(kind: .matchOffer, title: "找到搭子了，等你确认",
-                               body: "\(summary)。请在\(DateText.deadline(respondBy, now: now))前确认。", relatedId: ticket.id), to: owner.id)
+            addInbox(InboxItem(kind: .matchOffer, title: String(localized: "找到搭子了，等你确认"),
+                               body: String(localized: "\(summary)。请在\(DateText.deadline(respondBy, now: now))前确认。"), relatedId: ticket.id), to: owner.id)
         }
         for seat in otherSeats { scheduleBotResponse(offerId: offer.id, botId: seat.userId) }
         return offer
@@ -425,8 +425,8 @@ extension MockBackend {
             db.offers[offerId] = offer
             scheduleBotResponse(offerId: offerId, botId: replacement.id)
             for seat in offer.seats where seat.ticketId != nil && seat.response == .accepted {
-                addInbox(InboxItem(kind: .matchUpdate, title: "有位球友这次来不了，已找人补上",
-                                   body: "\(offer.slot.formattedFull) · \(offer.court.name)。新球友确认后就约成了。",
+                addInbox(InboxItem(kind: .matchUpdate, title: String(localized: "有位球友这次来不了，已找人补上"),
+                                   body: String(localized: "\(offer.slot.formattedFull) · \(offer.court.name)。新球友确认后就约成了。"),
                                    relatedId: seat.ticketId), to: seat.userId)
             }
         }
@@ -477,8 +477,8 @@ extension MockBackend {
                 ticket.excludedUserIds = Array(Set(ticket.excludedUserIds + vacated)).sorted()
                 db.tickets[ticketId] = ticket
                 if now < ticket.deadline {
-                    addInbox(InboxItem(kind: .matchUpdate, title: "这次没凑成，继续帮你找",
-                                       body: "\(offer.slot.formattedFull) · \(offer.court.name)。你会被优先安排，不计入任何记录。",
+                    addInbox(InboxItem(kind: .matchUpdate, title: String(localized: "这次没凑成，继续帮你找"),
+                                       body: String(localized: "\(offer.slot.formattedFull) · \(offer.court.name)。你会被优先安排，不计入任何记录。"),
                                        relatedId: ticketId), to: ticket.userId)
                     runMatchmaking(ticketId: ticketId, now: now)
                 }
@@ -518,8 +518,8 @@ extension MockBackend {
             if let ticketId = seat.ticketId, var ticket = db.tickets[ticketId] {
                 ticket.status = .offered(offerId: singles.id)
                 db.tickets[ticketId] = ticket
-                addInbox(InboxItem(kind: .matchOffer, title: "双打没凑齐，改打单打吗？",
-                                   body: "\(offer.slot.formattedFull) · \(offer.court.name)。请在\(DateText.deadline(respondBy, now: now))前确认，不想打也不影响记录。",
+                addInbox(InboxItem(kind: .matchOffer, title: String(localized: "双打没凑齐，改打单打吗？"),
+                                   body: String(localized: "\(offer.slot.formattedFull) · \(offer.court.name)。请在\(DateText.deadline(respondBy, now: now))前确认，不想打也不影响记录。"),
                                    relatedId: ticketId), to: seat.userId)
             } else {
                 scheduleBotResponse(offerId: singles.id, botId: seat.userId)
@@ -560,8 +560,8 @@ extension MockBackend {
             guard let ticketId = seat.ticketId, var ticket = db.tickets[ticketId] else { continue }
             ticket.status = .matched(gameId: game.id)
             db.tickets[ticketId] = ticket
-            addInbox(InboxItem(kind: .gameConfirmed, title: "约成了！",
-                               body: "\(offer.slot.formattedFull) · \(offer.court.name)。开赛前 2 小时内取消会计入履约记录。",
+            addInbox(InboxItem(kind: .gameConfirmed, title: String(localized: "约成了！"),
+                               body: String(localized: "\(offer.slot.formattedFull) · \(offer.court.name)。开赛前 2 小时内取消会计入履约记录。"),
                                relatedId: game.id), to: seat.userId)
         }
         scheduleSave()

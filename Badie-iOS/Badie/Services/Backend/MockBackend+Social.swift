@@ -124,7 +124,7 @@ extension MockBackend {
         guard !db.friendships.contains(where: { $0.involves(first) && $0.involves(second) }) else { return }
         db.friendships.append(Friendship(between: first, and: second))
         let threadId = MessageThread.id(for: first, second)
-        appendMessage(Message(threadId: threadId, senderId: "system", content: "你们已经成为球友，打个招呼约一场吧 🏸",
+        appendMessage(Message(threadId: threadId, senderId: "system", content: String(localized: "你们已经成为球友，打个招呼约一场吧 🏸"),
                               deliveredAt: Date(), readAt: Date(), kind: .system),
                       participants: [first, second], countsAsUnread: false)
     }
@@ -139,8 +139,8 @@ extension MockBackend {
             return
         }
         makeFriends(request.fromUserId, request.toUserId)
-        addInbox(InboxItem(kind: .friendAccepted, title: "\(bot.nickname) 通过了你的好友申请",
-                           body: "现在可以私信、邀请 TA 进房间了。", relatedId: bot.id), to: request.fromUserId)
+        addInbox(InboxItem(kind: .friendAccepted, title: String(localized: "\(bot.nickname) 通过了你的好友申请"),
+                           body: String(localized: "现在可以私信、邀请 TA 进房间了。"), relatedId: bot.id), to: request.fromUserId)
         scheduleSave()
         emit(.friendRequestsChanged)
         emit(.friendsChanged)
@@ -272,9 +272,9 @@ extension MockBackend {
             thread.requestFrom = me.id
             db.threads[threadId] = thread
             if !blockedByOther {
-                let groupName = sharedGroups(with: userId).first?.name ?? "同一个球群"
-                addInbox(InboxItem(kind: .messageRequest, title: "\(me.nickname) 想和你聊天",
-                                   body: "来自「\(groupName)」。接受后才能继续聊，忽略对方不会知道。", relatedId: me.id), to: userId)
+                let groupName = sharedGroups(with: userId).first?.name ?? String(localized: "同一个球群")
+                addInbox(InboxItem(kind: .messageRequest, title: String(localized: "\(me.nickname) 想和你聊天"),
+                                   body: String(localized: "来自「\(groupName)」。接受后才能继续聊，忽略对方不会知道。"), relatedId: me.id), to: userId)
             }
             scheduleSave()
             emit(.threadsChanged)

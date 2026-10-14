@@ -69,7 +69,7 @@ struct MainTabView: View {
         }
         .onChange(of: roomManager.startedGameId) { _, gameId in
             guard let gameId else { return }
-            appState.showToast("球局已开始组队，查看详情", style: .success)
+            appState.showToast(String(localized: "球局已开始组队，查看详情"), style: .success)
             router.show(.game(id: gameId), in: .games)
             roomManager.startedGameId = nil
         }
@@ -185,7 +185,7 @@ struct FloatingTabBar: View {
         }
         .buttonStyle(PressableStyle(scale: 0.9))
         .accessibilityLabel(tab.title)
-        .accessibilityValue(badges[tab].map { $0 > 0 ? "\($0) 条未处理" : "" } ?? "")
+        .accessibilityValue(badges[tab].map { $0 > 0 ? String(localized: "\($0) 条未处理") : "" } ?? "")
         .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
     }
 
@@ -225,14 +225,14 @@ struct CreateMenuSheet: View {
                 .font(AppTheme.Typography.title)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .padding(.top, AppTheme.Spacing.xl)
-            option(icon: "bolt.fill", tint: AppTheme.Colors.lime, title: "快速匹配",
-                   subtitle: "按水平、时间和距离自动找搭子", action: .quickMatch)
-            option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: "发起球局",
-                   subtitle: "我有场地缺人 / 约好友组局，可公开招募", action: .createRoom)
-            option(icon: "person.3.fill", tint: AppTheme.Colors.sky, title: "固定局 · 球群",
-                   subtitle: "每周固定时间和球馆，一键报名、自动候补", action: .groups)
-            option(icon: "number", tint: AppTheme.Colors.lavender, title: "输入房间码 / 群号",
-                   subtitle: "好友发来的 6 位房间码或群号", action: .joinRoom)
+            option(icon: "bolt.fill", tint: AppTheme.Colors.lime, title: String(localized: "快速匹配"),
+                   subtitle: String(localized: "按水平、时间和距离自动找搭子"), action: .quickMatch)
+            option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: String(localized: "发起球局"),
+                   subtitle: String(localized: "我有场地缺人 / 约好友组局，可公开招募"), action: .createRoom)
+            option(icon: "person.3.fill", tint: AppTheme.Colors.sky, title: String(localized: "固定局 · 球群"),
+                   subtitle: String(localized: "每周固定时间和球馆，一键报名、自动候补"), action: .groups)
+            option(icon: "number", tint: AppTheme.Colors.lavender, title: String(localized: "输入房间码 / 群号"),
+                   subtitle: String(localized: "好友发来的 6 位房间码或群号"), action: .joinRoom)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppTheme.Spacing.screen)

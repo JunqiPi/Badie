@@ -12,6 +12,17 @@ enum RoomTag: String, CaseIterable, Identifiable, Codable, Hashable {
 
     var id: String { rawValue }
 
+    /// 显示文字（rawValue 已持久化，不能改；显示走这里以便本地化）
+    var title: String {
+        switch self {
+        case .beginnerFriendly: return String(localized: "新手友好")
+        case .casual: return String(localized: "欢乐局")
+        case .competitive: return String(localized: "竞技局")
+        case .womenFriendly: return String(localized: "女生友好")
+        case .coaching: return String(localized: "可指导")
+        }
+    }
+
     var icon: String {
         switch self {
         case .beginnerFriendly: return "leaf.fill"
@@ -37,9 +48,9 @@ enum RoomCloseReason: String, Codable, Hashable {
 
     var message: String {
         switch self {
-        case .expired: return "房间 30 分钟无活动，已自动关闭"
-        case .ownerClosed: return "房主已解散房间"
-        case .startTimePassed: return "已过开始时间，房间已关闭"
+        case .expired: return String(localized: "房间 30 分钟无活动，已自动关闭")
+        case .ownerClosed: return String(localized: "房主已解散房间")
+        case .startTimePassed: return String(localized: "已过开始时间，房间已关闭")
         }
     }
 }
@@ -138,7 +149,7 @@ struct Room: Identifiable, Codable, Hashable {
     func accepts(level: Int) -> Bool { levelRange.contains(level) }
 
     var levelRangeText: String {
-        if levelRange.lowerBound <= 1 && levelRange.upperBound >= 9 { return "不限水平" }
+        if levelRange.lowerBound <= 1 && levelRange.upperBound >= 9 { return String(localized: "不限水平") }
         if levelRange.lowerBound == levelRange.upperBound { return "Lv.\(levelRange.lowerBound)" }
         return "Lv.\(levelRange.lowerBound)–\(levelRange.upperBound)"
     }
@@ -169,7 +180,7 @@ struct Room: Identifiable, Codable, Hashable {
     }
 
     var inviteText: String {
-        var text = "来 Badie 一起打\(mode.title)！房间码：\(code)"
+        var text = String(localized: "来 Badie 一起打\(mode.title)！房间码：\(code)")
         if let slot { text += "\n🕖 \(slot.formattedFull)" }
         if let court { text += "\n📍 \(court.name)" }
         return text

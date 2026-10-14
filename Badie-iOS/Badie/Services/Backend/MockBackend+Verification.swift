@@ -14,21 +14,21 @@ extension MockBackend {
     func submitVerification(kind: VerificationStatus, tier: SkillTier, evidenceURL: String, nameOnRecord: String,
                             note: String = "", now: Date = Date()) throws -> VerificationRequest {
         let me = try requireUser()
-        guard kind != .unverified else { throw BackendError.verificationInvalid("请选择证据类型") }
+        guard kind != .unverified else { throw BackendError.verificationInvalid(String(localized: "请选择证据类型")) }
         if let pending = myVerificationRequest(), pending.status == .pending {
-            throw BackendError.verificationInvalid("你已有一份申请在审核中（\(pending.claimedTier.text)）")
+            throw BackendError.verificationInvalid(String(localized: "你已有一份申请在审核中（\(pending.claimedTier.text)）"))
         }
         guard tier >= kind.minTier, tier <= kind.maxTier else {
-            throw BackendError.verificationInvalid("\(kind.title)可以认证 \(SkillTier.rangeText(kind.minTier, kind.maxTier))")
+            throw BackendError.verificationInvalid(String(localized: "\(kind.title)可以认证 \(SkillTier.rangeText(kind.minTier, kind.maxTier))"))
         }
         if let problem = VerificationEvidence.problem(with: evidenceURL, for: kind) {
             throw BackendError.verificationInvalid(problem)
         }
         if kind == .national, let certificateCap = VerificationEvidence.certificateMaxTier(evidenceURL), tier > certificateCap {
-            throw BackendError.verificationInvalid("这张证书最高可以认证到 \(certificateCap.code)")
+            throw BackendError.verificationInvalid(String(localized: "这张证书最高可以认证到 \(certificateCap.code)"))
         }
         let name = nameOnRecord.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard name.count >= 2 else { throw BackendError.verificationInvalid("请填写成绩或证书上的姓名") }
+        guard name.count >= 2 else { throw BackendError.verificationInvalid(String(localized: "请填写成绩或证书上的姓名")) }
         let request = VerificationRequest(
             id: "vr-" + UUID().uuidString.prefix(8).lowercased(),
             userId: me.id, kind: kind, claimedRating: tier.rating,
@@ -63,13 +63,14 @@ extension MockBackend {
             request.status = .approved
             request.approvedRating = user.verifiedRating
             db.users[user.id] = user
-            addInbox(InboxItem(kind: .system, title: "认证通过：\(user.tierCap.text)",
-                               body: "已显示\(request.kind.badgeText ?? "认证")徽章。之后的等级会结合球友评价，但不会超过认证档位。",
+            let badgeText = request.kind.badgeText ?? String(localized: "认证")
+            addInbox(InboxItem(kind: .system, title: String(localized: "认证通过：\(user.tierCap.text)"),
+                               body: String(localized: "已显示\(badgeText)徽章。之后的等级会结合球友评价，但不会超过认证档位。"),
                                relatedId: user.id), to: user.id)
         } else {
             request.status = .rejected
-            addInbox(InboxItem(kind: .system, title: "认证没有通过",
-                               body: note ?? "证据上的信息无法核实，可以补充材料后重新申请。", relatedId: user.id), to: user.id)
+            addInbox(InboxItem(kind: .system, title: String(localized: "认证没有通过"),
+                               body: note ?? String(localized: "证据上的信息无法核实，可以补充材料后重新申请。"), relatedId: user.id), to: user.id)
         }
         db.verificationRequests[index] = request
         scheduleSave()

@@ -14,21 +14,31 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "设置")
+            ScreenHeader(title: String(localized: "设置"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    section("外观") {
+                    section(String(localized: "外观")) {
                         SegmentedSticker(options: AppAppearance.allCases, selection: $appState.appearance, title: { $0.title })
                     }
 
-                    section("权限") {
+                    // iOS 在 App 的系统设置页里提供“首选语言”，切换后系统会重启 App
+                    section(String(localized: "语言")) {
+                        MenuRow(icon: "globe", tint: AppTheme.Colors.sky, title: String(localized: "App 语言"),
+                                value: currentLanguageName) {
+                            openSystemSettings()
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.lg)
+                        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+                    }
+
+                    section(String(localized: "权限")) {
                         VStack(spacing: 0) {
-                            MenuRow(icon: "bell.badge.fill", tint: AppTheme.Colors.butter, title: "球局提醒",
+                            MenuRow(icon: "bell.badge.fill", tint: AppTheme.Colors.butter, title: String(localized: "球局提醒"),
                                     value: notificationText) {
                                 Task { await handleNotificationTap() }
                             }
                             InsetDivider()
-                            MenuRow(icon: "location.fill", tint: AppTheme.Colors.sky, title: "定位",
+                            MenuRow(icon: "location.fill", tint: AppTheme.Colors.sky, title: String(localized: "定位"),
                                     value: locationText) {
                                 if locationManager.authorizationStatus == .notDetermined {
                                     locationManager.requestAuthorization()
@@ -37,7 +47,7 @@ struct SettingsView: View {
                                 }
                             }
                             InsetDivider()
-                            MenuRow(icon: "map.fill", tint: AppTheme.Colors.mint, title: "出行范围",
+                            MenuRow(icon: "map.fill", tint: AppTheme.Colors.mint, title: String(localized: "出行范围"),
                                     value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
                                 showRadius = true
                             }
@@ -46,14 +56,14 @@ struct SettingsView: View {
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
                     }
 
-                    section("约球偏好") {
+                    section(String(localized: "约球偏好")) {
                         VStack(spacing: 0) {
-                            MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.peach, title: "常用时间",
+                            MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.peach, title: String(localized: "常用时间"),
                                     value: "\(appState.backend.recurringSlots().count)/\(TimeSlotConstants.maximumRecurringSlots)") {
                                 router.open(.recurringSlots)
                             }
                             InsetDivider()
-                            MenuRow(icon: "hand.raised.fill", tint: AppTheme.Colors.pink, title: "屏蔽名单") {
+                            MenuRow(icon: "hand.raised.fill", tint: AppTheme.Colors.pink, title: String(localized: "屏蔽名单")) {
                                 router.open(.blockedUsers)
                             }
                         }
@@ -61,7 +71,7 @@ struct SettingsView: View {
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
                     }
 
-                    section("谁能看到我、联系我") {
+                    section(String(localized: "谁能看到我、联系我")) {
                         VStack(spacing: AppTheme.Spacing.md) {
                             Toggle(isOn: privacyBinding(\.showsAsRegular)) {
                                 VStack(alignment: .leading, spacing: 2) {
@@ -89,18 +99,18 @@ struct SettingsView: View {
                         .card(AppTheme.Colors.surface, shadow: .zero)
                     }
 
-                    section("隐私与安全") {
+                    section(String(localized: "隐私与安全")) {
                         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                            privacyLine("手机号只用于登录与安全验证，不会展示给任何球友")
-                            privacyLine("位置只用于计算距离，球友看到的是大概范围（如“5 英里内”），不是精确距离")
-                            privacyLine("陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求")
-                            privacyLine("评价匿名汇总，不展示单条评价与评价人")
-                            privacyLine("屏蔽对方不会通知对方")
+                            privacyLine(String(localized: "手机号只用于登录与安全验证，不会展示给任何球友"))
+                            privacyLine(String(localized: "位置只用于计算距离，球友看到的是大概范围（如“5 英里内”），不是精确距离"))
+                            privacyLine(String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"))
+                            privacyLine(String(localized: "评价匿名汇总，不展示单条评价与评价人"))
+                            privacyLine(String(localized: "屏蔽对方不会通知对方"))
                         }
                         .card(AppTheme.Colors.surface, shadow: .zero)
                     }
 
-                    section("演示数据") {
+                    section(String(localized: "演示数据")) {
                         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                             Text("当前没有接入线上服务：附近球友、公开球局为本机模拟数据，会自动回复消息、加入球局和互评，方便完整体验流程。")
                                 .font(AppTheme.Typography.footnote)
@@ -112,7 +122,7 @@ struct SettingsView: View {
                         .card(AppTheme.Colors.surface, shadow: .zero)
                     }
 
-                    section("账号") {
+                    section(String(localized: "账号")) {
                         VStack(spacing: AppTheme.Spacing.sm) {
                             Button("退出登录") { showSignOut = true }
                                 .buttonStyle(BrutalButtonStyle(kind: .accent(AppTheme.Colors.butter), size: .medium))
@@ -193,16 +203,16 @@ struct SettingsView: View {
 
     private var notificationText: String {
         switch notificationStatus {
-        case .authorized, .provisional, .ephemeral: return "已开启"
-        case .denied: return "已关闭"
-        default: return "未设置"
+        case .authorized, .provisional, .ephemeral: return String(localized: "已开启")
+        case .denied: return String(localized: "已关闭")
+        default: return String(localized: "未设置")
         }
     }
 
     private var locationText: String {
-        if locationManager.isAuthorized { return "使用期间" }
-        if locationManager.isDenied { return "已关闭" }
-        return "未设置"
+        if locationManager.isAuthorized { return String(localized: "使用期间") }
+        if locationManager.isDenied { return String(localized: "已关闭") }
+        return String(localized: "未设置")
     }
 
     private func refreshNotificationStatus() async {
@@ -216,6 +226,11 @@ struct SettingsView: View {
         } else {
             openSystemSettings()
         }
+    }
+
+    private var currentLanguageName: String? {
+        guard let id = Bundle.main.preferredLocalizations.first else { return nil }
+        return Locale(identifier: id).localizedString(forIdentifier: id)
     }
 
     private func openSystemSettings() {
@@ -235,9 +250,9 @@ struct RecurringSlotsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "常用时间") {
+            ScreenHeader(title: String(localized: "常用时间")) {
                 if slots.canAddMore {
-                    IconButton(systemName: "plus", accessibilityLabel: "添加常用时间", accent: AppTheme.Colors.lime) {
+                    IconButton(systemName: "plus", accessibilityLabel: String(localized: "添加常用时间"), accent: AppTheme.Colors.lime) {
                         showEditor = true
                     }
                 }
@@ -249,8 +264,8 @@ struct RecurringSlotsView: View {
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                     if slots.isEmpty {
-                        EmptyStateView(icon: "calendar.badge.plus", title: "还没有常用时间", tint: AppTheme.Colors.peach,
-                                       actionTitle: "添加") { showEditor = true }
+                        EmptyStateView(icon: "calendar.badge.plus", title: String(localized: "还没有常用时间"), tint: AppTheme.Colors.peach,
+                                       actionTitle: String(localized: "添加")) { showEditor = true }
                     }
                     ForEach($slots) { $slot in
                         HStack(spacing: AppTheme.Spacing.md) {
@@ -335,8 +350,8 @@ struct RecurringSlotEditor: View {
                 }
             }
             HStack(spacing: AppTheme.Spacing.md) {
-                TimeStepper(title: "开始", minutes: $startMinutes, range: (6 * 60)...(23 * 60))
-                TimeStepper(title: "结束", minutes: $endMinutes, range: (7 * 60)...(24 * 60))
+                TimeStepper(title: String(localized: "开始"), minutes: $startMinutes, range: (6 * 60)...(23 * 60))
+                TimeStepper(title: String(localized: "结束"), minutes: $endMinutes, range: (7 * 60)...(24 * 60))
             }
             if !candidate.isValidDuration {
                 Text("时间段需要 1-8 小时")
@@ -365,11 +380,11 @@ struct BlockedUsersView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "屏蔽名单")
+            ScreenHeader(title: String(localized: "屏蔽名单"))
             ScrollView {
                 VStack(spacing: AppTheme.Spacing.sm) {
                     if messageManager.blockedUsers.isEmpty {
-                        EmptyStateView(icon: "hand.raised", title: "没有屏蔽任何人", tint: AppTheme.Colors.mint)
+                        EmptyStateView(icon: "hand.raised", title: String(localized: "没有屏蔽任何人"), tint: AppTheme.Colors.mint)
                     }
                     ForEach(messageManager.blockedUsers) { blocked in
                         HStack(spacing: AppTheme.Spacing.md) {
@@ -388,7 +403,7 @@ struct BlockedUsersView: View {
                             Spacer()
                             Button("解除") {
                                 messageManager.unblock(blocked.blockedUserId)
-                                appState.showToast("已解除屏蔽")
+                                appState.showToast(String(localized: "已解除屏蔽"))
                             }
                             .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
                         }

@@ -405,15 +405,16 @@ extension MockBackend {
         db.users[userId] = me
 
         // 站内通知
-        addInbox(InboxItem(kind: .system, title: "欢迎来到 Badie 🏸",
-                           body: "附近的球友、球局都在首页。点中间的「+」可以快速匹配或发起球局。",
+        addInbox(InboxItem(kind: .system, title: String(localized: "欢迎来到 Badie 🏸"),
+                           body: String(localized: "附近的球友、球局都在首页。点中间的「+」可以快速匹配或发起球局。"),
                            createdAt: now.addingTimeInterval(-60)), to: userId)
-        addInbox(InboxItem(kind: .friendRequest, title: "琳琳 想加你为球友",
+        let requesterName = "琳琳"
+        addInbox(InboxItem(kind: .friendRequest, title: String(localized: "\(requesterName) 想加你为球友"),
                            body: "上周在朝阳馆一起打过双打～", createdAt: now.addingTimeInterval(-3 * 3600),
                            relatedId: "bot-4"), to: userId)
         if let survey = db.pendingSurveys.first(where: { $0.evaluatorId == userId }) {
-            addInbox(InboxItem(kind: .surveyDue, title: "给 \(survey.opponentNickname) 的球局打个分",
-                               body: "评价匿名汇总，双方都提交后才会计入。", createdAt: now.addingTimeInterval(-10 * 3600),
+            addInbox(InboxItem(kind: .surveyDue, title: String(localized: "给 \(survey.opponentNickname) 的球局打个分"),
+                               body: String(localized: "评价匿名汇总，双方都提交后才会计入。"), createdAt: now.addingTimeInterval(-10 * 3600),
                                relatedId: survey.id), to: userId)
         }
     }

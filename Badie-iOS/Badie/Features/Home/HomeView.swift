@@ -28,7 +28,7 @@ struct HomeView: View {
 
                 if locationManager.isDenied {
                     NoticeBanner(icon: "location.slash.fill", text: LocationError.permissionDenied.message,
-                                 actionTitle: "去设置") { openSettings() }
+                                 actionTitle: String(localized: "去设置")) { openSettings() }
                         .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
@@ -87,12 +87,12 @@ struct HomeView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack(spacing: AppTheme.Spacing.md) {
-                Text("\(greeting)，\(appState.currentUser?.nickname ?? "球友")")
+                Text("\(greeting)，\(appState.currentUser?.nickname ?? String(localized: "球友"))")
                     .font(AppTheme.Typography.subheadlineBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .lineLimit(1)
                 Spacer()
-                IconButton(systemName: "bell.fill", accessibilityLabel: "通知", badge: inboxManager.unreadCount) {
+                IconButton(systemName: "bell.fill", accessibilityLabel: String(localized: "通知"), badge: inboxManager.unreadCount) {
                     router.open(.notifications)
                 }
                 Button {
@@ -103,7 +103,7 @@ struct HomeView: View {
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel("我的资料")
             }
-            (Text("今晚，\n打") + Text(markedText: "一场") + Text("？"))
+            (Text("今晚，\n打") + Text(markedText: String(localized: "一场")) + Text("？"))
                 .font(AppTheme.Typography.display)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .accessibilityLabel("今晚，打一场？")
@@ -113,10 +113,10 @@ struct HomeView: View {
 
     private var greeting: String {
         switch Calendar.current.component(.hour, from: Date()) {
-        case 5..<11: return "早上好"
-        case 11..<13: return "中午好"
-        case 13..<18: return "下午好"
-        default: return "晚上好"
+        case 5..<11: return String(localized: "早上好")
+        case 11..<13: return String(localized: "中午好")
+        case 13..<18: return String(localized: "下午好")
+        default: return String(localized: "晚上好")
         }
     }
 
@@ -127,7 +127,7 @@ struct HomeView: View {
         let open = matchManager.openTickets
         if !open.isEmpty {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                SectionTitle(title: "约球请求", detail: "\(open.count) 个进行中")
+                SectionTitle(title: String(localized: "约球请求"), detail: String(localized: "\(open.count) 个进行中"))
                 ForEach(open) { ticket in
                     Button {
                         matchManager.openTicket(ticket.id)
@@ -164,7 +164,7 @@ struct HomeView: View {
                 FlowLayout(spacing: 6) {
                     summaryChip(matchManager.draft.mode.title, icon: matchManager.draft.mode.icon)
                     summaryChip(draftTimeText, icon: "clock.fill")
-                    summaryChip("\(matchManager.draft.courtIds.count) 个球馆", icon: "mappin")
+                    summaryChip(String(localized: "\(matchManager.draft.courtIds.count) 个球馆"), icon: "mappin")
                     summaryChip(toleranceText, icon: "chart.bar.fill")
                 }
             }
@@ -172,7 +172,7 @@ struct HomeView: View {
             Button {
                 startQuickMatch()
             } label: {
-                ArrowButtonLabel(title: "开始匹配")
+                ArrowButtonLabel(title: String(localized: "开始匹配"))
             }
             .buttonStyle(BrutalButtonStyle(kind: .inverse, size: .large))
             .accessibilityHint("用当前设置立即寻找球友")
@@ -197,13 +197,13 @@ struct HomeView: View {
     }
 
     private var draftTimeText: String {
-        guard let slot = matchManager.draft.slot else { return "选择时间" }
-        let day = Calendar.current.isDateInToday(slot.date) ? "今天" : DateText.weekday(slot.date)
+        guard let slot = matchManager.draft.slot else { return String(localized: "选择时间") }
+        let day = Calendar.current.isDateInToday(slot.date) ? String(localized: "今天") : DateText.weekday(slot.date)
         return "\(day) \(slot.formattedTimeRange)"
     }
 
     private var toleranceText: String {
-        matchManager.draft.skillTolerance >= MatchRequest.anySkill ? "不限水平" : "水平 ±\(matchManager.draft.skillTolerance)"
+        matchManager.draft.skillTolerance >= MatchRequest.anySkill ? String(localized: "不限水平") : String(localized: "水平 ±\(matchManager.draft.skillTolerance)")
     }
 
     private func startQuickMatch() {
@@ -222,7 +222,7 @@ struct HomeView: View {
 
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "哪天有空？", detail: "附近可约人数")
+            SectionTitle(title: String(localized: "哪天有空？"), detail: String(localized: "附近可约人数"))
                 .padding(.horizontal, AppTheme.Spacing.screen)
             DateStrip(
                 days: days,
@@ -272,14 +272,14 @@ struct HomeView: View {
 
     private var publicGamesSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "附近球局", detail: "有场地缺人", actionTitle: "全部") {
+            SectionTitle(title: String(localized: "附近球局"), detail: String(localized: "有场地缺人"), actionTitle: String(localized: "全部")) {
                 router.open(.publicGames)
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             if roomManager.publicRooms.isEmpty {
-                EmptyStateView(icon: "sportscourt", title: "附近暂时没有公开球局",
-                               message: "订好场地却缺人？发起一个，附近球友会看到。",
-                               tint: AppTheme.Colors.peach, actionTitle: "发起球局") {
+                EmptyStateView(icon: "sportscourt", title: String(localized: "附近暂时没有公开球局"),
+                               message: String(localized: "订好场地却缺人？发起一个，附近球友会看到。"),
+                               tint: AppTheme.Colors.peach, actionTitle: String(localized: "发起球局")) {
                     router.open(.createRoom(nil, invitee: nil), in: .games)
                 }
                 .card()
@@ -310,11 +310,11 @@ struct HomeView: View {
     @ViewBuilder
     private var playersSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "同馆常客", detail: regulars.isEmpty ? nil : "\(regulars.count) 人")
+            SectionTitle(title: String(localized: "同馆常客"), detail: regulars.isEmpty ? nil : String(localized: "\(regulars.count) 人"))
                 .padding(.horizontal, AppTheme.Spacing.screen)
             if locationManager.favoriteCourtIds.isEmpty {
-                NoticeBanner(icon: "heart.fill", text: "设置常去球馆后，这里会显示也常去那里的球友（对方开启了才会出现）。",
-                             tint: AppTheme.Colors.surfaceMuted, actionTitle: "去设置") {
+                NoticeBanner(icon: "heart.fill", text: String(localized: "设置常去球馆后，这里会显示也常去那里的球友（对方开启了才会出现）。"),
+                             tint: AppTheme.Colors.surfaceMuted, actionTitle: String(localized: "去设置")) {
                     router.open(.courts)
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -361,8 +361,8 @@ struct HomeView: View {
     /// 我的固定局（已报名 / 候补）+ 找球群入口
     private var groupsSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "固定局", detail: groupManager.myGroups.isEmpty ? "不用再在群里接龙" : "\(groupManager.myGroups.count) 个球群",
-                         actionTitle: "全部") {
+            SectionTitle(title: String(localized: "固定局"), detail: groupManager.myGroups.isEmpty ? String(localized: "不用再在群里接龙") : String(localized: "\(groupManager.myGroups.count) 个球群"),
+                         actionTitle: String(localized: "全部")) {
                 router.open(.groups)
             }
             if groupManager.mySessions.isEmpty {
@@ -422,9 +422,9 @@ struct HomeView: View {
 
     private func sessionStatus(_ session: GroupSession) -> String {
         switch session.status(of: appState.currentUser?.id ?? "") {
-        case .signedUp: return "已报名 · \(session.signedUp.count)/\(session.capacity) 人"
-        case .waitlisted(let position): return "候补第 \(position) 位 · 有人退出自动递补"
-        case .none: return "\(session.signedUp.count)/\(session.capacity) 人"
+        case .signedUp: return String(localized: "已报名 · \(session.signedUp.count)/\(session.capacity) 人")
+        case .waitlisted(let position): return String(localized: "候补第 \(position) 位 · 有人退出自动递补")
+        case .none: return String(localized: "\(session.signedUp.count)/\(session.capacity) 人")
         }
     }
 
@@ -432,8 +432,8 @@ struct HomeView: View {
 
     private var courtsSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "附近球馆", detail: "\(locationManager.nearbyCourts.count) 家",
-                         actionTitle: "地图") {
+            SectionTitle(title: String(localized: "附近球馆"), detail: String(localized: "\(locationManager.nearbyCourts.count) 家"),
+                         actionTitle: String(localized: "地图")) {
                 router.open(.courts)
             }
             Button {

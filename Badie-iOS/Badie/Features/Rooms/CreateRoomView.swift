@@ -36,7 +36,7 @@ struct CreateRoomView: View {
 
     private var validationMessage: String? {
         if let message = slot?.validate().errorMessage { return message }
-        if visibility == .publicListing && court == nil { return "公开球局需要选择球馆" }
+        if visibility == .publicListing && court == nil { return String(localized: "公开球局需要选择球馆") }
         return nil
     }
 
@@ -48,10 +48,10 @@ struct CreateRoomView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "发起球局")
+            ScreenHeader(title: String(localized: "发起球局"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
-                    group("模式") {
+                    group(String(localized: "模式")) {
                         HStack(spacing: AppTheme.Spacing.sm) {
                             ForEach(GameMode.allCases) { option in
                                 ChoiceChip(title: "\(option.title) \(option.versusText)", icon: option.icon, isSelected: mode == option) {
@@ -60,13 +60,13 @@ struct CreateRoomView: View {
                             }
                         }
                     }
-                    group("招募方式") {
+                    group(String(localized: "招募方式")) {
                         SegmentedSticker(options: [RoomVisibility.privateRoom, .publicListing], selection: $visibility) {
-                            $0 == .privateRoom ? "仅邀请（私密）" : "公开到附近"
+                            $0 == .privateRoom ? String(localized: "仅邀请（私密）") : String(localized: "公开到附近")
                         }
                         Text(visibility == .privateRoom
-                             ? "生成 6 位房间码，分享给好友加入；30 分钟无活动自动关闭。"
-                             : "附近符合水平的球友都能看到并报名，满员后可候补，有人退出自动递补。")
+                             ? String(localized: "生成 6 位房间码，分享给好友加入；30 分钟无活动自动关闭。")
+                             : String(localized: "附近符合水平的球友都能看到并报名，满员后可候补，有人退出自动递补。"))
                             .font(AppTheme.Typography.footnote)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -77,13 +77,13 @@ struct CreateRoomView: View {
                         levelGroup
                         tagsGroup
                     }
-                    group("备注（可选）") {
-                        BrutalTextField(label: "给球友的话", placeholder: "例：已订 2 小时，打完 AA；自带球", text: $note,
+                    group(String(localized: "备注（可选）")) {
+                        BrutalTextField(label: String(localized: "给球友的话"), placeholder: String(localized: "例：已订 2 小时，打完 AA；自带球"), text: $note,
                                         characterLimit: 80, axis: .vertical)
                     }
                     if let cost = costPreview {
                         InfoRow(icon: Money.icon(for: cost.currencyCode), tint: AppTheme.Colors.butter,
-                                title: cost.perPerson == nil ? "费用待定" : "预计 AA \(cost.perPersonText)", subtitle: cost.breakdownText)
+                                title: cost.perPerson == nil ? String(localized: "费用待定") : String(localized: "预计 AA \(cost.perPersonText)"), subtitle: cost.breakdownText)
                             .padding(.horizontal, AppTheme.Spacing.md)
                             .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
                     }
@@ -104,7 +104,7 @@ struct CreateRoomView: View {
     // MARK: Groups
 
     private var scheduleGroup: some View {
-        group("时间") {
+        group(String(localized: "时间")) {
             if visibility == .privateRoom {
                 Toggle(isOn: $hasSchedule.animation(AppTheme.Motion.standard)) {
                     Text("现在就定时间")
@@ -117,8 +117,8 @@ struct CreateRoomView: View {
                 DateStrip(days: days, selection: $day)
                     .padding(.horizontal, -AppTheme.Spacing.screen)
                 HStack(spacing: AppTheme.Spacing.md) {
-                    TimeStepper(title: "开始", minutes: $startMinutes, range: (6 * 60)...(23 * 60))
-                    TimeStepper(title: "结束", minutes: $endMinutes, range: (7 * 60)...(24 * 60))
+                    TimeStepper(title: String(localized: "开始"), minutes: $startMinutes, range: (6 * 60)...(23 * 60))
+                    TimeStepper(title: String(localized: "结束"), minutes: $endMinutes, range: (7 * 60)...(24 * 60))
                 }
                 if let message = slot?.validate().errorMessage {
                     Label(message, systemImage: "exclamationmark.circle.fill")
@@ -134,14 +134,14 @@ struct CreateRoomView: View {
     }
 
     private var courtGroup: some View {
-        group(visibility == .publicListing ? "球馆" : "球馆（可选）") {
+        group(visibility == .publicListing ? String(localized: "球馆") : String(localized: "球馆（可选）")) {
             Button {
                 showCourtPicker = true
             } label: {
                 HStack(spacing: AppTheme.Spacing.md) {
                     IconTile(systemName: "sportscourt.fill", fill: AppTheme.Colors.sky, size: 40)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(court?.name ?? "选择球馆")
+                        Text(court?.name ?? String(localized: "选择球馆"))
                             .font(AppTheme.Typography.bodyBold)
                             .foregroundStyle(AppTheme.Colors.ink)
                         if let court {
@@ -170,20 +170,20 @@ struct CreateRoomView: View {
     }
 
     private var levelGroup: some View {
-        group("接受的水平") {
+        group(String(localized: "接受的水平")) {
             HStack(spacing: AppTheme.Spacing.md) {
-                LevelStepper(title: "最低", level: $lowerLevel, range: 1...upperLevel)
-                LevelStepper(title: "最高", level: $upperLevel, range: lowerLevel...9)
+                LevelStepper(title: String(localized: "最低"), level: $lowerLevel, range: 1...upperLevel)
+                LevelStepper(title: String(localized: "最高"), level: $upperLevel, range: lowerLevel...9)
             }
             let myLevel = appState.currentUser?.displayLevel ?? 4
             HStack(spacing: AppTheme.Spacing.sm) {
-                ChoiceChip(title: "不限", isSelected: lowerLevel == 1 && upperLevel == 9) {
+                ChoiceChip(title: String(localized: "不限"), isSelected: lowerLevel == 1 && upperLevel == 9) {
                     lowerLevel = 1; upperLevel = 9
                 }
-                ChoiceChip(title: "我的水平 ±1", isSelected: lowerLevel == max(1, myLevel - 1) && upperLevel == min(9, myLevel + 1)) {
+                ChoiceChip(title: String(localized: "我的水平 ±1"), isSelected: lowerLevel == max(1, myLevel - 1) && upperLevel == min(9, myLevel + 1)) {
                     lowerLevel = max(1, myLevel - 1); upperLevel = min(9, myLevel + 1)
                 }
-                ChoiceChip(title: "新手 1–3", isSelected: lowerLevel == 1 && upperLevel == 3) {
+                ChoiceChip(title: String(localized: "新手 1–3"), isSelected: lowerLevel == 1 && upperLevel == 3) {
                     lowerLevel = 1; upperLevel = 3
                 }
             }
@@ -191,10 +191,10 @@ struct CreateRoomView: View {
     }
 
     private var tagsGroup: some View {
-        group("球局氛围") {
+        group(String(localized: "球局氛围")) {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(RoomTag.allCases) { tag in
-                    ChoiceChip(title: tag.rawValue, icon: tag.icon, isSelected: tags.contains(tag), tint: AppTheme.Colors.mint) {
+                    ChoiceChip(title: tag.title, icon: tag.icon, isSelected: tags.contains(tag), tint: AppTheme.Colors.mint) {
                         if tags.contains(tag) { tags.remove(tag) } else { tags.insert(tag) }
                     }
                 }
@@ -214,7 +214,7 @@ struct CreateRoomView: View {
             } label: {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     if isWorking { LoadingDots() }
-                    Text(visibility == .publicListing ? "发布球局" : "创建房间")
+                    Text(visibility == .publicListing ? String(localized: "发布球局") : String(localized: "创建房间"))
                 }
             }
             .buttonStyle(.brutalPrimary)

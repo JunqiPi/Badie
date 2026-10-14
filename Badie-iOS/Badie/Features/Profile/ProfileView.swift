@@ -13,8 +13,8 @@ struct ProfileView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                LargeTitleHeader(title: "我的") {
-                    IconButton(systemName: "gearshape.fill", accessibilityLabel: "设置") {
+                LargeTitleHeader(title: String(localized: "我的")) {
+                    IconButton(systemName: "gearshape.fill", accessibilityLabel: String(localized: "设置")) {
                         router.open(.settings)
                     }
                 }
@@ -22,14 +22,14 @@ struct ProfileView: View {
                     Group {
                         if user.needsAssessment {
                             NoticeBanner(icon: "checklist",
-                                         text: "还没定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配",
-                                         actionTitle: "去定级") { router.open(.editProfile) }
+                                         text: String(localized: "还没定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配"),
+                                         actionTitle: String(localized: "去定级")) { router.open(.editProfile) }
                         }
                         identityCard(user)
                         HStack(spacing: AppTheme.Spacing.sm) {
-                            StatTile(value: "\(user.totalGames)", label: "场次")
-                            StatTile(value: "\(Int(user.winRate.rounded()))%", label: "胜率")
-                            StatTile(value: "\(user.attendance.reliabilityPercentage)%", label: "履约率")
+                            StatTile(value: "\(user.totalGames)", label: String(localized: "场次"))
+                            StatTile(value: "\(Int(user.winRate.rounded()))%", label: String(localized: "胜率"))
+                            StatTile(value: "\(user.attendance.reliabilityPercentage)%", label: String(localized: "履约率"))
                         }
                         reputationCard(user)
                         attendanceCard(user)
@@ -67,7 +67,7 @@ struct ProfileView: View {
                         if user.isNewPlayer { NewPlayerBadge() }
                         VerifiedBadge(status: user.verificationStatus)
                         if let mode = user.preferredMode {
-                            TagPill(text: "偏好\(mode.title)", fill: .white)
+                            TagPill(text: String(localized: "偏好\(mode.title)"), fill: .white)
                         }
                     }
                 }
@@ -94,28 +94,28 @@ struct ProfileView: View {
                 Text("我的口碑")
                     .font(AppTheme.Typography.headline)
                 Spacer()
-                Text(reputation.evaluationCount == 0 ? "还没有评价" : "\(reputation.evaluationCount) 次匿名评价")
+                Text(reputation.evaluationCount == 0 ? String(localized: "还没有评价") : String(localized: "\(reputation.evaluationCount) 次匿名评价"))
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
             if reputation.evaluationCount > 0 {
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    StatTile(value: reputation.punctualityText, label: "准时到场")
-                    StatTile(value: reputation.deviationText, label: "等级偏差")
+                    StatTile(value: reputation.punctualityText, label: String(localized: "准时到场"))
+                    StatTile(value: reputation.deviationText, label: String(localized: "等级偏差"))
                 }
             }
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                 Text("球友眼中的你")
                     .font(AppTheme.Typography.subheadlineBold)
-                PraiseTagsView(tags: reputation.publicTags, emptyText: "5 位以上球友评价后显示，每月更新一次")
+                PraiseTagsView(tags: reputation.publicTags, emptyText: String(localized: "5 位以上球友评价后显示，每月更新一次"))
             }
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
                 if user.isNewPlayer {
                     Text("水平校准中 \(reputation.evaluationCount)/\(ReputationScore.newPlayerThreshold)")
                         .font(AppTheme.Typography.subheadlineBold)
                     ProgressBar(progress: Double(reputation.evaluationCount) / Double(ReputationScore.newPlayerThreshold))
-                    Text("再打 \(ReputationScore.newPlayerThreshold - reputation.evaluationCount) 场并获得评价后，等级将按“问卷 \(selfPercent(user))% + 球友评价 \(100 - selfPercent(user))%”计算"
-                         + (user.peerWeight > User.peerEvaluationWeight ? "（你的等级待校准，球友评价占比更高）" : ""))
+                    Text(String(localized: "再打 \(ReputationScore.newPlayerThreshold - reputation.evaluationCount) 场并获得评价后，等级将按“问卷 \(selfPercent(user))% + 球友评价 \(100 - selfPercent(user))%”计算")
+                         + (user.peerWeight > User.peerEvaluationWeight ? String(localized: "（你的等级待校准，球友评价占比更高）") : ""))
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -123,8 +123,8 @@ struct ProfileView: View {
                     Text("综合等级 \(user.displayTier.text)")
                         .font(AppTheme.Typography.subheadlineBold)
                     ProgressBar(progress: Double(user.displayTier.index + 1) / Double(SkillTier.count))
-                    Text("\(user.verifiedRating == nil ? "问卷" : "认证") \(SkillTier(rating: user.baseRating).text) × \(selfPercent(user))% + 球友评价 \(SkillTier(rating: reputation.peerLevelAverage).text) × \(100 - selfPercent(user))%"
-                         + (user.verifiedRating == nil ? "" : "，不超过认证档位"))
+                    Text(String(localized: "\(user.verifiedRating == nil ? String(localized: "问卷") : String(localized: "认证")) \(SkillTier(rating: user.baseRating).text) × \(selfPercent(user))% + 球友评价 \(SkillTier(rating: reputation.peerLevelAverage).text) × \(100 - selfPercent(user))%")
+                         + (user.verifiedRating == nil ? "" : String(localized: "，不超过认证档位")))
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
@@ -170,37 +170,37 @@ struct ProfileView: View {
 
     private func menuCard(_ user: User) -> some View {
         VStack(spacing: 0) {
-            MenuRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender, title: "我的球友",
+            MenuRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender, title: String(localized: "我的球友"),
                     value: "\(friendManager.friends.count)", badge: friendManager.incomingRequests.count) {
                 router.open(.friends)
             }
             InsetDivider()
-            MenuRow(icon: "list.number", tint: AppTheme.Colors.lime, title: "等级对照表",
+            MenuRow(icon: "list.number", tint: AppTheme.Colors.lime, title: String(localized: "等级对照表"),
                     value: user.displayTier.text) {
                 router.open(.levelGuide)
             }
             InsetDivider()
-            MenuRow(icon: "clock.arrow.circlepath", tint: AppTheme.Colors.peach, title: "历史球局",
+            MenuRow(icon: "clock.arrow.circlepath", tint: AppTheme.Colors.peach, title: String(localized: "历史球局"),
                     value: "\(matchManager.pastGames.count)") {
                 router.open(.gameHistory)
             }
             InsetDivider()
-            MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.butter, title: "常用时间",
+            MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.butter, title: String(localized: "常用时间"),
                     value: "\(appState.backend.recurringSlots().count)/\(TimeSlotConstants.maximumRecurringSlots)") {
                 router.open(.recurringSlots)
             }
             InsetDivider()
-            MenuRow(icon: "location.circle.fill", tint: AppTheme.Colors.sky, title: "出行范围",
+            MenuRow(icon: "location.circle.fill", tint: AppTheme.Colors.sky, title: String(localized: "出行范围"),
                     value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
                 showRadius = true
             }
             InsetDivider()
-            MenuRow(icon: "heart.fill", tint: AppTheme.Colors.pink, title: "球馆与收藏",
+            MenuRow(icon: "heart.fill", tint: AppTheme.Colors.pink, title: String(localized: "球馆与收藏"),
                     value: "\(locationManager.favoriteCourtIds.count)") {
                 router.open(.courts)
             }
             InsetDivider()
-            MenuRow(icon: "hand.raised.fill", tint: AppTheme.Colors.surfaceMuted, title: "屏蔽名单",
+            MenuRow(icon: "hand.raised.fill", tint: AppTheme.Colors.surfaceMuted, title: String(localized: "屏蔽名单"),
                     value: "\(messageManager.blockedUsers.count)") {
                 router.open(.blockedUsers)
             }

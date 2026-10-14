@@ -24,7 +24,7 @@ struct MatchDraft: Equatable {
     }
 
     var validation: TimeSlotValidationResult {
-        guard let slot else { return .invalid(reason: "时间无效") }
+        guard let slot else { return .invalid(reason: String(localized: "时间无效")) }
         return slot.validate()
     }
 
@@ -182,11 +182,11 @@ final class MatchManager: ObservableObject {
             switch ticket.status {
             case .matched:
                 Haptics.success()
-                if !isShowing { notice = "约成了！\(ticket.slot.formattedFull)" }
+                if !isShowing { notice = String(localized: "约成了！\(ticket.slot.formattedFull)") }
             case .offered(let offerId):
                 if map[offerId]?.seat(of: ticket.userId)?.response == .pending {
                     Haptics.impact()
-                    if !isShowing { notice = "找到搭子了，去确认吧" }
+                    if !isShowing { notice = String(localized: "找到搭子了，去确认吧") }
                 }
             default:
                 break
@@ -263,7 +263,7 @@ final class MatchManager: ObservableObject {
                     self.phase = .idle
                     if ticket.offerId != nil { Haptics.impact() }
                 case .failure(let error):
-                    self.phase = .failed((error as? LocalizedError)?.errorDescription ?? "没能发起请求，请重试")
+                    self.phase = .failed((error as? LocalizedError)?.errorDescription ?? String(localized: "没能发起请求，请重试"))
                 }
             }
         }
@@ -299,7 +299,7 @@ final class MatchManager: ObservableObject {
             draft.apply(next.slot)
             reloadMatchmaking(announce: false)
         } catch {
-            phase = .failed((error as? LocalizedError)?.errorDescription ?? "调整失败")
+            phase = .failed((error as? LocalizedError)?.errorDescription ?? String(localized: "调整失败"))
         }
     }
 
@@ -348,7 +348,7 @@ final class MatchManager: ObservableObject {
                 withAnimation(AppTheme.Motion.standard) { self.phase = .idle }
             } catch {
                 withAnimation(AppTheme.Motion.standard) {
-                    self.phase = .failed((error as? LocalizedError)?.errorDescription ?? "没能发起请求")
+                    self.phase = .failed((error as? LocalizedError)?.errorDescription ?? String(localized: "没能发起请求"))
                 }
             }
         }

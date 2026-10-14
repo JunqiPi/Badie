@@ -8,7 +8,13 @@ enum GameMode: String, CaseIterable, Identifiable, Codable, Hashable {
 
     var id: String { rawValue }
 
-    var title: String { rawValue }
+    /// 显示文字（rawValue 已持久化，不能改；显示走这里以便本地化）
+    var title: String {
+        switch self {
+        case .singles: return String(localized: "单打")
+        case .doubles: return String(localized: "双打")
+        }
+    }
 
     var versusText: String {
         switch self {
@@ -73,18 +79,26 @@ struct CostSplit: Codable, Hashable {
     func money(_ amount: Int) -> String { Money.format(amount, currency: currencyCode) }
 
     /// "$17/人" 或 "费用待定"
-    var perPersonText: String { perPerson.map { "\(money($0))/人" } ?? "费用待定" }
+    var perPersonText: String {
+        guard let perPerson else { return String(localized: "费用待定") }
+        let amount = money(perPerson)
+        return String(localized: "\(amount)/人")
+    }
 
     var breakdownText: String {
         let hoursText = hours == hours.rounded() ? "\(Int(hours))" : String(format: "%.1f", hours)
-        let shuttle = shuttleFee > 0 ? " + 用球 \(money(shuttleFee))" : ""
+        let rateText = money(rate)
+        let shuttleText = money(shuttleFee)
         switch basis {
         case .courtHour:
-            return "场地 \(money(rate))/时 × \(hoursText) 小时\(shuttle) = \(money(total ?? 0))，\(players) 人 AA"
+            let shuttle = shuttleFee > 0 ? String(localized: " + 用球 \(shuttleText)") : ""
+            let totalText = money(total ?? 0)
+            return String(localized: "场地 \(rateText)/时 × \(hoursText) 小时\(shuttle) = \(totalText)，\(players) 人 AA")
         case .dropIn:
-            return "球馆按人次收费 \(money(rate))/人\(shuttleFee > 0 ? "，用球 \(money(shuttleFee)) 平摊" : "")"
+            let shuttle = shuttleFee > 0 ? String(localized: "，用球 \(shuttleText) 平摊") : ""
+            return String(localized: "球馆按人次收费 \(rateText)/人\(shuttle)")
         case .unknown:
-            return "球馆价格未知，到场后按实际费用 AA"
+            return String(localized: "球馆价格未知，到场后按实际费用 AA")
         }
     }
 
@@ -183,13 +197,13 @@ struct Game: Identifiable, Codable, Hashable {
 
     var statusText: String {
         switch status {
-        case .confirmed: return "已确认"
-        case .completed: return "已完成"
-        case .cancelled: return "已取消"
+        case .confirmed: return String(localized: "已确认")
+        case .completed: return String(localized: "已完成")
+        case .cancelled: return String(localized: "已取消")
         }
     }
 
     var shareText: String {
-        "🏸 \(mode.title)球局 · \(slot.formattedFull)\n📍 \(court.name)\n\(court.address)\n💰 AA \(cost.perPersonText) —— 来自 Badie"
+        String(localized: "🏸 \(mode.title)球局 · \(slot.formattedFull)\n📍 \(court.name)\n\(court.address)\n💰 AA \(cost.perPersonText) —— 来自 Badie")
     }
 }

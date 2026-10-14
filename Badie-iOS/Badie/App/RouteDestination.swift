@@ -70,11 +70,11 @@ struct VenueDetailPage: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "球馆")
+            ScreenHeader(title: String(localized: "球馆"))
             if let venue = appState.backend.venue(id: venueId) {
                 CourtDetailSheet(court: venue, isSheet: false)
             } else {
-                EmptyStateView(icon: "mappin.slash", title: "没有找到这个球馆")
+                EmptyStateView(icon: "mappin.slash", title: String(localized: "没有找到这个球馆"))
                 Spacer()
             }
         }
@@ -94,7 +94,7 @@ struct LevelGuidePage: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "等级")
+            ScreenHeader(title: String(localized: "等级"))
             SkillLevelGuideView(highlight: appState.currentUser?.displayTier, showsCloseButton: false,
                                 scrollLevel: guideScrollLevel)
         }

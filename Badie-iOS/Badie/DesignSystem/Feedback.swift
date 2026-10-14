@@ -232,11 +232,11 @@ private struct DateChip: View {
                      shadow: isSelected ? AppTheme.Elevation.low : .zero)
         }
         .buttonStyle(PressableStyle())
-        .accessibilityLabel("\(DateText.relativeDay(day))\(count.map { "，\($0) 人有空" } ?? "")")
+        .accessibilityLabel(DateText.relativeDay(day) + (count.map { String(localized: "，\($0) 人有空") } ?? ""))
         .accessibilityAddTraits(isSelected ? [.isSelected, .isButton] : .isButton)
     }
 
     private var label: String {
-        Calendar.current.isDateInToday(day) ? "今天" : DateText.weekday(day)
+        Calendar.current.isDateInToday(day) ? String(localized: "今天") : DateText.weekday(day)
     }
 }

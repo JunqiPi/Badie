@@ -24,7 +24,7 @@ struct RoomLobbyView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: room?.visibility == .publicListing ? "公开球局" : "私密房间") {
+            ScreenHeader(title: room?.visibility == .publicListing ? String(localized: "公开球局") : String(localized: "私密房间")) {
                 if let room {
                     ShareLink(item: room.inviteText) {
                         Image(systemName: "square.and.arrow.up")
@@ -52,14 +52,14 @@ struct RoomLobbyView: View {
                 footer(room)
             } else {
                 Spacer()
-                EmptyStateView(icon: "door.left.hand.closed", title: "房间不存在或已关闭")
+                EmptyStateView(icon: "door.left.hand.closed", title: String(localized: "房间不存在或已关闭"))
                 Spacer()
             }
         }
         .sheet(isPresented: $showInvite) {
             if let room {
                 FriendPickerSheet(
-                    title: "邀请好友",
+                    title: String(localized: "邀请好友"),
                     maxSelection: room.openSeats,
                     excluded: Set(room.participants.map(\.userId) + room.invitedUserIds),
                     selection: $invitees
@@ -90,7 +90,7 @@ struct RoomLobbyView: View {
         }
         .alert(leaveTitle, isPresented: $showLeaveConfirm) {
             Button("取消", role: .cancel) {}
-            Button(isOwner ? "解散" : "退出", role: .destructive) {
+            Button(isOwner ? String(localized: "解散") : String(localized: "退出"), role: .destructive) {
                 Task { await leave() }
             }
         }
@@ -98,7 +98,7 @@ struct RoomLobbyView: View {
 
     private var isOwner: Bool { room.map { $0.ownerId == me } ?? false }
 
-    private var leaveTitle: String { isOwner ? "解散房间？所有人都会收到通知" : "退出房间？" }
+    private var leaveTitle: String { isOwner ? String(localized: "解散房间？所有人都会收到通知") : String(localized: "退出房间？") }
 
     // MARK: Sections
 
@@ -109,14 +109,14 @@ struct RoomLobbyView: View {
             if room.visibility == .privateRoom {
                 TimelineView(.periodic(from: .now, by: 30)) { context in
                     let minutes = max(0, Int(room.expiresAt().timeIntervalSince(context.date) / 60))
-                    NoticeBanner(icon: "timer", text: "30 分钟无活动会自动关闭 · 剩约 \(minutes) 分钟", tint: AppTheme.Colors.butter)
+                    NoticeBanner(icon: "timer", text: String(localized: "30 分钟无活动会自动关闭 · 剩约 \(minutes) 分钟"), tint: AppTheme.Colors.butter)
                 }
             }
         case .started(let gameId):
             Button {
                 router.open(.game(id: gameId))
             } label: {
-                NoticeBanner(icon: "checkmark.seal.fill", text: "球局已开始组队，点击查看球局详情", tint: AppTheme.Colors.lime)
+                NoticeBanner(icon: "checkmark.seal.fill", text: String(localized: "球局已开始组队，点击查看球局详情"), tint: AppTheme.Colors.lime)
             }
             .buttonStyle(PressableStyle(scale: 0.98))
         case .closed(let reason):
@@ -145,7 +145,7 @@ struct RoomLobbyView: View {
             HStack(spacing: AppTheme.Spacing.sm) {
                 Button {
                     UIPasteboard.general.string = room.code
-                    appState.showToast("房间码已复制", style: .success)
+                    appState.showToast(String(localized: "房间码已复制"), style: .success)
                 } label: {
                     Label("复制", systemImage: "doc.on.doc.fill")
                 }
@@ -163,20 +163,20 @@ struct RoomLobbyView: View {
     private func detailsCard(_ room: Room) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
-                    title: room.slot?.formattedFull ?? "时间待定",
-                    subtitle: room.slot.map { "共 \($0.formattedDuration)" } ?? "房主可以随时设置")
+                    title: room.slot?.formattedFull ?? String(localized: "时间待定"),
+                    subtitle: room.slot.map { String(localized: "共 \($0.formattedDuration)") } ?? String(localized: "房主可以随时设置"))
             InsetDivider()
             InfoRow(icon: "mappin.and.ellipse", tint: AppTheme.Colors.sky,
-                    title: room.court?.name ?? "球馆待定",
+                    title: room.court?.name ?? String(localized: "球馆待定"),
                     subtitle: room.court.map { "\($0.formattedDistance(from: locationManager.coordinate)) · \($0.address)" })
             InsetDivider()
             InfoRow(icon: "chart.bar.fill", tint: AppTheme.Colors.lavender,
                     title: room.levelRangeText,
-                    subtitle: room.tags.isEmpty ? nil : room.tags.map(\.rawValue).joined(separator: " · "))
+                    subtitle: room.tags.isEmpty ? nil : room.tags.map(\.title).joined(separator: " · "))
             if let cost = room.costEstimate {
                 InsetDivider()
                 InfoRow(icon: Money.icon(for: cost.currencyCode), tint: AppTheme.Colors.butter,
-                        title: cost.perPerson == nil ? "费用待定" : "AA 约 \(cost.perPersonText)", subtitle: cost.breakdownText)
+                        title: cost.perPerson == nil ? String(localized: "费用待定") : String(localized: "AA 约 \(cost.perPersonText)"), subtitle: cost.breakdownText)
             }
             if !room.note.isEmpty {
                 InsetDivider()
@@ -184,7 +184,7 @@ struct RoomLobbyView: View {
             }
             if isOwner && room.status.isOpen {
                 InsetDivider()
-                MenuRow(icon: "pencil", tint: AppTheme.Colors.lime, title: "编辑时间和球馆") {
+                MenuRow(icon: "pencil", tint: AppTheme.Colors.lime, title: String(localized: "编辑时间和球馆")) {
                     showEditDetails = true
                 }
             }
@@ -196,7 +196,7 @@ struct RoomLobbyView: View {
 
     private func seatsSection(_ room: Room) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            SectionTitle(title: "座位", detail: room.isReady ? "已满员" : "还差 \(room.openSeats) 人")
+            SectionTitle(title: String(localized: "座位"), detail: room.isReady ? String(localized: "已满员") : String(localized: "还差 \(room.openSeats) 人"))
             LazyVGrid(columns: [GridItem(.flexible(), spacing: AppTheme.Spacing.md), GridItem(.flexible(), spacing: AppTheme.Spacing.md)],
                       spacing: AppTheme.Spacing.md) {
                 ForEach(room.participants) { participant in
@@ -210,7 +210,7 @@ struct RoomLobbyView: View {
                         VStack(spacing: AppTheme.Spacing.sm) {
                             Image(systemName: "plus")
                                 .font(.system(size: 22, weight: .heavy))
-                            Text(room.contains(me ?? "") ? "邀请好友" : "空位")
+                            Text(room.contains(me ?? "") ? String(localized: "邀请好友") : String(localized: "空位"))
                                 .font(AppTheme.Typography.footnoteBold)
                         }
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -233,13 +233,13 @@ struct RoomLobbyView: View {
         let isMe = participant.userId == me
         return VStack(spacing: AppTheme.Spacing.sm) {
             AvatarView(participant: participant, size: 52)
-            Text(isMe ? "我" : participant.nickname)
+            Text(isMe ? String(localized: "我") : participant.nickname)
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.onAccent)
                 .lineLimit(1)
             HStack(spacing: 4) {
                 LevelBadge(tier: participant.tier, showsName: false, compact: true)
-                if isRoomOwner { TagPill(text: "房主", fill: AppTheme.Colors.butter) }
+                if isRoomOwner { TagPill(text: String(localized: "房主"), fill: AppTheme.Colors.butter) }
             }
         }
         .frame(maxWidth: .infinity, minHeight: 124)
@@ -270,7 +270,7 @@ struct RoomLobbyView: View {
 
     private func waitlistSection(_ room: Room) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "候补", detail: "\(room.waitlist.count) 人 · 有人退出自动递补")
+            SectionTitle(title: String(localized: "候补"), detail: String(localized: "\(room.waitlist.count) 人 · 有人退出自动递补"))
             ForEach(Array(room.waitlist.enumerated()), id: \.element.id) { index, participant in
                 HStack(spacing: AppTheme.Spacing.md) {
                     Text("\(index + 1)")
@@ -279,7 +279,7 @@ struct RoomLobbyView: View {
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                     AvatarView(participant: participant, size: 32)
                         .opensProfile(participant.userId)
-                    Text(participant.userId == me ? "我" : participant.nickname)
+                    Text(participant.userId == me ? String(localized: "我") : participant.nickname)
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
                     Spacer()
@@ -293,7 +293,7 @@ struct RoomLobbyView: View {
 
     private func invitedSection(_ room: Room) -> some View {
         let names = room.invitedUserIds.compactMap { friendManager.user(id: $0)?.nickname }
-        return NoticeBanner(icon: "paperplane.fill", text: "已邀请 \(names.joined(separator: "、"))，等待回应…", tint: AppTheme.Colors.sky)
+        return NoticeBanner(icon: "paperplane.fill", text: String(localized: "已邀请 \(names.formatted(.list(type: .and)))，等待回应…"), tint: AppTheme.Colors.sky)
     }
 
     // MARK: Footer
@@ -316,10 +316,10 @@ struct RoomLobbyView: View {
                     Button("解散房间") { showLeaveConfirm = true }
                         .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
                 } else if room.contains(me ?? "") || room.isWaitlisted(me ?? "") {
-                    Text(room.isWaitlisted(me ?? "") ? "你在候补名单中，有空位会自动加入并通知你" : "等待房主开始，满员后会自动组局")
+                    Text(room.isWaitlisted(me ?? "") ? String(localized: "你在候补名单中，有空位会自动加入并通知你") : String(localized: "等待房主开始，满员后会自动组局"))
                         .font(AppTheme.Typography.footnoteBold)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    Button(room.isWaitlisted(me ?? "") ? "退出候补" : "退出房间") { showLeaveConfirm = true }
+                    Button(room.isWaitlisted(me ?? "") ? String(localized: "退出候补") : String(localized: "退出房间")) { showLeaveConfirm = true }
                         .buttonStyle(.brutalSecondary)
                 } else {
                     joinButton(room)
@@ -346,7 +346,7 @@ struct RoomLobbyView: View {
         } label: {
             HStack(spacing: AppTheme.Spacing.sm) {
                 if isWorking { LoadingDots() }
-                Text(room.isFull ? "加入候补" : "加入球局" + (room.costEstimate.flatMap { $0.perPerson == nil ? nil : " · \($0.perPersonText)" } ?? ""))
+                Text(room.isFull ? String(localized: "加入候补") : String(localized: "加入球局") + (room.costEstimate.flatMap { $0.perPerson == nil ? nil : " · \($0.perPersonText)" } ?? ""))
             }
         }
         .buttonStyle(.brutalPrimary)
@@ -354,9 +354,9 @@ struct RoomLobbyView: View {
     }
 
     private func startTitle(_ room: Room) -> String {
-        if !room.isReady { return "还差 \(room.openSeats) 人才能开始" }
-        if room.court == nil || room.slot == nil { return "先设置时间和球馆" }
-        return "开始球局"
+        if !room.isReady { return String(localized: "还差 \(room.openSeats) 人才能开始") }
+        if room.court == nil || room.slot == nil { return String(localized: "先设置时间和球馆") }
+        return String(localized: "开始球局")
     }
 
     // MARK: Actions
@@ -367,7 +367,7 @@ struct RoomLobbyView: View {
         guard !ids.isEmpty else { return }
         do {
             try await roomManager.invite(ids, to: room)
-            appState.showToast("邀请已发送", style: .success)
+            appState.showToast(String(localized: "邀请已发送"), style: .success)
         } catch {
             appState.showError(error)
         }
@@ -376,7 +376,7 @@ struct RoomLobbyView: View {
     private func kick(_ participant: RoomParticipant, from room: Room) async {
         do {
             try await roomManager.kick(participant, from: room)
-            appState.showToast("已移出 \(participant.nickname)")
+            appState.showToast(String(localized: "已移出 \(participant.nickname)"))
         } catch {
             appState.showError(error)
         }
@@ -386,7 +386,7 @@ struct RoomLobbyView: View {
         guard let room else { return }
         do {
             try await roomManager.leave(room)
-            appState.showToast(isOwner ? "房间已解散" : "已退出")
+            appState.showToast(isOwner ? String(localized: "房间已解散") : String(localized: "已退出"))
             router.pop()
         } catch {
             appState.showError(error)
@@ -398,7 +398,7 @@ struct RoomLobbyView: View {
         defer { isWorking = false }
         do {
             let joined = try await roomManager.joinPublic(room)
-            appState.showToast(joined.isWaitlisted(me ?? "") ? "已加入候补，有空位会通知你" : "已加入球局", style: .success)
+            appState.showToast(joined.isWaitlisted(me ?? "") ? String(localized: "已加入候补，有空位会通知你") : String(localized: "已加入球局"), style: .success)
         } catch {
             appState.showError(error)
         }
@@ -445,7 +445,7 @@ struct RoomDetailsEditor: View {
                     .font(AppTheme.Typography.title)
                     .foregroundStyle(AppTheme.Colors.ink)
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { dismiss() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.top, AppTheme.Spacing.xl)
@@ -453,8 +453,8 @@ struct RoomDetailsEditor: View {
                 Calendar.current.date(byAdding: .day, value: $0, to: Calendar.current.startOfDay(for: Date()))
             }, selection: $day)
             HStack(spacing: AppTheme.Spacing.md) {
-                TimeStepper(title: "开始", minutes: $startMinutes, range: (6 * 60)...(23 * 60))
-                TimeStepper(title: "结束", minutes: $endMinutes, range: (7 * 60)...(24 * 60))
+                TimeStepper(title: String(localized: "开始"), minutes: $startMinutes, range: (6 * 60)...(23 * 60))
+                TimeStepper(title: String(localized: "结束"), minutes: $endMinutes, range: (7 * 60)...(24 * 60))
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             if let message = slot?.validate().errorMessage {
@@ -467,8 +467,8 @@ struct RoomDetailsEditor: View {
                 showCourtPicker = true
             } label: {
                 InfoRow(icon: "sportscourt.fill", tint: AppTheme.Colors.sky,
-                        title: courtId.flatMap { locationManager.court(id: $0)?.name } ?? "选择球馆",
-                        subtitle: "点按更换")
+                        title: courtId.flatMap { locationManager.court(id: $0)?.name } ?? String(localized: "选择球馆"),
+                        subtitle: String(localized: "点按更换"))
                     .padding(.horizontal, AppTheme.Spacing.md)
                     .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
             }
@@ -479,7 +479,7 @@ struct RoomDetailsEditor: View {
                 Task {
                     do {
                         try await roomManager.updateDetails(room, court: courtId.flatMap { locationManager.court(id: $0) }, slot: slot)
-                        appState.showToast("已更新", style: .success)
+                        appState.showToast(String(localized: "已更新"), style: .success)
                         dismiss()
                     } catch {
                         appState.showError(error)

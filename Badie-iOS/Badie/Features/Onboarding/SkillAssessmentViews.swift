@@ -154,19 +154,19 @@ struct AssessmentResultCard: View {
             if let gate = result.limitingGate {
                 notice("arrow.up.circle.fill", gate)
             } else if result.tier < SkillAssessment.maxTier, let next = SkillLevel.tierCriteria(for: result.tier.offset(by: 1)).first {
-                notice("arrow.up.circle.fill", "想到 \(result.tier.offset(by: 1).code)：\(next)")
+                notice("arrow.up.circle.fill", String(localized: "想到 \(result.tier.offset(by: 1).code)：\(next)"))
             }
             if result.needsCalibration {
-                notice("scope", "你的比赛经历比技术题的结果高，先按经历定级；打几场后会按球友评价更快校准。")
+                notice("scope", String(localized: "你的比赛经历比技术题的结果高，先按经历定级；打几场后会按球友评价更快校准。"))
             }
             if result.isReturning {
-                notice("arrow.uturn.backward.circle.fill", "回归球友：按现在的状态定级，球友评价会帮你更快回到原来的水平。")
+                notice("arrow.uturn.backward.circle.fill", String(localized: "回归球友：按现在的状态定级，球友评价会帮你更快回到原来的水平。"))
             }
             if result.tier == SkillAssessment.maxTier {
-                notice("person.2.fill", "\(SkillAssessment.maxTier.code) 是问卷能给的最高档；球友评价最多推到 \(VerificationStatus.unverifiedMaxTier.code)，7 起凭证据认证。")
+                notice("person.2.fill", String(localized: "\(SkillAssessment.maxTier.code) 是问卷能给的最高档；球友评价最多推到 \(VerificationStatus.unverifiedMaxTier.code)，7 起凭证据认证。"))
             }
             if result.suggestsVerification {
-                notice("checkmark.seal.fill", "打过 A 组或 Open 组？7 起凭赛果、全国排名或运动员等级证书认证，注册后在资料页申请。")
+                notice("checkmark.seal.fill", String(localized: "打过 A 组或 Open 组？7 起凭赛果、全国排名或运动员等级证书认证，注册后在资料页申请。"))
             }
             Text("打满 5 场并获得评价后，等级会按球友评价自动校准。")
                 .font(AppTheme.Typography.caption)
@@ -203,7 +203,9 @@ struct AssessmentResultCard: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Capsule().fill(isWeak ? AppTheme.Colors.peach : Color.white.opacity(isStrength ? 0.9 : 0.55)))
-                    .accessibilityLabel("\(dimension.name) \(dimension.level) 级" + (isStrength ? "，技术特点" : isWeak ? "，短板" : ""))
+                    .accessibilityLabel(isStrength ? String(localized: "\(dimension.name) \(dimension.level) 级，技术特点")
+                        : isWeak ? String(localized: "\(dimension.name) \(dimension.level) 级，短板")
+                        : String(localized: "\(dimension.name) \(dimension.level) 级"))
                 }
             }
         }
@@ -241,7 +243,7 @@ struct SkillLevelGuideView: View {
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
                 if showsCloseButton {
-                    IconButton(systemName: "xmark", accessibilityLabel: "关闭") { dismiss() }
+                    IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
@@ -286,7 +288,7 @@ struct SkillLevelGuideView: View {
         VStack(alignment: .leading, spacing: 6) {
             ForEach([SkillTier.Modifier.minus, .base, .plus], id: \.self) { modifier in
                 HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
-                    Text(modifier == .base ? "本级" : modifier.symbol)
+                    Text(modifier == .base ? String(localized: "本级") : modifier.symbol)
                         .font(AppTheme.Typography.footnoteBold)
                         .frame(width: 36, alignment: .leading)
                     Text(modifier.meaning)
@@ -326,9 +328,9 @@ struct SkillLevelGuideView: View {
                 }
                 Spacer(minLength: 0)
                 if isCurrent {
-                    TagPill(text: "你在这里", fill: AppTheme.Colors.lime)
+                    TagPill(text: String(localized: "你在这里"), fill: AppTheme.Colors.lime)
                 } else if level > SkillLevel.maxSelfSelectable {
-                    TagPill(text: "需认证", icon: "lock.fill", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
+                    TagPill(text: String(localized: "需认证"), icon: "lock.fill", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
                 }
             }
             if level <= SkillLevel.maxSelfSelectable {
@@ -370,7 +372,7 @@ struct SkillLevelGuideView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "list.bullet.rectangle")
                             .font(.system(size: 12, weight: .bold))
-                        Text(isOpen ? "收起分项标准" : "分项标准（\(notes.count) 项）")
+                        Text(isOpen ? String(localized: "收起分项标准") : String(localized: "分项标准（\(notes.count) 项）"))
                             .font(AppTheme.Typography.footnoteBold)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.down")
@@ -383,7 +385,7 @@ struct SkillLevelGuideView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Lv.\(level) 分项标准")
-                .accessibilityValue(isOpen ? "已展开" : "已收起")
+                .accessibilityValue(isOpen ? String(localized: "已展开") : String(localized: "已收起"))
                 if isOpen {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(notes.indices, id: \.self) { index in
@@ -471,7 +473,7 @@ struct ReassessSheet: View {
                     .font(AppTheme.Typography.title)
                     .foregroundStyle(AppTheme.Colors.ink)
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { dismiss() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.top, AppTheme.Spacing.xl)
@@ -487,7 +489,7 @@ struct ReassessSheet: View {
                         do {
                             try appState.backend.updateAssessment(result)
                             Haptics.success()
-                            appState.showToast("问卷等级已更新为 \(result.tier.text)", style: .success)
+                            appState.showToast(String(localized: "问卷等级已更新为 \(result.tier.text)"), style: .success)
                             dismiss()
                         } catch {
                             appState.showError(error)

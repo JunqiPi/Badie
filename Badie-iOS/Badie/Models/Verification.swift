@@ -62,8 +62,8 @@ enum VerificationEvidence {
     static func placeholder(for kind: VerificationStatus) -> String {
         switch kind {
         case .bwf: return "bwfbadminton.com/player/12345/your-name"
-        case .tournament: return "usab.tournamentsoftware.com/… 的成绩页"
-        case .national: return "USAB 排名页链接，或 15 位电子证书编号"
+        case .tournament: return String(localized: "usab.tournamentsoftware.com/… 的成绩页")
+        case .national: return String(localized: "USAB 排名页链接，或 15 位电子证书编号")
         case .unverified: return ""
         }
     }
@@ -71,24 +71,24 @@ enum VerificationEvidence {
     /// 检查链接；有问题时返回原因
     static func problem(with link: String, for kind: VerificationStatus) -> String? {
         let trimmed = link.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return "请填写证据链接" }
+        guard !trimmed.isEmpty else { return String(localized: "请填写证据链接") }
         if kind == .national, certificateMaxTier(trimmed) != nil { return nil }
         let withScheme = trimmed.contains("://") ? trimmed : "https://" + trimmed
         guard let url = URL(string: withScheme), let host = url.host?.lowercased(),
               url.scheme?.lowercased() == "https", host.contains(".") else {
-            return "链接格式不对，请复制完整的网页地址"
+            return String(localized: "链接格式不对，请复制完整的网页地址")
         }
         let hosts = acceptedHosts(for: kind)
         if !hosts.isEmpty, !hosts.contains(where: { host == $0 || host.hasSuffix("." + $0) }) {
             return kind == .bwf
-                ? "需要 BWF 官网的球员页（bwfbadminton.com/player/…）"
-                : "需要 tournamentsoftware.com 上的成绩页"
+                ? String(localized: "需要 BWF 官网的球员页（bwfbadminton.com/player/…）")
+                : String(localized: "需要 tournamentsoftware.com 上的成绩页")
         }
         if kind == .bwf {
             let path = url.path.lowercased()
             let isPlayerPage = path.hasPrefix("/player/") || path.hasPrefix("/player-profile/")
             let hasId = path.split(separator: "/").dropFirst().first.map { !$0.isEmpty } ?? false
-            guard isPlayerPage, hasId else { return "需要具体的球员页，链接里要有球员 ID" }
+            guard isPlayerPage, hasId else { return String(localized: "需要具体的球员页，链接里要有球员 ID") }
         }
         return nil
     }

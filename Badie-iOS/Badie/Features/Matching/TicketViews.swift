@@ -12,45 +12,45 @@ struct TicketStatus {
     init(ticket: MatchTicket, offer: MatchOffer?, now: Date = Date()) {
         switch ticket.status {
         case .searching:
-            title = ticket.isLastMinute ? "临时局 · 正在找附近的人" : "正在找 · 最晚\(DateText.deadline(ticket.deadline))前约成"
+            title = ticket.isLastMinute ? String(localized: "临时局 · 正在找附近的人") : String(localized: "正在找 · 最晚\(DateText.deadline(ticket.deadline))前约成")
             icon = "hourglass"
             tint = AppTheme.Colors.sky
             needsAction = false
         case .offered:
             if let offer, let seat = offer.seat(of: ticket.userId), seat.response == .pending {
-                title = "找到搭子了，等你确认 · \(MatchTiming.remainingText(until: seat.respondBy, now: now))"
+                title = String(localized: "找到搭子了，等你确认 · \(MatchTiming.remainingText(until: seat.respondBy, now: now))")
                 icon = "bolt.fill"
                 tint = AppTheme.Colors.lime
                 needsAction = true
             } else if let offer, offer.vacantCount > 0 {
-                title = "有人来不了，正在找人补位"
+                title = String(localized: "有人来不了，正在找人补位")
                 icon = "arrow.triangle.2.circlepath"
                 tint = AppTheme.Colors.butter
                 needsAction = false
             } else {
                 let total = offer?.seats.count ?? 2
-                title = "已确认，等其他人（\(offer?.acceptedCount ?? 1)/\(total)）"
+                title = String(localized: "已确认，等其他人（\(offer?.acceptedCount ?? 1)/\(total)）")
                 icon = "checkmark.circle.fill"
                 tint = AppTheme.Colors.mint
                 needsAction = false
             }
         case .matched:
-            title = "约成了"
+            title = String(localized: "约成了")
             icon = "sportscourt.fill"
             tint = AppTheme.Colors.lime
             needsAction = false
         case .paused:
-            title = "错过了确认，已暂停 · 点开继续找"
+            title = String(localized: "错过了确认，已暂停 · 点开继续找")
             icon = "pause.circle.fill"
             tint = AppTheme.Colors.peach
             needsAction = true
         case .expired:
-            title = "这次没约到人，已结束"
+            title = String(localized: "这次没约到人，已结束")
             icon = "clock.badge.xmark"
             tint = AppTheme.Colors.surfaceMuted
             needsAction = false
         case .cancelled:
-            title = "已取消"
+            title = String(localized: "已取消")
             icon = "xmark.circle.fill"
             tint = AppTheme.Colors.surfaceMuted
             needsAction = false
@@ -105,15 +105,15 @@ struct TicketSummaryCard: View {
         VStack(spacing: 0) {
             InfoRow(icon: ticket.mode.icon, tint: AppTheme.Colors.lavender,
                     title: "\(ticket.mode.title) · \(ticket.slot.formattedFull)",
-                    subtitle: ticket.skillTolerance >= MatchRequest.anySkill ? "不限水平" : "水平相差 ±\(ticket.skillTolerance) 级以内")
+                    subtitle: ticket.skillTolerance >= MatchRequest.anySkill ? String(localized: "不限水平") : String(localized: "水平相差 ±\(ticket.skillTolerance) 级以内"))
             InsetDivider()
             InfoRow(icon: "mappin.and.ellipse", tint: AppTheme.Colors.sky,
                     title: venueTitle,
-                    subtitle: "只和也能去这些球馆（或 150 米内同一处）的球友匹配")
+                    subtitle: String(localized: "只和也能去这些球馆（或 150 米内同一处）的球友匹配"))
             InsetDivider()
             InfoRow(icon: "location.circle.fill", tint: AppTheme.Colors.peach,
-                    title: "\(DistanceFormatter.radius(km: ticket.radiusKm))内的球友",
-                    subtitle: ticket.isLastMinute ? "临时局只找附近此刻也在找人的球友" : nil)
+                    title: String(localized: "\(DistanceFormatter.radius(km: ticket.radiusKm))内的球友"),
+                    subtitle: ticket.isLastMinute ? String(localized: "临时局只找附近此刻也在找人的球友") : nil)
         }
         .padding(.horizontal, AppTheme.Spacing.lg)
         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
@@ -121,8 +121,8 @@ struct TicketSummaryCard: View {
 
     private var venueTitle: String {
         let names = locationManager.courts(ids: ticket.courtIds).map(\.name)
-        guard let first = names.first else { return "\(ticket.courtIds.count) 个球馆" }
-        return names.count > 1 ? "\(first) 等 \(names.count) 个球馆" : first
+        guard let first = names.first else { return String(localized: "\(ticket.courtIds.count) 个球馆") }
+        return names.count > 1 ? String(localized: "\(first) 等 \(names.count) 个球馆") : first
     }
 }
 
@@ -139,7 +139,7 @@ struct TicketWaitingView: View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭（请求会继续）") { matchManager.closeFlow() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭（请求会继续）")) { matchManager.closeFlow() }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.top, AppTheme.Spacing.sm)
@@ -147,9 +147,9 @@ struct TicketWaitingView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        TagPill(text: ticket.isLastMinute ? "临时局 · 正在找" : "后台匹配中",
+                        TagPill(text: ticket.isLastMinute ? String(localized: "临时局 · 正在找") : String(localized: "后台匹配中"),
                                 icon: "dot.radiowaves.left.and.right", fill: AppTheme.Colors.lime)
-                        (Text("已经在帮你\n") + Text(markedText: "找搭子") + Text("了"))
+                        (Text("已经在帮你\n") + Text(markedText: String(localized: "找搭子")) + Text("了"))
                             .font(AppTheme.Typography.display)
                             .foregroundStyle(AppTheme.Colors.ink)
                             .fixedSize(horizontal: false, vertical: true)
@@ -163,8 +163,8 @@ struct TicketWaitingView: View {
                     TicketSummaryCard(ticket: ticket)
 
                     HStack(spacing: AppTheme.Spacing.sm) {
-                        StatTile(value: "\(summary.available)", label: ticket.isLastMinute ? "附近正在找人" : "附近那天有空")
-                        StatTile(value: "\(summary.compatible)", label: "条件都合适")
+                        StatTile(value: "\(summary.available)", label: ticket.isLastMinute ? String(localized: "附近正在找人") : String(localized: "附近那天有空"))
+                        StatTile(value: "\(summary.compatible)", label: String(localized: "条件都合适"))
                     }
 
                     timingNote
@@ -225,8 +225,8 @@ struct TicketWaitingView: View {
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(AppTheme.Colors.ink)
             Text(ticket.isLastMinute
-                 ? "临时局：找到人后需要在 5–10 分钟内确认，最晚开赛前 20 分钟约成。到点没约成会自动结束，不计入任何记录。"
-                 : "最晚\(DateText.deadline(ticket.deadline))（开赛前 2 小时）前所有人都要确认。到点没约成会自动结束，不计入任何记录。")
+                 ? String(localized: "临时局：找到人后需要在 5–10 分钟内确认，最晚开赛前 20 分钟约成。到点没约成会自动结束，不计入任何记录。")
+                 : String(localized: "最晚\(DateText.deadline(ticket.deadline))（开赛前 2 小时）前所有人都要确认。到点没约成会自动结束，不计入任何记录。"))
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -248,7 +248,7 @@ struct TicketEndedView: View {
         VStack(spacing: AppTheme.Spacing.xl) {
             HStack {
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { matchManager.closeFlow() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { matchManager.closeFlow() }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
 
@@ -272,7 +272,7 @@ struct TicketEndedView: View {
                         Button {
                             matchManager.retryAsLastMinute(ticket)
                         } label: {
-                            ArrowButtonLabel(title: "转为临时局继续找")
+                            ArrowButtonLabel(title: String(localized: "转为临时局继续找"))
                         }
                         .buttonStyle(.brutalPrimary)
                         Text("只找 \(DistanceFormatter.radius(km: MatchTiming.lastMinuteRadiusKm)) 内此刻也在找人的球友，找到后会替你接受，等对方确认")
@@ -313,20 +313,20 @@ struct TicketEndedView: View {
 
     private var title: String {
         switch ticket.status {
-        case .paused: return "你错过了一个匹配"
-        case .expired: return "这次没约到人"
-        default: return "请求已取消"
+        case .paused: return String(localized: "你错过了一个匹配")
+        case .expired: return String(localized: "这次没约到人")
+        default: return String(localized: "请求已取消")
         }
     }
 
     private var message: String {
         switch ticket.status {
         case .paused:
-            return "为了不让别人白等，这个请求先暂停了。还想打的话点“继续找”，不影响任何记录。"
+            return String(localized: "为了不让别人白等，这个请求先暂停了。还想打的话点“继续找”，不影响任何记录。")
         case .expired:
-            return "\(ticket.slot.formattedFull) 到了确认截止时间还没凑齐，请求已结束，不计入任何记录。"
+            return String(localized: "\(ticket.slot.formattedFull) 到了确认截止时间还没凑齐，请求已结束，不计入任何记录。")
         default:
-            return "随时可以重新发起。"
+            return String(localized: "随时可以重新发起。")
         }
     }
 }

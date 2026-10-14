@@ -24,7 +24,7 @@ struct VenueCandidateSheet: View {
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { dismiss() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.top, AppTheme.Spacing.xl)
@@ -44,9 +44,9 @@ struct VenueCandidateSheet: View {
                             .fixedSize(horizontal: false, vertical: true)
                         VenueAddressBlock(address: candidate.address)
                         HStack(spacing: AppTheme.Spacing.sm) {
-                            TagPill(text: "距你 \(DistanceFormatter.string(km: candidate.location.distanceKm(to: locationManager.coordinate)))",
+                            TagPill(text: String(localized: "距你 \(DistanceFormatter.string(km: candidate.location.distanceKm(to: locationManager.coordinate)))"),
                                     icon: "location.fill", fill: AppTheme.Colors.sky)
-                            TagPill(text: "来自 Apple 地图", icon: "map.fill", fill: AppTheme.Colors.surfaceMuted,
+                            TagPill(text: String(localized: "来自 Apple 地图"), icon: "map.fill", fill: AppTheme.Colors.surfaceMuted,
                                     foreground: AppTheme.Colors.ink)
                         }
                         if let phone = candidate.phone {
@@ -60,11 +60,11 @@ struct VenueCandidateSheet: View {
 
                     if !candidate.address.isComplete {
                         NoticeBanner(icon: "exclamationmark.triangle.fill",
-                                     text: "这个地点缺少街道地址，别人很难确认位置。请改用“添加球馆”放图钉并补全地址。")
+                                     text: String(localized: "这个地点缺少街道地址，别人很难确认位置。请改用“添加球馆”放图钉并补全地址。"))
                     }
 
-                    BrutalTextField(label: "常用简称（选填）", placeholder: "例：LABC、洛羽", text: $alias, characterLimit: 20)
-                    BrutalTextField(label: "入口说明（选填）", placeholder: "例：工业区里，从后门进，2 楼", text: $entranceNote,
+                    BrutalTextField(label: String(localized: "常用简称（选填）"), placeholder: String(localized: "例：LABC、洛羽"), text: $alias, characterLimit: 20)
+                    BrutalTextField(label: String(localized: "入口说明（选填）"), placeholder: String(localized: "例：工业区里，从后门进，2 楼"), text: $entranceNote,
                                     characterLimit: 80)
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -80,7 +80,7 @@ struct VenueCandidateSheet: View {
                     } else if isBlocked {
                         Text("请选择上面已有的球馆")
                     } else {
-                        Text(duplicates.isEmpty ? "就是这里，加入并选择" : "都不是，加入为新球馆")
+                        Text(duplicates.isEmpty ? String(localized: "就是这里，加入并选择") : String(localized: "都不是，加入为新球馆"))
                     }
                 }
                 .buttonStyle(.brutalPrimary)
@@ -107,7 +107,7 @@ struct VenueCandidateSheet: View {
             let venue = try appState.backend.addVenue(candidate, source: source, aliases: [alias],
                                                       entranceNote: entranceNote)
             Haptics.success()
-            appState.showToast("已加入球馆库：\(venue.name)", style: .success)
+            appState.showToast(String(localized: "已加入球馆库：\(venue.name)"), style: .success)
             onChosen(venue)
         } catch {
             appState.showError(error)

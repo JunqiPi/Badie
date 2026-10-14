@@ -5,9 +5,9 @@ import UserNotifications
 @MainActor
 enum ReminderService {
     private static let offsets: [(id: String, seconds: TimeInterval, title: String)] = [
-        ("1d", 24 * 3600, "明天有球局"),
-        ("2h", 2 * 3600, "2 小时后开打"),
-        ("15m", 15 * 60, "快到了，记得签到")
+        ("1d", 24 * 3600, String(localized: "明天有球局")),
+        ("2h", 2 * 3600, String(localized: "2 小时后开打")),
+        ("15m", 15 * 60, String(localized: "快到了，记得签到"))
     ]
 
     static func requestAuthorization() async -> Bool {

@@ -65,7 +65,7 @@ struct AddVenueView: View {
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { dismiss() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.top, AppTheme.Spacing.xl)
@@ -129,7 +129,7 @@ struct AddVenueView: View {
     private var locateSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack(spacing: AppTheme.Spacing.sm) {
-                SearchField(text: $addressQuery, placeholder: "搜索地址，快速移动图钉")
+                SearchField(text: $addressQuery, placeholder: String(localized: "搜索地址，快速移动图钉"))
                 PasteButton(payloadType: String.self) { strings in
                     guard let text = strings.first else { return }
                     Task { @MainActor in await applyPastedLink(text) }
@@ -195,7 +195,7 @@ struct AddVenueView: View {
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Spacer()
-                Button(editsAddress ? "收起" : "地址不对？修改") {
+                Button(editsAddress ? String(localized: "收起") : String(localized: "地址不对？修改")) {
                     withAnimation(AppTheme.Motion.standard) { editsAddress.toggle() }
                 }
                 .buttonStyle(TextActionStyle())
@@ -224,13 +224,13 @@ struct AddVenueView: View {
             }
             if editsAddress {
                 VStack(spacing: AppTheme.Spacing.md) {
-                    BrutalTextField(label: "街道门牌", placeholder: "例：10410 Valley Blvd", text: $street)
+                    BrutalTextField(label: String(localized: "街道门牌"), placeholder: String(localized: "例：10410 Valley Blvd"), text: $street)
                     HStack(spacing: AppTheme.Spacing.md) {
-                        BrutalTextField(label: "城市", placeholder: "例：El Monte", text: $city)
-                        BrutalTextField(label: "州/省", placeholder: "CA", text: $region)
+                        BrutalTextField(label: String(localized: "城市"), placeholder: String(localized: "例：El Monte"), text: $city)
+                        BrutalTextField(label: String(localized: "州/省"), placeholder: "CA", text: $region)
                             .frame(maxWidth: 110)
                     }
-                    BrutalTextField(label: "邮编", placeholder: "91731", text: $postalCode, keyboard: .numbersAndPunctuation)
+                    BrutalTextField(label: String(localized: "邮编"), placeholder: "91731", text: $postalCode, keyboard: .numbersAndPunctuation)
                 }
                 .padding(.top, AppTheme.Spacing.sm)
             }
@@ -243,16 +243,16 @@ struct AddVenueView: View {
 
     private var detailsSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            BrutalTextField(label: "球馆名称", placeholder: "例：Los Angeles Badminton Club", text: $name, characterLimit: 60)
-            BrutalTextField(label: "常用简称（选填）", placeholder: "例：LABC、洛羽", text: $alias, characterLimit: 20)
-            BrutalTextField(label: "单元/楼层（选填）", placeholder: "例：Unit B、2F", text: $unit, characterLimit: 20)
-            BrutalTextField(label: "入口说明（选填）", placeholder: "例：从后门进，停车场在侧面", text: $entranceNote, characterLimit: 80)
+            BrutalTextField(label: String(localized: "球馆名称"), placeholder: String(localized: "例：Los Angeles Badminton Club"), text: $name, characterLimit: 60)
+            BrutalTextField(label: String(localized: "常用简称（选填）"), placeholder: String(localized: "例：LABC、洛羽"), text: $alias, characterLimit: 20)
+            BrutalTextField(label: String(localized: "单元/楼层（选填）"), placeholder: String(localized: "例：Unit B、2F"), text: $unit, characterLimit: 20)
+            BrutalTextField(label: String(localized: "入口说明（选填）"), placeholder: String(localized: "例：从后门进，停车场在侧面"), text: $entranceNote, characterLimit: 80)
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("场地数（选填）")
                         .font(AppTheme.Typography.footnoteBold)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    Text(courtCount == 0 ? "不确定" : "\(courtCount) 片")
+                    Text(courtCount == 0 ? String(localized: "不确定") : String(localized: "\(courtCount) 片"))
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
                 }
@@ -270,7 +270,7 @@ struct AddVenueView: View {
             Button {
                 submit()
             } label: {
-                Text(isBlocked ? "请选择上面已有的球馆" : (checkedDuplicates && !duplicates.isEmpty ? "都不是，添加为新球馆" : "检查并添加"))
+                Text(isBlocked ? String(localized: "请选择上面已有的球馆") : (checkedDuplicates && !duplicates.isEmpty ? String(localized: "都不是，添加为新球馆") : String(localized: "检查并添加")))
             }
             .buttonStyle(.brutalPrimary)
             .disabled(!canSubmit || isBlocked)
@@ -298,9 +298,9 @@ struct AddVenueView: View {
     private var isBlocked: Bool { duplicates.contains { $0.kind.blocksAdding } }
 
     private var submitHint: String? {
-        if isBlocked { return "如果确实是另一家，请改用能区分的名称（如分店名）" }
-        if trimmedName.count < 2 { return "填写球馆名称" }
-        if !(composedAddress?.isComplete ?? false) { return "需要街道和城市，方便别人确认位置" }
+        if isBlocked { return String(localized: "如果确实是另一家，请改用能区分的名称（如分店名）") }
+        if trimmedName.count < 2 { return String(localized: "填写球馆名称") }
+        if !(composedAddress?.isComplete ?? false) { return String(localized: "需要街道和城市，方便别人确认位置") }
         return nil
     }
 
@@ -353,7 +353,7 @@ struct AddVenueView: View {
     private func jump(to completion: MKLocalSearchCompletion) {
         Task {
             guard let candidate = try? await addressSearch.resolve(completion) else {
-                appState.showToast("没找到这个地址", style: .error)
+                appState.showToast(String(localized: "没找到这个地址"), style: .error)
                 return
             }
             addressQuery = ""
@@ -373,7 +373,7 @@ struct AddVenueView: View {
             url = expanded
         }
         guard let link = MapLinkParser.parse(url) else {
-            appState.showToast("没能识别这个地图链接", style: .error)
+            appState.showToast(String(localized: "没能识别这个地图链接"), style: .error)
             return
         }
         if let linkName = link.name, trimmedName.isEmpty { name = linkName }
@@ -403,7 +403,7 @@ struct AddVenueView: View {
                                                       courtCount: courtCount > 0 ? courtCount : nil,
                                                       entranceNote: entranceNote)
             Haptics.success()
-            appState.showToast("已添加：\(venue.name)，等球友确认", style: .success)
+            appState.showToast(String(localized: "已添加：\(venue.name)，等球友确认"), style: .success)
             onAdded(venue)
         } catch {
             appState.showError(error)

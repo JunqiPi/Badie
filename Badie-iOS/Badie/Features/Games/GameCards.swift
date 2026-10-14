@@ -84,9 +84,10 @@ struct GameTicketCard: View {
 
     private var playersText: String {
         let others = players.filter { $0.id != currentUserId }.map(\.nickname)
-        guard !others.isEmpty else { return "等待球友加入" }
-        if others.count == 1 { return "你和 \(others[0])" }
-        return "你和 \(others.prefix(2).joined(separator: "、"))\(others.count > 2 ? " 等 \(others.count) 人" : "")"
+        guard !others.isEmpty else { return String(localized: "等待球友加入") }
+        if others.count == 1 { return String(localized: "你和 \(others[0])") }
+        let more = others.count > 2 ? String(localized: " 等 \(others.count) 人") : ""
+        return String(localized: "你和 \(others.prefix(2).joined(separator: "、"))\(more)")
     }
 
     @ViewBuilder
@@ -94,16 +95,16 @@ struct GameTicketCard: View {
         switch game.status {
         case .confirmed:
             if game.isInProgress(now: now) {
-                chip("进行中", fill: AppTheme.Colors.lime)
+                chip(String(localized: "进行中"), fill: AppTheme.Colors.lime)
             } else if game.slot.endTime <= now {
-                chip("待完成", fill: AppTheme.Colors.butter)
+                chip(String(localized: "待完成"), fill: AppTheme.Colors.butter)
             } else {
                 chip(DateText.countdown(to: game.slot.startTime, now: now), fill: Color(hex: 0x17140F), foreground: AppTheme.Colors.lime)
             }
         case .completed:
-            chip(game.result?.didWin == true ? "赢了 🎉" : "已完成", fill: AppTheme.Colors.surface)
+            chip(game.result?.didWin == true ? String(localized: "赢了 🎉") : String(localized: "已完成"), fill: AppTheme.Colors.surface)
         case .cancelled:
-            chip(game.cancelledLate ? "临时取消" : "已取消", fill: AppTheme.Colors.surface)
+            chip(game.cancelledLate ? String(localized: "临时取消") : String(localized: "已取消"), fill: AppTheme.Colors.surface)
         }
     }
 
@@ -147,7 +148,7 @@ struct GameRowCard: View {
                         .monospacedDigit()
                         .lineLimit(1)
                     if game.status == .cancelled {
-                        TagPill(text: game.cancelledLate ? "临时取消" : "已取消", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
+                        TagPill(text: game.cancelledLate ? String(localized: "临时取消") : String(localized: "已取消"), fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
                     }
                 }
                 Text(game.court.name)
@@ -157,9 +158,9 @@ struct GameRowCard: View {
                 HStack(spacing: 6) {
                     AvatarStack(users: players.filter { $0.id != currentUserId }, size: 24)
                     if pendingSurveyCount > 0 {
-                        TagPill(text: "待评价 \(pendingSurveyCount)", icon: "star.fill", fill: AppTheme.Colors.pink)
+                        TagPill(text: String(localized: "待评价 \(pendingSurveyCount)"), icon: "star.fill", fill: AppTheme.Colors.pink)
                     } else if let result = game.result, game.status == .completed {
-                        Text(result.didWin == true ? "胜 \(result.score)" : (result.didWin == false ? "负 \(result.score)" : result.score))
+                        Text(result.didWin == true ? String(localized: "胜 \(result.score)") : (result.didWin == false ? String(localized: "负 \(result.score)") : result.score))
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .lineLimit(1)

@@ -4,6 +4,13 @@ struct GamesView: View {
     enum Segment: String, CaseIterable {
         case upcoming = "即将开始"
         case past = "已结束"
+
+        var title: String {
+            switch self {
+            case .upcoming: return String(localized: "即将开始")
+            case .past: return String(localized: "已结束")
+            }
+        }
     }
 
     @EnvironmentObject private var appState: AppState
@@ -20,8 +27,8 @@ struct GamesView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                LargeTitleHeader(title: "球局", subtitle: "我的约球与房间") {
-                    IconButton(systemName: "clock.arrow.circlepath", accessibilityLabel: "历史球局") {
+                LargeTitleHeader(title: String(localized: "球局"), subtitle: String(localized: "我的约球与房间")) {
+                    IconButton(systemName: "clock.arrow.circlepath", accessibilityLabel: String(localized: "历史球局")) {
                         router.open(.gameHistory)
                     }
                 }
@@ -34,7 +41,7 @@ struct GamesView: View {
                         router.open(.surveys)
                     } label: {
                         NoticeBanner(icon: "star.bubble.fill",
-                                     text: "有 \(surveyManager.pendingSurveys.count) 位球友等你评价，48 小时内有效",
+                                     text: String(localized: "有 \(surveyManager.pendingSurveys.count) 位球友等你评价，48 小时内有效"),
                                      tint: AppTheme.Colors.pink)
                     }
                     .buttonStyle(PressableStyle(scale: 0.98))
@@ -43,7 +50,7 @@ struct GamesView: View {
 
                 if !matchManager.openTickets.isEmpty {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SectionTitle(title: "等待匹配", detail: "所有人确认后会出现在下面")
+                        SectionTitle(title: String(localized: "等待匹配"), detail: String(localized: "所有人确认后会出现在下面"))
                         ForEach(matchManager.openTickets) { ticket in
                             Button {
                                 matchManager.openTicket(ticket.id)
@@ -58,7 +65,7 @@ struct GamesView: View {
 
                 if !groupManager.mySessions.isEmpty {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SectionTitle(title: "我报名的固定局", detail: "开场前 2 小时内退出算临时取消")
+                        SectionTitle(title: String(localized: "我报名的固定局"), detail: String(localized: "开场前 2 小时内退出算临时取消"))
                         ForEach(groupManager.mySessions) { session in
                             if let group = groupManager.group(id: session.groupId) {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -82,7 +89,7 @@ struct GamesView: View {
 
                 if !roomManager.myRooms.isEmpty {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SectionTitle(title: "我的房间", detail: "\(roomManager.myRooms.count) 个进行中")
+                        SectionTitle(title: String(localized: "我的房间"), detail: String(localized: "\(roomManager.myRooms.count) 个进行中"))
                         ForEach(roomManager.myRooms) { room in
                             Button {
                                 router.open(.room(id: room.id))
@@ -92,7 +99,7 @@ struct GamesView: View {
                                                currentUserId: appState.currentUser?.id, width: nil)
                                     .overlay(alignment: .topTrailing) {
                                         if room.visibility == .privateRoom {
-                                            TagPill(text: "私密 · \(room.code)", icon: "lock.fill", fill: AppTheme.Colors.butter)
+                                            TagPill(text: String(localized: "私密 · \(room.code)"), icon: "lock.fill", fill: AppTheme.Colors.butter)
                                                 .offset(x: -12, y: -10)
                                         }
                                     }
@@ -104,7 +111,7 @@ struct GamesView: View {
                 }
 
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    SegmentedSticker(options: Segment.allCases, selection: $segment, title: { $0.rawValue }) { option in
+                    SegmentedSticker(options: Segment.allCases, selection: $segment, title: { $0.title }) { option in
                         option == .upcoming ? matchManager.upcomingGames.count : 0
                     }
                     gamesList
@@ -123,13 +130,13 @@ struct GamesView: View {
 
     private var quickActions: some View {
         HStack(spacing: AppTheme.Spacing.md) {
-            quickAction(icon: "sportscourt.fill", title: "发起球局", subtitle: "有场地缺人", tint: AppTheme.Colors.peach) {
+            quickAction(icon: "sportscourt.fill", title: String(localized: "发起球局"), subtitle: String(localized: "有场地缺人"), tint: AppTheme.Colors.peach) {
                 router.open(.createRoom(nil, invitee: nil))
             }
-            quickAction(icon: "person.3.fill", title: "固定局", subtitle: "每周固定的球群", tint: AppTheme.Colors.sky) {
+            quickAction(icon: "person.3.fill", title: String(localized: "固定局"), subtitle: String(localized: "每周固定的球群"), tint: AppTheme.Colors.sky) {
                 router.open(.groups)
             }
-            quickAction(icon: "number", title: "房间码", subtitle: "房间码或群号", tint: AppTheme.Colors.lavender) {
+            quickAction(icon: "number", title: String(localized: "房间码"), subtitle: String(localized: "房间码或群号"), tint: AppTheme.Colors.lavender) {
                 router.open(.joinRoom(code: nil))
             }
         }
@@ -162,10 +169,10 @@ struct GamesView: View {
         if games.isEmpty {
             EmptyStateView(
                 icon: segment == .upcoming ? "calendar.badge.plus" : "clock",
-                title: segment == .upcoming ? "还没有约好的球局" : "还没有打过的球局",
-                message: segment == .upcoming ? "快速匹配一个搭子，或者发起球局招募附近球友。" : "打完的球局和结果会出现在这里。",
+                title: segment == .upcoming ? String(localized: "还没有约好的球局") : String(localized: "还没有打过的球局"),
+                message: segment == .upcoming ? String(localized: "快速匹配一个搭子，或者发起球局招募附近球友。") : String(localized: "打完的球局和结果会出现在这里。"),
                 tint: AppTheme.Colors.sky,
-                actionTitle: segment == .upcoming ? "快速匹配" : nil,
+                actionTitle: segment == .upcoming ? String(localized: "快速匹配") : nil,
                 action: segment == .upcoming ? { router.isMatchSetupPresented = true } : nil
             )
             .card()
@@ -197,17 +204,17 @@ struct GameHistoryView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "历史球局")
+            ScreenHeader(title: String(localized: "历史球局"))
             ScrollView {
                 VStack(spacing: AppTheme.Spacing.md) {
                     let me = appState.currentUser
                     HStack(spacing: AppTheme.Spacing.sm) {
-                        StatTile(value: "\(me?.totalGames ?? 0)", label: "总场次")
-                        StatTile(value: "\(me?.wins ?? 0)", label: "胜场")
-                        StatTile(value: "\(me?.attendance.reliabilityPercentage ?? 100)%", label: "履约率")
+                        StatTile(value: "\(me?.totalGames ?? 0)", label: String(localized: "总场次"))
+                        StatTile(value: "\(me?.wins ?? 0)", label: String(localized: "胜场"))
+                        StatTile(value: "\(me?.attendance.reliabilityPercentage ?? 100)%", label: String(localized: "履约率"))
                     }
                     if matchManager.pastGames.isEmpty {
-                        EmptyStateView(icon: "clock", title: "还没有历史球局")
+                        EmptyStateView(icon: "clock", title: String(localized: "还没有历史球局"))
                     }
                     ForEach(matchManager.pastGames) { game in
                         Button {

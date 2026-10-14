@@ -18,12 +18,12 @@ enum NavigationApp: String, CaseIterable, Identifiable, Codable {
 
     var title: String {
         switch self {
-        case .appleMaps: return "Apple 地图"
-        case .googleMaps: return "Google 地图"
+        case .appleMaps: return String(localized: "Apple 地图")
+        case .googleMaps: return String(localized: "Google 地图")
         case .waze: return "Waze"
-        case .amap: return "高德地图"
-        case .baidu: return "百度地图"
-        case .naver: return "Naver 地图"
+        case .amap: return String(localized: "高德地图")
+        case .baidu: return String(localized: "百度地图")
+        case .naver: return String(localized: "Naver 地图")
         case .kakao: return "KakaoMap"
         }
     }
@@ -73,55 +73,55 @@ struct CountryInfo: Identifiable, Hashable {
     }
 
     static let all: [CountryInfo] = [
-        CountryInfo(code: "US", nameZh: "美国", callingCode: "1", currencyCode: "USD", currencySymbol: "$",
+        CountryInfo(code: "US", nameZh: String(localized: "美国"), callingCode: "1", currencyCode: "USD", currencySymbol: "$",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 10...10, pattern: "[2-9][0-9]{2}[2-9][0-9]{6}", example: "626 555 0123"),
                     navigationApps: [.appleMaps, .googleMaps, .waze]),
-        CountryInfo(code: "CA", nameZh: "加拿大", callingCode: "1", currencyCode: "CAD", currencySymbol: "C$",
+        CountryInfo(code: "CA", nameZh: String(localized: "加拿大"), callingCode: "1", currencyCode: "CAD", currencySymbol: "C$",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 10...10, pattern: "[2-9][0-9]{2}[2-9][0-9]{6}", example: "604 555 0123"),
                     navigationApps: [.appleMaps, .googleMaps, .waze]),
-        CountryInfo(code: "CN", nameZh: "中国大陆", callingCode: "86", currencyCode: "CNY", currencySymbol: "¥",
+        CountryInfo(code: "CN", nameZh: String(localized: "中国大陆"), callingCode: "86", currencyCode: "CNY", currencySymbol: "¥",
                     addressStyle: .largeToSmall,
                     phone: PhoneRule(lengths: 11...11, pattern: "1[3-9][0-9]{9}", example: "138 0013 8000"),
                     navigationApps: [.amap, .baidu, .appleMaps]),
-        CountryInfo(code: "HK", nameZh: "中国香港", callingCode: "852", currencyCode: "HKD", currencySymbol: "HK$",
+        CountryInfo(code: "HK", nameZh: String(localized: "中国香港"), callingCode: "852", currencyCode: "HKD", currencySymbol: "HK$",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 8...8, pattern: "[4-9][0-9]{7}", example: "5123 4567"),
                     navigationApps: [.appleMaps, .googleMaps]),
-        CountryInfo(code: "TW", nameZh: "中国台湾", callingCode: "886", currencyCode: "TWD", currencySymbol: "NT$",
+        CountryInfo(code: "TW", nameZh: String(localized: "中国台湾"), callingCode: "886", currencyCode: "TWD", currencySymbol: "NT$",
                     addressStyle: .largeToSmall,
                     phone: PhoneRule(lengths: 9...9, pattern: "9[0-9]{8}", example: "912 345 678"),
                     navigationApps: [.googleMaps, .appleMaps]),
-        CountryInfo(code: "SG", nameZh: "新加坡", callingCode: "65", currencyCode: "SGD", currencySymbol: "S$",
+        CountryInfo(code: "SG", nameZh: String(localized: "新加坡"), callingCode: "65", currencyCode: "SGD", currencySymbol: "S$",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 8...8, pattern: "[3689][0-9]{7}", example: "8123 4567"),
                     navigationApps: [.googleMaps, .appleMaps, .waze]),
-        CountryInfo(code: "MY", nameZh: "马来西亚", callingCode: "60", currencyCode: "MYR", currencySymbol: "RM",
+        CountryInfo(code: "MY", nameZh: String(localized: "马来西亚"), callingCode: "60", currencyCode: "MYR", currencySymbol: "RM",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 9...10, pattern: "1[0-9]{8,9}", example: "12 345 6789"),
                     navigationApps: [.waze, .googleMaps, .appleMaps]),
-        CountryInfo(code: "JP", nameZh: "日本", callingCode: "81", currencyCode: "JPY", currencySymbol: "¥",
+        CountryInfo(code: "JP", nameZh: String(localized: "日本"), callingCode: "81", currencyCode: "JPY", currencySymbol: "¥",
                     addressStyle: .largeToSmall,
                     phone: PhoneRule(lengths: 10...10, pattern: "[789]0[0-9]{8}", example: "90 1234 5678"),
                     navigationApps: [.googleMaps, .appleMaps]),
-        CountryInfo(code: "KR", nameZh: "韩国", callingCode: "82", currencyCode: "KRW", currencySymbol: "₩",
+        CountryInfo(code: "KR", nameZh: String(localized: "韩国"), callingCode: "82", currencyCode: "KRW", currencySymbol: "₩",
                     addressStyle: .largeToSmall,
                     phone: PhoneRule(lengths: 9...10, pattern: "1[0-9]{8,9}", example: "10 1234 5678"),
                     navigationApps: [.naver, .kakao, .appleMaps]),
-        CountryInfo(code: "GB", nameZh: "英国", callingCode: "44", currencyCode: "GBP", currencySymbol: "£",
+        CountryInfo(code: "GB", nameZh: String(localized: "英国"), callingCode: "44", currencyCode: "GBP", currencySymbol: "£",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 10...10, pattern: "7[0-9]{9}", example: "7400 123456"),
                     navigationApps: [.googleMaps, .appleMaps, .waze]),
-        CountryInfo(code: "AU", nameZh: "澳大利亚", callingCode: "61", currencyCode: "AUD", currencySymbol: "A$",
+        CountryInfo(code: "AU", nameZh: String(localized: "澳大利亚"), callingCode: "61", currencyCode: "AUD", currencySymbol: "A$",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 9...9, pattern: "4[0-9]{8}", example: "412 345 678"),
                     navigationApps: [.googleMaps, .appleMaps, .waze]),
-        CountryInfo(code: "IN", nameZh: "印度", callingCode: "91", currencyCode: "INR", currencySymbol: "₹",
+        CountryInfo(code: "IN", nameZh: String(localized: "印度"), callingCode: "91", currencyCode: "INR", currencySymbol: "₹",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 10...10, pattern: "[6-9][0-9]{9}", example: "98765 43210"),
                     navigationApps: [.googleMaps, .appleMaps]),
-        CountryInfo(code: "ID", nameZh: "印度尼西亚", callingCode: "62", currencyCode: "IDR", currencySymbol: "Rp",
+        CountryInfo(code: "ID", nameZh: String(localized: "印度尼西亚"), callingCode: "62", currencyCode: "IDR", currencySymbol: "Rp",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 9...12, pattern: "8[0-9]{8,11}", example: "812 3456 7890"),
                     navigationApps: [.googleMaps, .waze, .appleMaps])
@@ -131,7 +131,7 @@ struct CountryInfo: Identifiable, Hashable {
     static func generic(_ code: String) -> CountryInfo {
         let upper = code.uppercased()
         let currency = Locale(identifier: "en_\(upper)").currency?.identifier ?? "USD"
-        return CountryInfo(code: upper, nameZh: Locale(identifier: "zh_Hans").localizedString(forRegionCode: upper) ?? upper,
+        return CountryInfo(code: upper, nameZh: Locale.current.localizedString(forRegionCode: upper) ?? upper,
                            callingCode: "", currencyCode: currency, currencySymbol: currency + " ",
                            addressStyle: .smallToLarge,
                            phone: PhoneRule(lengths: 6...14, pattern: nil, example: ""),

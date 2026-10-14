@@ -12,16 +12,16 @@ enum SkillLevel {
 
     static func name(for level: Int) -> String {
         switch level {
-        case 1: return "萌新"
-        case 2: return "入门"
-        case 3: return "初级"
-        case 4: return "中级"
-        case 5: return "中高级"
-        case 6: return "俱乐部高手"
-        case 7: return "州级"
-        case 8: return "国家级"
-        case 9: return "国际级"
-        default: return "初级"
+        case 1: return String(localized: "萌新")
+        case 2: return String(localized: "入门")
+        case 3: return String(localized: "初级")
+        case 4: return String(localized: "中级")
+        case 5: return String(localized: "中高级")
+        case 6: return String(localized: "俱乐部高手")
+        case 7: return String(localized: "州级")
+        case 8: return String(localized: "国家级")
+        case 9: return String(localized: "国际级")
+        default: return String(localized: "初级")
         }
     }
 
@@ -33,15 +33,15 @@ enum SkillLevel {
     /// 可观察的行为锚点：对照这些动作判断自己在哪一级
     static func anchors(for level: Int) -> [String] {
         switch level {
-        case 1: return ["对拉不到 5 拍", "高远球到不了中场"]
-        case 2: return ["发球基本能进区", "慢速对拉 5–10 拍", "走着够球，还没有步法"]
-        case 3: return ["学技术的阶段：发球、正反手高远、吊、杀、搓放网、挑球、接杀逐项学会", "质量时好时坏，对拉十几拍就容易断", "双打知道攻前后、守左右"]
-        case 4: return ["主动球（舒服位置）全部打得不错，包括反手不被动时能回到对方中后场", "双打会攻守轮转", "但被动球、极限球基本做不到，一被压就丢分"]
-        case 5: return ["被动球、极限球有机会摆脱：被压到底线、调到死角也能过渡出来", "技术特点开始明显：有自己的得分手段和打法", "战术开始明显，会用落点和节奏调动对手"]
-        case 6: return ["俱乐部里的佼佼者，日常局很少输", "杀、吊、网前、防守没有明显短板", "会用假动作和节奏变化组织进攻"]
-        case 7: return ["州级水平：州 / 地区公开赛最高组能打进 8 强", "中国：二级运动员（省级比赛前八）", "需要上传证据审核"]
-        case 8: return ["USAB 认证赛最高组正赛能赢球，或有全国排名", "或一级运动员、运动健将", "需要上传证据审核"]
-        case 9: return ["bwfbadminton.com 能查到本人的世界排名或国际赛赢球记录", "只有 BWF ID 不够（老将赛也要 BWF ID）", "需要上传证据审核"]
+        case 1: return [String(localized: "对拉不到 5 拍"), String(localized: "高远球到不了中场")]
+        case 2: return [String(localized: "发球基本能进区"), String(localized: "慢速对拉 5–10 拍"), String(localized: "走着够球，还没有步法")]
+        case 3: return [String(localized: "学技术的阶段：发球、正反手高远、吊、杀、搓放网、挑球、接杀逐项学会"), String(localized: "质量时好时坏，对拉十几拍就容易断"), String(localized: "双打知道攻前后、守左右")]
+        case 4: return [String(localized: "主动球（舒服位置）全部打得不错，包括反手不被动时能回到对方中后场"), String(localized: "双打会攻守轮转"), String(localized: "但被动球、极限球基本做不到，一被压就丢分")]
+        case 5: return [String(localized: "被动球、极限球有机会摆脱：被压到底线、调到死角也能过渡出来"), String(localized: "技术特点开始明显：有自己的得分手段和打法"), String(localized: "战术开始明显，会用落点和节奏调动对手")]
+        case 6: return [String(localized: "俱乐部里的佼佼者，日常局很少输"), String(localized: "杀、吊、网前、防守没有明显短板"), String(localized: "会用假动作和节奏变化组织进攻")]
+        case 7: return [String(localized: "州级水平：州 / 地区公开赛最高组能打进 8 强"), String(localized: "中国：二级运动员（省级比赛前八）"), String(localized: "需要上传证据审核")]
+        case 8: return [String(localized: "USAB 认证赛最高组正赛能赢球，或有全国排名"), String(localized: "或一级运动员、运动健将"), String(localized: "需要上传证据审核")]
+        case 9: return [String(localized: "bwfbadminton.com 能查到本人的世界排名或国际赛赢球记录"), String(localized: "只有 BWF ID 不够（老将赛也要 BWF ID）"), String(localized: "需要上传证据审核")]
         default: return []
         }
     }
@@ -49,53 +49,53 @@ enum SkillLevel {
     /// 每级各技术分项的标准
     static func dimensionNotes(for level: Int) -> [(name: String, text: String)] {
         switch level {
-        case 1: return [("握拍", "苍蝇拍式握法"), ("意识", "知道要把球打到对方难接的地方，但多数时候还做不到")]
-        case 2: return [("握拍", "正反手握拍基本正确，但转换不顺"),
-                        ("发球", "会发正手高远和反手网前，质量不高"),
-                        ("网前", "基本是轻放过去，时高时远，常不过网"),
-                        ("正手后场", "挥拍对了，但发力、时机、击球点还不对，多靠挥手臂"),
-                        ("反手后场", "基本不会，只能绕头打或者放弃"),
-                        ("进攻", "杀球多半下网、出界")]
-        case 3: return [("握拍、发球", "基本没问题"),
-                        ("步法", "能区分垫步、跨步，全场六个点能走到但不流畅"),
-                        ("发力", "能区分手臂和手腕发力，对内旋、外旋有基本概念"),
-                        ("正手后场", "高远能底线到底线但球速慢；吊、杀质量有限"),
-                        ("反手后场", "能正确挥拍但常出错，回球只到中场或略偏后"),
-                        ("网前", "放网基本能控制，搓球、勾对角刚开始用，失误多")]
-        case 4: return [("步法", "全场步法正确并能用在打球中，但启动和移动速度不够"),
-                        ("发力", "能用上手腕和内外旋，但力量有限"),
-                        ("正手后场", "拉、吊、杀都能轻松完成，球速一般，落点凭感觉"),
-                        ("反手后场", "能回到对方中后场，但不能底线到底线；反手吊不稳"),
-                        ("网前", "挑球能到底线，正反手搓球正确，勾对角常用但质量一般"),
-                        ("进攻", "能组织进攻，但速度和角度一般，很难一拍致命"),
-                        ("防守", "只能挡直线网前或挑高，不能变线（被动球做不到）"),
-                        ("双打", "发接发、移动补位、封网有基本意识")]
-        case 5: return [("步法", "全场多点步法轻松，启动和移动速度中上"),
-                        ("发力", "前臂内外旋和手腕发力熟练，开始体会手指发力"),
-                        ("后场", "平高、高远、各种吊杀熟练，落点基本到位；反手直线斜线吊都会，后场回后场轻松"),
-                        ("网前", "挑、搓熟练，开始会展搓和推球"),
-                        ("中场", "平抽挡比较好"),
-                        ("进攻", "直线、斜线进攻规范，力量速度中上，有一定威胁"),
-                        ("防守", "防守熟练，回球基本到位（被动球多数能摆脱）")]
-        case 6: return [("步法", "像本能一样自然，全场没有盲点"),
-                        ("发力", "手指发力熟练：网前精细控制、杀球额外爆发都靠它"),
-                        ("动作一致性", "拉吊杀动作一致，对手很难提前判断"),
-                        ("反手", "底线到底线轻松，反手劈吊熟练，机会好时反手杀有威力"),
-                        ("网前", "搓、勾、推、扑都熟练并用在实战里"),
-                        ("中后场", "快速平抽挡；被动低位也能把球抽到底线"),
-                        ("进攻", "杀球有暴击音，按对方站位用重杀、劈杀、点杀"),
-                        ("防守", "防住不是绝对机会的杀球并控制落点，对方杀得一般时能反抽"),
-                        ("战术", "单打主动控制、找弱点；双打抢网、保持主动，找配合盲区")]
-        case 7: return [("技术", "没有明显缺陷，而且至少有一两项绝活：杀球凌厉、防守杀不死、假动作逼真或网前炉火纯青"),
-                        ("战术", "单双打战术熟练，但限制与反限制的对抗中，关键时刻还不够冷静"),
-                        ("稳定性", "在业余里很高，和专业选手比失误还多"),
-                        ("自测参考", "和全国性业余赛的冠军对打，21 分制输分不超过 10 分")]
-        case 8: return [("技术", "任何单项技术都不是问题"),
-                        ("战术", "所有战术都能熟练运用，遇到战术大师时应变还不够"),
-                        ("稳定性", "业余球友看来稳得可怕，和顶尖高手只差毫厘"),
-                        ("背景", "多为前省队、在全国比赛有成绩")]
-        case 9: return [("背景", "国际赛选手、前国家队"),
-                        ("技战术", "和更顶尖选手的差距主要在体能和手感")]
+        case 1: return [(String(localized: "握拍"), String(localized: "苍蝇拍式握法")), (String(localized: "意识"), String(localized: "知道要把球打到对方难接的地方，但多数时候还做不到"))]
+        case 2: return [(String(localized: "握拍"), String(localized: "正反手握拍基本正确，但转换不顺")),
+                        (String(localized: "发球"), String(localized: "会发正手高远和反手网前，质量不高")),
+                        (String(localized: "网前"), String(localized: "基本是轻放过去，时高时远，常不过网")),
+                        (String(localized: "正手后场"), String(localized: "挥拍对了，但发力、时机、击球点还不对，多靠挥手臂")),
+                        (String(localized: "反手后场"), String(localized: "基本不会，只能绕头打或者放弃")),
+                        (String(localized: "进攻"), String(localized: "杀球多半下网、出界"))]
+        case 3: return [(String(localized: "握拍、发球"), String(localized: "基本没问题")),
+                        (String(localized: "步法"), String(localized: "能区分垫步、跨步，全场六个点能走到但不流畅")),
+                        (String(localized: "发力"), String(localized: "能区分手臂和手腕发力，对内旋、外旋有基本概念")),
+                        (String(localized: "正手后场"), String(localized: "高远能底线到底线但球速慢；吊、杀质量有限")),
+                        (String(localized: "反手后场"), String(localized: "能正确挥拍但常出错，回球只到中场或略偏后")),
+                        (String(localized: "网前"), String(localized: "放网基本能控制，搓球、勾对角刚开始用，失误多"))]
+        case 4: return [(String(localized: "步法"), String(localized: "全场步法正确并能用在打球中，但启动和移动速度不够")),
+                        (String(localized: "发力"), String(localized: "能用上手腕和内外旋，但力量有限")),
+                        (String(localized: "正手后场"), String(localized: "拉、吊、杀都能轻松完成，球速一般，落点凭感觉")),
+                        (String(localized: "反手后场"), String(localized: "能回到对方中后场，但不能底线到底线；反手吊不稳")),
+                        (String(localized: "网前"), String(localized: "挑球能到底线，正反手搓球正确，勾对角常用但质量一般")),
+                        (String(localized: "进攻"), String(localized: "能组织进攻，但速度和角度一般，很难一拍致命")),
+                        (String(localized: "防守"), String(localized: "只能挡直线网前或挑高，不能变线（被动球做不到）")),
+                        (String(localized: "双打"), String(localized: "发接发、移动补位、封网有基本意识"))]
+        case 5: return [(String(localized: "步法"), String(localized: "全场多点步法轻松，启动和移动速度中上")),
+                        (String(localized: "发力"), String(localized: "前臂内外旋和手腕发力熟练，开始体会手指发力")),
+                        (String(localized: "后场"), String(localized: "平高、高远、各种吊杀熟练，落点基本到位；反手直线斜线吊都会，后场回后场轻松")),
+                        (String(localized: "网前"), String(localized: "挑、搓熟练，开始会展搓和推球")),
+                        (String(localized: "中场"), String(localized: "平抽挡比较好")),
+                        (String(localized: "进攻"), String(localized: "直线、斜线进攻规范，力量速度中上，有一定威胁")),
+                        (String(localized: "防守"), String(localized: "防守熟练，回球基本到位（被动球多数能摆脱）"))]
+        case 6: return [(String(localized: "步法"), String(localized: "像本能一样自然，全场没有盲点")),
+                        (String(localized: "发力"), String(localized: "手指发力熟练：网前精细控制、杀球额外爆发都靠它")),
+                        (String(localized: "动作一致性"), String(localized: "拉吊杀动作一致，对手很难提前判断")),
+                        (String(localized: "反手"), String(localized: "底线到底线轻松，反手劈吊熟练，机会好时反手杀有威力")),
+                        (String(localized: "网前"), String(localized: "搓、勾、推、扑都熟练并用在实战里")),
+                        (String(localized: "中后场"), String(localized: "快速平抽挡；被动低位也能把球抽到底线")),
+                        (String(localized: "进攻"), String(localized: "杀球有暴击音，按对方站位用重杀、劈杀、点杀")),
+                        (String(localized: "防守"), String(localized: "防住不是绝对机会的杀球并控制落点，对方杀得一般时能反抽")),
+                        (String(localized: "战术"), String(localized: "单打主动控制、找弱点；双打抢网、保持主动，找配合盲区"))]
+        case 7: return [(String(localized: "技术"), String(localized: "没有明显缺陷，而且至少有一两项绝活：杀球凌厉、防守杀不死、假动作逼真或网前炉火纯青")),
+                        (String(localized: "战术"), String(localized: "单双打战术熟练，但限制与反限制的对抗中，关键时刻还不够冷静")),
+                        (String(localized: "稳定性"), String(localized: "在业余里很高，和专业选手比失误还多")),
+                        (String(localized: "自测参考"), String(localized: "和全国性业余赛的冠军对打，21 分制输分不超过 10 分"))]
+        case 8: return [(String(localized: "技术"), String(localized: "任何单项技术都不是问题")),
+                        (String(localized: "战术"), String(localized: "所有战术都能熟练运用，遇到战术大师时应变还不够")),
+                        (String(localized: "稳定性"), String(localized: "业余球友看来稳得可怕，和顶尖高手只差毫厘")),
+                        (String(localized: "背景"), String(localized: "多为前省队、在全国比赛有成绩"))]
+        case 9: return [(String(localized: "背景"), String(localized: "国际赛选手、前国家队")),
+                        (String(localized: "技战术"), String(localized: "和更顶尖选手的差距主要在体能和手感"))]
         default: return []
         }
     }
@@ -103,13 +103,13 @@ enum SkillLevel {
     /// 大致对应的美国赛事组别（各赛事分组不同，仅供参考）
     static func usFlight(for level: Int) -> String? {
         switch level {
-        case 3: return "E 组"
-        case 4: return "D 组"
-        case 5: return "C 组"
-        case 6: return "B / A 组"
-        case 7: return "州 / 地区公开赛最高组"
-        case 8: return "Open 组 / 全国排名"
-        case 9: return "BWF 国际赛"
+        case 3: return String(localized: "E 组")
+        case 4: return String(localized: "D 组")
+        case 5: return String(localized: "C 组")
+        case 6: return String(localized: "B / A 组")
+        case 7: return String(localized: "州 / 地区公开赛最高组")
+        case 8: return String(localized: "Open 组 / 全国排名")
+        case 9: return String(localized: "BWF 国际赛")
         default: return nil
         }
     }
@@ -117,48 +117,48 @@ enum SkillLevel {
     /// 球龄（弱参考：练得多的人进步快，不能只看年限）
     static func typicalExperience(for level: Int) -> String {
         switch level {
-        case 1: return "通常不到 3 个月"
-        case 2: return "通常不到 1 年"
-        case 3: return "通常 1–2 年"
-        case 4: return "通常 2–4 年"
-        case 5: return "通常 3–6 年"
-        case 6: return "通常 5 年以上且受过训练"
-        case 7: return "体校 / 青训出身"
-        case 8: return "体校 / 省队出身"
-        default: return "职业 / 国家队背景"
+        case 1: return String(localized: "通常不到 3 个月")
+        case 2: return String(localized: "通常不到 1 年")
+        case 3: return String(localized: "通常 1–2 年")
+        case 4: return String(localized: "通常 2–4 年")
+        case 5: return String(localized: "通常 3–6 年")
+        case 6: return String(localized: "通常 5 年以上且受过训练")
+        case 7: return String(localized: "体校 / 青训出身")
+        case 8: return String(localized: "体校 / 省队出身")
+        default: return String(localized: "职业 / 国家队背景")
         }
     }
 
     /// 每一档的具体标准
     static func tierCriteria(for tier: SkillTier) -> [String] {
         switch (tier.level, tier.modifier) {
-        case (1, .minus): return ["正手发球 10 个里 ≤3 个进区"]
-        case (1, .base): return ["正手发球 10 个里 4–6 个进区"]
-        case (1, .plus): return ["正手发球 ≥7 个进区，慢速对拉 ≥5 拍"]
-        case (2, .minus): return ["中后场正手高远 10 个里 1–2 个过后场第一条线"]
-        case (2, .base): return ["高远 10 个里 3–4 个到后场，慢速对拉 5–10 拍"]
-        case (2, .plus): return ["高远 10 个里 ≥5 个到后场"]
-        case (3, .minus): return ["技术学了大半，还有一两项不会（常见是反手、发力）"]
-        case (3, .base): return ["全部技术都会做（所有分项到 3 级），但质量一般、时好时坏"]
-        case (3, .plus): return ["全部技术都会，一两项打得不错（到 4 级），但稳定性不足"]
-        case (4, .minus): return ["多数分项到 4 级，个别还在 3 级；实战失误还多"]
-        case (4, .base): return ["主动球全部不错（所有分项到 4 级，包括反手），双打有基本意识；但被动球、极限球做不到"]
-        case (4, .plus): return ["主动球全部不错，一两项精通（到 5 级），稳定性略有提升；被动球仍是短板"]
-        case (5, .minus): return ["被动球、极限球有时能过渡出来：回到对方后场或网前，让自己回位"]
-        case (5, .base): return ["被动球多数能摆脱；技术特点和战术开始明显（有自己的得分手段，会用落点和节奏调动对手）"]
-        case (5, .plus): return ["战术和技巧明显结合：用落点、节奏、假动作组织进攻，会随对手调整"]
-        case (6, .minus): return ["和俱乐部里最强的几个人互有胜负；多数分项到 5 级，多拍很稳"]
-        case (6, .base): return ["俱乐部准霸主：日常局很少输，常有人请教；有一两项到 6 级的绝活"]
-        case (6, .plus): return ["俱乐部霸主：俱乐部对抗的主力，开始打业余 / 半专业比赛"]
-        case (7, .minus): return ["州 / 地区赛次高组冠军，或最高组正赛赢过 1 场", "或三级运动员（2025 新标准）、旧二级"]
-        case (7, .base): return ["州 / 地区公开赛最高组（Open / A）8 强", "或二级运动员（2025 新标准）"]
-        case (7, .plus): return ["州 / 地区公开赛最高组 4 强或冠军"]
-        case (8, .minus): return ["USAB 认证赛最高组（Open）正赛赢过 1 场，进入 USAB 排名表", "或 2025 年前的一级证书"]
-        case (8, .base): return ["USAB 全国排名有正式名次，或认证赛最高组 8 强", "或一级运动员"]
-        case (8, .plus): return ["USAB 任一项目前 5，或全国成年锦标赛 4 强", "或运动健将"]
-        case (9, .minus): return ["BWF 世界排名任一项目前 500", "或单站 ≥1,370 积分：International Series 8 强，或 IC / Super 100 正赛赢 1 场"]
-        case (9, .base): return ["BWF 世界排名前 100", "或 Super 300 及以上赛事正赛赢过 1 场"]
-        case (9, .plus): return ["BWF 世界排名前 20", "或奥运会 / 世锦赛 8 强、Super 750 及以上 4 强"]
+        case (1, .minus): return [String(localized: "正手发球 10 个里 ≤3 个进区")]
+        case (1, .base): return [String(localized: "正手发球 10 个里 4–6 个进区")]
+        case (1, .plus): return [String(localized: "正手发球 ≥7 个进区，慢速对拉 ≥5 拍")]
+        case (2, .minus): return [String(localized: "中后场正手高远 10 个里 1–2 个过后场第一条线")]
+        case (2, .base): return [String(localized: "高远 10 个里 3–4 个到后场，慢速对拉 5–10 拍")]
+        case (2, .plus): return [String(localized: "高远 10 个里 ≥5 个到后场")]
+        case (3, .minus): return [String(localized: "技术学了大半，还有一两项不会（常见是反手、发力）")]
+        case (3, .base): return [String(localized: "全部技术都会做（所有分项到 3 级），但质量一般、时好时坏")]
+        case (3, .plus): return [String(localized: "全部技术都会，一两项打得不错（到 4 级），但稳定性不足")]
+        case (4, .minus): return [String(localized: "多数分项到 4 级，个别还在 3 级；实战失误还多")]
+        case (4, .base): return [String(localized: "主动球全部不错（所有分项到 4 级，包括反手），双打有基本意识；但被动球、极限球做不到")]
+        case (4, .plus): return [String(localized: "主动球全部不错，一两项精通（到 5 级），稳定性略有提升；被动球仍是短板")]
+        case (5, .minus): return [String(localized: "被动球、极限球有时能过渡出来：回到对方后场或网前，让自己回位")]
+        case (5, .base): return [String(localized: "被动球多数能摆脱；技术特点和战术开始明显（有自己的得分手段，会用落点和节奏调动对手）")]
+        case (5, .plus): return [String(localized: "战术和技巧明显结合：用落点、节奏、假动作组织进攻，会随对手调整")]
+        case (6, .minus): return [String(localized: "和俱乐部里最强的几个人互有胜负；多数分项到 5 级，多拍很稳")]
+        case (6, .base): return [String(localized: "俱乐部准霸主：日常局很少输，常有人请教；有一两项到 6 级的绝活")]
+        case (6, .plus): return [String(localized: "俱乐部霸主：俱乐部对抗的主力，开始打业余 / 半专业比赛")]
+        case (7, .minus): return [String(localized: "州 / 地区赛次高组冠军，或最高组正赛赢过 1 场"), String(localized: "或三级运动员（2025 新标准）、旧二级")]
+        case (7, .base): return [String(localized: "州 / 地区公开赛最高组（Open / A）8 强"), String(localized: "或二级运动员（2025 新标准）")]
+        case (7, .plus): return [String(localized: "州 / 地区公开赛最高组 4 强或冠军")]
+        case (8, .minus): return [String(localized: "USAB 认证赛最高组（Open）正赛赢过 1 场，进入 USAB 排名表"), String(localized: "或 2025 年前的一级证书")]
+        case (8, .base): return [String(localized: "USAB 全国排名有正式名次，或认证赛最高组 8 强"), String(localized: "或一级运动员")]
+        case (8, .plus): return [String(localized: "USAB 任一项目前 5，或全国成年锦标赛 4 强"), String(localized: "或运动健将")]
+        case (9, .minus): return [String(localized: "BWF 世界排名任一项目前 500"), String(localized: "或单站 ≥1,370 积分：International Series 8 强，或 IC / Super 100 正赛赢 1 场")]
+        case (9, .base): return [String(localized: "BWF 世界排名前 100"), String(localized: "或 Super 300 及以上赛事正赛赢过 1 场")]
+        case (9, .plus): return [String(localized: "BWF 世界排名前 20"), String(localized: "或奥运会 / 世锦赛 8 强、Super 750 及以上 4 强")]
         default: return [tier.modifier.meaning]
         }
     }
@@ -167,9 +167,9 @@ enum SkillLevel {
     static func evidenceSummary(for kind: VerificationStatus) -> String {
         switch kind {
         case .unverified: return ""
-        case .tournament: return "tournamentsoftware.com 上公开的签表和成绩（签位 ≥8，7 起 ≥16）：次高组冠军或最高组正赛赢球 → 7−，州 / 地区公开赛最高组 8 强 → 7，4 强 → 7+，USAB 认证赛最高组正赛赢球 → 8−，8 强 → 8"
-        case .national: return "USAB 全国排名，或运动员技术等级电子证书：三级 → 7−，二级 → 7，一级 → 8，运动健将 → 8+（2025 年前的证书低一档）"
-        case .bwf: return "bwfbadminton.com 上本人的球员页，看近 24 个月的世界排名和赛果。只有 BWF ID 不够"
+        case .tournament: return String(localized: "tournamentsoftware.com 上公开的签表和成绩（签位 ≥8，7 起 ≥16）：次高组冠军或最高组正赛赢球 → 7−，州 / 地区公开赛最高组 8 强 → 7，4 强 → 7+，USAB 认证赛最高组正赛赢球 → 8−，8 强 → 8")
+        case .national: return String(localized: "USAB 全国排名，或运动员技术等级电子证书：三级 → 7−，二级 → 7，一级 → 8，运动健将 → 8+（2025 年前的证书低一档）")
+        case .bwf: return String(localized: "bwfbadminton.com 上本人的球员页，看近 24 个月的世界排名和赛果。只有 BWF ID 不够")
         }
     }
 
@@ -221,19 +221,19 @@ enum VerificationStatus: String, Codable, Hashable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .unverified: return "未认证"
-        case .tournament: return "赛事成绩"
-        case .national: return "全国排名 / 运动员等级证书"
-        case .bwf: return "BWF 世界排名"
+        case .unverified: return String(localized: "未认证")
+        case .tournament: return String(localized: "赛事成绩")
+        case .national: return String(localized: "全国排名 / 运动员等级证书")
+        case .bwf: return String(localized: "BWF 世界排名")
         }
     }
 
     var badgeText: String? {
         switch self {
         case .unverified: return nil
-        case .tournament: return "赛果认证"
-        case .national: return "等级认证"
-        case .bwf: return "BWF 认证"
+        case .tournament: return String(localized: "赛果认证")
+        case .national: return String(localized: "等级认证")
+        case .bwf: return String(localized: "BWF 认证")
         }
     }
 }
@@ -245,9 +245,9 @@ enum Gender: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var label: String {
         switch self {
-        case .unspecified: return "不透露"
-        case .male: return "男"
-        case .female: return "女"
+        case .unspecified: return String(localized: "不透露")
+        case .male: return String(localized: "男")
+        case .female: return String(localized: "女")
         }
     }
 }
@@ -419,20 +419,20 @@ struct User: Identifiable, Codable, Hashable {
     /// 对别人显示的场次：分档（"20+ 场"），不给精确数字
     var gamesBand: String {
         switch totalGames {
-        case 0: return "还没打过"
-        case 1..<5: return "1–4 场"
-        case 5..<20: return "5+ 场"
-        case 20..<50: return "20+ 场"
-        default: return "50+ 场"
+        case 0: return String(localized: "还没打过")
+        case 1..<5: return String(localized: "1–4 场")
+        case 5..<20: return String(localized: "5+ 场")
+        case 20..<50: return String(localized: "20+ 场")
+        default: return String(localized: "50+ 场")
         }
     }
 
     /// 列表里对别人展示的一句话：只有正面信息，没有分数（"靠谱 · 20+ 场"）
     var publicSummary: String {
         var parts: [String] = []
-        if isNewPlayer { parts.append("新球友") } else if isReliable { parts.append("靠谱") }
+        if isNewPlayer { parts.append(String(localized: "新球友")) } else if isReliable { parts.append(String(localized: "靠谱")) }
         parts.append(gamesBand)
-        if let tag = reputation.publicTags.first { parts.append(tag.rawValue) }
+        if let tag = reputation.publicTags.first { parts.append(tag.title) }
         return parts.joined(separator: " · ")
     }
 

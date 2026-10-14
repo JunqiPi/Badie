@@ -121,7 +121,7 @@ extension MockBackend {
         guard !isBlockedEitherWay(me.id, group.ownerId) else { throw BackendError.groupNotFound }
         guard !group.isMember(me.id) else { return group }
         guard group.levelRange.contains(me.displayLevel) else {
-            throw BackendError.levelOutOfRange("这个球群适合 \(group.levelText)，你目前是 \(me.displayTier.text)")
+            throw BackendError.levelOutOfRange(String(localized: "这个球群适合 \(group.levelText)，你目前是 \(me.displayTier.text)"))
         }
         switch group.joinPolicy {
         case .open:
@@ -161,8 +161,8 @@ extension MockBackend {
         group.memberIds.append(userId)
         db.groups[groupId] = group
         ensureGroupThread(for: group)
-        addInbox(InboxItem(kind: .groupUpdate, title: "已加入「\(group.name)」",
-                           body: "组织者同意了你的申请，现在可以报名固定场次了。", relatedId: groupId), to: userId)
+        addInbox(InboxItem(kind: .groupUpdate, title: String(localized: "已加入「\(group.name)」"),
+                           body: String(localized: "组织者同意了你的申请，现在可以报名固定场次了。"), relatedId: groupId), to: userId)
         scheduleSave()
         emit(.groupsChanged)
         emit(.threadsChanged)
@@ -245,8 +245,8 @@ extension MockBackend {
                 let promoted = session.waitlist.removeFirst()
                 session.signedUp.append(promoted)
                 if let group = db.groups[session.groupId] {
-                    addInbox(InboxItem(kind: .groupUpdate, title: "候补转正：\(group.name)",
-                                       body: "\(session.slot.formattedFull) 有人退出，你已自动报上。去不了记得提前取消。",
+                    addInbox(InboxItem(kind: .groupUpdate, title: String(localized: "候补转正：\(group.name)"),
+                                       body: String(localized: "\(session.slot.formattedFull) 有人退出，你已自动报上。去不了记得提前取消。"),
                                        relatedId: group.id), to: promoted)
                 }
             }
@@ -266,11 +266,11 @@ extension MockBackend {
         session.isCancelled = true
         db.groupSessions[sessionId] = session
         for userId in session.signedUp + session.waitlist where userId != me.id {
-            addInbox(InboxItem(kind: .groupUpdate, title: "「\(group.name)」这场取消了",
-                               body: "\(session.slot.formattedFull) 由组织者取消，不影响你的记录。", relatedId: group.id), to: userId)
+            addInbox(InboxItem(kind: .groupUpdate, title: String(localized: "「\(group.name)」这场取消了"),
+                               body: String(localized: "\(session.slot.formattedFull) 由组织者取消，不影响你的记录。"), relatedId: group.id), to: userId)
         }
         let thread = ensureGroupThread(for: group)
-        appendMessage(Message(threadId: thread.id, senderId: "system", content: "\(session.slot.formattedFull) 这场取消了",
+        appendMessage(Message(threadId: thread.id, senderId: "system", content: String(localized: "\(session.slot.formattedFull) 这场取消了"),
                               deliveredAt: Date(), kind: .system),
                       participants: thread.participantIds, countsAsUnread: false)
         scheduleSave()

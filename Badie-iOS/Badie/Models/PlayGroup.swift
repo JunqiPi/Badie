@@ -16,8 +16,8 @@ struct PlayGroup: Identifiable, Codable, Hashable {
 
         var title: String {
             switch self {
-            case .open: return "直接加入"
-            case .approval: return "需要组织者同意"
+            case .open: return String(localized: "直接加入")
+            case .approval: return String(localized: "需要组织者同意")
             }
         }
     }
@@ -52,8 +52,8 @@ struct PlayGroup: Identifiable, Codable, Hashable {
 
     /// 分享到微信的文字
     func inviteText(venueName: String) -> String {
-        let times = schedules.map { "\($0.weekdayTitle) \($0.timeText)" }.joined(separator: "、")
-        return "来「\(name)」一起打羽毛球！\(venueName) · \(times) · \(levelText)。在 Badie App 输入群号 \(inviteCode) 加入，报名、候补都在 App 里。"
+        let times = schedules.map { "\($0.weekdayTitle) \($0.timeText)" }.formatted(.list(type: .and))
+        return String(localized: "来「\(name)」一起打羽毛球！\(venueName) · \(times) · \(levelText)。在 Badie App 输入群号 \(inviteCode) 加入，报名、候补都在 App 里。")
     }
 }
 
@@ -72,7 +72,10 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
 
     static let capacityRange = 4...40
 
-    var weekdayTitle: String { "每\(RecurringTimeSlot.weekdayNames[(weekday - 1 + 7) % 7])" }
+    var weekdayTitle: String {
+        let day = RecurringTimeSlot.weekdayNames[(weekday - 1 + 7) % 7]
+        return String(localized: "每\(day)")
+    }
 
     var timeText: String {
         String(format: "%02d:%02d–%02d:%02d", startMinutes / 60, startMinutes % 60, endMinutes / 60, endMinutes % 60)
@@ -135,8 +138,9 @@ struct GroupActivity: Hashable {
     let averageTurnout: Double
 
     var text: String {
-        sessionsLast30Days == 0
-            ? "近 30 天还没开过场"
-            : "近 30 天 \(sessionsLast30Days) 场 · 平均每场 \(Int(averageTurnout.rounded())) 人"
+        let turnout = Int(averageTurnout.rounded())
+        return sessionsLast30Days == 0
+            ? String(localized: "近 30 天还没开过场")
+            : String(localized: "近 30 天 \(sessionsLast30Days) 场 · 平均每场 \(turnout) 人")
     }
 }

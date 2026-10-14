@@ -372,7 +372,7 @@ final class MockBackend {
     func saveRecurringSlots(_ slots: [RecurringTimeSlot]) throws {
         guard let id = currentUserId else { throw BackendError.notSignedIn }
         guard slots.count <= TimeSlotConstants.maximumRecurringSlots else { throw BackendError.tooManyRecurringSlots }
-        guard slots.allSatisfy(\.isValidDuration) else { throw BackendError.invalidSlot("每个时间段需要 1-8 小时") }
+        guard slots.allSatisfy(\.isValidDuration) else { throw BackendError.invalidSlot(String(localized: "每个时间段需要 1-8 小时")) }
         db.recurringSlots[id] = slots
         scheduleSave()
     }

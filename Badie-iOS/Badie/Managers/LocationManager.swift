@@ -8,7 +8,7 @@ import Combine
 enum LocationError: Error, Equatable {
     case permissionDenied
 
-    var message: String { "未开启定位，距离按默认城市计算；可直接搜索球馆" }
+    var message: String { String(localized: "未开启定位，距离按默认城市计算；可直接搜索球馆") }
 }
 
 @MainActor
@@ -92,7 +92,7 @@ final class LocationManager: NSObject, ObservableObject {
     var distanceUnit: DistanceUnit { .current }
 
     /// "10 公里内" / "6 英里内"
-    var radiusText: String { DistanceFormatter.radius(km: preferences.travelRadiusKm) + "内" }
+    var radiusText: String { String(localized: "\(DistanceFormatter.radius(km: preferences.travelRadiusKm))内") }
 
     func isFavorite(_ courtId: String) -> Bool { favoriteCourtIds.contains(courtId) }
 

@@ -21,7 +21,7 @@ struct GameDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "球局详情") {
+            ScreenHeader(title: String(localized: "球局详情")) {
                 if let game {
                     Menu {
                         ShareLink(item: game.shareText) {
@@ -53,7 +53,7 @@ struct GameDetailView: View {
                 content(game)
             } else {
                 Spacer()
-                EmptyStateView(icon: "questionmark.folder", title: "球局不存在或已被删除")
+                EmptyStateView(icon: "questionmark.folder", title: String(localized: "球局不存在或已被删除"))
                 Spacer()
             }
         }
@@ -78,7 +78,7 @@ struct GameDetailView: View {
                     Button(app.title) {
                         Task {
                             let opened = await MapsLauncher.open(game.court, with: app)
-                            if !opened { appState.showToast("未安装\(app.title)", style: .error) }
+                            if !opened { appState.showToast(String(localized: "未安装\(app.title)"), style: .error) }
                         }
                     }
                 }
@@ -182,30 +182,30 @@ struct GameDetailView: View {
 
     private func actionGrid(_ game: Game) -> some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            actionTile(icon: "location.north.line.fill", title: "导航", tint: AppTheme.Colors.sky) {
+            actionTile(icon: "location.north.line.fill", title: String(localized: "导航"), tint: AppTheme.Colors.sky) {
                 showNavigationChoices = true
             }
             // 球局群聊：所有人一起沟通，不需要先加好友；赛后 48 小时关闭
-            actionTile(icon: "bubble.left.and.bubble.right.fill", title: "群聊", tint: AppTheme.Colors.lavender) {
+            actionTile(icon: "bubble.left.and.bubble.right.fill", title: String(localized: "群聊"), tint: AppTheme.Colors.lavender) {
                 if let threadId = messageManager.gameChatId(for: game.id) {
                     router.open(.groupChat(threadId: threadId))
                 }
             }
             actionTile(icon: game.reminderEnabled ? "bell.badge.fill" : "bell.fill",
-                       title: game.reminderEnabled ? "已提醒" : "提醒",
+                       title: game.reminderEnabled ? String(localized: "已提醒") : String(localized: "提醒"),
                        tint: game.reminderEnabled ? AppTheme.Colors.lime : AppTheme.Colors.butter) {
                 Task {
                     let target = !game.reminderEnabled
                     let ok = await matchManager.setReminder(game, enabled: target)
                     if ok {
-                        appState.showToast(target ? "将在开赛前 1 天、2 小时、15 分钟提醒你" : "已关闭提醒", style: .success)
+                        appState.showToast(target ? String(localized: "将在开赛前 1 天、2 小时、15 分钟提醒你") : String(localized: "已关闭提醒"), style: .success)
                     } else {
-                        appState.showToast("请在系统设置中允许通知", style: .error)
+                        appState.showToast(String(localized: "请在系统设置中允许通知"), style: .error)
                     }
                 }
             }
             ShareLink(item: game.shareText) {
-                tileLabel(icon: "square.and.arrow.up.fill", title: "分享", tint: AppTheme.Colors.pink)
+                tileLabel(icon: "square.and.arrow.up.fill", title: String(localized: "分享"), tint: AppTheme.Colors.pink)
             }
             .buttonStyle(PressableStyle())
         }
@@ -252,12 +252,12 @@ struct GameDetailView: View {
                     HStack(spacing: AppTheme.Spacing.md) {
                         AvatarView(user: player, size: 32)
                             .opensProfile(player.id)
-                        Text(player.id == me ? "我" : player.nickname)
+                        Text(player.id == me ? String(localized: "我") : player.nickname)
                             .font(AppTheme.Typography.bodyBold)
                             .foregroundStyle(AppTheme.Colors.ink)
                         Spacer()
                         if let time = game.checkIns[player.id] {
-                            TagPill(text: "\(DateText.time(time)) 已到", icon: "checkmark", fill: AppTheme.Colors.mint)
+                            TagPill(text: String(localized: "\(DateText.time(time)) 已到"), icon: "checkmark", fill: AppTheme.Colors.mint)
                         } else {
                             Text("未签到")
                                 .font(AppTheme.Typography.footnote)
@@ -270,7 +270,7 @@ struct GameDetailView: View {
                     Button {
                         Task { await checkIn(game) }
                     } label: {
-                        Label(game.canCheckIn(now: now) ? "我已到场 · 签到" : "开赛前 30 分钟开放签到", systemImage: "mappin.circle.fill")
+                        Label(game.canCheckIn(now: now) ? String(localized: "我已到场 · 签到") : String(localized: "开赛前 30 分钟开放签到"), systemImage: "mappin.circle.fill")
                     }
                     .buttonStyle(.brutal(.primary, size: .medium))
                     .disabled(!game.canCheckIn(now: now) || isWorking)
@@ -294,14 +294,14 @@ struct GameDetailView: View {
             HStack(alignment: .center, spacing: AppTheme.Spacing.sm) {
                 ForEach(Array(game.teams.enumerated()), id: \.offset) { index, team in
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text(index == 0 ? "A 队" : "B 队")
+                        Text(index == 0 ? String(localized: "A 队") : String(localized: "B 队"))
                             .font(AppTheme.Typography.overline)
                         ForEach(team, id: \.self) { userId in
                             if let user = lookup[userId] {
                                 HStack(spacing: 6) {
                                     AvatarView(user: user, size: 26)
                                         .opensProfile(user.id)
-                                    Text(user.id == me ? "我" : user.nickname)
+                                    Text(user.id == me ? String(localized: "我") : user.nickname)
                                         .font(AppTheme.Typography.footnoteBold)
                                         .lineLimit(1)
                                     Spacer(minLength: 0)
@@ -347,7 +347,7 @@ struct GameDetailView: View {
                 }
             }
             .foregroundStyle(AppTheme.Colors.ink)
-            Text(game.cost.breakdownText + " · 平台不收服务费")
+            Text("\(game.cost.breakdownText) · 平台不收服务费")
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -363,26 +363,26 @@ struct GameDetailView: View {
                 HStack(spacing: AppTheme.Spacing.md) {
                     AvatarView(user: player, size: 30)
                         .opensProfile(player.id)
-                    Text(player.id == me ? "我" : player.nickname)
+                    Text(player.id == me ? String(localized: "我") : player.nickname)
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
                     if player.id == game.hostId {
-                        TagPill(text: "发起人", fill: AppTheme.Colors.butter)
+                        TagPill(text: String(localized: "发起人"), fill: AppTheme.Colors.butter)
                     }
                     Spacer()
                     Button {
                         Haptics.selection()
                         matchManager.togglePaid(game, userId: player.id)
                     } label: {
-                        TagPill(text: paid ? "已付" : "待付", icon: paid ? "checkmark" : nil,
+                        TagPill(text: paid ? String(localized: "已付") : String(localized: "待付"), icon: paid ? "checkmark" : nil,
                                 fill: paid ? AppTheme.Colors.mint : AppTheme.Colors.surface,
                                 foreground: paid ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
                             .frame(minHeight: 44)
                     }
                     .buttonStyle(.plain)
                     .disabled(!canToggle || game.status == .cancelled)
-                    .accessibilityLabel("\(player.nickname) \(paid ? "已付" : "待付")")
-                    .accessibilityHint(canToggle ? "点按切换付款状态" : "")
+                    .accessibilityLabel("\(player.nickname) \(paid ? String(localized: "已付") : String(localized: "待付"))")
+                    .accessibilityHint(canToggle ? String(localized: "点按切换付款状态") : "")
                 }
             }
         }
@@ -402,7 +402,7 @@ struct GameDetailView: View {
                 }
                 .buttonStyle(.brutal(.inverse, size: .medium))
                 .disabled(!canComplete)
-                Text(canComplete ? "结束后可以给球友匿名评价，互评都提交后才会计入口碑" : "球局开始后才能结束 · \(DateText.countdown(to: game.slot.startTime, now: context.date))")
+                Text(canComplete ? String(localized: "结束后可以给球友匿名评价，互评都提交后才会计入口碑") : String(localized: "球局开始后才能结束 · \(DateText.countdown(to: game.slot.startTime, now: context.date))"))
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
             }
@@ -414,7 +414,7 @@ struct GameDetailView: View {
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             if let result = game.result {
                 HStack {
-                    Text(result.didWin == true ? "🎉 赢下了这场" : (result.didWin == false ? "惜败，下次再来" : "球局已完成"))
+                    Text(result.didWin == true ? String(localized: "🎉 赢下了这场") : (result.didWin == false ? String(localized: "惜败，下次再来") : String(localized: "球局已完成")))
                         .font(AppTheme.Typography.headline)
                     Spacer()
                     if !result.score.isEmpty {
@@ -427,7 +427,7 @@ struct GameDetailView: View {
                 .card(AppTheme.Colors.surface)
             }
             if !pending.isEmpty {
-                SectionTitle(title: "待评价", detail: DateText.remaining(until: pending[0].expiresAt))
+                SectionTitle(title: String(localized: "待评价"), detail: DateText.remaining(until: pending[0].expiresAt))
                 ForEach(pending) { survey in
                     Button {
                         router.open(.survey(pendingId: survey.id))
@@ -465,28 +465,28 @@ struct GameDetailView: View {
     }
 
     private func cancelledText(_ game: Game) -> String {
-        let who = game.cancelledBy == me ? "你" : (game.cancelledBy.flatMap { friendManager.user(id: $0)?.nickname } ?? "球友")
-        return "\(who)已取消这场球局" + (game.cancelledLate ? "（开赛前 2 小时内，计为临时取消）" : "")
+        let who = game.cancelledBy == me ? String(localized: "你") : (game.cancelledBy.flatMap { friendManager.user(id: $0)?.nickname } ?? String(localized: "球友"))
+        return String(localized: "\(who)已取消这场球局") + (game.cancelledLate ? String(localized: "（开赛前 2 小时内，计为临时取消）") : "")
     }
 
     private var cancelTitle: String {
-        guard let game else { return "取消球局？" }
-        return game.isLateCancellation() ? "现在取消会记为临时取消" : "确定取消球局吗？"
+        guard let game else { return String(localized: "取消球局？") }
+        return game.isLateCancellation() ? String(localized: "现在取消会记为临时取消") : String(localized: "确定取消球局吗？")
     }
 
     private var cancelMessage: String {
         guard let game else { return "" }
         if game.isLateCancellation() {
-            return "距开赛不到 2 小时，取消会计入你的履约记录，并通知其他球友。多次临时取消后，约球需要先付 AA。"
+            return String(localized: "距开赛不到 2 小时，取消会计入你的履约记录，并通知其他球友。多次临时取消后，约球需要先付 AA。")
         }
-        return "会通知其他球友。开赛 2 小时前取消不影响履约记录。"
+        return String(localized: "会通知其他球友。开赛 2 小时前取消不影响履约记录。")
     }
 
     private func cancel() async {
         guard let game else { return }
         do {
             try await matchManager.cancel(game)
-            appState.showToast("已取消，已通知其他球友")
+            appState.showToast(String(localized: "已取消，已通知其他球友"))
         } catch {
             appState.showError(error)
         }
@@ -497,7 +497,7 @@ struct GameDetailView: View {
         defer { isWorking = false }
         do {
             try await matchManager.checkIn(game)
-            appState.showToast("签到成功，打得开心！", style: .success)
+            appState.showToast(String(localized: "签到成功，打得开心！"), style: .success)
         } catch {
             appState.showError(error)
         }
@@ -507,7 +507,7 @@ struct GameDetailView: View {
         showCompleteSheet = false
         do {
             try await matchManager.complete(game, didWin: didWin, score: score)
-            appState.showToast("球局已完成，去给球友评个分吧", style: .success)
+            appState.showToast(String(localized: "球局已完成，去给球友评个分吧"), style: .success)
             if let first = surveyManager.pending(forGame: game.id).first {
                 router.open(.survey(pendingId: first.id))
             }
@@ -524,6 +524,14 @@ struct CompleteGameSheet: View {
         case win = "赢了"
         case lose = "输了"
         case skip = "不记录"
+
+        var title: String {
+            switch self {
+            case .win: return String(localized: "赢了")
+            case .lose: return String(localized: "输了")
+            case .skip: return String(localized: "不记录")
+            }
+        }
     }
 
     let game: Game
@@ -539,12 +547,12 @@ struct CompleteGameSheet: View {
                 .foregroundStyle(AppTheme.Colors.ink)
                 .padding(.top, AppTheme.Spacing.xl)
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Text(game.mode == .doubles ? "你所在的队伍" : "比赛结果")
+                Text(game.mode == .doubles ? String(localized: "你所在的队伍") : String(localized: "比赛结果"))
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
-                SegmentedSticker(options: Outcome.allCases, selection: $outcome, title: { $0.rawValue })
+                SegmentedSticker(options: Outcome.allCases, selection: $outcome, title: { $0.title })
             }
-            BrutalTextField(label: "比分（可选）", placeholder: "如 21:18 19:21 21:15", text: $score,
+            BrutalTextField(label: String(localized: "比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
                             keyboard: .numbersAndPunctuation, characterLimit: 40)
             Spacer(minLength: 0)
             Button("完成并去评价") {

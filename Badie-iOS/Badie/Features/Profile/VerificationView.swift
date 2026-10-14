@@ -26,7 +26,7 @@ struct VerificationView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "高水平认证")
+            ScreenHeader(title: String(localized: "高水平认证"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     intro
@@ -35,7 +35,7 @@ struct VerificationView: View {
                     } else {
                         if let request, request.status == .rejected {
                             NoticeBanner(icon: "exclamationmark.circle.fill",
-                                         text: "上次申请没有通过：\(request.reviewNote ?? "证据无法核实")。可以补充材料后重新申请。",
+                                         text: String(localized: "上次申请没有通过：\(request.reviewNote ?? String(localized: "证据无法核实"))。可以补充材料后重新申请。"),
                                          tint: AppTheme.Colors.peach)
                         }
                         kindPicker
@@ -93,23 +93,23 @@ struct VerificationView: View {
     private func pendingCard(_ request: VerificationRequest) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack {
-                TagPill(text: "审核中", icon: "hourglass", fill: AppTheme.Colors.butter)
+                TagPill(text: String(localized: "审核中"), icon: "hourglass", fill: AppTheme.Colors.butter)
                 Spacer()
                 Text("提交于 \(DateText.shortDay(request.submittedAt))")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
-            InfoRow(icon: "checkmark.seal.fill", tint: AppTheme.Colors.lime, title: "申请 \(request.claimedTier.text)",
+            InfoRow(icon: "checkmark.seal.fill", tint: AppTheme.Colors.lime, title: String(localized: "申请 \(request.claimedTier.text)"),
                     subtitle: request.kind.title)
-            InfoRow(icon: "link", title: "证据", subtitle: request.evidenceURL)
-            InfoRow(icon: "person.text.rectangle", tint: AppTheme.Colors.peach, title: "证据上的姓名",
+            InfoRow(icon: "link", title: String(localized: "证据"), subtitle: request.evidenceURL)
+            InfoRow(icon: "person.text.rectangle", tint: AppTheme.Colors.peach, title: String(localized: "证据上的姓名"),
                     subtitle: request.nameOnRecord)
             Text("一般 \(VerificationRequest.reviewDays) 个工作日内审核完，结果会发到通知里。")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
             Button(role: .destructive) {
                 appState.backend.cancelVerificationRequest()
-                appState.showToast("已撤回申请")
+                appState.showToast(String(localized: "已撤回申请"))
             } label: {
                 Text("撤回申请")
             }
@@ -120,7 +120,7 @@ struct VerificationView: View {
 
     private var kindPicker: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "证据类型")
+            SectionTitle(title: String(localized: "证据类型"))
             ForEach([VerificationStatus.tournament, .national, .bwf]) { option in
                 Button {
                     Haptics.selection()
@@ -160,7 +160,7 @@ struct VerificationView: View {
 
     private var tierPicker: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: "申请的档位")
+            SectionTitle(title: String(localized: "申请的档位"))
             HStack {
                 Text("按证据能证明的最高一档填，审核时可能下调")
                     .font(AppTheme.Typography.caption)
@@ -186,12 +186,12 @@ struct VerificationView: View {
 
     private var evidenceFields: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            BrutalTextField(label: kind == .national ? "证据链接或证书编号" : "证据链接",
+            BrutalTextField(label: kind == .national ? String(localized: "证据链接或证书编号") : String(localized: "证据链接"),
                             placeholder: VerificationEvidence.placeholder(for: kind), text: $link,
                             keyboard: .URL, contentType: .URL, errorText: linkProblem)
-            BrutalTextField(label: "成绩 / 证书上的姓名", placeholder: "和证件一致，例如 Wei Zhang", text: $nameOnRecord,
+            BrutalTextField(label: String(localized: "成绩 / 证书上的姓名"), placeholder: String(localized: "和证件一致，例如 Wei Zhang"), text: $nameOnRecord,
                             contentType: .name, characterLimit: 40)
-            BrutalTextField(label: "补充说明（选填）", placeholder: "例：2025 洛杉矶公开赛 A 组男双亚军", text: $note,
+            BrutalTextField(label: String(localized: "补充说明（选填）"), placeholder: String(localized: "例：2025 洛杉矶公开赛 A 组男双亚军"), text: $note,
                             characterLimit: 200, axis: .vertical)
         }
     }
@@ -233,7 +233,7 @@ struct VerificationView: View {
             try appState.backend.submitVerification(kind: kind, tier: tier, evidenceURL: link,
                                                     nameOnRecord: nameOnRecord, note: note)
             Haptics.success()
-            appState.showToast("已提交，审核结果会发到通知里", style: .success)
+            appState.showToast(String(localized: "已提交，审核结果会发到通知里"), style: .success)
         } catch {
             Haptics.error()
             appState.showError(error)

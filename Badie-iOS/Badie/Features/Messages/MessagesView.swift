@@ -4,6 +4,13 @@ struct MessagesView: View {
     enum Segment: String, CaseIterable {
         case chats = "聊天"
         case friends = "球友"
+
+        var title: String {
+            switch self {
+            case .chats: return String(localized: "聊天")
+            case .friends: return String(localized: "球友")
+            }
+        }
     }
 
     @EnvironmentObject private var router: Router
@@ -15,12 +22,12 @@ struct MessagesView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                LargeTitleHeader(title: "消息") {
-                    IconButton(systemName: "person.badge.plus", accessibilityLabel: "添加球友") {
+                LargeTitleHeader(title: String(localized: "消息")) {
+                    IconButton(systemName: "person.badge.plus", accessibilityLabel: String(localized: "添加球友")) {
                         router.open(.addFriend)
                     }
                 }
-                SegmentedSticker(options: Segment.allCases, selection: $segment, title: { $0.rawValue }) { option in
+                SegmentedSticker(options: Segment.allCases, selection: $segment, title: { $0.title }) { option in
                     switch option {
                     case .chats: return messageManager.unreadCount
                     case .friends: return friendManager.incomingRequests.count
@@ -46,7 +53,7 @@ struct MessagesView: View {
     private var chats: some View {
         if !messageManager.incomingRequests.isEmpty {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                SectionTitle(title: "消息请求", detail: "同球群的人想和你聊 · 忽略对方不会知道")
+                SectionTitle(title: String(localized: "消息请求"), detail: String(localized: "同球群的人想和你聊 · 忽略对方不会知道"))
                 VStack(spacing: 0) {
                     ForEach(Array(messageManager.incomingRequests.enumerated()), id: \.element.id) { index, thread in
                         if index > 0 { InsetDivider().padding(.leading, 72) }
@@ -59,9 +66,9 @@ struct MessagesView: View {
             .padding(.horizontal, AppTheme.Spacing.screen)
         }
         if messageManager.conversations.isEmpty {
-            EmptyStateView(icon: "bubble.left.and.bubble.right", title: "还没有聊天",
-                           message: "匹配成功或添加球友后，就可以在这里约时间、约球馆。",
-                           actionTitle: "添加球友") { router.open(.addFriend) }
+            EmptyStateView(icon: "bubble.left.and.bubble.right", title: String(localized: "还没有聊天"),
+                           message: String(localized: "匹配成功或添加球友后，就可以在这里约时间、约球馆。"),
+                           actionTitle: String(localized: "添加球友")) { router.open(.addFriend) }
                 .card()
                 .padding(.horizontal, AppTheme.Spacing.screen)
         } else {
@@ -127,7 +134,7 @@ private struct ThreadRow: View {
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     HStack {
-                        Text(thread.isGroup ? (thread.title ?? "群聊") : (other?.nickname ?? "球友"))
+                        Text(thread.isGroup ? (thread.title ?? String(localized: "群聊")) : (other?.nickname ?? String(localized: "球友")))
                             .font(AppTheme.Typography.headline)
                             .foregroundStyle(AppTheme.Colors.ink)
                             .lineLimit(1)
@@ -135,7 +142,7 @@ private struct ThreadRow: View {
                             LevelBadge(tier: other.displayTier, showsName: false, compact: true)
                         }
                         if thread.isPendingRequest && thread.requestFrom == me {
-                            TagPill(text: "等对方接受", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
+                            TagPill(text: String(localized: "等对方接受"), fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
                         }
                         Spacer()
                         Text(DateText.compact(thread.lastActivityAt))
@@ -174,14 +181,14 @@ private struct ThreadRow: View {
         guard let message = thread.lastMessage else { return "" }
         if thread.isGroup, message.kind != .system, message.senderId != messageManager.currentUserId,
            let sender = messageManager.user(id: message.senderId) {
-            return "\(sender.nickname)：\(message.content)"
+            return String(localized: "\(sender.nickname)：\(message.content)")
         }
         switch message.kind {
-        case .roomInvite: return "[房间邀请] \(message.content)"
-        case .gameShare: return "[球局] \(message.content)"
+        case .roomInvite: return String(localized: "[房间邀请] \(message.content)")
+        case .gameShare: return String(localized: "[球局] \(message.content)")
         case .system: return message.content
         case .text:
-            let prefix = message.senderId == messageManager.currentUserId ? "我：" : ""
+            let prefix = message.senderId == messageManager.currentUserId ? String(localized: "我：") : ""
             return prefix + message.content
         }
     }
@@ -200,23 +207,23 @@ struct FriendsContent: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
             if !friendManager.incomingRequests.isEmpty {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                    SectionTitle(title: "好友申请", detail: "\(friendManager.incomingRequests.count)")
+                    SectionTitle(title: String(localized: "好友申请"), detail: "\(friendManager.incomingRequests.count)")
                     ForEach(friendManager.incomingRequests) { request in
                         FriendRequestRow(request: request)
                     }
                 }
             }
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                SectionTitle(title: "我的球友", detail: "\(friendManager.friends.count) 人", actionTitle: "添加") {
+                SectionTitle(title: String(localized: "我的球友"), detail: String(localized: "\(friendManager.friends.count) 人"), actionTitle: String(localized: "添加")) {
                     router.open(.addFriend)
                 }
                 if friendManager.friends.count > 5 {
-                    SearchField(text: $query, placeholder: "搜索球友")
+                    SearchField(text: $query, placeholder: String(localized: "搜索球友"))
                 }
                 let list = friendManager.searchFriends(query: query)
                 if list.isEmpty {
-                    EmptyStateView(icon: "person.2", title: query.isEmpty ? "还没有球友" : "没有找到",
-                                   message: query.isEmpty ? "一起打过球后互加好友，下次约球更方便。" : "换个关键词试试")
+                    EmptyStateView(icon: "person.2", title: query.isEmpty ? String(localized: "还没有球友") : String(localized: "没有找到"),
+                                   message: query.isEmpty ? String(localized: "一起打过球后互加好友，下次约球更方便。") : String(localized: "换个关键词试试"))
                         .card()
                 } else {
                     VStack(spacing: 0) {
@@ -253,7 +260,7 @@ struct FriendsContent: View {
 struct FriendsView: View {
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "我的球友")
+            ScreenHeader(title: String(localized: "我的球友"))
             ScrollView {
                 FriendsContent()
                     .padding(.bottom, AppTheme.Spacing.xxl)
@@ -284,7 +291,7 @@ struct FriendRequestRow: View {
                                     .foregroundStyle(AppTheme.Colors.ink)
                                 LevelBadge(tier: user.displayTier, showsName: false, compact: true)
                             }
-                            Text(request.note.isEmpty ? "想加你为球友" : "“\(request.note)”")
+                            Text(request.note.isEmpty ? String(localized: "想加你为球友") : "“\(request.note)”")
                                 .font(AppTheme.Typography.footnote)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                                 .lineLimit(2)
@@ -311,7 +318,7 @@ struct FriendRequestRow: View {
             defer { isWorking = false }
             do {
                 try await friendManager.respond(request, accept: accept)
-                if accept { appState.showToast("已添加为球友", style: .success) }
+                if accept { appState.showToast(String(localized: "已添加为球友"), style: .success) }
             } catch {
                 appState.showError(error)
             }
@@ -371,11 +378,11 @@ struct AddFriendView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "添加球友")
+            ScreenHeader(title: String(localized: "添加球友"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SearchField(text: $query, placeholder: "搜索昵称或 4 位 ID")
+                        SearchField(text: $query, placeholder: String(localized: "搜索昵称或 4 位 ID"))
                         if let me = appState.currentUser {
                             Text("我的 ID：\(me.shortId)")
                                 .font(AppTheme.Typography.footnoteBold)
@@ -383,10 +390,10 @@ struct AddFriendView: View {
                         }
                     }
                     if !query.isEmpty {
-                        section(title: "搜索结果", users: results, emptyText: "没有找到“\(query)”")
+                        section(title: String(localized: "搜索结果"), users: results, emptyText: String(localized: "没有找到“\(query)”"))
                     }
-                    section(title: "一起打过球的人", users: coPlayers, emptyText: "打完球后，这里会出现一起打过的人")
-                    section(title: "同馆常客", users: regulars, emptyText: "设置常去球馆后，这里会显示公开了自己是常客的球友")
+                    section(title: String(localized: "一起打过球的人"), users: coPlayers, emptyText: String(localized: "打完球后，这里会出现一起打过的人"))
+                    section(title: String(localized: "同馆常客"), users: regulars, emptyText: String(localized: "设置常去球馆后，这里会显示公开了自己是常客的球友"))
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
@@ -444,9 +451,9 @@ struct FriendActionButton: View {
     var body: some View {
         Group {
             if friendManager.isFriend(userId) {
-                TagPill(text: "已是球友", icon: "checkmark", fill: AppTheme.Colors.mint)
+                TagPill(text: String(localized: "已是球友"), icon: "checkmark", fill: AppTheme.Colors.mint)
             } else if friendManager.hasPendingRequest(to: userId) {
-                TagPill(text: "等待通过", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
+                TagPill(text: String(localized: "等待通过"), fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
             } else if let incoming = friendManager.incomingRequest(from: userId) {
                 Button("通过申请") {
                     Task {
@@ -471,7 +478,7 @@ struct FriendActionButton: View {
         defer { isWorking = false }
         do {
             try await friendManager.sendRequest(to: userId)
-            appState.showToast("申请已发送", style: .success)
+            appState.showToast(String(localized: "申请已发送"), style: .success)
         } catch {
             appState.showError(error)
         }

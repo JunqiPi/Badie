@@ -29,12 +29,12 @@ extension MockBackend {
             emit(.userUpdated(me))
         }
         for other in game.otherPlayerIds(excluding: me.id) {
-            addInbox(InboxItem(kind: .gameCancelled, title: "\(me.nickname) 取消了球局",
+            addInbox(InboxItem(kind: .gameCancelled, title: String(localized: "\(me.nickname) 取消了球局"),
                                body: "\(game.slot.formattedFull) · \(game.court.name)", relatedId: game.id), to: other)
         }
         // 在球局群聊里说明，并有球友回应
         let thread = ensureGameThread(for: game)
-        appendMessage(Message(threadId: thread.id, senderId: "system", content: "\(me.nickname) 取消了这场球局",
+        appendMessage(Message(threadId: thread.id, senderId: "system", content: String(localized: "\(me.nickname) 取消了这场球局"),
                               deliveredAt: Date(), kind: .system),
                       participants: thread.participantIds, countsAsUnread: false)
         if let bot = game.otherPlayerIds(excluding: me.id).first(where: { isBot($0) }) {
@@ -94,7 +94,7 @@ extension MockBackend {
         var me = try requireUser()
         guard var game = db.games[id], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
         guard game.status == .confirmed else { throw BackendError.gameAlreadyFinished }
-        guard game.canComplete() else { throw BackendError.invalidSlot("球局开始后才能标记完成") }
+        guard game.canComplete() else { throw BackendError.invalidSlot(String(localized: "球局开始后才能标记完成")) }
         await networkDelay()
         let now = Date()
         game.status = .completed
@@ -142,8 +142,8 @@ extension MockBackend {
                 ))
             }
         }
-        addInbox(InboxItem(kind: .surveyDue, title: "球局完成，给球友们评个分吧",
-                           body: "48 小时内有效 · 评价匿名汇总，双方都提交后才计入", relatedId: id), to: me.id)
+        addInbox(InboxItem(kind: .surveyDue, title: String(localized: "球局完成，给球友们评个分吧"),
+                           body: String(localized: "48 小时内有效 · 评价匿名汇总，双方都提交后才计入"), relatedId: id), to: me.id)
         scheduleSave()
         emit(.userUpdated(me))
         emit(.gamesChanged)
@@ -219,8 +219,8 @@ extension MockBackend {
                 db.surveys.append(item)
                 apply(item)
             }
-            addInbox(InboxItem(kind: .reviewReceived, title: "你收到了新的球友评价",
-                               body: "评价已匿名计入你的口碑与综合水平。", relatedId: me.id), to: me.id)
+            addInbox(InboxItem(kind: .reviewReceived, title: String(localized: "你收到了新的球友评价"),
+                               body: String(localized: "评价已匿名计入你的口碑与综合水平。"), relatedId: me.id), to: me.id)
         }
         notifyMutualRematchIfNeeded(survey)
         scheduleSave()
@@ -238,8 +238,8 @@ extension MockBackend {
         guard theirs?.wantsRematch == true,
               let first = db.users[survey.evaluatorId], let second = db.users[survey.evaluatedUserId] else { return }
         for (user, other) in [(first, second), (second, first)] {
-            addInbox(InboxItem(kind: .rematch, title: "你和 \(other.nickname) 都想再约一场",
-                               body: "加个球友，下次直接约。", relatedId: other.id), to: user.id)
+            addInbox(InboxItem(kind: .rematch, title: String(localized: "你和 \(other.nickname) 都想再约一场"),
+                               body: String(localized: "加个球友，下次直接约。"), relatedId: other.id), to: user.id)
         }
     }
 
@@ -262,8 +262,8 @@ extension MockBackend {
         for issue in ReputationScore.recurringIssues(in: received, now: now) {
             if let last = sent[issue.rawValue], now.timeIntervalSince(last) < 60 * 86400 { continue }
             sent[issue.rawValue] = now
-            addInbox(InboxItem(kind: .system, title: "来自球友的一个小建议",
-                               body: "最近有几位球友提到“\(issue.rawValue)”。\(issue.nudge)这条提醒只有你能看到，不会公开，也不影响匹配。",
+            addInbox(InboxItem(kind: .system, title: String(localized: "来自球友的一个小建议"),
+                               body: String(localized: "最近有几位球友提到“\(issue.title)”。\(issue.nudge)这条提醒只有你能看到，不会公开，也不影响匹配。"),
                                relatedId: nil), to: userId)
         }
         db.nudges[userId] = sent

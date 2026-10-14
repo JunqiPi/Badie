@@ -54,7 +54,7 @@ struct MatchFlowView: View {
     private func failure(_ message: String) -> some View {
         VStack(spacing: AppTheme.Spacing.xl) {
             Spacer()
-            EmptyStateView(icon: "exclamationmark.triangle.fill", title: "没能发起请求", message: message, tint: AppTheme.Colors.pink)
+            EmptyStateView(icon: "exclamationmark.triangle.fill", title: String(localized: "没能发起请求"), message: message, tint: AppTheme.Colors.pink)
             Spacer()
             Button("返回") { matchManager.closeFlow() }
                 .buttonStyle(.brutalSecondary)
@@ -78,11 +78,14 @@ struct SearchingView: View {
 
     private var statuses: [String] {
         let draft = matchManager.draft
+        let levelText = draft.skillTolerance >= MatchRequest.anySkill
+            ? String(localized: "所有水平")
+            : String(localized: "水平 ±\(draft.skillTolerance) 级")
         return [
-            "正在查看 \(draft.courtIds.count) 个球馆附近的球友…",
-            "筛选 \(draft.skillTolerance >= MatchRequest.anySkill ? "所有水平" : "水平 ±\(draft.skillTolerance) 级") 的球友…",
-            "比对你们都有空的时间…",
-            "只匹配也能去这些球馆的球友…"
+            String(localized: "正在查看 \(draft.courtIds.count) 个球馆附近的球友…"),
+            String(localized: "筛选 \(levelText) 的球友…"),
+            String(localized: "比对你们都有空的时间…"),
+            String(localized: "只匹配也能去这些球馆的球友…")
         ]
     }
 
@@ -90,7 +93,7 @@ struct SearchingView: View {
         VStack(spacing: AppTheme.Spacing.xl) {
             HStack {
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") {
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) {
                     matchManager.closeFlow()
                 }
             }
@@ -201,7 +204,7 @@ struct OfferView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                IconButton(systemName: "xmark", accessibilityLabel: "关闭") { matchManager.closeFlow() }
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { matchManager.closeFlow() }
                 Spacer()
                 Text("\(offer.mode.title) · 匹配度 \(offer.compatibility)%")
                     .font(AppTheme.Typography.footnoteBold)
@@ -248,9 +251,9 @@ struct OfferView: View {
     }
 
     private var headline: Text {
-        if isMatched { return Text("约好") + Text(markedText: "搭子") + Text("了！") }
-        if awaitsMe { return Text("找到") + Text(markedText: "搭子") + Text("了！") }
-        return Text("等") + Text(markedText: "大家") + Text("确认")
+        if isMatched { return Text("约好") + Text(markedText: String(localized: "搭子")) + Text("了！") }
+        if awaitsMe { return Text("找到") + Text(markedText: String(localized: "搭子")) + Text("了！") }
+        return Text("等") + Text(markedText: String(localized: "大家")) + Text("确认")
     }
 
     // MARK: Collision animation
@@ -258,7 +261,7 @@ struct OfferView: View {
     private var collisionStage: some View {
         ZStack {
             if offer.mode == .singles, let me, let opponent = others.first {
-                playerCard(me, title: "我", fill: AppTheme.Colors.surface)
+                playerCard(me, title: String(localized: "我"), fill: AppTheme.Colors.surface)
                     .rotationEffect(.degrees(collided ? -7 : -20))
                     .offset(x: collided ? -82 : -260, y: 0)
                 Button {
@@ -328,7 +331,7 @@ struct OfferView: View {
         HStack(spacing: AppTheme.Spacing.sm) {
             AvatarView(user: user, size: 36)
             VStack(alignment: .leading, spacing: 2) {
-                Text(isMe ? "我" : user.nickname)
+                Text(isMe ? String(localized: "我") : user.nickname)
                     .font(AppTheme.Typography.subheadlineBold)
                     .foregroundStyle(AppTheme.Colors.onAccent)
                     .lineLimit(1)
@@ -373,21 +376,21 @@ struct OfferView: View {
                 InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
                         title: offer.slot.formattedFull,
                         subtitle: offer.commonOverlap.duration > offer.slot.duration
-                            ? "你们共同有空 \(offer.commonOverlap.formattedTimeRange)，已安排 \(offer.slot.formattedDuration)"
-                            : "你们都有空的 \(offer.slot.formattedDuration)")
+                            ? String(localized: "你们共同有空 \(offer.commonOverlap.formattedTimeRange)，已安排 \(offer.slot.formattedDuration)")
+                            : String(localized: "你们都有空的 \(offer.slot.formattedDuration)"))
                 InsetDivider()
                 InfoRow(icon: "mappin.and.ellipse", tint: AppTheme.Colors.sky,
                         title: offer.court.name,
                         subtitle: offer.court.address)
                 InsetDivider()
                 InfoRow(icon: Money.icon(for: offer.cost.currencyCode), tint: AppTheme.Colors.butter,
-                        title: offer.cost.perPerson == nil ? "费用待定" : "AA 约 \(offer.cost.perPersonText)",
+                        title: offer.cost.perPerson == nil ? String(localized: "费用待定") : String(localized: "AA 约 \(offer.cost.perPersonText)"),
                         subtitle: offer.cost.breakdownText)
                 if offer.mode == .doubles {
                     InsetDivider()
                     InfoRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender,
-                            title: "已按水平平衡分队",
-                            subtitle: "两队平均等级差不超过 1 级")
+                            title: String(localized: "已按水平平衡分队"),
+                            subtitle: String(localized: "两队平均等级差不超过 1 级"))
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.lg)
@@ -423,9 +426,9 @@ struct OfferView: View {
 
     private func deadlineText(now: Date) -> String {
         if awaitsMe, let seat = mySeat {
-            return "请在\(DateText.deadline(seat.respondBy, now: now))前确认（\(MatchTiming.remainingText(until: seat.respondBy, now: now))）"
+            return String(localized: "请在\(DateText.deadline(seat.respondBy, now: now))前确认（\(MatchTiming.remainingText(until: seat.respondBy, now: now))）")
         }
-        return "最晚\(DateText.deadline(offer.lockAt, now: now))前全部确认，否则自动取消，不计入任何记录"
+        return String(localized: "最晚\(DateText.deadline(offer.lockAt, now: now))前全部确认，否则自动取消，不计入任何记录")
     }
 
     @ViewBuilder
@@ -440,18 +443,18 @@ struct OfferView: View {
                     .font(AppTheme.Typography.subheadlineBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Spacer()
-                statusPill("补位中", icon: "arrow.triangle.2.circlepath", fill: AppTheme.Colors.surfaceMuted)
+                statusPill(String(localized: "补位中"), icon: "arrow.triangle.2.circlepath", fill: AppTheme.Colors.surfaceMuted)
             } else if let user = matchManager.user(id: seat.userId) {
                 AvatarView(user: user, size: 32, )
                     .opensProfile(user.id, allowsInvite: false)
-                Text(user.id == ticket.userId ? "我" : user.nickname)
+                Text(user.id == ticket.userId ? String(localized: "我") : user.nickname)
                     .font(AppTheme.Typography.subheadlineBold)
                     .lineLimit(1)
                 Spacer()
                 if seat.response == .accepted {
-                    statusPill("已确认", icon: "checkmark", fill: AppTheme.Colors.mint)
+                    statusPill(String(localized: "已确认"), icon: "checkmark", fill: AppTheme.Colors.mint)
                 } else {
-                    statusPill("等待确认", icon: "hourglass", fill: AppTheme.Colors.surface)
+                    statusPill(String(localized: "等待确认"), icon: "hourglass", fill: AppTheme.Colors.surface)
                 }
             }
         }

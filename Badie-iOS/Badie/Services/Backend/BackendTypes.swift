@@ -84,57 +84,57 @@ enum BackendError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .invalidPhone: return "手机号格式不正确，请检查国家/地区和号码"
-        case .invalidCode: return "验证码不正确，请重新输入"
-        case .codeExpired: return "验证码已过期，请重新获取"
-        case .consentRequired: return "请先阅读并同意用户协议与隐私政策"
-        case .notSignedIn: return "请先登录"
-        case .invalidNickname: return "昵称需为 2-12 个字符"
-        case .userNotFound: return "没有找到这位球友"
-        case .alreadyFriends: return "你们已经是球友了"
-        case .requestAlreadySent: return "已经发送过申请，等待对方通过"
-        case .cannotFriendSelf: return "不能添加自己为球友"
-        case .blocked: return "无法与该用户互动"
-        case .messageEmpty: return "消息不能为空"
-        case .messageTooLong: return "消息不能超过 \(Message.maxContentLength) 字"
-        case .roomNotFound: return "房间不存在，请检查房间码"
-        case .roomFull: return "房间已满"
-        case .roomClosed: return "房间已关闭"
-        case .roomExpired: return "房间已过期"
-        case .notRoomOwner: return "只有房主可以进行此操作"
-        case .alreadyInRoom: return "你已经在一个房间中，请先退出"
-        case .levelOutOfRange(let range): return "这个局要求 \(range)，与你的水平不符"
-        case .notEnoughPlayers(let required, let current): return "还差 \(required - current) 人，需要 \(required) 人才能开始"
+        case .invalidPhone: return String(localized: "手机号格式不正确，请检查国家/地区和号码")
+        case .invalidCode: return String(localized: "验证码不正确，请重新输入")
+        case .codeExpired: return String(localized: "验证码已过期，请重新获取")
+        case .consentRequired: return String(localized: "请先阅读并同意用户协议与隐私政策")
+        case .notSignedIn: return String(localized: "请先登录")
+        case .invalidNickname: return String(localized: "昵称需为 2-12 个字符")
+        case .userNotFound: return String(localized: "没有找到这位球友")
+        case .alreadyFriends: return String(localized: "你们已经是球友了")
+        case .requestAlreadySent: return String(localized: "已经发送过申请，等待对方通过")
+        case .cannotFriendSelf: return String(localized: "不能添加自己为球友")
+        case .blocked: return String(localized: "无法与该用户互动")
+        case .messageEmpty: return String(localized: "消息不能为空")
+        case .messageTooLong: return String(localized: "消息不能超过 \(Message.maxContentLength) 字")
+        case .roomNotFound: return String(localized: "房间不存在，请检查房间码")
+        case .roomFull: return String(localized: "房间已满")
+        case .roomClosed: return String(localized: "房间已关闭")
+        case .roomExpired: return String(localized: "房间已过期")
+        case .notRoomOwner: return String(localized: "只有房主可以进行此操作")
+        case .alreadyInRoom: return String(localized: "你已经在一个房间中，请先退出")
+        case .levelOutOfRange(let range): return String(localized: "这个局要求 \(range)，与你的水平不符")
+        case .notEnoughPlayers(let required, let current): return String(localized: "还差 \(required - current) 人，需要 \(required) 人才能开始")
         case .invalidSlot(let reason): return reason
-        case .gameNotFound: return "球局不存在"
-        case .gameAlreadyFinished: return "球局已结束或已取消"
-        case .checkInNotOpen: return "开赛前 30 分钟才能签到"
-        case .surveyDuplicate: return "你已经评价过这场球了"
-        case .surveyExpired: return "评价已超过 48 小时，无法提交"
-        case .surveyInvalid: return "评价内容无效"
-        case .tooManyRecurringSlots: return "最多保存 \(TimeSlotConstants.maximumRecurringSlots) 个常用时间"
-        case .matchingSuspended: return "因多次爽约，快速匹配暂停中"
-        case .venueNameInvalid: return "球馆名称需为 2–60 个字符"
-        case .venueAddressIncomplete: return "请补全街道和城市，方便其他球友确认位置"
-        case .venueNotFound: return "没有找到这个球馆"
-        case .ticketOverlap: return "这个时间段你已经在找人了，可以先修改或取消那个请求"
-        case .tooLateToRequest: return "离开赛不到 30 分钟，来不及凑人了，换个时间试试"
-        case .offerClosed: return "这个匹配已经结束了"
-        case .venueDuplicate(let name): return "球馆库里已有“\(name)”，请直接选择它"
-        case .venueRateLimited: return "今天添加的球馆有点多，明天再来吧"
-        case .notFriends: return "加为球友后才能私信。可以先发好友申请，或在球局、球群里聊"
-        case .newAccountMessageLimit: return "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求"
-        case .messageRequestPending: return "已发出消息请求，对方接受后才能继续聊"
-        case .useGameChat: return "你们在同一场球局里，请在球局群聊里沟通"
-        case .requestContainsContact: return "消息请求里不能留链接或站外联系方式（手机号、微信等），对方接受后再聊"
-        case .chatClosed: return "这个群聊已经结束了"
-        case .groupNotFound: return "没有找到这个球群"
-        case .notGroupMember: return "加入球群后才能报名和聊天"
-        case .groupNameInvalid: return "球群名称需要 2–20 个字"
-        case .groupScheduleInvalid: return "固定场次需要 1–8 小时，名额 4–40 人"
-        case .sessionClosed: return "这一场已经结束或取消了"
-        case .ownerCannotLeave: return "群主不能直接退出，可以先把群交给其他组织者"
-        case .assessmentTooSoon(let date): return "每 90 天可以重测一次，下次：\(DateText.shortDay(date))"
+        case .gameNotFound: return String(localized: "球局不存在")
+        case .gameAlreadyFinished: return String(localized: "球局已结束或已取消")
+        case .checkInNotOpen: return String(localized: "开赛前 30 分钟才能签到")
+        case .surveyDuplicate: return String(localized: "你已经评价过这场球了")
+        case .surveyExpired: return String(localized: "评价已超过 48 小时，无法提交")
+        case .surveyInvalid: return String(localized: "评价内容无效")
+        case .tooManyRecurringSlots: return String(localized: "最多保存 \(TimeSlotConstants.maximumRecurringSlots) 个常用时间")
+        case .matchingSuspended: return String(localized: "因多次爽约，快速匹配暂停中")
+        case .venueNameInvalid: return String(localized: "球馆名称需为 2–60 个字符")
+        case .venueAddressIncomplete: return String(localized: "请补全街道和城市，方便其他球友确认位置")
+        case .venueNotFound: return String(localized: "没有找到这个球馆")
+        case .ticketOverlap: return String(localized: "这个时间段你已经在找人了，可以先修改或取消那个请求")
+        case .tooLateToRequest: return String(localized: "离开赛不到 30 分钟，来不及凑人了，换个时间试试")
+        case .offerClosed: return String(localized: "这个匹配已经结束了")
+        case .venueDuplicate(let name): return String(localized: "球馆库里已有“\(name)”，请直接选择它")
+        case .venueRateLimited: return String(localized: "今天添加的球馆有点多，明天再来吧")
+        case .notFriends: return String(localized: "加为球友后才能私信。可以先发好友申请，或在球局、球群里聊")
+        case .newAccountMessageLimit: return String(localized: "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求")
+        case .messageRequestPending: return String(localized: "已发出消息请求，对方接受后才能继续聊")
+        case .useGameChat: return String(localized: "你们在同一场球局里，请在球局群聊里沟通")
+        case .requestContainsContact: return String(localized: "消息请求里不能留链接或站外联系方式（手机号、微信等），对方接受后再聊")
+        case .chatClosed: return String(localized: "这个群聊已经结束了")
+        case .groupNotFound: return String(localized: "没有找到这个球群")
+        case .notGroupMember: return String(localized: "加入球群后才能报名和聊天")
+        case .groupNameInvalid: return String(localized: "球群名称需要 2–20 个字")
+        case .groupScheduleInvalid: return String(localized: "固定场次需要 1–8 小时，名额 4–40 人")
+        case .sessionClosed: return String(localized: "这一场已经结束或取消了")
+        case .ownerCannotLeave: return String(localized: "群主不能直接退出，可以先把群交给其他组织者")
+        case .assessmentTooSoon(let date): return String(localized: "每 90 天可以重测一次，下次：\(DateText.shortDay(date))")
         case .verificationInvalid(let reason): return reason
         }
     }
@@ -185,6 +185,16 @@ enum VenueIssue: String, Codable, CaseIterable, Identifiable {
     case other = "其他"
 
     var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .wrongLocation: String(localized: "位置或地址不对")
+        case .closed: String(localized: "已关门/不再开放")
+        case .duplicate: String(localized: "和另一个球馆重复")
+        case .notBadminton: String(localized: "不是羽毛球场地")
+        case .other: String(localized: "其他")
+        }
+    }
 }
 
 struct VenueReport: Codable, Hashable {

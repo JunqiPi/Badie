@@ -61,7 +61,7 @@ struct PublicRoomCard: View {
             if !room.tags.isEmpty {
                 HStack(spacing: 4) {
                     ForEach(room.tags.prefix(2)) { tag in
-                        TagPill(text: tag.rawValue, icon: tag.icon, fill: AppTheme.Colors.mint)
+                        TagPill(text: tag.title, icon: tag.icon, fill: AppTheme.Colors.mint)
                     }
                 }
             }
@@ -77,22 +77,22 @@ struct PublicRoomCard: View {
     @ViewBuilder
     private var seatsBadge: some View {
         if let me = currentUserId, room.contains(me) {
-            TagPill(text: "已加入", icon: "checkmark", fill: AppTheme.Colors.lime)
+            TagPill(text: String(localized: "已加入"), icon: "checkmark", fill: AppTheme.Colors.lime)
         } else if let me = currentUserId, room.isWaitlisted(me) {
-            TagPill(text: "候补中", fill: AppTheme.Colors.butter)
+            TagPill(text: String(localized: "候补中"), fill: AppTheme.Colors.butter)
         } else if room.isFull {
-            TagPill(text: "满员·可候补", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
+            TagPill(text: String(localized: "满员·可候补"), fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
         } else {
-            TagPill(text: "缺 \(room.openSeats) 人", fill: AppTheme.Colors.pink)
+            TagPill(text: String(localized: "缺 \(room.openSeats) 人"), fill: AppTheme.Colors.pink)
         }
     }
 
     private var accessibilityText: String {
-        var parts = ["\(room.mode.title)球局", room.levelRangeText]
+        var parts = [String(localized: "\(room.mode.title)球局"), room.levelRangeText]
         if let slot = room.slot { parts.append(slot.formattedFull) }
         if let court = room.court { parts.append(court.name) }
-        parts.append(room.isFull ? "已满员" : "还缺 \(room.openSeats) 人")
-        if let cost = room.costEstimate, cost.perPerson != nil { parts.append("每人约 \(cost.perPersonText)") }
+        parts.append(room.isFull ? String(localized: "已满员") : String(localized: "还缺 \(room.openSeats) 人"))
+        if let cost = room.costEstimate, cost.perPerson != nil { parts.append(String(localized: "每人约 \(cost.perPersonText)")) }
         return parts.joined(separator: "，")
     }
 }

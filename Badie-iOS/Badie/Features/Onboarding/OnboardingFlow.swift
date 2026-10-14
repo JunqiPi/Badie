@@ -42,6 +42,16 @@ enum TimePreset: String, CaseIterable, Identifiable, Hashable {
 
     var id: String { rawValue }
 
+    /// 展示用标题（本地化）
+    var title: String {
+        switch self {
+        case .weekdayEvening: return String(localized: "工作日晚上")
+        case .weekendMorning: return String(localized: "周末上午")
+        case .weekendAfternoon: return String(localized: "周末下午")
+        case .earlyMorning: return String(localized: "早起晨练")
+        }
+    }
+
     var icon: String {
         switch self {
         case .weekdayEvening: return "moon.stars.fill"
@@ -113,7 +123,7 @@ struct OnboardingFlow: View {
 
     private var header: some View {
         HStack(spacing: AppTheme.Spacing.md) {
-            IconButton(systemName: "chevron.left", accessibilityLabel: "上一步") { goBack() }
+            IconButton(systemName: "chevron.left", accessibilityLabel: String(localized: "上一步")) { goBack() }
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
                     Capsule().fill(AppTheme.Colors.surfaceMuted)
@@ -158,7 +168,7 @@ struct OnboardingFlow: View {
                 .frame(height: 230)
                 .frame(maxWidth: .infinity)
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                (Text("今晚，\n找个") + Text(markedText: "搭子") + Text("\n打一场。"))
+                (Text("今晚，\n找个") + Text(markedText: String(localized: "搭子")) + Text("\n打一场。"))
                     .font(AppTheme.Typography.display)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .lineSpacing(4)
@@ -169,9 +179,9 @@ struct OnboardingFlow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             HStack(spacing: AppTheme.Spacing.sm) {
-                TagPill(text: "水平匹配", icon: "chart.bar.fill", fill: AppTheme.Colors.lavender)
-                TagPill(text: "AA 透明", icon: Money.icon(for: CountryInfo.deviceCountry.currencyCode), fill: AppTheme.Colors.peach)
-                TagPill(text: "到场签到", icon: "checkmark.seal.fill", fill: AppTheme.Colors.mint)
+                TagPill(text: String(localized: "水平匹配"), icon: "chart.bar.fill", fill: AppTheme.Colors.lavender)
+                TagPill(text: String(localized: "AA 透明"), icon: Money.icon(for: CountryInfo.deviceCountry.currencyCode), fill: AppTheme.Colors.peach)
+                TagPill(text: String(localized: "到场签到"), icon: "checkmark.seal.fill", fill: AppTheme.Colors.mint)
             }
         }
     }
@@ -180,7 +190,7 @@ struct OnboardingFlow: View {
 
     private var phoneStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle("先用手机号\n登录或注册", subtitle: "未注册的手机号验证后会自动创建账号")
+            stepTitle(String(localized: "先用手机号\n登录或注册"), subtitle: String(localized: "未注册的手机号验证后会自动创建账号"))
             HStack(spacing: AppTheme.Spacing.sm) {
                 Menu {
                     Picker("国家/地区", selection: $form.phoneCountry) {
@@ -204,7 +214,7 @@ struct OnboardingFlow: View {
                 .accessibilityLabel("国家或地区")
                 .accessibilityValue("\(form.phoneCountry.nameZh)，+\(form.phoneCountry.callingCode)")
                 .onChange(of: form.phoneCountry) { _, _ in errorText = nil }
-                TextField(form.phoneCountry.phone.example.isEmpty ? "请输入手机号" : form.phoneCountry.phone.example, text: $form.phone)
+                TextField(form.phoneCountry.phone.example.isEmpty ? String(localized: "请输入手机号") : form.phoneCountry.phone.example, text: $form.phone)
                     .font(.system(.title3, design: .rounded, weight: .bold))
                     .monospacedDigit()
                     .keyboardType(.numberPad)
@@ -250,7 +260,7 @@ struct OnboardingFlow: View {
 
     private var codeStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle("输入验证码", subtitle: "已发送至 \(form.phoneNumber.masked)")
+            stepTitle(String(localized: "输入验证码"), subtitle: String(localized: "已发送至 \(form.phoneNumber.masked)"))
             ZStack {
                 TextField("", text: $form.code)
                     .keyboardType(.numberPad)
@@ -289,13 +299,13 @@ struct OnboardingFlow: View {
             }
 
             if let issued = form.issuedCode {
-                NoticeBanner(icon: "message.badge.filled.fill", text: "演示环境不发真实短信，验证码：\(issued)",
-                             tint: AppTheme.Colors.sky, actionTitle: "填入") {
+                NoticeBanner(icon: "message.badge.filled.fill", text: String(localized: "演示环境不发真实短信，验证码：\(issued)"),
+                             tint: AppTheme.Colors.sky, actionTitle: String(localized: "填入")) {
                     form.code = issued
                 }
             }
 
-            Button(resendRemaining > 0 ? "\(resendRemaining) 秒后可重新发送" : "重新发送验证码") {
+            Button(resendRemaining > 0 ? String(localized: "\(resendRemaining) 秒后可重新发送") : String(localized: "重新发送验证码")) {
                 Task { await sendCode() }
             }
             .buttonStyle(TextActionStyle())
@@ -308,7 +318,7 @@ struct OnboardingFlow: View {
 
     private var profileStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle("怎么称呼你？", subtitle: "昵称和头像会展示给球友，手机号不会")
+            stepTitle(String(localized: "怎么称呼你？"), subtitle: String(localized: "昵称和头像会展示给球友，手机号不会"))
             HStack {
                 Spacer()
                 AvatarView(text: form.avatar.symbol.isEmpty ? (form.nickname.first.map { String($0) } ?? "🏸") : form.avatar.symbol,
@@ -317,7 +327,7 @@ struct OnboardingFlow: View {
                 Spacer()
             }
             AvatarPaletteEditor(avatar: $form.avatar)
-            BrutalTextField(label: "昵称", placeholder: "2-12 个字", text: $form.nickname,
+            BrutalTextField(label: String(localized: "昵称"), placeholder: String(localized: "2-12 个字"), text: $form.nickname,
                             contentType: .nickname, errorText: errorText, characterLimit: 12)
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Text("性别（可选）")
@@ -335,7 +345,7 @@ struct OnboardingFlow: View {
 
     private var levelStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-            stepTitle("测一下你的水平", subtitle: "\(SkillAssessment.questions.count) 道题，按你能稳定做到的选，自动算出你的等级（细分到 −、本级、+）")
+            stepTitle(String(localized: "测一下你的水平"), subtitle: String(localized: "\(SkillAssessment.questions.count) 道题，按你能稳定做到的选，自动算出你的等级（细分到 −、本级、+）"))
             SkillAssessmentView(answers: $form.assessmentAnswers)
             if form.assessmentResult == nil {
                 Button {
@@ -362,19 +372,19 @@ struct OnboardingFlow: View {
 
     private var preferencesStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle("最后一步", subtitle: "这些偏好用于默认匹配设置，之后都能改")
+            stepTitle(String(localized: "最后一步"), subtitle: String(localized: "这些偏好用于默认匹配设置，之后都能改"))
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Text("常打")
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    ChoiceChip(title: "单打", icon: GameMode.singles.icon, isSelected: form.preferredMode == .singles) {
+                    ChoiceChip(title: String(localized: "单打"), icon: GameMode.singles.icon, isSelected: form.preferredMode == .singles) {
                         form.preferredMode = .singles
                     }
-                    ChoiceChip(title: "双打", icon: GameMode.doubles.icon, isSelected: form.preferredMode == .doubles) {
+                    ChoiceChip(title: String(localized: "双打"), icon: GameMode.doubles.icon, isSelected: form.preferredMode == .doubles) {
                         form.preferredMode = .doubles
                     }
-                    ChoiceChip(title: "都行", isSelected: form.preferredMode == nil) {
+                    ChoiceChip(title: String(localized: "都行"), isSelected: form.preferredMode == nil) {
                         form.preferredMode = nil
                     }
                 }
@@ -385,7 +395,7 @@ struct OnboardingFlow: View {
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 FlowLayout(spacing: AppTheme.Spacing.sm) {
                     ForEach(TimePreset.allCases) { preset in
-                        ChoiceChip(title: preset.rawValue, icon: preset.icon, isSelected: form.timePresets.contains(preset),
+                        ChoiceChip(title: preset.title, icon: preset.icon, isSelected: form.timePresets.contains(preset),
                                    tint: AppTheme.Colors.peach) {
                             if form.timePresets.contains(preset) {
                                 form.timePresets.remove(preset)
@@ -414,7 +424,7 @@ struct OnboardingFlow: View {
             HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
                 IconTile(systemName: "figure.badminton", fill: AppTheme.Colors.lime, size: 48)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(venues.isEmpty ? "常去哪几个球馆？（选填）" : "常去球馆")
+                    (venues.isEmpty ? Text("常去哪几个球馆？（选填）") : Text("常去球馆"))
                         .font(AppTheme.Typography.headline)
                         .foregroundStyle(AppTheme.Colors.ink)
                     if venues.isEmpty {
@@ -446,7 +456,7 @@ struct OnboardingFlow: View {
         HStack(spacing: AppTheme.Spacing.md) {
             IconTile(systemName: locationManager.isAuthorized ? "location.fill" : "location", fill: AppTheme.Colors.sky, size: 48)
             VStack(alignment: .leading, spacing: 2) {
-                Text(locationManager.isAuthorized ? "已开启定位" : "开启定位")
+                (locationManager.isAuthorized ? Text("已开启定位") : Text("开启定位"))
                     .font(AppTheme.Typography.headline)
                     .foregroundStyle(AppTheme.Colors.ink)
                 Text("用于找附近的球馆和球友，只在使用 App 时获取")
@@ -495,11 +505,11 @@ struct OnboardingFlow: View {
 
     private var primaryTitle: String {
         switch step {
-        case .welcome: return "手机号登录 / 注册"
-        case .phone: return "获取验证码"
-        case .code: return "验证"
-        case .profile, .level: return "下一步"
-        case .preferences: return "完成，开始约球"
+        case .welcome: return String(localized: "手机号登录 / 注册")
+        case .phone: return String(localized: "获取验证码")
+        case .code: return String(localized: "验证")
+        case .profile, .level: return String(localized: "下一步")
+        case .preferences: return String(localized: "完成，开始约球")
         }
     }
 
@@ -565,7 +575,7 @@ struct OnboardingFlow: View {
             do {
                 switch try await appState.verify(phone: form.phoneNumber.e164, code: form.code) {
                 case .signedIn(let user):
-                    appState.showToast("欢迎回来，\(user.nickname)", style: .success)
+                    appState.showToast(String(localized: "欢迎回来，\(user.nickname)"), style: .success)
                 case .needsProfile:
                     advance(to: .profile)
                 }
@@ -646,9 +656,9 @@ private struct WelcomeCardFan: View {
     @State private var spread = false
 
     private let cards: [(String, SkillTier, Color, Double)] = [
-        ("小红", SkillTier(level: 7, modifier: .minus), AppTheme.Colors.lavender, -14),
-        ("阿杰", SkillTier(level: 4, modifier: .plus), AppTheme.Colors.peach, 0),
-        ("小明", SkillTier(level: 6), AppTheme.Colors.sky, 14)
+        (String(localized: "小红"), SkillTier(level: 7, modifier: .minus), AppTheme.Colors.lavender, -14),
+        (String(localized: "阿杰"), SkillTier(level: 4, modifier: .plus), AppTheme.Colors.peach, 0),
+        (String(localized: "小明"), SkillTier(level: 6), AppTheme.Colors.sky, 14)
     ]
 
     var body: some View {
@@ -716,7 +726,7 @@ struct AvatarPaletteEditor: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     ForEach(symbols, id: \.self) { symbol in
-                        ChoiceChip(title: symbol.isEmpty ? "昵称首字" : symbol, isSelected: avatar.symbol == symbol) {
+                        ChoiceChip(title: symbol.isEmpty ? String(localized: "昵称首字") : symbol, isSelected: avatar.symbol == symbol) {
                             avatar.symbol = symbol
                         }
                     }

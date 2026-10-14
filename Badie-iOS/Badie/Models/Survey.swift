@@ -10,6 +10,15 @@ enum AttendanceAnswer: String, Codable, CaseIterable, Identifiable, Hashable {
 
     var id: String { rawValue }
 
+    /// 显示文字（rawValue 已持久化，不能改；显示走这里以便本地化）
+    var title: String {
+        switch self {
+        case .onTime: return String(localized: "准时到")
+        case .late: return String(localized: "迟到了")
+        case .noShow: return String(localized: "没来")
+        }
+    }
+
     var wasPunctual: Bool { self == .onTime }
 }
 
@@ -20,6 +29,14 @@ enum LevelCalibration: String, CaseIterable, Identifiable, Hashable {
     case higher = "比标的高"
 
     var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .lower: return String(localized: "比标的低")
+        case .accurate: return String(localized: "差不多")
+        case .higher: return String(localized: "比标的高")
+        }
+    }
 
     func rating(from displayed: SkillTier) -> SkillTier {
         switch self {
@@ -40,6 +57,18 @@ enum SurveyTag: String, CaseIterable, Identifiable, Codable, Hashable {
     case greatPartner = "默契搭档"
 
     var id: String { rawValue }
+
+    /// 显示文字（rawValue 已持久化，不能改；显示走这里以便本地化）
+    var title: String {
+        switch self {
+        case .friendly: return String(localized: "友善好相处")
+        case .punctual: return String(localized: "守时靠谱")
+        case .skilled: return String(localized: "球技扎实")
+        case .patient: return String(localized: "愿意带新手")
+        case .fairPlay: return String(localized: "不抢球")
+        case .greatPartner: return String(localized: "默契搭档")
+        }
+    }
 }
 
 /// 需要对方注意的地方：不公开、不计分。
@@ -52,13 +81,23 @@ enum SurveyIssue: String, CaseIterable, Identifiable, Codable, Hashable {
 
     var id: String { rawValue }
 
+    /// 显示文字（rawValue 已持久化，不能改；显示走这里以便本地化）
+    var title: String {
+        switch self {
+        case .unsafePlay: return String(localized: "动作危险/不注意安全")
+        case .rude: return String(localized: "言语不友善")
+        case .hogging: return String(localized: "抢球/不轮换")
+        case .unpaid: return String(localized: "AA 没结清")
+        }
+    }
+
     /// 私下提醒的措辞（建议式，不指责）
     var nudge: String {
         switch self {
-        case .unsafePlay: return "打球时多留意身边的人，动作幅度注意安全。"
-        case .rude: return "场上沟通可以再温和一点，大家都是来开心打球的。"
-        case .hogging: return "双打时注意轮换和分工，让搭档也有球打。"
-        case .unpaid: return "打完记得及时结清 AA，可以在球局里标记已付。"
+        case .unsafePlay: return String(localized: "打球时多留意身边的人，动作幅度注意安全。")
+        case .rude: return String(localized: "场上沟通可以再温和一点，大家都是来开心打球的。")
+        case .hogging: return String(localized: "双打时注意轮换和分工，让搭档也有球打。")
+        case .unpaid: return String(localized: "打完记得及时结清 AA，可以在球局里标记已付。")
         }
     }
 }
@@ -149,19 +188,19 @@ struct AttendanceRecord: Codable, Hashable {
 
         var title: String {
             switch self {
-            case .good: return "履约良好"
-            case .warned: return "已提醒"
-            case .prepayRequired: return "需预付"
-            case .suspended: return "暂停匹配"
+            case .good: return String(localized: "履约良好")
+            case .warned: return String(localized: "已提醒")
+            case .prepayRequired: return String(localized: "需预付")
+            case .suspended: return String(localized: "暂停匹配")
             }
         }
 
         var message: String {
             switch self {
-            case .good: return "保持准时到场，你的履约记录会让更多球友愿意和你约球。"
-            case .warned: return "近期有爽约或临时取消记录，请尽量提前 2 小时取消。"
-            case .prepayRequired: return "爽约次数较多，之后约球需先付 AA 才能确认。"
-            case .suspended: return "爽约次数过多，快速匹配已暂停 7 天。"
+            case .good: return String(localized: "保持准时到场，你的履约记录会让更多球友愿意和你约球。")
+            case .warned: return String(localized: "近期有爽约或临时取消记录，请尽量提前 2 小时取消。")
+            case .prepayRequired: return String(localized: "爽约次数较多，之后约球需先付 AA 才能确认。")
+            case .suspended: return String(localized: "爽约次数过多，快速匹配已暂停 7 天。")
             }
         }
     }

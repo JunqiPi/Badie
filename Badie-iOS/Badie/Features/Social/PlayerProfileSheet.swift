@@ -35,12 +35,12 @@ struct PlayerProfileSheet: View {
                 .padding(.top, AppTheme.Spacing.xl)
                 .padding(.bottom, AppTheme.Spacing.xl)
             } else {
-                EmptyStateView(icon: "person.fill.questionmark", title: "找不到这位球友")
+                EmptyStateView(icon: "person.fill.questionmark", title: String(localized: "找不到这位球友"))
             }
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .sheet(isPresented: $showReport) {
-            ReportSheet(userId: userId, nickname: user?.nickname ?? "TA")
+            ReportSheet(userId: userId, nickname: user?.nickname ?? String(localized: "TA"))
         }
     }
 
@@ -73,8 +73,8 @@ struct PlayerProfileSheet: View {
 
     private func statsRow(_ user: User) -> some View {
         HStack(spacing: AppTheme.Spacing.sm) {
-            StatTile(value: user.gamesBand, label: "打过")
-            StatTile(value: user.preferredMode?.title ?? "都可以", label: "偏好")
+            StatTile(value: user.gamesBand, label: String(localized: "打过"))
+            StatTile(value: user.preferredMode?.title ?? String(localized: "都可以"), label: String(localized: "偏好"))
         }
     }
 
@@ -84,10 +84,10 @@ struct PlayerProfileSheet: View {
             Text("球友印象")
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
-            PraiseTagsView(tags: user.reputation.publicTags, emptyText: "评价的球友还不到 5 位，暂不显示印象")
+            PraiseTagsView(tags: user.reputation.publicTags, emptyText: String(localized: "评价的球友还不到 5 位，暂不显示印象"))
             Text(user.isNewPlayer
-                 ? "评价不足 5 次，等级为问卷定级 \(SkillTier(rating: user.selfRating).text)，仅供参考"
-                 : "等级由问卷与球友评价综合得出")
+                 ? String(localized: "评价不足 5 次，等级为问卷定级 \(SkillTier(rating: user.selfRating).text)，仅供参考")
+                 : String(localized: "等级由问卷与球友评价综合得出"))
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
         }
@@ -140,7 +140,7 @@ struct PlayerProfileSheet: View {
             HStack(spacing: AppTheme.Spacing.md) {
                 IconTile(systemName: "sportscourt.fill", fill: AppTheme.Colors.lime, size: 36)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(together.isEmpty ? "还没一起打过" : "一起打过 \(together.count) 场")
+                    Text(together.isEmpty ? String(localized: "还没一起打过") : String(localized: "一起打过 \(together.count) 场"))
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
                     if let last = together.first {
@@ -153,7 +153,7 @@ struct PlayerProfileSheet: View {
             }
             HStack(spacing: AppTheme.Spacing.md) {
                 IconTile(systemName: "person.2.fill", fill: AppTheme.Colors.lavender, size: 36)
-                Text(mutual.isEmpty ? "没有共同球友" : "共同球友 \(mutual.count) 位")
+                Text(mutual.isEmpty ? String(localized: "没有共同球友") : String(localized: "共同球友 \(mutual.count) 位"))
                     .font(AppTheme.Typography.bodyBold)
                     .foregroundStyle(AppTheme.Colors.ink)
                 Spacer(minLength: 0)
@@ -201,7 +201,7 @@ struct PlayerProfileSheet: View {
                     Button("删除球友") {
                         Task {
                             try? await friendManager.remove(user.id)
-                            appState.showToast("已删除")
+                            appState.showToast(String(localized: "已删除"))
                         }
                     }
                     .buttonStyle(TextActionStyle())
@@ -210,7 +210,7 @@ struct PlayerProfileSheet: View {
                     Button("屏蔽") {
                         messageManager.block(user.id)
                         friendManager.reload()
-                        appState.showToast("已屏蔽，对方不会收到通知")
+                        appState.showToast(String(localized: "已屏蔽，对方不会收到通知"))
                         dismiss()
                     }
                     .buttonStyle(TextActionStyle())
@@ -237,7 +237,7 @@ private struct FriendActionButtonLarge: View {
             Button("通过好友申请") {
                 Task {
                     try? await friendManager.respond(incoming, accept: true)
-                    appState.showToast("已添加为球友", style: .success)
+                    appState.showToast(String(localized: "已添加为球友"), style: .success)
                 }
             }
             .buttonStyle(BrutalButtonStyle(kind: .primary, size: .medium))
@@ -246,7 +246,7 @@ private struct FriendActionButtonLarge: View {
                 Task {
                     do {
                         try await friendManager.sendRequest(to: userId)
-                        appState.showToast("申请已发送", style: .success)
+                        appState.showToast(String(localized: "申请已发送"), style: .success)
                     } catch {
                         appState.showError(error)
                     }
@@ -271,7 +271,7 @@ struct NotificationsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "通知") {
+            ScreenHeader(title: String(localized: "通知")) {
                 if inboxManager.unreadCount > 0 {
                     Button("全部已读") { inboxManager.markRead() }
                         .font(AppTheme.Typography.footnoteBold)
@@ -282,7 +282,7 @@ struct NotificationsView: View {
             ScrollView {
                 VStack(spacing: AppTheme.Spacing.sm) {
                     if inboxManager.items.isEmpty {
-                        EmptyStateView(icon: "bell.slash", title: "暂无通知", message: "好友申请、房间邀请、球局提醒都会出现在这里。")
+                        EmptyStateView(icon: "bell.slash", title: String(localized: "暂无通知"), message: String(localized: "好友申请、房间邀请、球局提醒都会出现在这里。"))
                     }
                     ForEach(inboxManager.items) { item in
                         Button {

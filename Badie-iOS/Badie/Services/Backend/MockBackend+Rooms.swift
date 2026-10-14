@@ -40,7 +40,7 @@ extension MockBackend {
         let me = try requireUser()
         if let slot = draft.slot, case .invalid(let reason) = slot.validate() { throw BackendError.invalidSlot(reason) }
         if draft.visibility == .publicListing, draft.court == nil || draft.slot == nil {
-            throw BackendError.invalidSlot("公开球局需要设置球馆和时间")
+            throw BackendError.invalidSlot(String(localized: "公开球局需要设置球馆和时间"))
         }
         await networkDelay()
         // 房主自己的水平必须在范围内
@@ -187,8 +187,8 @@ extension MockBackend {
     }
 
     private func notifyKicked(userId: String, room: Room) {
-        addInbox(InboxItem(kind: .kicked, title: "你已被移出房间 \(room.code)",
-                           body: "房主调整了人员，去看看其他球局吧。", relatedId: room.code), to: userId)
+        addInbox(InboxItem(kind: .kicked, title: String(localized: "你已被移出房间 \(room.code)"),
+                           body: String(localized: "房主调整了人员，去看看其他球局吧。"), relatedId: room.code), to: userId)
         if userId == currentUserId { emit(.kicked(roomCode: room.code)) }
     }
 
@@ -196,8 +196,8 @@ extension MockBackend {
         while !room.isFull, !room.waitlist.isEmpty {
             let next = room.waitlist.removeFirst()
             room.participants.append(next)
-            addInbox(InboxItem(kind: .waitlistPromoted, title: "候补成功，你已加入球局",
-                               body: room.court.map { "\($0.name) · \(room.slot?.formattedFull ?? "")" } ?? "房间 \(room.code)",
+            addInbox(InboxItem(kind: .waitlistPromoted, title: String(localized: "候补成功，你已加入球局"),
+                               body: room.court.map { "\($0.name) · \(room.slot?.formattedFull ?? "")" } ?? String(localized: "房间 \(room.code)"),
                                relatedId: room.code), to: next.userId)
         }
     }
@@ -213,7 +213,7 @@ extension MockBackend {
         for userId in userIds where !room.contains(userId) && !room.invitedUserIds.contains(userId) {
             room.invitedUserIds.append(userId)
             let threadId = MessageThread.id(for: me.id, userId)
-            let text = "邀请你加入\(room.mode.title)房间" + (room.slot.map { " · \($0.formattedFull)" } ?? "")
+            let text = String(localized: "邀请你加入\(room.mode.title)房间") + (room.slot.map { " · \($0.formattedFull)" } ?? "")
             let message = Message(threadId: threadId, senderId: me.id, content: text, deliveredAt: Date(),
                                   kind: .roomInvite(code: room.code))
             appendMessage(message, participants: [me.id, userId], countsAsUnread: true)
@@ -240,7 +240,7 @@ extension MockBackend {
             throw BackendError.notEnoughPlayers(required: room.requiredPlayerCount, current: room.participants.count)
         }
         guard let court = room.court, let slot = room.slot else {
-            throw BackendError.invalidSlot("开始前请先设置时间和球馆")
+            throw BackendError.invalidSlot(String(localized: "开始前请先设置时间和球馆"))
         }
         await networkDelay()
         let game = makeGame(from: room, court: court, slot: slot)
@@ -260,7 +260,7 @@ extension MockBackend {
         db.rooms[room.id] = room
         let everyone = room.participants.map(\.userId) + room.waitlist.map(\.userId)
         for userId in everyone where userId != room.ownerId || reason != .ownerClosed {
-            addInbox(InboxItem(kind: .roomClosed, title: "房间 \(room.code) 已关闭",
+            addInbox(InboxItem(kind: .roomClosed, title: String(localized: "房间 \(room.code) 已关闭"),
                                body: reason.message, relatedId: room.code), to: userId)
         }
         if let me = currentUserId, everyone.contains(me) {
@@ -306,7 +306,7 @@ extension MockBackend {
             reminderEnabled: false
         )
         for userId in ids where userId != room.ownerId {
-            addInbox(InboxItem(kind: .gameConfirmed, title: "球局已确认",
+            addInbox(InboxItem(kind: .gameConfirmed, title: String(localized: "球局已确认"),
                                body: "\(slot.formattedFull) · \(court.name)", relatedId: game.id), to: userId)
         }
         return game
@@ -325,8 +325,8 @@ extension MockBackend {
             room.participants.append(RoomParticipant(user: joiner))
             room.lastActivityAt = Date()
             self.db.rooms[roomId] = room
-            self.addInbox(InboxItem(kind: .roomJoined, title: "\(joiner.nickname) 加入了你的球局",
-                                    body: "\(joiner.displayLevelText) · 准时率 \(joiner.reputation.punctualityText)",
+            self.addInbox(InboxItem(kind: .roomJoined, title: String(localized: "\(joiner.nickname) 加入了你的球局"),
+                                    body: String(localized: "\(joiner.displayLevelText) · 准时率 \(joiner.reputation.punctualityText)"),
                                     relatedId: room.code), to: room.ownerId)
             self.scheduleSave()
             self.emit(.roomsChanged)
@@ -343,8 +343,8 @@ extension MockBackend {
             db.rooms[roomId] = room
             appendMessage(Message(threadId: threadId, senderId: botId, content: "来了来了，已进房间 👋", deliveredAt: Date()),
                           participants: [me, botId], countsAsUnread: true)
-            addInbox(InboxItem(kind: .roomJoined, title: "\(bot.nickname) 接受了邀请",
-                               body: "房间 \(room.code) · \(room.participants.count)/\(room.requiredPlayerCount) 人",
+            addInbox(InboxItem(kind: .roomJoined, title: String(localized: "\(bot.nickname) 接受了邀请"),
+                               body: String(localized: "房间 \(room.code) · \(room.participants.count)/\(room.requiredPlayerCount) 人"),
                                relatedId: room.code), to: room.ownerId)
         } else {
             db.rooms[roomId] = room

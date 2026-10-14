@@ -10,6 +10,18 @@ enum CourtAmenity: String, Codable, CaseIterable, Hashable {
     case cafe = "餐饮"
     case airConditioning = "空调"
 
+    /// 显示文字（rawValue 已持久化，不能改；显示走这里以便本地化）
+    var title: String {
+        switch self {
+        case .parking: return String(localized: "停车场")
+        case .shower: return String(localized: "淋浴")
+        case .locker: return String(localized: "储物柜")
+        case .rental: return String(localized: "器材租赁")
+        case .cafe: return String(localized: "餐饮")
+        case .airConditioning: return String(localized: "空调")
+        }
+    }
+
     var icon: String {
         switch self {
         case .parking: return "car.fill"
@@ -48,10 +60,10 @@ struct OperatingHours: Codable, Hashable {
 
     var formattedDaysOpen: String {
         let days = daysOpen.sorted()
-        if days.count == 7 { return "每天" }
-        if days == [2, 3, 4, 5, 6] { return "周一至周五" }
-        if days == [1, 7] { return "周末" }
-        return days.compactMap { (1...7).contains($0) ? RecurringTimeSlot.weekdayNames[$0 - 1] : nil }.joined(separator: "、")
+        if days.count == 7 { return String(localized: "每天") }
+        if days == [2, 3, 4, 5, 6] { return String(localized: "周一至周五") }
+        if days == [1, 7] { return String(localized: "周末") }
+        return days.compactMap { (1...7).contains($0) ? RecurringTimeSlot.weekdayNames[$0 - 1] : nil }.formatted(.list(type: .and))
     }
 
     /// 时间段是否完全落在营业时间内（跨午夜结束的按 24 点之后计）
@@ -159,9 +171,9 @@ enum VenueStatus: String, Codable, Hashable {
 
     var title: String {
         switch self {
-        case .verified: return "已核实"
-        case .confirmed: return "球友确认"
-        case .unconfirmed: return "待确认"
+        case .verified: return String(localized: "已核实")
+        case .confirmed: return String(localized: "球友确认")
+        case .unconfirmed: return String(localized: "待确认")
         }
     }
 
@@ -182,9 +194,13 @@ enum VenuePricing: Codable, Hashable {
 
     func text(currency: String) -> String {
         switch self {
-        case .perCourtHour(let price): return "\(Money.format(price, currency: currency))/场·时"
-        case .dropIn(let price): return "\(Money.format(price, currency: currency))/人次"
-        case .unknown: return "价格未知"
+        case .perCourtHour(let price):
+            let amount = Money.format(price, currency: currency)
+            return String(localized: "\(amount)/场·时")
+        case .dropIn(let price):
+            let amount = Money.format(price, currency: currency)
+            return String(localized: "\(amount)/人次")
+        case .unknown: return String(localized: "价格未知")
         }
     }
 
@@ -319,7 +335,7 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
         operatingHours?.covers(slot, calendar: calendar) ?? true
     }
 
-    var hoursText: String { operatingHours?.formattedTimeRange ?? "营业时间未知" }
+    var hoursText: String { operatingHours?.formattedTimeRange ?? String(localized: "营业时间未知") }
 
     /// 到用户的距离（公里）
     func distance(from coordinate: Coordinate) -> Double {

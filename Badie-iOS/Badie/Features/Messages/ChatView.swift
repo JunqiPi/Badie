@@ -30,7 +30,8 @@ struct ChatView: View {
             && messages.contains { $0.senderId == userId && ContactInfoDetector.mentionsOffPlatformContact($0.content) }
     }
 
-    private let quickReplies = ["几点开始？", "去哪个球馆？", "我带球", "我到了", "AA 就行"]
+    private let quickReplies = [String(localized: "几点开始？"), String(localized: "去哪个球馆？"), String(localized: "我带球"),
+                                String(localized: "我到了"), String(localized: "AA 就行")]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -40,8 +41,8 @@ struct ChatView: View {
                     LazyVStack(spacing: AppTheme.Spacing.sm) {
                         let receiptId = lastMineId
                         if messages.isEmpty {
-                            EmptyStateView(icon: "hand.wave.fill", title: "打个招呼吧",
-                                           message: "约时间、约球馆、约 AA，都可以在这里说。", tint: AppTheme.Colors.butter)
+                            EmptyStateView(icon: "hand.wave.fill", title: String(localized: "打个招呼吧"),
+                                           message: String(localized: "约时间、约球馆、约 AA，都可以在这里说。"), tint: AppTheme.Colors.butter)
                         }
                         ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                             if showsTimestamp(at: index) {
@@ -85,15 +86,15 @@ struct ChatView: View {
         .onAppear { messageManager.open(with: userId) }
         .onDisappear { messageManager.close(with: userId) }
         .sheet(isPresented: $showReport) {
-            ReportSheet(userId: userId, nickname: other?.nickname ?? "TA")
+            ReportSheet(userId: userId, nickname: other?.nickname ?? String(localized: "TA"))
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-        .alert("屏蔽 \(other?.nickname ?? "TA")？", isPresented: $showBlockConfirm) {
+        .alert("屏蔽 \(other?.nickname ?? String(localized: "TA"))？", isPresented: $showBlockConfirm) {
             Button("取消", role: .cancel) {}
             Button("屏蔽", role: .destructive) {
                 messageManager.block(userId)
-                appState.showToast("已屏蔽，对方不会收到通知")
+                appState.showToast(String(localized: "已屏蔽，对方不会收到通知"))
             }
         } message: {
             Text("屏蔽后对方无法给你发消息、加你好友或加入你的房间，也不会出现在匹配结果里。对方不会收到通知。")
@@ -103,7 +104,7 @@ struct ChatView: View {
     // MARK: Header
 
     private var header: some View {
-        ScreenHeader(title: other?.nickname ?? "聊天") {
+        ScreenHeader(title: other?.nickname ?? String(localized: "聊天")) {
             if let other {
                 AvatarView(user: other, size: 36)
                     .frame(width: 44, height: 44)
@@ -127,7 +128,7 @@ struct ChatView: View {
                 if isBlocked {
                     Button {
                         messageManager.unblock(userId)
-                        appState.showToast("已解除屏蔽")
+                        appState.showToast(String(localized: "已解除屏蔽"))
                     } label: {
                         Label("解除屏蔽", systemImage: "hand.raised.slash")
                     }
@@ -168,7 +169,7 @@ struct ChatView: View {
         VStack(spacing: AppTheme.Spacing.sm) {
             if showsContactWarning {
                 NoticeBanner(icon: "exclamationmark.shield.fill",
-                             text: "对方提到了站外联系方式或转账。见面打球前不需要转账、代付或提供验证码，遇到这类要求请举报。",
+                             text: String(localized: "对方提到了站外联系方式或转账。见面打球前不需要转账、代付或提供验证码，遇到这类要求请举报。"),
                              tint: AppTheme.Colors.pink)
             }
             if isIncomingRequest {
@@ -176,15 +177,15 @@ struct ChatView: View {
             }
             switch permission {
             case .blocked:
-                NoticeBanner(icon: "hand.raised.fill", text: "你已屏蔽对方，解除后才能继续聊天", tint: AppTheme.Colors.surfaceMuted,
-                             actionTitle: "解除") {
+                NoticeBanner(icon: "hand.raised.fill", text: String(localized: "你已屏蔽对方，解除后才能继续聊天"), tint: AppTheme.Colors.surfaceMuted,
+                             actionTitle: String(localized: "解除")) {
                     messageManager.unblock(userId)
                 }
             case .pendingRequest:
-                NoticeBanner(icon: "paperplane.fill", text: "已发出消息请求，对方接受后才能继续聊", tint: AppTheme.Colors.sky)
+                NoticeBanner(icon: "paperplane.fill", text: String(localized: "已发出消息请求，对方接受后才能继续聊"), tint: AppTheme.Colors.sky)
             case .gameChat(let gameId):
-                NoticeBanner(icon: "person.3.fill", text: "你们在同一场球局里，在球局群聊里沟通就行（赛后 48 小时关闭）",
-                             tint: AppTheme.Colors.lime, actionTitle: "去群聊") {
+                NoticeBanner(icon: "person.3.fill", text: String(localized: "你们在同一场球局里，在球局群聊里沟通就行（赛后 48 小时关闭）"),
+                             tint: AppTheme.Colors.lime, actionTitle: String(localized: "去群聊")) {
                     if let threadId = messageManager.gameChatId(for: gameId) {
                         router.open(.groupChat(threadId: threadId))
                     }
@@ -192,13 +193,13 @@ struct ChatView: View {
             case .friendsOnly:
                 VStack(spacing: AppTheme.Spacing.sm) {
                     NoticeBanner(icon: "person.crop.circle.badge.plus",
-                                 text: "加为球友后才能私信。陌生人不能直接发消息，是为了少一点骚扰和骗局。",
+                                 text: String(localized: "加为球友后才能私信。陌生人不能直接发消息，是为了少一点骚扰和骗局。"),
                                  tint: AppTheme.Colors.surfaceMuted)
                     FriendActionButton(userId: userId)
                 }
             case .newAccount:
                 NoticeBanner(icon: "hourglass",
-                             text: "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求；可以先在球群群聊里打招呼",
+                             text: String(localized: "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求；可以先在球群群聊里打招呼"),
                              tint: AppTheme.Colors.surfaceMuted)
             case .allowed, .request:
                 composer
@@ -214,7 +215,7 @@ struct ChatView: View {
     /// 对方发来的消息请求：接受 / 忽略（忽略对方不会知道）
     private var requestCard: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Label("\(other?.nickname ?? "TA") 想和你聊天", systemImage: "envelope.badge.fill")
+            Label("\(other?.nickname ?? String(localized: "TA")) 想和你聊天", systemImage: "envelope.badge.fill")
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
             Text("你们在同一个球群。接受后才能互相发消息；忽略的话对方不会知道。")
@@ -397,9 +398,9 @@ struct MessageBubble: View {
     }
 
     private var receiptText: String {
-        if let readAt = message.readAt { return "已读 \(DateText.time(readAt))" }
-        if message.isDelivered { return "已送达" }
-        return "发送中"
+        if let readAt = message.readAt { return String(localized: "已读 \(DateText.time(readAt))") }
+        if message.isDelivered { return String(localized: "已送达") }
+        return String(localized: "发送中")
     }
 }
 
@@ -425,7 +426,7 @@ struct ReportSheet: View {
                         .font(AppTheme.Typography.title)
                         .foregroundStyle(AppTheme.Colors.ink)
                     Spacer()
-                    IconButton(systemName: "xmark", accessibilityLabel: "关闭") { dismiss() }
+                    IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
                 }
                 .padding(.top, AppTheme.Spacing.xl)
                 Text("举报信息仅平台可见，我们会在 24 小时内处理。")
@@ -438,7 +439,7 @@ struct ReportSheet: View {
                             reason = option
                         } label: {
                             HStack {
-                                Text(option.rawValue)
+                                Text(option.title)
                                     .font(AppTheme.Typography.bodyBold)
                                     .foregroundStyle(AppTheme.Colors.ink)
                                 Spacer()
@@ -453,7 +454,7 @@ struct ReportSheet: View {
                         .accessibilityAddTraits(reason == option ? [.isSelected, .isButton] : .isButton)
                     }
                 }
-                BrutalTextField(label: "补充说明（可选）", placeholder: "发生了什么？", text: $detail, characterLimit: 200, axis: .vertical)
+                BrutalTextField(label: String(localized: "补充说明（可选）"), placeholder: String(localized: "发生了什么？"), text: $detail, characterLimit: 200, axis: .vertical)
                 Toggle(isOn: $alsoBlock) {
                     Text("同时屏蔽对方")
                         .font(AppTheme.Typography.bodyBold)
@@ -464,7 +465,7 @@ struct ReportSheet: View {
                     guard let reason else { return }
                     Task {
                         await messageManager.report(userId, reason: reason, detail: detail, alsoBlock: alsoBlock)
-                        appState.showToast("举报已提交，感谢你让社区更安全", style: .success)
+                        appState.showToast(String(localized: "举报已提交，感谢你让社区更安全"), style: .success)
                         dismiss()
                     }
                 }

@@ -51,6 +51,18 @@ enum ReportReason: String, CaseIterable, Identifiable, Codable, Hashable {
     case other = "其他"
 
     var id: String { rawValue }
+
+    /// 显示文字（rawValue 已持久化，不能改；显示走这里以便本地化）
+    var title: String {
+        switch self {
+        case .noShow: return String(localized: "爽约 / 临时放鸽子")
+        case .harassment: return String(localized: "骚扰或不当言论")
+        case .fakeLevel: return String(localized: "严重虚报水平")
+        case .scam: return String(localized: "推销、诈骗或引流")
+        case .unsafe: return String(localized: "球场上危险或不文明行为")
+        case .other: return String(localized: "其他")
+        }
+    }
 }
 
 // MARK: - 同馆常客

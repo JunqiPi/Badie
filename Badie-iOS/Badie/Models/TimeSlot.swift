@@ -41,16 +41,16 @@ struct TimeSlot: Codable, Hashable {
         let totalMinutes = Int(duration / 60)
         let hours = totalMinutes / 60
         let minutes = totalMinutes % 60
-        if minutes == 0 { return "\(hours) 小时" }
-        if hours == 0 { return "\(minutes) 分钟" }
-        return "\(hours) 小时 \(minutes) 分"
+        if minutes == 0 { return String(localized: "\(hours) 小时") }
+        if hours == 0 { return String(localized: "\(minutes) 分钟") }
+        return String(localized: "\(hours) 小时 \(minutes) 分")
     }
 
     var formattedTimeRange: String {
         "\(DateText.time(startTime))–\(DateText.time(endTime))"
     }
 
-    /// 例："今天 · 周三" / "10月15日 周三"
+    /// 例："今天 · 周三" / "10月15日周三"（按当前语言格式化）
     var formattedDate: String { DateText.relativeDay(date) }
 
     var formattedFull: String { "\(formattedDate) \(formattedTimeRange)" }
@@ -92,17 +92,17 @@ struct TimeSlot: Codable, Hashable {
     }
 
     func validate(now: Date = Date()) -> TimeSlotValidationResult {
-        guard endTime > startTime else { return .invalid(reason: "结束时间需要晚于开始时间") }
-        guard duration >= TimeSlotConstants.minimumDuration else { return .invalid(reason: "至少需要 1 小时") }
-        guard duration <= TimeSlotConstants.maximumDuration else { return .invalid(reason: "最长 8 小时") }
+        guard endTime > startTime else { return .invalid(reason: String(localized: "结束时间需要晚于开始时间")) }
+        guard duration >= TimeSlotConstants.minimumDuration else { return .invalid(reason: String(localized: "至少需要 1 小时")) }
+        guard duration <= TimeSlotConstants.maximumDuration else { return .invalid(reason: String(localized: "最长 8 小时")) }
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: now)
         let day = calendar.startOfDay(for: date)
-        guard day >= today else { return .invalid(reason: "不能选择过去的日期") }
+        guard day >= today else { return .invalid(reason: String(localized: "不能选择过去的日期")) }
         if let maxDate = calendar.date(byAdding: .day, value: TimeSlotConstants.maximumDaysAhead, to: today), day > maxDate {
-            return .invalid(reason: "只能选择未来 14 天内")
+            return .invalid(reason: String(localized: "只能选择未来 14 天内"))
         }
-        guard endTime > now else { return .invalid(reason: "这个时间段已经过去了") }
+        guard endTime > now else { return .invalid(reason: String(localized: "这个时间段已经过去了")) }
         return .valid
     }
 
@@ -183,10 +183,13 @@ struct RecurringTimeSlot: Identifiable, Codable, Hashable {
         self.isActive = isActive
     }
 
-    static let weekdayNames = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+    static let weekdayNames = [
+        String(localized: "周日"), String(localized: "周一"), String(localized: "周二"), String(localized: "周三"),
+        String(localized: "周四"), String(localized: "周五"), String(localized: "周六")
+    ]
 
     var dayOfWeekName: String {
-        (1...7).contains(dayOfWeek) ? Self.weekdayNames[dayOfWeek - 1] : "未知"
+        (1...7).contains(dayOfWeek) ? Self.weekdayNames[dayOfWeek - 1] : String(localized: "未知")
     }
 
     var formattedTimeRange: String {
@@ -226,14 +229,17 @@ extension Array where Element == RecurringTimeSlot {
 // MARK: - 日期文本
 
 enum DateText {
-    private static let timeFormatter = makeFormatter("HH:mm")
-    private static let dayFormatter = makeFormatter("M月d日 EEE")
-    private static let shortDayFormatter = makeFormatter("M/d")
+    /// 时刻，12/24 小时制随系统地区
+    private static let timeFormatter = makeFormatter(template: "jmm")
+    /// 月日 + 星期，如中文 "10月15日周三"、英文 "Wed, Oct 15"
+    private static let dayFormatter = makeFormatter(template: "MMMdEEE")
+    /// 数字月日，如 "10/15"
+    private static let shortDayFormatter = makeFormatter(template: "Md")
 
-    private static func makeFormatter(_ format: String) -> DateFormatter {
+    private static func makeFormatter(template: String) -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "zh_CN")
-        formatter.dateFormat = format
+        formatter.locale = .current
+        formatter.setLocalizedDateFormatFromTemplate(template)
         return formatter
     }
 
@@ -241,12 +247,13 @@ enum DateText {
 
     static func relativeDay(_ date: Date, now: Date = Date()) -> String {
         let calendar = Calendar.current
-        if calendar.isDate(date, inSameDayAs: now) { return "今天 · \(weekday(date))" }
+        let day = weekday(date)
+        if calendar.isDate(date, inSameDayAs: now) { return String(localized: "今天 · \(day)") }
         if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now), calendar.isDate(date, inSameDayAs: tomorrow) {
-            return "明天 · \(weekday(date))"
+            return String(localized: "明天 · \(day)")
         }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: yesterday) {
-            return "昨天 · \(weekday(date))"
+            return String(localized: "昨天 · \(day)")
         }
         return dayFormatter.string(from: date)
     }
@@ -256,9 +263,10 @@ enum DateText {
     /// 截止时间：“今天 17:00” / “明天 09:00” / “周五 09:00”
     static func deadline(_ date: Date, now: Date = Date()) -> String {
         let calendar = Calendar.current
-        if calendar.isDate(date, inSameDayAs: now) { return "今天 \(time(date))" }
+        let clock = time(date)
+        if calendar.isDate(date, inSameDayAs: now) { return String(localized: "今天 \(clock)") }
         if let tomorrow = calendar.date(byAdding: .day, value: 1, to: now), calendar.isDate(date, inSameDayAs: tomorrow) {
-            return "明天 \(time(date))"
+            return String(localized: "明天 \(clock)")
         }
         return "\(weekday(date)) \(time(date))"
     }
@@ -272,7 +280,7 @@ enum DateText {
         let calendar = Calendar.current
         if calendar.isDate(date, inSameDayAs: now) { return time(date) }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: yesterday) {
-            return "昨天"
+            return String(localized: "昨天")
         }
         return shortDay(date)
     }
@@ -281,33 +289,47 @@ enum DateText {
     static func relative(_ date: Date, now: Date = Date()) -> String {
         let seconds = max(0, Int(now.timeIntervalSince(date)))
         switch seconds {
-        case ..<3600: return "刚刚"
-        case ..<86400: return "\(seconds / 3600) 小时前"
-        case ..<(30 * 86400): return "\(seconds / 86400) 天前"
-        case ..<(365 * 86400): return "\(seconds / (30 * 86400)) 个月前"
-        default: return "\(seconds / (365 * 86400)) 年前"
+        case ..<3600: return String(localized: "刚刚")
+        case ..<86400:
+            let hours = seconds / 3600
+            return String(localized: "\(hours) 小时前")
+        case ..<(30 * 86400):
+            let days = seconds / 86400
+            return String(localized: "\(days) 天前")
+        case ..<(365 * 86400):
+            let months = seconds / (30 * 86400)
+            return String(localized: "\(months) 个月前")
+        default:
+            let years = seconds / (365 * 86400)
+            return String(localized: "\(years) 年前")
         }
     }
 
     /// 倒计时描述，例如 "还有 2 小时 15 分"
     static func countdown(to date: Date, now: Date = Date()) -> String {
         let seconds = Int(date.timeIntervalSince(now))
-        guard seconds > 0 else { return "已开始" }
+        guard seconds > 0 else { return String(localized: "已开始") }
         let days = seconds / 86400
         let hours = (seconds % 86400) / 3600
         let minutes = (seconds % 3600) / 60
-        if days > 0 { return "还有 \(days) 天" + (hours > 0 ? " \(hours) 小时" : "") }
-        if hours > 0 { return "还有 \(hours) 小时" + (minutes > 0 ? " \(minutes) 分" : "") }
-        return "还有 \(max(1, minutes)) 分钟"
+        if days > 0 {
+            return hours > 0 ? String(localized: "还有 \(days) 天 \(hours) 小时") : String(localized: "还有 \(days) 天")
+        }
+        if hours > 0 {
+            return minutes > 0 ? String(localized: "还有 \(hours) 小时 \(minutes) 分") : String(localized: "还有 \(hours) 小时")
+        }
+        let shownMinutes = max(1, minutes)
+        return String(localized: "还有 \(shownMinutes) 分钟")
     }
 
     /// 剩余时间（用于问卷截止等）
     static func remaining(until date: Date, now: Date = Date()) -> String {
         let seconds = Int(date.timeIntervalSince(now))
-        guard seconds > 0 else { return "已截止" }
+        guard seconds > 0 else { return String(localized: "已截止") }
         let hours = seconds / 3600
-        if hours >= 1 { return "剩 \(hours) 小时" }
-        return "剩 \(max(1, seconds / 60)) 分钟"
+        if hours >= 1 { return String(localized: "剩 \(hours) 小时") }
+        let minutes = max(1, seconds / 60)
+        return String(localized: "剩 \(minutes) 分钟")
     }
 }
 

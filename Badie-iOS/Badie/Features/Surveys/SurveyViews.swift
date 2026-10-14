@@ -8,14 +8,14 @@ struct SurveyListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "待评价")
+            ScreenHeader(title: String(localized: "待评价"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                     NoticeBanner(icon: "lock.shield.fill",
-                                 text: "评价匿名，只展示汇总结果；双方都提交后（或 48 小时后）才会计入，避免“互相客气”和报复性差评。",
+                                 text: String(localized: "评价匿名，只展示汇总结果；双方都提交后（或 48 小时后）才会计入，避免“互相客气”和报复性差评。"),
                                  tint: AppTheme.Colors.sky)
                     if surveyManager.pendingSurveys.isEmpty {
-                        EmptyStateView(icon: "checkmark.seal.fill", title: "都评价完啦", message: "谢谢你让社区更靠谱。", tint: AppTheme.Colors.mint)
+                        EmptyStateView(icon: "checkmark.seal.fill", title: String(localized: "都评价完啦"), message: String(localized: "谢谢你让社区更靠谱。"), tint: AppTheme.Colors.mint)
                     }
                     ForEach(surveyManager.pendingSurveys) { survey in
                         Button {
@@ -75,7 +75,7 @@ struct SurveyFormView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: "赛后评价")
+            ScreenHeader(title: String(localized: "赛后评价"))
             if let survey {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
@@ -108,8 +108,8 @@ struct SurveyFormView: View {
                 .background(AppTheme.Colors.canvas.ignoresSafeArea(edges: .bottom))
             } else {
                 Spacer()
-                EmptyStateView(icon: "hourglass.bottomhalf.filled", title: "这份评价已提交或已过期",
-                               message: "评价需要在球局结束后 48 小时内完成。")
+                EmptyStateView(icon: "hourglass.bottomhalf.filled", title: String(localized: "这份评价已提交或已过期"),
+                               message: String(localized: "评价需要在球局结束后 48 小时内完成。"))
                 Spacer()
             }
         }
@@ -144,11 +144,11 @@ struct SurveyFormView: View {
     }
 
     private var attendanceQuestion: some View {
-        question("TA 准时到场了吗？", hint: "到场情况会计入对方的履约记录") {
+        question(String(localized: "TA 准时到场了吗？"), hint: String(localized: "到场情况会计入对方的履约记录")) {
             HStack(spacing: AppTheme.Spacing.sm) {
                 ForEach(AttendanceAnswer.allCases) { answer in
                     optionCard(
-                        title: answer.rawValue,
+                        title: answer.title,
                         icon: icon(for: answer),
                         isSelected: attendance == answer,
                         tint: answer == .noShow ? AppTheme.Colors.pink : AppTheme.Colors.lime
@@ -161,11 +161,11 @@ struct SurveyFormView: View {
     }
 
     private func levelQuestion(_ survey: PendingSurvey) -> some View {
-        question("TA 的实际水平和标注的 \(survey.opponentTier.text) 比？", hint: "高低各一档（1/3 级）；差得多就精确调，越如实越好") {
+        question(String(localized: "TA 的实际水平和标注的 \(survey.opponentTier.text) 比？"), hint: String(localized: "高低各一档（1/3 级）；差得多就精确调，越如实越好")) {
             HStack(spacing: AppTheme.Spacing.sm) {
                 ForEach(LevelCalibration.allCases) { option in
                     optionCard(
-                        title: option.rawValue,
+                        title: option.title,
                         subtitle: option.rating(from: survey.opponentTier).text,
                         icon: icon(for: option),
                         isSelected: calibration == option,
@@ -194,16 +194,16 @@ struct SurveyFormView: View {
     }
 
     private var characterQuestion: some View {
-        question("球品如何？", hint: "\(characterHint) · 只用于匹配排序，不会显示分数") {
+        question(String(localized: "球品如何？"), hint: String(localized: "\(characterHint) · 只用于匹配排序，不会显示分数")) {
             RatingPicker(rating: $characterRating)
         }
     }
 
     private var tagsQuestion: some View {
-        question("TA 的优点（可选）", hint: "5 位以上球友评价后，大家给得最多的会显示在 TA 的主页") {
+        question(String(localized: "TA 的优点（可选）"), hint: String(localized: "5 位以上球友评价后，大家给得最多的会显示在 TA 的主页")) {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(SurveyTag.allCases) { tag in
-                    ChoiceChip(title: tag.rawValue, isSelected: tags.contains(tag), tint: AppTheme.Colors.mint) {
+                    ChoiceChip(title: tag.title, isSelected: tags.contains(tag), tint: AppTheme.Colors.mint) {
                         if tags.contains(tag) { tags.remove(tag) } else { tags.insert(tag) }
                     }
                 }
@@ -212,10 +212,10 @@ struct SurveyFormView: View {
     }
 
     private var issuesQuestion: some View {
-        question("有什么需要 TA 注意的？（可选）", hint: "不公开、不扣分；多位球友都提到时，我们会私下提醒 TA，不说是谁") {
+        question(String(localized: "有什么需要 TA 注意的？（可选）"), hint: String(localized: "不公开、不扣分；多位球友都提到时，我们会私下提醒 TA，不说是谁")) {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(SurveyIssue.allCases) { issue in
-                    ChoiceChip(title: issue.rawValue, isSelected: issues.contains(issue), tint: AppTheme.Colors.peach) {
+                    ChoiceChip(title: issue.title, isSelected: issues.contains(issue), tint: AppTheme.Colors.peach) {
                         if issues.contains(issue) { issues.remove(issue) } else { issues.insert(issue) }
                     }
                 }
@@ -239,11 +239,11 @@ struct SurveyFormView: View {
 
     private var characterHint: String {
         switch characterRating {
-        case 1: return "很差：言语冒犯或危险动作"
-        case 2: return "较差：不太尊重人"
-        case 3: return "一般"
-        case 4: return "不错：友善配合"
-        default: return "非常好：下次还想约"
+        case 1: return String(localized: "很差：言语冒犯或危险动作")
+        case 2: return String(localized: "较差：不太尊重人")
+        case 3: return String(localized: "一般")
+        case 4: return String(localized: "不错：友善配合")
+        default: return String(localized: "非常好：下次还想约")
         }
     }
 
@@ -337,7 +337,7 @@ struct SurveyFormView: View {
                 issues: SurveyIssue.allCases.filter { issues.contains($0) },
                 wantsRematch: wantsRematch
             )
-            appState.showToast("评价已提交，谢谢！", style: .success)
+            appState.showToast(String(localized: "评价已提交，谢谢！"), style: .success)
             router.pop()
             if let next = surveyManager.pending(forGame: survey.matchId).first {
                 router.open(.survey(pendingId: next.id))

@@ -21,9 +21,9 @@ struct VenueStatusBadge: View {
 
     private var accessibilityText: String {
         switch status {
-        case .verified: return "平台已核实地址"
-        case .confirmed: return "多位球友确认过地址"
-        case .unconfirmed: return "新添加，地址待确认"
+        case .verified: return String(localized: "平台已核实地址")
+        case .confirmed: return String(localized: "多位球友确认过地址")
+        case .unconfirmed: return String(localized: "新添加，地址待确认")
         }
     }
 }
@@ -134,8 +134,8 @@ struct VenueRow: View {
 
     private var metaText: String {
         var parts: [String] = []
-        if let courts = venue.courtCount { parts.append("\(courts) 片场地") }
-        if regulars > 0 { parts.append("\(regulars) 人常去") }
+        if let courts = venue.courtCount { parts.append(String(localized: "\(courts) 片场地")) }
+        if regulars > 0 { parts.append(String(localized: "\(regulars) 人常去")) }
         return parts.joined(separator: " · ")
     }
 
@@ -180,7 +180,7 @@ struct MapResultRow: View {
                     .font(AppTheme.Typography.headline)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(subtitle.isEmpty ? "地址待确认" : subtitle)
+                Text(subtitle.isEmpty ? String(localized: "地址待确认") : subtitle)
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -251,7 +251,7 @@ struct VenueAddressBlock: View {
             Button {
                 UIPasteboard.general.string = address.singleLine
                 Haptics.success()
-                appState.showToast("地址已复制", style: .success)
+                appState.showToast(String(localized: "地址已复制"), style: .success)
             } label: {
                 Image(systemName: "doc.on.doc")
                     .font(.system(size: 15, weight: .bold))
@@ -276,8 +276,8 @@ struct DuplicateChoiceList: View {
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
             Text(blocksAdding
-                 ? "名称和位置都跟已有球馆太接近，请直接选择它。大家选同一个球馆才能匹配到一起。"
-                 : "选同一个球馆，大家才能匹配到一起。如果是同楼的另一家，可以继续添加。")
+                 ? String(localized: "名称和位置都跟已有球馆太接近，请直接选择它。大家选同一个球馆才能匹配到一起。")
+                 : String(localized: "选同一个球馆，大家才能匹配到一起。如果是同楼的另一家，可以继续添加。"))
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
             VStack(spacing: 0) {
@@ -286,7 +286,7 @@ struct DuplicateChoiceList: View {
                     Button {
                         onChoose(duplicate.venue)
                     } label: {
-                        VenueRow(venue: duplicate.venue, distance: "相距 " + DistanceFormatter.string(km: duplicate.distanceMeters / 1000),
+                        VenueRow(venue: duplicate.venue, distance: String(localized: "相距 \(DistanceFormatter.string(km: duplicate.distanceMeters / 1000))"),
                                  accessory: .none)
                             .overlay(alignment: .bottomTrailing) {
                                 Text("是这个")
@@ -310,6 +310,6 @@ struct DuplicateChoiceList: View {
     private var blocksAdding: Bool { duplicates.contains { $0.kind.blocksAdding } }
 
     private var title: String {
-        blocksAdding ? "球馆库里已有这家球馆" : "同一位置已有球馆，是同一个吗？"
+        blocksAdding ? String(localized: "球馆库里已有这家球馆") : String(localized: "同一位置已有球馆，是同一个吗？")
     }
 }

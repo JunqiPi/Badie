@@ -106,7 +106,7 @@ extension MockBackend {
         }
         let title = "\(game.slot.formattedDate) \(DateText.time(game.slot.startTime)) · \(game.court.name)"
         let welcome = Message(threadId: threadId, senderId: "system",
-                              content: "球局已确认。这个群聊在赛后 48 小时关闭；开赛前 2 小时内取消会计入履约记录。",
+                              content: String(localized: "球局已确认。这个群聊在赛后 48 小时关闭；开赛前 2 小时内取消会计入履约记录。"),
                               sentAt: game.createdAt, deliveredAt: game.createdAt, kind: .system)
         db.messages[threadId] = [welcome]
         let thread = MessageThread(id: threadId, participantIds: game.playerIds.sorted(), lastMessage: welcome,
@@ -131,7 +131,7 @@ extension MockBackend {
             return existing
         }
         let welcome = Message(threadId: threadId, senderId: "system",
-                              content: "「\(group.name)」群聊。报名、候补在球群页面里，不用在群里接龙。",
+                              content: String(localized: "「\(group.name)」群聊。报名、候补在球群页面里，不用在群里接龙。"),
                               sentAt: date, deliveredAt: date, kind: .system)
         db.messages[threadId] = [welcome]
         let thread = MessageThread(id: threadId, participantIds: group.memberIds.sorted(), lastMessage: welcome,

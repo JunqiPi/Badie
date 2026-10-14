@@ -20,14 +20,14 @@ enum PersistenceError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .encodingFailed(let error):
-            return "数据编码失败: \(error.localizedDescription)"
+            return String(localized: "数据编码失败: \(error.localizedDescription)")
         case .decodingFailed(let error, let position):
             if let pos = position {
-                return "数据解码失败 (位置: \(pos)): \(error.localizedDescription)"
+                return String(localized: "数据解码失败 (位置: \(pos)): \(error.localizedDescription)")
             }
-            return "数据解码失败: \(error.localizedDescription)"
+            return String(localized: "数据解码失败: \(error.localizedDescription)")
         case .dataCorrupted(let key):
-            return "数据已损坏: \(key)"
+            return String(localized: "数据已损坏: \(key)")
         }
     }
 }
@@ -50,7 +50,7 @@ enum JSONErrorLocationExtractor {
              .keyNotFound(_, let context),
              .dataCorrupted(let context):
             let path = context.codingPath.map { $0.stringValue }.joined(separator: ".")
-            return path.isEmpty ? nil : "路径: \(path)"
+            return path.isEmpty ? nil : String(localized: "路径: \(path)")
         @unknown default:
             return nil
         }

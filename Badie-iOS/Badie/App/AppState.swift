@@ -10,9 +10,9 @@ enum AppAppearance: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .system: return "跟随系统"
-        case .light: return "浅色"
-        case .dark: return "深色"
+        case .system: return String(localized: "跟随系统")
+        case .light: return String(localized: "浅色")
+        case .dark: return String(localized: "深色")
         }
     }
 
@@ -133,13 +133,13 @@ final class AppState: ObservableObject {
             phone: phone, nickname: nickname, gender: gender, avatar: avatar, level: level,
             preferredMode: preferredMode, recurringSlots: recurringSlots, location: location, assessment: assessment
         )
-        showToast("注册成功，欢迎加入 🏸", style: .success)
+        showToast(String(localized: "注册成功，欢迎加入 🏸"), style: .success)
     }
 
     func updateProfile(_ user: User) async -> Bool {
         do {
             currentUser = try await backend.updateProfile(user)
-            showToast("资料已保存", style: .success)
+            showToast(String(localized: "资料已保存"), style: .success)
             return true
         } catch {
             showError(error)
@@ -153,12 +153,12 @@ final class AppState: ObservableObject {
 
     func deleteAccount() {
         backend.deleteAccount()
-        showToast("账号与数据已删除")
+        showToast(String(localized: "账号与数据已删除"))
     }
 
     func resetDemoData() {
         backend.resetAll()
-        showToast("演示数据已重置")
+        showToast(String(localized: "演示数据已重置"))
     }
 
     // MARK: UI helpers
