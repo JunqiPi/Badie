@@ -148,8 +148,11 @@ struct AssessmentResultCard: View {
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
             }
+            if !result.dimensions.isEmpty {
+                dimensionProfile
+            }
             if let gate = result.limitingGate {
-                notice("arrow.up.circle.fill", "还差一步：\(gate)")
+                notice("arrow.up.circle.fill", gate)
             } else if result.tier < SkillAssessment.maxTier, let next = SkillLevel.tierCriteria(for: result.tier.offset(by: 1)).first {
                 notice("arrow.up.circle.fill", "想到 \(result.tier.offset(by: 1).code)：\(next)")
             }
@@ -176,6 +179,36 @@ struct AssessmentResultCard: View {
         .accessibilityElement(children: .combine)
     }
 
+    /// 技术分项：每项几级，最强的标出来（技术特点）
+    private var dimensionProfile: some View {
+        let strengths = Set(result.strengths.map(\.id))
+        let lowest = result.dimensions.map(\.level).min()
+        return VStack(alignment: .leading, spacing: 6) {
+            Text("技术分项")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
+            FlowLayout(spacing: 6) {
+                ForEach(result.dimensions) { dimension in
+                    let isStrength = strengths.contains(dimension.id)
+                    let isWeak = !strengths.isEmpty && dimension.level == lowest
+                    HStack(spacing: 4) {
+                        if isStrength {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 9, weight: .bold))
+                        }
+                        Text("\(dimension.name) \(dimension.level)")
+                    }
+                    .font(AppTheme.Typography.caption.weight(.bold))
+                    .foregroundStyle(AppTheme.Colors.onAccent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(isWeak ? AppTheme.Colors.peach : Color.white.opacity(isStrength ? 0.9 : 0.55)))
+                    .accessibilityLabel("\(dimension.name) \(dimension.level) 级" + (isStrength ? "，技术特点" : isWeak ? "，短板" : ""))
+                }
+            }
+        }
+    }
+
     private func notice(_ icon: String, _ text: String) -> some View {
         Label(text, systemImage: icon)
             .font(AppTheme.Typography.footnoteBold)
@@ -196,6 +229,8 @@ struct SkillLevelGuideView: View {
     var scrollLevel: Int?
 
     @Environment(\.dismiss) private var dismiss
+    /// 展开了“分项标准”的等级
+    @State private var expanded: Set<Int> = []
 
     var body: some View {
         VStack(spacing: 0) {
@@ -215,7 +250,7 @@ struct SkillLevelGuideView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                        Text("1–9 级，每级再分 −、本级、+ 三档，共 27 档。3–6 级一级比一级多一个维度：技术会不会 → 好不好 → 稳不稳、会不会用战术 → 在俱乐部里的位置。对照“能稳定做到”的，而不是偶尔打出来的球；7 起是州级、全国、国际水平，只看能查到的赛果、排名和证书。")
+                        Text("1–9 级，每级再分 −、本级、+ 三档，共 27 档。3–6 级一级比一级多一个维度：技术会不会 → 主动球好不好 → 被动球能不能摆脱、战术 → 在俱乐部里的位置。每级可以展开看分项标准（步法、发力、前后场、攻防）。对照“能稳定做到”的，而不是偶尔打出来的球；7 起是州级、全国、国际水平，只看能查到的赛果、排名和证书。")
                             .font(AppTheme.Typography.subheadline)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -224,7 +259,7 @@ struct SkillLevelGuideView: View {
                             levelCard(level)
                                 .id(level)
                         }
-                        Text("1–6 级参考打球吧“业余 1–9 级”、中羽在线 0–9 级的子档写法和 USTA NTRP；7 起按 tournamentsoftware 公开成绩、USAB 全国排名、《运动员技术等级标准》（2025 版）和 BWF 世界排名划分。中国羽协的业余等级是“九级最低”，方向和这里相反；美国各赛事的组别强度不同，所以按“最高组 / 次高组”的相对位置认定。")
+                        Text("分项标准参考中羽在线论坛流传的 1–9 级分项描述；1–6 级还参考了打球吧“业余 1–9 级”和 USTA NTRP；7 起按 tournamentsoftware 公开成绩、USAB 全国排名、《运动员技术等级标准》（2025 版）和 BWF 世界排名划分。中国羽协的业余等级是“九级最低”，方向和这里相反；美国各赛事的组别强度不同，所以按“最高组 / 次高组”的相对位置认定。")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -233,6 +268,8 @@ struct SkillLevelGuideView: View {
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
                 .onAppear {
+                    // 默认展开当前所在的级（或演示时指定的级）
+                    if let level = scrollLevel ?? highlight?.level { expanded.insert(level) }
                     if let scrollLevel {
                         proxy.scrollTo(scrollLevel, anchor: .top)
                     } else if let highlight {
@@ -309,12 +346,67 @@ struct SkillLevelGuideView: View {
                     tierRow(tier)
                 }
             }
+            dimensionNotes(level)
         }
         .padding(AppTheme.Spacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .sticker(isCurrent ? AppTheme.Colors.lime.opacity(0.35) : AppTheme.Colors.surface, radius: AppTheme.Radius.md,
                  shadow: .zero)
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
+    }
+
+    /// 可展开的分项标准：步法、发力、前后场、攻防在这一级是什么样子
+    @ViewBuilder
+    private func dimensionNotes(_ level: Int) -> some View {
+        let notes = SkillLevel.dimensionNotes(for: level)
+        if !notes.isEmpty {
+            let isOpen = expanded.contains(level)
+            VStack(alignment: .leading, spacing: 6) {
+                Button {
+                    withAnimation(AppTheme.Motion.standard) {
+                        if isOpen { expanded.remove(level) } else { expanded.insert(level) }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "list.bullet.rectangle")
+                            .font(.system(size: 12, weight: .bold))
+                        Text(isOpen ? "收起分项标准" : "分项标准（\(notes.count) 项）")
+                            .font(AppTheme.Typography.footnoteBold)
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 11, weight: .bold))
+                            .rotationEffect(.degrees(isOpen ? 180 : 0))
+                    }
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .frame(minHeight: 32)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Lv.\(level) 分项标准")
+                .accessibilityValue(isOpen ? "已展开" : "已收起")
+                if isOpen {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(notes.indices, id: \.self) { index in
+                            let note = notes[index]
+                            HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.sm) {
+                                Text(note.name)
+                                    .font(AppTheme.Typography.footnoteBold)
+                                    .foregroundStyle(AppTheme.Colors.ink)
+                                    .frame(width: 72, alignment: .leading)
+                                Text(note.text)
+                                    .font(AppTheme.Typography.footnote)
+                                    .foregroundStyle(AppTheme.Colors.ink)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .accessibilityElement(children: .combine)
+                        }
+                    }
+                    .padding(AppTheme.Spacing.sm)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(AppTheme.Colors.surfaceMuted))
+                }
+            }
+        }
     }
 
     /// 每一档的标准（7 起需认证的档位带锁）
