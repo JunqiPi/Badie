@@ -51,6 +51,31 @@ jobs:
           tail -15 build.log
           exit $STATUS
 
+      - name: Package simulator app
+        if: steps.build.outcome == 'success'
+        run: ditto -c -k --sequesterRsrc --keepParent build/Build/Products/Debug-iphonesimulator/BadmintonBuddy.app BadmintonBuddy-sim.zip
+
+      - name: Upload simulator app
+        if: steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulator-app
+          path: BadmintonBuddy-iOS/BadmintonBuddy-sim.zip
+          retention-days: 14
+
+      # 设置了 APPETIZE_API_TOKEN（Secret）时，把这次构建更新到 Appetize 在线试玩；
+      # APPETIZE_PUBLIC_KEY（Variable）指定要更新的那个 App，保持试玩链接不变
+      - name: Update Appetize preview
+        if: steps.build.outcome == 'success' && github.event_name == 'push'
+        env:
+          APPETIZE_API_TOKEN: ${{ secrets.APPETIZE_API_TOKEN }}
+          APPETIZE_PUBLIC_KEY: ${{ vars.APPETIZE_PUBLIC_KEY }}
+        run: |
+          if [ -z "$APPETIZE_API_TOKEN" ]; then echo "未设置 APPETIZE_API_TOKEN，跳过"; exit 0; fi
+          curl -sS --fail -X POST "https://api.appetize.io/v1/apps${APPETIZE_PUBLIC_KEY:+/$APPETIZE_PUBLIC_KEY}" \
+            -H "X-API-KEY: $APPETIZE_API_TOKEN" -F "file=@BadmintonBuddy-sim.zip" -F "platform=ios" \
+            | python3 -c 'import sys, json; print("https://appetize.io/app/" + json.load(sys.stdin)["publicKey"])'
+
       - name: Run unit tests
         id: test
         timeout-minutes: 15
