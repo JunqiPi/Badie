@@ -65,9 +65,28 @@ final class SkillAssessmentTests: XCTestCase {
 
     func testClubTopWithoutTheSkillsIsNotSix() {
         // 在自己的局里很少输，但技术只到 4 级：俱乐部位置不算数
-        let result = SkillAssessment.evaluate(answers(breadth: 4, clear: 3, backhand: 1, smash: 2, defense: 2, doubles: 2,
+        let result = SkillAssessment.evaluate(answers(breadth: 4, clear: 3, backhand: 2, smash: 2, defense: 2, doubles: 2,
                                                       stability: 2, tactics: 1, standing: 5))
         XCTAssertEqual(result?.tier.code, "4")
+    }
+
+    func testLevelFourNeedsEveryTechniqueIncludingBackhand() {
+        // 自称全部技术都不错，但反手只能挡过网：到不了 4
+        let result = SkillAssessment.evaluate(answers(breadth: 4, clear: 3, backhand: 1, smash: 2, defense: 2, doubles: 2,
+                                                      stability: 2))
+        XCTAssertEqual(result?.tier.code, "4−")
+        XCTAssertEqual(result?.limitingGate?.contains("反手"), true)
+    }
+
+    func testTechniquesAreNotRequirementsAboveLevelFour() {
+        // 技术在 4 级就全部熟练；5 级以上只看稳定、战术、俱乐部位置
+        for tier in SkillTier.all where (5...6).contains(tier.level) {
+            XCTAssertFalse(SkillLevel.tierCriteria(for: tier).joined().contains("反手"), tier.code)
+        }
+        for level in 5...6 {
+            XCTAssertFalse(SkillLevel.anchors(for: level).joined().contains("反手"), "Lv.\(level)")
+        }
+        XCTAssertTrue(SkillLevel.tierCriteria(for: SkillTier(level: 4)).joined().contains("反手"))
     }
 
     func testInflatedClaimsAreCappedByActions() {
@@ -90,7 +109,7 @@ final class SkillAssessmentTests: XCTestCase {
         noExperience["experience"] = 0
         let capped = SkillAssessment.evaluate(noExperience)
         XCTAssertEqual(capped?.tier.code, "6")
-        XCTAssertEqual(capped?.limitingGate, "反手底线到底线，并有比赛或青训经历")
+        XCTAssertEqual(capped?.limitingGate, "有比赛或青训经历")
     }
 
     func testExperienceFloorRaisesLevelAndFlagsCalibration() {
