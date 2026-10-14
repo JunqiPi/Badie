@@ -31,35 +31,31 @@ enum Haptics {
     }
 }
 
-/// 本人头像照片的本地存储（不上传）
-enum AvatarStore {
-    private static func url(for userId: String) -> URL? {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("avatar-\(userId).jpg")
+/// 头像照片：上传前裁成 320×320 JPEG；显示时按“用户 + 版本”缓存解码结果
+@MainActor
+enum AvatarPhotos {
+    /// 由后端提供照片数据
+    static var source: @MainActor (String) -> Data? = { _ in nil }
+    private static var cache: [String: UIImage] = [:]
+
+    static func image(userId: String, avatar: Avatar) -> UIImage? {
+        guard let version = avatar.photoVersion else { return nil }
+        let key = "\(userId)#\(version)"
+        if let cached = cache[key] { return cached }
+        guard let data = source(userId), let image = UIImage(data: data) else { return nil }
+        cache[key] = image
+        return image
     }
 
-    static func image(for userId: String?) -> UIImage? {
-        guard let userId, let url = url(for: userId), let data = try? Data(contentsOf: url) else { return nil }
-        return UIImage(data: data)
-    }
-
-    static func save(_ image: UIImage, for userId: String) {
-        guard let url = url(for: userId) else { return }
-        let size = CGSize(width: 320, height: 320)
-        let renderer = UIGraphicsImageRenderer(size: size)
-        let scaled = renderer.image { _ in
+    /// 居中裁成正方形并压缩
+    nonisolated static func jpegData(from image: UIImage, side: CGFloat = 320) -> Data? {
+        let size = CGSize(width: side, height: side)
+        let scaled = UIGraphicsImageRenderer(size: size).image { _ in
             let aspect = max(size.width / image.size.width, size.height / image.size.height)
             let drawSize = CGSize(width: image.size.width * aspect, height: image.size.height * aspect)
             let origin = CGPoint(x: (size.width - drawSize.width) / 2, y: (size.height - drawSize.height) / 2)
             image.draw(in: CGRect(origin: origin, size: drawSize))
         }
-        if let data = scaled.jpegData(compressionQuality: 0.85) {
-            try? data.write(to: url, options: .atomic)
-        }
-    }
-
-    static func delete(for userId: String?) {
-        guard let userId, let url = url(for: userId) else { return }
-        try? FileManager.default.removeItem(at: url)
+        return scaled.jpegData(compressionQuality: 0.8)
     }
 }

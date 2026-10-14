@@ -22,7 +22,7 @@ struct SurveyListView: View {
                             router.open(.survey(pendingId: survey.id))
                         } label: {
                             HStack(spacing: AppTheme.Spacing.md) {
-                                AvatarView(text: survey.opponentAvatarText, paletteIndex: survey.opponentAvatar.paletteIndex, size: 46)
+                                AvatarView(avatar: survey.opponentAvatar, userId: survey.opponentId, text: survey.opponentAvatarText, size: 46)
                                     .opensProfile(survey.opponentId, allowsInvite: false)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("评价 \(survey.opponentNickname)")
@@ -120,7 +120,7 @@ struct SurveyFormView: View {
 
     private func opponentCard(_ survey: PendingSurvey) -> some View {
         HStack(spacing: AppTheme.Spacing.md) {
-            AvatarView(text: survey.opponentAvatarText, paletteIndex: survey.opponentAvatar.paletteIndex, size: 60)
+            AvatarView(avatar: survey.opponentAvatar, userId: survey.opponentId, text: survey.opponentAvatarText, size: 60)
                 .opensProfile(survey.opponentId, allowsInvite: false)
             VStack(alignment: .leading, spacing: 4) {
                 Text(survey.opponentNickname)

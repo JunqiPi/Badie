@@ -14,6 +14,7 @@ struct EditProfileView: View {
     @State private var showGuide = false
     @State private var photoItem: PhotosPickerItem?
     @State private var photo: UIImage?
+    @State private var isUploadingPhoto = false
     @State private var isSaving = false
     @State private var didLoad = false
 
@@ -87,6 +88,12 @@ struct EditProfileView: View {
                         image: photo
                     )
                     .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
+                    .overlay {
+                        if isUploadingPhoto {
+                            Circle().fill(Color.black.opacity(0.35))
+                            ProgressView().tint(.white)
+                        }
+                    }
                 }
                 PhotosPicker(selection: $photoItem, matching: .images) {
                     Image(systemName: "camera.fill")
@@ -101,14 +108,14 @@ struct EditProfileView: View {
             .frame(maxWidth: .infinity)
             if photo != nil {
                 Button("移除照片，使用文字头像") {
-                    AvatarStore.delete(for: appState.currentUser?.id)
+                    appState.backend.removeAvatarPhoto()
                     photo = nil
                 }
                 .buttonStyle(TextActionStyle())
             } else {
                 AvatarPaletteEditor(avatar: $avatar)
             }
-            Text("照片只保存在本机，不会上传")
+            Text("上传的照片会显示给其他球友")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
         }
@@ -204,18 +211,25 @@ struct EditProfileView: View {
         gender = user.gender
         preferredMode = user.preferredMode
         avatar = user.avatar
-        photo = AvatarStore.image(for: user.id)
+        photo = AvatarPhotos.image(userId: user.id, avatar: user.avatar)
     }
 
     private func loadPhoto(_ item: PhotosPickerItem) async {
-        guard let user = appState.currentUser,
-              let data = try? await item.loadTransferable(type: Data.self),
-              let image = UIImage(data: data) else {
+        guard let data = try? await item.loadTransferable(type: Data.self),
+              let image = UIImage(data: data),
+              let jpeg = AvatarPhotos.jpegData(from: image) else {
             appState.showToast("无法读取这张照片", style: .error)
             return
         }
-        AvatarStore.save(image, for: user.id)
-        photo = AvatarStore.image(for: user.id)
+        isUploadingPhoto = true
+        defer { isUploadingPhoto = false }
+        do {
+            let user = try await appState.backend.uploadAvatarPhoto(jpeg)
+            photo = AvatarPhotos.image(userId: user.id, avatar: user.avatar)
+            appState.showToast("头像已更新", style: .success)
+        } catch {
+            appState.showError(error)
+        }
     }
 
     private func save() async {

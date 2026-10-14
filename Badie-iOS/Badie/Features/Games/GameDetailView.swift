@@ -433,7 +433,7 @@ struct GameDetailView: View {
                         router.open(.survey(pendingId: survey.id))
                     } label: {
                         HStack(spacing: AppTheme.Spacing.md) {
-                            AvatarView(text: survey.opponentAvatarText, paletteIndex: survey.opponentAvatar.paletteIndex, size: 40)
+                            AvatarView(avatar: survey.opponentAvatar, userId: survey.opponentId, text: survey.opponentAvatarText, size: 40)
                                 .opensProfile(survey.opponentId)
                             Text("评价 \(survey.opponentNickname)")
                                 .font(AppTheme.Typography.headline)

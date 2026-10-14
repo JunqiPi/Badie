@@ -247,7 +247,7 @@ struct HomeView: View {
             router.open(.survey(pendingId: survey.id), in: .games)
         } label: {
             HStack(spacing: AppTheme.Spacing.md) {
-                AvatarView(text: survey.opponentAvatarText, paletteIndex: survey.opponentAvatar.paletteIndex, size: 40)
+                AvatarView(avatar: survey.opponentAvatar, userId: survey.opponentId, text: survey.opponentAvatarText, size: 40)
                     .opensProfile(survey.opponentId, allowsInvite: false)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("给 \(survey.opponentNickname) 的球局打个分")

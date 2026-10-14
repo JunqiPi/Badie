@@ -257,6 +257,8 @@ struct Avatar: Codable, Hashable {
     /// 表情或单字；为空时使用昵称首字
     var symbol: String
     var paletteIndex: Int
+    /// 上传过照片时的版本号（每次重新上传 +1，用于刷新缓存）；为空表示没有照片
+    var photoVersion: Int?
 
     static func `default`(for seed: String) -> Avatar {
         Avatar(symbol: "", paletteIndex: abs(seed.stableHash) % 6)

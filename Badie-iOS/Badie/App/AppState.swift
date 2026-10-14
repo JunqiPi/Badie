@@ -152,7 +152,6 @@ final class AppState: ObservableObject {
     }
 
     func deleteAccount() {
-        AvatarStore.delete(for: currentUser?.id)
         backend.deleteAccount()
         showToast("账号与数据已删除")
     }

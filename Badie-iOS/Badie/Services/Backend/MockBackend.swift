@@ -28,6 +28,7 @@ final class MockBackend {
         self.store = store
         db = store.load() ?? Database()
         ensureWorld()
+        AvatarPhotos.source = { [weak self] userId in self?.db.avatarPhotos[userId] }
     }
 
     // MARK: Events
@@ -216,6 +217,7 @@ final class MockBackend {
         guard let user = currentUser else { return }
         db.accounts[user.phone] = nil
         db.users[user.id] = nil
+        db.avatarPhotos[user.id] = nil
         db.friendships.removeAll { $0.involves(user.id) }
         db.friendRequests.removeAll { $0.fromUserId == user.id || $0.toUserId == user.id }
         for (threadId, thread) in db.threads where thread.participantIds.contains(user.id) {
@@ -289,13 +291,36 @@ final class MockBackend {
         user.nickname = updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines)
         user.bio = String(updated.bio.prefix(60))
         user.gender = updated.gender
-        user.avatar = updated.avatar
+        user.avatar.symbol = updated.avatar.symbol
+        user.avatar.paletteIndex = updated.avatar.paletteIndex
         user.preferredMode = updated.preferredMode
         // 等级不能在这里直接改：只能通过定级问卷（每 90 天一次）或球友评价校准
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))
         return user
+    }
+
+    /// 上传头像照片：其他球友在列表、资料页、聊天里都能看到
+    @discardableResult
+    func uploadAvatarPhoto(_ jpeg: Data) async throws -> User {
+        guard var user = currentUser else { throw BackendError.notSignedIn }
+        await networkDelay()
+        db.avatarPhotos[user.id] = jpeg
+        user.avatar.photoVersion = (user.avatar.photoVersion ?? 0) + 1
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+        return user
+    }
+
+    func removeAvatarPhoto() {
+        guard var user = currentUser else { return }
+        db.avatarPhotos[user.id] = nil
+        user.avatar.photoVersion = nil
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
     }
 
     func updateCurrentUserLocation(_ coordinate: Coordinate) {

@@ -208,7 +208,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；版本不符的本地数据直接丢弃
-    static let currentVersion = 5
+    static let currentVersion = 6
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
@@ -247,6 +247,8 @@ struct Database: Codable {
     var groupSessions: [String: GroupSession] = [:]
     /// 高水平认证申请
     var verificationRequests: [VerificationRequest] = []
+    /// 头像照片（JPEG）：用户 ID → 数据
+    var avatarPhotos: [String: Data] = [:]
 }
 
 // MARK: - 可复现的伪随机数（保证模拟世界在每次启动时一致）

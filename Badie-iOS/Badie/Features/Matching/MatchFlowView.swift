@@ -312,7 +312,7 @@ struct OfferView: View {
 
     private func playerCard(_ user: User, title: String, fill: Color) -> some View {
         VStack(spacing: AppTheme.Spacing.sm) {
-            AvatarView(user: user, size: 60, image: user.id == me?.id ? AvatarStore.image(for: user.id) : nil)
+            AvatarView(user: user, size: 60, )
             Text(title)
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.onAccent)
@@ -442,7 +442,7 @@ struct OfferView: View {
                 Spacer()
                 statusPill("补位中", icon: "arrow.triangle.2.circlepath", fill: AppTheme.Colors.surfaceMuted)
             } else if let user = matchManager.user(id: seat.userId) {
-                AvatarView(user: user, size: 32, image: user.id == me?.id ? AvatarStore.image(for: user.id) : nil)
+                AvatarView(user: user, size: 32, )
                     .opensProfile(user.id, allowsInvite: false)
                 Text(user.id == ticket.userId ? "我" : user.nickname)
                     .font(AppTheme.Typography.subheadlineBold)

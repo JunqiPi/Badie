@@ -6,7 +6,7 @@ struct AvatarView: View {
     let text: String
     var paletteIndex: Int = 0
     var size: CGFloat = 44
-    /// 本人照片（可选）
+    /// 头像照片（可选）
     var image: UIImage?
     var showsBorder = true
 
@@ -38,26 +38,29 @@ struct AvatarView: View {
 }
 
 extension AvatarView {
-    init(user: User, size: CGFloat = 44, image: UIImage? = nil) {
-        self.init(text: user.avatarText, paletteIndex: user.avatar.paletteIndex, size: size, image: image)
+    init(user: User, size: CGFloat = 44) {
+        self.init(avatar: user.avatar, userId: user.id, text: user.avatarText, size: size)
     }
 
     init(participant: RoomParticipant, size: CGFloat = 44) {
-        self.init(text: participant.avatarText, paletteIndex: participant.avatar.paletteIndex, size: size)
+        self.init(avatar: participant.avatar, userId: participant.userId, text: participant.avatarText, size: size)
+    }
+
+    /// 别人的头像：有上传的照片就显示照片
+    init(avatar: Avatar, userId: String, text: String, size: CGFloat = 44) {
+        self.init(text: text, paletteIndex: avatar.paletteIndex, size: size,
+                  image: AvatarPhotos.image(userId: userId, avatar: avatar))
     }
 }
 
-/// 当前用户头像（自动读取本地照片）
+/// 当前用户头像
 struct MyAvatarView: View {
     @EnvironmentObject private var appState: AppState
     var size: CGFloat = 44
-    /// 变更后强制刷新
-    var refreshToken: Int = 0
 
     var body: some View {
         if let user = appState.currentUser {
-            AvatarView(user: user, size: size, image: AvatarStore.image(for: user.id))
-                .id(refreshToken)
+            AvatarView(user: user, size: size)
         } else {
             AvatarView(text: "🏸", size: size)
         }
