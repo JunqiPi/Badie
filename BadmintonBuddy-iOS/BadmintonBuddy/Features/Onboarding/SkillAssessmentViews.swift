@@ -88,7 +88,7 @@ struct SkillAssessmentView: View {
 
     private func optionRow(_ option: AssessmentOption, question: AssessmentQuestion) -> some View {
         let selected = answers[question.id] == option.id
-        let letters = ["A", "B", "C", "D", "E"]
+        let letters = ["A", "B", "C", "D", "E", "F", "G"]
         return Button {
             Haptics.selection()
             answers[question.id] = option.id
