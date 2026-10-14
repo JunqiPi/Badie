@@ -81,13 +81,9 @@ struct PlayerProfileSheet: View {
     /// 别人只看到正面印象和“靠谱”徽章；评分数字只在内部用于匹配排序
     private func reputationCard(_ user: User) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            HStack {
-                Text("球友印象")
-                    .font(AppTheme.Typography.headline)
-                    .foregroundStyle(AppTheme.Colors.ink)
-                Spacer()
-                if user.isReliable { ReliableBadge() }
-            }
+            Text("球友印象")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.ink)
             PraiseTagsView(tags: user.reputation.publicTags, emptyText: "评价的球友还不到 5 位，暂不显示印象")
             Text(user.isNewPlayer
                  ? "评价不足 5 次，等级为自评 Lv.\(user.selfReportedLevel)，仅供参考"
