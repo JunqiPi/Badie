@@ -423,6 +423,8 @@ extension MockBackend {
             appendSeedRecord(id: "seed-record-\(index)-\(userId)", date: date, venue: court,
                              teams: [[userId], [rival]], winner: index % 3 == 2 ? 1 : 0)
         }
+        db.users[userId]?.totalGames += rivals.count
+        db.users[userId]?.attendance.gamesPlayed += rivals.count
         seedIncomingChallenge(for: userId, at: seedVenues.first, now: now)
 
         // 站内通知

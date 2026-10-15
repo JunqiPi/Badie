@@ -63110,7 +63110,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Play %lld more confirmed games this week to qualify (at least %lld different opponents)"
+            "value" : "Games needed to qualify this week: %1$lld (at least %2$lld different opponents)"
           }
         },
         "hi" : {
