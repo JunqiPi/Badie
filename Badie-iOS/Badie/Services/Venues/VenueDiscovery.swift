@@ -22,7 +22,7 @@ enum VenueDiscovery {
     }
 
     /// 名称是否指同一个地方：去掉空格后互相包含（韩文、日文名常有空格差异），或分词相似
-    static func isSamePlace(_ a: String, _ b: String) -> Bool {
+    nonisolated static func isSamePlace(_ a: String, _ b: String) -> Bool {
         let compactA = VenueSearch.normalize(a).replacingOccurrences(of: " ", with: "")
         let compactB = VenueSearch.normalize(b).replacingOccurrences(of: " ", with: "")
         if min(compactA.count, compactB.count) >= 3, compactA.contains(compactB) || compactB.contains(compactA) { return true }
