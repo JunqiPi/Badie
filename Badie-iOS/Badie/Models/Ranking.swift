@@ -132,6 +132,9 @@ enum Rankings {
     /// 注册满这么多天才上榜（小号刷榜成本更高）
     static let minimumAccountAgeDays = 7
     static let boardSize = 50
+    /// 近 60 天和至少 3 位不同对手有赛果争议的人暂不上榜（应对故意拒认），由人工复核后恢复
+    static let disputeLimit = 3
+    static let disputeWindowDays = 60
 
     // MARK: 时间段
 

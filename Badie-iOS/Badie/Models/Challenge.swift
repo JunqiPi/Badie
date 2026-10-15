@@ -51,6 +51,11 @@ struct Challenge: Identifiable, Codable, Hashable {
     var status: ChallengeStatus
     var respondedAt: Date?
     var gameId: String?
+    /// 双打：发起人带的搭档；对方接受时再选自己的搭档
+    var challengerPartnerId: String?
+    var targetPartnerId: String?
+
+    var mode: GameMode { challengerPartnerId == nil ? .singles : .doubles }
 
     /// 对方 48 小时内不回应就自动过期
     static let responseWindow: TimeInterval = 48 * 3600
@@ -71,7 +76,9 @@ struct Challenge: Identifiable, Codable, Hashable {
         status == .pending && now >= expiresAt
     }
 
-    func involves(_ userId: String) -> Bool { challengerId == userId || targetId == userId }
+    func involves(_ userId: String) -> Bool {
+        [challengerId, targetId, challengerPartnerId, targetPartnerId].contains(userId)
+    }
 
     func other(than userId: String) -> String { challengerId == userId ? targetId : challengerId }
 }

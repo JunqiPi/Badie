@@ -159,6 +159,8 @@ enum VenueSource: String, Codable, Hashable {
     case appleMaps
     /// 用户手动添加（放图钉/输入地址/粘贴地图链接）
     case player
+    /// 按城市从 OpenStreetMap 导入（未实地核实）
+    case openStreetMap
 }
 
 enum VenueStatus: String, Codable, Hashable {

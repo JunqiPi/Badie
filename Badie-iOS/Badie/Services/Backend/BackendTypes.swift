@@ -228,7 +228,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；版本不符的本地数据直接丢弃
-    static let currentVersion = 7
+    static let currentVersion = 8
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID

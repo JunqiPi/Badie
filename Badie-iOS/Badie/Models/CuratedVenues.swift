@@ -5,7 +5,7 @@ import Foundation
 // 地址至少有 2 个独立来源互相印证，坐标来自门牌地址地理编码。见 docs/DESIGN.md §9。
 
 extension BadmintonCourt {
-    static var curated: [BadmintonCourt] { curatedUS + curatedBeijing }
+    static var curated: [BadmintonCourt] { curatedUS + curatedBeijing + curatedMY }
 
     /// 北京（国内演示与测试用）
     static let curatedBeijing: [BadmintonCourt] = [

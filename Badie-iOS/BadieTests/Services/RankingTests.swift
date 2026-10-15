@@ -193,4 +193,46 @@ final class RankingTests: XCTestCase {
             XCTAssertEqual(error as? BackendError, .profileContainsContact)
         }
     }
+
+    func testDoublesChallengeBuildsTwoTeamsWithPartners() async throws {
+        let me = signUp()
+        let bots = backend.db.bots.keys.sorted()
+        let (partner, rival, rivalPartner) = (bots[0], bots[1], bots[2])
+        backend.db.friendships.append(Friendship(between: me.id, and: partner, createdAt: Date()))
+        backend.db.friendships.append(Friendship(between: rival, and: rivalPartner, createdAt: Date()))
+        backend.db.users[rival]?.privacy.challengePolicy = .everyone
+        do {
+            try await backend.sendChallenge(to: rival, court: BadmintonCourt.curatedUS[0], slot: TimeSlot.suggestedDefault(),
+                                            message: "", partnerId: rivalPartner)
+            XCTFail("搭档必须是自己的球友")
+        } catch {}
+        let challenge = try await backend.sendChallenge(to: rival, court: BadmintonCourt.curatedUS[0],
+                                                        slot: TimeSlot.suggestedDefault(), message: "", partnerId: partner)
+        XCTAssertEqual(challenge.mode, .doubles)
+
+        backend.currentUserIdOverride(rival)
+        do {
+            _ = try await backend.respondToChallenge(id: challenge.id, accept: true)
+            XCTFail("接受双打挑战要选搭档")
+        } catch {}
+        let accepted = try await backend.respondToChallenge(id: challenge.id, accept: true, partnerId: rivalPartner)
+        let game = try XCTUnwrap(accepted)
+        XCTAssertEqual(game.mode, .doubles)
+        XCTAssertEqual(game.teams, [[me.id, partner], [rival, rivalPartner]])
+    }
+
+    func testRepeatedDisputesKeepPlayerOffBoards() async throws {
+        let me = signUp()
+        backend.db.users[me.id]?.joinDate = Date().addingTimeInterval(-30 * 86400)
+        XCTAssertTrue(backend.isListedOnBoards(me.id))
+        for (index, rival) in backend.db.bots.keys.sorted().prefix(Rankings.disputeLimit).enumerated() {
+            var game = finishedGame(id: "d\(index)", players: [me.id, rival])
+            game.status = .completed
+            game.resultReports = [ResultReport(reporterId: me.id, winningTeam: 0, score: "", reportedAt: Date()),
+                                  ResultReport(reporterId: rival, winningTeam: 1, score: "", reportedAt: Date())]
+            backend.db.games[game.id] = game
+        }
+        XCTAssertFalse(backend.isListedOnBoards(me.id), "和 3 位不同对手都有争议，暂不上榜")
+        XCTAssertNotNil(backend.boardAbsenceReason())
+    }
 }

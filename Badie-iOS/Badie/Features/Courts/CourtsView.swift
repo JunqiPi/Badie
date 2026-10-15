@@ -374,7 +374,12 @@ struct CourtDetailSheet: View {
         case .confirmed:
             return String(localized: "\(venue.confirmedBy.count) 位球友确认过地址\(freshness)")
         case .unconfirmed:
-            let origin = venue.source == .appleMaps ? String(localized: "来自 Apple 地图，由球友加入") : String(localized: "由球友添加")
+            let origin: String
+            switch venue.source {
+            case .appleMaps: origin = String(localized: "来自 Apple 地图，由球友加入")
+            case .openStreetMap: origin = String(localized: "来自 © OpenStreetMap 贡献者")
+            default: origin = String(localized: "由球友添加")
+            }
             return String(localized: "\(origin) · \(venue.confirmedBy.count)/\(BadmintonCourt.confirmationsNeeded) 位确认\(freshness)")
         }
     }

@@ -49,6 +49,12 @@ final class VenueTests: XCTestCase {
             XCTAssertNotNil(TimeZone(identifier: zone), venue.name)
             XCTAssertTrue((-90...90).contains(venue.location.latitude) && (-180...180).contains(venue.location.longitude))
         }
+        for venue in BadmintonCourt.curatedMY {
+            XCTAssertEqual(venue.source, .openStreetMap)
+            XCTAssertEqual(venue.status, .unconfirmed, "OSM 导入未实地核实")
+            XCTAssertTrue((2.5...3.6).contains(venue.location.latitude) && (101.2...102.0).contains(venue.location.longitude),
+                          "\(venue.name) 不在巴生谷")
+        }
         for venue in BadmintonCourt.curatedUS {
             XCTAssertEqual(venue.currencyCode, "USD")
             XCTAssertTrue((24...50).contains(venue.location.latitude), "\(venue.name) 坐标不在美国本土")

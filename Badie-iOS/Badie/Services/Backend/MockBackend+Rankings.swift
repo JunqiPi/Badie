@@ -140,8 +140,18 @@ extension MockBackend {
     func isListedOnBoards(_ userId: String, now: Date = Date()) -> Bool {
         guard let user = db.users[userId], user.privacy.showsOnLeaderboards else { return false }
         guard now.timeIntervalSince(user.joinDate) >= Double(Rankings.minimumAccountAgeDays) * 86400 else { return false }
+        guard disputedOpponents(of: userId, now: now) < Rankings.disputeLimit else { return false }
         guard let me = currentUserId else { return true }
         return !isBlockedEitherWay(me, userId) && !(db.hiddenFromBoards[me] ?? []).contains(userId)
+    }
+
+    /// 近 60 天里和多少位不同对手有过赛果争议
+    func disputedOpponents(of userId: String, now: Date = Date()) -> Int {
+        let since = now.addingTimeInterval(-Double(Rankings.disputeWindowDays) * 86400)
+        let opponents = db.games.values
+            .filter { $0.slot.startTime > since && $0.team(of: userId) != nil && $0.resultStatus(now: now) == .disputed }
+            .flatMap { game in game.teams.enumerated().filter { $0.offset != game.team(of: userId) }.flatMap(\.element) }
+        return Set(opponents).count
     }
 
     /// 我为什么不在榜上（在榜上时为 nil）
@@ -150,6 +160,9 @@ extension MockBackend {
         if !me.privacy.showsOnLeaderboards { return String(localized: "你在设置里关闭了上榜") }
         let ready = me.joinDate.addingTimeInterval(Double(Rankings.minimumAccountAgeDays) * 86400)
         if now < ready { return String(localized: "注册满 \(Rankings.minimumAccountAgeDays) 天后上榜（\(DateText.shortDay(ready)) 起）") }
+        if disputedOpponents(of: me.id, now: now) >= Rankings.disputeLimit {
+            return String(localized: "最近 \(Rankings.disputeWindowDays) 天和多位球友有赛果争议，暂不上榜，核实后恢复")
+        }
         return nil
     }
 
@@ -239,18 +252,24 @@ extension MockBackend {
     }
 
     @discardableResult
-    func sendChallenge(to targetId: String, court: BadmintonCourt, slot: TimeSlot, message: String) async throws -> Challenge {
+    func sendChallenge(to targetId: String, court: BadmintonCourt, slot: TimeSlot, message: String,
+                       partnerId: String? = nil) async throws -> Challenge {
         let me = try requireUser()
         let availability = challengeAvailability(for: targetId)
         if let reason = availability.reason { throw BackendError.challengeUnavailable(reason) }
+        if let partnerId, !isValidPartner(partnerId, for: me.id, excluding: [targetId]) {
+            throw BackendError.challengeUnavailable(String(localized: "搭档需要是你的球友"))
+        }
         if case .invalid(let reason) = slot.validate() { throw BackendError.invalidSlot(reason) }
         let note = String(message.trimmingCharacters(in: .whitespacesAndNewlines).prefix(Challenge.messageLimit))
         guard !Self.advertises(note) else { throw BackendError.requestContainsContact }
         await networkDelay()
         let challenge = Challenge(id: UUID().uuidString, challengerId: me.id, targetId: targetId, court: court, slot: slot,
-                                  message: note, createdAt: Date(), status: .pending)
+                                  message: note, createdAt: Date(), status: .pending, challengerPartnerId: partnerId)
         db.challenges[challenge.id] = challenge
-        addInbox(InboxItem(kind: .challenge, title: String(localized: "\(me.nickname) 向你发起单打挑战"),
+        let title = partnerId == nil ? String(localized: "\(me.nickname) 向你发起单打挑战")
+                                     : String(localized: "\(me.nickname) 向你发起双打挑战（各带一位搭档）")
+        addInbox(InboxItem(kind: .challenge, title: title,
                            body: "\(slot.formattedFull) · \(court.name)", relatedId: challenge.id), to: targetId)
         if isBot(targetId) { scheduleBotChallengeResponse(challengeId: challenge.id) }
         scheduleSave()
@@ -258,14 +277,27 @@ extension MockBackend {
         return challenge
     }
 
-    /// 接受：生成一场单打球局（计入排行）；拒绝：对方只会看到“未成行”
+    /// 接受：生成一场球局（计入排行；双打需选自己的搭档）；拒绝：对方只会看到“未成行”
     @discardableResult
-    func respondToChallenge(id: String, accept: Bool) async throws -> Game? {
+    func respondToChallenge(id: String, accept: Bool, partnerId: String? = nil) async throws -> Game? {
         let me = try requireUser()
         guard var challenge = db.challenges[id], challenge.targetId == me.id,
               challenge.status == .pending, !challenge.isExpired() else { throw BackendError.challengeNotFound }
+        if accept, challenge.mode == .doubles {
+            let taken = [challenge.challengerId, challenge.challengerPartnerId].compactMap { $0 }
+            guard let partnerId, isValidPartner(partnerId, for: me.id, excluding: taken) else {
+                throw BackendError.challengeUnavailable(String(localized: "双打挑战需要选一位你的球友做搭档"))
+            }
+            challenge.targetPartnerId = partnerId
+        }
         await networkDelay()
         return settle(&challenge, accept: accept)
+    }
+
+    /// 搭档：我的球友，且不是对手、没有互相屏蔽
+    func isValidPartner(_ partnerId: String, for userId: String, excluding others: [String]) -> Bool {
+        partnerId != userId && !others.contains(partnerId) && friendIds(of: userId).contains(partnerId)
+            && !isBlockedEitherWay(userId, partnerId)
     }
 
     func withdrawChallenge(id: String) {
@@ -284,12 +316,13 @@ extension MockBackend {
         challenge.respondedAt = Date()
         var game: Game?
         if accept, let target = db.users[challenge.targetId] {
+            let teams = [[challenge.challengerId] + [challenge.challengerPartnerId].compactMap { $0 },
+                         [challenge.targetId] + [challenge.targetPartnerId].compactMap { $0 }]
             let created = Game(
-                id: UUID().uuidString, mode: .singles, court: challenge.court, slot: challenge.slot,
-                playerIds: [challenge.challengerId, challenge.targetId],
-                teams: [[challenge.challengerId], [challenge.targetId]], hostId: challenge.challengerId,
+                id: UUID().uuidString, mode: challenge.mode, court: challenge.court, slot: challenge.slot,
+                playerIds: teams.flatMap { $0 }, teams: teams, hostId: challenge.challengerId,
                 origin: .challenge(id: challenge.id), status: .confirmed, createdAt: Date(), checkIns: [:], paidPlayerIds: [],
-                cost: CostSplit.estimate(court: challenge.court, slot: challenge.slot, mode: .singles),
+                cost: CostSplit.estimate(court: challenge.court, slot: challenge.slot, mode: challenge.mode),
                 result: nil, cancelledBy: nil, cancelledLate: false, reminderEnabled: false
             )
             db.games[created.id] = created
@@ -298,6 +331,11 @@ extension MockBackend {
             addInbox(InboxItem(kind: .challenge, title: String(localized: "\(target.nickname) 接受了你的挑战"),
                                body: "\(challenge.slot.formattedFull) · \(challenge.court.name)", relatedId: created.id),
                      to: challenge.challengerId)
+            for partner in [challenge.challengerPartnerId, challenge.targetPartnerId].compactMap({ $0 }) {
+                addInbox(InboxItem(kind: .challenge, title: String(localized: "你被拉进了一场双打挑战"),
+                                   body: "\(challenge.slot.formattedFull) · \(challenge.court.name)", relatedId: created.id),
+                         to: partner)
+            }
             game = created
             emit(.gameCreated(created))
         }
@@ -312,7 +350,15 @@ extension MockBackend {
             guard let self, var challenge = self.db.challenges[challengeId], challenge.status == .pending,
                   let bot = self.db.bots[challenge.targetId] else { return }
             var rng = SeededGenerator(challengeId)
-            self.settle(&challenge, accept: Double.random(in: 0..<1, using: &rng) < bot.friendliness * 0.85)
+            let accepts = Double.random(in: 0..<1, using: &rng) < bot.friendliness * 0.85
+            if accepts, challenge.mode == .doubles {
+                // 模拟球友找一位水平相近、不在这场里的模拟球友做搭档
+                let taken = Set([challenge.challengerId, challenge.targetId, challenge.challengerPartnerId].compactMap { $0 })
+                let rating = self.db.users[challenge.targetId]?.displayTier.rating ?? 4
+                challenge.targetPartnerId = self.db.bots.keys.filter { !taken.contains($0) }
+                    .min { abs((self.db.users[$0]?.displayTier.rating ?? 0) - rating) < abs((self.db.users[$1]?.displayTier.rating ?? 0) - rating) }
+            }
+            self.settle(&challenge, accept: accepts && (challenge.mode == .singles || challenge.targetPartnerId != nil))
         }
     }
 }
