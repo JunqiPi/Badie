@@ -269,6 +269,7 @@ final class VenueTests: XCTestCase {
         XCTAssertTrue(all.filter { $0.countryCode == "HK" }.allSatisfy { (22.1...22.6).contains($0.location.latitude) })
     }
 
+    @MainActor
     func testConfirmingOpenDataVenueCopiesItIntoTheDatabase() throws {
         let backend = MockBackend(store: .inMemory)
         backend.latencyEnabled = false
