@@ -236,4 +236,11 @@ final class VenueTests: XCTestCase {
         XCTAssertEqual(added.confirmedBy, ["a", "b", "c"])
         XCTAssertNotNil(added.lastConfirmedAt)
     }
+
+    func testBadmintonSearchUsesLocalTerms() {
+        XCTAssertEqual(BadmintonKeywords.queries(for: "ID"), ["badminton", "bulu tangkis", "GOR badminton"])
+        XCTAssertEqual(BadmintonKeywords.queries(for: "vn"), ["badminton", "sân cầu lông"])
+        XCTAssertEqual(BadmintonKeywords.queries(for: "US").first, "badminton")
+        XCTAssertLessThanOrEqual(BadmintonKeywords.queries(for: "CN").count, 3, "Apple 搜索有频率限制")
+    }
 }

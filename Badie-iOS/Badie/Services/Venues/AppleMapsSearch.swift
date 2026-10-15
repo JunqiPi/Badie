@@ -108,6 +108,26 @@ final class AppleMapsSearch: NSObject, ObservableObject {
         return response.mapItems.prefix(limit).map(VenueCandidate.init(mapItem:))
     }
 
+    /// 附近的羽毛球场地：同时用英文和当地叫法搜（Apple 地图没有羽毛球分类，只能按名称匹配），合并去重后按距离排序
+    static func searchBadmintonVenues(near center: Coordinate, countryCode: String, radiusKm: Double = 40,
+                                      limit: Int = 12) async -> [VenueCandidate] {
+        let queries = BadmintonKeywords.queries(for: countryCode)
+        let batches = await withTaskGroup(of: [VenueCandidate].self) { group in
+            for query in queries {
+                group.addTask { await AppleMapsSearch.search(query, near: center, radiusKm: radiusKm, limit: limit) }
+            }
+            return await group.reduce(into: []) { $0 += $1 }
+        }
+        var merged: [VenueCandidate] = []
+        for candidate in batches.sorted(by: { $0.location.distanceKm(to: center) < $1.location.distanceKm(to: center) }) {
+            let isDuplicate = merged.contains {
+                $0.id == candidate.id || $0.location.distanceKm(to: candidate.location) < 0.08
+            }
+            if !isDuplicate { merged.append(candidate) }
+        }
+        return Array(merged.prefix(limit))
+    }
+
     /// 通过 Apple Place ID 取回地点（iOS 18+）
     static func mapItem(placeId: String) async -> MKMapItem? {
         guard #available(iOS 18.0, *) else { return nil }
@@ -151,5 +171,30 @@ extension AppleMapsSearch: MKLocalSearchCompleterDelegate {
         Task { @MainActor in
             self.completions = []
         }
+    }
+}
+
+// MARK: - 各地对羽毛球场地的叫法
+
+enum BadmintonKeywords {
+    /// 最多 3 个搜索词：英文 + 当地常用叫法（印尼的 GOR、越南的 sân cầu lông 等名称里往往没有 “badminton”）
+    static func queries(for countryCode: String) -> [String] {
+        let local: [String]
+        switch countryCode.uppercased() {
+        case "CN": local = ["羽毛球馆", "羽毛球"]
+        case "TW", "HK": local = ["羽球館", "羽毛球"]
+        case "JP": local = ["バドミントン"]
+        case "KR": local = ["배드민턴"]
+        case "ID": local = ["bulu tangkis", "GOR badminton"]
+        case "MY": local = ["dewan badminton", "badminton court"]
+        case "TH": local = ["แบดมินตัน"]
+        case "VN": local = ["sân cầu lông"]
+        case "IN": local = ["badminton court", "बैडमिंटन"]
+        case "DK": local = ["badmintonhal", "badmintonklub"]
+        case "DE": local = ["Badmintonhalle"]
+        case "FR": local = ["club de badminton"]
+        default: local = ["badminton court"]
+        }
+        return Array((["badminton"] + local).prefix(3))
     }
 }

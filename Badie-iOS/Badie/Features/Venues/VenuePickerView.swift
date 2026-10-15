@@ -337,7 +337,7 @@ struct VenuePickerView: View {
         guard allowsAdding, locationManager.allowsMapSearch, locationManager.nearbyCourts.count < 3 else { return }
         let center = locationManager.coordinate
         Task {
-            let found = await AppleMapsSearch.search("badminton", near: center, radiusKm: 40)
+            let found = await AppleMapsSearch.searchBadmintonVenues(near: center, countryCode: backend.currentCountryCode)
             let known = backend.allVenues
             suggestions = found.filter { candidate in
                 !VenueSearch.duplicates(name: candidate.name, location: candidate.location,
