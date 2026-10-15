@@ -94,6 +94,19 @@ struct SettingsView: View {
                                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                                 }
                             }
+                            InsetDivider()
+                            challengePolicyRow
+                            InsetDivider()
+                            Toggle(isOn: privacyBinding(\.showsOnLeaderboards)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("出现在排行榜上")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("关闭后你仍能看榜，但不会上榜")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
                         }
                         .tint(AppTheme.Colors.success)
                         .card(AppTheme.Colors.surface, shadow: .zero)
@@ -177,6 +190,50 @@ struct SettingsView: View {
                 appState.backend.updatePrivacy(privacy)
             }
         )
+    }
+
+    private var challengePolicy: Binding<ChallengePolicy> {
+        Binding(
+            get: { appState.currentUser?.privacy.challengePolicy ?? .similarLevel },
+            set: { value in
+                guard var privacy = appState.currentUser?.privacy else { return }
+                privacy.challengePolicy = value
+                appState.backend.updatePrivacy(privacy)
+            }
+        )
+    }
+
+    private var challengePolicyRow: some View {
+        Menu {
+            Picker("谁可以向我发起挑战", selection: challengePolicy) {
+                ForEach(ChallengePolicy.allCases) { policy in
+                    Text(policy.title).tag(policy)
+                }
+            }
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.md) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("谁可以向我发起挑战")
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    Text(challengePolicy.wrappedValue.detail)
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: AppTheme.Spacing.sm)
+                HStack(spacing: 4) {
+                    Text(challengePolicy.wrappedValue.title)
+                        .font(AppTheme.Typography.footnoteBold)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {

@@ -127,6 +127,7 @@ enum GameStatus: String, Codable, Hashable {
 enum GameOrigin: Codable, Hashable {
     case quickMatch
     case room(code: String)
+    case challenge(id: String)
 }
 
 struct GameResult: Codable, Hashable {
@@ -158,6 +159,8 @@ struct Game: Identifiable, Codable, Hashable {
     /// 是否为临时取消（开赛前 2 小时内）
     var cancelledLate: Bool
     var reminderEnabled: Bool
+    /// 每位球员各自申报的赛果（见 `resultStatus`）
+    var resultReports: [ResultReport] = []
 
     /// 开赛前多少时间内取消算临时取消
     static let freeCancellationWindow: TimeInterval = 2 * 3600

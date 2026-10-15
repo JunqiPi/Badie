@@ -12,6 +12,7 @@ struct PlayerProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var showReport = false
+    @State private var showChallenge = false
 
     private var user: User? { friendManager.user(id: userId) }
 
@@ -21,6 +22,7 @@ struct PlayerProfileSheet: View {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                     header(user)
                     statsRow(user)
+                    winRateLine(user)
                     reputationCard(user)
                     connectionCard(user)
                     if !user.bio.isEmpty {
@@ -41,6 +43,10 @@ struct PlayerProfileSheet: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .sheet(isPresented: $showReport) {
             ReportSheet(userId: userId, nickname: user?.nickname ?? String(localized: "TA"))
+        }
+        .sheet(isPresented: $showChallenge) {
+            ChallengeComposer(targetId: userId)
+                .presentationDragIndicator(.visible)
         }
     }
 
@@ -75,6 +81,40 @@ struct PlayerProfileSheet: View {
         HStack(spacing: AppTheme.Spacing.sm) {
             StatTile(value: user.gamesBand, label: String(localized: "打过"))
             StatTile(value: user.preferredMode?.title ?? String(localized: "都可以"), label: String(localized: "偏好"))
+        }
+    }
+
+    /// 场次够了才公开胜率，否则不显示
+    @ViewBuilder
+    private func winRateLine(_ user: User) -> some View {
+        let rate = appState.backend.winRate(for: user.id, month: Rankings.month(containing: Date()))
+        if rate.isPublic {
+            Label("本月胜率 \(rate.percentage)%（\(rate.games) 场 · \(rate.opponents) 位对手）", systemImage: "chart.bar.fill")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+        }
+    }
+
+    /// 能挑战就显示按钮；对方不接受挑战时整块隐藏；其他情况灰掉并说明原因
+    @ViewBuilder
+    private func challengeButton(_ user: User) -> some View {
+        let availability = appState.backend.challengeAvailability(for: user.id)
+        if user.id != appState.currentUser?.id, availability != .notAccepting {
+            VStack(spacing: AppTheme.Spacing.xs) {
+                Button {
+                    showChallenge = true
+                } label: {
+                    Label("发起单打挑战", systemImage: "flag.2.crossed.fill")
+                }
+                .buttonStyle(BrutalButtonStyle(kind: .accent(AppTheme.Colors.peach), size: .medium))
+                .disabled(availability != .available)
+                if let reason = availability.reason {
+                    Text(reason)
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                        .multilineTextAlignment(.center)
+                }
+            }
         }
     }
 
@@ -195,6 +235,7 @@ struct PlayerProfileSheet: View {
                         FriendActionButtonLarge(userId: user.id)
                     }
                 }
+                challengeButton(user)
             }
             HStack(spacing: AppTheme.Spacing.lg) {
                 if friendManager.isFriend(user.id) {
@@ -359,6 +400,15 @@ struct NotificationsView: View {
             if let id = item.relatedId { router.open(.group(id: id)) }
         case .rematch:
             if let id = item.relatedId { appState.showPlayer(id) }
+        case .challenge:
+            // 接受后 relatedId 是球局 ID，否则是挑战 ID
+            if let id = item.relatedId, appState.backend.db.games[id] != nil {
+                router.open(.game(id: id))
+            } else {
+                router.open(.challenges)
+            }
+        case .resultUpdate:
+            if let id = item.relatedId { router.open(.game(id: id)) }
         case .kicked, .roomClosed, .system:
             break
         }
@@ -378,6 +428,8 @@ struct NotificationsView: View {
         case .rematch: return "arrow.uturn.left.circle.fill"
         case .gameCancelled: return "xmark.circle.fill"
         case .system: return "megaphone.fill"
+        case .challenge: return "flag.2.crossed.fill"
+        case .resultUpdate: return "checkmark.seal.fill"
         }
     }
 
@@ -392,6 +444,8 @@ struct NotificationsView: View {
         case .groupUpdate: return AppTheme.Colors.lavender
         case .rematch: return AppTheme.Colors.mint
         case .system: return AppTheme.Colors.sky
+        case .challenge: return AppTheme.Colors.peach
+        case .resultUpdate: return AppTheme.Colors.mint
         }
     }
 }

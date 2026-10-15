@@ -28,9 +28,9 @@ struct ProfileView: View {
                         identityCard(user)
                         HStack(spacing: AppTheme.Spacing.sm) {
                             StatTile(value: "\(user.totalGames)", label: String(localized: "场次"))
-                            StatTile(value: "\(Int(user.winRate.rounded()))%", label: String(localized: "胜率"))
                             StatTile(value: "\(user.attendance.reliabilityPercentage)%", label: String(localized: "履约率"))
                         }
+                        monthlyWinRateCard(user)
                         reputationCard(user)
                         attendanceCard(user)
                         menuCard(user)
@@ -82,6 +82,63 @@ struct ProfileView: View {
         }
         .foregroundStyle(AppTheme.Colors.onAccent)
         .card(AppTheme.Colors.lavender, padding: AppTheme.Spacing.xl)
+    }
+
+    // MARK: Monthly win rate
+
+    /// 只统计双方确认过的对局，每个自然月重新计算；场数不够时只显示进度
+    private func monthlyWinRateCard(_ user: User) -> some View {
+        let month = Rankings.month(containing: Date())
+        let rate = appState.backend.winRate(for: user.id, month: month)
+        let previous = appState.backend.winRate(for: user.id, month: Rankings.month(containing: month.start.addingTimeInterval(-86400)))
+        let minimum = Rankings.winRateMinimumGames
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("本月胜率")
+                    .font(AppTheme.Typography.headline)
+                Spacer()
+                if previous.isPublic {
+                    Text("上月 \(previous.percentage)%")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                }
+            }
+            if rate.isPublic {
+                HStack(alignment: .lastTextBaseline, spacing: AppTheme.Spacing.sm) {
+                    Text("\(rate.percentage)%")
+                        .scaledFont(size: 40, relativeTo: .largeTitle)
+                        .monospacedDigit()
+                    Text("\(rate.wins) 胜 \(rate.games - rate.wins) 负")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                }
+            } else {
+                Text("本月已确认 \(rate.games) 场，满 \(minimum) 场显示胜率")
+                    .font(AppTheme.Typography.subheadlineBold)
+                    .fixedSize(horizontal: false, vertical: true)
+                ProgressBar(progress: Double(rate.games) / Double(minimum))
+            }
+            if rate.games > 0 {
+                Text("\(rate.games) 场 · \(rate.opponents) 位不同对手 · \(opponentStrengthText(rate.averageGap))")
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Label("只算双方都确认的比赛，每月 1 日重新计算；同一对手每月最多计入 \(Rankings.monthlySameOpponentCap) 场",
+                  systemImage: "info.circle")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.inkTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(AppTheme.Colors.ink)
+        .card()
+    }
+
+    private func opponentStrengthText(_ gap: Double) -> String {
+        let levels = String(format: "%.1f", abs(gap))
+        if gap > 0.3 { return String(localized: "对手平均比你强 \(levels) 级") }
+        if gap < -0.3 { return String(localized: "对手平均比你弱 \(levels) 级") }
+        return String(localized: "对手和你水平相当")
     }
 
     // MARK: Reputation
@@ -183,6 +240,18 @@ struct ProfileView: View {
             MenuRow(icon: "clock.arrow.circlepath", tint: AppTheme.Colors.peach, title: String(localized: "历史球局"),
                     value: "\(matchManager.pastGames.count)") {
                 router.open(.gameHistory)
+            }
+            InsetDivider()
+            MenuRow(icon: "trophy.fill", tint: AppTheme.Colors.butter, title: String(localized: "排行榜")) {
+                router.open(.leaderboard)
+            }
+            let incomingChallenges = appState.backend.challenges().filter { $0.targetId == user.id && $0.status == .pending }.count
+            if incomingChallenges > 0 {
+                InsetDivider()
+                MenuRow(icon: "flag.2.crossed.fill", tint: AppTheme.Colors.pink, title: String(localized: "挑战"),
+                        badge: incomingChallenges) {
+                    router.open(.challenges)
+                }
             }
             InsetDivider()
             MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.butter, title: String(localized: "常用时间"),

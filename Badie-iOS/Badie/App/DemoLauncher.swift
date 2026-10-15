@@ -137,6 +137,19 @@ enum DemoLauncher {
             }
         case "profile":
             router.selectedTab = .profile
+        case "leaderboard":
+            router.show(.leaderboard, in: .home)
+        case "venueLeaderboard":
+            if let venue = backend.nearestVenues(to: backend.currentUser?.location ?? Coordinate.fallbackCenter, count: 1).first {
+                router.show(.venueLeaderboard(venueId: venue.id), in: .home)
+            }
+        case "challenges":
+            router.show(.challenges, in: .games)
+        case "gameResult":
+            // 刚打完、等对方确认赛果的一场
+            if let game = backend.db.games.values.first(where: { $0.status == .completed }) {
+                router.show(.game(id: game.id), in: .games)
+            }
         case "editProfile":
             router.show(.editProfile, in: .profile)
         case "settings":

@@ -72,6 +72,12 @@ enum Route: Hashable {
     case levelGuide
     /// 高水平认证申请
     case verification
+    /// 全球周榜
+    case leaderboard
+    /// 场馆月榜
+    case venueLeaderboard(venueId: String)
+    /// 收到和发出的挑战
+    case challenges
 }
 
 /// 添加球馆的预填内容（地图链接、演示截图）

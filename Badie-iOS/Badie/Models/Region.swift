@@ -67,7 +67,7 @@ struct CountryInfo: Identifiable, Hashable {
     func shuttleFee(for mode: GameMode) -> Int {
         switch currencyCode {
         case "CNY": return mode == .doubles ? 15 : 10
-        case "USD", "CAD", "AUD", "SGD": return mode == .doubles ? 8 : 5
+        case "USD", "CAD", "AUD", "SGD", "NZD": return mode == .doubles ? 8 : 5
         default: return 0
         }
     }
@@ -124,7 +124,35 @@ struct CountryInfo: Identifiable, Hashable {
         CountryInfo(code: "ID", nameZh: String(localized: "印度尼西亚"), callingCode: "62", currencyCode: "IDR", currencySymbol: "Rp",
                     addressStyle: .smallToLarge,
                     phone: PhoneRule(lengths: 9...12, pattern: "8[0-9]{8,11}", example: "812 3456 7890"),
-                    navigationApps: [.googleMaps, .waze, .appleMaps])
+                    navigationApps: [.googleMaps, .waze, .appleMaps]),
+        CountryInfo(code: "TH", nameZh: String(localized: "泰国"), callingCode: "66", currencyCode: "THB", currencySymbol: "฿",
+                    addressStyle: .smallToLarge,
+                    phone: PhoneRule(lengths: 9...9, pattern: "[689][0-9]{8}", example: "81 234 5678"),
+                    navigationApps: [.googleMaps, .appleMaps]),
+        CountryInfo(code: "VN", nameZh: String(localized: "越南"), callingCode: "84", currencyCode: "VND", currencySymbol: "₫",
+                    addressStyle: .smallToLarge,
+                    phone: PhoneRule(lengths: 9...9, pattern: "[35789][0-9]{8}", example: "91 234 5678"),
+                    navigationApps: [.googleMaps, .appleMaps]),
+        CountryInfo(code: "PH", nameZh: String(localized: "菲律宾"), callingCode: "63", currencyCode: "PHP", currencySymbol: "₱",
+                    addressStyle: .smallToLarge,
+                    phone: PhoneRule(lengths: 10...10, pattern: "9[0-9]{9}", example: "917 123 4567"),
+                    navigationApps: [.googleMaps, .waze, .appleMaps]),
+        CountryInfo(code: "DK", nameZh: String(localized: "丹麦"), callingCode: "45", currencyCode: "DKK", currencySymbol: "kr ",
+                    addressStyle: .smallToLarge,
+                    phone: PhoneRule(lengths: 8...8, pattern: "[2-9][0-9]{7}", example: "20 12 34 56"),
+                    navigationApps: [.appleMaps, .googleMaps]),
+        CountryInfo(code: "NZ", nameZh: String(localized: "新西兰"), callingCode: "64", currencyCode: "NZD", currencySymbol: "NZ$",
+                    addressStyle: .smallToLarge,
+                    phone: PhoneRule(lengths: 8...10, pattern: "2[0-9]{7,9}", example: "21 123 4567"),
+                    navigationApps: [.googleMaps, .appleMaps, .waze]),
+        CountryInfo(code: "DE", nameZh: String(localized: "德国"), callingCode: "49", currencyCode: "EUR", currencySymbol: "€",
+                    addressStyle: .smallToLarge,
+                    phone: PhoneRule(lengths: 10...11, pattern: "1[5-7][0-9]{8,9}", example: "1512 3456789"),
+                    navigationApps: [.googleMaps, .appleMaps]),
+        CountryInfo(code: "FR", nameZh: String(localized: "法国"), callingCode: "33", currencyCode: "EUR", currencySymbol: "€",
+                    addressStyle: .smallToLarge,
+                    phone: PhoneRule(lengths: 9...9, pattern: "[67][0-9]{8}", example: "6 12 34 56 78"),
+                    navigationApps: [.googleMaps, .appleMaps, .waze])
     ]
 
     /// 未收录的国家：通用规则（6–14 位数字）

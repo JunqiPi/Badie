@@ -28,9 +28,26 @@ struct GamesView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                 LargeTitleHeader(title: String(localized: "球局"), subtitle: String(localized: "我的约球与房间")) {
-                    IconButton(systemName: "clock.arrow.circlepath", accessibilityLabel: String(localized: "历史球局")) {
-                        router.open(.gameHistory)
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        IconButton(systemName: "flag.2.crossed", accessibilityLabel: String(localized: "挑战")) {
+                            router.open(.challenges)
+                        }
+                        IconButton(systemName: "clock.arrow.circlepath", accessibilityLabel: String(localized: "历史球局")) {
+                            router.open(.gameHistory)
+                        }
                     }
+                }
+
+                if pendingChallengeCount > 0 {
+                    Button {
+                        router.open(.challenges)
+                    } label: {
+                        NoticeBanner(icon: "flag.2.crossed.fill",
+                                     text: String(localized: "\(pendingChallengeCount) 个挑战待回应"),
+                                     tint: AppTheme.Colors.peach)
+                    }
+                    .buttonStyle(PressableStyle(scale: 0.98))
+                    .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
                 quickActions
@@ -126,6 +143,12 @@ struct GamesView: View {
             roomManager.reload()
             surveyManager.refresh()
         }
+    }
+
+    /// 别人发给我、还没回应的挑战（挑战变化会刷新 matchManager，从而重绘）
+    private var pendingChallengeCount: Int {
+        guard let me = appState.currentUser?.id else { return 0 }
+        return appState.backend.challenges().filter { $0.targetId == me && $0.status == .pending }.count
     }
 
     private var quickActions: some View {

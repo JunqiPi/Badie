@@ -168,7 +168,8 @@ final class SkillAssessmentTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(SkillLevel.anchors(for: level).count, 2, "Lv.\(level) 至少 2 条描述")
             XCTAssertFalse(SkillLevel.dimensionNotes(for: level).isEmpty, "Lv.\(level) 有分项标准")
         }
-        XCTAssertEqual(SkillLevel.usFlight(for: 4), "D 组")
+        XCTAssertEqual(SkillLevel.usFlight(for: 4, region: "US"), "D 组")
+        XCTAssertNil(SkillLevel.usFlight(for: 4, region: "MY"), "其他国家没有美国组别")
         XCTAssertEqual(SkillTier(level: 3, modifier: .plus).displayText, "Lv.3+ 初级")
         XCTAssertEqual(SkillTier(level: 6).displayText, "Lv.6 俱乐部高手")
     }

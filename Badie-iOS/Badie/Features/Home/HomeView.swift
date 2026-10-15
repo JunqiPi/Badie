@@ -13,6 +13,8 @@ struct HomeView: View {
     @EnvironmentObject private var groupManager: GroupManager
 
     @State private var regulars: [VenueRegular] = []
+    @State private var weeklyStanding: WeeklyStanding?
+    @State private var pendingChallenges = 0
 
     private var days: [Date] {
         let calendar = Calendar.current
@@ -47,10 +49,23 @@ struct HomeView: View {
                 quickMatchCard
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
+                if pendingChallenges > 0 {
+                    NoticeBanner(icon: "figure.badminton", text: String(localized: "\(pendingChallenges) 个挑战待回应"),
+                                 tint: AppTheme.Colors.peach, actionTitle: String(localized: "去看看")) {
+                        router.open(.challenges)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                }
+
                 dateSection
 
                 if let survey = surveyManager.pendingSurveys.first {
                     surveyBanner(survey)
+                        .padding(.horizontal, AppTheme.Spacing.screen)
+                }
+
+                if let weeklyStanding {
+                    weeklyCard(weeklyStanding)
                         .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
@@ -72,6 +87,13 @@ struct HomeView: View {
         .onAppear {
             reloadPlayers()
             prepareDraft()
+            reloadRankings()
+        }
+        .onChange(of: matchManager.games) { _, _ in
+            reloadRankings()
+        }
+        .onChange(of: inboxManager.unreadCount) { _, _ in
+            reloadRankings()
         }
         .onChange(of: locationManager.nearbyCourts) { _, _ in
             prepareDraft()
@@ -268,6 +290,35 @@ struct HomeView: View {
         .accessibilityElement(children: .combine)
     }
 
+    // MARK: Weekly leaderboard
+
+    private func weeklyCard(_ standing: WeeklyStanding) -> some View {
+        Button {
+            router.open(.leaderboard)
+        } label: {
+            HStack(spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "trophy.fill", fill: AppTheme.Colors.butter, size: 44)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("本周排行")
+                        .font(AppTheme.Typography.overline)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    Text(standing.summary)
+                        .font(AppTheme.Typography.headline)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+            }
+            .padding(AppTheme.Spacing.lg)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+        }
+        .buttonStyle(PressableStyle(scale: 0.98))
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("查看本周排行")
+    }
+
     // MARK: Public games
 
     private var publicGamesSection: some View {
@@ -454,6 +505,21 @@ struct HomeView: View {
 
     private func players(of game: Game) -> [User] {
         game.playerIds.compactMap { friendManager.user(id: $0) }
+    }
+
+    private func reloadRankings() {
+        let backend = appState.backend
+        guard let me = appState.currentUser?.id else {
+            weeklyStanding = nil
+            pendingChallenges = 0
+            return
+        }
+        let week = Rankings.week(containing: Date())
+        weeklyStanding = WeeklyStanding(backend: backend, userId: me, week: week,
+                                        entries: backend.weeklyLeaderboard(week: week))
+        pendingChallenges = backend.challenges()
+            .filter { $0.targetId == me && $0.status == .pending && !$0.isExpired() }
+            .count
     }
 
     private func reloadPlayers() {

@@ -13,7 +13,7 @@ struct GameDetailView: View {
     @State private var showNavigationChoices = false
     @State private var showCalendar = false
     @State private var showCancelConfirm = false
-    @State private var showCompleteSheet = false
+    @State private var resultSheet: ResultSheetPurpose?
     @State private var isWorking = false
 
     private var game: Game? { matchManager.game(id: gameId) }
@@ -63,12 +63,18 @@ struct GameDetailView: View {
                     .ignoresSafeArea()
             }
         }
-        .sheet(isPresented: $showCompleteSheet) {
+        .sheet(item: $resultSheet) { purpose in
             if let game {
-                CompleteGameSheet(game: game) { didWin, score in
-                    Task { await complete(game, didWin: didWin, score: score) }
+                CompleteGameSheet(game: game, isConfirming: purpose == .confirm) { didWin, score in
+                    Task {
+                        if purpose == .confirm {
+                            await confirmResult(game, didWin: didWin, score: score)
+                        } else {
+                            await complete(game, didWin: didWin, score: score)
+                        }
+                    }
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
             }
         }
@@ -396,7 +402,7 @@ struct GameDetailView: View {
             let canComplete = game.canComplete(now: context.date)
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Button {
-                    showCompleteSheet = true
+                    resultSheet = .complete
                 } label: {
                     Label("结束球局并记录结果", systemImage: "flag.checkered")
                 }
@@ -412,20 +418,7 @@ struct GameDetailView: View {
     private func resultSection(_ game: Game) -> some View {
         let pending = surveyManager.pending(forGame: game.id)
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            if let result = game.result {
-                HStack {
-                    Text(result.didWin == true ? String(localized: "🎉 赢下了这场") : (result.didWin == false ? String(localized: "惜败，下次再来") : String(localized: "球局已完成")))
-                        .font(AppTheme.Typography.headline)
-                    Spacer()
-                    if !result.score.isEmpty {
-                        Text(result.score)
-                            .font(AppTheme.Typography.footnoteBold)
-                            .monospacedDigit()
-                    }
-                }
-                .foregroundStyle(AppTheme.Colors.ink)
-                .card(AppTheme.Colors.surface)
-            }
+            resultCard(game)
             if !pending.isEmpty {
                 SectionTitle(title: String(localized: "待评价"), detail: DateText.remaining(until: pending[0].expiresAt))
                 ForEach(pending) { survey in
@@ -455,6 +448,119 @@ struct GameDetailView: View {
                 Label("和他们再约一场", systemImage: "arrow.triangle.2.circlepath")
             }
             .buttonStyle(.brutal(.primary, size: .medium))
+        }
+    }
+
+    // MARK: Result confirmation
+
+    private func resultCard(_ game: Game) -> some View {
+        let status = game.resultStatus()
+        let outcome = game.resultOutcome(for: me)
+        let score = game.reportedScore(by: me)
+        let hasReported = me.flatMap { game.report(by: $0) } != nil
+        let isPlayer = me.flatMap { game.team(of: $0) } != nil
+        // 早期没有申报记录的球局不参与确认
+        let hasReports = !game.resultReports.isEmpty
+        let canReport = hasReports && isPlayer && !hasReported && (status == .awaiting || status == .disputed)
+        let claims = otherClaims(game)
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack {
+                Text(resultHeadline(status: status, outcome: outcome))
+                    .font(AppTheme.Typography.headline)
+                Spacer()
+                if !score.isEmpty {
+                    Text(score)
+                        .font(AppTheme.Typography.footnoteBold)
+                        .monospacedDigit()
+                }
+            }
+            .foregroundStyle(AppTheme.Colors.ink)
+            if hasReports {
+                NoticeBanner(icon: resultIcon(status), text: resultStatusText(game, status: status, hasReported: hasReported),
+                             tint: resultTint(status))
+            }
+            if (canReport || status == .disputed), !claims.isEmpty {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                    ForEach(Array(claims.enumerated()), id: \.offset) { _, claim in
+                        Text(claim)
+                            .font(AppTheme.Typography.footnoteBold)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    }
+                }
+            }
+            if canReport {
+                Button {
+                    resultSheet = .confirm
+                } label: {
+                    Label("确认赛果", systemImage: "checkmark.seal.fill")
+                }
+                .buttonStyle(.brutal(.primary, size: .medium))
+            }
+        }
+        .card(AppTheme.Colors.surface)
+    }
+
+    private func resultHeadline(status: ResultStatus, outcome: Bool?) -> String {
+        if status == .friendly { return String(localized: "友谊局") }
+        switch outcome {
+        case true?: return String(localized: "🎉 赢下了这场")
+        case false?: return String(localized: "惜败，下次再来")
+        case nil: return String(localized: "球局已完成")
+        }
+    }
+
+    private func resultStatusText(_ game: Game, status: ResultStatus, hasReported: Bool) -> String {
+        switch status {
+        case .awaiting:
+            let left = confirmationTimeLeft(game)
+            return hasReported ? String(localized: "已提交，等对方确认（\(left)）") : String(localized: "等你确认赛果（\(left)）")
+        case .verified:
+            return String(localized: "赛果已确认 · 计入本月胜率")
+        case .disputed:
+            return String(localized: "双方说法不一致，本场不计入胜率")
+        case .friendly:
+            return String(localized: "友谊局，不计胜负")
+        case .expired:
+            return String(localized: "没有在 7 天内确认，本场不计入")
+        }
+    }
+
+    private func resultIcon(_ status: ResultStatus) -> String {
+        switch status {
+        case .awaiting: return "hourglass"
+        case .verified: return "checkmark.seal.fill"
+        case .disputed: return "exclamationmark.triangle.fill"
+        case .friendly: return "hand.wave.fill"
+        case .expired: return "clock.badge.xmark"
+        }
+    }
+
+    private func resultTint(_ status: ResultStatus) -> Color {
+        switch status {
+        case .awaiting: return AppTheme.Colors.butter
+        case .verified: return AppTheme.Colors.mint
+        case .disputed: return AppTheme.Colors.pink
+        case .friendly: return AppTheme.Colors.sky
+        case .expired: return AppTheme.Colors.surfaceMuted
+        }
+    }
+
+    /// 例如“还剩 3 天”；不足一天时显示小时 / 分钟
+    private func confirmationTimeLeft(_ game: Game) -> String {
+        let deadline = game.slot.endTime.addingTimeInterval(Game.resultWindow)
+        let seconds = deadline.timeIntervalSinceNow
+        guard seconds >= 86400 else { return DateText.remaining(until: deadline) }
+        let days = Int((seconds / 86400).rounded(.up))
+        return String(localized: "还剩 \(days) 天")
+    }
+
+    /// 其他球员各自报的结果（以我方视角描述）
+    private func otherClaims(_ game: Game) -> [String] {
+        guard let me, let mine = game.team(of: me) else { return [] }
+        return game.resultReports.filter { $0.reporterId != me }.map { report in
+            let name = friendManager.user(id: report.reporterId)?.nickname ?? String(localized: "球友")
+            guard let winner = report.winningTeam else { return String(localized: "\(name) 报：友谊局，不计胜负") }
+            return winner == mine ? String(localized: "\(name) 报：我方赢") : String(localized: "\(name) 报：我方输")
         }
     }
 
@@ -504,7 +610,7 @@ struct GameDetailView: View {
     }
 
     private func complete(_ game: Game, didWin: Bool?, score: String) async {
-        showCompleteSheet = false
+        resultSheet = nil
         do {
             try await matchManager.complete(game, didWin: didWin, score: score)
             appState.showToast(String(localized: "球局已完成，去给球友评个分吧"), style: .success)
@@ -515,59 +621,127 @@ struct GameDetailView: View {
             appState.showError(error)
         }
     }
+
+    private func confirmResult(_ game: Game, didWin: Bool?, score: String) async {
+        resultSheet = nil
+        do {
+            try await appState.backend.reportResult(gameId: game.id, didWin: didWin, score: score)
+            appState.showToast(String(localized: "已提交，双方一致后计入胜率"), style: .success)
+        } catch {
+            appState.showError(error)
+        }
+    }
 }
 
-// MARK: - 结束球局
+private enum ResultSheetPurpose: String, Identifiable {
+    case complete, confirm
+
+    var id: String { rawValue }
+}
+
+// MARK: - 结束球局 / 确认赛果
 
 struct CompleteGameSheet: View {
-    enum Outcome: String, CaseIterable {
-        case win = "赢了"
-        case lose = "输了"
-        case skip = "不记录"
+    enum Outcome: CaseIterable, Identifiable {
+        case win, lose, friendly
+
+        var id: Self { self }
 
         var title: String {
             switch self {
-            case .win: return String(localized: "赢了")
-            case .lose: return String(localized: "输了")
-            case .skip: return String(localized: "不记录")
+            case .win: return String(localized: "我方赢了")
+            case .lose: return String(localized: "我方输了")
+            case .friendly: return String(localized: "友谊局，不计胜负")
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .win: return "trophy.fill"
+            case .lose: return "arrow.uturn.down"
+            case .friendly: return "hand.wave.fill"
+            }
+        }
+
+        var didWin: Bool? {
+            switch self {
+            case .win: return true
+            case .lose: return false
+            case .friendly: return nil
             }
         }
     }
 
     let game: Game
+    /// 别人已结束球局，我来补报 / 确认赛果
+    var isConfirming = false
     let onComplete: (Bool?, String) -> Void
 
-    @State private var outcome: Outcome = .skip
+    @State private var outcome: Outcome?
     @State private var score = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            Text("结束球局")
-                .font(AppTheme.Typography.title)
-                .foregroundStyle(AppTheme.Colors.ink)
-                .padding(.top, AppTheme.Spacing.xl)
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Text(game.mode == .doubles ? String(localized: "你所在的队伍") : String(localized: "比赛结果"))
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                SegmentedSticker(options: Outcome.allCases, selection: $outcome, title: { $0.title })
-            }
-            BrutalTextField(label: String(localized: "比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
-                            keyboard: .numbersAndPunctuation, characterLimit: 40)
-            Spacer(minLength: 0)
-            Button("完成并去评价") {
-                let didWin: Bool?
-                switch outcome {
-                case .win: didWin = true
-                case .lose: didWin = false
-                case .skip: didWin = nil
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+                Text(isConfirming ? String(localized: "确认赛果") : String(localized: "结束球局"))
+                    .font(AppTheme.Typography.title)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .padding(.top, AppTheme.Spacing.xl)
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    Text("这场的结果")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    ForEach(Outcome.allCases) { option in
+                        optionRow(option)
+                    }
                 }
-                onComplete(didWin, score)
+                BrutalTextField(label: String(localized: "比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
+                                keyboard: .numbersAndPunctuation, characterLimit: 40)
+                Label("双方都确认后才计入胜率和排行榜；说法不一致的场次不计入", systemImage: "checkmark.shield")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
+        }
+        .safeAreaInset(edge: .bottom) {
+            Button(isConfirming ? String(localized: "提交赛果") : String(localized: "完成并去评价")) {
+                guard let outcome else { return }
+                onComplete(outcome.didWin, score)
             }
             .buttonStyle(.brutalPrimary)
-            .padding(.bottom, AppTheme.Spacing.lg)
+            .disabled(outcome == nil)
+            .padding(.horizontal, AppTheme.Spacing.screen)
+            .padding(.vertical, AppTheme.Spacing.lg)
+            .background(AppTheme.Colors.canvas)
         }
-        .padding(.horizontal, AppTheme.Spacing.screen)
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
+    }
+
+    private func optionRow(_ option: Outcome) -> some View {
+        let selected = outcome == option
+        return Button {
+            Haptics.selection()
+            outcome = option
+        } label: {
+            HStack(spacing: AppTheme.Spacing.md) {
+                Image(systemName: option.icon)
+                    .font(.system(size: 16, weight: .bold))
+                    .frame(width: 24)
+                Text(option.title)
+                    .font(AppTheme.Typography.bodyBold)
+                Spacer(minLength: 0)
+                Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 20, weight: .bold))
+            }
+            .foregroundStyle(selected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            .frame(minHeight: 52)
+            .sticker(selected ? AppTheme.Colors.lime : AppTheme.Colors.surface, radius: AppTheme.Radius.md,
+                     shadow: selected ? AppTheme.Elevation.low : .zero)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressableStyle(scale: 0.98))
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }

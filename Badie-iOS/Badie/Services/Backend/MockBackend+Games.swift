@@ -89,7 +89,7 @@ extension MockBackend {
         emit(.gamesChanged)
     }
 
-    /// 结束球局：记录结果，生成互评问卷
+    /// 结束球局：申报我方赛果（等对方确认），生成互评问卷
     func completeGame(id: String, didWin: Bool?, score: String) async throws {
         var me = try requireUser()
         guard var game = db.games[id], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
@@ -100,10 +100,12 @@ extension MockBackend {
         game.status = .completed
         confirmVenueFromCheckIns(game)
         game.result = GameResult(didWin: didWin, score: String(score.prefix(40)))
+        game.resultReports = [ResultReport(reporterId: me.id, winningTeam: winningTeam(in: game, for: me.id, didWin: didWin),
+                                           score: String(score.prefix(40)), reportedAt: now)]
         db.games[id] = game
 
+        // 胜场要等对方确认赛果后才计入（见 MockBackend+Rankings）
         me.totalGames += 1
-        if didWin == true { me.wins += 1 }
         me.attendance.gamesPlayed += 1
         db.users[me.id] = me
 
@@ -142,6 +144,7 @@ extension MockBackend {
                 ))
             }
         }
+        scheduleBotResultReports(gameId: id)
         addInbox(InboxItem(kind: .surveyDue, title: String(localized: "球局完成，给球友们评个分吧"),
                            body: String(localized: "48 小时内有效 · 评价匿名汇总，双方都提交后才计入"), relatedId: id), to: me.id)
         scheduleSave()

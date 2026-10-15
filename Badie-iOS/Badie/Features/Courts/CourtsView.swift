@@ -213,6 +213,20 @@ struct CourtDetailSheet: View {
 
                 groupsSection
 
+                Button {
+                    navigate(to: .venueLeaderboard(venueId: venue.id))
+                } label: {
+                    InfoRow(icon: "trophy.fill", tint: AppTheme.Colors.butter,
+                            title: String(localized: "本馆排行"),
+                            subtitle: String(localized: "本月在这里打得最多的球友，每个水平段单独排")) {
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+                }
+                .buttonStyle(PressableStyle(scale: 0.98))
+
                 if !venue.amenities.isEmpty {
                     FlowLayout(spacing: AppTheme.Spacing.sm) {
                         ForEach(venue.amenities, id: \.self) { amenity in

@@ -23,6 +23,8 @@ final class MockBackend {
     private var saveTask: Task<Void, Never>?
     /// 最近一次发送的验证码（手机号 -> (验证码, 过期时间)）
     var issuedCodes: [String: (code: String, expiresAt: Date)] = [:]
+    /// 模拟球友之间的对局按天生成（同一天、同一世界中心结果固定）
+    var botRecordCache: [String: [MatchRecord]] = [:]
 
     init(store: DatabaseStore) {
         self.store = store
@@ -115,6 +117,11 @@ final class MockBackend {
         phone.hasPrefix("+") && PhoneNumber.parse(phone)?.isValid == true
     }
 
+    /// 昵称、简介会出现在排行榜上：不允许留联系方式或链接（防广告）
+    static func advertises(_ text: String) -> Bool {
+        ContactInfoDetector.mentionsOffPlatformContact(text) || ContactInfoDetector.containsLink(text)
+    }
+
     static func isValidNickname(_ nickname: String) -> Bool {
         let trimmed = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
         return (2...12).contains(trimmed.count)
@@ -160,6 +167,7 @@ final class MockBackend {
     ) async throws -> User {
         guard Self.isValidPhone(phone) else { throw BackendError.invalidPhone }
         guard Self.isValidNickname(nickname) else { throw BackendError.invalidNickname }
+        guard !Self.advertises(nickname) else { throw BackendError.profileContainsContact }
         await networkDelay()
         return createAccount(
             phone: phone, nickname: nickname, gender: gender, avatar: avatar, level: assessment?.level ?? level,
@@ -287,6 +295,7 @@ final class MockBackend {
     func updateProfile(_ updated: User) async throws -> User {
         guard var user = currentUser, user.id == updated.id else { throw BackendError.notSignedIn }
         guard Self.isValidNickname(updated.nickname) else { throw BackendError.invalidNickname }
+        guard !Self.advertises(updated.nickname), !Self.advertises(updated.bio) else { throw BackendError.profileContainsContact }
         await networkDelay()
         user.nickname = updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines)
         user.bio = String(updated.bio.prefix(60))

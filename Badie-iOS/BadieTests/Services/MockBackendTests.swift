@@ -274,6 +274,8 @@ final class MockBackendTests: XCTestCase {
         backend.db.games["done"] = makeGame(id: "done", players: [me.id, "bot-0"], start: Date().addingTimeInterval(-3 * 3600))
         try await backend.completeGame(id: "done", didWin: true, score: "21:15")
         XCTAssertEqual(backend.currentUser?.totalGames, 1)
+        XCTAssertEqual(backend.currentUser?.wins, 0, "对方确认前不计胜场")
+        backend.addResultReport(ResultReport(reporterId: "bot-0", winningTeam: 0, score: "21:15", reportedAt: Date()), to: "done")
         XCTAssertEqual(backend.currentUser?.wins, 1)
 
         let pending = try XCTUnwrap(backend.pendingSurveys().first)

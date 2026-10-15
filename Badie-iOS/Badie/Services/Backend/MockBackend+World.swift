@@ -353,7 +353,10 @@ extension MockBackend {
                 checkIns: [userId: slot.startTime.addingTimeInterval(-300), "bot-2": slot.startTime.addingTimeInterval(120)],
                 paidPlayerIds: [userId, "bot-2"], cost: CostSplit.estimate(court: court, slot: slot, mode: .singles),
                 result: GameResult(didWin: true, score: "21:15 18:21 21:17"), cancelledBy: nil, cancelledLate: false,
-                reminderEnabled: false
+                reminderEnabled: false,
+                resultReports: [userId, "bot-2"].map {
+                    ResultReport(reporterId: $0, winningTeam: 0, score: "21:15 18:21 21:17", reportedAt: slot.endTime.addingTimeInterval(1800))
+                }
             )
             db.games[game.id] = game
             if let opponent = db.users["bot-2"] {
@@ -381,7 +384,10 @@ extension MockBackend {
                 checkIns: Dictionary(uniqueKeysWithValues: players.map { ($0, slot.startTime) }),
                 paidPlayerIds: players, cost: CostSplit.estimate(court: court, slot: slot, mode: .doubles),
                 result: GameResult(didWin: false, score: "19:21 21:23"), cancelledBy: nil, cancelledLate: false,
-                reminderEnabled: false
+                reminderEnabled: false,
+                resultReports: [userId, "bot-3"].map {
+                    ResultReport(reporterId: $0, winningTeam: 1, score: "19:21 21:23", reportedAt: slot.endTime.addingTimeInterval(3600))
+                }
             )
             db.games[game.id] = game
             // 历史评价：3 次（仍是“待校准”的新球友）
@@ -400,9 +406,24 @@ extension MockBackend {
             me.reputation = ReputationScore.aggregate(past, selfRating: me.selfRating)
         }
         me.totalGames = 2
-        me.wins = 1
+        me.wins = 0
         me.attendance = AttendanceRecord(gamesPlayed: 2, noShows: 0, lateCancellations: 0)
+        // 演示账号：一个多月前注册，近几周和附近球友打过几场确认过的单打
+        me.joinDate = now.addingTimeInterval(-40 * 86400)
         db.users[userId] = me
+        for game in db.games.values where game.playerIds.contains(userId) {
+            if case .verified(let winner) = game.resultStatus(now: now) {
+                appendSeedRecord(id: game.id, date: game.slot.startTime, venue: game.court, teams: game.teams, winner: winner)
+            }
+        }
+        let rivals = ["bot-5", "bot-6", "bot-7", "bot-9", "bot-11", "bot-0"]
+        for (index, rival) in rivals.enumerated() {
+            guard let court = seedVenues.first, db.users[rival] != nil else { continue }
+            let date = now.addingTimeInterval(-Double(2 + index * 3) * 86400 - 3 * 3600)
+            appendSeedRecord(id: "seed-record-\(index)-\(userId)", date: date, venue: court,
+                             teams: [[userId], [rival]], winner: index % 3 == 2 ? 1 : 0)
+        }
+        seedIncomingChallenge(for: userId, at: seedVenues.first, now: now)
 
         // 站内通知
         addInbox(InboxItem(kind: .system, title: String(localized: "欢迎来到 Badie 🏸"),
@@ -417,6 +438,33 @@ extension MockBackend {
                                body: String(localized: "评价匿名汇总，双方都提交后才会计入。"), createdAt: now.addingTimeInterval(-10 * 3600),
                                relatedId: survey.id), to: userId)
         }
+    }
+
+    private func appendSeedRecord(id: String, date: Date, venue: BadmintonCourt, teams: [[String]], winner: Int) {
+        let ratings = Dictionary(uniqueKeysWithValues: teams.flatMap { $0 }.compactMap { id in
+            db.users[id].map { (id, $0.displayTier.rating) }
+        })
+        db.matchRecords.append(MatchRecord(id: id, date: date, venueId: venue.id, countryCode: venue.countryCode,
+                                           mode: teams[0].count == 2 ? .doubles : .singles, teams: teams,
+                                           winningTeam: winner, ratings: ratings))
+        for player in teams[winner] { db.users[player]?.wins += 1 }
+    }
+
+    /// 一位水平相近的附近球友发来的单打挑战（明晚）
+    private func seedIncomingChallenge(for userId: String, at venue: BadmintonCourt?, now: Date) {
+        guard let me = db.users[userId], let venue,
+              let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: now),
+              let slot = TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
+              let challenger = db.bots.keys.sorted().compactMap({ db.users[$0] }).first(where: {
+                  !isFriend($0.id) && abs($0.displayTier.rating - me.displayTier.rating) <= Challenge.similarLevelRange
+              }) else { return }
+        let challenge = Challenge(id: "seed-challenge-\(userId)", challengerId: challenger.id, targetId: userId,
+                                  court: venue, slot: slot, message: "听说你单打不错，来一场？",
+                                  createdAt: now.addingTimeInterval(-2 * 3600), status: .pending)
+        db.challenges[challenge.id] = challenge
+        addInbox(InboxItem(kind: .challenge, title: String(localized: "\(challenger.nickname) 向你发起单打挑战"),
+                           body: "\(slot.formattedFull) · \(venue.name)", createdAt: challenge.createdAt,
+                           relatedId: challenge.id), to: userId)
     }
 
     private func appendSeedMessage(

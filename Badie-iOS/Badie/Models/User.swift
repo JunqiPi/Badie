@@ -101,7 +101,9 @@ enum SkillLevel {
     }
 
     /// 大致对应的美国赛事组别（各赛事分组不同，仅供参考）
-    static func usFlight(for level: Int) -> String? {
+    /// 只对美国地区的用户显示（其他国家没有这套组别）
+    static func usFlight(for level: Int, region: String? = Locale.current.region?.identifier) -> String? {
+        guard region == "US" else { return nil }
         switch level {
         case 3: return String(localized: "E 组")
         case 4: return String(localized: "D 组")
@@ -276,6 +278,10 @@ struct PrivacySettings: Codable, Hashable {
     var showsAsRegular = false
     /// 允许同球群的球友给我发消息请求（默认开启；关闭后只有好友能私信）
     var allowsMessageRequests = true
+    /// 谁可以向我发起挑战（默认只接受水平相近的人）
+    var challengePolicy: ChallengePolicy = .similarLevel
+    /// 出现在场馆榜和周榜上（关闭后仍能看榜，但自己不上榜）
+    var showsOnLeaderboards = true
 }
 
 // MARK: - 用户

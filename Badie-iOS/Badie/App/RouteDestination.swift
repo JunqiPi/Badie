@@ -58,6 +58,12 @@ struct RouteDestination: View {
             LevelGuidePage()
         case .verification:
             VerificationView()
+        case .leaderboard:
+            WeeklyLeaderboardView()
+        case .venueLeaderboard(let venueId):
+            VenueLeaderboardView(venueId: venueId)
+        case .challenges:
+            ChallengesView()
         }
     }
 }

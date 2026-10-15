@@ -102,6 +102,10 @@ struct InboxItem: Identifiable, Codable, Hashable {
         case groupUpdate
         /// 你们都想再约一场
         case rematch
+        /// 收到挑战 / 挑战有了回应
+        case challenge
+        /// 赛果确认、有分歧
+        case resultUpdate
         case system
     }
 

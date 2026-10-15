@@ -81,6 +81,11 @@ enum BackendError: LocalizedError, Equatable {
     case ownerCannotLeave
     case assessmentTooSoon(Date)
     case verificationInvalid(String)
+    case challengeUnavailable(String)
+    case challengeNotFound
+    case resultAlreadyReported
+    case resultWindowClosed
+    case profileContainsContact
 
     var errorDescription: String? {
         switch self {
@@ -128,6 +133,11 @@ enum BackendError: LocalizedError, Equatable {
         case .useGameChat: return String(localized: "你们在同一场球局里，请在球局群聊里沟通")
         case .requestContainsContact: return String(localized: "消息请求里不能留链接或站外联系方式（手机号、微信等），对方接受后再聊")
         case .chatClosed: return String(localized: "这个群聊已经结束了")
+        case .challengeUnavailable(let reason): return reason
+        case .challengeNotFound: return String(localized: "这个挑战已经结束了")
+        case .resultAlreadyReported: return String(localized: "你已经提交过这场的赛果")
+        case .resultWindowClosed: return String(localized: "赛后 7 天内才能提交赛果")
+        case .profileContainsContact: return String(localized: "昵称和简介里不能留联系方式或链接")
         case .groupNotFound: return String(localized: "没有找到这个球群")
         case .notGroupMember: return String(localized: "加入球群后才能报名和聊天")
         case .groupNameInvalid: return String(localized: "球群名称需要 2–20 个字")
@@ -218,7 +228,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；版本不符的本地数据直接丢弃
-    static let currentVersion = 6
+    static let currentVersion = 7
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
@@ -259,6 +269,11 @@ struct Database: Codable {
     var verificationRequests: [VerificationRequest] = []
     /// 头像照片（JPEG）：用户 ID → 数据
     var avatarPhotos: [String: Data] = [:]
+    /// 双方确认过的对局（真实球员；模拟球友之间的对局按日期即时生成，不存）
+    var matchRecords: [MatchRecord] = []
+    var challenges: [String: Challenge] = [:]
+    /// 举报后对举报人隐藏的榜单条目：举报人 → 被隐藏的用户
+    var hiddenFromBoards: [String: [String]] = [:]
 }
 
 // MARK: - 可复现的伪随机数（保证模拟世界在每次启动时一致）

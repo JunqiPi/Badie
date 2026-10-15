@@ -102,7 +102,14 @@ struct GameTicketCard: View {
                 chip(DateText.countdown(to: game.slot.startTime, now: now), fill: Color(hex: 0x17140F), foreground: AppTheme.Colors.lime)
             }
         case .completed:
-            chip(game.result?.didWin == true ? String(localized: "赢了 🎉") : String(localized: "已完成"), fill: AppTheme.Colors.surface)
+            switch game.resultStatus(now: now) {
+            case .awaiting where !game.resultReports.isEmpty:
+                chip(String(localized: "待确认"), fill: AppTheme.Colors.butter)
+            case .disputed:
+                chip(String(localized: "有分歧"), fill: AppTheme.Colors.pink)
+            default:
+                chip(game.resultOutcome(for: currentUserId, now: now) == true ? String(localized: "赢了 🎉") : String(localized: "已完成"), fill: AppTheme.Colors.surface)
+            }
         case .cancelled:
             chip(game.cancelledLate ? String(localized: "临时取消") : String(localized: "已取消"), fill: AppTheme.Colors.surface)
         }
@@ -159,11 +166,22 @@ struct GameRowCard: View {
                     AvatarStack(users: players.filter { $0.id != currentUserId }, size: 24)
                     if pendingSurveyCount > 0 {
                         TagPill(text: String(localized: "待评价 \(pendingSurveyCount)"), icon: "star.fill", fill: AppTheme.Colors.pink)
-                    } else if let result = game.result, game.status == .completed {
-                        Text(result.didWin == true ? String(localized: "胜 \(result.score)") : (result.didWin == false ? String(localized: "负 \(result.score)") : result.score))
-                            .font(AppTheme.Typography.caption)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            .lineLimit(1)
+                    } else if game.status == .completed {
+                        let text = resultText
+                        if !text.isEmpty {
+                            Text(text)
+                                .font(AppTheme.Typography.caption)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
+                        }
+                        switch game.resultStatus() {
+                        case .awaiting where !game.resultReports.isEmpty:
+                            TagPill(text: String(localized: "待确认"), fill: AppTheme.Colors.butter)
+                        case .disputed:
+                            TagPill(text: String(localized: "有分歧"), fill: AppTheme.Colors.pink)
+                        default:
+                            EmptyView()
+                        }
                     }
                 }
             }
@@ -177,11 +195,39 @@ struct GameRowCard: View {
         .accessibilityElement(children: .combine)
     }
 
+    private var resultText: String {
+        let score = game.reportedScore(by: currentUserId)
+        switch game.resultOutcome(for: currentUserId) {
+        case true?: return String(localized: "胜 \(score)")
+        case false?: return String(localized: "负 \(score)")
+        case nil: return score
+        }
+    }
+
     private var tint: Color {
         switch game.status {
         case .confirmed: return AppTheme.Colors.peach
         case .completed: return AppTheme.Colors.mint
         case .cancelled: return AppTheme.Colors.surfaceMuted
         }
+    }
+}
+
+// MARK: - 赛果展示
+
+extension Game {
+    /// 某位球员视角的胜负：赛果确认后以确认结果为准，否则看他自己的申报；nil = 未知或不计胜负
+    func resultOutcome(for userId: String?, now: Date = Date()) -> Bool? {
+        // 早期的球局没有申报记录，沿用当时记下的结果
+        guard !resultReports.isEmpty else { return result?.didWin }
+        guard let userId, let mine = team(of: userId) else { return nil }
+        if case .verified(let winner) = resultStatus(now: now) { return winner == mine }
+        return report(by: userId)?.winningTeam.map { $0 == mine }
+    }
+
+    /// 展示用的比分：优先本人申报的
+    func reportedScore(by userId: String?) -> String {
+        if let userId, let mine = report(by: userId), !mine.score.isEmpty { return mine.score }
+        return resultReports.first { !$0.score.isEmpty }?.score ?? result?.score ?? ""
     }
 }
