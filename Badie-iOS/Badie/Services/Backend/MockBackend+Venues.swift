@@ -9,13 +9,20 @@ import Foundation
 extension MockBackend {
 
     /// 球馆库（不含已合并到别处的旧条目）
-    var allVenues: [BadmintonCourt] { db.venues.values.filter { $0.mergedInto == nil } }
+    var allVenues: [BadmintonCourt] {
+        db.venues.values.filter { $0.mergedInto == nil } + OpenDataVenues.all.filter { db.venues[$0.id] == nil }
+    }
+
+    /// 库里的版本优先，其次是只读的开放数据目录
+    func storedVenue(id: String) -> BadmintonCourt? {
+        db.venues[id] ?? OpenDataVenues.byId[id]
+    }
 
     /// 按 ID 取球馆；已合并的旧 ID 自动跳到保留的那一家
     func venue(id: String) -> BadmintonCourt? {
-        var current = db.venues[id]
+        var current = storedVenue(id: id)
         var hops = 0
-        while let target = current?.mergedInto, let next = db.venues[target], hops < 5 {
+        while let target = current?.mergedInto, let next = storedVenue(id: target), hops < 5 {
             current = next
             hops += 1
         }
@@ -124,7 +131,7 @@ extension MockBackend {
 
     /// 合并重复条目（审核操作）：旧条目指向保留的球馆，名称记为别名，确认人与收藏一并转过去
     func mergeVenue(_ duplicateId: String, into targetId: String) throws {
-        guard duplicateId != targetId, var duplicate = db.venues[duplicateId], var target = venue(id: targetId),
+        guard duplicateId != targetId, var duplicate = storedVenue(id: duplicateId), var target = venue(id: targetId),
               target.id != duplicateId else { throw BackendError.venueNotFound }
         if duplicate.name != target.name && !target.aliases.contains(duplicate.name) {
             target.aliases.append(duplicate.name)
@@ -153,7 +160,7 @@ extension MockBackend {
     /// 球友确认“地址正确”
     func confirmVenue(_ id: String) throws {
         let me = try requireUser()
-        guard var venue = db.venues[id] else { throw BackendError.venueNotFound }
+        guard var venue = storedVenue(id: id) else { throw BackendError.venueNotFound }
         venue.addConfirmation(from: me.id)
         db.venues[id] = venue
         scheduleSave()
@@ -162,13 +169,13 @@ extension MockBackend {
 
     func hasConfirmed(_ id: String) -> Bool {
         guard let me = currentUserId else { return false }
-        return db.venues[id]?.confirmedBy.contains(me) ?? false
+        return storedVenue(id: id)?.confirmedBy.contains(me) ?? false
     }
 
     /// 报告球馆信息有误（位置不对、已关门、重复…）
     func reportVenue(_ id: String, issue: VenueIssue, detail: String = "") throws {
         let me = try requireUser()
-        guard db.venues[id] != nil else { throw BackendError.venueNotFound }
+        guard storedVenue(id: id) != nil else { throw BackendError.venueNotFound }
         db.venueReports.append(VenueReport(venueId: id, reporterId: me.id, issue: issue,
                                            detail: String(detail.prefix(200)), createdAt: Date()))
         scheduleSave()
@@ -181,7 +188,7 @@ extension MockBackend {
 
     /// 签到打过球的人自动算作确认了地址
     func confirmVenueFromCheckIns(_ game: Game) {
-        guard var venue = db.venues[game.court.id] else { return }
+        guard var venue = storedVenue(id: game.court.id) else { return }
         for userId in game.checkIns.keys.sorted() {
             venue.addConfirmation(from: userId)
         }

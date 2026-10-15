@@ -161,6 +161,8 @@ enum VenueSource: String, Codable, Hashable {
     case player
     /// 按城市从 OpenStreetMap 导入（未实地核实）
     case openStreetMap
+    /// 各地政府开放数据（见 OpenDataVenues）
+    case openData
 }
 
 enum VenueStatus: String, Codable, Hashable {
@@ -256,6 +258,8 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
     var mergedInto: String?
     /// 需要人工看一眼的原因（如“同一栋楼已有另一家球馆”）；不影响使用
     var reviewFlag: String?
+    /// 开放数据要求的署名（详情页显示）
+    var attribution: String?
 
     /// 达到这个人数的确认后，状态从“待确认”变为“球友确认”
     static let confirmationsNeeded = 3

@@ -368,6 +368,9 @@ struct CourtDetailSheet: View {
 
     private var sourceText: String {
         let freshness = venue.lastConfirmedAt.map { String(localized: " · 最近确认 \(DateText.relative($0))") } ?? ""
+        if venue.source == .openData, let attribution = venue.attribution {
+            return String(localized: "来自当地政府开放数据 · \(attribution)\(freshness)")
+        }
         switch venue.status {
         case .verified:
             return String(localized: "平台已核实地址\(freshness)")

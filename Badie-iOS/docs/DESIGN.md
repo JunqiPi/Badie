@@ -444,7 +444,13 @@
 - 模拟世界、球馆、榜单都跟着用户所在位置走；约战、榜单“本国”都以国家/地区为界，不跨国匹配。
 - 已支持的国家/地区（手机号、货币、地址顺序、导航 App）：美、加、中、港、台、新、马、日、韩、英、澳、印、印尼、泰、越、菲、丹、新西兰、德、法；其他国家走通用规则。
 - 美国业余赛组别（“大致相当于 D 组”）只对美国地区显示。
-- 美国以外的球馆靠 Apple 地图搜索 + 球友添加；人工核实的精选球馆目前只有美国。吉隆坡 / 巴生谷预置了 28 家来自 OpenStreetMap 的羽毛球馆（去掉商店、泛称、学校与协会场地，地址由 Nominatim 反查），状态是“待确认”，详情页注明 © OpenStreetMap 贡献者（ODbL）。新加坡 OSM 几乎没有标注（公共场馆多在 ActiveSG 体育中心里），下一步考虑 data.gov.sg 的开放数据。Apple 地图没有“羽毛球”分类，只能按名称匹配，所以附近建议会同时用英文和当地叫法搜（bulu tangkis / GOR、sân cầu lông、バドミントン、배드민턴、แบดมินตัน、羽毛球馆…，最多 3 个词，受 Apple 频率限制）。覆盖率仍取决于 Apple 地图本身；下一步按城市从 OpenStreetMap（sport=badminton，ODbL 需署名）预置球馆，正式上线后再考虑 Google Places（按次收费、限制存储）。
+- 美国以外的球馆靠 Apple 地图搜索 + 球友添加；人工核实的精选球馆目前只有美国。吉隆坡 / 巴生谷预置了 28 家来自 OpenStreetMap 的羽毛球馆（去掉商店、泛称、学校与协会场地，地址由 Nominatim 反查），状态是“待确认”，详情页注明 © OpenStreetMap 贡献者（ODbL）。- **各地球馆数据按“当地人从哪里找场地”来选来源**，优先政府开放数据（可商用、有署名要求），商业订场平台（Courtsite、AYO、Playo、Hudle、趣运动、大众点评等）条款禁止抓取，只谈合作：
+  - 香港：康文署 SmartPLAY 羽毛球场开放数据（105 个可订场馆，含场数；DATA.GOV.HK）
+  - 新加坡：Sport Singapore「Sport Facilities」+「SportSG Sport Facilities」（ActiveSG 体育中心 + 设羽毛球场的社区中心共 119 个；私人公寓的场地不对外，已排除；Singapore Open Data Licence）
+  - 台湾：运动部「全國運動場館資訊」中对外开放、有羽球设施的 633 个场馆（政府資料開放授權條款）
+  - 英格兰：Sport England Active Places 中营业中、个人可直接订（Pay and Play / 会员制）且有羽毛球场的 1,553 个场馆（CC BY 4.0；联系人等个人字段不导入；只租给俱乐部的学校场馆不收录）
+  - 这些数据由 `scripts/build_open_data_venues.py` 生成 `Badie/Resources/venues-XX.json`，随 App 只读发布，不写进本地数据库；球友确认、签到时才复制进库。详情页显示各数据集要求的署名。
+  - 还没做的：日本（各自治体「公共施設一覧」CC BY，但不标运动项目）、韩国（data.go.kr 全国体育设施 API，需要申请 key）、加拿大（StatCan ODRSF）、澳洲维多利亚州；马来西亚、印尼、泰国、越南、菲律宾、印度没有可用的官方数据，只能 OSM + 球友添加；中国大陆没有可商用的开放数据，暂靠球友添加；丹麦 Idan 设施库需要签协议。Apple 地图没有“羽毛球”分类，只能按名称匹配，所以附近建议会同时用英文和当地叫法搜（bulu tangkis / GOR、sân cầu lông、バドミントン、배드민턴、แบดมินตัน、羽毛球馆…，最多 3 个词，受 Apple 频率限制）。覆盖率仍取决于 Apple 地图本身；下一步按城市从 OpenStreetMap（sport=badminton，ODbL 需署名）预置球馆，正式上线后再考虑 Google Places（按次收费、限制存储）。
 - 上线顺序建议：英语可用、WhatsApp 习惯的新加坡 / 马来西亚，再到英国（以俱乐部工具切入）。中国大陆需要本地主体、ICP 备案和小程序，单独立项；欧盟要 GDPR 合规包，印度 DPDP 核心义务约 2027 年生效。
 
 ## 16. 已知限制

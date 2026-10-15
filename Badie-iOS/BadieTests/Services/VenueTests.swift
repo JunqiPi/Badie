@@ -249,4 +249,37 @@ final class VenueTests: XCTestCase {
         XCTAssertEqual(BadmintonKeywords.queries(for: "US").first, "badminton")
         XCTAssertLessThanOrEqual(BadmintonKeywords.queries(for: "CN").count, 3, "Apple 搜索有频率限制")
     }
+
+    // MARK: 各地开放数据
+
+    func testOpenDataCatalogsLoadWithAttribution() {
+        let all = OpenDataVenues.all
+        let byCountry = Dictionary(grouping: all, by: \.countryCode)
+        for country in ["HK", "SG", "TW", "GB"] {
+            XCTAssertGreaterThan(byCountry[country]?.count ?? 0, 50, "\(country) 场馆太少")
+        }
+        let curatedIds = Set(BadmintonCourt.curated.map(\.id))
+        XCTAssertEqual(Set(all.map(\.id)).count, all.count, "开放数据 ID 唯一")
+        XCTAssertTrue(curatedIds.isDisjoint(with: all.map(\.id)))
+        for venue in all {
+            XCTAssertEqual(venue.source, .openData)
+            XCTAssertFalse(venue.attribution?.isEmpty ?? true, "\(venue.name) 缺少署名")
+            XCTAssertNotNil(TimeZone(identifier: venue.timeZoneId ?? ""), venue.name)
+        }
+        XCTAssertTrue(all.filter { $0.countryCode == "HK" }.allSatisfy { (22.1...22.6).contains($0.location.latitude) })
+    }
+
+    func testConfirmingOpenDataVenueCopiesItIntoTheDatabase() throws {
+        let backend = MockBackend(store: .inMemory)
+        backend.latencyEnabled = false
+        backend.simulationEnabled = false
+        _ = backend.createAccount(phone: "+85291234567", nickname: "阿杰", level: 4,
+                                  location: Coordinate(latitude: 22.32, longitude: 114.17), seedsDemoContent: false)
+        let venue = try XCTUnwrap(OpenDataVenues.all.first { $0.countryCode == "HK" })
+        XCTAssertNotNil(backend.venue(id: venue.id), "开放数据可以按 ID 找到")
+        XCTAssertNil(backend.db.venues[venue.id], "不写进本地数据库")
+        try backend.confirmVenue(venue.id)
+        XCTAssertEqual(backend.db.venues[venue.id]?.confirmedBy.count, 1)
+        XCTAssertEqual(backend.allVenues.filter { $0.id == venue.id }.count, 1, "库里的版本覆盖开放数据")
+    }
 }
