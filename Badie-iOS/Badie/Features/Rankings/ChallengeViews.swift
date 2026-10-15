@@ -9,6 +9,8 @@ struct ChallengesView: View {
     @EnvironmentObject private var matchManager: MatchManager
 
     @State private var workingId: String?
+    /// 双打挑战接受前先选搭档
+    @State private var acceptingDoubles: Challenge?
 
     var body: some View {
         let me = appState.currentUser?.id ?? ""
@@ -25,7 +27,7 @@ struct ChallengesView: View {
                     if all.isEmpty {
                         EmptyStateView(icon: "flag.2.crossed.fill",
                                        title: String(localized: "还没有挑战"),
-                                       message: String(localized: "点任意球友头像就能发起单打挑战。"),
+                                       message: String(localized: "点任意球友头像就能发起挑战。"),
                                        tint: AppTheme.Colors.peach)
                             .card()
                     } else {
@@ -56,6 +58,13 @@ struct ChallengesView: View {
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
         }
+        .sheet(item: $acceptingDoubles) { challenge in
+            AcceptDoublesSheet(challenge: challenge) { partnerId in
+                respond(challenge, accept: true, partnerId: partnerId)
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+        }
     }
 
     // MARK: Rows
@@ -71,7 +80,13 @@ struct ChallengesView: View {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     Button("不了") { respond(challenge, accept: false) }
                         .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
-                    Button("接受") { respond(challenge, accept: true) }
+                    Button("接受") {
+                        if challenge.mode == .doubles {
+                            acceptingDoubles = challenge
+                        } else {
+                            respond(challenge, accept: true)
+                        }
+                    }
                         .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small))
                 }
                 .disabled(workingId != nil)
@@ -125,12 +140,13 @@ struct ChallengesView: View {
 
     // MARK: Actions
 
-    private func respond(_ challenge: Challenge, accept: Bool) {
+    private func respond(_ challenge: Challenge, accept: Bool, partnerId: String? = nil) {
         workingId = challenge.id
         Task {
             defer { workingId = nil }
             do {
-                let game = try await appState.backend.respondToChallenge(id: challenge.id, accept: accept)
+                let game = try await appState.backend.respondToChallenge(id: challenge.id, accept: accept,
+                                                                         partnerId: partnerId)
                 if accept {
                     Haptics.success()
                     appState.showToast(String(localized: "已接受，球局已加入你的日程"), style: .success)
@@ -163,6 +179,19 @@ private struct ChallengeRow<Trailing: View>: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var friendManager: FriendManager
 
+    /// otherId 是发起人时我在被挑战方，反之亦然
+    private var otherIsChallenger: Bool { otherId == challenge.challengerId }
+
+    private var myPartner: User? {
+        (otherIsChallenger ? challenge.targetPartnerId : challenge.challengerPartnerId)
+            .flatMap { friendManager.user(id: $0) }
+    }
+
+    private var otherPartner: User? {
+        (otherIsChallenger ? challenge.challengerPartnerId : challenge.targetPartnerId)
+            .flatMap { friendManager.user(id: $0) }
+    }
+
     var body: some View {
         let other = friendManager.user(id: otherId)
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
@@ -188,9 +217,15 @@ private struct ChallengeRow<Trailing: View>: View {
                 .buttonStyle(.plain)
                 .accessibilityHint("查看个人资料")
                 Spacer(minLength: 0)
-                TagPill(text: String(localized: "单打"), icon: "flag.2.crossed.fill", fill: AppTheme.Colors.peach)
+                TagPill(text: challenge.mode.title, icon: "flag.2.crossed.fill", fill: AppTheme.Colors.peach)
             }
             VStack(alignment: .leading, spacing: 4) {
+                if let partner = myPartner {
+                    Label("搭档：\(partner.nickname)", systemImage: "person.2")
+                }
+                if let partner = otherPartner {
+                    Label("对方搭档：\(partner.nickname)", systemImage: "person.2")
+                }
                 Label(challenge.slot.formattedFull, systemImage: "calendar")
                 Label(challenge.court.name, systemImage: "mappin.and.ellipse")
                     .lineLimit(1)
@@ -224,11 +259,16 @@ struct ChallengeComposer: View {
     @State private var startMinutes = 19 * 60
     @State private var endMinutes = 21 * 60
     @State private var message = ""
+    @State private var mode: GameMode = .singles
+    @State private var partnerId: String?
     @State private var showCourtPicker = false
     @State private var isSending = false
     @State private var didSetup = false
 
     private var target: User? { friendManager.user(id: targetId) }
+
+    /// 搭档只能是我的球友，且不能是被挑战的人
+    private var partnerOptions: [User] { appState.backend.friends().filter { $0.id != targetId } }
 
     private var court: BadmintonCourt? { courtId.flatMap { locationManager.court(id: $0) } }
 
@@ -256,6 +296,7 @@ struct ChallengeComposer: View {
 
     private var validationMessage: String? {
         if court == nil { return String(localized: "选一个球馆") }
+        if mode == .doubles, partnerId == nil { return String(localized: "选一位搭档") }
         guard let slot else { return String(localized: "时间无效") }
         return slot.validate().errorMessage
     }
@@ -263,7 +304,13 @@ struct ChallengeComposer: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("向 \(target?.nickname ?? String(localized: "TA")) 发起单打挑战")
+                Group {
+                    if mode == .doubles {
+                        Text("向 \(target?.nickname ?? String(localized: "TA")) 发起双打挑战")
+                    } else {
+                        Text("向 \(target?.nickname ?? String(localized: "TA")) 发起单打挑战")
+                    }
+                }
                     .font(AppTheme.Typography.title3)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
@@ -276,6 +323,20 @@ struct ChallengeComposer: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+                    SegmentedSticker(options: GameMode.allCases, selection: $mode, title: { $0.title })
+
+                    if mode == .doubles {
+                        group(String(localized: "你的搭档")) {
+                            let options = partnerOptions
+                            if options.isEmpty {
+                                NoticeBanner(icon: "person.2.fill",
+                                             text: String(localized: "先加球友，才能带搭档发起双打挑战"))
+                            } else {
+                                PartnerPicker(friends: options, selection: $partnerId)
+                            }
+                        }
+                    }
+
                     group(String(localized: "球馆")) {
                         FlowLayout(spacing: AppTheme.Spacing.sm) {
                             ForEach(suggestedCourts) { option in
@@ -319,7 +380,13 @@ struct ChallengeComposer: View {
                             }
                         }
 
-                    Text("对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。接受后生成一场单打，双方确认赛果后计入排行。")
+                    Group {
+                        if mode == .doubles {
+                            Text("对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。对方接受时会选自己的搭档；四人都确认赛果后计入排行。")
+                        } else {
+                            Text("对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。接受后生成一场单打，双方确认赛果后计入排行。")
+                        }
+                    }
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -333,7 +400,11 @@ struct ChallengeComposer: View {
             } label: {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     if isSending { LoadingDots() }
-                    Text("发出挑战")
+                    if mode == .doubles {
+                        Text("发起双打挑战")
+                    } else {
+                        Text("发起单打挑战")
+                    }
                 }
             }
             .buttonStyle(.brutalPrimary)
@@ -378,12 +449,106 @@ struct ChallengeComposer: View {
         isSending = true
         defer { isSending = false }
         do {
-            try await appState.backend.sendChallenge(to: targetId, court: court, slot: slot, message: message)
+            try await appState.backend.sendChallenge(to: targetId, court: court, slot: slot, message: message,
+                                                     partnerId: mode == .doubles ? partnerId : nil)
             Haptics.success()
             appState.showToast(String(localized: "挑战已发出"), style: .success)
             dismiss()
         } catch {
             appState.showError(error)
         }
+    }
+}
+
+// MARK: - 搭档选择
+
+/// 横向的球友头像胶囊，单选
+private struct PartnerPicker: View {
+    let friends: [User]
+    @Binding var selection: String?
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ForEach(friends) { friend in
+                    let selected = selection == friend.id
+                    Button {
+                        Haptics.selection()
+                        selection = friend.id
+                    } label: {
+                        HStack(spacing: 6) {
+                            AvatarView(user: friend, size: 28)
+                            Text(friend.nickname)
+                                .font(AppTheme.Typography.footnoteBold)
+                                .lineLimit(1)
+                        }
+                        .foregroundStyle(selected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
+                        .padding(.leading, 5)
+                        .padding(.trailing, 14)
+                        .frame(minHeight: 40)
+                        .background(Capsule().fill(selected ? AppTheme.Colors.lime : AppTheme.Colors.surface))
+                        .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
+                        .contentShape(Capsule())
+                    }
+                    .buttonStyle(PressableStyle())
+                    .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
+            .padding(.vertical, 2)
+        }
+        .padding(.horizontal, -AppTheme.Spacing.screen)
+    }
+}
+
+/// 接受双打挑战前选自己的搭档
+private struct AcceptDoublesSheet: View {
+    let challenge: Challenge
+    let onConfirm: (String) -> Void
+
+    @EnvironmentObject private var appState: AppState
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var partnerId: String?
+
+    /// 不能选对方两人
+    private var partnerOptions: [User] {
+        let taken = [challenge.challengerId, challenge.challengerPartnerId].compactMap { $0 }
+        return appState.backend.friends().filter { !taken.contains($0.id) }
+    }
+
+    var body: some View {
+        let options = partnerOptions
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+            HStack {
+                Text("选你的搭档")
+                    .font(AppTheme.Typography.title3)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
+            }
+            if options.isEmpty {
+                NoticeBanner(icon: "person.2.fill", text: String(localized: "先加球友，才能接受双打挑战"))
+            } else {
+                PartnerPicker(friends: options, selection: $partnerId)
+            }
+            Text("四人都确认赛果后计入排行。")
+                .font(AppTheme.Typography.footnote)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Button("接受挑战") {
+                guard let partnerId else { return }
+                dismiss()
+                onConfirm(partnerId)
+            }
+            .buttonStyle(.brutalPrimary)
+            .disabled(partnerId == nil)
+        }
+        .padding(.horizontal, AppTheme.Spacing.screen)
+        .padding(.top, AppTheme.Spacing.xl)
+        .padding(.bottom, AppTheme.Spacing.lg)
+        .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
 }
