@@ -1761,6 +1761,64 @@
         }
       }
     },
+    "%@ 向你发起双打挑战（各带一位搭档）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ challenged you to doubles (bring a partner each)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ने आपको डबल्स का चैलेंज दिया (दोनों अपना पार्टनर लाएँ)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ menantangmu main ganda (masing-masing bawa partner)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ からダブルスの挑戦状（各自パートナー同伴）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@님이 복식 도전을 보냈어요 (각자 파트너 동반)"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ mencabar anda bermain beregu (masing-masing bawa pasangan)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ท้าคุณเล่นคู่ (ต่างฝ่ายพาคู่มาเอง)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ thách đấu đánh đôi với bạn (mỗi bên mang theo một bạn đánh)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 向你發起雙打挑戰（各帶一位搭檔）"
+          }
+        }
+      }
+    },
     "%@ 已到" : {
       "localizations" : {
         "en" : {
@@ -20054,6 +20112,64 @@
         }
       }
     },
+    "你的搭档" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपका पार्टनर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partnermu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "あなたのパートナー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내 파트너"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasangan anda"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คู่ของคุณ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đánh của bạn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的搭檔"
+          }
+        }
+      }
+    },
     "你的比赛经历比技术题的结果高，先按经历定级；打几场后会按球友评价更快校准。" : {
       "localizations" : {
         "en" : {
@@ -20230,6 +20346,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你的等級 %@，將配對所有水準的球友"
+          }
+        }
+      }
+    },
+    "你被拉进了一场双打挑战" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've been added to a doubles challenge"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपको एक डबल्स चैलेंज में जोड़ा गया है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu ditambahkan ke tantangan ganda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダブルスの挑戦に参加メンバーとして追加されました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복식 도전에 파트너로 추가되었어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda telah ditambah ke cabaran beregu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คุณถูกเพิ่มเข้าในการท้าแข่งประเภทคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đã được thêm vào một trận thách đấu đánh đôi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你被拉進了一場雙打挑戰"
           }
         }
       }
@@ -22492,6 +22666,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "允許同球群的人傳訊息請求給我"
+          }
+        }
+      }
+    },
+    "先加球友，才能带搭档发起双打挑战" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add friends first to bring a partner to a doubles challenge"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डबल्स चैलेंज के लिए पार्टनर लाने से पहले दोस्त जोड़ें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah teman dulu agar bisa bawa partner untuk tantangan ganda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダブルスで挑戦するには、先に友達を追加してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복식 도전을 하려면 먼저 친구를 추가하세요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah rakan dahulu untuk membawa pasangan dalam cabaran beregu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่มเพื่อนก่อน จึงจะพาคู่ไปท้าแข่งประเภทคู่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy thêm bạn bè trước để mang bạn đánh đi thách đấu đôi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先加球友，才能帶搭檔發起雙打挑戰"
+          }
+        }
+      }
+    },
+    "先加球友，才能接受双打挑战" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add friends first to accept a doubles challenge"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डबल्स चैलेंज स्वीकार करने से पहले दोस्त जोड़ें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah teman dulu untuk menerima tantangan ganda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダブルスの挑戦を受けるには、先に友達を追加してください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복식 도전을 수락하려면 먼저 친구를 추가하세요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah rakan dahulu untuk menerima cabaran beregu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่มเพื่อนก่อน จึงจะรับคำท้าประเภทคู่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy thêm bạn bè trước để nhận thách đấu đôi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先加球友，才能接受雙打挑戰"
           }
         }
       }
@@ -28861,6 +29151,64 @@
         }
       }
     },
+    "双打挑战需要选一位你的球友做搭档" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick one of your friends as your doubles partner"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपने दोस्तों में से एक को डबल्स पार्टनर चुनें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih salah satu temanmu sebagai partner ganda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "友達の中からダブルスのパートナーを選んでください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "친구 중에서 복식 파트너를 골라 주세요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih seorang rakan sebagai pasangan beregu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกเพื่อนหนึ่งคนเป็นคู่เล่นประเภทคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn một người bạn làm bạn đánh đôi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雙打挑戰需要選一位你的球友當搭檔"
+          }
+        }
+      }
+    },
     "双打时注意轮换和分工，让搭档也有球打。" : {
       "localizations" : {
         "en" : {
@@ -30365,6 +30713,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "發起單打挑戰"
+          }
+        }
+      }
+    },
+    "发起双打挑战" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Challenge to doubles"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डबल्स का चैलेंज दें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tantang main ganda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダブルスで挑戦する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복식 도전하기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cabar bermain beregu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ท้าเล่นประเภทคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thách đấu đánh đôi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發起雙打挑戰"
           }
         }
       }
@@ -33049,6 +33455,64 @@
         }
       }
     },
+    "向 %@ 发起双打挑战" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Challenge %@ to doubles"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ को डबल्स का चैलेंज दें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tantang %@ main ganda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ にダブルスで挑戦"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@님에게 복식 도전"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cabar %@ bermain beregu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ท้า %@ เล่นประเภทคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thách đấu đôi với %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向 %@ 發起雙打挑戰"
+          }
+        }
+      }
+    },
     "启用" : {
       "localizations" : {
         "en" : {
@@ -34380,6 +34844,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "四"
+          }
+        }
+      }
+    },
+    "四人都确认赛果后计入排行。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Counts toward rankings once all four confirm the result."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चारों खिलाड़ियों के नतीजा कन्फ़र्म करने पर रैंकिंग में गिना जाएगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masuk peringkat setelah keempat pemain mengonfirmasi hasil."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "4人全員が結果を確認するとランキングに反映されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "네 명 모두 결과를 확인하면 랭킹에 반영돼요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dikira dalam kedudukan selepas keempat-empat pemain mengesahkan keputusan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "นับเข้าอันดับเมื่อทั้งสี่คนยืนยันผลแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Được tính vào xếp hạng khi cả bốn người xác nhận kết quả."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "四人都確認賽果後計入排行。"
           }
         }
       }
@@ -38746,6 +39268,64 @@
         }
       }
     },
+    "对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。对方接受时会选自己的搭档；四人都确认赛果后计入排行。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They have 48 hours to accept; otherwise it expires. A decline only shows as “Didn't happen”. They'll pick their own partner when accepting; it counts toward rankings once all four confirm the result."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सामने वाले के पास स्वीकार करने के लिए 48 घंटे हैं; जवाब न आने पर चैलेंज अपने-आप खत्म हो जाएगा। मना करने पर भी सिर्फ़ “नहीं हुआ” दिखेगा। स्वीकार करते समय वे अपना पार्टनर चुनेंगे; चारों खिलाड़ियों के नतीजा कन्फ़र्म करने पर रैंकिंग में गिना जाएगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lawan punya 48 jam untuk menerima; jika tidak, tantangan kedaluwarsa. Penolakan hanya tampil sebagai “Tidak jadi”. Lawan memilih partnernya saat menerima; masuk peringkat setelah keempat pemain mengonfirmasi hasil."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手は48時間以内に承諾できます。返事がなければ自動で期限切れになります。断られても「不成立」とだけ表示されます。相手は承諾時に自分のパートナーを選びます。4人全員が結果を確認するとランキングに反映されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대는 48시간 안에 수락할 수 있어요. 응답이 없으면 자동으로 만료돼요. 거절해도 “성사 안 됨”으로만 표시돼요. 상대는 수락할 때 자기 파트너를 골라요. 네 명 모두 결과를 확인하면 랭킹에 반영돼요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pihak lawan ada 48 jam untuk menerima; jika tiada respons, cabaran tamat tempoh. Penolakan hanya dipaparkan sebagai “Tidak jadi”. Pihak lawan memilih pasangan sendiri semasa menerima; dikira dalam kedudukan selepas keempat-empat pemain mengesahkan keputusan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อีกฝ่ายมีเวลา 48 ชั่วโมงในการรับคำท้า ถ้าไม่ตอบจะหมดอายุเอง การปฏิเสธจะแสดงแค่ว่า “ไม่ได้เล่น” อีกฝ่ายจะเลือกคู่ของตัวเองตอนรับคำท้า และนับเข้าอันดับเมื่อทั้งสี่คนยืนยันผลแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đối phương có 48 giờ để chấp nhận; không phản hồi thì tự hết hạn. Bị từ chối cũng chỉ hiện “Không diễn ra”. Đối phương chọn bạn đánh của mình khi chấp nhận; được tính vào xếp hạng khi cả bốn người xác nhận kết quả."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對方 48 小時內可以接受；沒回應會自動過期。被拒絕也只會顯示「未成行」。對方接受時會選自己的搭檔；四人都確認賽果後計入排行。"
+          }
+        }
+      }
+    },
     "对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。接受后生成一场单打，双方确认赛果后计入排行。" : {
       "localizations" : {
         "en" : {
@@ -38916,6 +39496,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "對方提到了站外聯絡方式或轉帳。見面打球前不需要轉帳、代付或提供驗證碼，遇到這類要求請檢舉。"
+          }
+        }
+      }
+    },
+    "对方搭档：%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Their partner: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उनका पार्टनर: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partner lawan: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手のパートナー：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대 파트너: %@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasangan lawan: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คู่ของอีกฝ่าย: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đánh của đối phương: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對方搭檔：%@"
           }
         }
       }
@@ -56108,6 +56746,64 @@
         }
       }
     },
+    "接受挑战" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accept challenge"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चैलेंज स्वीकार करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terima tantangan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "挑戦を受ける"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "도전 수락"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terima cabaran"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รับคำท้า"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhận thách đấu"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接受挑戰"
+          }
+        }
+      }
+    },
     "接受的水平" : {
       "localizations" : {
         "en" : {
@@ -57554,6 +58250,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜尋結果"
+          }
+        }
+      }
+    },
+    "搭档需要是你的球友" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your partner must be one of your friends"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पार्टनर आपका दोस्त होना चाहिए"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partner harus temanmu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パートナーは友達から選んでください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파트너는 친구 중에서 골라야 해요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasangan mesti rakan anda"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คู่ต้องเป็นเพื่อนของคุณ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đánh phải là bạn bè của bạn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搭檔需要是你的球友"
+          }
+        }
+      }
+    },
+    "搭档：%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partner: %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पार्टनर: %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partner: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パートナー：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파트너: %@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasangan: %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คู่: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đánh: %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搭檔：%@"
           }
         }
       }
@@ -61573,6 +62385,64 @@
         }
       }
     },
+    "最近 %lld 天和多位球友有赛果争议，暂不上榜，核实后恢复" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Results disputed with several players in the last %lld days — off the leaderboards until reviewed"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पिछले %lld दिनों में कई खिलाड़ियों के साथ नतीजे पर विवाद रहा — जाँच पूरी होने तक लीडरबोर्ड पर नहीं दिखेंगे"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hasil diperselisihkan dengan beberapa pemain dalam %lld hari terakhir — tidak tampil di papan peringkat sampai ditinjau"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "過去 %lld 日に複数の相手と結果の食い違いがあったため、確認が済むまでランキングに表示されません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최근 %lld일 동안 여러 플레이어와 결과 분쟁이 있어 확인될 때까지 랭킹에 표시되지 않아요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keputusan dipertikaikan dengan beberapa pemain dalam %lld hari lepas — tidak disenaraikan dalam papan kedudukan sehingga disemak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใน %lld วันที่ผ่านมามีผลการแข่งไม่ตรงกันกับผู้เล่นหลายคน จึงยังไม่แสดงในอันดับจนกว่าจะตรวจสอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Có tranh chấp kết quả với nhiều người chơi trong %lld ngày qua — tạm không lên bảng xếp hạng cho đến khi được xác minh"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近 %lld 天和多位球友有賽果爭議，暫不上榜，核實後恢復"
+          }
+        }
+      }
+    },
     "最近一年" : {
       "localizations" : {
         "en" : {
@@ -64233,6 +65103,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "來自 Apple 地圖，由球友加入"
+          }
+        }
+      }
+    },
+    "来自 © OpenStreetMap 贡献者" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From © OpenStreetMap contributors"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "© OpenStreetMap योगदानकर्ताओं से"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dari © kontributor OpenStreetMap"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "© OpenStreetMap 貢献者による"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "출처: © OpenStreetMap 기여자"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daripada © penyumbang OpenStreetMap"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จาก © ผู้ร่วมพัฒนา OpenStreetMap"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Từ © cộng tác viên OpenStreetMap"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "來自 © OpenStreetMap 貢獻者"
           }
         }
       }
@@ -70963,6 +71891,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "點任一球友頭像就能發起單打挑戰。"
+          }
+        }
+      }
+    },
+    "点任意球友头像就能发起挑战。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap any player's avatar to challenge them."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चैलेंज देने के लिए किसी भी खिलाड़ी के अवतार पर टैप करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketuk avatar pemain mana pun untuk menantang."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレイヤーのアイコンをタップすると挑戦できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "플레이어 아바타를 탭하면 도전할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketik avatar mana-mana pemain untuk mencabar."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แตะรูปโปรไฟล์ผู้เล่นคนไหนก็ได้เพื่อท้าแข่ง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm vào ảnh đại diện của bất kỳ người chơi nào để thách đấu."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點任何球友頭像就能發起挑戰。"
           }
         }
       }
@@ -92307,6 +93293,64 @@
         }
       }
     },
+    "选一位搭档" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a partner"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पार्टनर चुनें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih partner"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "パートナーを選ぶ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파트너 선택"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih pasangan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn bạn đánh"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選一位搭檔"
+          }
+        }
+      }
+    },
     "选中后核对位置" : {
       "localizations" : {
         "en" : {
@@ -92361,6 +93405,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選取後核對位置"
+          }
+        }
+      }
+    },
+    "选你的搭档" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick your partner"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपना पार्टनर चुनें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih partnermu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自分のパートナーを選ぶ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내 파트너 선택"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih pasangan anda"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกคู่ของคุณ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn bạn đánh của bạn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選你的搭檔"
           }
         }
       }
