@@ -177,7 +177,8 @@ final class RankingTests: XCTestCase {
         let challenge = try await backend.sendChallenge(to: rival.id, court: BadmintonCourt.curatedUS[0],
                                                         slot: TimeSlot.suggestedDefault(), message: "")
         backend.currentUserIdOverride(rival.id)
-        let game = try XCTUnwrap(try await backend.respondToChallenge(id: challenge.id, accept: true))
+        let accepted = try await backend.respondToChallenge(id: challenge.id, accept: true)
+        let game = try XCTUnwrap(accepted)
         XCTAssertEqual(game.teams, [[me.id], [rival.id]])
         XCTAssertEqual(game.origin, .challenge(id: challenge.id))
     }
