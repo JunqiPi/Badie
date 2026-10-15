@@ -197,4 +197,13 @@ enum BadmintonKeywords {
         }
         return Array((["badminton"] + local).prefix(3))
     }
+
+    private static let nameWords = ["badminton", "羽毛球", "羽球", "バドミントン", "배드민턴", "แบดมินตัน",
+                                    "cầu lông", "cau long", "bulu tangkis", "बैडमिंटन"]
+
+    /// 名称明显是羽毛球场地（自动收录只认名称，不猜综合体育馆）
+    static func looksLikeBadmintonVenue(_ name: String) -> Bool {
+        let lower = name.lowercased()
+        return nameWords.contains { lower.contains($0) } || name.range(of: #"\bGOR\b"#, options: .regularExpression) != nil
+    }
 }

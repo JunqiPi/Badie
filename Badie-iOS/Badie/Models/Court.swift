@@ -260,6 +260,8 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
     var reviewFlag: String?
     /// 开放数据要求的署名（详情页显示）
     var attribution: String?
+    /// 坐标只精确到区，Apple 地图核对后才显示
+    var needsLocationCheck: Bool?
 
     /// 达到这个人数的确认后，状态从“待确认”变为“球友确认”
     static let confirmationsNeeded = 3

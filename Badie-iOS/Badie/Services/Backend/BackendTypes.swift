@@ -228,7 +228,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；版本不符的本地数据直接丢弃
-    static let currentVersion = 8
+    static let currentVersion = 9
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
@@ -274,6 +274,8 @@ struct Database: Codable {
     var challenges: [String: Challenge] = [:]
     /// 举报后对举报人隐藏的榜单条目：举报人 → 被隐藏的用户
     var hiddenFromBoards: [String: [String]] = [:]
+    /// 用 Apple 地图核对位置没找到的开放数据场馆：ID → 上次尝试时间
+    var locationChecks: [String: Date] = [:]
 }
 
 // MARK: - 可复现的伪随机数（保证模拟世界在每次启动时一致）

@@ -283,4 +283,43 @@ final class VenueTests: XCTestCase {
         XCTAssertEqual(backend.db.venues[venue.id]?.confirmedBy.count, 1)
         XCTAssertEqual(backend.allVenues.filter { $0.id == venue.id }.count, 1, "库里的版本覆盖开放数据")
     }
+
+    // MARK: 自动补充
+
+    func testOnlyClearlyBadmintonNamesAreAutoImported() {
+        XCTAssertTrue(BadmintonKeywords.looksLikeBadmintonVenue("GOR Bulutangkis Sinar"))
+        XCTAssertTrue(BadmintonKeywords.looksLikeBadmintonVenue("광장동실내배드민턴장"))
+        XCTAssertTrue(BadmintonKeywords.looksLikeBadmintonVenue("Sân cầu lông Hòa Bình"))
+        XCTAssertFalse(BadmintonKeywords.looksLikeBadmintonVenue("Gorilla Fitness"))
+        XCTAssertFalse(BadmintonKeywords.looksLikeBadmintonVenue("Community Sports Centre"))
+        XCTAssertTrue(VenueDiscovery.isSamePlace("무학봉 체육관", "무학봉체육관"))
+        XCTAssertFalse(VenueDiscovery.isSamePlace("무학봉 체육관", "대현산 체육관"))
+    }
+
+    @MainActor
+    func testDiscoveredVenuesAreAddedOnceAndChecked() throws {
+        let backend = MockBackend(store: .inMemory)
+        backend.latencyEnabled = false
+        backend.simulationEnabled = false
+        let spot = Coordinate(latitude: -6.2, longitude: 106.8)
+        func candidate(_ name: String, _ placeId: String, offsetKm: Double = 0) -> VenueCandidate {
+            VenueCandidate(name: name, location: spot.offsetBy(eastKm: offsetKm, northKm: 0),
+                           address: PostalAddress(street: "Jl. Sudirman 1", city: "Jakarta", region: "DKI Jakarta",
+                                                  countryCode: "ID"),
+                           applePlaceId: placeId)
+        }
+        let added = backend.importDiscoveredVenues([candidate("GOR Badminton Sudirman", "p1"),
+                                                    candidate("Warung Kopi", "p2", offsetKm: 2)])
+        XCTAssertEqual(added.map(\.name), ["GOR Badminton Sudirman"])
+        XCTAssertEqual(added.first?.status, .unconfirmed)
+        XCTAssertTrue(backend.importDiscoveredVenues([candidate("GOR Badminton Sudirman", "p1")]).isEmpty, "不重复收录")
+
+        let pending = try XCTUnwrap(OpenDataVenues.all.first { $0.needsLocationCheck == true })
+        XCTAssertFalse(backend.allVenues.contains { $0.id == pending.id }, "位置待核对的场馆不出现在球馆库里")
+        backend.applyLocationCheck(venueId: pending.id, match: nil)
+        XCTAssertTrue(backend.venuesAwaitingLocationCheck(near: pending.location).allSatisfy { $0.id != pending.id }, "没找到的过一段时间再试")
+        backend.applyLocationCheck(venueId: pending.id, match: candidate(pending.name, "p9"))
+        XCTAssertEqual(backend.db.venues[pending.id]?.applePlaceId, "p9")
+        XCTAssertTrue(backend.allVenues.contains { $0.id == pending.id })
+    }
 }

@@ -9,8 +9,10 @@
   sg/sportsg_facilities.geojson Sport Singapore「SportSG Sport Facilities」
   tw/national_venues.csv       運動部「全國運動場館資訊」（data.gov.tw 22849）
   uk/ap_sportshall.json, uk/ap_sites.json  Sport England Active Places（CC BY 4.0）
+  jp/tokyo_public_facility/*.csv  東京都内各区市「公共施設一覧」（CC BY 4.0）
+  kr/kr_rows.json, kr/districts.json  문화체육관광부「전국 공공체육시설 현황」(2021) 中有배드민턴的行，及按区查到的中心坐标
 """
-import csv, json, re, sys, hashlib
+import csv, io, json, re, sys, hashlib
 from collections import defaultdict
 from pathlib import Path
 
@@ -157,7 +159,65 @@ def england():
     write("GB", "Sport England Active Places", "Contains Data © Sport England (CC BY 4.0)", venues)
 
 
+def tokyo():
+    """東京都内各区市的公共体育馆（数据不标运动项目：体育馆通常可以打羽毛球，以馆方为准）；学校设施不收录。"""
+    def read(path):
+        raw = path.read_bytes()
+        for encoding in ("utf-8-sig", "cp932"):
+            try:
+                return list(csv.DictReader(io.StringIO(raw.decode(encoding))))
+            except UnicodeDecodeError:
+                pass
+        return []
+
+    venues, seen = [], set()
+    for path in sorted((RAW / "jp/tokyo_public_facility").glob("*.csv")):
+        for r in read(path):
+            name = (r.get("名称") or r.get("列1") or "").strip()
+            city = (r.get("地方公共団体名") or r.get("市区町村名") or "").strip()
+            if not re.search(r"体育館|スポーツセンター|総合運動場|スポーツ館", name) or re.search(r"学校|大学|高校|中学|小学", name):
+                continue
+            try:
+                lat, lon = float(r["緯度"]), float(r["経度"])
+            except (KeyError, ValueError):
+                continue
+            venue_id = "v-jp-" + short_hash(city + name)
+            if venue_id in seen:
+                continue
+            seen.add(venue_id)
+            address = (r.get("所在地_連結表記") or r.get("住所") or "").replace("東京都", "", 1)
+            street = address[len(city):] if address.startswith(city) else address
+            venues.append({"id": venue_id, "name": name, "lat": round(lat, 6), "lon": round(lon, 6),
+                           "street": street, "city": city, "region": "東京都", "postcode": (r.get("郵便番号") or "").strip(),
+                           "country": "JP", "tz": "Asia/Tokyo", "phone": (r.get("電話番号") or "").strip() or None,
+                           "web": (r.get("URL") or "").strip() or None,
+                           "attr": f"出典：{city}「公共施設一覧」（CC BY 4.0）"})
+    write("JP", "東京都内各区市「公共施設一覧」", "出典：東京都内各区市「公共施設一覧」（CC BY 4.0）", venues)
+
+
+def korea():
+    """2021 年公共体育设施统计表里能打羽毛球的场馆。原表没有坐标：先放在所在区的中心，
+    App 用 Apple 地图按名称核对到具体地点后才显示（approx）。"""
+    rows = json.loads((RAW / "kr/kr_rows.json").read_text())
+    districts = json.loads((RAW / "kr/districts.json").read_text())
+    venues, seen = [], set()
+    for r in rows:
+        center = districts.get(f"{r['sido']}|{r['sgg']}")
+        if not center or len(r["name"]) < 3:
+            continue
+        venue_id = "v-kr-" + short_hash(r["sido"] + r["sgg"] + r["name"])
+        if venue_id in seen:
+            continue
+        seen.add(venue_id)
+        lat, lon, region = center
+        venues.append({"id": venue_id, "name": r["name"], "lat": round(lat, 6), "lon": round(lon, 6),
+                       "street": r["addr"], "city": r["sgg"], "region": region, "postcode": "",
+                       "country": "KR", "tz": "Asia/Seoul", "approx": True})
+    write("KR", "문화체육관광부「전국 공공체육시설 현황」(2021)",
+          "출처: 문화체육관광부「전국 공공체육시설 현황」(2021, 공공누리 제1유형) · 위치는 Apple 지도로 확인", venues)
+
+
 if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
-    for build in (hong_kong, singapore, taiwan, england):
+    for build in (hong_kong, singapore, taiwan, england, tokyo, korea):
         build()

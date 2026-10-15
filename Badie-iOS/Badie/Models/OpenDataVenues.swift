@@ -27,9 +27,15 @@ enum OpenDataVenues {
         let courts: Int?
         let phone: String?
         let web: String?
+        /// 坐标只精确到区（原始数据没有坐标），要先用 Apple 地图核对
+        let approx: Bool?
+        /// 条目自己的署名（如日本各区市的数据各自署名）
+        let attr: String?
     }
 
     static let all: [BadmintonCourt] = load()
+    /// 位置可信、可以直接显示的
+    static let located: [BadmintonCourt] = all.filter { $0.needsLocationCheck != true }
     static let byId: [String: BadmintonCourt] = Dictionary(all.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 
     private static func load(bundle: Bundle = .main) -> [BadmintonCourt] {
@@ -45,9 +51,10 @@ enum OpenDataVenues {
                     address: PostalAddress(street: entry.street, city: entry.city, region: entry.region,
                                            postalCode: entry.postcode, countryCode: entry.country),
                     timeZoneId: entry.tz, courtCount: entry.courts, phone: entry.phone, website: entry.web,
-                    source: .openData, status: .verified
+                    source: .openData, status: entry.approx == true ? .unconfirmed : .verified
                 )
-                court.attribution = catalog.attribution
+                court.attribution = entry.attr ?? catalog.attribution
+                court.needsLocationCheck = entry.approx == true ? true : nil
                 return court
             }
         }

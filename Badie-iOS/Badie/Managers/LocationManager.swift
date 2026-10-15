@@ -157,6 +157,11 @@ final class LocationManager: NSObject, ObservableObject {
         }
         lastRefreshLocation = location
         refreshCourts()
+        guard allowsMapSearch else { return }
+        Task {
+            await VenueDiscovery.run(backend: backend, near: Coordinate(location.coordinate))
+            refreshCourts()
+        }
     }
 }
 

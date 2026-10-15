@@ -10,7 +10,7 @@ extension MockBackend {
 
     /// 球馆库（不含已合并到别处的旧条目）
     var allVenues: [BadmintonCourt] {
-        db.venues.values.filter { $0.mergedInto == nil } + OpenDataVenues.all.filter { db.venues[$0.id] == nil }
+        db.venues.values.filter { $0.mergedInto == nil } + OpenDataVenues.located.filter { db.venues[$0.id] == nil }
     }
 
     /// 库里的版本优先，其次是只读的开放数据目录
