@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 Badie-iOS/scripts/fetch_cbo_gyms.py:*)"
+    ]
+  }
+}
