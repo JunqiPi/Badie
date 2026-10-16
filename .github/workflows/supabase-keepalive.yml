@@ -1,6 +1,6 @@
 name: Supabase keep-alive
 
-# 免费版项目 7 天没有活动会被暂停；每天读一行公开数据，保持活跃
+# 免费版项目 7 天没有活动会被暂停；每天读一次公开数据，保持活跃，顺便检查公开 API 能读到球馆
 on:
   schedule:
     - cron: "17 9 * * *"
@@ -16,4 +16,7 @@ jobs:
           KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           if [ -z "$SUPABASE_URL" ]; then echo "未配置 Supabase，跳过"; exit 0; fi
-          curl -sSf "$SUPABASE_URL/rest/v1/venues?select=id&limit=1" -H "apikey: $KEY" > /dev/null
+          range=$(curl -sSf -o /dev/null -D - "$SUPABASE_URL/rest/v1/venues?select=id&limit=1" \
+            -H "apikey: $KEY" -H "Prefer: count=exact" | grep -i '^content-range' | tr -d '\r')
+          echo "$range"
+          [[ "$range" == */[1-9]* ]] || { echo "公开 API 读不到球馆"; exit 1; }
