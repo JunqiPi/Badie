@@ -248,6 +248,7 @@ final class VenueTests: XCTestCase {
         XCTAssertEqual(BadmintonKeywords.queries(for: "vn"), ["badminton", "sân cầu lông"])
         XCTAssertEqual(BadmintonKeywords.queries(for: "US").first, "badminton")
         XCTAssertLessThanOrEqual(BadmintonKeywords.queries(for: "CN").count, 3, "Apple 搜索有频率限制")
+        XCTAssertEqual(BadmintonKeywords.queries(for: "cn"), ["羽毛球馆", "羽毛球", "羽毛球俱乐部"], "大陆场馆名几乎都是中文")
     }
 
     // MARK: 各地开放数据

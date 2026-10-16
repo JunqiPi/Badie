@@ -98,28 +98,42 @@ final class AppleMapsSearch: NSObject, ObservableObject {
 
     /// 按关键词搜索附近地点（粘贴链接后用名称找回地点、或“附近的羽毛球馆”建议）
     static func search(_ query: String, near center: Coordinate, radiusKm: Double = 40, limit: Int = 8) async -> [VenueCandidate] {
+        await searchIfAvailable(query, near: center, radiusKm: radiusKm, limit: limit) ?? []
+    }
+
+    /// 同上，但搜索失败时返回 nil（与“确实没有结果”区分开）
+    static func searchIfAvailable(_ query: String, near center: Coordinate, radiusKm: Double = 40, limit: Int = 8) async -> [VenueCandidate]? {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = query
         request.resultTypes = .pointOfInterest
         request.region = MKCoordinateRegion(center: center.clCoordinate,
                                             latitudinalMeters: radiusKm * 2000, longitudinalMeters: radiusKm * 2000)
-        // Apple 对搜索有未公开的频率限制（开发者观察约 60 秒 50 次），被限流时直接放弃这次建议
-        guard let response = try? await MKLocalSearch(request: request).start() else { return [] }
+        // Apple 对搜索有未公开的频率限制（开发者观察约 60 秒 50 次）；中国大陆走高德数据源时，
+        // 开发者也反馈过部分关键词间歇性报错。失败就放弃这次，由调用方决定稍后重试
+        guard let response = try? await MKLocalSearch(request: request).start() else { return nil }
         return response.mapItems.prefix(limit).map(VenueCandidate.init(mapItem:))
     }
 
     /// 附近的羽毛球场地：同时用英文和当地叫法搜（Apple 地图没有羽毛球分类，只能按名称匹配），合并去重后按距离排序
     static func searchBadmintonVenues(near center: Coordinate, countryCode: String, radiusKm: Double = 40,
                                       limit: Int = 12) async -> [VenueCandidate] {
+        await searchBadmintonVenuesIfAvailable(near: center, countryCode: countryCode, radiusKm: radiusKm, limit: limit) ?? []
+    }
+
+    /// 同上；所有关键词都搜索失败时返回 nil
+    static func searchBadmintonVenuesIfAvailable(near center: Coordinate, countryCode: String, radiusKm: Double = 40,
+                                                 limit: Int = 12) async -> [VenueCandidate]? {
         let queries = BadmintonKeywords.queries(for: countryCode)
-        let batches = await withTaskGroup(of: [VenueCandidate].self) { group in
+        let batches = await withTaskGroup(of: [VenueCandidate]?.self) { group in
             for query in queries {
-                group.addTask { await AppleMapsSearch.search(query, near: center, radiusKm: radiusKm, limit: limit) }
+                group.addTask { await AppleMapsSearch.searchIfAvailable(query, near: center, radiusKm: radiusKm, limit: limit) }
             }
-            return await group.reduce(into: []) { $0 += $1 }
+            return await group.reduce(into: [[VenueCandidate]?]()) { $0.append($1) }
         }
+        let succeeded = batches.compactMap { $0 }
+        if succeeded.isEmpty { return nil }
         var merged: [VenueCandidate] = []
-        for candidate in batches.sorted(by: { $0.location.distanceKm(to: center) < $1.location.distanceKm(to: center) }) {
+        for candidate in succeeded.flatMap({ $0 }).sorted(by: { $0.location.distanceKm(to: center) < $1.location.distanceKm(to: center) }) {
             let isDuplicate = merged.contains {
                 $0.id == candidate.id || $0.location.distanceKm(to: candidate.location) < 0.08
             }
@@ -181,7 +195,8 @@ enum BadmintonKeywords {
     static func queries(for countryCode: String) -> [String] {
         let local: [String]
         switch countryCode.uppercased() {
-        case "CN": local = ["羽毛球馆", "羽毛球"]
+        // 大陆的场馆名几乎都是中文，英文词基本搜不到，三个名额全给中文叫法
+        case "CN": return ["羽毛球馆", "羽毛球", "羽毛球俱乐部"]
         case "TW", "HK": local = ["羽球館", "羽毛球"]
         case "JP": local = ["バドミントン"]
         case "KR": local = ["배드민턴"]

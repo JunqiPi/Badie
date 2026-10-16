@@ -1,23 +1,30 @@
 import Foundation
 
-/// 用户到了一个新地方时跑一次（同一片区域 6 小时内不重复）：
+/// 用户到了一个新地方时跑一次（同一片区域 6 小时内不重复，搜索失败的 10 分钟后重试）：
 /// 1. 附近只知道大概位置的开放数据场馆，用名称在 Apple 地图上找到对应地点，核对后才显示
 /// 2. 出行范围内收录的球馆太少时，用当地叫法搜 Apple 地图，名称明显是羽毛球场地的直接收录
 @MainActor
 enum VenueDiscovery {
-    private static var lastRun: (center: Coordinate, date: Date)?
+    private static var lastRun: (center: Coordinate, date: Date, failed: Bool)?
+    /// 成功跑过后同一片区域多久不再跑；搜索失败（限流、网络、大陆数据源间歇报错）则较快重试
+    static let refreshInterval: TimeInterval = 6 * 3600
+    static let retryInterval: TimeInterval = 10 * 60
 
     static func run(backend: MockBackend, near center: Coordinate, now: Date = Date()) async {
-        if let last = lastRun, last.center.distanceKm(to: center) < 5, now.timeIntervalSince(last.date) < 6 * 3600 { return }
-        lastRun = (center, now)
+        if let last = lastRun, last.center.distanceKm(to: center) < 5,
+           now.timeIntervalSince(last.date) < (last.failed ? retryInterval : refreshInterval) { return }
+        lastRun = (center, now, false)
 
         for venue in backend.venuesAwaitingLocationCheck(near: center) {
             let results = await AppleMapsSearch.search(venue.name, near: venue.location, radiusKm: 10, limit: 5)
             backend.applyLocationCheck(venueId: venue.id, match: results.first { isSamePlace($0.name, venue.name) })
         }
         if backend.venues(near: center, radiusKm: 15).count < 8 {
-            let found = await AppleMapsSearch.searchBadmintonVenues(near: center, countryCode: backend.currentCountryCode)
-            backend.importDiscoveredVenues(found)
+            if let found = await AppleMapsSearch.searchBadmintonVenuesIfAvailable(near: center, countryCode: backend.currentCountryCode) {
+                backend.importDiscoveredVenues(found)
+            } else {
+                lastRun = (center, now, true)
+            }
         }
     }
 
