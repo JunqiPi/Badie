@@ -14,3 +14,12 @@ npm run build    # 输出到 dist/；SITE_URL 决定 canonical 和 sitemap 的�
 - 样式变量和 iOS `Theme.swift` 一致，深色模式跟随系统。
 - 布局按网页习惯，不照搬手机版：城市页是“列表 + 地图”，球馆页是两栏（右侧固定的“到这里去”卡片），首页用 bento 数字块。
 - `sticker`（描边 + 硬投影）只给能点的卡片和按钮；静态色块用 `tile`（只有描边），保持“能点”的信号可靠。
+
+## 部署
+
+`main` 分支的推送会部署到 Cloudflare Pages（项目名 `badie`）。需要在 GitHub 仓库设置里加：
+
+- Secrets：`CLOUDFLARE_API_TOKEN`（权限：Cloudflare Pages 编辑）、`CLOUDFLARE_ACCOUNT_ID`
+- Variables：`SITE_URL`（正式域名，如 `https://badie.app`；决定 canonical 和 sitemap）
+
+没配的时候 CI 只构建不部署。
