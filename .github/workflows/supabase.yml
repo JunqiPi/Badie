@@ -1,0 +1,38 @@
+name: Supabase CI
+
+on:
+  push:
+    branches: [ main, "claude/**" ]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/supabase.yml"
+  pull_request:
+    paths:
+      - "supabase/**"
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  db-test:
+    name: Migrations, lint & database tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+
+      # 只启动数据库：迁移和 pgTAP 测试不需要其他服务
+      - name: Start database
+        run: supabase db start
+
+      - name: Lint schema
+        run: supabase db lint -s public --level warning --fail-on warning
+
+      - name: Run database tests
+        run: supabase test db
