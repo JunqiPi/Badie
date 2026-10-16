@@ -106,7 +106,7 @@ struct AddVenueView: View {
             }
             if checksDuplicatesOnAppear, let finalAddress = composedAddress {
                 let candidate = VenueCandidate(name: trimmedName, location: pin, address: finalAddress)
-                duplicates = appState.backend.duplicates(for: candidate)
+                duplicates = appState.venueService.duplicates(for: candidate)
                 checkedDuplicates = true
             }
         }
@@ -391,22 +391,24 @@ struct AddVenueView: View {
                                        applePlaceId: nil, timeZoneId: timeZoneId ?? TimeZone.current.identifier)
         if !checkedDuplicates {
             checkedDuplicates = true
-            duplicates = appState.backend.duplicates(for: candidate)
+            duplicates = appState.venueService.duplicates(for: candidate)
             if !duplicates.isEmpty {
                 Haptics.error()
                 return
             }
         }
         guard !isBlocked else { return }
-        do {
-            let venue = try appState.backend.addVenue(candidate, source: .player, aliases: [alias],
-                                                      courtCount: courtCount > 0 ? courtCount : nil,
-                                                      entranceNote: entranceNote)
-            Haptics.success()
-            appState.showToast(String(localized: "已添加：\(venue.name)，等球友确认"), style: .success)
-            onAdded(venue)
-        } catch {
-            appState.showError(error)
+        Task {
+            do {
+                let venue = try await appState.venueService.addVenue(candidate, source: .player, aliases: [alias],
+                                                                     courtCount: courtCount > 0 ? courtCount : nil,
+                                                                     entranceNote: entranceNote, now: Date())
+                Haptics.success()
+                appState.showToast(String(localized: "已添加：\(venue.name)，等球友确认"), style: .success)
+                onAdded(venue)
+            } catch {
+                appState.showError(error)
+            }
         }
     }
 }

@@ -59,6 +59,8 @@ final class AppState: ObservableObject {
     }
 
     let backend: MockBackend
+    /// 球馆库（界面只通过接口访问，便于换成正式后端）
+    var venueService: any VenueService { backend }
     /// 截图/演示模式下跳过启动动画
     var skipsSplash = false
     /// 登录流程的起始步骤（演示模式可直接打开手机号页）

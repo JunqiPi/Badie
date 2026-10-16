@@ -258,7 +258,7 @@ struct CourtDetailSheet: View {
             .padding(.bottom, AppTheme.Spacing.xl)
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
-        .onAppear { hasConfirmed = appState.backend.hasConfirmed(venue.id) }
+        .onAppear { hasConfirmed = appState.venueService.hasConfirmed(venue.id) }
         .confirmationDialog("选择导航方式", isPresented: $showNavigation, titleVisibility: .visible) {
             ForEach(MapsLauncher.apps(for: venue)) { app in
                 Button(app.title) {
@@ -273,11 +273,13 @@ struct CourtDetailSheet: View {
         .confirmationDialog("这个球馆有什么问题？", isPresented: $showReport, titleVisibility: .visible) {
             ForEach(VenueIssue.allCases) { issue in
                 Button(issue.title) {
-                    do {
-                        try appState.backend.reportVenue(venue.id, issue: issue)
-                        appState.showToast(String(localized: "谢谢，我们会尽快核实"), style: .success)
-                    } catch {
-                        appState.showError(error)
+                    Task {
+                        do {
+                            try await appState.venueService.reportVenue(venue.id, issue: issue, detail: "")
+                            appState.showToast(String(localized: "谢谢，我们会尽快核实"), style: .success)
+                        } catch {
+                            appState.showError(error)
+                        }
                     }
                 }
             }
@@ -340,13 +342,15 @@ struct CourtDetailSheet: View {
             HStack(spacing: AppTheme.Spacing.sm) {
                 if venue.status != .verified {
                     Button {
-                        do {
-                            try appState.backend.confirmVenue(venue.id)
-                            hasConfirmed = true
-                            Haptics.success()
-                            appState.showToast(String(localized: "谢谢确认！"), style: .success)
-                        } catch {
-                            appState.showError(error)
+                        Task {
+                            do {
+                                try await appState.venueService.confirmVenue(venue.id)
+                                hasConfirmed = true
+                                Haptics.success()
+                                appState.showToast(String(localized: "谢谢确认！"), style: .success)
+                            } catch {
+                                appState.showError(error)
+                            }
                         }
                     } label: {
                         Label(hasConfirmed ? String(localized: "你已确认过") : String(localized: "我去过，地址正确"), systemImage: "checkmark.circle.fill")

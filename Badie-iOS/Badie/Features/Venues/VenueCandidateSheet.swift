@@ -101,16 +101,19 @@ struct VenueCandidateSheet: View {
     private var isBlocked: Bool { duplicates.contains { $0.kind.blocksAdding } }
 
     private func save() {
+        guard !isSaving else { return }
         isSaving = true
-        defer { isSaving = false }
-        do {
-            let venue = try appState.backend.addVenue(candidate, source: source, aliases: [alias],
-                                                      entranceNote: entranceNote)
-            Haptics.success()
-            appState.showToast(String(localized: "已加入球馆库：\(venue.name)"), style: .success)
-            onChosen(venue)
-        } catch {
-            appState.showError(error)
+        Task {
+            defer { isSaving = false }
+            do {
+                let venue = try await appState.venueService.addVenue(candidate, source: source, aliases: [alias],
+                                                                     courtCount: nil, entranceNote: entranceNote, now: Date())
+                Haptics.success()
+                appState.showToast(String(localized: "已加入球馆库：\(venue.name)"), style: .success)
+                onChosen(venue)
+            } catch {
+                appState.showError(error)
+            }
         }
     }
 }

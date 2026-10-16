@@ -38,6 +38,7 @@ struct VenuePickerView: View {
     @FocusState private var searchFocused: Bool
 
     private var backend: MockBackend { appState.backend }
+    private var venueService: any VenueService { appState.venueService }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -246,7 +247,7 @@ struct VenuePickerView: View {
                         VenueRow(
                             venue: venue,
                             distance: venue.formattedDistance(from: locationManager.coordinate),
-                            regulars: backend.regularsCount(for: venue.id),
+                            regulars: venueService.regularsCount(for: venue.id),
                             isFavorite: locationManager.isFavorite(venue.id),
                             query: query,
                             accessory: accessory(for: venue),
@@ -326,7 +327,7 @@ struct VenuePickerView: View {
             mapSearch.clear()
             return
         }
-        hits = backend.searchVenues(trimmed, near: locationManager.coordinate, limit: 15)
+        hits = venueService.searchVenues(trimmed, near: locationManager.coordinate, limit: 15)
         if locationManager.allowsMapSearch && allowsAdding {
             mapSearch.update(query: trimmed, near: locationManager.coordinate)
         }
@@ -338,7 +339,7 @@ struct VenuePickerView: View {
         let center = locationManager.coordinate
         Task {
             let found = await AppleMapsSearch.searchBadmintonVenues(near: center, countryCode: backend.currentCountryCode)
-            let known = backend.allVenues
+            let known = venueService.allVenues
             suggestions = found.filter { candidate in
                 !VenueSearch.duplicates(name: candidate.name, location: candidate.location,
                                         applePlaceId: candidate.applePlaceId,
@@ -400,7 +401,7 @@ struct VenuePickerView: View {
 
     /// 地图地点 → 查重 → Place ID 相同直接选已有球馆，否则打开核对页
     private func review(_ candidate: VenueCandidate, source: VenueSource) {
-        let duplicates = backend.duplicates(for: candidate)
+        let duplicates = venueService.duplicates(for: candidate)
         if let same = duplicates.first(where: { $0.kind == .samePlace }) {
             appState.showToast(String(localized: "球馆库里已有：\(same.venue.name)"), style: .success)
             choose(same.venue)
