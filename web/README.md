@@ -25,4 +25,4 @@ npm run e2e      # 应用端到端测试，需要先 supabase start，并用本�
 - Secrets：`CLOUDFLARE_API_TOKEN`（权限：Cloudflare Pages 编辑）、`CLOUDFLARE_ACCOUNT_ID`
 - Variables：`SITE_URL`（正式域名，如 `https://badie.app`；决定 canonical 和 sitemap）
 
-没配的时候 CI 只构建不部署。
+第一次部署前，在 Cloudflare 后台建一个 Direct Upload 类型的 Pages 项目，名字填 `badie`。没配密钥的时候 CI 只构建不部署。
