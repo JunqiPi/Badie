@@ -2,9 +2,9 @@ import Foundation
 
 // MARK: - 赛果申报
 //
-// 赛后每位球员各自申报“哪一队赢了”。两队各至少一人申报、且所有申报一致才算确认；
-// 有人报得不一样就是“有争议”，7 天内没凑齐就作废。确认、作废都不需要人工介入，
-// 也没有“超时自动确认”——虚报不会因为对方没理会就生效。
+// 一人先报“哪一队赢了”，其他人看到后点“对”或改成自己记得的结果。两队各至少一人报、且一致才算确认。
+// 记不清的人选“记不清了”：不算确认也不算争议，这场不计入。报得不一样是“有分歧”，
+// 7 天内任何人都可以改，改到一致照常计入。没有“超时自动确认”——虚报不会因为对方没理会就生效。
 
 struct ResultReport: Codable, Hashable {
     let reporterId: String
@@ -12,16 +12,20 @@ struct ResultReport: Codable, Hashable {
     let winningTeam: Int?
     let score: String
     let reportedAt: Date
+    /// 记不清了：不算确认，也不算争议
+    var unsure = false
 }
 
 enum ResultStatus: Hashable {
     /// 还在等另一队确认
     case awaiting
     case verified(winningTeam: Int)
-    /// 双方说法不一致：不计入任何统计
+    /// 双方说法不一致：期限内可以改，改不到一致就不计入
     case disputed
     /// 双方都选了不计胜负
     case friendly
+    /// 有一队全员记不清，无法确认
+    case unsure
     /// 期限内没凑齐确认
     case expired
 }
@@ -29,6 +33,8 @@ enum ResultStatus: Hashable {
 extension Game {
     /// 结束后多久内可以申报、确认赛果
     static let resultWindow: TimeInterval = 7 * 86400
+
+    var resultDeadline: Date { slot.endTime.addingTimeInterval(Self.resultWindow) }
 
     func team(of userId: String) -> Int? {
         teams.firstIndex { $0.contains(userId) }
@@ -39,14 +45,24 @@ extension Game {
     }
 
     func resultStatus(now: Date = Date()) -> ResultStatus {
-        let outcomes = Set(resultReports.map(\.winningTeam))
+        let claims = resultReports.filter { !$0.unsure }
+        let outcomes = Set(claims.map(\.winningTeam))
         if outcomes.count > 1 { return .disputed }
-        let reportingTeams = Set(resultReports.compactMap { team(of: $0.reporterId) })
-        if reportingTeams.count == teams.count, let outcome = outcomes.first {
-            if let winner = outcome { return .verified(winningTeam: winner) }
-            return .friendly
+        let claimingTeams = Set(claims.compactMap { team(of: $0.reporterId) })
+        if claimingTeams.count == teams.count, let outcome = outcomes.first {
+            return outcome.map { .verified(winningTeam: $0) } ?? .friendly
         }
-        return now > slot.endTime.addingTimeInterval(Self.resultWindow) ? .expired : .awaiting
+        if teams.contains(where: { $0.allSatisfy { report(by: $0)?.unsure == true } }) { return .unsure }
+        return now > resultDeadline ? .expired : .awaiting
+    }
+
+    /// 还能报或改赛果：确认之前、期限之内
+    func acceptsResultReports(now: Date = Date()) -> Bool {
+        guard status == .completed, now <= resultDeadline else { return false }
+        switch resultStatus(now: now) {
+        case .awaiting, .disputed, .unsure: return true
+        case .verified, .friendly, .expired: return false
+        }
     }
 }
 

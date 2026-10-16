@@ -4083,6 +4083,64 @@
         }
       }
     },
+    "%@：记不清了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: doesn't remember"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: याद नहीं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: tidak ingat"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ さん：覚えていない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 님: 기억 안 남"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: tidak ingat"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: จำไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: không nhớ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@：記不清了"
+          }
+        }
+      }
+    },
     "%lld" : {},
     "%lld %@" : {
       "localizations" : {
@@ -19764,64 +19822,6 @@
         }
       }
     },
-    "你已经提交过这场的赛果" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "You've already submitted the result for this game"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "आप इस गेम का नतीजा पहले ही भेज चुके हैं"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu sudah mengirim hasil game ini"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "この試合の結果はすでに送信済みです"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 게임의 결과를 이미 제출했어요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anda sudah menghantar keputusan permainan ini"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "คุณส่งผลเกมนี้ไปแล้ว"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bạn đã gửi kết quả trận này rồi"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你已經提交過這場的賽果"
-          }
-        }
-      }
-    },
     "你已经评价过这场球了" : {
       "localizations" : {
         "en" : {
@@ -21564,6 +21564,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "修改模式、時間和球館"
+          }
+        }
+      }
+    },
+    "修改赛果" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit result"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "नतीजा बदलें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubah hasil"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結果を修正"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "결과 수정"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubah keputusan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แก้ไขผล"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa kết quả"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改賽果"
           }
         }
       }
@@ -29383,60 +29441,60 @@
         }
       }
     },
-    "双方报的结果不一致，这场不计入胜率和排行榜" : {
+    "双方报的结果不一致。7 天内任何一方都可以修改，一致后照常计入" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The results reported don't match, so this game won't count toward win rate or leaderboards"
+            "value" : "The reported results don't match. Either side can edit theirs within 7 days; once they match, the game counts as usual"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "दोनों तरफ़ के नतीजे अलग हैं, इसलिए यह गेम जीत दर और लीडरबोर्ड में नहीं गिना जाएगा"
+            "value" : "दोनों के बताए नतीजे अलग हैं। 7 दिन में कोई भी पक्ष बदल सकता है, मिल जाने पर गेम सामान्य रूप से गिना जाएगा"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hasil yang dilaporkan tidak cocok, jadi game ini tidak dihitung ke win rate atau papan peringkat"
+            "value" : "Hasil yang dilaporkan tidak cocok. Salah satu pihak bisa mengubahnya dalam 7 hari; setelah cocok, game dihitung seperti biasa"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "双方の報告が一致しないため、この試合は勝率とランキングに含まれません"
+            "value" : "報告された結果が食い違っています。7 日以内ならどちらも修正でき、一致すれば通常どおり反映されます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "양쪽이 보고한 결과가 달라서 이 게임은 승률과 순위표에 반영되지 않아요"
+            "value" : "보고한 결과가 서로 달라요. 7일 안에 어느 쪽이든 수정할 수 있고, 일치하면 정상 반영돼요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keputusan yang dilaporkan tidak sepadan, jadi permainan ini tidak dikira dalam kadar menang atau papan pendahulu"
+            "value" : "Keputusan yang dilaporkan tidak sepadan. Mana-mana pihak boleh mengubahnya dalam 7 hari; apabila sepadan, permainan dikira seperti biasa"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ผลที่ทั้งสองฝ่ายแจ้งไม่ตรงกัน เกมนี้ไม่นับในอัตราชนะและตารางอันดับ"
+            "value" : "ผลที่แจ้งไม่ตรงกัน ทั้งสองฝ่ายแก้ไขได้ภายใน 7 วัน เมื่อตรงกันแล้วจะนับตามปกติ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kết quả hai bên báo không khớp, trận này không được tính vào tỷ lệ thắng và bảng xếp hạng"
+            "value" : "Kết quả hai bên báo không khớp. Trong 7 ngày bên nào cũng có thể sửa; khi khớp, trận được tính như bình thường"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "雙方回報的結果不一致，這場不計入勝率和排行榜"
+            "value" : "雙方回報的結果不一致。7 天內任何一方都可以修改，一致後照常計入"
           }
         }
       }
@@ -29615,60 +29673,60 @@
         }
       }
     },
-    "双方都确认后才计入胜率和排行榜；说法不一致的场次不计入" : {
+    "双方说法不一致：任何一方改成一致就照常计入（%@）" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Games count toward win rate and leaderboards once both sides confirm; disputed games don't count"
+            "value" : "Results don't match. If either side fixes theirs to match, it still counts (%@)"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "दोनों तरफ़ से कन्फ़र्म होने पर ही जीत दर और लीडरबोर्ड में गिना जाता है; अलग नतीजों वाले गेम नहीं गिने जाते"
+            "value" : "दोनों के नतीजे अलग हैं। कोई भी एक पक्ष बदलकर मिला दे तो गेम गिना जाएगा (%@)"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Game dihitung ke win rate dan papan peringkat setelah dikonfirmasi kedua pihak; game yang diperselisihkan tidak dihitung"
+            "value" : "Hasil tidak cocok. Jika salah satu pihak mengubahnya hingga cocok, game tetap dihitung (%@)"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "双方が確認した後に勝率とランキングに反映されます。報告が食い違う試合は含まれません"
+            "value" : "報告が食い違っています。どちらかが修正して一致すれば通常どおり反映されます（%@）"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "양쪽이 모두 확인해야 승률과 순위표에 반영되고, 결과가 다른 게임은 반영되지 않아요"
+            "value" : "양쪽 결과가 달라요. 한쪽이 수정해서 일치하면 정상 반영돼요(%@)"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permainan dikira dalam kadar menang dan papan pendahulu selepas kedua-dua pihak mengesahkan; permainan yang dipertikaikan tidak dikira"
+            "value" : "Keputusan tidak sepadan. Jika mana-mana pihak membetulkannya hingga sepadan, permainan tetap dikira (%@)"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "นับในอัตราชนะและตารางอันดับเมื่อทั้งสองฝ่ายยืนยันแล้ว เกมที่แจ้งไม่ตรงกันจะไม่นับ"
+            "value" : "ผลไม่ตรงกัน ถ้าฝ่ายใดแก้ให้ตรงกัน เกมจะนับตามปกติ (%@)"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trận chỉ được tính vào tỷ lệ thắng và bảng xếp hạng khi cả hai bên xác nhận; trận có tranh chấp không được tính"
+            "value" : "Kết quả không khớp. Chỉ cần một bên sửa cho khớp là trận vẫn được tính (%@)"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "雙方都確認後才計入勝率和排行榜；說法不一致的場次不計入"
+            "value" : "雙方說法不一致：任何一方改成一致就照常計入（%@）"
           }
         }
       }
@@ -38156,6 +38214,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "好的，有消息通知我"
+          }
+        }
+      }
+    },
+    "好的，这场不计入胜率" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got it. This game won't count toward win rate"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ठीक है, यह गेम जीत दर में नहीं गिना जाएगा"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oke, game ini tidak dihitung ke win rate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "了解です。この試合は勝率に含まれません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알겠어요. 이 게임은 승률에 반영되지 않아요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baik, permainan ini tidak dikira dalam kadar menang"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ได้เลย เกมนี้จะไม่นับในอัตราชนะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Được rồi, trận này không tính vào tỷ lệ thắng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好的，這場不計入勝率"
           }
         }
       }
@@ -53654,6 +53770,64 @@
         }
       }
     },
+    "打了好几局就按赢得多的一方算。双方一致才计入胜率；记不清就选“记不清了”，不算分歧" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Played several games? Pick the side that won more. Only matching results count toward win rate. If you don't remember, choose “I don't remember” — it won't count as a dispute"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कई गेम खेले? जिस पक्ष ने ज़्यादा जीते, वही चुनें। दोनों के नतीजे मिलने पर ही जीत दर में गिना जाता है। याद न हो तो “मुझे याद नहीं” चुनें, इसे विवाद नहीं माना जाएगा"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main beberapa game? Pilih pihak yang menang lebih banyak. Hanya hasil yang cocok dihitung ke win rate. Kalau tidak ingat, pilih “Saya tidak ingat”, ini tidak dianggap perselisihan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何ゲームか打った場合は、多く勝った側を選んでください。双方の結果が一致した試合だけが勝率に反映されます。覚えていなければ「覚えていない」を選んでください。食い違いにはなりません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여러 게임을 쳤다면 더 많이 이긴 쪽을 고르세요. 양쪽 결과가 일치해야 승률에 반영돼요. 기억이 안 나면 ‘기억이 안 나요’를 고르세요. 결과 불일치로 치지 않아요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main beberapa permainan? Pilih pihak yang menang lebih banyak. Hanya keputusan yang sepadan dikira dalam kadar menang. Jika tidak ingat, pilih “Saya tidak ingat”, ia tidak dikira sebagai pertikaian"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ถ้าเล่นหลายเกม ให้เลือกฝ่ายที่ชนะมากกว่า ผลที่ตรงกันเท่านั้นจึงนับในอัตราชนะ ถ้าจำไม่ได้ให้เลือก “จำไม่ได้” จะไม่ถือว่าผลไม่ตรงกัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chơi nhiều ván thì chọn bên thắng nhiều hơn. Chỉ kết quả khớp mới được tính vào tỷ lệ thắng. Không nhớ thì chọn “Tôi không nhớ”, sẽ không bị tính là tranh chấp"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打了好幾局就按贏得多的一方算。雙方一致才計入勝率；記不清就選「記不清了」，不算分歧"
+          }
+        }
+      }
+    },
     "打双打时，你对站位和配合的掌握？" : {
       "localizations" : {
         "en" : {
@@ -62927,6 +63101,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "有一個位置正在找人補上"
+          }
+        }
+      }
+    },
+    "有一方记不清，本场不计入胜率" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One side doesn't remember, so this game won't count toward win rate"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक पक्ष को याद नहीं, यह गेम जीत दर में नहीं गिना जाएगा"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salah satu pihak tidak ingat, jadi game ini tidak dihitung ke win rate"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一方が覚えていないため、この試合は勝率に含まれません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한쪽이 기억하지 못해 이 게임은 승률에 반영되지 않아요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Satu pihak tidak ingat, jadi permainan ini tidak dikira dalam kadar menang"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มีฝ่ายหนึ่งจำไม่ได้ เกมนี้ไม่นับในอัตราชนะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Một bên không nhớ, trận này không được tính vào tỷ lệ thắng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有一方記不清，本場不計入勝率"
           }
         }
       }
@@ -84555,6 +84787,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "認證通過：%@"
+          }
+        }
+      }
+    },
+    "记不清了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I don't remember"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मुझे याद नहीं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saya tidak ingat"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "覚えていない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기억이 안 나요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saya tidak ingat"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จำไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tôi không nhớ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記不清了"
           }
         }
       }

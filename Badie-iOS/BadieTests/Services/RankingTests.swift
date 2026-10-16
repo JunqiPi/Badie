@@ -62,6 +62,36 @@ final class RankingTests: XCTestCase {
         XCTAssertEqual(backend.currentUser?.wins, 0)
     }
 
+    func testUnsureIsNeitherConfirmationNorDispute() async throws {
+        let me = signUp()
+        backend.db.games["g"] = finishedGame(id: "g", players: [me.id, "bot-0"])
+        backend.db.games["g"]?.status = .completed
+        backend.addResultReport(ResultReport(reporterId: "bot-0", winningTeam: 1, score: "", reportedAt: Date()), to: "g")
+        try await backend.reportResultUnsure(gameId: "g")
+        XCTAssertEqual(backend.db.games["g"]?.resultStatus(), .unsure)
+        XCTAssertTrue(backend.db.matchRecords.isEmpty)
+    }
+
+    func testEitherSideCanFixADisputeWithinTheWindow() async throws {
+        let me = signUp()
+        backend.db.games["g"] = finishedGame(id: "g", players: [me.id, "bot-0"])
+        try await backend.completeGame(id: "g", didWin: true, score: "")
+        backend.addResultReport(ResultReport(reporterId: "bot-0", winningTeam: 1, score: "", reportedAt: Date()), to: "g")
+        XCTAssertEqual(backend.db.games["g"]?.resultStatus(), .disputed)
+
+        try await backend.reportResult(gameId: "g", didWin: false, score: "")
+        XCTAssertEqual(backend.db.games["g"]?.resultStatus(), .verified(winningTeam: 1))
+        XCTAssertEqual(backend.db.games["g"]?.resultReports.count, 2, "改赛果替换原来的申报")
+        XCTAssertEqual(backend.db.matchRecords.map(\.id), ["g"])
+
+        do {
+            try await backend.reportResult(gameId: "g", didWin: true, score: "")
+            XCTFail("确认后不能再改")
+        } catch {
+            XCTAssertEqual(error as? BackendError, .resultWindowClosed)
+        }
+    }
+
     func testUnconfirmedResultExpiresInsteadOfAutoConfirming() {
         var game = finishedGame(id: "g", players: ["a", "b"], hoursAgo: 24 * 8)
         game.resultReports = [ResultReport(reporterId: "a", winningTeam: 0, score: "", reportedAt: Date())]
@@ -225,14 +255,19 @@ final class RankingTests: XCTestCase {
         let me = signUp()
         backend.db.users[me.id]?.joinDate = Date().addingTimeInterval(-30 * 86400)
         XCTAssertTrue(backend.isListedOnBoards(me.id))
-        for (index, rival) in backend.db.bots.keys.sorted().prefix(Rankings.disputeLimit).enumerated() {
-            var game = finishedGame(id: "d\(index)", players: [me.id, rival])
-            game.status = .completed
-            game.resultReports = [ResultReport(reporterId: me.id, winningTeam: 0, score: "", reportedAt: Date()),
-                                  ResultReport(reporterId: rival, winningTeam: 1, score: "", reportedAt: Date())]
-            backend.db.games[game.id] = game
+        func addDisputes(daysAgo: Double) {
+            for (index, rival) in backend.db.bots.keys.sorted().prefix(Rankings.disputeLimit).enumerated() {
+                var game = finishedGame(id: "d\(index)", players: [me.id, rival], hoursAgo: daysAgo * 24)
+                game.status = .completed
+                game.resultReports = [ResultReport(reporterId: me.id, winningTeam: 0, score: "", reportedAt: Date()),
+                                      ResultReport(reporterId: rival, winningTeam: 1, score: "", reportedAt: Date())]
+                backend.db.games[game.id] = game
+            }
         }
-        XCTAssertFalse(backend.isListedOnBoards(me.id), "和 3 位不同对手都有争议，暂不上榜")
+        addDisputes(daysAgo: 1)
+        XCTAssertTrue(backend.isListedOnBoards(me.id), "期限内还能改的分歧不算")
+        addDisputes(daysAgo: 8)
+        XCTAssertFalse(backend.isListedOnBoards(me.id), "和 3 位不同对手都有到期未解决的分歧，暂不上榜")
         XCTAssertNotNil(backend.boardAbsenceReason())
     }
 }

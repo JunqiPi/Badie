@@ -11,23 +11,35 @@ extension MockBackend {
         return didWin ? mine : game.teams.indices.first { $0 != mine }
     }
 
-    /// 对方先结束了球局时，我来申报 / 确认赛果
+    /// 确认或修改我报的赛果；didWin 为 nil 表示不计胜负
     func reportResult(gameId: String, didWin: Bool?, score: String) async throws {
-        let me = try requireUser()
-        guard let game = db.games[gameId], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
-        guard game.report(by: me.id) == nil else { throw BackendError.resultAlreadyReported }
-        guard game.status == .completed, game.resultStatus() == .awaiting || game.resultStatus() == .disputed
-        else { throw BackendError.resultWindowClosed }
-        await networkDelay()
-        addResultReport(ResultReport(reporterId: me.id, winningTeam: winningTeam(in: game, for: me.id, didWin: didWin),
-                                     score: String(score.prefix(40)), reportedAt: Date()), to: gameId)
+        try await submitResult(gameId: gameId) { game, me in
+            ResultReport(reporterId: me, winningTeam: self.winningTeam(in: game, for: me, didWin: didWin),
+                         score: String(score.prefix(40)), reportedAt: Date())
+        }
     }
 
-    /// 记一份申报，并在双方确认后生成计入排行的对局
+    /// 记不清了：这场不计入，也不算争议
+    func reportResultUnsure(gameId: String) async throws {
+        try await submitResult(gameId: gameId) { _, me in
+            ResultReport(reporterId: me, winningTeam: nil, score: "", reportedAt: Date(), unsure: true)
+        }
+    }
+
+    private func submitResult(gameId: String, makeReport: (Game, String) -> ResultReport) async throws {
+        let me = try requireUser()
+        guard let game = db.games[gameId], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
+        guard game.acceptsResultReports() else { throw BackendError.resultWindowClosed }
+        await networkDelay()
+        addResultReport(makeReport(game, me.id), to: gameId)
+    }
+
+    /// 记一份申报（同一人再报会替换上一次），双方确认后生成计入排行的对局
     func addResultReport(_ report: ResultReport, to gameId: String) {
-        guard var game = db.games[gameId], game.team(of: report.reporterId) != nil,
-              game.report(by: report.reporterId) == nil else { return }
+        guard var game = db.games[gameId], game.team(of: report.reporterId) != nil else { return }
         let before = game.resultStatus()
+        if case .verified = before { return }
+        game.resultReports.removeAll { $0.reporterId == report.reporterId }
         game.resultReports.append(report)
         db.games[gameId] = game
         let after = game.resultStatus()
@@ -40,7 +52,7 @@ extension MockBackend {
                           body: String(localized: "双方结果一致，已计入本月胜率和排行榜"))
         case .disputed:
             notifyPlayers(of: game, title: String(localized: "赛果有分歧"),
-                          body: String(localized: "双方报的结果不一致，这场不计入胜率和排行榜"))
+                          body: String(localized: "双方报的结果不一致。7 天内任何一方都可以修改，一致后照常计入"))
         default:
             break
         }
@@ -145,11 +157,12 @@ extension MockBackend {
         return !isBlockedEitherWay(me, userId) && !(db.hiddenFromBoards[me] ?? []).contains(userId)
     }
 
-    /// 近 60 天里和多少位不同对手有过赛果争议
+    /// 近 60 天里和多少位不同对手有过到期仍未解决的赛果分歧（期限内还能改的不算）
     func disputedOpponents(of userId: String, now: Date = Date()) -> Int {
         let since = now.addingTimeInterval(-Double(Rankings.disputeWindowDays) * 86400)
         let opponents = db.games.values
-            .filter { $0.slot.startTime > since && $0.team(of: userId) != nil && $0.resultStatus(now: now) == .disputed }
+            .filter { $0.slot.startTime > since && now > $0.resultDeadline && $0.team(of: userId) != nil
+                && $0.resultStatus(now: now) == .disputed }
             .flatMap { game in game.teams.enumerated().filter { $0.offset != game.team(of: userId) }.flatMap(\.element) }
         return Set(opponents).count
     }

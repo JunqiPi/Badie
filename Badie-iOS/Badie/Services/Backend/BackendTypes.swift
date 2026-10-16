@@ -83,7 +83,6 @@ enum BackendError: LocalizedError, Equatable {
     case verificationInvalid(String)
     case challengeUnavailable(String)
     case challengeNotFound
-    case resultAlreadyReported
     case resultWindowClosed
     case profileContainsContact
 
@@ -135,7 +134,6 @@ enum BackendError: LocalizedError, Equatable {
         case .chatClosed: return String(localized: "这个群聊已经结束了")
         case .challengeUnavailable(let reason): return reason
         case .challengeNotFound: return String(localized: "这个挑战已经结束了")
-        case .resultAlreadyReported: return String(localized: "你已经提交过这场的赛果")
         case .resultWindowClosed: return String(localized: "赛后 7 天内才能提交赛果")
         case .profileContainsContact: return String(localized: "昵称和简介里不能留联系方式或链接")
         case .groupNotFound: return String(localized: "没有找到这个球群")
@@ -228,7 +226,7 @@ struct ReportRecord: Codable, Hashable {
 
 struct Database: Codable {
     /// 结构变更时递增；版本不符的本地数据直接丢弃
-    static let currentVersion = 9
+    static let currentVersion = 10
     var version: Int = Database.currentVersion
     var currentUserId: String?
     /// 手机号 -> 用户 ID
