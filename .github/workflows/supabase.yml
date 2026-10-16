@@ -43,3 +43,7 @@ jobs:
 
       - name: Run database tests
         run: supabase test db
+
+      # 生产库每次部署都会再执行一遍 seed.sql
+      - name: Seed can be re-run
+        run: psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -v ON_ERROR_STOP=1 --single-transaction -q -f supabase/seed.sql

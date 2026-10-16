@@ -18,6 +18,10 @@ notes = {
 }
 
 
+facilities = {"dedicated": "dedicated", "multi_sport": "multiSport", "rec_center": "recCenter",
+              "school_or_college": "school", "community_hall": "communityHall"}
+
+
 def slug(name):
     return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40].rstrip("-")
 
@@ -26,7 +30,8 @@ entries = []
 for v in venues:
     name = v["name"]
     entry = {"id": overrides.get(name) or f"v-us-{v['state'].lower()}-{slug(name)}", "name": name}
-    aliases = [a for a in v.get("aliases") or [] if a and a != name]
+    aliases = [a for a in (v.get("aliases") or []) + (v.get("hostedBy") or []) if a and a != name]
+    aliases = list(dict.fromkeys(aliases))
     if v.get("nameZh") and v["nameZh"] not in aliases:
         aliases.append(v["nameZh"])
     if aliases:
@@ -46,6 +51,12 @@ for v in venues:
         entry["phone"] = v["phone"]
     if v.get("website"):
         entry["web"] = v["website"]
+    if v.get("venueType"):
+        entry["facility"] = facilities[v["venueType"]]
+    if v.get("schedule"):
+        entry["playTimes"] = v["schedule"]
+    if v.get("verifiedAt"):
+        entry["checked"] = v["verifiedAt"]
     if name in notes:
         entry["entrance"] = notes[name]
     if name in unconfirmed:

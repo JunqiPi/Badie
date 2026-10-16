@@ -34,6 +34,10 @@ enum VenueCatalog {
         let approx: Bool?
         /// 条目自己的署名（如日本各区市的数据各自署名）
         let attr: String?
+        let facility: VenueFacility?
+        let playTimes: String?
+        /// 核实日期，如 "2026-10-16"
+        let checked: String?
     }
 
     private struct Price: Decodable {
@@ -67,6 +71,9 @@ enum VenueCatalog {
             )
             court.attribution = entry.attr ?? file.attribution
             court.needsLocationCheck = entry.approx == true ? true : nil
+            court.facility = entry.facility
+            court.playTimes = entry.playTimes
+            court.checkedOn = entry.checked.flatMap { try? Date($0, strategy: Date.ISO8601FormatStyle().year().month().day()) }
             return court
         }
     }

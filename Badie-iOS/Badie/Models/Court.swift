@@ -190,6 +190,25 @@ enum VenueStatus: String, Codable, Hashable {
     }
 }
 
+/// 场地类型：专营球馆以外的地方（社区中心、学校、教会体育馆）只在固定时段开放羽毛球
+enum VenueFacility: String, Codable, Hashable {
+    case dedicated
+    case multiSport
+    case recCenter
+    case school
+    case communityHall
+
+    var title: String {
+        switch self {
+        case .dedicated: return String(localized: "羽毛球馆")
+        case .multiSport: return String(localized: "综合运动馆")
+        case .recCenter: return String(localized: "社区中心")
+        case .school: return String(localized: "学校")
+        case .communityHall: return String(localized: "社区会馆")
+        }
+    }
+}
+
 /// 收费方式：国内多为“按场地小时”，美国俱乐部常见“按人次 drop-in”
 enum VenuePricing: Codable, Hashable {
     case perCourtHour(Int)
@@ -262,6 +281,11 @@ struct BadmintonCourt: Identifiable, Codable, Hashable {
     var attribution: String?
     /// 坐标只精确到区，Apple 地图核对后才显示
     var needsLocationCheck: Bool?
+    var facility: VenueFacility?
+    /// 羽毛球开放时段（社区中心等），照录官方页面
+    var playTimes: String?
+    /// 平台最后一次人工核实的日期
+    var checkedOn: Date?
 
     /// 达到这个人数的确认后，状态从“待确认”变为“球友确认”
     static let confirmationsNeeded = 3

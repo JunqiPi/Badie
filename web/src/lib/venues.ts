@@ -6,6 +6,15 @@ const catalogDir = join(process.cwd(), '..', 'Badie-iOS', 'Badie', 'Resources');
 const catalogs = ['curated-US', 'curated-MY', 'venues-GB', 'venues-HK', 'venues-JP', 'venues-SG', 'venues-TW'];
 
 type Source = 'curated' | 'openStreetMap' | 'openData';
+type Facility = 'dedicated' | 'multiSport' | 'recCenter' | 'school' | 'communityHall';
+
+export const facilityLabel: Record<Facility, string> = {
+  dedicated: 'Badminton center',
+  multiSport: 'Multi-sport center',
+  recCenter: 'Community center',
+  school: 'School gym',
+  communityHall: 'Community hall',
+};
 
 interface CatalogEntry {
   id: string;
@@ -26,6 +35,11 @@ interface CatalogEntry {
   status?: string;
   approx?: boolean;
   attr?: string;
+  facility?: Facility;
+  /** When badminton is on at places that aren't badminton centres, copied from the official page */
+  playTimes?: string;
+  /** Date the Badie team last checked the entry, e.g. "2026-10-16" */
+  checked?: string;
 }
 
 interface Catalog {
@@ -140,7 +154,7 @@ function load(): Country[] {
     venueSlugs.set(city, taken);
     const slug = uniqueSlug(slugify(englishName(entry) ?? entry.name), taken);
     // 只有名字和地址的页面对搜索没有价值，先不让收录，等有了场地数、价格或球友贡献再放开
-    const indexable = entry.courts !== undefined || entry.price !== undefined;
+    const indexable = entry.courts !== undefined || entry.price !== undefined || entry.playTimes !== undefined;
     city.venues.push({ ...entry, slug, path: `${city.path}${slug}/`, indexable });
     country.venueCount++;
   }

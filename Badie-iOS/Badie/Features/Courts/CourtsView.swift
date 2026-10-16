@@ -150,7 +150,12 @@ struct CourtDetailSheet: View {
                                 .font(AppTheme.Typography.footnoteBold)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                         }
-                        VenueStatusBadge(status: venue.status)
+                        HStack(spacing: AppTheme.Spacing.xs) {
+                            VenueStatusBadge(status: venue.status)
+                            if let facility = venue.facility {
+                                TagPill(text: facility.title, icon: "building.2.fill", fill: AppTheme.Colors.lavender)
+                            }
+                        }
                     }
                     Spacer()
                     IconButton(systemName: locationManager.isFavorite(venue.id) ? "heart.fill" : "heart",
@@ -186,9 +191,14 @@ struct CourtDetailSheet: View {
                             title: venue.pricingText,
                             subtitle: venue.pricingNote ?? (venue.pricing.isKnown ? String(localized: "以球馆实际收费为准") : String(localized: "去过的球友可以告诉大家")))
                     InsetDivider()
-                    InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
-                            title: venue.hoursText,
-                            subtitle: venue.operatingHours.map { $0.formattedDaysOpen + timeZoneSuffix } ?? String(localized: "出发前建议先电话确认"))
+                    if let playTimes = venue.playTimes {
+                        InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
+                                title: String(localized: "羽毛球开放时段"), subtitle: playTimes)
+                    } else {
+                        InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
+                                title: venue.hoursText,
+                                subtitle: venue.operatingHours.map { $0.formattedDaysOpen + timeZoneSuffix } ?? String(localized: "出发前建议先电话确认"))
+                    }
                     if let phone = venue.phone {
                         InsetDivider()
                         Button {
@@ -377,6 +387,9 @@ struct CourtDetailSheet: View {
         }
         switch venue.status {
         case .verified:
+            if let checkedOn = venue.checkedOn {
+                return String(localized: "平台于 \(checkedOn.formatted(.dateTime.year().month())) 核实\(freshness)")
+            }
             return String(localized: "平台已核实地址\(freshness)")
         case .confirmed:
             return String(localized: "\(venue.confirmedBy.count) 位球友确认过地址\(freshness)")

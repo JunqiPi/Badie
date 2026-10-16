@@ -58,7 +58,7 @@ Authentication → URL Configuration：
 
 把代码推到 `main`：
 
-- “Supabase deploy”：先预览变更，再推迁移，并第一次导入 3,503 家球馆（`seed.sql` 只在第一次执行）。
+- “Supabase deploy”：先预览变更，再推迁移，然后用 psql 同步场馆目录（`seed.sql`）。注意 `supabase db push --include-seed` 只在第一次执行 seed，之后文件变了也只更新记账的 hash，所以同步要显式执行。
 - “Web CI”：构建网站，第一次会自动创建 Cloudflare Pages 项目 `badie` 并部署。
 
 ## 6. 绑定域名
@@ -83,5 +83,4 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 ## 以后要补的
 
 - **备份**：免费版没有自动备份。要做每日 `pg_dump` 到私有存储（如 Cloudflare R2），不能传成公开仓库的 Actions 产物。
-- **场馆数据更新**：`seed.sql` 只在第一次执行，以后目录有变化要写单独的导入。
 - Google / Apple 登录；Apple 的网页登录密钥每 6 个月要换一次。

@@ -1,6 +1,6 @@
 name: Supabase deploy
 
-# main 上的迁移有变化时推到生产库；也可以在 Actions 页面手动运行
+# main 上的迁移或场馆目录有变化时推到生产库；也可以在 Actions 页面手动运行
 on:
   push:
     branches: [ main ]
@@ -35,9 +35,16 @@ jobs:
 
       - name: Preview changes
         if: env.SUPABASE_ACCESS_TOKEN != '' && env.PROJECT_REF != ''
-        run: supabase db push --dry-run --include-seed
+        run: supabase db push --dry-run
 
-      # seed.sql 只会在第一次执行（CLI 按文件 hash 记账）；以后的场馆数据更新走单独的导入脚本
-      - name: Apply migrations and first-time venue import
+      - name: Apply migrations
         if: env.SUPABASE_ACCESS_TOKEN != '' && env.PROJECT_REF != ''
-        run: supabase db push --include-seed
+        run: supabase db push
+
+      # 场馆目录每次都显式同步：db push --include-seed 只在第一次执行 seed.sql，之后文件变了也只更新记账的 hash。
+      # seed.sql 可以重复执行（按 id 新增或更新，目录里删掉的进审核队列）
+      - name: Sync venue catalog
+        if: env.SUPABASE_ACCESS_TOKEN != '' && env.PROJECT_REF != ''
+        env:
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: psql "$(cat supabase/.temp/pooler-url)" -v ON_ERROR_STOP=1 --single-transaction -q -f supabase/seed.sql
