@@ -199,6 +199,7 @@ export function nearby(venue: Venue, limit = 5, radiusKm = 30): { venue: Venue; 
 const currencies: Record<string, string> = { US: 'USD', GB: 'GBP', HK: 'HKD', SG: 'SGD', TW: 'TWD', JP: 'JPY', MY: 'MYR' };
 
 export function formatPrice(amount: number, country: string): string {
+  if (amount === 0) return 'Free';
   const currency = currencies[country];
   if (!currency) return String(amount);
   return new Intl.NumberFormat('en', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
@@ -238,7 +239,7 @@ export function nearbyCities(city: City, limit = 6): City[] {
 }
 
 export function citySummary(city: City) {
-  const priced = city.venues.filter((v) => v.price?.perPerson);
+  const priced = city.venues.filter((v) => v.price?.perPerson !== undefined);
   const cheapest = priced.reduce<Venue | undefined>((best, v) => (!best || v.price!.perPerson! < best.price!.perPerson! ? v : best), undefined);
   const largest = city.venues.reduce<Venue | undefined>((best, v) => ((v.courts ?? 0) > (best?.courts ?? 0) ? v : best), undefined);
   const totalCourts = city.venues.reduce((sum, v) => sum + (v.courts ?? 0), 0);

@@ -25,7 +25,7 @@ final class SocialRulesTests: XCTestCase {
 
     private func game(_ id: String, players: [String], start: Date) -> Game {
         let slot = TimeSlot(date: start, startTime: start, endTime: start.addingTimeInterval(2 * 3600))
-        let court = BadmintonCourt.curatedUS[0]
+        let court = BadmintonCourt.mock
         return Game(id: id, mode: .singles, court: court, slot: slot, playerIds: players, teams: players.map { [$0] },
                     hostId: players[0], origin: .quickMatch, status: .confirmed, createdAt: Date(), checkIns: [:],
                     paidPlayerIds: [], cost: CostSplit.estimate(court: court, slot: slot, mode: .singles), result: nil,
@@ -161,7 +161,7 @@ final class SocialRulesTests: XCTestCase {
     func testLateWithdrawalCountsAsLateCancellation() throws {
         let me = signUp()
         let group = try backend.createGroup(
-            name: "测试群", venueId: BadmintonCourt.curatedUS[0].id,
+            name: "测试群", venueId: BadmintonCourt.mock.id,
             schedules: [GroupSchedule(id: "s", weekday: Calendar.current.component(.weekday, from: Date().addingTimeInterval(86400)),
                                       startMinutes: 19 * 60, endMinutes: 21 * 60, capacity: 8)],
             levelRange: 1...9, joinPolicy: .open, summary: "")

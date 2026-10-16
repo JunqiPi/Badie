@@ -193,7 +193,8 @@ struct CourtDetailSheet: View {
                     InsetDivider()
                     if let playTimes = venue.playTimes {
                         InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
-                                title: String(localized: "羽毛球开放时段"), subtitle: playTimes)
+                                title: String(localized: "羽毛球开放时段"),
+                                subtitle: playTimes + "\n" + String(localized: "时段常有变动，出发前先看官网"))
                     } else {
                         InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
                                 title: venue.hoursText,

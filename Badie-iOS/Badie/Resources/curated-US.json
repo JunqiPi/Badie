@@ -5,6 +5,185 @@
  "status": "verified",
  "venues": [
   {
+   "id": "v-us-ca-almansor-park-gymnasium",
+   "name": "Almansor Park Gymnasium",
+   "aliases": [
+    "Almansor Park Gym",
+    "Almansor Gym",
+    "City of Alhambra open-play badminton"
+   ],
+   "lat": 34.087333,
+   "lon": -118.116882,
+   "street": "800 S Almansor St",
+   "city": "Alhambra",
+   "region": "CA",
+   "postcode": "91801",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(626) 570-5052",
+   "web": "https://www.alhambraca.gov/353/Recreational-Open-Play-Activities",
+   "facility": "recCenter",
+   "playTimes": "Open play: Tue 6–9 PM, Sat 5–9 PM, Sun 12–4 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-bintang-badminton-burlingame",
+   "name": "Bintang Badminton - Burlingame",
+   "aliases": [
+    "Bintang",
+    "Bintang Badminton Academy",
+    "Bintang Burlingame"
+   ],
+   "lat": 37.593298,
+   "lon": -122.370876,
+   "street": "1524 Rollins Rd",
+   "city": "Burlingame",
+   "region": "CA",
+   "postcode": "94010",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 21,
+    "perCourtHour": 35
+   },
+   "priceNote": "散客 $21/人次 · 包场 $35/场·时",
+   "phone": "(650) 624-0002",
+   "web": "https://bintangbadminton.org/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 10 AM–2 PM & 6–11 PM; Sat 9 AM–9 PM; Sun 9 AM–8 PM. Drop-in during open hours.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-happy-birdie-badminton-burlingame",
+   "name": "Happy Birdie Badminton - Burlingame",
+   "aliases": [
+    "Happy Birdie Badminton",
+    "Happy Birdie",
+    "HBB Burlingame"
+   ],
+   "lat": 37.588288,
+   "lon": -122.335894,
+   "street": "405 Beach Rd",
+   "city": "Burlingame",
+   "region": "CA",
+   "postcode": "94010",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 7,
+   "price": {
+    "perCourtHour": 45
+   },
+   "priceNote": "包场 $45/场·时",
+   "phone": "(510) 661-9888",
+   "web": "https://www.happybirdiebadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 8 AM–12 AM; weekends and holidays 6 AM–12 AM. Court rental by online booking.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-bintang-badminton-campbell",
+   "name": "Bintang Badminton - Campbell",
+   "aliases": [
+    "Bintang",
+    "Bintang Badminton Academy",
+    "Bintang Campbell"
+   ],
+   "lat": 37.294151,
+   "lon": -121.9395,
+   "street": "600 E Hamilton Ave",
+   "unit": "Suite 189",
+   "city": "Campbell",
+   "region": "CA",
+   "postcode": "95008",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 21,
+    "perCourtHour": 35
+   },
+   "priceNote": "散客 $21/人次 · 包场 $35/场·时",
+   "phone": "(408) 871-1683",
+   "web": "https://bintangbadminton.org/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 11 AM–2 PM & 7–11 PM; Sat 1–8 PM; Sun 10 AM–6 PM. Drop-in during open hours.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-cerritos-community-gymnasium-at-cerritos",
+   "name": "Cerritos Community Gymnasium at Cerritos High School",
+   "aliases": [
+    "Cerritos Community Gym",
+    "Cerritos High School Community Gymnasium"
+   ],
+   "lat": 33.865783,
+   "lon": -118.065901,
+   "street": "12500 E 183rd St",
+   "city": "Cerritos",
+   "region": "CA",
+   "postcode": "90703",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 6,
+   "phone": "(562) 916-8577",
+   "web": "https://www.cerritos.gov/recreation-culture/community-gymnasiums/",
+   "facility": "recCenter",
+   "playTimes": "Drop-in: Tue & Thu 6:45–10 PM, Sat 9–11:30 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-war-memorial-community-center",
+   "name": "War Memorial Community Center",
+   "aliases": [
+    "Daly City War Memorial Community Center",
+    "War Memorial Upper Gym",
+    "City of Daly City Recreation Services"
+   ],
+   "lat": 37.701971,
+   "lon": -122.463087,
+   "street": "6655 Mission St",
+   "city": "Daly City",
+   "region": "CA",
+   "postcode": "94014",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(650) 991-8001",
+   "web": "https://www.dalycity.org/339/Athletics",
+   "facility": "recCenter",
+   "playTimes": "Court reservations only (no drop-in): Fri 6–9 PM, Sat–Sun 9 AM–12 PM; booked quarterly.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-bintang-badminton-dublin",
+   "name": "Bintang Badminton - Dublin",
+   "aliases": [
+    "Bintang Badminton Academy - Dublin",
+    "Bintang Dublin"
+   ],
+   "lat": 37.709253,
+   "lon": -121.914135,
+   "street": "6780 Sierra Court",
+   "unit": "Suite I & J",
+   "city": "Dublin",
+   "region": "CA",
+   "postcode": "94568",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 21,
+    "perCourtHour": 35
+   },
+   "priceNote": "散客 $21/人次 · 包场 $35/场·时",
+   "phone": "(925) 829-3200",
+   "web": "https://bintangbadminton.org/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 11 AM–2 PM & 6–11 PM; Sat 12–10 PM; Sun 10 AM–6 PM. Drop-in during open hours.",
+   "checked": "2026-10-16"
+  },
+  {
    "id": "v-us-ca-labc",
    "name": "Los Angeles Badminton Club",
    "aliases": [
@@ -22,38 +201,16 @@
    "postcode": "91731",
    "country": "US",
    "tz": "America/Los_Angeles",
-   "courts": 15,
    "price": {
     "perPerson": 10,
     "perCourtHour": 20
    },
    "priceNote": "散客 $10/人次 · 包场 $20/场·时",
    "phone": "(626) 279-9919",
-   "web": "https://www.labadmintonclub.com/"
-  },
-  {
-   "id": "v-us-ca-elite-rally",
-   "name": "Elite Rally Badminton Club",
-   "aliases": [
-    "Elite Rally",
-    "Elite Rally BC"
-   ],
-   "lat": 34.095632,
-   "lon": -117.986341,
-   "street": "4800 Rivergrade Rd",
-   "unit": "Ste B",
-   "city": "Baldwin Park",
-   "region": "CA",
-   "postcode": "91706",
-   "country": "US",
-   "tz": "America/Los_Angeles",
-   "courts": 11,
-   "price": {
-    "perPerson": 15
-   },
-   "priceNote": "散客 $15/人次",
-   "phone": "(213) 628-4135",
-   "web": "https://booking.eliterallybc.com/"
+   "web": "https://www.labadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Open daily 6 AM–1 AM, including major holidays.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ca-san-gabriel-valley-badminton-club",
@@ -63,6 +220,8 @@
     "SGV Badminton Club",
     "San Gabriel Valley BC",
     "聖蓋博羽毛球‧乒乓球俱樂部",
+    "STAR Badminton Academy",
+    "American Badminton Club",
     "圣盖博羽毛球‧乒乓球俱乐部"
    ],
    "lat": 34.068869,
@@ -81,241 +240,105 @@
    },
    "priceNote": "散客 $14/人次 · 包场 $28/场·时",
    "phone": "(626) 307-4650",
-   "web": "https://sgvbadminton.com/"
+   "web": "https://sgvbadminton.com/",
+   "facility": "dedicated",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-ca-arena-badminton-sports-club",
-   "name": "Arena Badminton & Sports Club",
+   "id": "v-us-ca-pinnacle-badminton-center",
+   "name": "Pinnacle Badminton Center",
    "aliases": [
-    "Arena Badminton",
-    "Arena Badminton and Sports Club"
+    "Pinnacle Badminton",
+    "PBC Emeryville"
    ],
-   "lat": 34.023665,
-   "lon": -117.731345,
-   "street": "2780 S Reservoir St",
-   "city": "Pomona",
+   "lat": 37.830952,
+   "lon": -122.289127,
+   "street": "4230 Hubbard St",
+   "city": "Emeryville",
    "region": "CA",
-   "postcode": "91766",
+   "postcode": "94608",
    "country": "US",
    "tz": "America/Los_Angeles",
-   "courts": 24,
    "price": {
-    "perPerson": 16,
-    "perCourtHour": 42
+    "perPerson": 20,
+    "perCourtHour": 60
    },
-   "priceNote": "散客 $16/人次 · 包场 $42/场·时",
-   "phone": "(909) 464-2144",
-   "web": "https://www.arenabadminton.com/"
+   "priceNote": "散客 $20/人次 · 包场 $60/场·时",
+   "phone": "(510) 879-7931",
+   "web": "https://www.pinnaclebadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 10 AM–11 PM; Sat–Sun 9 AM–10 PM. Drop-in all day; weekdays 6–8 PM most courts go to rentals and training.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-ca-santa-fe-springs-badminton-club",
-   "name": "Santa Fe Springs Badminton Club",
-   "aliases": [
-    "SFSBC",
-    "Santa Fe Springs BC"
-   ],
-   "lat": 33.929024,
-   "lon": -118.05527,
-   "street": "11323 Shoemaker Ave",
-   "city": "Santa Fe Springs",
+   "id": "v-us-ca-east-valley-community-center",
+   "name": "East Valley Community Center",
+   "lat": 33.139897,
+   "lon": -117.046451,
+   "street": "2245 E Valley Pkwy",
+   "city": "Escondido",
    "region": "CA",
-   "postcode": "90670",
+   "postcode": "92027",
    "country": "US",
    "tz": "America/Los_Angeles",
-   "courts": 14,
    "price": {
-    "perPerson": 12
+    "perPerson": 5
    },
-   "priceNote": "散客 $12/人次",
-   "phone": "(562) 273-0945",
-   "web": "https://www.sfsbadmintonclub.com/"
+   "priceNote": "散客 $5/人次",
+   "phone": "(760) 839-4382",
+   "web": "https://escondido.gov/1170/Open-Gym",
+   "facility": "recCenter",
+   "playTimes": "During some open-gym hours, posted on the city's open-gym calendar.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-ca-orange-county-badminton-club",
-   "name": "Orange County Badminton Club",
+   "id": "v-us-ca-fountain-valley-recreation-center-gymnas",
+   "name": "Fountain Valley Recreation Center Gymnasium",
    "aliases": [
-    "OCBC",
-    "OC Badminton Club",
-    "Orange County Badminton Club, Inc."
+    "Fountain Valley Recreation Center & Sports Park"
    ],
-   "lat": 33.811177,
-   "lon": -117.867345,
-   "street": "1432 N Main St",
-   "unit": "Ste A",
-   "city": "Orange",
+   "lat": 33.724812,
+   "lon": -117.954451,
+   "street": "16400 Brookhurst St",
+   "city": "Fountain Valley",
    "region": "CA",
-   "postcode": "92867",
+   "postcode": "92708",
    "country": "US",
    "tz": "America/Los_Angeles",
-   "courts": 12,
+   "courts": 3,
    "price": {
-    "perCourtHour": 42
+    "perPerson": 5
    },
-   "priceNote": "包场 $42/场·时",
-   "phone": "(714) 639-6222",
-   "web": "https://ocbadmintonclub.com/"
+   "priceNote": "散客 $5/人次",
+   "phone": "(714) 593-4448",
+   "web": "https://www.fountainvalley.gov/221/Badminton",
+   "facility": "recCenter",
+   "playTimes": "Open play on 3 courts: Sun 5–8 PM.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-ca-pickleball-badminton-center",
-   "name": "PickleBall Badminton Center",
+   "id": "v-us-ca-freedom-hall-at-mile-square-regional-par",
+   "name": "Freedom Hall at Mile Square Regional Park",
    "aliases": [
-    "Badminton Center Court",
-    "BCC",
-    "BCC Sports Center",
-    "PBC Lakewood"
+    "Mile Square Regional Park"
    ],
-   "lat": 33.824362,
-   "lon": -118.165499,
-   "street": "3699 Industry Ave",
-   "city": "Lakewood",
+   "lat": 33.719912,
+   "lon": -117.937323,
+   "street": "16801 Euclid St",
+   "city": "Fountain Valley",
    "region": "CA",
-   "postcode": "90712",
+   "postcode": "92708",
    "country": "US",
    "tz": "America/Los_Angeles",
-   "courts": 6,
    "price": {
-    "perPerson": 15,
-    "perCourtHour": 38
+    "perPerson": 0
    },
-   "priceNote": "散客 $15/人次 · 包场 $38/场·时",
-   "phone": "(562) 426-9299",
-   "web": "https://www.badmintoncentercourt.com/",
-   "entrance": "与匹克球共用场地，羽毛球最多 6 片"
-  },
-  {
-   "id": "v-us-ca-manhattan-beach-badminton-club",
-   "name": "Manhattan Beach Badminton Club",
-   "aliases": [
-    "MBBC"
-   ],
-   "lat": 33.890185,
-   "lon": -118.409269,
-   "street": "516 18th St",
-   "city": "Manhattan Beach",
-   "region": "CA",
-   "postcode": "90266",
-   "country": "US",
-   "tz": "America/Los_Angeles",
-   "courts": 5,
-   "phone": "(310) 545-9052",
-   "web": "https://mbbadmintonclub.com/",
-   "entrance": "会员制私人俱乐部，不接待散客"
-  },
-  {
-   "id": "v-us-ca-smash-badminton-san-diego",
-   "name": "SMASH! Badminton San Diego",
-   "aliases": [
-    "SMASH!",
-    "Smash Badminton San Diego",
-    "SmashBSD"
-   ],
-   "lat": 32.88104,
-   "lon": -117.163099,
-   "street": "9586 Distribution Ave",
-   "unit": "Ste E",
-   "city": "San Diego",
-   "region": "CA",
-   "postcode": "92121",
-   "country": "US",
-   "tz": "America/Los_Angeles",
-   "courts": 7,
-   "price": {
-    "perPerson": 14
-   },
-   "priceNote": "散客 $14/人次",
-   "phone": "(858) 397-2153",
-   "web": "https://www.smashbsd.com/"
-  },
-  {
-   "id": "v-us-ca-oc-smash-badminton-club",
-   "name": "OC SMASH Badminton Club",
-   "aliases": [
-    "OC Smash",
-    "OC SMASH Badminton club 배드민턴 클럽"
-   ],
-   "lat": 33.810548,
-   "lon": -117.905983,
-   "street": "1500 S Anaheim Blvd",
-   "unit": "Ste 110",
-   "city": "Anaheim",
-   "region": "CA",
-   "postcode": "92805",
-   "country": "US",
-   "tz": "America/Los_Angeles",
-   "courts": 8,
-   "phone": "(310) 995-5424",
-   "status": "unconfirmed"
-  },
-  {
-   "id": "v-us-ca-bay-badminton-center-milpitas",
-   "name": "Bay Badminton Center - Milpitas",
-   "aliases": [
-    "Bay Badminton Center",
-    "Bay Badminton",
-    "BBC Milpitas"
-   ],
-   "lat": 37.413597,
-   "lon": -121.883504,
-   "street": "1191 W Montague Expy",
-   "city": "Milpitas",
-   "region": "CA",
-   "postcode": "95035",
-   "country": "US",
-   "tz": "America/Los_Angeles",
-   "courts": 13,
-   "price": {
-    "perCourtHour": 55
-   },
-   "priceNote": "包场 $55/场·时",
-   "phone": "(408) 942-2888",
-   "web": "https://baybadminton.com/"
-  },
-  {
-   "id": "v-us-ca-bay-badminton-center-south-san-francisco",
-   "name": "Bay Badminton Center - South San Francisco",
-   "aliases": [
-    "Bay Badminton Center",
-    "Bay Badminton",
-    "BBC South SF"
-   ],
-   "lat": 37.645452,
-   "lon": -122.409971,
-   "street": "1404 San Mateo Ave",
-   "city": "South San Francisco",
-   "region": "CA",
-   "postcode": "94080",
-   "country": "US",
-   "tz": "America/Los_Angeles",
-   "courts": 9,
-   "price": {
-    "perCourtHour": 55
-   },
-   "priceNote": "包场 $55/场·时",
-   "phone": "(650) 588-2088",
-   "web": "https://baybadminton.com/"
-  },
-  {
-   "id": "v-us-ca-elite-badminton-center",
-   "name": "Elite Badminton Center",
-   "aliases": [
-    "EBC",
-    "Elite Badminton Center Union City"
-   ],
-   "lat": 37.593428,
-   "lon": -122.039043,
-   "street": "33540 Central Ave",
-   "city": "Union City",
-   "region": "CA",
-   "postcode": "94587",
-   "country": "US",
-   "tz": "America/Los_Angeles",
-   "courts": 16,
-   "price": {
-    "perPerson": 17
-   },
-   "priceNote": "散客 $17/人次",
-   "phone": "(510) 431-3130",
-   "web": "https://elitebadmintoncenter.com/"
+   "priceNote": "免费",
+   "phone": "(714) 973-6600",
+   "web": "https://parks.oc.gov/parks-trails/mile-square-regional-park",
+   "facility": "recCenter",
+   "playTimes": "Free: Sat & Sun 8 AM–4 PM.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ca-bintang-badminton-fremont",
@@ -340,7 +363,1040 @@
    },
    "priceNote": "散客 $21/人次 · 包场 $35/场·时",
    "phone": "(510) 270-8386",
-   "web": "https://bintangbadminton.org/"
+   "web": "https://bintangbadminton.org/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 10 AM–11 PM; Sat 8 AM–10 PM; Sun 8 AM–9 PM. Drop-in during open hours.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-happy-birdie-badminton-fremont",
+   "name": "Happy Birdie Badminton - Fremont",
+   "aliases": [
+    "Happy Birdie Badminton",
+    "Happy Birdie",
+    "HBB Fremont"
+   ],
+   "lat": 37.50068,
+   "lon": -121.973059,
+   "street": "43921 Boscell Rd",
+   "city": "Fremont",
+   "region": "CA",
+   "postcode": "94538",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 10,
+    "perCourtHour": 45
+   },
+   "priceNote": "散客 $10/人次 · 包场 $45/场·时",
+   "phone": "(510) 661-9888",
+   "web": "https://www.happybirdiebadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 8 AM–12 AM; Sat–Sun 6 AM–12 AM. Weekday drop-in 8 AM–3 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-synergy-badminton-academy-fremont-automa",
+   "name": "Synergy Badminton Academy - Fremont (Automall)",
+   "aliases": [
+    "Synergy Badminton Automall",
+    "Synergy Badminton Fremont"
+   ],
+   "lat": 37.505817,
+   "lon": -121.945144,
+   "street": "44380 Old Warm Springs Blvd",
+   "city": "Fremont",
+   "region": "CA",
+   "postcode": "94538",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 27,
+   "phone": "(510) 573-3431",
+   "web": "https://www.synergybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Drop-in: Tue, Thu, Fri 10 AM–2 PM; Sat 7–10 PM; Challenge Night Mon 7–11 PM. Open Mon–Fri until 11 PM, Sat 8 AM–10 PM, Sun 8 AM–9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-synergy-badminton-academy-fremont-missio",
+   "name": "Synergy Badminton Academy - Fremont (Mission)",
+   "aliases": [
+    "Synergy Badminton Mission"
+   ],
+   "lat": 37.494296,
+   "lon": -121.932259,
+   "street": "46049 Warm Springs Blvd",
+   "city": "Fremont",
+   "region": "CA",
+   "postcode": "94539",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 21,
+   "phone": "(510) 438-0445",
+   "web": "https://www.synergybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Drop-in: Mon, Wed, Fri 10 AM–2 PM; Challenge Night Fri 7–11 PM. Open Mon–Fri until 11 PM, Sat 7 AM–11 PM, Sun 7 AM–10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-garden-grove-sports-recreation-center",
+   "name": "Garden Grove Sports & Recreation Center",
+   "aliases": [
+    "Garden Grove Recreation Center"
+   ],
+   "lat": 33.763181,
+   "lon": -117.965848,
+   "street": "13641 Deodara Dr",
+   "city": "Garden Grove",
+   "region": "CA",
+   "postcode": "92844",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 3
+   },
+   "priceNote": "散客 $3/人次",
+   "phone": "(714) 741-5783",
+   "web": "https://ggcity.org/community-services/sportsandreccenter",
+   "facility": "recCenter",
+   "playTimes": "Drop-in: Sun 5–8 PM, Thu 6–9 PM (Sep–Dec and Apr–May); youth Thu 3–5 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-irvine-high-school-practice-gym",
+   "name": "Irvine High School Practice Gym",
+   "aliases": [
+    "City of Irvine Badminton Open Gym",
+    "City of Irvine Community Services"
+   ],
+   "lat": 33.702135,
+   "lon": -117.783359,
+   "street": "4321 Walnut Ave",
+   "city": "Irvine",
+   "region": "CA",
+   "postcode": "92604",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 10,
+   "phone": "(949) 724-6899",
+   "web": "https://www.cityofirvine.gov/node/77091",
+   "facility": "school",
+   "playTimes": "City-run open gym on 10 courts in seasonal sessions (fall, winter, spring, summer); register for each session.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-los-olivos-community-park",
+   "name": "Los Olivos Community Park",
+   "lat": 33.635829,
+   "lon": -117.745836,
+   "street": "101 Alfonso",
+   "city": "Irvine",
+   "region": "CA",
+   "postcode": "92618",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 1,
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(949) 724-6292",
+   "web": "https://www.cityofirvine.gov/node/77091",
+   "facility": "recCenter",
+   "playTimes": "Outdoor court, open daily; lights until 10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-elite-rally",
+   "name": "Elite Rally Badminton Club",
+   "aliases": [
+    "Elite Rally",
+    "Elite Rally BC",
+    "Elite Rally Badminton"
+   ],
+   "lat": 34.09602,
+   "lon": -117.98741,
+   "street": "4800 Rivergrade Rd",
+   "unit": "Ste B",
+   "city": "Irwindale",
+   "region": "CA",
+   "postcode": "91706",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 11,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 28
+   },
+   "priceNote": "散客 $15/人次 · 包场 $28/场·时",
+   "phone": "(213) 628-4135",
+   "web": "https://booking.eliterallybc.com/",
+   "facility": "dedicated",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-uc-san-diego-main-gym-rec-gym",
+   "name": "UC San Diego Main Gym (REC Gym)",
+   "aliases": [
+    "UCSD Recreation",
+    "UCSD Main Gym",
+    "REC Gym"
+   ],
+   "lat": 32.877204,
+   "lon": -117.241271,
+   "street": "2995 Scholars Ln",
+   "city": "La Jolla",
+   "region": "CA",
+   "postcode": "92093",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 25
+   },
+   "priceNote": "散客 $25/人次",
+   "phone": "(858) 822-4815",
+   "web": "https://recreation.ucsd.edu/open-rec/",
+   "facility": "school",
+   "playTimes": "Open rec badminton most weekdays and Sunday afternoons, posted weekly; community members need a day pass.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-royal-badminton-academy-lake-forest",
+   "name": "Royal Badminton Academy - Lake Forest",
+   "aliases": [
+    "Royal Badminton Complex",
+    "Royal Badminton Academy CA",
+    "RBA Lake Forest"
+   ],
+   "lat": 33.665989,
+   "lon": -117.68701,
+   "street": "25392 Commercentre Dr",
+   "city": "Lake Forest",
+   "region": "CA",
+   "postcode": "92630",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 27,
+   "price": {
+    "perPerson": 18,
+    "perCourtHour": 42
+   },
+   "priceNote": "散客 $18/人次 · 包场 $42/场·时",
+   "phone": "(949) 202-0222",
+   "web": "https://royalbadmintonacademy.com/",
+   "facility": "dedicated",
+   "playTimes": "Opened August 2026; walk-in nights and skill-level mixers are on the online court schedule.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-pickleball-badminton-center",
+   "name": "PickleBall Badminton Center",
+   "aliases": [
+    "Badminton Center Court",
+    "BCC",
+    "BCC Sports Center",
+    "PBC Lakewood",
+    "Pickleball Badminton Center",
+    "PBC"
+   ],
+   "lat": 33.824362,
+   "lon": -118.165499,
+   "street": "3699 Industry Ave",
+   "city": "Lakewood",
+   "region": "CA",
+   "postcode": "90712",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 6,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 38
+   },
+   "priceNote": "散客 $15/人次 · 包场 $38/场·时",
+   "phone": "(562) 426-9299",
+   "web": "https://www.badmintoncentercourt.com/",
+   "facility": "multiSport",
+   "playTimes": "Mon–Fri 2 PM–12 AM, Sat 8 AM–12 AM, Sun 8 AM–11 PM (online booking hours).",
+   "checked": "2026-10-16",
+   "entrance": "与匹克球共用场地，羽毛球最多 6 片"
+  },
+  {
+   "id": "v-us-ca-us-badminton-academy",
+   "name": "US Badminton Academy",
+   "aliases": [
+    "USBA",
+    "US Badminton Academy Livermore"
+   ],
+   "lat": 37.695132,
+   "lon": -121.741411,
+   "street": "4569 Las Positas Rd",
+   "unit": "Unit A&B",
+   "city": "Livermore",
+   "region": "CA",
+   "postcode": "94551",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(925) 292-5296",
+   "web": "https://usbadmintonacademy.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Wed 12–3 PM & 8–11 PM; Thu 8–11 PM; Fri 11:30 AM–3 PM & 8–11 PM; Sat 12–10 PM; Sun 10 AM–10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-synergy-badminton-menlo-park",
+   "name": "Synergy Badminton - Menlo Park",
+   "aliases": [
+    "Synergy Badminton Academy",
+    "Synergy Badminton Club",
+    "Synergy Menlo Park"
+   ],
+   "lat": 37.483799,
+   "lon": -122.17297,
+   "street": "190 Constitution Dr",
+   "city": "Menlo Park",
+   "region": "CA",
+   "postcode": "94025",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 8,
+   "phone": "(650) 521-0916",
+   "web": "https://www.synergybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Walk-in: Mon, Wed, Fri 10 AM–2 PM; Sat 5–9 PM; Sun 5–8 PM. Court rental most days until 9–10 PM. Each player needs an account and a signed waiver.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-bay-badminton-center-milpitas",
+   "name": "Bay Badminton Center - Milpitas",
+   "aliases": [
+    "Bay Badminton Center",
+    "Bay Badminton",
+    "BBC Milpitas"
+   ],
+   "lat": 37.413597,
+   "lon": -121.883504,
+   "street": "1191 W Montague Expy",
+   "city": "Milpitas",
+   "region": "CA",
+   "postcode": "95035",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 55
+   },
+   "priceNote": "包场 $55/场·时",
+   "phone": "(408) 942-2888",
+   "web": "https://baybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 10 AM–2 PM; evenings Mon, Wed, Thu 4–10:30 PM and Tue, Fri 5:30–10:30 PM; Sat 10 AM–9 PM; Sun 10 AM–7 PM. Drop-ins welcome.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-moreno-valley-conference-recreation-cent",
+   "name": "Moreno Valley Conference & Recreation Center",
+   "aliases": [
+    "Conference and Recreation Center",
+    "CRC"
+   ],
+   "lat": 33.916478,
+   "lon": -117.261169,
+   "street": "14075 Frederick St",
+   "city": "Moreno Valley",
+   "region": "CA",
+   "postcode": "92553",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(951) 413-3280",
+   "web": "https://ci.moreno-valley.ca.us/parks-comm-svc/sports-youth.html",
+   "facility": "recCenter",
+   "playTimes": "Open play: Fri 5–9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-harvest-recreation-complex",
+   "name": "Harvest Recreation Complex",
+   "aliases": [
+    "Harvest Gym",
+    "Harvest Middle School (former)",
+    "City of Napa Parks & Recreation"
+   ],
+   "lat": 38.287711,
+   "lon": -122.303209,
+   "street": "2449 Old Sonoma Rd",
+   "city": "Napa",
+   "region": "CA",
+   "postcode": "94558",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "phone": "(707) 257-9529",
+   "web": "https://www.cityofnapa.org/385/Adult-Sports",
+   "facility": "recCenter",
+   "playTimes": "Drop-in in the small gym (ages 16+; 12–15 with an adult), usually Fri and Sun evenings; times change by season.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-borchard-community-center",
+   "name": "Borchard Community Center",
+   "aliases": [
+    "Borchard Center",
+    "BOC"
+   ],
+   "lat": 34.181148,
+   "lon": -118.95286,
+   "street": "190 N Reino Rd",
+   "city": "Newbury Park",
+   "region": "CA",
+   "postcode": "91320",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(805) 381-2791",
+   "web": "https://www.crpd.org/borchard-center",
+   "facility": "recCenter",
+   "playTimes": "Open gym: Wed 11:30 AM–2 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-dos-vientos-community-center",
+   "name": "Dos Vientos Community Center",
+   "aliases": [
+    "Dos Vientos Center",
+    "DVC"
+   ],
+   "lat": 34.175733,
+   "lon": -118.982239,
+   "street": "4801 Borchard Rd",
+   "city": "Newbury Park",
+   "region": "CA",
+   "postcode": "91320",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(805) 375-1003",
+   "web": "https://www.crpd.org/dos-vientos-center",
+   "facility": "recCenter",
+   "playTimes": "Open gym: Wed 6:30–10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-sycamore-canyon-school-gym",
+   "name": "Sycamore Canyon School Gym",
+   "aliases": [
+    "SCSG",
+    "Thousand Oaks Badminton Organization",
+    "TOBO",
+    "Thousand Oaks Badminton Club",
+    "Thousand Oaks Badminton Organization (TOBO)"
+   ],
+   "lat": 34.172739,
+   "lon": -118.972397,
+   "street": "4601 Via Rio",
+   "city": "Newbury Park",
+   "region": "CA",
+   "postcode": "91320",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "web": "https://www.tobadminton.org/",
+   "facility": "school",
+   "playTimes": "Thousand Oaks Badminton Organization: Fri 6–9 PM, Sat 3–6 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-orange-county-badminton-club",
+   "name": "Orange County Badminton Club",
+   "aliases": [
+    "OCBC",
+    "OC Badminton Club",
+    "Orange County Badminton Club, Inc."
+   ],
+   "lat": 33.811177,
+   "lon": -117.867345,
+   "street": "1432 N Main St",
+   "unit": "Ste A",
+   "city": "Orange",
+   "region": "CA",
+   "postcode": "92867",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 12,
+   "price": {
+    "perCourtHour": 42
+   },
+   "priceNote": "包场 $42/场·时",
+   "phone": "(714) 639-6222",
+   "web": "https://ocbadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon 4–10 PM; Tue–Thu 9 AM–1 PM & 4–10 PM; Fri 9 AM–10 PM; Sat–Sun 7:50 AM–9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-arena-badminton-sports-club",
+   "name": "Arena Badminton & Sports Club",
+   "aliases": [
+    "Arena Badminton",
+    "Arena Badminton and Sports Club",
+    "Global Badminton Academy",
+    "STAR Badminton Academy"
+   ],
+   "lat": 34.023665,
+   "lon": -117.731345,
+   "street": "2780 S Reservoir St",
+   "city": "Pomona",
+   "region": "CA",
+   "postcode": "91766",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 24,
+   "price": {
+    "perPerson": 16,
+    "perCourtHour": 42
+   },
+   "priceNote": "散客 $16/人次 · 包场 $42/场·时",
+   "phone": "(909) 464-2144",
+   "web": "https://www.arenabadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 9 AM–11 PM, Sat 8 AM–11 PM, Sun 8 AM–9 PM; holidays 8 AM–11 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-twin-peaks-multipurpose-center",
+   "name": "Twin Peaks Multipurpose Center",
+   "lat": 32.978882,
+   "lon": -117.027676,
+   "street": "14640 Tierra Bonita Rd",
+   "city": "Poway",
+   "region": "CA",
+   "postcode": "92064",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(858) 668-4671",
+   "web": "https://www.poway.org/368/Gymnasiums",
+   "facility": "recCenter",
+   "playTimes": "Open play: Fri 6–9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-northern-california-badminton-club",
+   "name": "Northern California Badminton Club",
+   "aliases": [
+    "NCBC",
+    "NorCal Badminton"
+   ],
+   "lat": 38.611918,
+   "lon": -121.254093,
+   "street": "2421 Mercantile Dr",
+   "unit": "Suite D",
+   "city": "Rancho Cordova",
+   "region": "CA",
+   "postcode": "95742",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 13,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $13/人次 · 包场 $40/场·时",
+   "web": "https://www.norcalbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 4–10 PM (open play from 5 PM); Sat–Sun 10 AM–9 PM. Closed to the public on tournament weekends.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-richmond-recreation-complex",
+   "name": "Richmond Recreation Complex",
+   "aliases": [
+    "RRC Gym",
+    "City of Richmond Recreation (Adult Sports)"
+   ],
+   "lat": 37.934384,
+   "lon": -122.338488,
+   "street": "3230 Macdonald Ave",
+   "city": "Richmond",
+   "region": "CA",
+   "postcode": "94804",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "web": "https://anc.apm.activecommunities.com/richmond/daycare/program/303",
+   "facility": "recCenter",
+   "playTimes": "Adult drop-in: Mon 6–10 PM during program sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-bintang-badminton-san-carlos",
+   "name": "Bintang Badminton - San Carlos",
+   "aliases": [
+    "Bintang",
+    "Bintang Badminton Academy",
+    "Bintang San Carlos",
+    "Affinity Badminton Club"
+   ],
+   "lat": 37.518337,
+   "lon": -122.265868,
+   "street": "403 Quarry Rd",
+   "city": "San Carlos",
+   "region": "CA",
+   "postcode": "94070",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 7,
+   "price": {
+    "perPerson": 21,
+    "perCourtHour": 35
+   },
+   "priceNote": "散客 $21/人次 · 包场 $35/场·时",
+   "phone": "(650) 226-3779",
+   "web": "https://bintangbadminton.org/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 6–11 PM; Sat 12–10 PM; Sun 10 AM–5 PM. Drop-in during open hours.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-balboa-park-activity-center",
+   "name": "Balboa Park Activity Center",
+   "aliases": [
+    "BPAC",
+    "San Diego Badminton Club",
+    "SDBC"
+   ],
+   "lat": 32.72655,
+   "lon": -117.14757,
+   "street": "2145 Park Blvd",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92101",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 10,
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(619) 235-5997",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/bpac",
+   "facility": "recCenter",
+   "playTimes": "Free open play on 5 courts: Mon & Wed 1–5 PM; Tue & Thu 11 AM–8:30 PM; Fri 12–7:30 PM; Sat & Sun 9 AM–4:30 PM. San Diego Badminton Club uses the other courts.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-black-mountain-multipurpose-center",
+   "name": "Black Mountain Multipurpose Center",
+   "aliases": [
+    "Black Mountain Multipurpose Gym"
+   ],
+   "lat": 32.969317,
+   "lon": -117.126488,
+   "street": "9353 Oviedo St",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92129",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(858) 538-8128",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/blkmtn",
+   "facility": "recCenter",
+   "playTimes": "Open play: Fri 6:45–8:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-carmel-valley-recreation-center",
+   "name": "Carmel Valley Recreation Center",
+   "lat": 32.94911,
+   "lon": -117.234557,
+   "street": "3777 Townsgate Dr",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92130",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(858) 552-1616",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/carmelvalley",
+   "facility": "recCenter",
+   "playTimes": "Open play: Mon 4–7:30 PM, Fri about 2–4 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-doyle-recreation-center",
+   "name": "Doyle Recreation Center",
+   "aliases": [
+    "Doyle Park and Recreation Center"
+   ],
+   "lat": 32.864767,
+   "lon": -117.221597,
+   "street": "8175 Regents Rd",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92122",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(858) 552-1612",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/doyle",
+   "facility": "recCenter",
+   "playTimes": "Open play: Sat 9 AM–2:30 PM, first come, first served.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-hourglass-field-house",
+   "name": "Hourglass Field House",
+   "aliases": [
+    "Hourglass Gymnasium at Miramar College",
+    "Hourglass Field Community Park"
+   ],
+   "lat": 32.909056,
+   "lon": -117.124284,
+   "street": "10440 Black Mountain Rd",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92126",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(858) 538-8153",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/hourglass",
+   "facility": "recCenter",
+   "playTimes": "Open play: Mon 6–8:45 PM, Thu 11 AM–1 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-mira-mesa-recreation-center",
+   "name": "Mira Mesa Recreation Center",
+   "lat": 32.915054,
+   "lon": -117.139375,
+   "street": "8575 New Salem St",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92126",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(858) 538-8122",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/miramesa",
+   "facility": "recCenter",
+   "playTimes": "Open play: Tue & Thu 11:15 AM–2 PM, Wed 1:30–3:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-nobel-recreation-center",
+   "name": "Nobel Recreation Center",
+   "aliases": [
+    "Nobel Athletic Fields and Recreation Center"
+   ],
+   "lat": 32.867632,
+   "lon": -117.197579,
+   "street": "8810 Judicial Dr",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92122",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(858) 552-1626",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/nobel",
+   "facility": "recCenter",
+   "playTimes": "Open play: Tue 10:15 AM–1:30 PM, Thu 10:15 AM–2:20 PM, some Saturdays.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-ocean-air-recreation-center",
+   "name": "Ocean Air Recreation Center",
+   "lat": 32.925992,
+   "lon": -117.217628,
+   "street": "4770 Fairport Way",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92130",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 3,
+   "phone": "(858) 552-1687",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/oceanair",
+   "facility": "recCenter",
+   "playTimes": "Open play on 3 courts: Thu 2–7:45 PM (school year).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-pacific-highlands-ranch-gymnasium",
+   "name": "Pacific Highlands Ranch Gymnasium",
+   "aliases": [
+    "Pacific Highlands Ranch Recreation Center"
+   ],
+   "lat": 32.961454,
+   "lon": -117.186631,
+   "street": "5977 Village Center Loop Rd",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92130",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(858) 538-8184",
+   "web": "https://www.sandiego.gov/park-and-recreation/centers/recctr/pacifichighlandsranch",
+   "facility": "recCenter",
+   "playTimes": "Open play: Mon 10 AM–2 PM, Tue 3–7:30 PM, Wed 9 AM–1 PM, Fri 9 AM–1:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-smash-badminton-san-diego",
+   "name": "SMASH! Badminton San Diego",
+   "aliases": [
+    "SMASH!",
+    "Smash Badminton San Diego",
+    "SmashBSD"
+   ],
+   "lat": 32.88104,
+   "lon": -117.163099,
+   "street": "9586 Distribution Ave",
+   "unit": "Ste E",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92121",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 7,
+   "price": {
+    "perPerson": 14,
+    "perCourtHour": 26
+   },
+   "priceNote": "散客 $14/人次 · 包场 $26/场·时",
+   "phone": "(858) 397-2153",
+   "web": "https://www.smashbsd.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 10 AM–10 PM, Sat 8 AM–10 PM, Sun 8 AM–8 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-betty-ann-ong-chinese-recreation-center",
+   "name": "Betty Ann Ong Chinese Recreation Center",
+   "aliases": [
+    "Betty Ann Ong Recreation Center",
+    "Chinese Recreation Center",
+    "Betty Ong Rec Center",
+    "San Francisco Recreation & Parks"
+   ],
+   "lat": 37.794462,
+   "lon": -122.411424,
+   "street": "1199 Mason St",
+   "city": "San Francisco",
+   "region": "CA",
+   "postcode": "94108",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(415) 359-9103",
+   "web": "https://sfrecpark.org/687/Betty-Ann-Ong-Recreation-Center",
+   "facility": "recCenter",
+   "playTimes": "Free drop-in, all ages: Tue 7–8:30 PM, Fri 10 AM–3:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-hamilton-recreation-center",
+   "name": "Hamilton Recreation Center",
+   "aliases": [
+    "Hamilton Rec Center",
+    "San Francisco Recreation & Parks"
+   ],
+   "lat": 37.78423,
+   "lon": -122.434591,
+   "street": "1900 Geary Blvd",
+   "city": "San Francisco",
+   "region": "CA",
+   "postcode": "94115",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(415) 292-2111",
+   "web": "https://sfrecpark.org/692/Hamilton-Recreation-Center",
+   "facility": "recCenter",
+   "playTimes": "Free drop-in, all ages: Tue 10:30 AM–1:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-one-a-badminton-club",
+   "name": "One A Badminton Club",
+   "aliases": [
+    "One A Badminton"
+   ],
+   "lat": 37.744806,
+   "lon": -122.399876,
+   "street": "2200 Jerrold Ave",
+   "unit": "Suite H",
+   "city": "San Francisco",
+   "region": "CA",
+   "postcode": "94124",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(707) 804-8630",
+   "web": "https://oneabadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Court rental by online booking.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-sunset-recreation-center",
+   "name": "Sunset Recreation Center",
+   "aliases": [
+    "Sunset Rec Center",
+    "San Francisco Recreation & Parks"
+   ],
+   "lat": 37.757482,
+   "lon": -122.48645,
+   "street": "2201 Lawton St",
+   "city": "San Francisco",
+   "region": "CA",
+   "postcode": "94122",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(415) 242-1070",
+   "web": "https://sfrecpark.org/706/Sunset-Recreation-Center",
+   "facility": "recCenter",
+   "playTimes": "Free drop-in, ages 18+: Thu 11:30 AM–3:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-almaden-community-center",
+   "name": "Almaden Community Center",
+   "aliases": [
+    "Almaden Community Center Gym",
+    "City of San Jose PRNS"
+   ],
+   "lat": 37.222094,
+   "lon": -121.869674,
+   "street": "6445 Camden Ave",
+   "city": "San Jose",
+   "region": "CA",
+   "postcode": "95120",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 3,
+   "phone": "(408) 268-1133",
+   "web": "https://anc.apm.activecommunities.com/sanjoseparksandrec/activity/search/detail/139916?onlineSiteId=0",
+   "facility": "recCenter",
+   "playTimes": "Open play for ages 50+, 3 courts, registration required: Thu 9–11 AM, Fri 9–11:30 AM (fall session).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-can-am-elite-badminton-san-jose",
+   "name": "CAN-AM Elite Badminton - San Jose",
+   "aliases": [
+    "Can-Am Elite Badminton",
+    "CAN-AM Elite Badminton & Sports",
+    "Can-Am Elite Badminton Club",
+    "Can-Am Badminton"
+   ],
+   "lat": 37.317101,
+   "lon": -121.911043,
+   "street": "591 Race St",
+   "city": "San Jose",
+   "region": "CA",
+   "postcode": "95126",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 20,
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(408) 598-5274",
+   "web": "https://canambadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 11 AM–2 PM (Tue & Thu by appointment) and 4–11 PM; weekends 9 AM–9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-sk-badminton",
+   "name": "SK Badminton",
+   "aliases": [
+    "SK Badminton San Jose",
+    "SK Badminton SJ"
+   ],
+   "lat": 37.307831,
+   "lon": -121.865638,
+   "street": "1919 Monterey Rd",
+   "unit": "Unit 60",
+   "city": "San Jose",
+   "region": "CA",
+   "postcode": "95112",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(408) 529-9125",
+   "web": "https://linktr.ee/skbadmintonsj",
+   "facility": "dedicated",
+   "playTimes": "Bookable daily 6 AM–12 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-iron-horse-gymnasium",
+   "name": "Iron Horse Gymnasium",
+   "aliases": [
+    "Iron Horse Middle School Park/Community Gym",
+    "San Ramon Open Gym",
+    "City of San Ramon Parks & Community Services (Open Gym)"
+   ],
+   "lat": 37.77042,
+   "lon": -121.956563,
+   "street": "12601 Alcosta Blvd",
+   "city": "San Ramon",
+   "region": "CA",
+   "postcode": "94583",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 6,
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "phone": "(925) 973-3205",
+   "web": "https://www.sanramon.ca.gov/our_city/departments_and_divisions/parks_community_services/sports_fitness/open_gym",
+   "facility": "recCenter",
+   "playTimes": "Open gym on 6 courts (ages 6+, under 18 with an adult): Wed 7–10 PM, Sat 6:30–9:30 PM, Sun 8:30–11:30 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-albert-d-salgado-recreation-center",
+   "name": "Albert D. Salgado Recreation Center",
+   "aliases": [
+    "Salgado Recreation Center"
+   ],
+   "lat": 33.750777,
+   "lon": -117.928914,
+   "street": "706 N Newhope St",
+   "city": "Santa Ana",
+   "region": "CA",
+   "postcode": "92703",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(714) 571-4267",
+   "web": "https://santa-ana.gov/drop-in-sports-and-open-play/",
+   "facility": "recCenter",
+   "playTimes": "Drop-in: Thu 12–4:30 PM, Sat 9 AM–1 PM, Sun 1–5 PM.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ca-bintang-badminton-santa-clara",
@@ -364,261 +1420,265 @@
    },
    "priceNote": "散客 $21/人次 · 包场 $35/场·时",
    "phone": "(408) 541-1837",
-   "web": "https://bintangbadminton.org/"
+   "web": "https://bintangbadminton.org/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 11 AM–2 PM & 6–11 PM; Sat 7:30 AM–10 PM; Sun 9 AM–9 PM. Drop-in during open hours.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-wa-bellevue-badminton-club-bellevue",
-   "name": "Bellevue Badminton Club - Bellevue",
+   "id": "v-us-ca-santa-fe-springs-badminton-club",
+   "name": "Santa Fe Springs Badminton Club",
    "aliases": [
-    "Bellevue Badminton Club",
-    "BBC",
-    "BBC Bellevue"
+    "SFSBC",
+    "Santa Fe Springs BC"
    ],
-   "lat": 47.583694,
-   "lon": -122.16072,
-   "street": "13405 SE 30th St",
-   "unit": "Ste 1C",
-   "city": "Bellevue",
-   "region": "WA",
-   "postcode": "98005",
+   "lat": 33.929024,
+   "lon": -118.05527,
+   "street": "11323 Shoemaker Ave",
+   "city": "Santa Fe Springs",
+   "region": "CA",
+   "postcode": "90670",
    "country": "US",
    "tz": "America/Los_Angeles",
    "price": {
-    "perCourtHour": 41
+    "perPerson": 12,
+    "perCourtHour": 35
    },
-   "priceNote": "包场 $41/场·时",
-   "phone": "(425) 562-2950",
-   "web": "https://www.bellevuebadminton.com/",
-   "entrance": "不接受散客 walk-in，需提前预约"
+   "priceNote": "散客 $12/人次 · 包场 $35/场·时",
+   "phone": "(562) 273-0945",
+   "web": "https://www.sfsbadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 8 AM–12 PM & 6–11 PM (Thu until 1 AM); Sat 7:30 AM–9 PM; Sun 7:30 AM–7 PM.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-wa-bellevue-badminton-club-redmond",
-   "name": "Bellevue Badminton Club - Redmond",
+   "id": "v-us-ca-rancho-santa-susana-community-center",
+   "name": "Rancho Santa Susana Community Center",
    "aliases": [
-    "Bellevue Badminton Club",
-    "BBC",
-    "BBC Redmond"
+    "RSSC",
+    "Rancho Simi Recreation & Park District open gym"
    ],
-   "lat": 47.684128,
-   "lon": -122.136645,
-   "street": "15340 NE 92nd St",
-   "unit": "Ste B",
-   "city": "Redmond",
-   "region": "WA",
-   "postcode": "98052",
+   "lat": 34.271786,
+   "lon": -118.696741,
+   "street": "5005 Los Angeles Ave",
+   "unit": "C",
+   "city": "Simi Valley",
+   "region": "CA",
+   "postcode": "93063",
    "country": "US",
    "tz": "America/Los_Angeles",
    "price": {
-    "perCourtHour": 41
+    "perPerson": 3
    },
-   "priceNote": "包场 $41/场·时",
-   "phone": "(425) 522-4895",
-   "web": "https://www.bellevuebadminton.com/",
-   "entrance": "不接受散客 walk-in，需提前预约"
+   "priceNote": "散客 $3/人次",
+   "phone": "(805) 584-4456",
+   "web": "https://www.rsrpd.org/facilities/community_centers/rancho_santa_susana_community_center.php",
+   "facility": "recCenter",
+   "playTimes": "Open gym on Saturdays, about 11 AM–3 PM.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-wa-seattle-badminton-club",
-   "name": "Seattle Badminton Club",
+   "id": "v-us-ca-bay-badminton-center-south-san-francisco",
+   "name": "Bay Badminton Center - South San Francisco",
    "aliases": [
-    "SBC",
-    "Seattle Badminton Club Kirkland"
+    "Bay Badminton Center",
+    "Bay Badminton",
+    "BBC South SF"
    ],
-   "lat": 47.698813,
-   "lon": -122.184475,
-   "street": "10858 117th Pl NE",
-   "city": "Kirkland",
-   "region": "WA",
-   "postcode": "98033",
+   "lat": 37.645452,
+   "lon": -122.409971,
+   "street": "1404 San Mateo Ave",
+   "city": "South San Francisco",
+   "region": "CA",
+   "postcode": "94080",
    "country": "US",
    "tz": "America/Los_Angeles",
-   "courts": 10,
    "price": {
-    "perPerson": 20
+    "perCourtHour": 55
    },
-   "priceNote": "散客 $20/人次",
-   "phone": "(425) 889-5958",
-   "web": "https://seattlebadminton.com/sbc/"
+   "priceNote": "包场 $55/场·时",
+   "phone": "(650) 588-2088",
+   "web": "https://baybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 9:30 AM–1:30 PM & 4–10 PM; Sat 9:30 AM–8 PM; Sun 9 AM–5 PM. Drop-ins welcome.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-ny-new-york-badminton-center-flushing",
-   "name": "New York Badminton Center - Flushing",
+   "id": "v-us-ca-shuttl-badminton-south-san-francisco",
+   "name": "SHUTTL Badminton - South San Francisco",
    "aliases": [
-    "NYBC",
-    "NY Badminton Center",
-    "NYBC Flushing"
+    "SHUTTL Badminton",
+    "The SHUTTL Badminton",
+    "SHUTTL"
    ],
-   "lat": 40.765378,
-   "lon": -73.834821,
-   "street": "132-70 34th Ave",
-   "city": "Flushing",
-   "region": "NY",
-   "postcode": "11354",
+   "lat": 37.651176,
+   "lon": -122.415603,
+   "street": "428 N Canal St",
+   "unit": "Unit B",
+   "city": "South San Francisco",
+   "region": "CA",
+   "postcode": "94080",
    "country": "US",
-   "tz": "America/New_York",
-   "courts": 7,
+   "tz": "America/Los_Angeles",
+   "courts": 4,
    "price": {
-    "perPerson": 22,
-    "perCourtHour": 100
+    "perCourtHour": 50
    },
-   "priceNote": "散客 $22/人次 · 包场 $100/场·时",
-   "phone": "(347) 955-7859",
-   "web": "https://www.newyorkcitybadminton.com/"
+   "priceNote": "包场 $50/场·时",
+   "phone": "(650) 636-4087",
+   "web": "https://www.shuttlbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 10 AM–12 AM; Sat–Sun 7 AM–12 AM. Weekly social open play on its online events page.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-ny-brooklyn-badminton-center",
-   "name": "Brooklyn Badminton Center",
+   "id": "v-us-ca-terrabay-gymnasium-and-recreation-center",
+   "name": "Terrabay Gymnasium and Recreation Center",
    "aliases": [
-    "BKBC",
-    "BKBC Ridgewood"
+    "Terrabay Gymnasium",
+    "Terrabay Recreation Center",
+    "City of South San Francisco Parks & Recreation"
    ],
-   "lat": 40.713308,
-   "lon": -73.920088,
-   "street": "14 Woodward Ave",
-   "city": "Ridgewood",
-   "region": "NY",
-   "postcode": "11385",
+   "lat": 37.669698,
+   "lon": -122.415858,
+   "street": "1121 South San Francisco Dr",
+   "city": "South San Francisco",
+   "region": "CA",
+   "postcode": "94080",
    "country": "US",
-   "tz": "America/New_York",
-   "courts": 7,
+   "tz": "America/Los_Angeles",
+   "courts": 4,
    "price": {
-    "perPerson": 23,
-    "perCourtHour": 100
+    "perPerson": 6
    },
-   "priceNote": "散客 $23/人次 · 包场 $100/场·时",
-   "phone": "(516) 988-8955",
-   "web": "https://www.brooklynbadmintoncenter.com/"
+   "priceNote": "散客 $6/人次",
+   "phone": "(650) 829-4680",
+   "web": "https://www.ssfca.gov/departments/parks-recreation/recreation-division/sports",
+   "facility": "recCenter",
+   "playTimes": "Open gym on 4 courts: Sun 9:15 AM–12 PM. Reserve online; drop-ins if space.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-ny-long-island-badminton-center",
-   "name": "Long Island Badminton Center",
+   "id": "v-us-ca-thousand-oaks-community-center",
+   "name": "Thousand Oaks Community Center",
    "aliases": [
-    "LIBC"
+    "Thousand Oaks Center",
+    "TOC",
+    "CRPD Thousand Oaks Center open gym"
    ],
-   "lat": 40.761699,
-   "lon": -73.437429,
-   "street": "260 Spagnoli Rd",
-   "city": "Melville",
-   "region": "NY",
-   "postcode": "11747",
+   "lat": 34.209962,
+   "lon": -118.868412,
+   "street": "2525 N Moorpark Rd",
+   "city": "Thousand Oaks",
+   "region": "CA",
+   "postcode": "91360",
    "country": "US",
-   "tz": "America/New_York",
-   "courts": 20,
-   "phone": "(516) 916-3364",
-   "web": "https://longislandbadmintoncenter.com/"
+   "tz": "America/Los_Angeles",
+   "courts": 2,
+   "phone": "(805) 381-2793",
+   "web": "https://www.crpd.org/thousand-oaks-center",
+   "facility": "recCenter",
+   "playTimes": "Open gym: Mon & Fri 10:30 AM–1:30 PM, Sun 11:30 AM–3:15 PM.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-nj-new-jersey-badminton-club-montville",
-   "name": "New Jersey Badminton Club - Montville",
+   "id": "v-us-ca-elite-badminton-center",
+   "name": "Elite Badminton Center",
    "aliases": [
-    "NJBC",
-    "NJ Badminton Club",
-    "NJBC Montville"
+    "EBC",
+    "Elite Badminton Center Union City"
    ],
-   "lat": 40.916254,
-   "lon": -74.362422,
-   "street": "2 Changebridge Rd",
-   "unit": "Unit JKL",
-   "city": "Montville",
-   "region": "NJ",
-   "postcode": "07045",
+   "lat": 37.593428,
+   "lon": -122.039043,
+   "street": "33540 Central Ave",
+   "city": "Union City",
+   "region": "CA",
+   "postcode": "94587",
    "country": "US",
-   "tz": "America/New_York",
-   "courts": 7,
+   "tz": "America/Los_Angeles",
+   "courts": 16,
    "price": {
-    "perPerson": 15
+    "perPerson": 17
    },
-   "priceNote": "散客 $15/人次",
-   "phone": "(201) 898-0382",
-   "web": "https://www.njbadminton.com/"
+   "priceNote": "散客 $17/人次",
+   "phone": "(510) 431-3130",
+   "web": "https://elitebadmintoncenter.com/",
+   "facility": "dedicated",
+   "playTimes": "Drop-in open gym: Mon–Fri 8–11:30 PM, Sat–Sun 6–11 PM. Court reservations Mon–Fri 4–11:30 PM, Sat–Sun 9 AM–1 PM & 4–11 PM.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-nj-international-badminton-center-edison",
-   "name": "International Badminton Center - Edison",
+   "id": "v-us-ca-the-club-vacaville",
+   "name": "The Club @ Vacaville",
    "aliases": [
-    "IBC",
-    "IBC Edison"
+    "The Club at Vacaville",
+    "Sonic Badminton Academy - Vacaville",
+    "Sonic Badminton Academy"
    ],
-   "lat": 40.571585,
-   "lon": -74.38742,
-   "street": "3775 Park Ave",
-   "unit": "Unit 8A",
-   "city": "Edison",
-   "region": "NJ",
-   "postcode": "08820",
+   "lat": 38.390245,
+   "lon": -121.936703,
+   "street": "3777 Vaca Valley Parkway",
+   "unit": "Suite D",
+   "city": "Vacaville",
+   "region": "CA",
+   "postcode": "95688",
    "country": "US",
-   "tz": "America/New_York",
+   "tz": "America/Los_Angeles",
    "courts": 6,
-   "phone": "(732) 549-7190",
-   "web": "https://www.ibcusa.org/"
+   "phone": "(707) 660-8744",
+   "web": "https://theclubatvacaville.com/",
+   "facility": "multiSport",
+   "playTimes": "Badminton open play, court rental and Sonic Badminton Academy programs; usually weekdays 4–10 PM, weekends 9 AM–6 PM.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-tx-houston-badminton-center",
-   "name": "Houston Badminton Center",
+   "id": "v-us-ca-los-angeles-valley-college",
+   "name": "Los Angeles Valley College",
    "aliases": [
-    "HBC",
-    "Houston Badminton"
+    "LAVC",
+    "LAVC Open Recreation Badminton",
+    "LA Valley Badminton Club",
+    "Valley College Badminton Club"
    ],
-   "lat": 29.641254,
-   "lon": -95.563935,
-   "street": "10550 W Airport Blvd",
-   "city": "Stafford",
-   "region": "TX",
-   "postcode": "77477",
+   "lat": 34.174937,
+   "lon": -118.422443,
+   "street": "5800 Fulton Ave",
+   "city": "Valley Glen",
+   "region": "CA",
+   "postcode": "91401",
    "country": "US",
-   "tz": "America/Chicago",
-   "courts": 12,
-   "phone": "(346) 229-4921",
-   "web": "https://www.houstonbadminton.com/"
+   "tz": "America/Los_Angeles",
+   "phone": "(818) 947-2577 ext. 4172",
+   "web": "https://lavalley.augusoft.net/index.cfm?method=ClassListing.ClassListingDisplay&int_category_id=5&int_sub_category_id=19",
+   "facility": "school",
+   "playTimes": "Open recreation during the semester: Thu 6:30–10:30 PM, Fri 7–11 PM, Sun 1:30–5:30 PM.",
+   "checked": "2026-10-16"
   },
   {
-   "id": "v-us-tx-plano-badminton-center",
-   "name": "Plano Badminton Center",
+   "id": "v-us-ca-walnut-gymnasium-and-teen-center",
+   "name": "Walnut Gymnasium and Teen Center",
    "aliases": [
-    "PBC",
-    "Plano Badminton"
+    "Walnut Gymnasium",
+    "Walnut City Gymnasium",
+    "Walnut City Teen Center Gymnasium"
    ],
-   "lat": 33.052588,
-   "lon": -96.699816,
-   "street": "4050 Premier Dr",
-   "unit": "Ste 250",
-   "city": "Plano",
-   "region": "TX",
-   "postcode": "75023",
+   "lat": 34.025353,
+   "lon": -117.845439,
+   "street": "21003 La Puente Rd",
+   "city": "Walnut",
+   "region": "CA",
+   "postcode": "91789",
    "country": "US",
-   "tz": "America/Chicago",
-   "courts": 5,
+   "tz": "America/Los_Angeles",
    "price": {
-    "perPerson": 11,
-    "perCourtHour": 48
+    "perPerson": 1
    },
-   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
-   "phone": "(469) 677-7686",
-   "web": "https://planobadmintoncenter.com/"
-  },
-  {
-   "id": "v-us-tx-dfw-badminton-center",
-   "name": "DFW Badminton Center",
-   "aliases": [
-    "DFWBC",
-    "DFW Badminton",
-    "DFW Badminton Center Irving"
-   ],
-   "lat": 32.874375,
-   "lon": -96.974826,
-   "street": "1800 Hurd Dr",
-   "city": "Irving",
-   "region": "TX",
-   "postcode": "75038",
-   "country": "US",
-   "tz": "America/Chicago",
-   "courts": 13,
-   "price": {
-    "perPerson": 11,
-    "perCourtHour": 48
-   },
-   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
-   "phone": "(469) 200-0276",
-   "web": "https://dfwbadmintoncenter.com/"
+   "priceNote": "散客 $1/人次",
+   "phone": "(909) 444-7959",
+   "web": "https://www.walnutca.gov/For-Residents/Departments/Community-Services/Recreation/Gymnasium",
+   "facility": "recCenter",
+   "playTimes": "Open gym (some sessions shared with table tennis), usually Wed & Fri 8:30 AM–1:30 PM, Thu 8–10:30 PM, Sat 5–8 PM, Sun 9 AM–12 PM. The calendar changes monthly.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-il-egret-badminton-chicago",
@@ -641,30 +1701,8 @@
    },
    "priceNote": "散客 $17/人次",
    "phone": "(312) 374-3022",
-   "web": "https://badmintontrainingcenter.com/"
-  },
-  {
-   "id": "v-us-il-egret-badminton-schaumburg",
-   "name": "Egret Badminton Schaumburg",
-   "aliases": [
-    "Egret Badminton Club Schaumburg",
-    "Egret Schaumburg",
-    "Egret"
-   ],
-   "lat": 42.052037,
-   "lon": -88.065147,
-   "street": "1251 Basswood Rd",
-   "city": "Schaumburg",
-   "region": "IL",
-   "postcode": "60173",
-   "country": "US",
-   "tz": "America/Chicago",
-   "price": {
-    "perPerson": 15
-   },
-   "priceNote": "散客 $15/人次",
-   "phone": "(847) 285-5788",
-   "web": "https://badmintontrainingcenter.com/"
+   "web": "https://badmintontrainingcenter.com/",
+   "facility": "dedicated"
   },
   {
    "id": "v-us-il-egret-badminton-naperville",
@@ -689,32 +1727,57 @@
    },
    "priceNote": "散客 $13/人次",
    "phone": "(630) 536-8032",
-   "web": "https://badmintontrainingcenter.com/"
+   "web": "https://badmintontrainingcenter.com/",
+   "facility": "dedicated"
   },
   {
-   "id": "v-us-ma-ljb-badminton-club",
-   "name": "LJB Badminton Club",
+   "id": "v-us-il-egret-badminton-schaumburg",
+   "name": "Egret Badminton Schaumburg",
    "aliases": [
-    "LJB",
-    "LJBBC"
+    "Egret Badminton Club Schaumburg",
+    "Egret Schaumburg",
+    "Egret"
    ],
-   "lat": 42.499281,
-   "lon": -71.138139,
-   "street": "78 Olympia Ave",
-   "unit": "Unit B",
-   "city": "Woburn",
+   "lat": 42.052037,
+   "lon": -88.065147,
+   "street": "1251 Basswood Rd",
+   "city": "Schaumburg",
+   "region": "IL",
+   "postcode": "60173",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(847) 285-5788",
+   "web": "https://badmintontrainingcenter.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-ma-boston-badminton-at-harvard",
+   "name": "Boston Badminton at Harvard",
+   "aliases": [
+    "Boston Badminton Harvard",
+    "Boston Badminton"
+   ],
+   "lat": 42.528154,
+   "lon": -71.578921,
+   "street": "203 Ayer Rd",
+   "city": "Harvard",
    "region": "MA",
-   "postcode": "01801",
+   "postcode": "01451",
    "country": "US",
    "tz": "America/New_York",
-   "courts": 14,
+   "courts": 16,
    "price": {
-    "perPerson": 20,
-    "perCourtHour": 30
+    "perPerson": 18,
+    "perCourtHour": 40
    },
-   "priceNote": "散客 $20/人次 · 包场 $30/场·时",
-   "phone": "(339) 227-3580",
-   "web": "https://ljbbc.com/"
+   "priceNote": "散客 $18/人次 · 包场 $40/场·时",
+   "phone": "(978) 707-5203",
+   "web": "https://www.bostonbadminton.com/harvard",
+   "facility": "dedicated"
   },
   {
    "id": "v-us-ma-boston-badminton-westborough",
@@ -739,31 +1802,299 @@
    },
    "priceNote": "散客 $18/人次 · 包场 $40/场·时",
    "phone": "(508) 329-1710",
-   "web": "https://www.bostonbadminton.com/"
+   "web": "https://www.bostonbadminton.com/",
+   "facility": "dedicated"
   },
   {
-   "id": "v-us-ma-boston-badminton-at-harvard",
-   "name": "Boston Badminton at Harvard",
+   "id": "v-us-ma-ljb-badminton-club",
+   "name": "LJB Badminton Club",
    "aliases": [
-    "Boston Badminton Harvard",
-    "Boston Badminton"
+    "LJB",
+    "LJBBC"
    ],
-   "lat": 42.528154,
-   "lon": -71.578921,
-   "street": "203 Ayer Rd",
-   "city": "Harvard",
+   "lat": 42.499281,
+   "lon": -71.138139,
+   "street": "78 Olympia Ave",
+   "unit": "Unit B",
+   "city": "Woburn",
    "region": "MA",
-   "postcode": "01451",
+   "postcode": "01801",
    "country": "US",
    "tz": "America/New_York",
-   "courts": 16,
+   "courts": 14,
    "price": {
-    "perPerson": 18,
-    "perCourtHour": 40
+    "perPerson": 20,
+    "perCourtHour": 30
    },
-   "priceNote": "散客 $18/人次 · 包场 $40/场·时",
-   "phone": "(978) 707-5203",
-   "web": "https://www.bostonbadminton.com/harvard"
+   "priceNote": "散客 $20/人次 · 包场 $30/场·时",
+   "phone": "(339) 227-3580",
+   "web": "https://ljbbc.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-nj-international-badminton-center-edison",
+   "name": "International Badminton Center - Edison",
+   "aliases": [
+    "IBC",
+    "IBC Edison"
+   ],
+   "lat": 40.571585,
+   "lon": -74.38742,
+   "street": "3775 Park Ave",
+   "unit": "Unit 8A",
+   "city": "Edison",
+   "region": "NJ",
+   "postcode": "08820",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 6,
+   "phone": "(732) 549-7190",
+   "web": "https://www.ibcusa.org/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-nj-new-jersey-badminton-club-montville",
+   "name": "New Jersey Badminton Club - Montville",
+   "aliases": [
+    "NJBC",
+    "NJ Badminton Club",
+    "NJBC Montville"
+   ],
+   "lat": 40.916254,
+   "lon": -74.362422,
+   "street": "2 Changebridge Rd",
+   "unit": "Unit JKL",
+   "city": "Montville",
+   "region": "NJ",
+   "postcode": "07045",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(201) 898-0382",
+   "web": "https://www.njbadminton.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-ny-new-york-badminton-center-flushing",
+   "name": "New York Badminton Center - Flushing",
+   "aliases": [
+    "NYBC",
+    "NY Badminton Center",
+    "NYBC Flushing"
+   ],
+   "lat": 40.765378,
+   "lon": -73.834821,
+   "street": "132-70 34th Ave",
+   "city": "Flushing",
+   "region": "NY",
+   "postcode": "11354",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 22,
+    "perCourtHour": 100
+   },
+   "priceNote": "散客 $22/人次 · 包场 $100/场·时",
+   "phone": "(347) 955-7859",
+   "web": "https://www.newyorkcitybadminton.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-ny-long-island-badminton-center",
+   "name": "Long Island Badminton Center",
+   "aliases": [
+    "LIBC"
+   ],
+   "lat": 40.761699,
+   "lon": -73.437429,
+   "street": "260 Spagnoli Rd",
+   "city": "Melville",
+   "region": "NY",
+   "postcode": "11747",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 20,
+   "phone": "(516) 916-3364",
+   "web": "https://longislandbadmintoncenter.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-ny-brooklyn-badminton-center",
+   "name": "Brooklyn Badminton Center",
+   "aliases": [
+    "BKBC",
+    "BKBC Ridgewood"
+   ],
+   "lat": 40.713308,
+   "lon": -73.920088,
+   "street": "14 Woodward Ave",
+   "city": "Ridgewood",
+   "region": "NY",
+   "postcode": "11385",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 23,
+    "perCourtHour": 100
+   },
+   "priceNote": "散客 $23/人次 · 包场 $100/场·时",
+   "phone": "(516) 988-8955",
+   "web": "https://www.brooklynbadmintoncenter.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-tx-dfw-badminton-center",
+   "name": "DFW Badminton Center",
+   "aliases": [
+    "DFWBC",
+    "DFW Badminton",
+    "DFW Badminton Center Irving"
+   ],
+   "lat": 32.874375,
+   "lon": -96.974826,
+   "street": "1800 Hurd Dr",
+   "city": "Irving",
+   "region": "TX",
+   "postcode": "75038",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 13,
+   "price": {
+    "perPerson": 11,
+    "perCourtHour": 48
+   },
+   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
+   "phone": "(469) 200-0276",
+   "web": "https://dfwbadmintoncenter.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-tx-plano-badminton-center",
+   "name": "Plano Badminton Center",
+   "aliases": [
+    "PBC",
+    "Plano Badminton"
+   ],
+   "lat": 33.052588,
+   "lon": -96.699816,
+   "street": "4050 Premier Dr",
+   "unit": "Ste 250",
+   "city": "Plano",
+   "region": "TX",
+   "postcode": "75023",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 5,
+   "price": {
+    "perPerson": 11,
+    "perCourtHour": 48
+   },
+   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
+   "phone": "(469) 677-7686",
+   "web": "https://planobadmintoncenter.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-tx-houston-badminton-center",
+   "name": "Houston Badminton Center",
+   "aliases": [
+    "HBC",
+    "Houston Badminton"
+   ],
+   "lat": 29.641254,
+   "lon": -95.563935,
+   "street": "10550 W Airport Blvd",
+   "city": "Stafford",
+   "region": "TX",
+   "postcode": "77477",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 12,
+   "phone": "(346) 229-4921",
+   "web": "https://www.houstonbadminton.com/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-wa-bellevue-badminton-club-bellevue",
+   "name": "Bellevue Badminton Club - Bellevue",
+   "aliases": [
+    "Bellevue Badminton Club",
+    "BBC",
+    "BBC Bellevue"
+   ],
+   "lat": 47.583694,
+   "lon": -122.16072,
+   "street": "13405 SE 30th St",
+   "unit": "Ste 1C",
+   "city": "Bellevue",
+   "region": "WA",
+   "postcode": "98005",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 41
+   },
+   "priceNote": "包场 $41/场·时",
+   "phone": "(425) 562-2950",
+   "web": "https://www.bellevuebadminton.com/",
+   "facility": "dedicated",
+   "entrance": "不接受散客 walk-in，需提前预约"
+  },
+  {
+   "id": "v-us-wa-seattle-badminton-club",
+   "name": "Seattle Badminton Club",
+   "aliases": [
+    "SBC",
+    "Seattle Badminton Club Kirkland"
+   ],
+   "lat": 47.698813,
+   "lon": -122.184475,
+   "street": "10858 117th Pl NE",
+   "city": "Kirkland",
+   "region": "WA",
+   "postcode": "98033",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 10,
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(425) 889-5958",
+   "web": "https://seattlebadminton.com/sbc/",
+   "facility": "dedicated"
+  },
+  {
+   "id": "v-us-wa-bellevue-badminton-club-redmond",
+   "name": "Bellevue Badminton Club - Redmond",
+   "aliases": [
+    "Bellevue Badminton Club",
+    "BBC",
+    "BBC Redmond"
+   ],
+   "lat": 47.684128,
+   "lon": -122.136645,
+   "street": "15340 NE 92nd St",
+   "unit": "Ste B",
+   "city": "Redmond",
+   "region": "WA",
+   "postcode": "98052",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 41
+   },
+   "priceNote": "包场 $41/场·时",
+   "phone": "(425) 522-4895",
+   "web": "https://www.bellevuebadminton.com/",
+   "facility": "dedicated",
+   "entrance": "不接受散客 walk-in，需提前预约"
   }
  ]
 }

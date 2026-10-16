@@ -24,7 +24,7 @@ const others = nearby(venue);
 
 const facts = [
   venue.courts && { label: 'courts', value: String(venue.courts), tint: 'bg-sky' },
-  venue.price?.perPerson && { label: 'drop-in per person', value: formatPrice(venue.price.perPerson, venue.country), tint: 'bg-butter' },
+  venue.price?.perPerson !== undefined && { label: 'drop-in per person', value: formatPrice(venue.price.perPerson, venue.country), tint: 'bg-butter' },
   venue.price?.perCourtHour && { label: 'court rental per hour', value: formatPrice(venue.price.perCourtHour, venue.country), tint: 'bg-peach' },
 ].filter((fact): fact is { label: string; value: string; tint: string } => Boolean(fact));
 const mapPoints = [
@@ -104,6 +104,7 @@ const jsonLd = {
           <div class="tile mt-6 bg-surface p-4 sm:p-5">
             <p class="eyebrow">Badminton hours</p>
             <p class="mt-2 font-bold">{venue.playTimes}</p>
+            <p class="mt-2 text-sm text-ink-secondary">Times change often. Check the official website before you go.</p>
           </div>
         )
       }

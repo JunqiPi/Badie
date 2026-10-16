@@ -8,10 +8,7 @@ import json, re, sys
 src, out = sys.argv[1], sys.argv[2]
 venues = json.load(open(src, encoding="utf-8"))
 
-overrides = {"Los Angeles Badminton Club": "v-us-ca-labc", "Elite Rally Badminton Club": "v-us-ca-elite-rally"}
-unconfirmed = {"OC SMASH Badminton Club"}
 notes = {
-    "Manhattan Beach Badminton Club": "会员制私人俱乐部，不接待散客",
     "Bellevue Badminton Club - Bellevue": "不接受散客 walk-in，需提前预约",
     "Bellevue Badminton Club - Redmond": "不接受散客 walk-in，需提前预约",
     "PickleBall Badminton Center": "与匹克球共用场地，羽毛球最多 6 片",
@@ -29,7 +26,10 @@ def slug(name):
 entries = []
 for v in venues:
     name = v["name"]
-    entry = {"id": overrides.get(name) or f"v-us-{v['state'].lower()}-{slug(name)}", "name": name}
+    missing = [k for k in ("street", "city", "state", "postalCode", "timeZone") if not v.get(k)]
+    assert not missing, f"{name}: missing {missing}"
+    # 已发布的场馆 id 固定写在数据里（改名后收藏、确认记录仍跟着 id 走）
+    entry = {"id": v.get("id") or f"v-us-{v['state'].lower()}-{slug(name)}", "name": name}
     aliases = [a for a in (v.get("aliases") or []) + (v.get("hostedBy") or []) if a and a != name]
     aliases = list(dict.fromkeys(aliases))
     if v.get("nameZh") and v["nameZh"] not in aliases:
@@ -43,10 +43,11 @@ for v in venues:
     if v.get("courtCount"):
         entry["courts"] = v["courtCount"]
     drop, rent = v.get("dropInFee"), v.get("courtRentalPerHour")
-    price = {k: int(p) for k, p in (("perPerson", drop), ("perCourtHour", rent)) if p}
+    price = {k: int(p) for k, p in (("perPerson", drop), ("perCourtHour", rent)) if p is not None}
     if price:
         entry["price"] = price
-        entry["priceNote"] = " · ".join(([f"散客 ${int(drop)}/人次"] if drop else []) + ([f"包场 ${int(rent)}/场·时"] if rent else []))
+        walk_in = [] if drop is None else ["免费" if drop == 0 else f"散客 ${int(drop)}/人次"]
+        entry["priceNote"] = " · ".join(walk_in + ([f"包场 ${int(rent)}/场·时"] if rent else []))
     if v.get("phone"):
         entry["phone"] = v["phone"]
     if v.get("website"):
@@ -59,8 +60,6 @@ for v in venues:
         entry["checked"] = v["verifiedAt"]
     if name in notes:
         entry["entrance"] = notes[name]
-    if name in unconfirmed:
-        entry["status"] = "unconfirmed"
     entries.append(entry)
 
 ids = [e["id"] for e in entries]

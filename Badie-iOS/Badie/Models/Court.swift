@@ -221,6 +221,7 @@ enum VenuePricing: Codable, Hashable {
             let amount = Money.format(price, currency: currency)
             return String(localized: "\(amount)/场·时")
         case .dropIn(let price):
+            if price == 0 { return String(localized: "免费") }
             let amount = Money.format(price, currency: currency)
             return String(localized: "\(amount)/人次")
         case .unknown: return String(localized: "价格未知")

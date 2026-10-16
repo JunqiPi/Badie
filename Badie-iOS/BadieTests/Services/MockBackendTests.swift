@@ -154,7 +154,7 @@ final class MockBackendTests: XCTestCase {
         let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date())!
         var draft = RoomDraft()
         draft.mode = .singles
-        draft.court = BadmintonCourt.curatedUS[0]
+        draft.court = BadmintonCourt.mock
         draft.slot = TimeSlot.on(tomorrow, startHour: 19, endHour: 21)
         let room = try await backend.createRoom(draft)
         XCTAssertEqual(room.participants.map(\.userId), [me.id])
@@ -191,7 +191,7 @@ final class MockBackendTests: XCTestCase {
         let room = Room(
             id: "r1", code: "QWERTY", ownerId: host.id, mode: .singles, visibility: .publicListing,
             participants: [RoomParticipant(user: host), RoomParticipant(user: other)], invitedUserIds: [], waitlist: [],
-            court: BadmintonCourt.curatedUS[0], slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
+            court: BadmintonCourt.mock, slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
             levelRange: 1...9, tags: [], note: "", createdAt: Date(), lastActivityAt: Date(), status: .open
         )
         backend.db.rooms[room.id] = room
@@ -216,7 +216,7 @@ final class MockBackendTests: XCTestCase {
         backend.db.rooms["r2"] = Room(
             id: "r2", code: "ZXCVBN", ownerId: host.id, mode: .doubles, visibility: .publicListing,
             participants: [RoomParticipant(user: host)], invitedUserIds: [], waitlist: [],
-            court: BadmintonCourt.curatedUS[0], slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
+            court: BadmintonCourt.mock, slot: TimeSlot.on(tomorrow, startHour: 19, endHour: 21),
             levelRange: 6...9, tags: [], note: "", createdAt: Date(), lastActivityAt: Date(), status: .open
         )
         do {
@@ -463,7 +463,7 @@ final class MockBackendTests: XCTestCase {
 
     private func makeGame(id: String, players: [String], start: Date) -> Game {
         let slot = TimeSlot(date: start, startTime: start, endTime: start.addingTimeInterval(2 * 3600))
-        let court = BadmintonCourt.curatedUS[0]
+        let court = BadmintonCourt.mock
         return Game(
             id: id, mode: .singles, court: court, slot: slot, playerIds: players, teams: players.map { [$0] },
             hostId: players[0], origin: .quickMatch, status: .confirmed, createdAt: Date(), checkIns: [:],

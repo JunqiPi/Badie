@@ -22,7 +22,10 @@ const points = city.venues.map((v) => ({ id: v.id, lat: v.lat, lon: v.lon, label
 const facts = [
   `${count} badminton ${count === 1 ? 'court is' : 'courts are'} listed in ${name}.`,
   summary.largest?.courts && `The largest is ${summary.largest.name} with ${summary.largest.courts} courts.`,
-  summary.cheapest && `${summary.priced} list a drop-in price, from ${formatPrice(summary.cheapest.price!.perPerson!, summary.cheapest.country)} per person.`,
+  summary.cheapest &&
+    (summary.cheapest.price!.perPerson === 0
+      ? `${summary.priced} list a drop-in price, and some are free.`
+      : `${summary.priced} list a drop-in price, from ${formatPrice(summary.cheapest.price!.perPerson!, summary.cheapest.country)} per person.`),
 ].filter(Boolean);
 ---
 

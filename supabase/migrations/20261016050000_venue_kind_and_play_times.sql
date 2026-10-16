@@ -3,6 +3,6 @@ create type public.venue_kind as enum ('dedicated', 'multi_sport', 'rec_center',
 
 alter table public.venues
   add column kind public.venue_kind,
-  add column play_times text check (play_times is null or char_length(play_times) <= 200),
+  add column play_times text check (play_times is null or char_length(play_times) <= 400),
   -- 官方目录最后一次人工核实的日期
   add column checked_on date;

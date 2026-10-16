@@ -23,7 +23,7 @@ final class RankingTests: XCTestCase {
     private func finishedGame(id: String, players: [String], hoursAgo: Double = 3) -> Game {
         let start = Date().addingTimeInterval(-hoursAgo * 3600)
         let slot = TimeSlot(date: start, startTime: start, endTime: start.addingTimeInterval(2 * 3600))
-        let court = BadmintonCourt.curatedUS[0]
+        let court = BadmintonCourt.mock
         return Game(
             id: id, mode: .singles, court: court, slot: slot, playerIds: players, teams: players.map { [$0] },
             hostId: players[0], origin: .quickMatch, status: .confirmed, createdAt: Date(), checkIns: [:],
@@ -181,11 +181,11 @@ final class RankingTests: XCTestCase {
         backend.db.users[similar.id]?.privacy.challengePolicy = .everyone
 
         let slot = TimeSlot.suggestedDefault()
-        let challenge = try await backend.sendChallenge(to: similar.id, court: BadmintonCourt.curatedUS[0], slot: slot, message: "来一场")
+        let challenge = try await backend.sendChallenge(to: similar.id, court: BadmintonCourt.mock, slot: slot, message: "来一场")
         XCTAssertEqual(backend.challengeAvailability(for: similar.id), .alreadyPending)
 
         do {
-            try await backend.sendChallenge(to: far.id, court: BadmintonCourt.curatedUS[0], slot: slot, message: "加我微信")
+            try await backend.sendChallenge(to: far.id, court: BadmintonCourt.mock, slot: slot, message: "加我微信")
             XCTFail("留言不能带联系方式")
         } catch {
             XCTAssertNotNil(error as? BackendError)
@@ -204,7 +204,7 @@ final class RankingTests: XCTestCase {
         let me = signUp()
         let rival = try XCTUnwrap(backend.db.users.values.first { backend.isBot($0.id) })
         backend.db.users[rival.id]?.privacy.challengePolicy = .everyone
-        let challenge = try await backend.sendChallenge(to: rival.id, court: BadmintonCourt.curatedUS[0],
+        let challenge = try await backend.sendChallenge(to: rival.id, court: BadmintonCourt.mock,
                                                         slot: TimeSlot.suggestedDefault(), message: "")
         backend.currentUserIdOverride(rival.id)
         let accepted = try await backend.respondToChallenge(id: challenge.id, accept: true)
@@ -232,11 +232,11 @@ final class RankingTests: XCTestCase {
         backend.db.friendships.append(Friendship(between: rival, and: rivalPartner, createdAt: Date()))
         backend.db.users[rival]?.privacy.challengePolicy = .everyone
         do {
-            try await backend.sendChallenge(to: rival, court: BadmintonCourt.curatedUS[0], slot: TimeSlot.suggestedDefault(),
+            try await backend.sendChallenge(to: rival, court: BadmintonCourt.mock, slot: TimeSlot.suggestedDefault(),
                                             message: "", partnerId: rivalPartner)
             XCTFail("搭档必须是自己的球友")
         } catch {}
-        let challenge = try await backend.sendChallenge(to: rival, court: BadmintonCourt.curatedUS[0],
+        let challenge = try await backend.sendChallenge(to: rival, court: BadmintonCourt.mock,
                                                         slot: TimeSlot.suggestedDefault(), message: "", partnerId: partner)
         XCTAssertEqual(challenge.mode, .doubles)
 

@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - 平台收录的球馆
 //
-// 美国：地址至少有 2 个独立来源互相印证，坐标来自门牌地址地理编码（见 docs/DESIGN.md §9，来源记在 JSON 里）。
+// 美国：逐家对照球馆官网 / 市政府页面核实，坐标来自门牌地址地理编码（见 docs/DESIGN.md §15，来源记在 data/us_venues.json 里）。
 // 马来西亚：来自 OpenStreetMap，未经实地核实。
 
 extension BadmintonCourt {
@@ -50,6 +50,6 @@ extension BadmintonCourt {
         )
     ]
 
-    /// 默认球馆（预览与单元测试）
-    static var mock: BadmintonCourt { curatedUS.first ?? curatedBeijing[0] }
+    /// 默认球馆（预览与单元测试）：洛杉矶 LABC，演示数据也围绕它
+    static var mock: BadmintonCourt { curatedUS.first { $0.id == "v-us-ca-labc" } ?? curatedBeijing[0] }
 }
