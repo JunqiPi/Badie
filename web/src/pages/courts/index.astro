@@ -1,20 +1,42 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { allVenues, countries } from '../../lib/venues';
+import CountryCard from '../../components/CountryCard.astro';
+import CourtSearch from '../../components/CourtSearch.astro';
+import { allVenues, byContinent, countries } from '../../lib/venues';
+
+const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
 ---
 
-<Base title="Badminton courts by country — Badie" description={`${allVenues.length.toLocaleString('en')} badminton courts in ${countries.length} countries.`}>
-  <h1 class="mb-6 text-3xl font-black sm:text-4xl">Badminton courts</h1>
-  <div class="grid gap-3 sm:grid-cols-2">
-    {
-      countries.map((country) => (
-        <a href={country.path} class="sticker p-4 hover:-translate-y-0.5">
-          <p class="text-lg font-extrabold">{country.name}</p>
-          <p class="text-sm font-bold text-ink-secondary">
-            {country.venueCount.toLocaleString('en')} courts · {country.cities.length.toLocaleString('en')} areas
-          </p>
-        </a>
-      ))
-    }
-  </div>
+<Base
+  title="Badminton courts by country — Badie"
+  description={`${allVenues.length.toLocaleString('en')} badminton courts in ${countries.length} countries, from government open data, OpenStreetMap and players.`}
+>
+  <section class="grid gap-8 py-6 lg:grid-cols-[1fr_1fr] lg:items-end">
+    <div>
+      <p class="eyebrow">Court directory</p>
+      <h1 class="display mt-3 text-[clamp(3rem,7vw,5.5rem)]">Badminton courts</h1>
+    </div>
+    <div>
+      <p class="mb-4 max-w-prose text-ink-secondary">
+        {allVenues.length.toLocaleString('en')} courts in {countries.length} countries. Search an area or a court, or browse below.
+      </p>
+      <CourtSearch />
+    </div>
+  </section>
+
+  {
+    byContinent().map((group) => (
+      <section class="mt-12">
+        <div class="flex items-center gap-4">
+          <h2 class="eyebrow shrink-0">{group.continent}</h2>
+          <span class="h-0.5 flex-1 bg-stroke/15" />
+        </div>
+        <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {group.countries.map((country) => (
+            <CountryCard country={country} tint={tints[countries.indexOf(country) % tints.length]} />
+          ))}
+        </div>
+      </section>
+    ))
+  }
 </Base>

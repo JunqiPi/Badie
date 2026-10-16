@@ -115,17 +115,18 @@ function load(): Country[] {
       countries.set(code, country);
     }
 
-    const cityKey = `${code}|${entry.region}|${entry.city}`;
+    const region = ['HK', 'SG'].includes(entry.country) ? '' : entry.region;
+    const cityKey = `${code}|${region}|${entry.city}`;
     let city = cities.get(cityKey);
     if (!city) {
-      const label = entry.region && !entry.city.includes(entry.region) ? `${entry.city} ${entry.region}` : entry.city;
+      const label = region && !entry.city.includes(region) ? `${entry.city} ${region}` : entry.city;
       const taken = citySlugs.get(code) ?? new Set<string>();
       citySlugs.set(code, taken);
       const slug = uniqueSlug(slugify(label), taken);
       city = {
         slug,
         name: entry.city,
-        region: entry.region === entry.city ? '' : entry.region,
+        region: region === entry.city ? '' : region,
         country: code,
         path: `${country.path}${slug}/`,
         venues: [],
@@ -151,7 +152,7 @@ function load(): Country[] {
   for (const country of countries.values()) {
     country.cities.sort((a, b) => b.venues.length - a.venues.length || a.name.localeCompare(b.name));
   }
-  return [...countries.values()].sort((a, b) => b.venueCount - a.venueCount);
+  return [...countries.values()].sort((a, b) => Number(b.code === 'us') - Number(a.code === 'us') || b.venueCount - a.venueCount);
 }
 
 export const countries = load();
@@ -164,7 +165,7 @@ export function noindexPaths(): Set<string> {
   return new Set([...allCities.filter((c) => !c.indexable), ...allVenues.filter((v) => !v.indexable)].map((p) => p.path));
 }
 
-function distanceKm(a: CatalogEntry, b: CatalogEntry): number {
+function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
   const rad = Math.PI / 180;
   const dLat = (b.lat - a.lat) * rad;
   const dLon = (b.lon - a.lon) * rad;
@@ -193,4 +194,39 @@ export function formatAddress(venue: CatalogEntry): string {
   const street = [venue.street, venue.unit].filter(Boolean).join(', ');
   const area = [venue.city, [venue.region, venue.postcode].filter(Boolean).join(' ')].filter(Boolean).join(', ');
   return [street, area].filter(Boolean).join(', ');
+}
+
+const continents: Record<string, string> = { us: 'North America', gb: 'Europe', hk: 'Asia', jp: 'Asia', my: 'Asia', sg: 'Asia', tw: 'Asia' };
+
+export function byContinent(): { continent: string; countries: Country[] }[] {
+  const groups = new Map<string, Country[]>();
+  for (const country of countries) {
+    const continent = continents[country.code] ?? 'Other';
+    groups.set(continent, [...(groups.get(continent) ?? []), country]);
+  }
+  return [...groups].map(([continent, list]) => ({ continent, countries: list }));
+}
+
+function centroid(city: City) {
+  const n = city.venues.length;
+  return { lat: city.venues.reduce((sum, v) => sum + v.lat, 0) / n, lon: city.venues.reduce((sum, v) => sum + v.lon, 0) / n };
+}
+
+export function nearbyCities(city: City, limit = 6): City[] {
+  const here = centroid(city);
+  return allCities
+    .filter((other) => other !== city && other.country === city.country)
+    .map((other) => ({ other, km: distanceKm(here, centroid(other)) }))
+    .filter(({ km }) => km <= 40)
+    .sort((a, b) => a.km - b.km)
+    .slice(0, limit)
+    .map(({ other }) => other);
+}
+
+export function citySummary(city: City) {
+  const priced = city.venues.filter((v) => v.price?.perPerson);
+  const cheapest = priced.reduce<Venue | undefined>((best, v) => (!best || v.price!.perPerson! < best.price!.perPerson! ? v : best), undefined);
+  const largest = city.venues.reduce<Venue | undefined>((best, v) => ((v.courts ?? 0) > (best?.courts ?? 0) ? v : best), undefined);
+  const totalCourts = city.venues.reduce((sum, v) => sum + (v.courts ?? 0), 0);
+  return { priced: priced.length, cheapest, largest, totalCourts };
 }

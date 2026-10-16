@@ -1,0 +1,69 @@
+---
+interface Point {
+  id?: string;
+  lat: number;
+  lon: number;
+  label?: string;
+  href?: string;
+  highlight?: boolean;
+}
+
+interface Props {
+  points: Point[];
+  label: string;
+  class?: string;
+  /** 点太多时均匀抽样，控制页面体积 */
+  max?: number;
+  /** 画在彩色底上：深浅模式都用墨色点 */
+  onTint?: boolean;
+}
+
+const { label, class: className, max = 600, onTint = false } = Astro.props;
+const step = Math.ceil(Astro.props.points.length / max);
+const points = Astro.props.points.filter((p, index) => p.highlight || index % step === 0);
+const width = 400;
+const height = 300;
+const pad = 24;
+
+const lats = points.map((p) => p.lat);
+const lons = points.map((p) => p.lon);
+const midLat = (Math.min(...lats) + Math.max(...lats)) / 2;
+const xScale = Math.cos((midLat * Math.PI) / 180);
+const spanX = Math.max((Math.max(...lons) - Math.min(...lons)) * xScale, 0.01);
+const spanY = Math.max(Math.max(...lats) - Math.min(...lats), 0.01);
+const scale = Math.min((width - pad * 2) / spanX, (height - pad * 2) / spanY);
+const offsetX = (width - spanX * scale) / 2;
+const offsetY = (height - spanY * scale) / 2;
+
+const project = (p: Point) => ({
+  x: offsetX + (p.lon - Math.min(...lons)) * xScale * scale,
+  y: height - offsetY - (p.lat - Math.min(...lats)) * scale,
+});
+const radius = points.length > 400 ? 1.6 : points.length > 60 ? 2.6 : 5;
+const ordered = [...points].sort((a, b) => Number(a.highlight ?? false) - Number(b.highlight ?? false));
+---
+
+<svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={label} class:list={['block h-auto w-full', className]}>
+  <g class={onTint ? 'stroke-on-accent/10' : 'stroke-ink/10'} stroke-width="1">
+    {[1, 2, 3].map((i) => <line x1={(width / 4) * i} x2={(width / 4) * i} y1="0" y2={height} />)}
+    {[1, 2].map((i) => <line y1={(height / 3) * i} y2={(height / 3) * i} x1="0" x2={width} />)}
+  </g>
+  {
+    ordered.map((point) => {
+      const { x, y } = project(point);
+      const dot = point.highlight ? (
+        <circle cx={x} cy={y} r={radius + 5} class="fill-lime stroke-stroke" stroke-width="2.5" />
+      ) : (
+        <circle cx={x} cy={y} r={radius} data-venue={point.id} class:list={[onTint ? 'fill-on-accent/70' : 'fill-ink/70', 'transition-all [&.active]:fill-lime [&.active]:stroke-stroke [&.active]:stroke-2']} />
+      );
+      return point.href ? (
+        <a href={point.href}>
+          <title>{point.label}</title>
+          {dot}
+        </a>
+      ) : (
+        dot
+      );
+    })
+  }
+</svg>

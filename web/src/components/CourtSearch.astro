@@ -1,0 +1,79 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<form action="/courts/" role="search" data-court-search class:list={['relative', className]}>
+  <label class="sticker flex items-center gap-3 rounded-2xl! px-4 focus-within:outline-3 focus-within:outline-lavender">
+    <svg viewBox="0 0 24 24" class="size-5 shrink-0 fill-none stroke-ink-secondary" stroke-width="2.5" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+    </svg>
+    <span class="sr-only">Search a city or court</span>
+    <input
+      name="q"
+      type="search"
+      autocomplete="off"
+      placeholder="Search a city or court"
+      class="h-14 w-full bg-transparent font-bold outline-none placeholder:text-ink-tertiary"
+    />
+  </label>
+  <ul hidden class="sticker absolute inset-x-0 top-full z-10 mt-2 max-h-96 overflow-auto rounded-2xl! p-2"></ul>
+</form>
+
+<script>
+  type Entry = { k: 'city' | 'court'; n: string; s: string; p: string; key?: string };
+
+  const fold = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  let index: Promise<Entry[]> | undefined;
+  const load = () =>
+    (index ??= fetch('/search.json')
+      .then((response) => response.json() as Promise<Entry[]>)
+      .then((entries) => entries.map((entry) => ({ ...entry, key: fold(entry.n) }))));
+
+  function item(entry: Entry) {
+    const li = document.createElement('li');
+    const link = document.createElement('a');
+    link.href = entry.p;
+    link.className = 'flex items-center justify-between gap-3 rounded-xl px-3 py-2 hover:bg-surface-muted focus:bg-surface-muted';
+    const text = document.createElement('span');
+    text.innerHTML = '<span class="block font-extrabold"></span><span class="block text-sm text-ink-secondary"></span>';
+    text.children[0].textContent = entry.n;
+    text.children[1].textContent = entry.s;
+    const kind = document.createElement('span');
+    kind.className = `chip ${entry.k === 'city' ? 'bg-peach' : 'bg-sky'}`;
+    kind.textContent = entry.k === 'city' ? 'Area' : 'Court';
+    link.append(text, kind);
+    li.append(link);
+    return li;
+  }
+
+  for (const form of document.querySelectorAll<HTMLFormElement>('[data-court-search]')) {
+    const input = form.querySelector('input')!;
+    const list = form.querySelector('ul')!;
+    input.addEventListener('focus', load, { once: true });
+    input.addEventListener('input', async () => {
+      const query = fold(input.value.trim());
+      if (query.length < 2) {
+        list.hidden = true;
+        return;
+      }
+      const hits = (await load())
+        .filter((entry) => entry.key!.includes(query))
+        .sort((a, b) => Number(b.key!.startsWith(query)) - Number(a.key!.startsWith(query)) || Number(a.k !== 'city') - Number(b.k !== 'city'))
+        .slice(0, 8);
+      list.replaceChildren(...hits.map(item));
+      list.hidden = hits.length === 0;
+    });
+    form.addEventListener('submit', (event) => {
+      const first = list.querySelector('a');
+      if (first) {
+        event.preventDefault();
+        location.href = first.href;
+      }
+    });
+  }
+</script>

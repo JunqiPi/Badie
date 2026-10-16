@@ -1,7 +1,10 @@
 @import "tailwindcss";
+@import "@fontsource-variable/nunito";
+@import "@fontsource/anton";
 
 /* 与 iOS Theme.swift 一致的 “Court Pop” 设计变量 */
 @theme {
+  --color-backdrop: #e6dece;
   --color-canvas: #f5f0e6;
   --color-surface: #ffffff;
   --color-surface-muted: #ede6d8;
@@ -18,11 +21,13 @@
   --color-sky: #a8d8ff;
   --color-butter: #ffe36e;
   --color-mint: #9fe8c3;
-  --font-sans: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+  --font-sans: "Nunito Variable", ui-rounded, system-ui, sans-serif;
+  --font-display: "Anton", "Arial Narrow", sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
+    --color-backdrop: #0d0b12;
     --color-canvas: #16131d;
     --color-surface: #221e2b;
     --color-surface-muted: #2c2737;
@@ -45,6 +50,20 @@
   border: 2px solid var(--color-stroke);
   border-radius: 20px;
   box-shadow: 3px 4px 0 var(--color-shadow);
+}
+
+@utility lift {
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+  &:hover {
+    transform: translate(-1px, -2px);
+    box-shadow: 5px 6px 0 var(--color-shadow);
+  }
+}
+
+/* 静态色块：只有描边。硬投影留给能点的东西（卡片链接、按钮），不然“可点”的信号就失效了 */
+@utility tile {
+  border: 2px solid var(--color-stroke);
+  border-radius: 20px;
 }
 
 @utility chip {
@@ -84,8 +103,24 @@
   --button-fg: var(--color-ink);
 }
 
+@utility eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-secondary);
+}
+
+@utility display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+}
+
 body {
-  background: var(--color-canvas);
+  background: var(--color-backdrop);
   color: var(--color-ink);
   font-family: var(--font-sans);
 }

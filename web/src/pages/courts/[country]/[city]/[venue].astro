@@ -1,6 +1,7 @@
 ---
 import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
+import DotMap from '../../../../components/DotMap.astro';
 import VenueRow from '../../../../components/VenueRow.astro';
 import { cityName, countries, englishName, formatAddress, formatPrice, nearby, type City, type Country, type Venue } from '../../../../lib/venues';
 
@@ -22,11 +23,16 @@ const place = cityName(city);
 const others = nearby(venue);
 
 const facts = [
-  venue.courts && { label: 'Courts', value: String(venue.courts) },
-  venue.price?.perPerson && { label: 'Drop-in', value: `${formatPrice(venue.price.perPerson, venue.country)} per person` },
-  venue.price?.perCourtHour && { label: 'Court rental', value: `${formatPrice(venue.price.perCourtHour, venue.country)} per hour` },
-  venue.phone && { label: 'Phone', value: venue.phone },
-].filter((fact): fact is { label: string; value: string } => Boolean(fact));
+  venue.courts && { label: 'courts', value: String(venue.courts), tint: 'bg-sky' },
+  venue.price?.perPerson && { label: 'drop-in per person', value: formatPrice(venue.price.perPerson, venue.country), tint: 'bg-butter' },
+  venue.price?.perCourtHour && { label: 'court rental per hour', value: formatPrice(venue.price.perCourtHour, venue.country), tint: 'bg-peach' },
+].filter((fact): fact is { label: string; value: string; tint: string } => Boolean(fact));
+const mapPoints = [
+  { lat: venue.lat, lon: venue.lon, label: venue.name, highlight: true },
+  ...others.map(({ venue: other }) => ({ lat: other.lat, lon: other.lon, label: other.name, href: other.path })),
+];
+const appleMaps = `https://maps.apple.com/?q=${encodeURIComponent(venue.name)}&ll=${venue.lat},${venue.lon}`;
+const googleMaps = `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lon}`;
 
 const sourceNote = {
   curated: 'Address checked against at least two public sources by the Badie team.',
@@ -81,52 +87,84 @@ const jsonLd = {
     ]}
   />
 
-  <article class="sticker p-6 sm:p-8">
-    <div class="flex flex-wrap items-center gap-2">
-      <span class="chip bg-lime">Badminton</span>
-      {!venue.confirmed && <span class="chip bg-surface-muted">Not yet confirmed</span>}
-    </div>
-    <h1 class="mt-3 text-3xl font-black leading-tight sm:text-4xl">{venue.name}</h1>
-    {alias && <p class="mt-1 text-lg font-bold text-ink-secondary">{alias}</p>}
-    <p class="mt-3 text-ink-secondary">{address}</p>
+  <div class="grid gap-8 lg:grid-cols-[1fr_360px]">
+    <header class="min-w-0 lg:col-start-1">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="chip bg-lime">Badminton court</span>
+        {!venue.confirmed && <span class="chip bg-surface-muted text-ink">Not yet confirmed by players</span>}
+      </div>
+      <h1 class="display mt-4 text-[clamp(2.5rem,5.5vw,4.25rem)] break-words">{venue.name}</h1>
+      {alias && <p class="mt-2 text-xl font-black text-ink-secondary">{alias}</p>}
+      <p class="mt-3 text-lg text-ink-secondary">{address}</p>
+      {
+        facts.length > 0 && (
+          <dl class="mt-8 grid grid-cols-3 gap-2 sm:gap-3">
+            {facts.map((fact) => (
+              <div class:list={['tile flex flex-col-reverse p-3 text-on-accent sm:p-4', fact.tint]}>
+                <dt class="mt-1 text-xs font-extrabold sm:text-sm">{fact.label}</dt>
+                <dd class="display text-3xl sm:text-5xl">{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )
+      }
+    </header>
+
+    <aside class="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+      <div class="space-y-4 lg:sticky lg:top-6">
+        <div class="sticker overflow-hidden">
+          <div class="border-b-2 border-stroke bg-sky p-3">
+            <DotMap points={mapPoints} label={`${venue.name} and ${others.length} nearby courts`} onTint />
+          </div>
+          <div class="p-5">
+            <p class="eyebrow">Get there</p>
+            <div class="mt-4 grid gap-2">
+              <a class="button" href={appleMaps}>Directions in Apple Maps</a>
+              <a class="button button-quiet" href={googleMaps}>Google Maps</a>
+            </div>
+            {
+              (venue.web || venue.phone) && (
+                <ul class="mt-5 space-y-2 border-t-2 border-stroke/15 pt-4 font-bold">
+                  {venue.web && (
+                    <li>
+                      <a href={venue.web} rel="nofollow noopener" class="underline decoration-2 underline-offset-4 hover:text-ink-secondary">
+                        Official website
+                      </a>
+                    </li>
+                  )}
+                  {venue.phone && (
+                    <li>
+                      <a href={`tel:${venue.phone.replace(/[^+\d]/g, '')}`} class="hover:text-ink-secondary">
+                        {venue.phone}
+                      </a>
+                    </li>
+                  )}
+                </ul>
+              )
+            }
+          </div>
+        </div>
+        <div class="tile bg-lavender p-5 text-on-accent">
+          <p class="font-black">Looking for people to play with here?</p>
+          <p class="mt-1 text-sm font-medium">Badie matches players at the same level who are free at the same time. The iPhone app is in testing.</p>
+        </div>
+      </div>
+    </aside>
 
     {
-      facts.length > 0 && (
-        <dl class="mt-6 grid gap-3 sm:grid-cols-2">
-          {facts.map((fact) => (
-            <div class="rounded-2xl bg-surface-muted px-4 py-3">
-              <dt class="text-xs font-extrabold uppercase tracking-wide text-ink-tertiary">{fact.label}</dt>
-              <dd class="text-lg font-extrabold">{fact.value}</dd>
-            </div>
-          ))}
-        </dl>
+      others.length > 0 && (
+        <section class="min-w-0 lg:col-start-1">
+          <div class="flex items-center gap-4">
+            <h2 class="eyebrow shrink-0">Nearby courts</h2>
+            <span class="h-0.5 flex-1 bg-stroke/15" />
+          </div>
+          <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {others.map(({ venue: other, km }) => <VenueRow venue={other} distanceKm={km} />)}
+          </div>
+        </section>
       )
     }
-
-    <div class="mt-6 flex flex-wrap gap-3">
-      <a class="button" href={`https://maps.apple.com/?q=${encodeURIComponent(venue.name)}&ll=${venue.lat},${venue.lon}`}>Apple Maps</a>
-      <a class="button button-quiet" href={`https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lon}`}>Google Maps</a>
-      {venue.web && <a class="button button-quiet" href={venue.web} rel="nofollow noopener">Website</a>}
-    </div>
-  </article>
-
-  <section class="mt-6 sticker bg-lavender! p-6 text-on-accent">
-    <h2 class="text-xl font-black">Looking for people to play with here?</h2>
-    <p class="mt-1 font-medium">
-      Badie matches players at the same level who are free at the same time. The iPhone app is in testing.
-    </p>
-  </section>
-
-  {
-    others.length > 0 && (
-      <section class="mt-10">
-        <h2 class="mb-4 text-2xl font-black">Nearby courts</h2>
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {others.map(({ venue: other, km }) => <VenueRow venue={other} distanceKm={km} />)}
-        </div>
-      </section>
-    )
-  }
+  </div>
 
   <Fragment slot="attribution">
     <p>{sourceNote}{venue.attribution && ` ${venue.attribution}`}</p>

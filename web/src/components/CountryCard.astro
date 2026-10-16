@@ -1,0 +1,36 @@
+---
+import DotMap from './DotMap.astro';
+import { cityName, type Country } from '../lib/venues';
+
+interface Props {
+  country: Country;
+  tint: string;
+}
+
+const { country, tint } = Astro.props;
+const points = country.cities.flatMap((city) => city.venues);
+---
+
+<article class="sticker lift flex flex-col overflow-hidden">
+  <a href={country.path} class:list={['hidden border-b-2 border-stroke p-3 sm:block', tint]} tabindex="-1" aria-hidden="true">
+    <DotMap points={points} label={`Map of badminton courts in ${country.name}`} max={300} onTint />
+  </a>
+  <div class="flex flex-1 flex-col p-5">
+    <div class="flex items-baseline justify-between gap-3">
+      <h3 class="text-lg font-black"><a href={country.path} class="hover:underline">{country.name}</a></h3>
+      <span class="display text-3xl">{country.venueCount.toLocaleString('en')}</span>
+    </div>
+    <p class="text-sm font-bold text-ink-secondary">courts in {country.cities.length.toLocaleString('en')} areas</p>
+    <ul class="mt-3 flex flex-wrap gap-2 text-sm font-bold">
+      {
+        country.cities.slice(0, 3).map((city) => (
+          <li>
+            <a href={city.path} class="inline-block rounded-full bg-surface-muted px-3 py-1 hover:bg-butter hover:text-on-accent">
+              {cityName(city)}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</article>

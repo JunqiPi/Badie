@@ -1,14 +1,19 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
-import { countries, inCountry, type Country } from '../../../lib/venues';
+import DotMap from '../../../components/DotMap.astro';
+import { cityName, countries, inCountry, type Country } from '../../../lib/venues';
 
 export function getStaticPaths() {
   return countries.map((country) => ({ params: { country: country.code }, props: { country } }));
 }
 
 const { country } = Astro.props as { country: Country };
-const attributions = [...new Set(country.cities.flatMap((c) => c.venues.map((v) => v.attribution)).filter(Boolean))];
+const venues = country.cities.flatMap((c) => c.venues);
+const topCities = country.cities.slice(0, 9);
+const alphabetical = [...country.cities].sort((a, b) => cityName(a).localeCompare(cityName(b)));
+const attributions = [...new Set(venues.map((v) => v.attribution).filter(Boolean))];
+const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
 ---
 
 <Base
@@ -16,18 +21,84 @@ const attributions = [...new Set(country.cities.flatMap((c) => c.venues.map((v) 
   description={`${country.venueCount.toLocaleString('en')} badminton courts across ${country.cities.length} areas in ${inCountry(country)}.`}
 >
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }]} />
-  <h1 class="mb-6 text-3xl font-black sm:text-4xl">Badminton courts in {inCountry(country)}</h1>
-  <ul class="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
-    {
-      country.cities.map((city) => (
-        <li>
-          <a href={city.path} class="flex justify-between gap-3 rounded-lg px-2 py-1 font-bold hover:bg-surface">
-            <span>{city.region ? `${city.name}, ${city.region}` : city.name}</span>
-            <span class="text-ink-tertiary">{city.venues.length}</span>
+
+  <section class="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+    <div>
+      <p class="eyebrow">Court directory</p>
+      <h1 class="display mt-3 text-[clamp(2.75rem,6vw,5rem)]">Badminton courts in {inCountry(country)}</h1>
+      <div class="mt-6 grid max-w-md grid-cols-2 gap-3">
+        <div class="tile bg-sky p-4 text-on-accent">
+          <p class="display text-5xl">{country.venueCount.toLocaleString('en')}</p>
+          <p class="text-sm font-extrabold">courts</p>
+        </div>
+        <div class="tile bg-peach p-4 text-on-accent">
+          <p class="display text-5xl">{country.cities.length.toLocaleString('en')}</p>
+          <p class="text-sm font-extrabold">areas</p>
+        </div>
+      </div>
+    </div>
+    <div class="tile bg-surface p-4">
+      <DotMap points={venues.map((v) => ({ lat: v.lat, lon: v.lon, label: v.name, href: v.path }))} label={`Map of courts in ${country.name}`} />
+    </div>
+  </section>
+
+  <section class="mt-14">
+    <h2 class="eyebrow">Areas with the most courts</h2>
+    <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        topCities.map((city, index) => (
+          <a href={city.path} class="sticker lift flex items-center justify-between gap-4 p-5">
+            <div class="min-w-0">
+              <p class="truncate text-lg font-black">{cityName(city)}</p>
+              <p class="truncate text-sm font-bold text-ink-secondary">{city.venues.slice(0, 2).map((v) => v.name).join(' · ')}</p>
+            </div>
+            <span class:list={['tile grid min-w-16 shrink-0 place-items-center px-3 py-2 text-on-accent', tints[index % tints.length]]}>
+              <span class="display text-3xl">{city.venues.length}</span>
+            </span>
           </a>
-        </li>
-      ))
-    }
-  </ul>
+        ))
+      }
+    </div>
+  </section>
+
+  {
+    country.cities.length > topCities.length && (
+      <section class="mt-14">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <h2 class="eyebrow">All {country.cities.length.toLocaleString('en')} areas A–Z</h2>
+          <label class="tile flex items-center gap-2 bg-surface px-3">
+            <span class="sr-only">Filter areas</span>
+            <input data-area-filter type="search" placeholder="Filter areas" class="h-10 w-48 bg-transparent font-bold outline-none placeholder:text-ink-tertiary" />
+          </label>
+        </div>
+        <details data-area-list open={country.cities.length <= 60} class="mt-5">
+          <summary class="cursor-pointer font-extrabold underline decoration-2 underline-offset-4">Show all areas</summary>
+          <ul class="mt-4 columns-1 gap-8 sm:columns-2 lg:columns-3">
+            {alphabetical.map((city) => (
+              <li data-area={cityName(city).toLowerCase()} class="break-inside-avoid">
+                <a href={city.path} class="flex justify-between gap-3 rounded-lg px-2 py-1.5 font-bold hover:bg-surface">
+                  <span class="truncate">{cityName(city)}</span>
+                  <span class="text-ink-tertiary">{city.venues.length}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </section>
+    )
+  }
+
   <Fragment slot="attribution">{attributions.length > 0 && <p>{attributions.join(' · ')}</p>}</Fragment>
 </Base>
+
+<script>
+  const input = document.querySelector<HTMLInputElement>('[data-area-filter]');
+  const list = document.querySelector<HTMLDetailsElement>('[data-area-list]');
+  input?.addEventListener('input', () => {
+    const query = input.value.trim().toLowerCase();
+    if (list && query) list.open = true;
+    for (const item of document.querySelectorAll<HTMLElement>('[data-area]')) {
+      item.hidden = !item.dataset.area!.includes(query);
+    }
+  });
+</script>
