@@ -144,6 +144,22 @@ iOS App（SwiftUI）──┐
 第三批：`threads`、`messages`、`groups`、`group_sessions`、`inbox`、`verification_requests`。
 演示用的 `bots`、`seededUserIds` 只留在 `MockBackend`。
 
+## 5.5 仓库结构：一个仓库，不拆分
+
+```
+Badie/
+├─ Badie-iOS/        SwiftUI App（现有）
+├─ web/              Astro 公开页 + React 应用（/app）
+├─ supabase/         后端：数据库迁移、SQL 函数、RLS 规则、Edge Functions、种子数据
+├─ shared/           两端共用：设计变量（颜色、描边、阴影）、从 xcstrings 导出的翻译、球馆开放数据
+└─ .github/workflows 各自按路径触发的 CI（改 web/ 不跑 iOS 构建，反之亦然）
+```
+
+- **后端不单独建仓库**：用 Supabase 后，“后端代码”就是 `supabase/` 里的迁移文件、SQL 函数和少量 Edge Functions，用 Supabase CLI 部署。
+- **好处**：改一个功能时，数据库、iOS、网页可以放在同一次提交里，不会出现“后端改了、客户端没跟上”；翻译和设计变量只维护一份；AI 助手一次能看到全部代码。
+- **代价**：CI 要按路径分开触发（现有 iOS 工作流已经这样做）；密钥一律放在 GitHub Secrets 和 Supabase 后台，绝不提交进仓库。
+- **什么时候再拆**：有了多人协作、需要分别授权时再考虑，现在没有必要。
+
 ## 6. 开发顺序
 
 1. **iOS 抽接口**（不需要服务器）：`AppState` 和各个 Manager 现在直接依赖 `MockBackend`（在外部用到约 140 个方法）。按领域拆出协议，`MockBackend` 实现它们，行为不变、测试照跑。
