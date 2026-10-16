@@ -38,7 +38,7 @@ Supabase 的已知坑和对策：
 - **推送不内置**：用数据库 webhook + Edge Function 调 APNs 和 Web Push。
 - **Swift SDK 仍在快速修 bug**（近期修过 Realtime 相关问题）：锁定版本，升级前跑测试。
 
-### 网页端：React + Vite（单页应用）
+### 网页端：公开页面用 Astro 静态生成，登录后的应用用 React 单页应用（理由见第 3.5 节）
 
 | 方案 | 结论 | 原因 |
 |---|---|---|
@@ -60,18 +60,71 @@ Supabase 的已知坑和对策：
 ```
 iOS App（SwiftUI）──┐
                      ├── Supabase（美西）
-网页端（React PWA）──┘     ├─ Auth：Apple / Google / 邮箱验证码
+网页端（Astro + React）┘     ├─ Auth：Apple / Google / 邮箱验证码
    ↑                       ├─ Postgres + PostGIS：数据、附近查询、RLS 权限
    │                       ├─ SQL 函数：赛果确认、胜率/榜单（定时任务算好写表）、匹配、限流、挑战规则
    │                       ├─ Realtime：聊天、匹配状态
    │                       ├─ Storage：头像（客户端压到 30KB 以下，带缓存头）
    │                       └─ Edge Function：APNs + Web Push 推送
-   └── Cloudflare Pages（静态网页，全球 CDN）
+   └── Cloudflare Pages（公开页静态 HTML + /app 单页应用，全球 CDN）
 备份：GitHub Actions 定时 pg_dump 到 Cloudflare R2（免费额度内）
 ```
 
 - **规则只写一份，放在服务端**：iOS 和网页只负责显示和提交。现在 App 里的 `Rankings`、`Challenge`、匹配等规则代码，就是移植成 SQL 函数的蓝本。
 - **审核**：先用 Supabase 后台的表格编辑器处理举报；量大了再做一个简单的管理页面（网页端里加一个管理员路由）。
+
+## 3.5 公开页面与搜索（SEO / AI 搜索）
+
+### 证据说了什么
+
+- **AI 爬虫不执行 JavaScript**（Vercel/MERJ 日志分析，2024-12）：GPTBot、ChatGPT 搜索、ClaudeBot、PerplexityBot 都只读原始 HTML；只有 Googlebot 和 Applebot 会渲染。纯 React 单页应用的页面在 ChatGPT、Claude、Perplexity 眼里是空的。
+- **AI 搜索基本还是传统搜索**：Google 官方说 AI 功能不需要特殊优化，强调“别处没有的信息”；AI Overviews 引用的页面里，排名前 10 的占比已降到约 38%（Ahrefs），排名有帮助但不是决定因素。
+- **“GEO 写作技巧”证据很弱**：原始 GEO 论文（KDD 2024）称最多提升约 40%，但 NeurIPS 2025 的复现（C-SEO Bench）发现多数方法无效甚至有害。可抓取性 + 独特数据才是核心。
+- **结构化数据对 AI 引用没有明显作用**（Ahrefs 对照实验）：关键信息必须写在可见的页面正文里，JSON-LD 只算加分项。
+- **llms.txt 没有证据被使用**，Google 明确说不用。可以放一个，不投入精力。
+- **站外渠道分量很重**：Reddit 是三大 AI 平台被引用最多的域名之一，ChatGPT 偏爱 Wikipedia，Perplexity 和 Google AI 偏爱 Reddit、YouTube。
+- **AI 带来的点击很少**（Cloudflare：抓取与带来访问的比例从约 200:1 到数万:1）。目标是“被提及、被推荐”，不是流量。
+
+### 架构因此调整
+
+- **一个 Astro 项目，部署在 Cloudflare Pages**：
+  - 公开页面由 Astro 输出纯 HTML（几乎不带 JavaScript），爬虫和 AI 都能读。
+  - 登录后的应用是 React 单页应用，挂在 `/app/*` 下，加 `noindex`。交互组件和设计样式两边共用。
+- **哪些页面公开、需要被搜到**：首页、场馆页、城市页、公开球群页、公开约球页、隐私和条款页。
+- **哪些只在应用内**：消息、资料编辑、报名、设置、排行榜详情。
+- **网址结构**：`/{语言}/courts/{国家}/{城市}/{场馆}`，例如 `/en/courts/us/san-jose/bay-badminton-center`。
+- **生成方式**：每天由 GitHub Actions 从 Supabase 拉数据重新构建一次；变化快的约球页由 Cloudflare 函数现场生成并缓存。Cloudflare Pages 免费版每个站最多 2 万个文件，所以场馆页只预生成英文和当地语言，其余语言现场生成。
+
+### 页面要有“别处没有的信息”，否则不放出来
+
+- **场馆页**：球场数、开放时间、收费、球友确认时间、这里活跃的球群和固定场次、最近 30 天约球次数、场馆榜前几名（只显示同意公开的人）。
+- **城市页**：至少 3 家场馆或有活跃球群才生成。
+- **没有任何独特信息的场馆页先加 `noindex`**，有球友贡献后再放开（避免被 Google 当成批量生成的低质量页面）。
+- **数据来源与许可**：
+  - 开放数据的场馆在页面上标注来源和许可证（英国 OGL、新加坡、台湾等要求署名）。
+  - **从 Apple 地图来的信息不公开发布**：Apple 开发者协议限制存储和再发布地图数据。场馆表加 `source`、`license` 字段，公开页只展示开放数据和用户自己填写、确认的内容；仅有 Apple 来源信息的场馆不生成公开页。
+- **基础项**：JSON-LD（场馆 `SportsActivityLocation`、球群 `SportsClub`、约球 `Event`）、按语言拆分的 sitemap + hreflang、每页的分享卡片图（构建时生成）、网站顶部的 App 下载横幅、iOS 通用链接。
+- **robots.txt**：允许 Googlebot、Bingbot、OAI-SearchBot、PerplexityBot、Claude 的搜索爬虫、Applebot。
+
+### 站外（非营利、不刷量）
+
+1. 在 r/badminton 和各城市版块以开发者身份如实回答“哪里能打球”，表明身份。
+2. 拍几段短视频放 YouTube：App 演示、城市球馆指南。
+3. 联系各地羽毛球协会、俱乐部，请他们链接对应的场馆页和球群页。
+4. 登录 Product Hunt、AlternativeTo、非营利和开源目录。
+5. 有了第三方媒体报道后，再考虑建 Wikidata 条目；不自己写 Wikipedia 词条。
+
+### App Store（ASO）
+
+- 标题、副标题各 30 字符，关键词字段 100 字符（逗号分隔、不加空格、不重复标题里的词）。
+- 10 种语言分别本地化关键词和截图；美国区还会索引西班牙语（墨西哥）等本地化的关键词。
+- 用“App 内活动”宣传赛事，用“自定义产品页”针对不同城市；尽早引导满意的用户评分。
+
+### 怎么衡量（都免费）
+
+- Google Search Console、Bing Webmaster Tools（有 Copilot 引用报告）。
+- Cloudflare 的 AI 爬虫访问统计、Cloudflare Web Analytics 按来源区分 chatgpt.com、perplexity.ai 等。
+- 每月用固定约 20 个问题（如“badminton courts in San Jose”）手动问各家 AI，每题问几次，记在表格里。
 
 ## 4. 球馆共享
 
@@ -96,7 +149,7 @@ iOS App（SwiftUI）──┐
 1. **iOS 抽接口**（不需要服务器）：`AppState` 和各个 Manager 现在直接依赖 `MockBackend`（在外部用到约 140 个方法）。按领域拆出协议，`MockBackend` 实现它们，行为不变、测试照跑。
 2. **Supabase 第一块：账号 + 球馆**。表结构、RLS、附近查询、球馆去重和确认；SQL 迁移文件放在仓库里，CI 用本地 Supabase 跑测试。
 3. **iOS 接上 Supabase**：`RemoteBackend` 按领域逐个接上；开关切换模拟/正式，演示模式和 CI 截图继续用模拟后端。
-4. **网页端第一版**：登录、个人资料、附近球馆、添加球馆。
+4. **网页端第一版**：公开的场馆页、城市页（Astro），以及应用里的登录、个人资料、附近球馆、添加球馆。
 5. **之后每块功能服务端先行、两端跟上**：匹配与对局 → 赛果与榜单 → 聊天与球群 → 挑战。
 
 ## 7. 每月成本
