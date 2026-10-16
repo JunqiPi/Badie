@@ -54,7 +54,7 @@ for v in venues:
 
 ids = [e["id"] for e in entries]
 assert len(ids) == len(set(ids)), "duplicate ids"
-catalog = {"country": "US", "source": "curated", "status": "verified", "venues": entries}
+catalog = {"country": "US", "source": "Badie research (data/us_venues.json)", "kind": "curated", "status": "verified", "venues": entries}
 with open(out, "w", encoding="utf-8") as fh:
     json.dump(catalog, fh, ensure_ascii=False, indent=1)
     fh.write("\n")

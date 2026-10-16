@@ -3,7 +3,8 @@ import Foundation
 /// 随 App 打包的球馆目录（Resources 里的 JSON）。网页端构建和数据库种子读的也是这批文件。
 enum VenueCatalog {
     private struct File: Decodable {
-        let source: VenueSource?
+        /// 平台收录 / OSM 导入；政府开放数据的目录没有这个字段（它们的 source 是来源说明文字）
+        let kind: VenueSource?
         let status: VenueStatus?
         let attribution: String?
         let venues: [Entry]
@@ -61,7 +62,7 @@ enum VenueCatalog {
                                        postalCode: entry.postcode, countryCode: entry.country),
                 timeZoneId: entry.tz, courtCount: entry.courts, pricing: entry.price?.pricing ?? .unknown,
                 pricingNote: entry.priceNote, phone: entry.phone, website: entry.web, entranceNote: entry.entrance,
-                source: file.source ?? .openData,
+                source: file.kind ?? .openData,
                 status: entry.approx == true ? .unconfirmed : (entry.status ?? file.status ?? .verified)
             )
             court.attribution = entry.attr ?? file.attribution

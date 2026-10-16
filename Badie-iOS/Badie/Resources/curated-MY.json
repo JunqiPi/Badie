@@ -1,6 +1,7 @@
 {
  "country": "MY",
- "source": "openStreetMap",
+ "source": "OpenStreetMap",
+ "kind": "openStreetMap",
  "status": "unconfirmed",
  "attribution": "© OpenStreetMap contributors, ODbL 1.0",
  "venues": [

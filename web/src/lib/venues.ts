@@ -29,7 +29,7 @@ interface CatalogEntry {
 }
 
 interface Catalog {
-  source?: Source;
+  kind?: Source;
   status?: string;
   attribution?: string;
   venues: CatalogEntry[];
@@ -96,7 +96,7 @@ function load(): Country[] {
       .filter((entry) => !entry.approx)
       .map((entry) => ({
         ...entry,
-        source: catalog.source ?? 'openData',
+        source: catalog.kind ?? 'openData',
         confirmed: (entry.status ?? catalog.status ?? 'verified') !== 'unconfirmed',
         attribution: entry.attr ?? catalog.attribution,
       }));

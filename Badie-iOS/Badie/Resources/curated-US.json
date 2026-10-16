@@ -1,6 +1,7 @@
 {
  "country": "US",
- "source": "curated",
+ "source": "Badie research (data/us_venues.json)",
+ "kind": "curated",
  "status": "verified",
  "venues": [
   {
