@@ -13,7 +13,7 @@ async function emailedCode() {
     const message = messages.find((m) => m.To?.some((to) => to.Address === email));
     if (message) {
       const full = await (await fetch(`${mailpit}/api/v1/message/${message.ID}`)).json();
-      const code = (full.Text || full.HTML).match(/\b\d{6}\b/)?.[0];
+      const code = (full.Text || full.HTML).match(/\b\d{6,10}\b/)?.[0];
       if (code) return code;
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
@@ -35,7 +35,7 @@ page.on('pageerror', (error) => {
 await page.goto(`${base}/app/`);
 await page.getByLabel('Email').fill(email);
 await page.getByRole('button', { name: 'Email me a code' }).click();
-await page.getByLabel('6-digit code').fill(await emailedCode());
+await page.getByLabel('Sign-in code').fill(await emailedCode());
 await page.getByRole('button', { name: 'Sign in' }).click();
 
 await page.getByLabel('Nickname').fill('Alex');

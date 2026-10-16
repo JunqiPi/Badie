@@ -36,15 +36,15 @@ export function SignIn() {
       <div className="sticker p-6">
         <h1 className="display text-4xl">{sent ? 'Check your email' : 'Sign in'}</h1>
         <p className="mt-2 text-ink-secondary">
-          {sent ? `We sent a 6-digit code to ${email}.` : 'We’ll email you a 6-digit code. No password needed.'}
+          {sent ? `We sent a sign-in code to ${email}.` : 'We’ll email you a sign-in code. No password needed.'}
         </p>
         <form onSubmit={sent ? verify : send} className="mt-6 grid gap-3">
           {sent ? (
             <input
-              aria-label="6-digit code"
+              aria-label="Sign-in code"
               inputMode="numeric"
               autoComplete="one-time-code"
-              maxLength={6}
+              maxLength={10}
               required
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}

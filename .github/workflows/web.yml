@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   build:
-    name: Check & build
+    name: Check, build & deploy
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -36,18 +36,24 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run check
+
+      # 这三个值都可以公开，放在仓库 Variables（不是 Secrets）
       - run: npm run build
         env:
           SITE_URL: ${{ vars.SITE_URL }}
+          PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
 
-      # 只有 main 部署；没配 Cloudflare 密钥时跳过（需要 Secrets：CLOUDFLARE_API_TOKEN、CLOUDFLARE_ACCOUNT_ID，Variables：SITE_URL）
+      # 只有 main 部署；没配 Cloudflare 时跳过
       - name: Deploy to Cloudflare Pages
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "未配置 Cloudflare，跳过部署"; exit 0; fi
+          npx --yes wrangler@4.151.1 pages project list | grep -qw badie \
+            || npx --yes wrangler@4.151.1 pages project create badie --production-branch main
           npx --yes wrangler@4.151.1 pages deploy dist --project-name badie --branch main
 
   app-e2e:
@@ -74,7 +80,7 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           export PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-          export PUBLIC_SUPABASE_ANON_KEY=$(supabase status -o env | grep '^ANON_KEY=' | cut -d= -f2- | tr -d '"')
+          export PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(supabase status -o env | grep '^PUBLISHABLE_KEY=' | cut -d= -f2- | tr -d '"')
           npm run build
           npx astro preview --port 4321 --host 127.0.0.1 &
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:4321/app/ >/dev/null && break; sleep 1; done

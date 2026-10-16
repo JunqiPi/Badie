@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
-const key = import.meta.env.PUBLIC_SUPABASE_ANON_KEY as string | undefined;
+// 只用 publishable key（sb_publishable_…）；secret key 绝不进前端
+const key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
 export const supabase = url && key ? createClient(url, key) : undefined;
 

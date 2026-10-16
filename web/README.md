@@ -10,7 +10,7 @@ npm run build    # 输出到 dist/；SITE_URL 决定 canonical 和 sitemap 的�
 npm run e2e      # 应用端到端测试，需要先 supabase start，并用本地 Supabase 的地址和 anon key 构建、启动网站
 ```
 
-应用（`/app/`）读 `PUBLIC_SUPABASE_URL`、`PUBLIC_SUPABASE_ANON_KEY`；没设时页面显示“未连接服务器”。
+应用（`/app/`）读 `PUBLIC_SUPABASE_URL`、`PUBLIC_SUPABASE_PUBLISHABLE_KEY`（`sb_publishable_…`，可以公开）；没设时页面显示“未连接服务器”。
 
 - 球馆数据读 `../Badie-iOS/Badie/Resources` 里和 App 共用的目录（不含只有大概位置的韩国数据）。
 - 只有名字和地址的球馆页、不到 3 家的城市页带 `noindex`，也不进 sitemap。

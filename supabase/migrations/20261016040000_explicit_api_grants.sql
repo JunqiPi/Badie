@@ -11,3 +11,7 @@ grant execute on function public.venues_near(double precision, double precision,
 grant execute on function public.venue_duplicates(text, double precision, double precision, text, text[]) to anon, authenticated;
 grant execute on function public.normalize_venue_name(text), public.venue_name_core(text),
   public.venue_names_similar(text, text) to anon, authenticated;
+
+-- 后台脚本和以后的 Edge Functions 用 service_role，也要显式授权
+grant all on all tables in schema public to service_role;
+grant usage, select on all sequences in schema public to service_role;
