@@ -21,6 +21,7 @@
   --color-sky: #a8d8ff;
   --color-butter: #ffe36e;
   --color-mint: #9fe8c3;
+  --color-danger: #c92a2f;
   --font-sans: "Nunito Variable", ui-rounded, system-ui, sans-serif;
   --font-display: "Anton", "Arial Narrow", sans-serif;
 }
@@ -42,6 +43,7 @@
     --color-sky: #8ec8f5;
     --color-butter: #f2d45c;
     --color-mint: #86d9b0;
+    --color-danger: #ff6b6e;
   }
 }
 
@@ -119,10 +121,12 @@
   text-transform: uppercase;
 }
 
-body {
-  background: var(--color-backdrop);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+@layer base {
+  body {
+    background: var(--color-backdrop);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
 }
 
 a:focus-visible,

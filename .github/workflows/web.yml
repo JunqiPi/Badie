@@ -5,11 +5,13 @@ on:
     branches: [ main, "claude/**" ]
     paths:
       - "web/**"
+      - "supabase/**"
       - "Badie-iOS/Badie/Resources/*.json"
       - ".github/workflows/web.yml"
   pull_request:
     paths:
       - "web/**"
+      - "supabase/**"
       - "Badie-iOS/Badie/Resources/*.json"
   workflow_dispatch:
 
@@ -47,3 +49,36 @@ jobs:
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "未配置 Cloudflare，跳过部署"; exit 0; fi
           npx --yes wrangler@4.151.1 pages deploy dist --project-name badie --branch main
+
+  app-e2e:
+    name: App end-to-end (local Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Start Supabase (database, auth, REST, mail)
+        run: supabase start -x studio,imgproxy,storage-api,realtime,edge-runtime,logflare,vector,supavisor,postgres-meta
+
+      - name: Build and serve the site against it
+        working-directory: web
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          export PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+          export PUBLIC_SUPABASE_ANON_KEY=$(supabase status -o env | grep '^ANON_KEY=' | cut -d= -f2- | tr -d '"')
+          npm run build
+          npx astro preview --port 4321 --host 127.0.0.1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4321/app/ >/dev/null && break; sleep 1; done
+
+      - name: Run end-to-end test
+        working-directory: web
+        run: npm run e2e

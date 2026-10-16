@@ -1,7 +1,7 @@
 -- 球馆库规则测试（与 iOS VenueTests 的规则一致）
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(24);
+select plan(25);
 
 -- 测试用户
 insert into auth.users (id, email) values
@@ -56,6 +56,9 @@ select throws_ok($$ select public.add_venue('Imported Hall', 37.5, -122.0, '1 St
 select lives_ok($$ select public.add_venue('Third Hall', 37.6, -122.1, '3 St', 'San Jose', 'CA', '', 'US') $$, '第 3 家可以');
 select throws_ok($$ select public.add_venue('Fourth Hall', 37.7, -122.2, '4 St', 'San Jose', 'CA', '', 'US') $$,
                  '54000', null, '第 4 家被限流');
+
+select is((select count(*)::int from public.venue_duplicates('Somewhere Else', 1.3, 103.8, 'I999')), 0,
+          '远处、Place ID 不同的球馆不算重复');
 
 -- 客户端不能直接写表
 select throws_ok($$ insert into public.venues (name, location, street, city, country_code, source)
