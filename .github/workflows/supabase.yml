@@ -5,10 +5,12 @@ on:
     branches: [ main, "claude/**" ]
     paths:
       - "supabase/**"
+      - "Badie-iOS/Badie/Resources/*.json"
       - ".github/workflows/supabase.yml"
   pull_request:
     paths:
       - "supabase/**"
+      - "Badie-iOS/Badie/Resources/*.json"
   workflow_dispatch:
 
 concurrency:
@@ -26,6 +28,11 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: 2.121.0
+
+      - name: Seed matches the venue catalogs
+        run: |
+          python3 supabase/scripts/build_venue_seed.py
+          git diff --exit-code supabase/seed.sql || { echo "seed.sql 过期：运行 python3 supabase/scripts/build_venue_seed.py"; exit 1; }
 
       # 只启动数据库：迁移和 pgTAP 测试不需要其他服务
       - name: Start database

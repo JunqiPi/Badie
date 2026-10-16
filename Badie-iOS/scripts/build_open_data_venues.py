@@ -57,7 +57,8 @@ def hong_kong():
             "web": "https://www.smartplay.lcsd.gov.hk/",
         })
     for (key, *_), count in courts.items():
-        venues[key]["courts"] = max(venues[key].get("courts", 0), count)
+        if count > 0:
+            venues[key]["courts"] = max(venues[key].get("courts", 0), count)
     write("HK", "康樂及文化事務署 SmartPLAY", "資料來源：康樂及文化事務署 / DATA.GOV.HK", venues.values())
 
 
