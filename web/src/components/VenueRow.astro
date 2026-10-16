@@ -1,0 +1,27 @@
+---
+import { englishName, formatAddress, formatPrice, type Venue } from '../lib/venues';
+
+interface Props {
+  venue: Venue;
+  distanceKm?: number;
+}
+
+const { venue, distanceKm } = Astro.props;
+const subtitle = englishName(venue);
+---
+
+<a href={venue.path} class="sticker block p-4 transition-transform hover:-translate-y-0.5">
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <p class="font-extrabold leading-snug">{venue.name}</p>
+      {subtitle && <p class="text-sm font-bold text-ink-secondary">{subtitle}</p>}
+      <p class="mt-1 truncate text-sm text-ink-secondary">{formatAddress(venue)}</p>
+    </div>
+    {distanceKm !== undefined && <span class="shrink-0 text-sm font-bold text-ink-tertiary">{distanceKm.toFixed(1)} km</span>}
+  </div>
+  <div class="mt-3 flex flex-wrap gap-2">
+    {venue.courts && <span class="chip bg-sky">{venue.courts} courts</span>}
+    {venue.price?.perPerson && <span class="chip bg-butter">Drop-in {formatPrice(venue.price.perPerson, venue.country)}</span>}
+    {!venue.confirmed && <span class="chip bg-surface-muted">Not yet confirmed</span>}
+  </div>
+</a>

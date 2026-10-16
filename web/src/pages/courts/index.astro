@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import { allVenues, countries } from '../../lib/venues';
+---
+
+<Base title="Badminton courts by country — Badie" description={`${allVenues.length.toLocaleString('en')} badminton courts in ${countries.length} countries.`}>
+  <h1 class="mb-6 text-3xl font-black sm:text-4xl">Badminton courts</h1>
+  <div class="grid gap-3 sm:grid-cols-2">
+    {
+      countries.map((country) => (
+        <a href={country.path} class="sticker p-4 hover:-translate-y-0.5">
+          <p class="text-lg font-extrabold">{country.name}</p>
+          <p class="text-sm font-bold text-ink-secondary">
+            {country.venueCount.toLocaleString('en')} courts · {country.cities.length.toLocaleString('en')} areas
+          </p>
+        </a>
+      ))
+    }
+  </div>
+</Base>

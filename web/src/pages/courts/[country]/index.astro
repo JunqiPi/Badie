@@ -1,0 +1,33 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import { countries, inCountry, type Country } from '../../../lib/venues';
+
+export function getStaticPaths() {
+  return countries.map((country) => ({ params: { country: country.code }, props: { country } }));
+}
+
+const { country } = Astro.props as { country: Country };
+const attributions = [...new Set(country.cities.flatMap((c) => c.venues.map((v) => v.attribution)).filter(Boolean))];
+---
+
+<Base
+  title={`Badminton courts in ${inCountry(country)} — Badie`}
+  description={`${country.venueCount.toLocaleString('en')} badminton courts across ${country.cities.length} areas in ${inCountry(country)}.`}
+>
+  <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }]} />
+  <h1 class="mb-6 text-3xl font-black sm:text-4xl">Badminton courts in {inCountry(country)}</h1>
+  <ul class="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      country.cities.map((city) => (
+        <li>
+          <a href={city.path} class="flex justify-between gap-3 rounded-lg px-2 py-1 font-bold hover:bg-surface">
+            <span>{city.region ? `${city.name}, ${city.region}` : city.name}</span>
+            <span class="text-ink-tertiary">{city.venues.length}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <Fragment slot="attribution">{attributions.length > 0 && <p>{attributions.join(' · ')}</p>}</Fragment>
+</Base>

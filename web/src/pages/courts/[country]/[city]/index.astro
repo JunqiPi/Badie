@@ -1,0 +1,29 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
+import VenueRow from '../../../../components/VenueRow.astro';
+import { cityName, countries, type City, type Country } from '../../../../lib/venues';
+
+export function getStaticPaths() {
+  return countries.flatMap((country) =>
+    country.cities.map((city) => ({ params: { country: country.code, city: city.slug }, props: { country, city } })),
+  );
+}
+
+const { country, city } = Astro.props as { country: Country; city: City };
+const name = cityName(city);
+const attributions = [...new Set(city.venues.map((v) => v.attribution).filter(Boolean))];
+---
+
+<Base
+  title={`Badminton courts in ${name} — Badie`}
+  description={`${city.venues.length} badminton ${city.venues.length === 1 ? 'court' : 'courts'} in ${name}, ${country.name}: addresses, court counts and prices.`}
+  noindex={!city.indexable}
+>
+  <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }, { label: country.name, href: country.path }]} />
+  <h1 class="mb-6 text-3xl font-black sm:text-4xl">Badminton courts in {name}</h1>
+  <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+    {city.venues.map((venue) => <VenueRow venue={venue} />)}
+  </div>
+  <Fragment slot="attribution">{attributions.length > 0 && <p>{attributions.join(' · ')}</p>}</Fragment>
+</Base>

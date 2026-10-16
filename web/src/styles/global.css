@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+/* 与 iOS Theme.swift 一致的 “Court Pop” 设计变量 */
+@theme {
+  --color-canvas: #f5f0e6;
+  --color-surface: #ffffff;
+  --color-surface-muted: #ede6d8;
+  --color-ink: #17140f;
+  --color-ink-secondary: #5b554b;
+  --color-ink-tertiary: #8c8579;
+  --color-stroke: #17140f;
+  --color-shadow: #17140f;
+  --color-on-accent: #17140f;
+  --color-lime: #d4f33f;
+  --color-lavender: #c8beff;
+  --color-peach: #ffc98f;
+  --color-pink: #ffb3cf;
+  --color-sky: #a8d8ff;
+  --color-butter: #ffe36e;
+  --color-mint: #9fe8c3;
+  --font-sans: ui-rounded, "SF Pro Rounded", "Nunito", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-canvas: #16131d;
+    --color-surface: #221e2b;
+    --color-surface-muted: #2c2737;
+    --color-ink: #f4efe6;
+    --color-ink-secondary: #b9b2a6;
+    --color-ink-tertiary: #857d90;
+    --color-stroke: #756a90;
+    --color-shadow: #07060a;
+    --color-lavender: #b3a6ff;
+    --color-peach: #f5b97a;
+    --color-pink: #f79cc0;
+    --color-sky: #8ec8f5;
+    --color-butter: #f2d45c;
+    --color-mint: #86d9b0;
+  }
+}
+
+@utility sticker {
+  background: var(--color-surface);
+  border: 2px solid var(--color-stroke);
+  border-radius: 20px;
+  box-shadow: 3px 4px 0 var(--color-shadow);
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.65rem;
+  border: 1.5px solid var(--color-stroke);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-on-accent);
+}
+
+@utility button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.75rem;
+  padding: 0 1.1rem;
+  border: 2px solid var(--color-stroke);
+  border-radius: 14px;
+  box-shadow: 0 4px 0 var(--color-shadow);
+  font-weight: 800;
+  color: var(--button-fg, var(--color-on-accent));
+  background: var(--button-bg, var(--color-lime));
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+  &:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 var(--color-shadow);
+  }
+}
+
+@utility button-quiet {
+  --button-bg: var(--color-surface);
+  --button-fg: var(--color-ink);
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--color-lavender);
+  outline-offset: 2px;
+}
