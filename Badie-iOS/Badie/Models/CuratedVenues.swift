@@ -2,12 +2,16 @@ import Foundation
 
 // MARK: - 平台收录的球馆
 //
-// 地址至少有 2 个独立来源互相印证，坐标来自门牌地址地理编码。见 docs/DESIGN.md §9。
+// 美国：地址至少有 2 个独立来源互相印证，坐标来自门牌地址地理编码（见 docs/DESIGN.md §9，来源记在 JSON 里）。
+// 马来西亚：来自 OpenStreetMap，未经实地核实。
 
 extension BadmintonCourt {
     static var curated: [BadmintonCourt] { curatedUS + curatedBeijing + curatedMY }
 
-    /// 北京（国内演示与测试用）
+    static let curatedUS = VenueCatalog.load("curated-US")
+    static let curatedMY = VenueCatalog.load("curated-MY")
+
+    /// 北京：虚构数据，只用于国内演示与测试，不对外发布
     static let curatedBeijing: [BadmintonCourt] = [
         BadmintonCourt(
             id: "v-cn-bj-chaoyang",

@@ -1,7 +1,7 @@
-"""由 data/us_venues.json 生成 Badie/Models/CuratedVenues+US.swift
+"""由 data/us_venues.json（调研记录：来源、冲突说明）生成 App 和网页共用的 Badie/Resources/curated-US.json
 
 用法（在 Badie-iOS 目录下）:
-    python3 scripts/gen_us_venues.py data/us_venues.json Badie/Models/CuratedVenues+US.swift
+    python3 scripts/gen_us_venues.py data/us_venues.json Badie/Resources/curated-US.json
 """
 import json, re, sys
 
@@ -17,80 +17,45 @@ notes = {
     "PickleBall Badminton Center": "与匹克球共用场地，羽毛球最多 6 片",
 }
 
-def swift_str(s):
-    return '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 def slug(name):
-    s = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-    return s[:40].rstrip("-")
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40].rstrip("-")
 
-used = set()
-lines = []
+
+entries = []
 for v in venues:
     name = v["name"]
-    vid = overrides.get(name) or f"v-us-{v['state'].lower()}-{slug(name)}"
-    assert vid not in used, vid
-    used.add(vid)
+    entry = {"id": overrides.get(name) or f"v-us-{v['state'].lower()}-{slug(name)}", "name": name}
     aliases = [a for a in v.get("aliases") or [] if a and a != name]
     if v.get("nameZh") and v["nameZh"] not in aliases:
         aliases.append(v["nameZh"])
+    if aliases:
+        entry["aliases"] = aliases
+    entry |= {"lat": round(v["latitude"], 6), "lon": round(v["longitude"], 6), "street": v["street"]}
+    if v.get("unit"):
+        entry["unit"] = v["unit"]
+    entry |= {"city": v["city"], "region": v["state"], "postcode": v["postalCode"], "country": "US", "tz": v["timeZone"]}
+    if v.get("courtCount"):
+        entry["courts"] = v["courtCount"]
     drop, rent = v.get("dropInFee"), v.get("courtRentalPerHour")
-    if drop:
-        pricing = f".dropIn(perPerson: {int(drop)})"
-    elif rent:
-        pricing = f".perCourtHour({int(rent)})"
-    else:
-        pricing = ".unknown"
-    price_note = []
-    if drop: price_note.append(f"散客 ${int(drop)}/人次")
-    if rent: price_note.append(f"包场 ${int(rent)}/场·时")
-    conflict = (v.get("conflicts") or "").replace("\n", " ")
-    comment = f"        // 来源 {len(v['sources'])} 个：" + " ".join(v["sources"][:3])
-    entry = [comment]
-    if conflict:
-        entry.append("        // 注意：" + conflict[:300])
-    args = [
-        f"id: {swift_str(vid)}",
-        f"name: {swift_str(name)}",
-        f"aliases: [{', '.join(swift_str(a) for a in aliases)}]",
-        f"location: Coordinate(latitude: {v['latitude']:.6f}, longitude: {v['longitude']:.6f})",
-        "address: PostalAddress(street: {}, unit: {}, city: {}, region: {}, postalCode: {}, countryCode: \"US\")".format(
-            swift_str(v["street"]), swift_str(v["unit"]) if v.get("unit") else "nil",
-            swift_str(v["city"]), swift_str(v["state"]), swift_str(v["postalCode"])),
-        f"timeZoneId: {swift_str(v['timeZone'])}",
-        f"courtCount: {v['courtCount'] if v.get('courtCount') else 'nil'}",
-        f"pricing: {pricing}",
-    ]
-    if price_note:
-        args.append(f"pricingNote: {swift_str(' · '.join(price_note))}")
+    price = {k: int(p) for k, p in (("perPerson", drop), ("perCourtHour", rent)) if p}
+    if price:
+        entry["price"] = price
+        entry["priceNote"] = " · ".join(([f"散客 ${int(drop)}/人次"] if drop else []) + ([f"包场 ${int(rent)}/场·时"] if rent else []))
     if v.get("phone"):
-        args.append(f"phone: {swift_str(v['phone'])}")
+        entry["phone"] = v["phone"]
     if v.get("website"):
-        args.append(f"website: {swift_str(v['website'])}")
+        entry["web"] = v["website"]
     if name in notes:
-        args.append(f"entranceNote: {swift_str(notes[name])}")
-    args.append("source: .curated")
-    args.append(f"status: {'.unconfirmed' if name in unconfirmed else '.verified'}")
-    body = ",\n            ".join(args)
-    entry.append(f"        BadmintonCourt(\n            {body}\n        )")
-    lines.append("\n".join(entry))
+        entry["entrance"] = notes[name]
+    if name in unconfirmed:
+        entry["status"] = "unconfirmed"
+    entries.append(entry)
 
-header = '''import Foundation
-
-// MARK: - 美国收录球馆（首发市场）
-//
-// 由 docs/DESIGN.md §9 的调研生成：每家至少 2 个独立来源互相印证地址（官网、Yelp、地图条目、俱乐部目录），
-// 坐标来自 US Census Geocoder 门牌地址匹配（Elite Rally 来自 OpenStreetMap，精确到街道）。
-// 价格为工作日晚间非会员价，来自官网或公开预订页；未公开的标为未知，不估算。
-// 已排除确认或疑似关门的球馆（如 Yan Long、Arcadia BC、IBC Irvine 等）。
-
-extension BadmintonCourt {
-    static let curatedUS: [BadmintonCourt] = [
-'''
-footer = '''
-    ]
-}
-'''
-body = ",\n".join(lines)
-open(out, "w", encoding="utf-8").write(header + body + footer)
-print("venues:", len(venues), "ids:", sorted(used)[:4])
+ids = [e["id"] for e in entries]
+assert len(ids) == len(set(ids)), "duplicate ids"
+catalog = {"country": "US", "source": "curated", "status": "verified", "venues": entries}
+with open(out, "w", encoding="utf-8") as fh:
+    json.dump(catalog, fh, ensure_ascii=False, indent=1)
+    fh.write("\n")
+print("venues:", len(entries))

@@ -286,7 +286,7 @@ enum DemoLauncher {
     }
 }
 
-/// 演示用的两家洛杉矶球馆（见 CuratedVenues+US.swift）
+/// 演示用的两家洛杉矶球馆（见 Resources/curated-US.json）
 enum DemoVenue {
     static let labc = "v-us-ca-labc"
     static let eliteRally = "v-us-ca-elite-rally"

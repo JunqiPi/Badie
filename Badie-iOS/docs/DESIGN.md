@@ -246,7 +246,7 @@
 
 ### 9.5 首批收录（美国 32 家）
 
-数据与来源在 `data/us_venues.json`（每家含 4 个以上来源链接、地址冲突说明、价格出处），用 `scripts/gen_us_venues.py` 生成 `Models/CuratedVenues+US.swift`。南加州 10 家：LABC、Elite Rally、SGVBC、Arena（Pomona）、Santa Fe Springs BC、OCBC、PickleBall Badminton Center（Lakewood）、Manhattan Beach BC（会员制）、SMASH! San Diego、OC SMASH（状态存疑，标为待确认）；其余为湾区、西雅图、纽约/新泽西、休斯顿/达拉斯、芝加哥、波士顿。已排除确认关门的球馆（Yan Long、Arcadia BC、IBC Irvine、Bintang 南旧金山等）。
+数据与来源在 `data/us_venues.json`（每家含 4 个以上来源链接、地址冲突说明、价格出处），用 `scripts/gen_us_venues.py` 生成 `Resources/curated-US.json`（App 和网页共用）。南加州 10 家：LABC、Elite Rally、SGVBC、Arena（Pomona）、Santa Fe Springs BC、OCBC、PickleBall Badminton Center（Lakewood）、Manhattan Beach BC（会员制）、SMASH! San Diego、OC SMASH（状态存疑，标为待确认）；其余为湾区、西雅图、纽约/新泽西、休斯顿/达拉斯、芝加哥、波士顿。已排除确认关门的球馆（Yan Long、Arcadia BC、IBC Irvine、Bintang 南旧金山等）。
 
 ### 9.6 主要来源
 

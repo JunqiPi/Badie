@@ -1,0 +1,768 @@
+{
+ "country": "US",
+ "source": "curated",
+ "status": "verified",
+ "venues": [
+  {
+   "id": "v-us-ca-labc",
+   "name": "Los Angeles Badminton Club",
+   "aliases": [
+    "LABC",
+    "LA Badminton Club",
+    "L.A. Badminton Club",
+    "洛杉磯羽毛球俱樂部",
+    "洛杉矶羽毛球俱乐部"
+   ],
+   "lat": 34.076502,
+   "lon": -118.046195,
+   "street": "10410 Valley Blvd",
+   "city": "El Monte",
+   "region": "CA",
+   "postcode": "91731",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 15,
+   "price": {
+    "perPerson": 10,
+    "perCourtHour": 20
+   },
+   "priceNote": "散客 $10/人次 · 包场 $20/场·时",
+   "phone": "(626) 279-9919",
+   "web": "https://www.labadmintonclub.com/"
+  },
+  {
+   "id": "v-us-ca-elite-rally",
+   "name": "Elite Rally Badminton Club",
+   "aliases": [
+    "Elite Rally",
+    "Elite Rally BC"
+   ],
+   "lat": 34.095632,
+   "lon": -117.986341,
+   "street": "4800 Rivergrade Rd",
+   "unit": "Ste B",
+   "city": "Baldwin Park",
+   "region": "CA",
+   "postcode": "91706",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 11,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(213) 628-4135",
+   "web": "https://booking.eliterallybc.com/"
+  },
+  {
+   "id": "v-us-ca-san-gabriel-valley-badminton-club",
+   "name": "San Gabriel Valley Badminton Club",
+   "aliases": [
+    "SGVBC",
+    "SGV Badminton Club",
+    "San Gabriel Valley BC",
+    "聖蓋博羽毛球‧乒乓球俱樂部",
+    "圣盖博羽毛球‧乒乓球俱乐部"
+   ],
+   "lat": 34.068869,
+   "lon": -118.066513,
+   "street": "9255 Telstar Ave",
+   "unit": "Unit J",
+   "city": "El Monte",
+   "region": "CA",
+   "postcode": "91731",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 18,
+   "price": {
+    "perPerson": 14,
+    "perCourtHour": 28
+   },
+   "priceNote": "散客 $14/人次 · 包场 $28/场·时",
+   "phone": "(626) 307-4650",
+   "web": "https://sgvbadminton.com/"
+  },
+  {
+   "id": "v-us-ca-arena-badminton-sports-club",
+   "name": "Arena Badminton & Sports Club",
+   "aliases": [
+    "Arena Badminton",
+    "Arena Badminton and Sports Club"
+   ],
+   "lat": 34.023665,
+   "lon": -117.731345,
+   "street": "2780 S Reservoir St",
+   "city": "Pomona",
+   "region": "CA",
+   "postcode": "91766",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 24,
+   "price": {
+    "perPerson": 16,
+    "perCourtHour": 42
+   },
+   "priceNote": "散客 $16/人次 · 包场 $42/场·时",
+   "phone": "(909) 464-2144",
+   "web": "https://www.arenabadminton.com/"
+  },
+  {
+   "id": "v-us-ca-santa-fe-springs-badminton-club",
+   "name": "Santa Fe Springs Badminton Club",
+   "aliases": [
+    "SFSBC",
+    "Santa Fe Springs BC"
+   ],
+   "lat": 33.929024,
+   "lon": -118.05527,
+   "street": "11323 Shoemaker Ave",
+   "city": "Santa Fe Springs",
+   "region": "CA",
+   "postcode": "90670",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 14,
+   "price": {
+    "perPerson": 12
+   },
+   "priceNote": "散客 $12/人次",
+   "phone": "(562) 273-0945",
+   "web": "https://www.sfsbadmintonclub.com/"
+  },
+  {
+   "id": "v-us-ca-orange-county-badminton-club",
+   "name": "Orange County Badminton Club",
+   "aliases": [
+    "OCBC",
+    "OC Badminton Club",
+    "Orange County Badminton Club, Inc."
+   ],
+   "lat": 33.811177,
+   "lon": -117.867345,
+   "street": "1432 N Main St",
+   "unit": "Ste A",
+   "city": "Orange",
+   "region": "CA",
+   "postcode": "92867",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 12,
+   "price": {
+    "perCourtHour": 42
+   },
+   "priceNote": "包场 $42/场·时",
+   "phone": "(714) 639-6222",
+   "web": "https://ocbadmintonclub.com/"
+  },
+  {
+   "id": "v-us-ca-pickleball-badminton-center",
+   "name": "PickleBall Badminton Center",
+   "aliases": [
+    "Badminton Center Court",
+    "BCC",
+    "BCC Sports Center",
+    "PBC Lakewood"
+   ],
+   "lat": 33.824362,
+   "lon": -118.165499,
+   "street": "3699 Industry Ave",
+   "city": "Lakewood",
+   "region": "CA",
+   "postcode": "90712",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 6,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 38
+   },
+   "priceNote": "散客 $15/人次 · 包场 $38/场·时",
+   "phone": "(562) 426-9299",
+   "web": "https://www.badmintoncentercourt.com/",
+   "entrance": "与匹克球共用场地，羽毛球最多 6 片"
+  },
+  {
+   "id": "v-us-ca-manhattan-beach-badminton-club",
+   "name": "Manhattan Beach Badminton Club",
+   "aliases": [
+    "MBBC"
+   ],
+   "lat": 33.890185,
+   "lon": -118.409269,
+   "street": "516 18th St",
+   "city": "Manhattan Beach",
+   "region": "CA",
+   "postcode": "90266",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 5,
+   "phone": "(310) 545-9052",
+   "web": "https://mbbadmintonclub.com/",
+   "entrance": "会员制私人俱乐部，不接待散客"
+  },
+  {
+   "id": "v-us-ca-smash-badminton-san-diego",
+   "name": "SMASH! Badminton San Diego",
+   "aliases": [
+    "SMASH!",
+    "Smash Badminton San Diego",
+    "SmashBSD"
+   ],
+   "lat": 32.88104,
+   "lon": -117.163099,
+   "street": "9586 Distribution Ave",
+   "unit": "Ste E",
+   "city": "San Diego",
+   "region": "CA",
+   "postcode": "92121",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 7,
+   "price": {
+    "perPerson": 14
+   },
+   "priceNote": "散客 $14/人次",
+   "phone": "(858) 397-2153",
+   "web": "https://www.smashbsd.com/"
+  },
+  {
+   "id": "v-us-ca-oc-smash-badminton-club",
+   "name": "OC SMASH Badminton Club",
+   "aliases": [
+    "OC Smash",
+    "OC SMASH Badminton club 배드민턴 클럽"
+   ],
+   "lat": 33.810548,
+   "lon": -117.905983,
+   "street": "1500 S Anaheim Blvd",
+   "unit": "Ste 110",
+   "city": "Anaheim",
+   "region": "CA",
+   "postcode": "92805",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 8,
+   "phone": "(310) 995-5424",
+   "status": "unconfirmed"
+  },
+  {
+   "id": "v-us-ca-bay-badminton-center-milpitas",
+   "name": "Bay Badminton Center - Milpitas",
+   "aliases": [
+    "Bay Badminton Center",
+    "Bay Badminton",
+    "BBC Milpitas"
+   ],
+   "lat": 37.413597,
+   "lon": -121.883504,
+   "street": "1191 W Montague Expy",
+   "city": "Milpitas",
+   "region": "CA",
+   "postcode": "95035",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 13,
+   "price": {
+    "perCourtHour": 55
+   },
+   "priceNote": "包场 $55/场·时",
+   "phone": "(408) 942-2888",
+   "web": "https://baybadminton.com/"
+  },
+  {
+   "id": "v-us-ca-bay-badminton-center-south-san-francisco",
+   "name": "Bay Badminton Center - South San Francisco",
+   "aliases": [
+    "Bay Badminton Center",
+    "Bay Badminton",
+    "BBC South SF"
+   ],
+   "lat": 37.645452,
+   "lon": -122.409971,
+   "street": "1404 San Mateo Ave",
+   "city": "South San Francisco",
+   "region": "CA",
+   "postcode": "94080",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 9,
+   "price": {
+    "perCourtHour": 55
+   },
+   "priceNote": "包场 $55/场·时",
+   "phone": "(650) 588-2088",
+   "web": "https://baybadminton.com/"
+  },
+  {
+   "id": "v-us-ca-elite-badminton-center",
+   "name": "Elite Badminton Center",
+   "aliases": [
+    "EBC",
+    "Elite Badminton Center Union City"
+   ],
+   "lat": 37.593428,
+   "lon": -122.039043,
+   "street": "33540 Central Ave",
+   "city": "Union City",
+   "region": "CA",
+   "postcode": "94587",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 16,
+   "price": {
+    "perPerson": 17
+   },
+   "priceNote": "散客 $17/人次",
+   "phone": "(510) 431-3130",
+   "web": "https://elitebadmintoncenter.com/"
+  },
+  {
+   "id": "v-us-ca-bintang-badminton-fremont",
+   "name": "Bintang Badminton - Fremont",
+   "aliases": [
+    "Bintang",
+    "Bintang Badminton Academy",
+    "Bintang Fremont"
+   ],
+   "lat": 37.461195,
+   "lon": -121.921851,
+   "street": "48900 Milmont Dr",
+   "city": "Fremont",
+   "region": "CA",
+   "postcode": "94538",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 54,
+   "price": {
+    "perPerson": 21,
+    "perCourtHour": 35
+   },
+   "priceNote": "散客 $21/人次 · 包场 $35/场·时",
+   "phone": "(510) 270-8386",
+   "web": "https://bintangbadminton.org/"
+  },
+  {
+   "id": "v-us-ca-bintang-badminton-santa-clara",
+   "name": "Bintang Badminton - Santa Clara",
+   "aliases": [
+    "Bintang",
+    "Bintang Badminton Academy",
+    "Bintang Santa Clara"
+   ],
+   "lat": 37.371777,
+   "lon": -121.979196,
+   "street": "2911 Mead Ave",
+   "city": "Santa Clara",
+   "region": "CA",
+   "postcode": "95051",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 21,
+    "perCourtHour": 35
+   },
+   "priceNote": "散客 $21/人次 · 包场 $35/场·时",
+   "phone": "(408) 541-1837",
+   "web": "https://bintangbadminton.org/"
+  },
+  {
+   "id": "v-us-wa-bellevue-badminton-club-bellevue",
+   "name": "Bellevue Badminton Club - Bellevue",
+   "aliases": [
+    "Bellevue Badminton Club",
+    "BBC",
+    "BBC Bellevue"
+   ],
+   "lat": 47.583694,
+   "lon": -122.16072,
+   "street": "13405 SE 30th St",
+   "unit": "Ste 1C",
+   "city": "Bellevue",
+   "region": "WA",
+   "postcode": "98005",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 41
+   },
+   "priceNote": "包场 $41/场·时",
+   "phone": "(425) 562-2950",
+   "web": "https://www.bellevuebadminton.com/",
+   "entrance": "不接受散客 walk-in，需提前预约"
+  },
+  {
+   "id": "v-us-wa-bellevue-badminton-club-redmond",
+   "name": "Bellevue Badminton Club - Redmond",
+   "aliases": [
+    "Bellevue Badminton Club",
+    "BBC",
+    "BBC Redmond"
+   ],
+   "lat": 47.684128,
+   "lon": -122.136645,
+   "street": "15340 NE 92nd St",
+   "unit": "Ste B",
+   "city": "Redmond",
+   "region": "WA",
+   "postcode": "98052",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 41
+   },
+   "priceNote": "包场 $41/场·时",
+   "phone": "(425) 522-4895",
+   "web": "https://www.bellevuebadminton.com/",
+   "entrance": "不接受散客 walk-in，需提前预约"
+  },
+  {
+   "id": "v-us-wa-seattle-badminton-club",
+   "name": "Seattle Badminton Club",
+   "aliases": [
+    "SBC",
+    "Seattle Badminton Club Kirkland"
+   ],
+   "lat": 47.698813,
+   "lon": -122.184475,
+   "street": "10858 117th Pl NE",
+   "city": "Kirkland",
+   "region": "WA",
+   "postcode": "98033",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 10,
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(425) 889-5958",
+   "web": "https://seattlebadminton.com/sbc/"
+  },
+  {
+   "id": "v-us-ny-new-york-badminton-center-flushing",
+   "name": "New York Badminton Center - Flushing",
+   "aliases": [
+    "NYBC",
+    "NY Badminton Center",
+    "NYBC Flushing"
+   ],
+   "lat": 40.765378,
+   "lon": -73.834821,
+   "street": "132-70 34th Ave",
+   "city": "Flushing",
+   "region": "NY",
+   "postcode": "11354",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 22,
+    "perCourtHour": 100
+   },
+   "priceNote": "散客 $22/人次 · 包场 $100/场·时",
+   "phone": "(347) 955-7859",
+   "web": "https://www.newyorkcitybadminton.com/"
+  },
+  {
+   "id": "v-us-ny-brooklyn-badminton-center",
+   "name": "Brooklyn Badminton Center",
+   "aliases": [
+    "BKBC",
+    "BKBC Ridgewood"
+   ],
+   "lat": 40.713308,
+   "lon": -73.920088,
+   "street": "14 Woodward Ave",
+   "city": "Ridgewood",
+   "region": "NY",
+   "postcode": "11385",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 23,
+    "perCourtHour": 100
+   },
+   "priceNote": "散客 $23/人次 · 包场 $100/场·时",
+   "phone": "(516) 988-8955",
+   "web": "https://www.brooklynbadmintoncenter.com/"
+  },
+  {
+   "id": "v-us-ny-long-island-badminton-center",
+   "name": "Long Island Badminton Center",
+   "aliases": [
+    "LIBC"
+   ],
+   "lat": 40.761699,
+   "lon": -73.437429,
+   "street": "260 Spagnoli Rd",
+   "city": "Melville",
+   "region": "NY",
+   "postcode": "11747",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 20,
+   "phone": "(516) 916-3364",
+   "web": "https://longislandbadmintoncenter.com/"
+  },
+  {
+   "id": "v-us-nj-new-jersey-badminton-club-montville",
+   "name": "New Jersey Badminton Club - Montville",
+   "aliases": [
+    "NJBC",
+    "NJ Badminton Club",
+    "NJBC Montville"
+   ],
+   "lat": 40.916254,
+   "lon": -74.362422,
+   "street": "2 Changebridge Rd",
+   "unit": "Unit JKL",
+   "city": "Montville",
+   "region": "NJ",
+   "postcode": "07045",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(201) 898-0382",
+   "web": "https://www.njbadminton.com/"
+  },
+  {
+   "id": "v-us-nj-international-badminton-center-edison",
+   "name": "International Badminton Center - Edison",
+   "aliases": [
+    "IBC",
+    "IBC Edison"
+   ],
+   "lat": 40.571585,
+   "lon": -74.38742,
+   "street": "3775 Park Ave",
+   "unit": "Unit 8A",
+   "city": "Edison",
+   "region": "NJ",
+   "postcode": "08820",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 6,
+   "phone": "(732) 549-7190",
+   "web": "https://www.ibcusa.org/"
+  },
+  {
+   "id": "v-us-tx-houston-badminton-center",
+   "name": "Houston Badminton Center",
+   "aliases": [
+    "HBC",
+    "Houston Badminton"
+   ],
+   "lat": 29.641254,
+   "lon": -95.563935,
+   "street": "10550 W Airport Blvd",
+   "city": "Stafford",
+   "region": "TX",
+   "postcode": "77477",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 12,
+   "phone": "(346) 229-4921",
+   "web": "https://www.houstonbadminton.com/"
+  },
+  {
+   "id": "v-us-tx-plano-badminton-center",
+   "name": "Plano Badminton Center",
+   "aliases": [
+    "PBC",
+    "Plano Badminton"
+   ],
+   "lat": 33.052588,
+   "lon": -96.699816,
+   "street": "4050 Premier Dr",
+   "unit": "Ste 250",
+   "city": "Plano",
+   "region": "TX",
+   "postcode": "75023",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 5,
+   "price": {
+    "perPerson": 11,
+    "perCourtHour": 48
+   },
+   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
+   "phone": "(469) 677-7686",
+   "web": "https://planobadmintoncenter.com/"
+  },
+  {
+   "id": "v-us-tx-dfw-badminton-center",
+   "name": "DFW Badminton Center",
+   "aliases": [
+    "DFWBC",
+    "DFW Badminton",
+    "DFW Badminton Center Irving"
+   ],
+   "lat": 32.874375,
+   "lon": -96.974826,
+   "street": "1800 Hurd Dr",
+   "city": "Irving",
+   "region": "TX",
+   "postcode": "75038",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 13,
+   "price": {
+    "perPerson": 11,
+    "perCourtHour": 48
+   },
+   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
+   "phone": "(469) 200-0276",
+   "web": "https://dfwbadmintoncenter.com/"
+  },
+  {
+   "id": "v-us-il-egret-badminton-chicago",
+   "name": "Egret Badminton Chicago",
+   "aliases": [
+    "Chicago Egret Badminton Club",
+    "Egret Chicago",
+    "Egret"
+   ],
+   "lat": 41.858651,
+   "lon": -87.674819,
+   "street": "1936 W 17th St",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60608",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 17
+   },
+   "priceNote": "散客 $17/人次",
+   "phone": "(312) 374-3022",
+   "web": "https://badmintontrainingcenter.com/"
+  },
+  {
+   "id": "v-us-il-egret-badminton-schaumburg",
+   "name": "Egret Badminton Schaumburg",
+   "aliases": [
+    "Egret Badminton Club Schaumburg",
+    "Egret Schaumburg",
+    "Egret"
+   ],
+   "lat": 42.052037,
+   "lon": -88.065147,
+   "street": "1251 Basswood Rd",
+   "city": "Schaumburg",
+   "region": "IL",
+   "postcode": "60173",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(847) 285-5788",
+   "web": "https://badmintontrainingcenter.com/"
+  },
+  {
+   "id": "v-us-il-egret-badminton-naperville",
+   "name": "Egret Badminton Naperville",
+   "aliases": [
+    "Egret Badminton Club Naperville",
+    "Egret Naperville",
+    "Egret"
+   ],
+   "lat": 41.776296,
+   "lon": -88.19893,
+   "street": "1811 High Grove Ln",
+   "unit": "Ste 191",
+   "city": "Naperville",
+   "region": "IL",
+   "postcode": "60540",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 9,
+   "price": {
+    "perPerson": 13
+   },
+   "priceNote": "散客 $13/人次",
+   "phone": "(630) 536-8032",
+   "web": "https://badmintontrainingcenter.com/"
+  },
+  {
+   "id": "v-us-ma-ljb-badminton-club",
+   "name": "LJB Badminton Club",
+   "aliases": [
+    "LJB",
+    "LJBBC"
+   ],
+   "lat": 42.499281,
+   "lon": -71.138139,
+   "street": "78 Olympia Ave",
+   "unit": "Unit B",
+   "city": "Woburn",
+   "region": "MA",
+   "postcode": "01801",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 14,
+   "price": {
+    "perPerson": 20,
+    "perCourtHour": 30
+   },
+   "priceNote": "散客 $20/人次 · 包场 $30/场·时",
+   "phone": "(339) 227-3580",
+   "web": "https://ljbbc.com/"
+  },
+  {
+   "id": "v-us-ma-boston-badminton-westborough",
+   "name": "Boston Badminton - Westborough",
+   "aliases": [
+    "Boston Badminton",
+    "Boston Badminton Westboro",
+    "Boston Badminton Club"
+   ],
+   "lat": 42.275408,
+   "lon": -71.560047,
+   "street": "169 Flanders Rd",
+   "city": "Westborough",
+   "region": "MA",
+   "postcode": "01581",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 8,
+   "price": {
+    "perPerson": 18,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $18/人次 · 包场 $40/场·时",
+   "phone": "(508) 329-1710",
+   "web": "https://www.bostonbadminton.com/"
+  },
+  {
+   "id": "v-us-ma-boston-badminton-at-harvard",
+   "name": "Boston Badminton at Harvard",
+   "aliases": [
+    "Boston Badminton Harvard",
+    "Boston Badminton"
+   ],
+   "lat": 42.528154,
+   "lon": -71.578921,
+   "street": "203 Ayer Rd",
+   "city": "Harvard",
+   "region": "MA",
+   "postcode": "01451",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 16,
+   "price": {
+    "perPerson": 18,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $18/人次 · 包场 $40/场·时",
+   "phone": "(978) 707-5203",
+   "web": "https://www.bostonbadminton.com/harvard"
+  }
+ ]
+}
