@@ -42,8 +42,14 @@ export function zoned(date: string, minutes: number, tz: string) {
 export const today = (tz: string, plusDays = 0) =>
   new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(Date.now() + plusDays * 86400000);
 
+/** 从 0 点起的分钟数 → “7:30 PM” */
+export const clock = (minutes: number) =>
+  new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }).format(Date.UTC(2000, 0, 1, 0, minutes));
+
+export const weekdays = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+
 /** 7:30 PM 这样的半点选项 */
 export const halfHours = Array.from({ length: 36 }, (_, i) => 360 + i * 30).map((minutes) => ({
   minutes,
-  label: new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }).format(Date.UTC(2000, 0, 1, 0, minutes)),
+  label: clock(minutes),
 }));

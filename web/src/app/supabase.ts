@@ -116,7 +116,7 @@ export interface PlayerCard {
   mutual_friends: number;
 }
 
-export type ThreadKind = 'game' | 'dm';
+export type ThreadKind = 'game' | 'group' | 'dm';
 
 export interface ThreadSummary {
   kind: ThreadKind;
@@ -124,7 +124,8 @@ export interface ThreadSummary {
   starts_at: string | null;
   venue: string | null;
   tz: string | null;
-  nickname: string | null;
+  /** 球群名或私信对象的昵称 */
+  name: string | null;
   access: 'open' | 'closed';
   last: { body: string; created_at: string; mine: boolean } | null;
   unread: number;
@@ -134,8 +135,51 @@ export interface Thread {
   access: 'open' | 'closed';
   friend: boolean;
   game: { starts_at: string; ends_at: string; venue: string; tz: string | null } | null;
+  group: { name: string; venue: string } | null;
   members: { id: string; nickname: string; me: boolean }[];
   messages: { id: number; body: string; created_at: string; sender: string; mine: boolean }[];
+}
+
+// 球群
+
+export type Schedule = { weekday: number; start: number; end: number; capacity: number; fee: string | null };
+
+export interface GroupSummary {
+  id: string;
+  name: string;
+  summary: string;
+  level_min: number;
+  level_max: number;
+  join_policy: 'open' | 'approval';
+  venue: { id: string; name: string; city: string; tz: string | null };
+  schedules: Schedule[];
+  activity: { sessions: number; average: number };
+  my_role: 'owner' | 'organizer' | 'member' | 'pending' | null;
+}
+
+export interface GroupSession {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  capacity: number;
+  cancelled: boolean;
+  confirmed: number;
+  waitlist: number;
+  /** 'confirmed' 或 'waitlisted:2' */
+  my_status: string | null;
+  players: { id: string; nickname: string; waitlisted: boolean }[] | null;
+}
+
+export interface GroupDetail extends GroupSummary {
+  invite_code: string | null;
+  sessions: GroupSession[];
+  members: { id: string; nickname: string; rating: number; role: 'owner' | 'organizer' | 'member' }[] | null;
+  pending: { id: string; nickname: string; rating: number }[] | null;
+}
+
+export interface MyGroups {
+  groups: GroupSummary[];
+  sessions: { id: string; group_id: string; group: string; venue: string; tz: string | null; starts_at: string; ends_at: string; waitlisted: boolean }[];
 }
 
 export type Friend = { id: string; nickname: string; rating: number; created_at?: string };
@@ -198,5 +242,14 @@ const problems: Record<string, string> = {
   not_allowed: 'You can only do this with players you’ve been matched with.',
   blocked: 'Unblock this player first.',
   no_request: 'This friend request is no longer open.',
+  invalid_schedule: 'Add 1 to 3 weekly sessions.',
+  no_contact_info: 'Leave out phone numbers and links.',
+  too_many_groups: 'You’ve reached the limit for groups.',
+  group_not_found: 'Group not found.',
+  level_out_of_range: 'This group is for a different level range.',
+  owner_cannot_leave: 'The owner can’t leave their own group.',
+  not_organizer: 'Only organizers can do this.',
+  not_member: 'Join the group first.',
+  session_closed: 'This session is closed.',
 };
 export const problem = (error: { message: string }) => problems[error.message] ?? 'Something went wrong. Try again.';

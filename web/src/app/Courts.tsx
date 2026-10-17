@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Combobox } from './Combobox';
 import { Icon } from './icons';
+import { AreaPicker, type Centre } from './pickers';
 import { supabase, type NearbyVenue, type Venue } from './supabase';
 import { Button, EmptyState, PageHeader, Skeleton, toast } from './ui';
-
-type Centre = { lat: number; lon: number; label: string };
-type Area = { k: 'city' | 'court'; n: string; s: string; c?: [number, number] };
 
 export const km = (metres: number) => (metres < 1000 ? `${Math.round(metres)} m` : `${(metres / 1000).toFixed(1)} km`);
 export const money = (amount: number, country: string) =>
@@ -14,17 +11,12 @@ export const money = (amount: number, country: string) =>
     : new Intl.NumberFormat('en', { style: 'currency', currency: { US: 'USD', GB: 'GBP', HK: 'HKD', SG: 'SGD', MY: 'MYR', TW: 'TWD', JP: 'JPY' }[country] ?? 'USD', maximumFractionDigits: 0 }).format(amount);
 export const address = (v: Venue) => [[v.street, v.unit].filter(Boolean).join(', '), v.city, [v.region, v.postal_code].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 
-let areas: Promise<Area[]> | undefined;
-export const loadAreas = () => (areas ??= fetch('/search.json').then((r) => r.json() as Promise<Area[]>));
-
 export function Courts({ userId }: { userId: string }) {
   const [centre, setCentre] = useState<Centre>();
   const [radius, setRadius] = useState(15);
   const [results, setResults] = useState<NearbyVenue[]>();
   const [selected, setSelected] = useState<Venue>();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [locating, setLocating] = useState(false);
-  const [hits, setHits] = useState<Area[]>([]);
   const detail = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -48,21 +40,6 @@ export function Courts({ userId }: { userId: string }) {
     setSelected(venue);
     // 窄屏上详情在列表下面，点了要带用户过去
     if (!matchMedia('(min-width: 1024px)').matches) requestAnimationFrame(() => detail.current?.scrollIntoView({ block: 'start' }));
-  }
-
-  function locate() {
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (p) => {
-        setLocating(false);
-        setCentre({ lat: p.coords.latitude, lon: p.coords.longitude, label: 'you' });
-      },
-      () => {
-        setLocating(false);
-        toast('Location is off. Search an area instead.', 'error');
-      },
-      { timeout: 10000 },
-    );
   }
 
   // 先改界面再请求，失败了改回来
@@ -93,27 +70,7 @@ export function Courts({ userId }: { userId: string }) {
       <PageHeader eyebrow="Courts" title={`Courts near ${centre?.label ?? 'you'}`} />
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button busy={locating} onClick={locate}>
-          <Icon name="pin" /> Use my location
-        </Button>
-        <Combobox
-          label="Search an area"
-          placeholder="Search an area"
-          options={hits}
-          className="w-full sm:w-72"
-          onQuery={(query) => {
-            const q = query.trim().toLowerCase();
-            if (q.length < 2) return setHits([]);
-            loadAreas().then((all) => setHits(all.filter((a) => a.k === 'city' && a.n.toLowerCase().includes(q)).slice(0, 6)));
-          }}
-          onPick={(area) => area.c && setCentre({ lat: area.c[0], lon: area.c[1], label: area.n })}
-          render={(area) => (
-            <>
-              <span className="block font-extrabold">{area.n}</span>
-              <span className="block text-sm text-ink-secondary">{area.s}</span>
-            </>
-          )}
-        />
+        <AreaPicker onPick={setCentre} />
         {centre && (
           <div className="flex gap-2" role="group" aria-label="Distance">
             {[5, 15, 30].map((r) => (

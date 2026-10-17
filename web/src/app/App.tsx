@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Courts } from './Courts';
 import { GameDetail, Games } from './Games';
+import { GroupPage } from './Group';
+import { Groups } from './Groups';
 import { LevelQuiz } from './LevelQuiz';
 import { Me } from './Me';
+import { NewGroup } from './NewGroup';
 import { Chat, Messages } from './Messages';
 import { Onboarding } from './Onboarding';
 import { Play } from './Play';
@@ -11,7 +14,7 @@ import { PlayerPage } from './Player';
 import { navigate, usePath } from './router';
 import { Shell } from './Shell';
 import { SignIn } from './SignIn';
-import { supabase, type Profile } from './supabase';
+import { supabase, type Profile, type ThreadKind } from './supabase';
 
 export default function App() {
   const path = usePath();
@@ -62,13 +65,20 @@ export default function App() {
   const id = (prefix: string) => path.match(new RegExp(`^/app/${prefix}/([0-9a-f-]{36})/`))?.[1];
   const game = id('games');
   const player = id('players');
-  const chat = path.match(/^\/app\/messages\/(game|dm)\/([0-9a-f-]{36})\//);
+  const group = id('groups');
+  const chat = path.match(/^\/app\/messages\/(game|group|dm)\/([0-9a-f-]{36})\//);
   return (
     <Shell path={path}>
       {player ? (
         <PlayerPage key={player} id={player} />
       ) : chat ? (
-        <Chat key={chat[2]} kind={chat[1] as 'game' | 'dm'} id={chat[2]} />
+        <Chat key={chat[2]} kind={chat[1] as ThreadKind} id={chat[2]} />
+      ) : group ? (
+        <GroupPage key={group} id={group} />
+      ) : path.startsWith('/app/groups/new/') ? (
+        <NewGroup profile={profile} />
+      ) : path.startsWith('/app/groups/') ? (
+        <Groups />
       ) : path.startsWith('/app/messages/') ? (
         <Messages />
       ) : path.startsWith('/app/me/') ? (

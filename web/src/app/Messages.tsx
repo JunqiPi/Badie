@@ -46,10 +46,10 @@ function Chats() {
         <Link key={`${t.kind}-${t.id}`} to={`/app/messages/${t.kind}/${t.id}/`} className="sticker lift flex items-center gap-4 p-4">
           <span className="min-w-0 flex-1">
             <span className="block truncate font-black">
-              {t.kind === 'game' ? `${day(t.starts_at!, t.tz)} · ${t.venue}` : t.nickname}
+              {t.kind === 'game' ? `${day(t.starts_at!, t.tz)} · ${t.venue}` : t.name}
             </span>
             <span className={`block truncate text-sm ${t.unread ? 'font-bold text-ink' : 'text-ink-secondary'}`}>
-              {t.last ? `${t.last.mine ? 'You: ' : ''}${t.last.body}` : t.kind === 'game' ? 'Game chat · say hi to your partners' : ''}
+              {t.last ? `${t.last.mine ? 'You: ' : ''}${t.last.body}` : t.kind === 'game' ? 'Game chat · say hi to your partners' : t.kind === 'group' ? `Group chat · ${t.venue}` : ''}
             </span>
           </span>
           <span className="grid shrink-0 justify-items-end gap-1">
@@ -204,6 +204,11 @@ export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
               ))}
             </p>
           </>
+        ) : thread.group ? (
+          <>
+            <h1 className="mt-4 text-2xl font-black"><Link to={`/app/groups/${id}/`} className="hover:underline">{thread.group.name}</Link></h1>
+            <p className="text-ink-secondary">{thread.group.venue} · {thread.members.length} members</p>
+          </>
         ) : (
           <h1 className="mt-4 text-2xl font-black">
             <Link to={`/app/players/${other?.id}/`} className="hover:underline">{other?.nickname}</Link>
@@ -221,7 +226,7 @@ export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
         {thread.messages.length === 0 && <p className="text-center text-ink-tertiary">No messages yet. Say hi!</p>}
         {thread.messages.map((m) => (
           <div key={m.id} className={`grid max-w-[80%] gap-1 ${m.mine ? 'justify-self-end text-right' : 'justify-self-start'}`}>
-            {!m.mine && thread.game && <span className="text-xs font-extrabold text-ink-secondary">{names[m.sender] ?? 'Player'}</span>}
+            {!m.mine && !thread.friend && <span className="text-xs font-extrabold text-ink-secondary">{names[m.sender] ?? 'Player'}</span>}
             <p className={`rounded-[var(--r-control)] border-2 border-stroke px-3 py-2 text-left break-words whitespace-pre-wrap ${m.mine ? 'bg-lime text-on-accent' : 'bg-surface-muted'}`}>
               {m.body}
             </p>

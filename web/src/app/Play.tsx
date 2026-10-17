@@ -1,12 +1,11 @@
 import { useEffect, useState, type SubmitEvent } from 'react';
 import { tier } from './assessment';
-import { Combobox } from './Combobox';
+import { PlayTabs } from './Groups';
+import { CourtSearch, type Court } from './pickers';
 import { Link } from './router';
 import { problem, supabase, useLive, type Mode, type Player, type Profile, type Ticket } from './supabase';
 import { day, halfHours, hours, moment, relative, today, zoned } from './time';
 import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
-
-type Court = { id: string; name: string; city: string; time_zone_id: string | null };
 
 export function Play({ profile }: { profile: Profile }) {
   const { data: tickets, failed, refresh } = useLive<Ticket[]>('my_matchmaking');
@@ -15,9 +14,10 @@ export function Play({ profile }: { profile: Profile }) {
 
   return (
     <div>
-      <PageHeader eyebrow="Find partners" title="Find a game">
+      <PageHeader eyebrow="Play" title="Find a game">
         Tell us when you’re free and where you can play. We’ll match you with players at your level and email you when there’s a match.
       </PageHeader>
+      <PlayTabs current="play" />
 
       {!profile.assessed_at && (
         <div className="tile mb-8 flex flex-wrap items-center justify-between gap-4 bg-lavender p-5 text-on-accent">
@@ -177,7 +177,6 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
   const [mode, setMode] = useState<Mode>('doubles');
   const [courts, setCourts] = useState<Court[]>([]);
   const [favorites, setFavorites] = useState<Court[]>([]);
-  const [hits, setHits] = useState<Court[]>([]);
   const tz = courts[0]?.time_zone_id ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [date, setDate] = useState(() => today(tz, 1));
   const [from, setFrom] = useState(18 * 60);
@@ -196,13 +195,6 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
 
   const toggleCourt = (court: Court) =>
     setCourts((list) => (list.some((c) => c.id === court.id) ? list.filter((c) => c.id !== court.id) : list.length < 3 ? [...list, court] : list));
-
-  async function search(query: string) {
-    const q = query.replace(/[%_*(),.]/g, ' ').trim();
-    if (q.length < 2) return setHits([]);
-    const { data } = await supabase!.from('venues').select('id, name, city, time_zone_id').is('merged_into', null).ilike('name', `%${q}%`).limit(8);
-    setHits((data ?? []) as Court[]);
-  }
 
   // 和数据库一样的检查，先在这里提示
   const startsAt = zoned(date, from, tz);
@@ -289,19 +281,7 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
         )}
         {courts.length < 3 && (
           <>
-            <Combobox
-              label="Search courts"
-              placeholder="Search courts by name"
-              options={hits}
-              onQuery={search}
-              onPick={toggleCourt}
-              render={(c) => (
-                <>
-                  <span className="block font-extrabold">{c.name}</span>
-                  <span className="block text-sm text-ink-secondary">{c.city}</span>
-                </>
-              )}
-            />
+            <CourtSearch onPick={toggleCourt} />
             {suggestions.length > 0 && (
               <ul className="flex flex-wrap gap-2" aria-label="My courts">
                 {suggestions.map((c) => (

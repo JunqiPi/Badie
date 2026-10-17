@@ -5,7 +5,7 @@ import { useLive, type InboxCounts } from './supabase';
 import { Toasts } from './ui';
 
 export const sections = [
-  { path: '/app/play/', label: 'Find partners', short: 'Play', icon: 'play' },
+  { path: '/app/play/', label: 'Play', short: 'Play', icon: 'play' },
   { path: '/app/games/', label: 'My games', short: 'Games', icon: 'games' },
   { path: '/app/messages/', label: 'Messages', short: 'Messages', icon: 'chat' },
   { path: '/app/courts/', label: 'Courts', short: 'Courts', icon: 'courts' },
@@ -32,7 +32,8 @@ function Badge({ count, small }: { count: number; small?: boolean }) {
 }
 
 export function Shell({ path, children }: { path: string; children: ReactNode }) {
-  const current = sections.find((s) => path.startsWith(s.path));
+  // 球群算在“约球”下面
+  const current = sections.find((s) => path.startsWith(s.path) || (s.icon === 'play' && path.startsWith('/app/groups/')));
   const { data: counts, refresh } = useLive<InboxCounts>('inbox_counts');
   // 换页时（比如刚看完消息）马上更新未读数
   useEffect(() => void refresh(), [path, refresh]);
