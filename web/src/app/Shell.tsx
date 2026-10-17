@@ -32,8 +32,9 @@ function Badge({ count, small }: { count: number; small?: boolean }) {
 }
 
 export function Shell({ path, children }: { path: string; children: ReactNode }) {
-  // 球群算在“约球”下面
-  const current = sections.find((s) => path.startsWith(s.path) || (s.icon === 'play' && path.startsWith('/app/groups/')));
+  // 球群算在“约球”下面，榜单算在“我的球局”下面
+  const current = sections.find((s) =>
+    path.startsWith(s.path) || (s.icon === 'play' && path.startsWith('/app/groups/')) || (s.icon === 'games' && path.startsWith('/app/rankings/')));
   const { data: counts, refresh } = useLive<InboxCounts>('inbox_counts');
   // 换页时（比如刚看完消息）马上更新未读数
   useEffect(() => void refresh(), [path, refresh]);

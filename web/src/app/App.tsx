@@ -11,6 +11,7 @@ import { Chat, Messages } from './Messages';
 import { Onboarding } from './Onboarding';
 import { Play } from './Play';
 import { PlayerPage } from './Player';
+import { Rankings } from './Rankings';
 import { navigate, usePath } from './router';
 import { Shell } from './Shell';
 import { SignIn } from './SignIn';
@@ -79,6 +80,8 @@ export default function App() {
         <NewGroup profile={profile} />
       ) : path.startsWith('/app/groups/') ? (
         <Groups />
+      ) : path.startsWith('/app/rankings/') ? (
+        <Rankings />
       ) : path.startsWith('/app/messages/') ? (
         <Messages />
       ) : path.startsWith('/app/me/') ? (

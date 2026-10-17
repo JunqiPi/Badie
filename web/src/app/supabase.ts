@@ -14,6 +14,8 @@ export interface Profile {
   /** 3.67 = 4−；没做问卷是 3 */
   rating: number;
   assessed_at: string | null;
+  show_on_boards: boolean;
+  challenge_policy: 'everyone' | 'similar' | 'friends' | 'nobody';
 }
 
 export interface Venue {
@@ -91,8 +93,17 @@ export interface Game {
   players: Player[];
 }
 
-export interface PlayRecord {
+/** 本月胜率：只算双方确认、分出胜负的比赛；满 5 场才对别人公开 */
+export interface WinRate {
+  games: number;
   wins: number;
+  opponents: number;
+  /** 对手平均比我方强多少级（负数 = 偏弱） */
+  gap: number;
+  public: boolean;
+}
+
+export interface PlayRecord extends WinRate {
   losses: number;
   games_played: number;
   no_shows: number;
@@ -114,6 +125,39 @@ export interface PlayerCard {
   games_together: number;
   last_game: { starts_at: string; venue: string; tz: string | null } | null;
   mutual_friends: number;
+  win_rate: WinRate | null;
+  /** 'available'、'hidden'（不显示按钮）或不能挑战的原因 */
+  challenge: string;
+}
+
+// 榜单与约战
+
+export type BoardEntry = { id: string; nickname: string; rating: number; rank: number; points?: number; games: number; wins: number; me: boolean };
+
+export interface WeeklyBoard {
+  week_starts: string;
+  entries: BoardEntry[];
+  me: { rank: number; points: number } | null;
+  progress: { games: number; opponents: number; points: number } | null;
+  eligible: boolean;
+}
+
+export interface VenueBoard {
+  venue: { id: string; name: string; city: string };
+  bands: { band: number; entries: BoardEntry[] }[];
+}
+
+type ChallengeBase = {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  venue: { name: string; tz: string | null };
+  player: { id: string; nickname: string; rating: number };
+};
+
+export interface MyChallenges {
+  incoming: (ChallengeBase & { message: string; expires_at: string })[];
+  outgoing: (ChallengeBase & { status: 'pending' | 'accepted' | 'not_happening'; game_id: string | null })[];
 }
 
 export type ThreadKind = 'game' | 'group' | 'dm';
@@ -246,10 +290,17 @@ const problems: Record<string, string> = {
   no_contact_info: 'Leave out phone numbers and links.',
   too_many_groups: 'You’ve reached the limit for groups.',
   group_not_found: 'Group not found.',
-  level_out_of_range: 'This group is for a different level range.',
+  level_out_of_range: 'Your level is outside the range they accept.',
   owner_cannot_leave: 'The owner can’t leave their own group.',
   not_organizer: 'Only organizers can do this.',
   not_member: 'Join the group first.',
   session_closed: 'This session is closed.',
+  challenge_closed: 'This challenge is no longer open.',
+  friends_only: 'They only accept challenges from friends.',
+  already_pending: 'You’ve already challenged them. Wait for their answer.',
+  cooldown: 'You can challenge them again a week after the last one.',
+  too_many_outgoing: 'You can have 3 open challenges at a time.',
+  daily_limit: 'You’ve used today’s challenges.',
+  target_busy: 'They have too many open challenges. Try later.',
 };
 export const problem = (error: { message: string }) => problems[error.message] ?? 'Something went wrong. Try again.';

@@ -36,6 +36,7 @@ export function Me({ profile, email, onChange }: { profile: Profile; email?: str
       </form>
 
       <Level profile={profile} />
+      <Settings profile={profile} onChange={onChange} />
 
       <Button variant="quiet" onClick={() => supabase!.auth.signOut()} className="mt-8">Sign out</Button>
     </div>
@@ -59,6 +60,41 @@ function Level({ profile }: { profile: Profile }) {
       ) : (
         <p className="text-sm text-ink-tertiary">You can retake the quiz from {retakeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.</p>
       )}
+    </section>
+  );
+}
+
+const policies = [
+  ['similar', 'Players within 1 level'],
+  ['everyone', 'Anyone in my country'],
+  ['friends', 'Friends only'],
+  ['nobody', 'No one'],
+] as const;
+
+/** 上榜和约战设置：改了马上保存 */
+function Settings({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
+  async function save(patch: Partial<Pick<Profile, 'show_on_boards' | 'challenge_policy'>>) {
+    const { data, error } = await supabase!.from('profiles').update(patch).eq('id', profile.id).select().single();
+    if (error) return toast('Couldn’t save. Try again.', 'error');
+    onChange(data as Profile);
+    toast('Saved');
+  }
+  return (
+    <section aria-labelledby="settings" className="tile mt-6 grid gap-5 bg-surface p-6">
+      <h2 id="settings" className="eyebrow">Rankings and challenges</h2>
+      <label className="flex items-start gap-3">
+        <input type="checkbox" checked={profile.show_on_boards} onChange={(e) => save({ show_on_boards: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
+        <span>
+          <span className="block font-extrabold">Show me on leaderboards</span>
+          <span className="block text-sm text-ink-tertiary">Weekly and court boards show your nickname, level and games.</span>
+        </span>
+      </label>
+      <label className="grid gap-1.5">
+        <span className="font-extrabold">Who can challenge me</span>
+        <select value={profile.challenge_policy} onChange={(e) => save({ challenge_policy: e.target.value as Profile['challenge_policy'] })} className="field">
+          {policies.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
     </section>
   );
 }

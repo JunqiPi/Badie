@@ -210,3 +210,10 @@ export function tier(rating: number) {
   const modifier = step - level * 3;
   return { level, label: `${level}${modifier < 0 ? '−' : modifier > 0 ? '+' : ''}`, name: names[level - 1], summary: summaries[level - 1] };
 }
+
+/** 对手平均强弱：“opponents 0.3 levels stronger on average” */
+export const gapText = (gap: number) =>
+  Math.abs(gap) < 0.05 ? 'opponents about your level' : `opponents ${Math.abs(gap).toFixed(1)} levels ${gap > 0 ? 'stronger' : 'weaker'} on average`;
+
+/** “1 opponent” / “3 opponents” */
+export const count = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;

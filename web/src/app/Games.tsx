@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { count, gapText } from './assessment';
 import { money } from './Courts';
 import { Players } from './Play';
 import { Reviews } from './Review';
 import { Link } from './router';
-import { problem, supabase, useLive, type Game, type Outcome, type PlayRecord } from './supabase';
+import { GamesTabs } from './Rankings';
+import { problem, supabase, useLive, type Game, type MyChallenges, type Outcome, type PlayRecord } from './supabase';
 import { day, hours, relative } from './time';
 import { Button, EmptyState, PageHeader, Skeleton, toast } from './ui';
 
@@ -22,6 +24,8 @@ export function Games() {
   return (
     <div>
       <PageHeader eyebrow="My games" title="My games" />
+      <GamesTabs current="games" />
+      <Challenges />
       {record && <RecordCard record={record} />}
 
       <section aria-labelledby="upcoming" className="mt-8 grid gap-3">
@@ -47,9 +51,8 @@ export function Games() {
 }
 
 function RecordCard({ record }: { record: PlayRecord }) {
-  const decided = record.wins + record.losses;
   const stats = [
-    ['Win rate', decided ? `${Math.round((record.wins / decided) * 100)}%` : '–'],
+    ['Win rate', record.games ? `${Math.round((record.wins / record.games) * 100)}%` : '–'],
     ['Wins – losses', `${record.wins}–${record.losses}`],
     ['Games played', String(record.games_played)],
   ];
@@ -65,7 +68,9 @@ function RecordCard({ record }: { record: PlayRecord }) {
         ))}
       </dl>
       <p className="text-sm text-ink-tertiary">
-        Only results both sides confirmed count, up to 3 games a month against the same opponents.
+        {record.games > 0 && `${count(record.games, 'confirmed game')} against ${count(record.opponents, 'opponent')}, ${gapText(record.gap)}. `}
+        {record.public ? 'Shown on your profile.' : `Shown on your profile from 5 confirmed games (${record.games} so far).`}
+        {' '}Up to 3 games a month count against the same opponents.
         {record.late_cancels > 0 && ` Late cancellations: ${record.late_cancels}.`}
       </p>
     </section>
@@ -238,6 +243,60 @@ function Result({ game: g, canReport, busy, act }: {
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+/** 约战：收到的（接受 / 拒绝）和发出的（等回应 / 未成行 / 已约成） */
+function Challenges() {
+  const { data, refresh } = useLive<MyChallenges>('my_challenges', { every: 60_000 });
+  const [busy, setBusy] = useState<string>();
+  if (!data || (data.incoming.length === 0 && data.outgoing.length === 0)) return null;
+
+  async function act(name: string, fn: string, args: Record<string, unknown>, done: string) {
+    setBusy(name);
+    const { error } = await supabase!.rpc(fn, args);
+    setBusy(undefined);
+    if (error) toast(problem(error), 'error');
+    else toast(done);
+    refresh();
+  }
+
+  return (
+    <section aria-labelledby="challenges" className="mb-8 grid gap-3">
+      <h2 id="challenges" className="text-xl font-black">Challenges</h2>
+      {data.incoming.map((c) => (
+        <article key={c.id} className="sticker grid gap-3 bg-butter p-5 text-on-accent">
+          <p className="font-black">
+            <Link to={`/app/players/${c.player.id}/`} className="underline">{c.player.nickname}</Link> challenged you to singles
+          </p>
+          <p className="font-bold">{day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} at {c.venue.name}</p>
+          {c.message && <p className="font-medium">“{c.message}”</p>}
+          <p className="text-sm font-semibold">Answer by {day(c.expires_at, c.venue.tz)}. Declining is fine, they’ll only see it didn’t happen.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button busy={busy === `yes-${c.id}`} disabled={Boolean(busy)} onClick={() => act(`yes-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: true }, 'Game on!')}>Accept</Button>
+            <Button variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: false }, 'Declined')}>Decline</Button>
+          </div>
+        </article>
+      ))}
+      {data.outgoing.map((c) => (
+        <article key={c.id} className="tile flex flex-wrap items-center justify-between gap-3 bg-surface p-4">
+          <span className="min-w-0">
+            <span className="block font-black">You challenged {c.player.nickname}</span>
+            <span className="block text-sm text-ink-secondary">{day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} at {c.venue.name}</span>
+          </span>
+          {c.status === 'pending' ? (
+            <span className="flex items-center gap-3">
+              <span className="chip bg-sky">Waiting</span>
+              <button className="link text-sm" disabled={Boolean(busy)} onClick={() => act(`w-${c.id}`, 'withdraw_challenge', { p_challenge: c.id }, 'Challenge withdrawn')}>Withdraw</button>
+            </span>
+          ) : c.status === 'accepted' && c.game_id ? (
+            <Link to={`/app/games/${c.game_id}/`} className="chip bg-mint">Game on</Link>
+          ) : (
+            <span className="chip bg-surface-muted text-ink">Didn’t happen</span>
+          )}
+        </article>
+      ))}
     </section>
   );
 }
