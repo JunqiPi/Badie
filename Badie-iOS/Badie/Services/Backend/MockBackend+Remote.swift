@@ -122,6 +122,7 @@ extension MockBackend {
         db.currentUserId = user.id
         scheduleSave()
         emit(signingIn ? .sessionChanged : .userUpdated(user))
+        if signingIn { Task { await refreshRemoteActivity() } }
         return user
     }
 

@@ -14,6 +14,10 @@ extension MockBackend {
     func game(id: String) -> Game? { db.games[id] }
 
     func cancelGame(id: String) async throws {
+        if let remote {
+            try await remote.call("cancel_game", ["p_game": id])
+            return await refreshRemoteActivity()
+        }
         var me = try requireUser()
         guard var game = db.games[id], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
         guard game.status == .confirmed, game.slot.endTime > Date() else { throw BackendError.gameAlreadyFinished }
@@ -45,6 +49,12 @@ extension MockBackend {
     }
 
     func checkIn(gameId: String) async throws -> Game {
+        if let remote {
+            try await remote.call("check_in", ["p_game": gameId])
+            await refreshRemoteActivity()
+            guard let game = db.games[gameId] else { throw BackendError.gameNotFound }
+            return game
+        }
         let me = try requireUser()
         guard var game = db.games[gameId], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
         guard game.canCheckIn() else { throw BackendError.checkInNotOpen }
@@ -91,6 +101,7 @@ extension MockBackend {
 
     /// 结束球局：申报我方赛果（等对方确认），生成互评问卷
     func completeGame(id: String, didWin: Bool?, score: String) async throws {
+        if isRemote { return try await remoteReportResult(gameId: id, didWin: didWin) }
         var me = try requireUser()
         guard var game = db.games[id], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
         guard game.status == .confirmed else { throw BackendError.gameAlreadyFinished }
@@ -176,6 +187,11 @@ extension MockBackend {
         issues: [SurveyIssue] = [],
         wantsRematch: Bool = false
     ) async throws {
+        if isRemote {
+            guard let pending = db.pendingSurveys.first(where: { $0.id == pendingId }) else { throw BackendError.surveyExpired }
+            return try await remoteSubmitSurvey(pending, skillRating: skillRating, attendance: attendance, tags: tags,
+                                                issues: issues, wantsRematch: wantsRematch)
+        }
         let me = try requireUser()
         guard let pending = db.pendingSurveys.first(where: { $0.id == pendingId && $0.evaluatorId == me.id }) else {
             throw BackendError.surveyExpired
@@ -289,6 +305,7 @@ extension MockBackend {
 
     /// 处理过期：未在 48 小时内提交的问卷作废；暂存的评价在窗口结束后揭晓
     func processSurveyExpirations(now: Date = Date()) {
+        guard !isRemote else { return }
         publishReputationIfNeeded(now: now)
         let before = db.pendingSurveys.count
         db.pendingSurveys.removeAll { $0.isExpired(now: now) }

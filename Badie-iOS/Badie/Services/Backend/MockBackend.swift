@@ -21,6 +21,8 @@ final class MockBackend {
     /// 正式后端：设置后登录和已接入的功能走服务器，本地 db 只当缓存（见 MockBackend+Remote）
     var remote: SupabaseClient?
     var isRemote: Bool { remote != nil }
+    /// 上次从服务器拉取约球和球局的时间（避免刷新太频繁）
+    var remoteRefreshedAt: Date?
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?

@@ -55,6 +55,9 @@ extension MockBackend {
     @discardableResult
     func submitTicket(mode: GameMode, slot: TimeSlot, courtIds: [String], skillTolerance: Int, radiusKm: Double,
                       origin: Coordinate, autoAccept: Bool, now: Date = Date()) async throws -> MatchTicket {
+        if isRemote {
+            return try await remoteSubmitTicket(mode: mode, slot: slot, courtIds: courtIds, skillTolerance: skillTolerance, autoAccept: autoAccept)
+        }
         let me = try requireUser()
         guard me.attendance.standing != .suspended else { throw BackendError.matchingSuspended }
         guard slot.endTime > now else { throw BackendError.invalidSlot(String(localized: "这个时间段已经过去了")) }
@@ -116,6 +119,12 @@ extension MockBackend {
 
     /// 取消请求：如果有进行中的提议，视为这次来不了（不扣分）
     func cancelTicket(_ ticketId: String, now: Date = Date()) {
+        if isRemote {
+            return runRemote({
+                db.tickets[ticketId]?.status = .cancelled
+                emit(.matchmakingChanged)
+            }) { try await $0.call("cancel_ticket", ["p_ticket": ticketId]) }
+        }
         guard var ticket = db.tickets[ticketId], ticket.userId == currentUserId, ticket.isActive || ticket.status == .paused else { return }
         let offerId = ticket.offerId
         ticket.status = .cancelled
@@ -133,6 +142,12 @@ extension MockBackend {
 
     /// 暂停的请求继续找
     func resumeTicket(_ ticketId: String, now: Date = Date()) throws {
+        if isRemote {
+            return runRemote({
+                db.tickets[ticketId]?.status = .searching
+                emit(.matchmakingChanged)
+            }) { try await $0.call("resume_ticket", ["p_ticket": ticketId]) }
+        }
         guard var ticket = db.tickets[ticketId], ticket.userId == currentUserId, ticket.status == .paused else { return }
         guard now < ticket.deadline else { throw BackendError.tooLateToRequest }
         ticket.status = .searching
@@ -146,6 +161,10 @@ extension MockBackend {
 
     /// 接受或拒绝提议。拒绝不扣分，请求会排除这组人继续找。
     func respond(toOffer offerId: String, accept: Bool, now: Date = Date()) async throws {
+        if let remote {
+            try await remote.call("respond_offer", ["p_offer": offerId, "p_accept": accept])
+            return await refreshRemoteActivity()
+        }
         let me = try requireUser()
         guard let offer = db.offers[offerId], offer.isOpen,
               let seat = offer.seat(of: me.id), seat.response == .pending else { throw BackendError.offerClosed }
@@ -200,6 +219,10 @@ extension MockBackend {
 
     /// 处理到期：确认超时、锁定、请求过期，并为在找的请求再匹配一次
     func processMatchmaking(now: Date = Date()) {
+        if isRemote {
+            Task { await refreshRemoteActivity(force: false) }
+            return
+        }
         var changed = false
 
         for offerId in db.offers.keys.sorted() {

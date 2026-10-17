@@ -110,6 +110,8 @@ final class AppState: ObservableObject {
             }
         case .userUpdated(let user):
             if user.id == currentUser?.id { currentUser = user }
+        case .remoteFailed(let message):
+            showToast(message, style: .error)
         default:
             break
         }

@@ -165,6 +165,105 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(backend.favoriteCourtIds(), ["v-us-ca-labc"])
     }
 
+    /// 已登录、资料已建好的正式后端
+    private func signedInBackend() async throws -> MockBackend {
+        let backend = MockBackend(store: .inMemory, seedsWorld: false)
+        backend.latencyEnabled = false
+        backend.simulationEnabled = false
+        backend.remote = client(session: session(expiresIn: 3600))
+        let profile = #"{"id":"\#(userId)","nickname":"Alex","country_code":"US","rating":4,"assessed_at":null,"show_on_boards":true,"challenge_policy":"everyone","locale":"\#(MockBackend.serverLocale)"}"#
+        server.on("GET /rest/v1/profiles", "[\(profile)]")
+        server.on("GET /rest/v1/favorite_venues", "[]")
+        try await backend.refreshRemoteProfile()
+        server.requests = []
+        return backend
+    }
+
+    private let blake = "6f1c2c3e-0000-4000-8000-000000000002"
+
+    private func players(blakeReviewed: Bool = false) -> String {
+        #"[{"id":"\#(userId)","nickname":"Alex","rating":4,"team":1,"me":true,"checked_in":true,"reviewed":false},{"id":"\#(blake)","nickname":"Blake","rating":4.33,"team":2,"me":false,"checked_in":false,"reviewed":\#(blakeReviewed)}]"#
+    }
+
+    private let venue = #"{"id":"v-test-court","name":"Test Court","city":"Irvine","street":"1 Main St","tz":"America/Los_Angeles","lat":33.68,"lon":-117.8,"country":"US","pricing":{"perPerson":12}}"#
+
+    func testMatchmakingAndGamesComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        let start = "2026-10-20T02:00:00+00:00", end = "2026-10-20T04:00:00+00:00"
+        let offer = #"{"id":"o1","starts_at":"\#(start)","ends_at":"\#(end)","respond_by":"2026-10-19T20:00:00+00:00","my_response":"accepted","venue":\#(venue),"accepted":2,"players":\#(players())}"#
+        server.on("POST /rest/v1/rpc/my_matchmaking",
+                  #"[{"id":"t1","mode":"singles","starts_at":"\#(start)","ends_at":"\#(end)","status":"offered","skill_tolerance":1,"auto_accept":false,"lock_at":"2026-10-20T00:00:00+00:00","game_id":null,"venues":[\#(venue)],"offer":\#(offer)}]"#)
+        let iso = { (offset: TimeInterval) in ISO8601DateFormatter().string(from: Date().addingTimeInterval(offset)) }
+        server.on("POST /rest/v1/rpc/my_games",
+                  #"[{"id":"g1","mode":"singles","starts_at":"\#(iso(-3 * 3600))","ends_at":"\#(iso(-3600))","status":"scheduled","venue":\#(venue),"my_team":1,"checked_in":true,"my_report":{"outcome":"team1"},"result":{"status":"verified","outcome":"team1"},"review_until":"\#(iso(47 * 3600))","players":\#(players())}]"#)
+        await backend.refreshRemoteActivity()
+
+        let ticket = try XCTUnwrap(backend.myTickets().first)
+        XCTAssertEqual(ticket.status, .offered(offerId: "o1"))
+        XCTAssertEqual(ticket.mode, .singles)
+        XCTAssertEqual(ticket.courtIds, ["v-test-court"])
+        let match = try XCTUnwrap(backend.offer(id: "o1"))
+        XCTAssertEqual(match.teams, [[userId], [blake]])
+        XCTAssertEqual(match.acceptedCount, 2, "两人都确认了")
+        XCTAssertEqual(match.court.name, "Test Court", "本地球馆库里没有：用服务器给的信息")
+        XCTAssertEqual(backend.user(id: blake)?.nickname, "Blake", "同局球友进缓存")
+
+        let game = try XCTUnwrap(backend.game(id: "g1"))
+        XCTAssertEqual(game.status, .completed, "我已经报过赛果")
+        XCTAssertTrue(game.hasCheckedIn(userId))
+        XCTAssertFalse(game.hasCheckedIn(blake))
+        XCTAssertEqual(game.resultStatus(), .verified(winningTeam: 0))
+        XCTAssertEqual(game.result?.didWin, true)
+        let survey = try XCTUnwrap(backend.pendingSurveys().first)
+        XCTAssertEqual(survey.opponentId, blake)
+        XCTAssertEqual(survey.matchId, "g1")
+    }
+
+    func testActionsCallTheServer() async throws {
+        let backend = try await signedInBackend()
+        let refresh = {
+            self.server.on("POST /rest/v1/rpc/my_matchmaking", "[]")
+            self.server.on("POST /rest/v1/rpc/my_games", "[]")
+        }
+        let slot = TimeSlot(date: Date(), startTime: Date().addingTimeInterval(4 * 3600), endTime: Date().addingTimeInterval(6 * 3600))
+        server.on("POST /rest/v1/rpc/submit_ticket", #""t-new""#)
+        refresh()
+        do {
+            _ = try await backend.submitTicket(mode: .doubles, slot: slot, courtIds: ["v-a", "v-b"], skillTolerance: 2, radiusKm: 10,
+                                               origin: Coordinate.fallbackCenter, autoAccept: true)
+        } catch {
+            // 刷新后列表是空的：找不到新请求属正常（这里只看请求格式）
+        }
+        let submit = server.json(0)
+        XCTAssertEqual(submit["p_mode"] as? String, "doubles")
+        XCTAssertEqual(submit["p_venue_ids"] as? [String], ["v-a", "v-b"])
+        XCTAssertEqual(submit["p_skill_tolerance"] as? Int, 2)
+        XCTAssertEqual(submit["p_auto_accept"] as? Bool, true)
+        XCTAssertNotNil(RemoteJSON.parseDate(submit["p_starts_at"] as? String ?? ""))
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/respond_offer", "")
+        refresh()
+        try await backend.respond(toOffer: "o1", accept: false)
+        XCTAssertEqual(server.json(0)["p_offer"] as? String, "o1")
+        XCTAssertEqual(server.json(0)["p_accept"] as? Bool, false)
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/review_player", "")
+        refresh()
+        let pending = PendingSurvey(id: "g1|b", matchId: "g1", evaluatorId: userId, opponentId: blake, opponentNickname: "Blake",
+                                    opponentLevel: 4, opponentAvatar: .default(for: blake), courtName: "Test Court", matchDate: Date(),
+                                    expiresAt: Date().addingTimeInterval(3600), opponentRating: 4.33)
+        try await backend.remoteSubmitSurvey(pending, skillRating: 4, attendance: .late, tags: [.fairPlay, .greatPartner],
+                                             issues: [.unpaid], wantsRematch: true)
+        let review = server.json(0)
+        XCTAssertEqual(review["p_level"] as? String, "lower", "选的档位比对方显示的低")
+        XCTAssertEqual(review["p_attendance"] as? String, "late")
+        XCTAssertEqual(review["p_tags"] as? [String], ["fair_play", "great_partner"])
+        XCTAssertEqual(review["p_issues"] as? [String], ["unpaid"])
+        XCTAssertEqual(review["p_play_again"] as? Bool, true)
+    }
+
     func testRestoreWithoutSessionSignsOutLocally() async {
         let backend = MockBackend(store: .inMemory, seedsWorld: false)
         backend.createAccount(phone: "+16265550123", nickname: "Old", level: 3, seedsDemoContent: false)
