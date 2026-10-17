@@ -69,9 +69,9 @@ select lives_ok($$ select public.submit_ticket('singles', pg_temp.at(2, 19), pg_
 reset role;
 select is((select array[status::text, (select status::text from public.match_tickets where user_id = pg_temp.u(2))] from public.match_tickets where user_id = pg_temp.u(1)),
           '{offered,offered}', '两人都收到提议');
-select is((select array[starts_at, ends_at] from public.match_offers), array[pg_temp.at(2, 19), pg_temp.at(2, 20)], '时间取共同空闲');
-select is((select venue_id from public.match_offers), 'v-us-ca-21-badminton-club-21bc', '球馆取大家都能去的');
-select is((select count(*)::int from public.notifications where kind = 'offer'), 2, '两人都收到通知');
+select is((select array[starts_at, ends_at] from public.match_offers where id = (pg_temp.ticket(1)).offer_id), array[pg_temp.at(2, 19), pg_temp.at(2, 20)], '时间取共同空闲');
+select is((select venue_id from public.match_offers where id = (pg_temp.ticket(1)).offer_id), 'v-us-ca-21-badminton-club-21bc', '球馆取大家都能去的');
+select is((select count(*)::int from public.notifications where kind = 'offer' and user_id in (pg_temp.u(1), pg_temp.u(2))), 2, '两人都收到通知');
 
 select pg_temp.login(1);
 select is(jsonb_array_length(public.my_matchmaking() -> 0 -> 'offer' -> 'players'), 2, '提议里能看到对手');
@@ -133,12 +133,12 @@ select pg_temp.login(11);
 select public.submit_ticket('doubles', pg_temp.at(5, 19), pg_temp.at(5, 21), '{v-us-ca-21-badminton-club-21bc}', 2, true);
 reset role;
 select is((pg_temp.ticket(11)).status::text, 'matched', '四人都自动接受：直接约成');
-select is((select array_agg(team order by rating desc, team) from public.game_players gp join public.games g on g.id = gp.game_id where g.mode = 'doubles'),
+select is((select array_agg(team order by rating desc, team) from public.game_players where game_id = (pg_temp.ticket(11)).game_id),
           '{1,2,1,2}'::smallint[], '最强和最弱一队');
 select is((select count(*)::int from public.notifications where kind like 'offer%' and user_id = pg_temp.u(11)), 0, '直接约成只发一条通知');
 
 -- 赛果：把 1、2 号的单打挪到已开始
-update public.games set starts_at = now() - interval '1 hour', ends_at = now() + interval '1 hour' where mode = 'singles';
+update public.games set starts_at = now() - interval '1 hour', ends_at = now() + interval '1 hour' where id = (pg_temp.ticket(1)).game_id;
 select pg_temp.login(1);
 select lives_ok($$ select public.check_in((pg_temp.ticket(1)).game_id) $$, '开赛后可以签到');
 select is(public.report_result((pg_temp.ticket(1)).game_id, 'team2'), 'awaiting', '一方报：等另一方');
@@ -152,11 +152,11 @@ select is(public.my_record() -> 'wins', '1'::jsonb, '确认的胜场计入战绩
 -- 记不清：双打某一队全员记不清 → 不计入
 reset role;
 insert into public.result_reports (game_id, reporter_id, outcome)
-  select game_id, user_id, null from public.game_players gp join public.games g on g.id = gp.game_id where g.mode = 'doubles' and team = 1;
-select is((select status from public.game_result((select id from public.games where mode = 'doubles'))), 'unsure', '一队都记不清：不计入');
+  select game_id, user_id, null from public.game_players where game_id = (pg_temp.ticket(11)).game_id and team = 1;
+select is((select status from public.game_result((pg_temp.ticket(11)).game_id)), 'unsure', '一队都记不清：不计入');
 
 -- 开赛前 2 小时内退出 = 临时取消；其他人优先重新找
-update public.games set starts_at = now() + interval '1 hour', ends_at = now() + interval '3 hours' where mode = 'doubles';
+update public.games set starts_at = now() + interval '1 hour', ends_at = now() + interval '3 hours' where id = (pg_temp.ticket(11)).game_id;
 select pg_temp.login(8);
 select lives_ok($$ select public.cancel_game((pg_temp.ticket(8)).game_id) $$, '可以退出');
 reset role;
