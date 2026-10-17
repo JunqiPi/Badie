@@ -84,10 +84,19 @@ insert into public.admin_users (user_id, role)
 select id, 'owner' from auth.users where email = '你的邮箱';
 ```
 
-## 8. 上线检查
+## 8. 约球通知邮件
 
-- 用一个**从没用过的邮箱**走一遍：收验证码 → 登录 → 填昵称 → 附近球馆 → 收藏。
-- 网站各页面、`/app/` 打开正常，刷新 `/app/courts/` 不报 404。
+匹配到人、约成、取消、错过确认时会发邮件（网页没有推送，用户不在线时靠邮件）。数据库每分钟检查一次，Vault 里有 Resend 的 key 才发：
+
+1. Resend → API Keys → Create，名字 `badie-notifications`，权限 Sending access，域名选 `badie.rsvp`。
+2. Supabase → Integrations → Vault → Add new secret：Name 填 `resend_api_key`，Secret 粘 key。**不要在 SQL Editor 里写 key**（会留在查询历史里）。
+3. 发件人是 `games@badie.rsvp`，Resend 验证过根域名就能用。免费额度每天 100 封；超了 Resend 会拒发，匹配本身不受影响。
+
+## 9. 上线检查
+
+- 用一个**从没用过的邮箱**走一遍：收验证码 → 登录 → 填昵称 → 定级问卷 → 附近球馆 → 收藏。
+- 用两个邮箱各发一个同时段、同球馆的约球请求：应该马上配上、两边都收到邮件，都确认后出现在 My games。
+- 网站各页面、`/app/` 打开正常，刷新 `/app/courts/`、`/app/games/` 不报 404。
 - “Supabase keep-alive” 每天自动运行，防止免费项目因 7 天无活动被暂停。
 
 ## 以后要补的

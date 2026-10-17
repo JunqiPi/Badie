@@ -36,6 +36,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run check
+      - run: npm test
 
       # 这几个值都可以公开，放在仓库 Variables（不是 Secrets）
       - run: npm run build
@@ -83,9 +84,10 @@ jobs:
           export PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
           export PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(supabase status -o env | grep '^PUBLISHABLE_KEY=' | cut -d= -f2- | tr -d '"')
           npm run build
-          npx astro preview --port 4321 --host 127.0.0.1 &
-          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4321/app/ >/dev/null && break; sleep 1; done
+          # 和线上一样用 Cloudflare Pages 的本地服务器，_redirects 和 _headers 都生效
+          WRANGLER_SEND_METRICS=false npx --yes wrangler@4.151.1 pages dev dist --ip 127.0.0.1 --port 4321 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:4321/app/ >/dev/null && break; sleep 1; done
 
-      - name: Run end-to-end test
+      - name: Run end-to-end tests
         working-directory: web
         run: npm run e2e

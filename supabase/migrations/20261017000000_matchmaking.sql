@@ -630,7 +630,7 @@ returns jsonb language sql stable security definer set search_path = '' as $$
     select t.starts_at, jsonb_build_object(
       'id', t.id, 'mode', t.mode, 'starts_at', t.starts_at, 'ends_at', t.ends_at, 'status', t.status,
       'skill_tolerance', t.skill_tolerance, 'auto_accept', t.auto_accept, 'lock_at', t.lock_at, 'game_id', t.game_id,
-      'venues', (select jsonb_agg(jsonb_build_object('id', v.id, 'name', v.name, 'city', v.city))
+      'venues', (select jsonb_agg(jsonb_build_object('id', v.id, 'name', v.name, 'city', v.city, 'tz', v.time_zone_id))
                  from public.venues v where v.id = any (t.venue_ids)),
       'offer', (select jsonb_build_object(
           'id', o.id, 'starts_at', o.starts_at, 'ends_at', o.ends_at, 'respond_by', me.respond_by, 'my_response', me.response,

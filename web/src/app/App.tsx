@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { ComingSoon } from './ComingSoon';
 import { Courts } from './Courts';
+import { GameDetail, Games } from './Games';
+import { LevelQuiz } from './LevelQuiz';
 import { Me } from './Me';
 import { Onboarding } from './Onboarding';
+import { Play } from './Play';
 import { navigate, usePath } from './router';
 import { Shell } from './Shell';
 import { SignIn } from './SignIn';
@@ -27,22 +29,45 @@ export default function App() {
   }, [session?.user.id]);
 
   useEffect(() => {
-    if (path === '/app/' || path === '/app') navigate('/app/courts/', true);
+    if (path === '/app/' || path === '/app') navigate('/app/play/', true);
   }, [path]);
 
   if (!supabase) return <Message text="The web app isn’t connected to a server yet." />;
   if (session === undefined || (session && profile === undefined)) return <Message busy text="Loading…" />;
   if (!session) return <SignIn />;
-  if (!profile) return <Onboarding userId={session.user.id} onDone={setProfile} />;
+  if (!profile) {
+    return (
+      <Onboarding
+        userId={session.user.id}
+        onDone={(created) => {
+          setProfile(created);
+          navigate('/app/level/', true);
+        }}
+      />
+    );
+  }
+  if (path.startsWith('/app/level/')) {
+    return (
+      <LevelQuiz
+        onDone={(saved) => {
+          if (saved) setProfile(saved);
+          navigate('/app/play/', true);
+        }}
+      />
+    );
+  }
 
+  const game = path.match(/^\/app\/games\/([0-9a-f-]{36})\//)?.[1];
   return (
     <Shell path={path}>
       {path.startsWith('/app/me/') ? (
         <Me profile={profile} email={session.user.email} onChange={setProfile} />
       ) : path.startsWith('/app/play/') ? (
-        <ComingSoon title="Find partners" body="Tell Badie when you’re free and which courts you can reach, and get matched with players at your level." />
+        <Play profile={profile} />
+      ) : game ? (
+        <GameDetail id={game} />
       ) : path.startsWith('/app/games/') ? (
-        <ComingSoon title="My games" body="Upcoming games, check-in, splitting the court fee and confirming results." />
+        <Games />
       ) : (
         <Courts userId={session.user.id} />
       )}

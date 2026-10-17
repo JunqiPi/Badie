@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "e2e": "node tests/app.e2e.mjs"
+    "e2e": "node tests/app.e2e.mjs && node tests/match.e2e.mjs",
+    "test": "node --test tests/*.test.ts"
   },
   "dependencies": {
     "@astrojs/react": "7.1.0",
