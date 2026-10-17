@@ -19,7 +19,7 @@ export function Messages() {
 
   return (
     <div className="max-w-3xl">
-      <PageHeader eyebrow={t('Messages')} title={t('Messages')} />
+      <PageHeader title={t('Messages')} />
       <div role="tablist" aria-label={t('Messages')} className="mb-6 flex gap-2">
         {tabs.map(([value, label]) => (
           <button key={value} role="tab" id={`tab-${value}`} aria-selected={tab === value} aria-controls="panel" onClick={() => pick(value)}

@@ -24,7 +24,7 @@ export function Games() {
 
   return (
     <div>
-      <PageHeader eyebrow={t('My games')} title={t('My games')} />
+      <PageHeader title={t('My games')} />
       <GamesTabs current="games" />
       <Challenges />
       {record && <RecordCard record={record} />}

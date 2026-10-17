@@ -39,11 +39,12 @@ export function Field({ label, hint, error, children }: {
 }
 
 /** 页面标题：每个页面同样的层级和间距 */
-export function PageHeader({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
+/** eyebrow 是所在的版块；和标题一样时省略 */
+export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; title: string; children?: ReactNode }) {
   return (
     <header className="mb-8">
-      <p className="eyebrow">{eyebrow}</p>
-      <h1 className="display mt-2 text-[clamp(2.5rem,6vw,3.75rem)]">{title}</h1>
+      {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
+      <h1 className="display text-[clamp(2.5rem,6vw,3.75rem)]">{title}</h1>
       {children && <div className="mt-3 max-w-prose text-lg text-ink-secondary">{children}</div>}
     </header>
   );
