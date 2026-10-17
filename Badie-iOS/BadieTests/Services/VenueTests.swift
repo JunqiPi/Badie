@@ -57,8 +57,9 @@ final class VenueTests: XCTestCase {
         }
         for venue in BadmintonCourt.curatedUS {
             XCTAssertEqual(venue.currencyCode, "USD")
-            XCTAssertTrue((24...50).contains(venue.location.latitude), "\(venue.name) 坐标不在美国本土")
-            XCTAssertTrue((-125...(-66)).contains(venue.location.longitude), "\(venue.name) 坐标不在美国本土")
+            // 本土 + 阿拉斯加 + 夏威夷；经纬度写反时会落在范围外
+            XCTAssertTrue((18...72).contains(venue.location.latitude), "\(venue.name) 坐标不在美国")
+            XCTAssertTrue((-180...(-65)).contains(venue.location.longitude), "\(venue.name) 坐标不在美国")
         }
     }
 

@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 select plan(8);
 
 select cmp_ok((select count(*)::int from public.venues where source = 'open_data'), '>', 3000, '政府开放数据已导入');
-select is((select count(*)::int from public.venues where source = 'curated' and country_code = 'US'), 85, '美国收录 85 处');
+select is((select count(*)::int from public.venues where source = 'curated' and country_code = 'US'), 276, '美国收录 276 处');
 select is((select court_count from public.venues where id = 'v-us-ca-orange-county-badminton-club'), 12, 'OCBC 场地数');
 select ok((select kind = 'rec_center' and play_times like 'Free open play%' and pricing ->> 'perPerson' = '0' and checked_on = '2026-10-16'
            from public.venues where id = 'v-us-ca-balboa-park-activity-center'), '社区中心：类型、开放时段、免费、核实日期');

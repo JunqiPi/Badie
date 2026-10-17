@@ -449,7 +449,7 @@
   - 新加坡：Sport Singapore「Sport Facilities」+「SportSG Sport Facilities」（ActiveSG 体育中心 + 设羽毛球场的社区中心共 119 个；私人公寓的场地不对外，已排除；Singapore Open Data Licence）
   - 台湾：运动部「全國運動場館資訊」中对外开放、有羽球设施的 633 个场馆（政府資料開放授權條款）
   - 英格兰：Sport England Active Places 中营业中、个人可直接订（Pay and Play / 会员制）且有羽毛球场的 1,553 个场馆（CC BY 4.0；联系人等个人字段不导入；只租给俱乐部的学校场馆不收录）
-  - 美国：没有全国性的开放数据。Overture Maps Places（CDLA-Permissive-2.0）里名称或分类含羽毛球的地点只当线索（实测约一半是商店、重复、停业或位置不准），逐家对照球馆官网、预订页、市政府和学校页面核实，来源和核实日期记在 `data/us_venues.json`，坐标用美国人口普查局的地址编码。除专营球馆外，也收录社区中心、学校等只在固定时段开放羽毛球的地方，标出类型和时段。第三方名录（badmintonclubs.org、badmintonjustin.com、worldbadminton.com）条款禁止抓取或未授权，不作为来源，已去信申请授权。2026-10 核实了加州（68 处），其他州的 17 家待按同样方法复核；不少市政府网站拒绝自动访问（403），这些城市的 drop-in 要人工查看。
+  - 美国：没有全国性的开放数据。Overture Maps Places（CDLA-Permissive-2.0）里名称或分类含羽毛球的地点只当线索（实测约一半是商店、重复、停业或位置不准），逐家对照球馆官网、预订页、市政府和学校页面核实，来源和核实日期记在 `data/us_venues.json`，坐标用美国人口普查局的地址编码。除专营球馆外，也收录社区中心、学校等只在固定时段开放羽毛球的地方，标出类型和时段。第三方名录（badmintonclubs.org、badmintonjustin.com、worldbadminton.com）条款禁止抓取或未授权，不作为来源，已去信申请授权。2026-10 按州核实了 34 个州 276 处（加州 74、德州 29、伊利诺伊 24、华盛顿 23、马里兰 21、新泽西 17、纽约 16 …），其中专营馆 105、社区中心 123、学校 21、综合馆 25、社区会馆 2。不少市政府网站拒绝自动访问（403），这些城市的 drop-in 要人工查看；San Antonio、Tulsa、Cleveland、Cincinnati、Milwaukee、Miami、Tampa 等暂时没有找到可核实的公开场地。
   - 这些数据由 `scripts/build_open_data_venues.py` 生成 `Badie/Resources/venues-XX.json`，随 App 只读发布，不写进本地数据库；球友确认、签到时才复制进库。详情页显示各数据集要求的署名。
   - 东京：各区市「公共施設一覧」（CC BY 4.0）里的 58 个公共体育馆（不含学校）。数据不标运动项目，详情页注明以馆方为准。
   - 韩国：문화체육관광부「전국 공공체육시설 현황」(2021) 里写明能打배드민턴 的 975 个场馆。原表没有坐标，先放在所在区的中心、不显示；用户到附近时 App 用 Apple 地图按名称找到对应地点，核对上了才显示（采用 Apple 的坐标和地址），找不到的 30 天后再试。

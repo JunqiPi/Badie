@@ -5,6 +5,173 @@
  "status": "verified",
  "venues": [
   {
+   "id": "v-us-ak-fairview-community-recreation-center",
+   "name": "Fairview Community Recreation Center",
+   "lat": 61.21269,
+   "lon": -149.86236,
+   "street": "1121 E 10th Ave",
+   "city": "Anchorage",
+   "region": "AK",
+   "postcode": "99501",
+   "country": "US",
+   "tz": "America/Anchorage",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(907) 343-4130",
+   "web": "https://www.muni.org/Departments/parks/pages/openbadminton.aspx",
+   "facility": "recCenter",
+   "playTimes": "Open recreational badminton (12+): Mon & Thu 5:45-7:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ak-spenard-recreation-center",
+   "name": "Spenard Recreation Center",
+   "lat": 61.177177,
+   "lon": -149.921068,
+   "street": "2020 W 48th Ave",
+   "city": "Anchorage",
+   "region": "AK",
+   "postcode": "99517",
+   "country": "US",
+   "tz": "America/Anchorage",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(907) 343-4160",
+   "web": "https://www.muni.org/Departments/parks/pages/openbadminton.aspx",
+   "facility": "recCenter",
+   "playTimes": "Open recreational badminton (12+): Tue 5:45-7:45 PM, Sat 12:30-2:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-al-fern-bell-recreation-center",
+   "name": "Fern Bell Recreation Center",
+   "aliases": [
+    "Huntsville Parks & Recreation"
+   ],
+   "lat": 34.673878,
+   "lon": -86.572324,
+   "street": "107 Sanders Rd SW",
+   "city": "Huntsville",
+   "region": "AL",
+   "postcode": "35802",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "256-883-3640",
+   "web": "https://www.huntsvilleal.gov/environment/parks-recreation/recreation/recreation-centers/fern-bell-recreation-center/",
+   "facility": "recCenter",
+   "playTimes": "Badminton (ages 12+): Mon 5:30-7:30 PM, Sep-Nov season (city fall programme).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-al-optimist-recreation-center",
+   "name": "Optimist Recreation Center",
+   "aliases": [
+    "Huntsville Parks & Recreation"
+   ],
+   "lat": 34.749107,
+   "lon": -86.57374,
+   "street": "703 Oakwood Ave NE",
+   "city": "Huntsville",
+   "region": "AL",
+   "postcode": "35811",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "256-427-5775",
+   "web": "https://www.huntsvilleal.gov/environment/parks-recreation/recreation/recreation-centers/optimist-recreation-center/",
+   "facility": "recCenter",
+   "playTimes": "Badminton round-robin (ages 16+): Wed 5:30-7:30 PM, Sep-Nov season (city fall programme).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-al-west-huntsville-recreation-center",
+   "name": "West Huntsville Recreation Center",
+   "aliases": [
+    "Huntsville Parks & Recreation"
+   ],
+   "lat": 34.64612,
+   "lon": -86.719356,
+   "street": "150 Martin Rd",
+   "city": "Huntsville",
+   "region": "AL",
+   "postcode": "35824",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "256-427-7194",
+   "web": "https://www.huntsvilleal.gov/environment/parks-recreation/recreation/recreation-centers/west-huntsville-recreation-center/",
+   "facility": "recCenter",
+   "playTimes": "Badminton (ages 18+, all levels): Mon & Fri 1-3:30 PM, Sep-Nov season (city fall programme).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-az-arizona-badminton-center",
+   "name": "Arizona Badminton Center",
+   "aliases": [
+    "AZBC"
+   ],
+   "lat": 33.407632,
+   "lon": -111.877818,
+   "street": "2150 W Broadway Rd",
+   "unit": "Ste 107",
+   "city": "Mesa",
+   "region": "AZ",
+   "postcode": "85202",
+   "country": "US",
+   "tz": "America/Phoenix",
+   "courts": 8,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 30
+   },
+   "priceNote": "散客 $15/人次 · 包场 $30/场·时",
+   "phone": "(480) 699-2760",
+   "web": "https://www.azbadmintoncenter.com/",
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Fri 1-11 PM (open play 1-5 PM and 7-11 PM), Sat 8:30 AM-6:30 PM and Sun 8 AM-6 PM (open play all day).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-micro-motion-table-tennis-academy-mmtta",
+   "name": "Micro Motion Table Tennis Academy (MMTTA) - Alameda",
+   "aliases": [
+    "MMTTA Alameda",
+    "Alameda Badminton & Ping Pong",
+    "Alameda Badminton & Ping-Pong"
+   ],
+   "lat": 37.769919,
+   "lon": -122.249116,
+   "street": "2050 Lincoln Ave",
+   "city": "Alameda",
+   "region": "CA",
+   "postcode": "94501",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 45
+   },
+   "priceNote": "包场 $45/场·时",
+   "phone": "(925) 319-7943",
+   "web": "https://www.mmtta.io/alameda",
+   "facility": "multiSport",
+   "playTimes": "Mon–Fri 2–10 PM; Sat & Sun 10 AM–7 PM. Badminton courts by advance reservation only.",
+   "checked": "2026-10-16"
+  },
+  {
    "id": "v-us-ca-almansor-park-gymnasium",
    "name": "Almansor Park Gymnasium",
    "aliases": [
@@ -341,6 +508,31 @@
    "checked": "2026-10-16"
   },
   {
+   "id": "v-us-ca-21-badminton-club-21bc",
+   "name": "21 Badminton Club (21BC)",
+   "aliases": [
+    "21BC",
+    "21 Badminton Club"
+   ],
+   "lat": 37.514849,
+   "lon": -121.986485,
+   "street": "40760 Encyclopedia Cir",
+   "city": "Fremont",
+   "region": "CA",
+   "postcode": "94538",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(510) 994-2122",
+   "web": "https://www.21bc.us/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 7–11 PM; Sat & Sun 9 AM–9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
    "id": "v-us-ca-bintang-badminton-fremont",
    "name": "Bintang Badminton - Fremont",
    "aliases": [
@@ -436,6 +628,34 @@
    "web": "https://www.synergybadminton.com/",
    "facility": "dedicated",
    "playTimes": "Drop-in: Mon, Wed, Fri 10 AM–2 PM; Challenge Night Fri 7–11 PM. Open Mon–Fri until 11 PM, Sat 7 AM–11 PM, Sun 7 AM–10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-fresno-state-south-gym",
+   "name": "Fresno State South Gym",
+   "aliases": [
+    "Fresno Badminton",
+    "Fresno State Recreational Badminton",
+    "Badminton Alumni Club - Fresno State",
+    "FSA Badminton Club",
+    "Fresno State Badminton Alumni Club (FSA Badminton Club)"
+   ],
+   "lat": 36.815097,
+   "lon": -119.745134,
+   "street": "5241 N Maple Ave",
+   "unit": "South Gym, Room 109",
+   "city": "Fresno",
+   "region": "CA",
+   "postcode": "93740",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://alumni.fresnostate.edu/get-involved/chapters/badminton.html",
+   "facility": "school",
+   "playTimes": "Recreational open gym each semester (spring, summer, fall), registration required: Fri 6–10 PM and Sun 5–9 PM (times per the club FAQ; may shift by semester).",
    "checked": "2026-10-16"
   },
   {
@@ -585,7 +805,7 @@
    "phone": "(949) 202-0222",
    "web": "https://royalbadmintonacademy.com/",
    "facility": "dedicated",
-   "playTimes": "Opened August 2026; walk-in nights and skill-level mixers are on the online court schedule.",
+   "playTimes": "Walk-in nights and skill-level mixers are posted on the online court schedule.",
    "checked": "2026-10-16"
   },
   {
@@ -689,6 +909,31 @@
    "web": "https://baybadminton.com/",
    "facility": "dedicated",
    "playTimes": "Mon–Fri 10 AM–2 PM; evenings Mon, Wed, Thu 4–10:30 PM and Tue, Fri 5:30–10:30 PM; Sat 10 AM–9 PM; Sun 10 AM–7 PM. Drop-ins welcome.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-monterey-sports-center",
+   "name": "Monterey Sports Center",
+   "aliases": [
+    "MSC",
+    "City of Monterey Sports Center"
+   ],
+   "lat": 36.599533,
+   "lon": -121.89139,
+   "street": "301 E Franklin St",
+   "city": "Monterey",
+   "region": "CA",
+   "postcode": "93940",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 17
+   },
+   "priceNote": "散客 $17/人次",
+   "phone": "(831) 646-3730",
+   "web": "https://monterey.gov/your_city_hall/departments/parks_and_recreation/monterey_sports_center/court_sports_youth_camps.php",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (ages 13+): Mon/Wed/Fri 7–10 AM; Tue 11 AM–1:30 PM (beginners); Thu 6:30–9 PM; Sat 8 AM–12 PM; Sun 8–10 AM.",
    "checked": "2026-10-16"
   },
   {
@@ -1559,6 +1804,32 @@
    "checked": "2026-10-16"
   },
   {
+   "id": "v-us-ca-ronald-j-parks-community-recreation-cent",
+   "name": "Ronald J. Parks Community Recreation Center",
+   "aliases": [
+    "Temecula Community Recreation Center",
+    "CRC Gym",
+    "RJPCRC"
+   ],
+   "lat": 33.500466,
+   "lon": -117.122238,
+   "street": "30875 Rancho Vista Rd",
+   "city": "Temecula",
+   "region": "CA",
+   "postcode": "92592",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 3
+   },
+   "priceNote": "散客 $3/人次",
+   "phone": "(951) 694-6480 ext. 6391",
+   "web": "https://temeculaca.gov/1010/CRC-Gym",
+   "facility": "recCenter",
+   "playTimes": "Open Badminton: Wed 11:30 AM–1:30 PM, Sat 10 AM–1 PM.",
+   "checked": "2026-10-16"
+  },
+  {
    "id": "v-us-ca-thousand-oaks-community-center",
    "name": "Thousand Oaks Community Center",
    "aliases": [
@@ -1579,6 +1850,31 @@
    "web": "https://www.crpd.org/thousand-oaks-center",
    "facility": "recCenter",
    "playTimes": "Open gym: Mon & Fri 10:30 AM–1:30 PM, Sun 11:30 AM–3:15 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ca-wilson-park-community-sports-complex",
+   "name": "Wilson Park Community Sports Complex",
+   "aliases": [
+    "Wilson Park",
+    "City of Torrance Badminton Open Play",
+    "City of Torrance Badminton Open Play (organizer Tony Yeh)"
+   ],
+   "lat": 33.824842,
+   "lon": -118.328448,
+   "street": "2200 Crenshaw Blvd",
+   "city": "Torrance",
+   "region": "CA",
+   "postcode": "90501",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://torrance.rec.us/programs/315c112b-0b74-4740-9016-93b01ea70bd7",
+   "facility": "recCenter",
+   "playTimes": "Badminton Open Play: Sat & Sun 5–9 PM (online pre-registration, $10/session).",
    "checked": "2026-10-16"
   },
   {
@@ -1681,12 +1977,514 @@
    "checked": "2026-10-16"
   },
   {
+   "id": "v-us-co-south-boulder-recreation-center",
+   "name": "South Boulder Recreation Center",
+   "lat": 39.974977,
+   "lon": -105.249403,
+   "street": "1360 Gillaspie Dr",
+   "city": "Boulder",
+   "region": "CO",
+   "postcode": "80305",
+   "country": "US",
+   "tz": "America/Denver",
+   "phone": "(303) 441-3448",
+   "web": "https://bouldercolorado.gov/gym-schedules",
+   "facility": "recCenter",
+   "playTimes": "Adult drop-in badminton (16+): Tue 6-7 PM (full gym) and 7-8 PM (half gym); Sat 2-4 PM (half gym).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-co-fort-collins-senior-center",
+   "name": "Fort Collins Senior Center",
+   "aliases": [
+    "Fort Collins Badminton Club"
+   ],
+   "lat": 40.555853,
+   "lon": -105.098034,
+   "street": "1200 Raintree Dr",
+   "city": "Fort Collins",
+   "region": "CO",
+   "postcode": "80526",
+   "country": "US",
+   "tz": "America/Denver",
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "phone": "(970) 221-6644",
+   "web": "https://sites.google.com/view/foco-playing-with-shuttlecocks/home",
+   "facility": "recCenter",
+   "playTimes": "Badminton: Mon, Wed & Fri 6-10:15 AM (6-8 AM club-hosted all levels, 8-10:15 AM recreational drop-in); Thu 6-9 PM (club-hosted competitive).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-co-northside-aztlan-community-center",
+   "name": "Northside Aztlan Community Center",
+   "aliases": [
+    "Northside Aztlan Athletic Center",
+    "Fort Collins Badminton Club"
+   ],
+   "lat": 40.59176,
+   "lon": -105.075387,
+   "street": "112 E Willow St",
+   "city": "Fort Collins",
+   "region": "CO",
+   "postcode": "80524",
+   "country": "US",
+   "tz": "America/Denver",
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "phone": "(970) 221-6256",
+   "web": "https://sites.google.com/view/foco-playing-with-shuttlecocks/home",
+   "facility": "recCenter",
+   "playTimes": "Badminton: Tue & Thu 6-10 AM (6-8 AM all levels, 8-10 AM competitive); Sun 12-5 PM (12-2 PM beginners & singles, 2-5 PM competitive doubles). Club-hosted.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-co-south-suburban-sports-complex",
+   "name": "South Suburban Sports Complex",
+   "aliases": [
+    "Parker Badminton Club"
+   ],
+   "lat": 39.565982,
+   "lon": -104.928645,
+   "street": "4810 E County Line Rd",
+   "city": "Highlands Ranch",
+   "region": "CO",
+   "postcode": "80126",
+   "country": "US",
+   "tz": "America/Denver",
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(630) 217-9144",
+   "web": "https://parkerbadmintonclub.com/",
+   "facility": "recCenter",
+   "playTimes": "Parker Badminton Club groups: Mon-Thu 8:30-10:30 PM (4-8 courts), Sun 7-9 AM (juniors Sun 7-9 AM).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-co-carpenter-recreation-center",
+   "name": "Carpenter Recreation Center",
+   "aliases": [
+    "Margaret W. Carpenter Recreation Center"
+   ],
+   "lat": 39.89881,
+   "lon": -104.940379,
+   "street": "11151 Colorado Blvd",
+   "city": "Thornton",
+   "region": "CO",
+   "postcode": "80233",
+   "country": "US",
+   "tz": "America/Denver",
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "phone": "(303) 255-7800",
+   "web": "https://www.thorntonco.gov/parks-recreation/recreation-facilities/carpenter-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton: Fri 5-8:50 PM, Sun 1-5:50 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-co-city-park-recreation-center",
+   "name": "City Park Recreation Center",
+   "aliases": [
+    "Westminster City Park Recreation Center",
+    "Boulder Badminton Club"
+   ],
+   "lat": 39.888374,
+   "lon": -105.053128,
+   "street": "10455 Sheridan Blvd",
+   "city": "Westminster",
+   "region": "CO",
+   "postcode": "80020",
+   "country": "US",
+   "tz": "America/Denver",
+   "phone": "(303) 658-2901",
+   "web": "https://www.boulderbadmintonclub.com/",
+   "facility": "recCenter",
+   "playTimes": "Badminton (Boulder Badminton Club, open to all): Wed 5-8:45 PM, Sun 10 AM-2 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ct-fly-badminton-club",
+   "name": "Fly Badminton Club",
+   "lat": 41.9364,
+   "lon": -72.705823,
+   "street": "67 Nicholson Rd",
+   "unit": "Suite B",
+   "city": "East Granby",
+   "region": "CT",
+   "postcode": "06026",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 10,
+   "phone": "(203) 994-3360",
+   "web": "https://flybadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Hours not published on the site; adult members get 7-day access. Open play, court rentals and lessons offered.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ct-irving-a-robbins-middle-school-gym",
+   "name": "Irving A. Robbins Middle School Gym",
+   "aliases": [
+    "Farmington Recreation Badminton Open Play",
+    "Farmington Recreation"
+   ],
+   "lat": 41.720313,
+   "lon": -72.799455,
+   "street": "20 Wolf Pit Rd",
+   "city": "Farmington",
+   "region": "CT",
+   "postcode": "06032",
+   "country": "US",
+   "tz": "America/New_York",
+   "web": "https://farmingtonct.myrec.com/info/activities/program_details.aspx?ProgramID=29960",
+   "facility": "school",
+   "playTimes": "Farmington Rec adult open play (14+): Sun 8 AM-12 PM and Tue 7-9 PM in registration blocks (fall); sign in on arrival.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ct-riverbrook-regional-ymca",
+   "name": "Riverbrook Regional YMCA",
+   "aliases": [
+    "Wilton Family Y",
+    "Wilton YMCA"
+   ],
+   "lat": 41.212009,
+   "lon": -73.432092,
+   "street": "404 Danbury Rd",
+   "city": "Wilton",
+   "region": "CT",
+   "postcode": "06897",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://wiltonymca.org/pickle-ball-at-the-y/",
+   "facility": "communityHall",
+   "playTimes": "Badminton playtime: Wed 7-9 PM (gym).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-de-club-28-badminton-delaware",
+   "name": "Club 28 Badminton - Delaware",
+   "aliases": [
+    "Club 28 Delaware",
+    "Club 28 Badminton and Table Tennis Delaware"
+   ],
+   "lat": 39.66112,
+   "lon": -75.606637,
+   "street": "217 Lisa Dr",
+   "city": "New Castle",
+   "region": "DE",
+   "postcode": "19720",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 45
+   },
+   "priceNote": "散客 $15/人次 · 包场 $45/场·时",
+   "phone": "(302) 276-0772",
+   "web": "https://www.club28badminton.com/delaware",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 4:30-10:30 PM, Sat-Sun 7 AM-10 PM. Open play 3-hour sessions: weekdays from 4:30 & 7:30 PM; weekends from 7 AM, 10 AM, 1 PM, 4 PM, 7 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-fl-clearone-sports-centre",
+   "name": "ClearOne Sports Centre",
+   "aliases": [
+    "ClearOne Orlando",
+    "ClearOne Badminton Centre",
+    "C1 Sports"
+   ],
+   "lat": 28.587106,
+   "lon": -81.416518,
+   "street": "4141 N John Young Pkwy",
+   "unit": "Suite 3",
+   "city": "Orlando",
+   "region": "FL",
+   "postcode": "32804",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 16,
+    "perCourtHour": 60
+   },
+   "priceNote": "散客 $16/人次 · 包场 $60/场·时",
+   "phone": "407-730-3596",
+   "web": "https://www.clearonesports.com/",
+   "facility": "multiSport",
+   "playTimes": "Open Mon-Fri & Sun 10 AM-10 PM, Sat 7 AM-10 PM. Badminton sessions daily 10 AM-4:30 PM and 5-10 PM (weekends 10 AM-1 PM, 1:30-7 PM, 7-10 PM).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ga-fortius-sports-academy-alpharetta",
+   "name": "Fortius Sports Academy - Alpharetta",
+   "aliases": [
+    "Fortius @ Game & Grill",
+    "Fortius Sports Academy",
+    "FSA Atlanta"
+   ],
+   "lat": 34.10773,
+   "lon": -84.22564,
+   "street": "5905 Ronald Reagan Blvd",
+   "city": "Alpharetta",
+   "region": "GA",
+   "postcode": "30005",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 15,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(678) 505-0464",
+   "web": "https://www.fsaatl.com/",
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Sun 5 AM-11 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ga-fortius-sports-academy-cumming",
+   "name": "Fortius Sports Academy - Cumming",
+   "aliases": [
+    "Fortius @ ARC",
+    "Atlanta Recreation Club",
+    "Nets&Turf"
+   ],
+   "lat": 34.110635,
+   "lon": -84.198992,
+   "street": "2711 Pine Grove Rd",
+   "city": "Cumming",
+   "region": "GA",
+   "postcode": "30041",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 9,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(678) 505-0464",
+   "web": "https://www.fsaatl.com/",
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Fri 4-9 PM, Sat-Sun 7 AM-6 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ga-atlanta-badminton-club",
+   "name": "Atlanta Badminton Club",
+   "aliases": [
+    "ABC",
+    "Atlanta Badminton Club Duluth"
+   ],
+   "lat": 34.023893,
+   "lon": -84.109614,
+   "street": "1900 Buford Hwy",
+   "unit": "Ste B",
+   "city": "Duluth",
+   "region": "GA",
+   "postcode": "30097",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 20,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(470) 282-1573",
+   "web": "https://atlantabadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Open daily 9 AM-12 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ga-ts-badminton-norcross-training-center",
+   "name": "TS Badminton - Norcross Training Center",
+   "aliases": [
+    "TS Badminton",
+    "TS Badminton Academy",
+    "TS Badminton NTC",
+    "Terminus Badminton Club"
+   ],
+   "lat": 33.935752,
+   "lon": -84.22674,
+   "street": "6527-D Jimmy Carter Blvd",
+   "city": "Norcross",
+   "region": "GA",
+   "postcode": "30071",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 5,
+    "perCourtHour": 37
+   },
+   "priceNote": "散客 $5/人次 · 包场 $37/场·时",
+   "phone": "(470) 657-1475",
+   "web": "https://www.tsbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Court rental Mon-Thu 3-8 PM, Fri 1-8 PM, Sat-Sun all day. Group play: Tue & Thu 3-5 PM, Fri 1-3 PM; Sun 3-6 PM family; competitive Mon & Wed 8-11 PM, Sat 2-6 PM; Terminus club Fri 8-10 PM, Sun 6-10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-id-fort-boise-community-center",
+   "name": "Fort Boise Community Center",
+   "lat": 43.616832,
+   "lon": -116.190951,
+   "street": "700 N Robbins Rd",
+   "city": "Boise",
+   "region": "ID",
+   "postcode": "83702",
+   "country": "US",
+   "tz": "America/Boise",
+   "price": {
+    "perPerson": 6
+   },
+   "priceNote": "散客 $6/人次",
+   "phone": "(208) 608-7680",
+   "web": "https://www.cityofboise.org/departments/parks-and-recreation/facilities/fort-boise/drop-in-activities-schedule/",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (16+): Fri 5-9 PM, Sun 2-5 PM (weekend play normally Oct-May only).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-pioneer-badminton",
+   "name": "Pioneer Badminton",
+   "aliases": [
+    "Pioneer Badminton Academy",
+    "Pioneer Badminton Bolingbrook"
+   ],
+   "lat": 41.683023,
+   "lon": -88.100199,
+   "street": "586 Territorial Dr",
+   "city": "Bolingbrook",
+   "region": "IL",
+   "postcode": "60440",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(630) 410-2349",
+   "web": "https://pioneerbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open daily: Mon–Fri 4:30–9:30 PM; Sat–Sun 10 AM–6:30 PM (open gym and classes).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-midwest-badminton-club-buffalo-grove",
+   "name": "Midwest Badminton Club - Buffalo Grove",
+   "aliases": [
+    "Midwest Badminton Club Buffalo Grove",
+    "MBC Buffalo Grove",
+    "Midwest Badminton"
+   ],
+   "lat": 42.176532,
+   "lon": -87.933476,
+   "street": "1362 Barclay Blvd",
+   "city": "Buffalo Grove",
+   "region": "IL",
+   "postcode": "60089",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(847) 777-1050",
+   "web": "https://mbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 3:30–10 PM; Sat–Sun 9 AM–7 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-broadway-armory-park",
+   "name": "Broadway Armory Park",
+   "aliases": [
+    "Broadway Armory Gymnasium",
+    "Broadway Armory",
+    "Chicago Park District"
+   ],
+   "lat": 41.989534,
+   "lon": -87.660174,
+   "street": "5917 N Broadway",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60660",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(312) 742-7502",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/broadway-armory-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration): Mon, Wed & Fri 9:30–11:30 AM (ages 45+); Sat 9:30–11:30 AM (18+). Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-chicago-badminton-pickleball",
+   "name": "Chicago Badminton & Pickleball",
+   "aliases": [
+    "CBA Chicago",
+    "Chicago Badminton Academy - Chicago",
+    "CBA Chicago Badminton & Pickleball",
+    "Chicago Badminton Academy"
+   ],
+   "lat": 41.830233,
+   "lon": -87.690616,
+   "street": "2600 W 35th St",
+   "unit": "Suite 122",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60632",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 17,
+    "perCourtHour": 60
+   },
+   "priceNote": "散客 $17/人次 · 包场 $60/场·时",
+   "phone": "224-468-6296",
+   "web": "https://cbadminton.com/pages/membership-chicago-badminton-pickleball",
+   "facility": "multiSport",
+   "playTimes": "Mon–Fri 5:30–10:30 PM; Sat 10 AM–10:30 PM; Sun 11 AM–10:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-dvorak-park",
+   "name": "Dvorak Park",
+   "aliases": [
+    "Anton Dvorak Park",
+    "Chicago Park District"
+   ],
+   "lat": 41.855167,
+   "lon": -87.654692,
+   "street": "1119 W Cullerton St",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60608",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(312) 746-5083",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/dvorak-anton-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration, 18+): Tue 6–8:30 PM, west gym. Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
    "id": "v-us-il-egret-badminton-chicago",
-   "name": "Egret Badminton Chicago",
+   "name": "Egret Badminton - Chicago",
    "aliases": [
     "Chicago Egret Badminton Club",
     "Egret Chicago",
-    "Egret"
+    "Egret",
+    "Egret Badminton Chicago"
    ],
    "lat": 41.858651,
    "lon": -87.674819,
@@ -1702,15 +2500,223 @@
    "priceNote": "散客 $17/人次",
    "phone": "(312) 374-3022",
    "web": "https://badmintontrainingcenter.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 3–10:30 PM; Sat 9 AM–10 PM; Sun 9 AM–9 PM (call to confirm holiday hours).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-jesse-white-park",
+   "name": "Jesse White Park",
+   "aliases": [
+    "Jesse White Community Center",
+    "Chicago Park District"
+   ],
+   "lat": 41.896586,
+   "lon": -87.638853,
+   "street": "410 W Chicago Ave",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60654",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(312) 742-2410",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/white-jesse-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration, 18+): Thu 7–8:45 PM. Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-loyola-park",
+   "name": "Loyola Park",
+   "aliases": [
+    "Chicago Park District"
+   ],
+   "lat": 42.010461,
+   "lon": -87.661964,
+   "street": "1230 W Greenleaf Ave",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60626",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(773) 262-8605",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/loyola-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration, 18+): Wed & Fri 1–2:30 PM, east gym. Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-mckinley-park",
+   "name": "McKinley Park",
+   "aliases": [
+    "Chicago Park District"
+   ],
+   "lat": 41.823085,
+   "lon": -87.681795,
+   "street": "2210 W Pershing Rd",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60609",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(312) 747-6527",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/mckinley-william-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration, 18+): Mon & Fri 6–8 PM; Sat 9 AM–12 PM (McKinley auditorium). Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-ping-tom-memorial-park",
+   "name": "Ping Tom Memorial Park",
+   "aliases": [
+    "Ping Tom Park Fieldhouse",
+    "Chicago Park District"
+   ],
+   "lat": 41.858532,
+   "lon": -87.632026,
+   "street": "1700 S Wentworth Ave",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60616",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(312) 225-3121",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/tom-ping-memorial-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration, 18+): Wed & Thu 6:30–8:30 PM. Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-pottawattomie-park",
+   "name": "Pottawattomie Park",
+   "aliases": [
+    "Chicago Park District"
+   ],
+   "lat": 42.014363,
+   "lon": -87.678927,
+   "street": "7340 N Rogers Ave",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60626",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(773) 262-5835",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/pottawattomie-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration, ages 25+): Wed & Fri 1:30–2:30 PM, east court. Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-union-park",
+   "name": "Union Park",
+   "aliases": [
+    "Chicago Park District"
+   ],
+   "lat": 41.884932,
+   "lon": -87.664735,
+   "street": "1501 W Randolph St",
+   "city": "Chicago",
+   "region": "IL",
+   "postcode": "60607",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(312) 746-5494",
+   "web": "https://www.chicagoparkdistrict.com/parks-facilities/union-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton open play (registration, 18+): Tue 5:30–7:30 PM; Sat 1:30–3:30 PM. Seasonal sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-cathy-mahoney-recreation-center",
+   "name": "Cathy Mahoney Recreation Center",
+   "aliases": [
+    "Downers Grove Park District Recreation Center",
+    "4500 Fitness",
+    "Downers Grove Park District"
+   ],
+   "lat": 41.804348,
+   "lon": -88.038109,
+   "street": "4500 Belmont Rd",
+   "city": "Downers Grove",
+   "region": "IL",
+   "postcode": "60515",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "phone": "630.960.7500",
+   "web": "https://www.dgparks.org/open-gym",
+   "facility": "recCenter",
+   "playTimes": "Badminton open gym (ages 14+, doubles courts): Sun 8–11:30 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-chicago-badminton-academy-lake-zurich",
+   "name": "Chicago Badminton Academy - Lake Zurich",
+   "aliases": [
+    "CBA Lake Zurich",
+    "Chicago Badminton Academy",
+    "CBA"
+   ],
+   "lat": 42.208252,
+   "lon": -88.067569,
+   "street": "570A Telser Rd",
+   "city": "Lake Zurich",
+   "region": "IL",
+   "postcode": "60047",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 14
+   },
+   "priceNote": "散客 $14/人次",
+   "phone": "224-424-7373",
+   "web": "https://cbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 1–10:30 PM; Sat–Sun 9 AM–10:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-egret-badminton-morton-grove",
+   "name": "Egret Badminton - Morton Grove",
+   "aliases": [
+    "Egret Badminton Morton Grove",
+    "Egret Morton Grove",
+    "Egret"
+   ],
+   "lat": 42.030226,
+   "lon": -87.782946,
+   "street": "8150 Lehigh Ave",
+   "unit": "Unit B",
+   "city": "Morton Grove",
+   "region": "IL",
+   "postcode": "60053",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 17
+   },
+   "priceNote": "散客 $17/人次",
+   "phone": "(847) 410-7404",
+   "web": "https://badmintontrainingcenter.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 4–10 PM; Sat 10 AM–9 PM; Sun 10 AM–8 PM.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-il-egret-badminton-naperville",
-   "name": "Egret Badminton Naperville",
+   "name": "Egret Badminton - Naperville",
    "aliases": [
     "Egret Badminton Club Naperville",
     "Egret Naperville",
-    "Egret"
+    "Egret",
+    "Egret Badminton Naperville"
    ],
    "lat": 41.776296,
    "lon": -88.19893,
@@ -1721,22 +2727,99 @@
    "postcode": "60540",
    "country": "US",
    "tz": "America/Chicago",
-   "courts": 9,
    "price": {
     "perPerson": 13
    },
    "priceNote": "散客 $13/人次",
    "phone": "(630) 536-8032",
    "web": "https://badmintontrainingcenter.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Open gym: Mon 12–10:30 PM; Tue–Fri 3–10:30 PM; Sat–Sun 9 AM–10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-fort-hill-activity-center",
+   "name": "Fort Hill Activity Center",
+   "aliases": [
+    "Naperville Park District Fort Hill",
+    "Naperville Park District"
+   ],
+   "lat": 41.774224,
+   "lon": -88.195827,
+   "street": "20 Fort Hill Dr",
+   "city": "Naperville",
+   "region": "IL",
+   "postcode": "60540",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "web": "https://napervilleparks.org/opengym",
+   "facility": "recCenter",
+   "playTimes": "Badminton open gym (ages 14+, first come first served): Sat 1:30–3:30 PM. Evening/weekend open gyms are trimmed during league season (through March).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-midwest-badminton-club-naperville",
+   "name": "Midwest Badminton Club - Naperville",
+   "aliases": [
+    "Midwest Badminton Club Naperville",
+    "MBC Naperville",
+    "Midwest Badminton"
+   ],
+   "lat": 41.811581,
+   "lon": -88.195679,
+   "street": "2019 Corporate Ln",
+   "unit": "Suite 103",
+   "city": "Naperville",
+   "region": "IL",
+   "postcode": "60563",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(630) 364-2345",
+   "web": "https://mbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 3:30–10 PM; Sat–Sun 9 AM–7 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-play-n-thrive-club-naperville",
+   "name": "Play N Thrive Club - Naperville",
+   "aliases": [
+    "PNT Club Naperville",
+    "Play N Thrive Naperville",
+    "PNT Club",
+    "Thrive Academy"
+   ],
+   "lat": 41.757026,
+   "lon": -88.205774,
+   "street": "808 S Route 59",
+   "unit": "Suite 120",
+   "city": "Naperville",
+   "region": "IL",
+   "postcode": "60540",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "847-231-2343",
+   "web": "https://www.pnt.club/naperville",
+   "facility": "multiSport",
+   "playTimes": "Badminton open play daily 7 AM–11 PM (per membership terms); clinics and leagues run alongside. Also pickleball, volleyball, table tennis and cages.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-il-egret-badminton-schaumburg",
-   "name": "Egret Badminton Schaumburg",
+   "name": "Egret Badminton - Schaumburg",
    "aliases": [
     "Egret Badminton Club Schaumburg",
     "Egret Schaumburg",
-    "Egret"
+    "Egret",
+    "Egret Badminton Schaumburg"
    ],
    "lat": 42.052037,
    "lon": -88.065147,
@@ -1752,7 +2835,301 @@
    "priceNote": "散客 $15/人次",
    "phone": "(847) 285-5788",
    "web": "https://badmintontrainingcenter.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Open gym: Mon, Wed & Fri 3–10:30 PM; Tue & Thu 1–10:30 PM; Sat–Sun 9 AM–10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-play-n-thrive-club-schaumburg",
+   "name": "Play N Thrive Club - Schaumburg",
+   "aliases": [
+    "PNT Club Schaumburg",
+    "Play N Thrive Badminton Schaumburg",
+    "PNT Club",
+    "Thrive Academy"
+   ],
+   "lat": 42.048816,
+   "lon": -88.079776,
+   "street": "1230 N Roselle Rd",
+   "city": "Schaumburg",
+   "region": "IL",
+   "postcode": "60195",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "847-231-2343",
+   "web": "https://www.pnt.club/schaumburg",
+   "facility": "dedicated",
+   "playTimes": "Badminton-only club. Open play (per membership terms): Mon–Fri 3–11 PM; Sat–Sun 7 AM–11 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-shannon-pohl-badminton-academy",
+   "name": "Shannon Pohl Badminton Academy",
+   "aliases": [
+    "SPBA",
+    "Shannon Pohl Badminton",
+    "Shannon Pohl Badminton Academy Vernon Hills"
+   ],
+   "lat": 42.21701,
+   "lon": -87.947654,
+   "street": "720 Corporate Woods Pkwy",
+   "city": "Vernon Hills",
+   "region": "IL",
+   "postcode": "60061",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 38
+   },
+   "priceNote": "散客 $15/人次 · 包场 $38/场·时",
+   "phone": "847-821-6948",
+   "web": "https://www.shannonpohl.com/",
+   "facility": "dedicated",
+   "playTimes": "Open gym: Mon–Fri 5:30–7:30 & 7:30–9:30 PM; Sat–Sun 9–11 AM, 5:30–7:30 & 7:30–9:30 PM. Closed for some tournaments (see monthly calendar).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-one-more-game-pickleball-and-badminton-c",
+   "name": "One More Game Pickleball and Badminton Club",
+   "aliases": [
+    "OMG PBB",
+    "OMG Pickleball and Badminton",
+    "One More Game"
+   ],
+   "lat": 42.126635,
+   "lon": -87.930568,
+   "street": "851 Seton Ct",
+   "unit": "Suite 1C",
+   "city": "Wheeling",
+   "region": "IL",
+   "postcode": "60090",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(847) 243-4217",
+   "web": "https://www.omgpbb.com/",
+   "facility": "multiSport",
+   "playTimes": "By reservation only, Mon–Sun 6 AM–11 PM (contact page lists shorter split hours with Wednesday closed).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-il-midwest-badminton-club-woodridge",
+   "name": "Midwest Badminton Club - Woodridge",
+   "aliases": [
+    "Midwest Badminton Club Woodridge",
+    "MBC Woodridge",
+    "Midwest Badminton"
+   ],
+   "lat": 41.73828,
+   "lon": -88.012524,
+   "street": "8202 Lemont Rd",
+   "city": "Woodridge",
+   "region": "IL",
+   "postcode": "60517",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(331) 903-3049",
+   "web": "https://mbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon–Fri 3:30–10 PM; Sat–Sun 9 AM–7 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-in-indy-badminton-club",
+   "name": "Indy Badminton Club",
+   "aliases": [
+    "IBC",
+    "Indy Badminton",
+    "Indy Badminton Club Carmel"
+   ],
+   "lat": 39.928336,
+   "lon": -86.237006,
+   "street": "9801 Mayflower Park Dr",
+   "unit": "Suite 200",
+   "city": "Carmel",
+   "region": "IN",
+   "postcode": "46032",
+   "country": "US",
+   "tz": "America/Indiana/Indianapolis",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "phone": "(317) 268-8316",
+   "web": "https://www.indybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open play (book in CourtReserve): Mon 5:30–10:30 PM; Tue & Thu 6–10:30 PM; Wed 5–10 PM; Fri 5–10 PM; Sat 2–4 PM & 7–10 PM; Sun 7–9:30 PM. Competitive sessions need a 3.5+ rating.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-in-washington-park-family-center",
+   "name": "Washington Park Family Center",
+   "aliases": [
+    "Indy Parks Washington Park",
+    "Indy Parks"
+   ],
+   "lat": 39.810819,
+   "lon": -86.112938,
+   "street": "3130 E 30th St",
+   "city": "Indianapolis",
+   "region": "IN",
+   "postcode": "46218",
+   "country": "US",
+   "tz": "America/Indiana/Indianapolis",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(317) 327-7473",
+   "web": "https://anc.apm.activecommunities.com/indyparks/activity/search/detail/34128",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (ages 16+): Tue & Fri 5–8 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ks-matt-ross-community-center",
+   "name": "Matt Ross Community Center",
+   "aliases": [
+    "City of Overland Park"
+   ],
+   "lat": 38.981817,
+   "lon": -94.669577,
+   "street": "8101 Marty St",
+   "city": "Overland Park",
+   "region": "KS",
+   "postcode": "66204",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 2,
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://www.opkansas.gov/gymnasium",
+   "facility": "recCenter",
+   "playTimes": "Badminton open gym (2 courts, lower-level gym): Wed 6–8 PM; Fri 4–8 PM; Sat 7 AM–1 PM; Sun 10 AM–1 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ks-tomahawk-ridge-community-center",
+   "name": "Tomahawk Ridge Community Center",
+   "aliases": [
+    "City of Overland Park"
+   ],
+   "lat": 38.912823,
+   "lon": -94.677124,
+   "street": "11902 Lowell Ave",
+   "city": "Overland Park",
+   "region": "KS",
+   "postcode": "66213",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 2,
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://www.opkansas.gov/gymnasium-1",
+   "facility": "recCenter",
+   "playTimes": "Badminton open gym (2 courts): Sat 7 AM–1 PM; Sun 10 AM–1 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-la-highland-road-community-park",
+   "name": "Highland Road Community Park",
+   "aliases": [
+    "BREC Highland Road Community Park",
+    "BREC (Recreation and Park Commission for East Baton Rouge Parish)"
+   ],
+   "lat": 30.34835,
+   "lon": -91.076917,
+   "street": "14024 Highland Rd",
+   "city": "Baton Rouge",
+   "region": "LA",
+   "postcode": "70810",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(225) 767-4003",
+   "web": "https://www.brec.org/facility/HighlandRoadCommunityPark",
+   "facility": "recCenter",
+   "playTimes": "Badminton: Tue & Fri 3:30-7:30 PM in the recreation center gym.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-la-loyola-university-sports-complex",
+   "name": "Loyola University Sports Complex",
+   "aliases": [
+    "New Orleans Badminton Club",
+    "NOBC",
+    "Loyola University Recreational Sports Complex"
+   ],
+   "lat": 29.937484,
+   "lon": -90.118603,
+   "street": "6329 Freret St",
+   "city": "New Orleans",
+   "region": "LA",
+   "postcode": "70118",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 4,
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://www.neworleansbadminton.com/",
+   "facility": "school",
+   "playTimes": "New Orleans Badminton Club play: usually Thu 6-9 PM plus one weekend evening (Sat or Sun 5-8 PM). Dates vary and are posted on the club's 'When We Play' page.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ma-dallin-school-gym",
+   "name": "Dallin School Gym",
+   "aliases": [
+    "Arlington Badminton Club",
+    "Arlington Recreation Badminton",
+    "Arlington Recreation"
+   ],
+   "lat": 42.417479,
+   "lon": -71.187266,
+   "street": "185 Florence Ave",
+   "city": "Arlington",
+   "region": "MA",
+   "postcode": "02474",
+   "country": "US",
+   "tz": "America/New_York",
+   "web": "https://arlingtonma.myrec.com/info/activities/program_details.aspx?ProgramID=29284",
+   "facility": "school",
+   "playTimes": "Arlington Recreation adult badminton (16+): Fri 6:30-9:30 PM, fall session Sep-Nov; pre-registration required.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ma-carlisle-public-school-corey-gym",
+   "name": "Carlisle Public School - Corey Gym",
+   "aliases": [
+    "Carlisle Badminton Club",
+    "Carlisle Recreation Badminton for Adults",
+    "Carlisle Recreation"
+   ],
+   "lat": 42.527796,
+   "lon": -71.349813,
+   "street": "83 School St",
+   "city": "Carlisle",
+   "region": "MA",
+   "postcode": "01741",
+   "country": "US",
+   "tz": "America/New_York",
+   "web": "https://carlislema.myrec.com/info/activities/program_details.aspx?ProgramID=30689",
+   "facility": "school",
+   "playTimes": "Adult badminton (16+): Mon & Wed 7-9:30 PM, fall season Sep-Dec; pre-register with Carlisle Recreation (open to other towns).",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ma-boston-badminton-at-harvard",
@@ -1777,7 +3154,35 @@
    "priceNote": "散客 $18/人次 · 包场 $40/场·时",
    "phone": "(978) 707-5203",
    "web": "https://www.bostonbadminton.com/harvard",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 4:30-10:30 PM; Sat 8:30 AM-9 PM; Sun 8:30 AM-6 PM (24-hour key access for members).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ma-lincoln-hancock-community-school",
+   "name": "Lincoln-Hancock Community School",
+   "aliases": [
+    "Quincy Badminton Club",
+    "QBC"
+   ],
+   "lat": 42.24265,
+   "lon": -71.011233,
+   "street": "300 Granite St",
+   "city": "Quincy",
+   "region": "MA",
+   "postcode": "02169",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 3,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(617) 302-7318",
+   "web": "https://www.quincybadmintonclub.com/",
+   "facility": "school",
+   "playTimes": "Quincy Badminton Club: Fri 6:30-9:30 PM (not on holidays), open to the public; 2nd-floor gym, parking on Water St.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ma-boston-badminton-westborough",
@@ -1803,7 +3208,9 @@
    "priceNote": "散客 $18/人次 · 包场 $40/场·时",
    "phone": "(508) 329-1710",
    "web": "https://www.bostonbadminton.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 4:30-10:30 PM; Sat 8:30 AM-9 PM; Sun 8:30 AM-6 PM (24-hour key access for members).",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ma-ljb-badminton-club",
@@ -1824,12 +3231,741 @@
    "courts": 14,
    "price": {
     "perPerson": 20,
-    "perCourtHour": 30
+    "perCourtHour": 40
    },
-   "priceNote": "散客 $20/人次 · 包场 $30/场·时",
+   "priceNote": "散客 $20/人次 · 包场 $40/场·时",
    "phone": "(339) 227-3580",
    "web": "https://ljbbc.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 9 AM-11 PM; Sat-Sun 8 AM-11 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-marilyn-j-praisner-community-recreation",
+   "name": "Marilyn J. Praisner Community Recreation Center",
+   "aliases": [
+    "Marilyn J. Praisner Community Center",
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.100928,
+   "lon": -76.941311,
+   "street": "14906 Old Columbia Pike",
+   "city": "Burtonsville",
+   "region": "MD",
+   "postcode": "20866",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-4970",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/marilyn-j-praisner-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+): Tue 6-8:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-jane-e-lawton-community-recreation-cente",
+   "name": "Jane E. Lawton Community Recreation Center",
+   "aliases": [
+    "Jane E. Lawton Community Center",
+    "Montgomery County Recreation"
+   ],
+   "lat": 38.982683,
+   "lon": -77.086884,
+   "street": "4301 Willow Ln",
+   "city": "Chevy Chase",
+   "region": "MD",
+   "postcode": "20815",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-6855",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/jane-e-lawton-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+): Thu 6-8:45 PM (most weeks).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-wisconsin-place-community-recreation-cen",
+   "name": "Wisconsin Place Community Recreation Center",
+   "aliases": [
+    "Montgomery County Recreation"
+   ],
+   "lat": 38.959674,
+   "lon": -77.087714,
+   "street": "5311 Friendship Blvd",
+   "city": "Chevy Chase",
+   "region": "MD",
+   "postcode": "20815",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-8088",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/wisconsin-place-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+): Mon 5-8:45 PM, Sat 9:30 AM-12 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-capital-badminton-academy-columbia",
+   "name": "Capital Badminton Academy - Columbia",
+   "aliases": [
+    "CBA Columbia",
+    "Capital Badminton Academy Columbia"
+   ],
+   "lat": 39.230785,
+   "lon": -76.826839,
+   "street": "9188 Red Branch Rd",
+   "unit": "Suite 450",
+   "city": "Columbia",
+   "region": "MD",
+   "postcode": "21045",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 17,
+   "price": {
+    "perPerson": 20,
+    "perCourtHour": 60
+   },
+   "priceNote": "散客 $20/人次 · 包场 $60/场·时",
+   "phone": "(443) 966-3331",
+   "web": "https://www.capitalbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open daily 9 AM-11 PM. Drop-in: Mon, Tue, Thu 5-10 PM; Wed 12-3 PM & 5-11 PM; Fri 5-11 PM; Sat-Sun 10 AM-7 PM (summer drop-in hours differ).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-damascus-community-recreation-center",
+   "name": "Damascus Community Recreation Center",
+   "aliases": [
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.275015,
+   "lon": -77.216367,
+   "street": "25520 Oak Dr",
+   "city": "Damascus",
+   "region": "MD",
+   "postcode": "20872",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-6930",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/damascus-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+): Mon & Wed 9 AM-12 PM, Fri 9 AM-12:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-capital-badminton-academy-gaithersburg",
+   "name": "Capital Badminton Academy - Gaithersburg",
+   "aliases": [
+    "Capital Badminton Academy",
+    "CBA Gaithersburg",
+    "Capital Badminton"
+   ],
+   "lat": 39.164126,
+   "lon": -77.153791,
+   "street": "7518 Lindbergh Dr",
+   "city": "Gaithersburg",
+   "region": "MD",
+   "postcode": "20879",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 4,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 45
+   },
+   "priceNote": "散客 $15/人次 · 包场 $45/场·时",
+   "phone": "(240) 200-5666",
+   "web": "https://www.capitalbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Fri 4-10 PM, Sat-Sun 10 AM-8 PM (drop-in sessions booked online).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-gaithersburg-high-school",
+   "name": "Gaithersburg High School",
+   "aliases": [
+    "Gaithersburg HS",
+    "ECBC Open Gym - Gaithersburg HS",
+    "East Coast Badminton Club"
+   ],
+   "lat": 39.134782,
+   "lon": -77.193945,
+   "street": "101 Education Blvd",
+   "city": "Gaithersburg",
+   "region": "MD",
+   "postcode": "20877",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(202) 390-8988",
+   "web": "https://www.eastcoastbadmintonclub.com/",
+   "facility": "school",
+   "playTimes": "ECBC open gym (drop-in): usually Mon, Wed & Thu 7:30-10 PM ($5).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-quince-orchard-high-school",
+   "name": "Quince Orchard High School",
+   "aliases": [
+    "Quince Orchard HS",
+    "QOHS",
+    "ECBC Open Gym - Quince Orchard HS",
+    "East Coast Badminton Club"
+   ],
+   "lat": 39.114892,
+   "lon": -77.253062,
+   "street": "15800 Quince Orchard Rd",
+   "city": "Gaithersburg",
+   "region": "MD",
+   "postcode": "20878",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(202) 390-8988",
+   "web": "https://www.eastcoastbadmintonclub.com/",
+   "facility": "school",
+   "playTimes": "ECBC open gym (drop-in): usually Tue & Fri 7:30-10 PM ($5); occasional extra weekday or weekend sessions.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-upper-county-community-recreation-center",
+   "name": "Upper County Community Recreation Center",
+   "aliases": [
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.149661,
+   "lon": -77.168813,
+   "street": "8201 Emory Grove Rd",
+   "city": "Gaithersburg",
+   "region": "MD",
+   "postcode": "20877",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-8077",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/upper-county-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in: Tue 6:15-8:45 PM (all ages), Sat 9:15-11 AM (teens & adults).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-germantown-community-recreation-center",
+   "name": "Germantown Community Recreation Center",
+   "aliases": [
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.164932,
+   "lon": -77.287046,
+   "street": "18905 Kingsview Rd",
+   "city": "Germantown",
+   "region": "MD",
+   "postcode": "20874",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-8095",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/germantown-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (16+): some Sat 9-11:15 AM and occasional Thu 5-8:45 PM (not every week).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-plum-gar-community-recreation-center",
+   "name": "Plum Gar Community Recreation Center",
+   "aliases": [
+    "Plum Gar Neighborhood Recreation Center",
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.17652,
+   "lon": -77.235204,
+   "street": "19561 Scenery Dr",
+   "city": "Germantown",
+   "region": "MD",
+   "postcode": "20876",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-4919",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/plum-gar-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in: all ages Mon 7-8:50 PM & Sat 10 AM-12 PM; 18+ Thu 6:30-8:50 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-northeast-regional-recreation-center",
+   "name": "Northeast Regional Recreation Center",
+   "aliases": [
+    "NERRC",
+    "Loch Raven Badminton Club",
+    "LRBC"
+   ],
+   "lat": 39.37347,
+   "lon": -76.559722,
+   "street": "7501 Oakleigh Rd",
+   "city": "Parkville",
+   "region": "MD",
+   "postcode": "21234",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 16,
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "phone": "410-887-5374",
+   "web": "https://www.lochravenbadmintonclub.com/",
+   "facility": "recCenter",
+   "playTimes": "Loch Raven BC: Tue & Thu 8-11 PM, Fri 6:30-11 PM, Sun 6:30-11 PM; Sat 8 AM-12:30 PM (junior coaching from 8:15 AM).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-potomac-community-recreation-center",
+   "name": "Potomac Community Recreation Center",
+   "aliases": [
+    "Potomac Community Center",
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.041276,
+   "lon": -77.192392,
+   "street": "11315 Falls Rd",
+   "city": "Potomac",
+   "region": "MD",
+   "postcode": "20854",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-6960",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/potomac-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+ and seniors): Fri 12-2:25 PM, Sat 2-4:55 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-winston-churchill-high-school",
+   "name": "Winston Churchill High School",
+   "aliases": [
+    "Churchill HS",
+    "ECBC Open Gym - Churchill HS",
+    "East Coast Badminton Club"
+   ],
+   "lat": 39.043755,
+   "lon": -77.171871,
+   "street": "11300 Gainsborough Rd",
+   "city": "Potomac",
+   "region": "MD",
+   "postcode": "20854",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "phone": "(202) 390-8988",
+   "web": "https://www.eastcoastbadmintonclub.com/",
+   "facility": "school",
+   "playTimes": "ECBC open gym (drop-in): Sat 5:30-8:30 PM, Sun 2-5 PM ($7 weekend).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-bauer-drive-community-recreation-center",
+   "name": "Bauer Drive Community Recreation Center",
+   "aliases": [
+    "Bauer Drive Community Center",
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.09366,
+   "lon": -77.109002,
+   "street": "14625 Bauer Dr",
+   "city": "Rockville",
+   "region": "MD",
+   "postcode": "20853",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-6922",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/bauer-drive-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+): Tue 6-8:30 PM. Sat 9 AM-1:45 PM badminton classes need registration.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-capital-badminton-academy-rockville",
+   "name": "Capital Badminton Academy - Rockville",
+   "aliases": [
+    "CBA Rockville",
+    "CBA-Rockville"
+   ],
+   "lat": 39.047869,
+   "lon": -77.100497,
+   "street": "4960 Boiling Brook Pkwy",
+   "city": "Rockville",
+   "region": "MD",
+   "postcode": "20852",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 4,
+   "price": {
+    "perCourtHour": 35
+   },
+   "priceNote": "包场 $35/场·时",
+   "phone": "(240) 308-1942",
+   "web": "https://www.capitalbadminton.com/",
+   "facility": "dedicated",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-nancy-h-dacek-north-potomac-community-re",
+   "name": "Nancy H. Dacek North Potomac Community Recreation Center",
+   "aliases": [
+    "North Potomac Community Recreation Center",
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.082861,
+   "lon": -77.232663,
+   "street": "13850 Travilah Rd",
+   "city": "Rockville",
+   "region": "MD",
+   "postcode": "20850",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-773-4800",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/nancy-h-dacek-north-potomac-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in: 18+ Wed 6:15-8:45 PM, Thu 6-8:45 PM, Sun 2:30-4:45 PM; 55+ Thu 9 AM-12 PM; family Thu 3-5:45 PM; youth 11-17 Sun 12-2:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-east-county-community-recreation-center",
+   "name": "East County Community Recreation Center",
+   "aliases": [
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.077438,
+   "lon": -76.942402,
+   "street": "3310 Gateshead Manor Way",
+   "city": "Silver Spring",
+   "region": "MD",
+   "postcode": "20904",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-8090",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/east-county-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+): Thu 6:30-8:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-gwendolyn-e-coffield-community-recreatio",
+   "name": "Gwendolyn E. Coffield Community Recreation Center",
+   "aliases": [
+    "Coffield Community Center",
+    "Montgomery County Recreation"
+   ],
+   "lat": 38.99723,
+   "lon": -77.054063,
+   "street": "2450 Lyttonsville Rd",
+   "city": "Silver Spring",
+   "region": "MD",
+   "postcode": "20910",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-4900",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/gwendolyn-e-coffield-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (18+): Thu 6-8:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-white-oak-community-recreation-center",
+   "name": "White Oak Community Recreation Center",
+   "aliases": [
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.045315,
+   "lon": -76.975699,
+   "street": "1700 April Ln",
+   "city": "Silver Spring",
+   "region": "MD",
+   "postcode": "20904",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-777-6940",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/white-oak-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Adult badminton open gym: Tue 9 AM-2 PM, Wed 6-8:45 PM, Sat 5-9:45 PM (closed major holidays/events).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-md-wheaton-community-recreation-center",
+   "name": "Wheaton Community Recreation Center",
+   "aliases": [
+    "Montgomery County Recreation"
+   ],
+   "lat": 39.047176,
+   "lon": -77.051939,
+   "street": "11701 Georgia Ave",
+   "city": "Wheaton",
+   "region": "MD",
+   "postcode": "20902",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "240-773-4825",
+   "web": "https://www.montgomerycountymd.gov/montgomery-county-recreation/facilities/recreation-centers/wheaton-community-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in: Tue 9 AM-12 PM (55+), Tue 6-8:45 PM (15+).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-mi-the-summit-on-the-park",
+   "name": "The Summit on the Park",
+   "aliases": [
+    "Summit on the Park",
+    "Canton Summit",
+    "Canton Leisure Services"
+   ],
+   "lat": 42.296008,
+   "lon": -83.493726,
+   "street": "46000 Summit Pkwy",
+   "city": "Canton",
+   "region": "MI",
+   "postcode": "48188",
+   "country": "US",
+   "tz": "America/Detroit",
+   "phone": "734/394-5460",
+   "web": "https://csc.canton-mi.org/160/Schedules-Amenities",
+   "facility": "recCenter",
+   "playTimes": "Open badminton: Thu 6–9:45 PM (West Gym); Sun 9–11 AM (East Gym).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-mi-troy-community-center",
+   "name": "Troy Community Center",
+   "aliases": [
+    "TCC Fitness Center",
+    "Troy Recreation",
+    "City of Troy Recreation"
+   ],
+   "lat": 42.56621,
+   "lon": -83.147936,
+   "street": "3179 Livernois Rd",
+   "city": "Troy",
+   "region": "MI",
+   "postcode": "48083",
+   "country": "US",
+   "tz": "America/Detroit",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "248.524.3484",
+   "web": "https://rec.troymi.gov/about/hours.php",
+   "facility": "recCenter",
+   "playTimes": "Badminton drop-in (adults 18+): Mon 5–9 AM & 5–7:45 PM; Tue 5–8:30 AM & 5–7:45 PM; Wed 5–10 AM; Thu 5–9:30 AM & 5–10 PM; Fri 5–10 AM & 4:30–10 PM; Sat 7–11:30 AM (10–11:30 all ages); Sun 8 AM–12:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-mo-arch-pickleball-badminton-club",
+   "name": "Arch Pickleball & Badminton Club",
+   "aliases": [
+    "Arch Pickleball and Badminton",
+    "Arch Badminton Center",
+    "ARCH"
+   ],
+   "lat": 38.735239,
+   "lon": -90.403357,
+   "street": "11333 Blake Dr",
+   "city": "Bridgeton",
+   "region": "MO",
+   "postcode": "63044",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 6,
+   "phone": "636-364-8668",
+   "web": "https://archpickleballmo.com/",
+   "facility": "multiSport",
+   "playTimes": "Mon–Sat 8 AM–10 PM; Sun 8 AM–8 PM (badminton court booking, group play and lessons).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nc-first-baptist-church-greensboro",
+   "name": "First Baptist Church Greensboro",
+   "aliases": [
+    "First Baptist Church",
+    "Greensboro Badminton Club - First Baptist",
+    "Greensboro Badminton Club"
+   ],
+   "lat": 36.074204,
+   "lon": -79.802662,
+   "street": "1000 W Friendly Ave",
+   "city": "Greensboro",
+   "region": "NC",
+   "postcode": "27401",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://www.greensborobadminton.com/",
+   "facility": "communityHall",
+   "playTimes": "Greensboro BC: Wed 6-9 PM (training programme first; play from about 7:30 PM); occasional Fri 6-9 PM training.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nc-glenwood-recreation-center",
+   "name": "Glenwood Recreation Center",
+   "aliases": [
+    "Greensboro Badminton Club - Glenwood",
+    "Greensboro Badminton Club"
+   ],
+   "lat": 36.049723,
+   "lon": -79.822262,
+   "street": "2010 Coliseum Blvd",
+   "city": "Greensboro",
+   "region": "NC",
+   "postcode": "27403",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://www.greensborobadminton.com/",
+   "facility": "recCenter",
+   "playTimes": "Greensboro BC play sessions: Tue & Thu 6:30-8:45 PM; some Saturdays 1-4:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nc-leonard-recreation-center",
+   "name": "Leonard Recreation Center",
+   "aliases": [
+    "Leonard Recreational Center",
+    "Greensboro Badminton Club"
+   ],
+   "lat": 36.099626,
+   "lon": -79.906146,
+   "street": "6324 Ballinger Rd",
+   "city": "Greensboro",
+   "region": "NC",
+   "postcode": "27410",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://www.greensborobadminton.com/",
+   "facility": "recCenter",
+   "playTimes": "Greensboro BC play sessions: Mon & Fri 6:30-8:45 PM, Sat 1-4:45 PM (some Saturdays at Glenwood instead).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nc-triangle-badminton-club",
+   "name": "Triangle Badminton Club",
+   "aliases": [
+    "TBC",
+    "Triangle Badminton"
+   ],
+   "lat": 35.81005,
+   "lon": -78.82195,
+   "street": "1012 Morrisville Pkwy",
+   "city": "Morrisville",
+   "region": "NC",
+   "postcode": "27560",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 10,
+   "price": {
+    "perPerson": 8,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $8/人次 · 包场 $40/场·时",
+   "phone": "(919) 650-1824",
+   "web": "https://www.trianglebadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Open weekdays 6-8:30 AM and 4-10 PM, weekends 7 AM-8 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nc-club-7-badminton",
+   "name": "Club 7 Badminton",
+   "aliases": [
+    "Club 7",
+    "Club 7 Charlotte",
+    "Club 7 Sports"
+   ],
+   "lat": 35.084321,
+   "lon": -80.704085,
+   "street": "3424 Pleasant Plains Rd",
+   "city": "Stallings",
+   "region": "NC",
+   "postcode": "28104",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 8,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "web": "https://www.club7sports.com/",
+   "facility": "dedicated",
+   "playTimes": "Open play in 3-hour slots: Mon-Fri 6:30-9:30 PM; Sat & Sun 12-3 PM and 3-6 PM.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-nj-international-badminton-center-edison",
@@ -1848,9 +3984,280 @@
    "country": "US",
    "tz": "America/New_York",
    "courts": 6,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
    "phone": "(732) 549-7190",
    "web": "https://www.ibcusa.org/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Court reservations only (book 48 h ahead via CourtReserve): Mon-Fri 4-11 PM slots; Sat-Sun 8 AM-11 PM slots. Sunday open play 8:30-11 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-cardinal-badminton",
+   "name": "Cardinal Badminton",
+   "lat": 40.879043,
+   "lon": -73.985595,
+   "street": "500 Nordhoff Pl",
+   "city": "Englewood",
+   "region": "NJ",
+   "postcode": "07631",
+   "country": "US",
+   "tz": "America/New_York",
+   "phone": "(201) 639-8037",
+   "web": "https://www.cardinalbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open daily 5 AM-12 AM (PIN-code entry for bookings). Court bookings, drop-ins and open play via CourtReserve.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-northeast-badminton-club-hamilton",
+   "name": "NorthEast Badminton Club - Hamilton",
+   "aliases": [
+    "NEBC Hamilton"
+   ],
+   "lat": 40.258739,
+   "lon": -74.682553,
+   "street": "3 Nami Ln",
+   "unit": "#1",
+   "city": "Hamilton Township",
+   "region": "NJ",
+   "postcode": "08619",
+   "country": "US",
+   "tz": "America/New_York",
+   "phone": "(732) 523-1888",
+   "web": "https://nebcus.com/",
+   "facility": "dedicated",
+   "playTimes": "Open 24 hours (call before you come). Closed Dec 24-25 and Jan 1.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-jersey-city-badminton-club",
+   "name": "Jersey City Badminton Club",
+   "aliases": [
+    "JCBC"
+   ],
+   "lat": 40.735287,
+   "lon": -74.072593,
+   "street": "85 Giles Ave",
+   "city": "Jersey City",
+   "region": "NJ",
+   "postcode": "07306",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 4,
+   "price": {
+    "perPerson": 14,
+    "perCourtHour": 28
+   },
+   "priceNote": "散客 $14/人次 · 包场 $28/场·时",
+   "phone": "(201) 779-6910",
+   "web": "https://www.jerseycitybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Fri 6-11 PM and Sat 1-9 PM in 90-120 min booking slots; Sun usually closed. Leveled open-play slots Fri & Sat. Book ahead; ring the bell at the steel gym doors.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-kotofit-3rd-street",
+   "name": "Kotofit - 3rd Street",
+   "aliases": [
+    "Kotofit Badminton",
+    "Kotofit 3rd St"
+   ],
+   "lat": 40.723106,
+   "lon": -74.043562,
+   "street": "209 3rd St",
+   "city": "Jersey City",
+   "region": "NJ",
+   "postcode": "07302",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 3,
+   "price": {
+    "perPerson": 20,
+    "perCourtHour": 60
+   },
+   "priceNote": "散客 $20/人次 · 包场 $60/场·时",
+   "phone": "(551) 866-1650",
+   "web": "https://www.kotofit.com/locations/club/new-jersey-jersey-city-3rd-st",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 7-10 PM; open play and private courts booked in the Kotofit app.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-kotofit-bishop-st",
+   "name": "Kotofit - Bishop St",
+   "aliases": [
+    "Kotofit Bishop"
+   ],
+   "lat": 40.718074,
+   "lon": -74.065497,
+   "street": "88 Bishop St",
+   "city": "Jersey City",
+   "region": "NJ",
+   "postcode": "07304",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 4,
+   "price": {
+    "perPerson": 20,
+    "perCourtHour": 60
+   },
+   "priceNote": "散客 $20/人次 · 包场 $60/场·时",
+   "phone": "(551) 866-1650",
+   "web": "https://www.kotofit.com/locations/club/new-jersey-jersey-city-bishop-st",
+   "facility": "multiSport",
+   "playTimes": "Open daily 6 AM-2 AM (app-based entry); open play and private courts booked in the Kotofit app.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-kotofit-brunswick-st",
+   "name": "Kotofit - Brunswick St",
+   "aliases": [
+    "Kotofit Brunswick"
+   ],
+   "lat": 40.72609,
+   "lon": -74.050504,
+   "street": "189 Brunswick St",
+   "city": "Jersey City",
+   "region": "NJ",
+   "postcode": "07302",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 3,
+   "price": {
+    "perPerson": 20,
+    "perCourtHour": 60
+   },
+   "priceNote": "散客 $20/人次 · 包场 $60/场·时",
+   "phone": "(551) 866-1650",
+   "web": "https://www.kotofit.com/locations/club/new-jersey-jersey-city-brunswick-st",
+   "facility": "multiSport",
+   "playTimes": "Open daily 6 AM-2 AM (app-based entry); open play and private courts booked in the Kotofit app.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-kotofit-summit",
+   "name": "Kotofit - Summit",
+   "aliases": [
+    "Kotofit Summit Ave"
+   ],
+   "lat": 40.729391,
+   "lon": -74.062117,
+   "street": "413 Summit Ave",
+   "city": "Jersey City",
+   "region": "NJ",
+   "postcode": "07306",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 2,
+   "price": {
+    "perPerson": 20,
+    "perCourtHour": 60
+   },
+   "priceNote": "散客 $20/人次 · 包场 $60/场·时",
+   "phone": "(551) 866-1650",
+   "web": "https://www.kotofit.com/locations/club/new-jersey-jersey-city-summit-ave",
+   "facility": "multiSport",
+   "playTimes": "Open daily 6 AM-2 AM (app-based entry); open play and private courts booked in the Kotofit app.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-new-hope-badminton-academy",
+   "name": "New Hope Badminton Academy",
+   "aliases": [
+    "NHBA"
+   ],
+   "lat": 40.385559,
+   "lon": -74.921085,
+   "street": "1422 NJ-179",
+   "city": "Lambertville",
+   "region": "NJ",
+   "postcode": "08530",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 6,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 45
+   },
+   "priceNote": "散客 $15/人次 · 包场 $45/场·时",
+   "phone": "(609) 333-3115",
+   "web": "https://newhopebadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 4-11 PM; Sat-Sun 9 AM-11 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-mount-pleasant-middle-school-gym",
+   "name": "Mount Pleasant Middle School Gym",
+   "aliases": [
+    "Livingston Badminton Coed Open Play",
+    "Livingston Recreation"
+   ],
+   "lat": 40.796378,
+   "lon": -74.305279,
+   "street": "11 Broadlawn Dr",
+   "city": "Livingston",
+   "region": "NJ",
+   "postcode": "07039",
+   "country": "US",
+   "tz": "America/New_York",
+   "web": "https://www.livingstonnj.org/648/Badminton---Coed-Open-Play",
+   "facility": "school",
+   "playTimes": "Coed open play (18+): Wed 7:30-10 PM, Oct-May; no sessions when schools are closed.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-multisports-kingdom-manalapan",
+   "name": "Multisports Kingdom - Manalapan",
+   "aliases": [
+    "MSK Manalapan",
+    "Sportika"
+   ],
+   "lat": 40.259832,
+   "lon": -74.367758,
+   "street": "150 Woodward Rd",
+   "city": "Manalapan",
+   "region": "NJ",
+   "postcode": "07726",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perCourtHour": 50
+   },
+   "priceNote": "包场 $50/场·时",
+   "phone": "(732) 792-9900",
+   "web": "https://www.multisportskingdom.com/sports/other-sports/badminton",
+   "facility": "multiSport",
+   "playTimes": "Open 6 AM-11 PM; badminton by court booking for groups (single day or whole season).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-monroe-sports-center",
+   "name": "Monroe Sports Center",
+   "aliases": [
+    "Monroe 33 Tennis, Basketball and Sports Center",
+    "MSK Monroe"
+   ],
+   "lat": 40.26651,
+   "lon": -74.434916,
+   "street": "4 Farrington Blvd",
+   "city": "Monroe Township",
+   "region": "NJ",
+   "postcode": "08831",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perCourtHour": 55
+   },
+   "priceNote": "包场 $55/场·时",
+   "phone": "(732) 792-9900",
+   "web": "https://www.monroesportscenter.com/badminton/group-play/",
+   "facility": "multiSport",
+   "playTimes": "Open 6 AM-11 PM; badminton court bookings for groups (primetime weekdays 5-10 PM and weekends).",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-nj-new-jersey-badminton-club-montville",
@@ -1876,7 +4283,298 @@
    "priceNote": "散客 $15/人次",
    "phone": "(201) 898-0382",
    "web": "https://www.njbadminton.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Fri 5-10:30 PM, Sat-Sun 9 AM-9 PM. Walk-in open play on courts 1 and 4-7; challenge courts 2-3 (advanced doubles).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-international-badminton-center-pine-broo",
+   "name": "International Badminton Center - Pine Brook",
+   "aliases": [
+    "IBC Pine Brook",
+    "IBC 2",
+    "International Badminton"
+   ],
+   "lat": 40.861207,
+   "lon": -74.339402,
+   "street": "10 New Maple Ave",
+   "unit": "Unit 302",
+   "city": "Pine Brook",
+   "region": "NJ",
+   "postcode": "07058",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 4,
+   "phone": "(732) 549-7190",
+   "web": "https://www.ibcusa.org/location",
+   "facility": "multiSport",
+   "playTimes": "Court reservations only (book 48 h ahead via CourtReserve): weekday evening slots 6-11 PM; Sat-Sun 6:30 AM-11 PM slots.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-njbc-dream-secaucus",
+   "name": "NJBC Dream - Secaucus",
+   "aliases": [
+    "New Jersey Badminton Club - Secaucus",
+    "NJBC Dream"
+   ],
+   "lat": 40.781209,
+   "lon": -74.078661,
+   "street": "225 Meadowlands Pkwy",
+   "city": "Secaucus",
+   "region": "NJ",
+   "postcode": "07094",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 21,
+   "phone": "(201) 898-0382",
+   "web": "https://www.njbadminton.com/announcements",
+   "facility": "dedicated",
+   "playTimes": "Court availability Mon-Fri 8 AM-12 AM, Sat-Sun 6 AM-12 AM (CourtReserve).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-northeast-badminton-club-somerset",
+   "name": "NorthEast Badminton Club - Somerset",
+   "aliases": [
+    "NEBC",
+    "Northeast Badminton Club",
+    "NEBC Somerset"
+   ],
+   "lat": 40.539925,
+   "lon": -74.538668,
+   "street": "142 Belmont Dr",
+   "city": "Somerset",
+   "region": "NJ",
+   "postcode": "08873",
+   "country": "US",
+   "tz": "America/New_York",
+   "phone": "(609) 686-9099",
+   "web": "https://nebcus.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 8 AM-11 PM; Sat-Sun 5 AM-10 PM (weekends 11 AM-6 PM mostly junior training). Court booking by phone.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nj-all-season-sports-academy",
+   "name": "All Season Sports Academy",
+   "aliases": [
+    "South Plainfield Badminton Club",
+    "SPBC"
+   ],
+   "lat": 40.559854,
+   "lon": -74.422567,
+   "street": "2700 Hamilton Blvd",
+   "city": "South Plainfield",
+   "region": "NJ",
+   "postcode": "07080",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 4,
+   "price": {
+    "perPerson": 12,
+    "perCourtHour": 36
+   },
+   "priceNote": "散客 $12/人次 · 包场 $36/场·时",
+   "phone": "(201) 779-6910",
+   "web": "https://www.southplainfieldbadminton.com/",
+   "facility": "multiSport",
+   "playTimes": "SPBC open play (2-hour slots, booking required): Tue 6-8 & 8-10 PM, Thu 6-8 PM, Sun 8-10 AM. Full-court bookings in 90-120 min slots.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nm-johnny-tapia-community-center-at-wells-p",
+   "name": "Johnny Tapia Community Center at Wells Park",
+   "aliases": [
+    "Wells Park Community Center"
+   ],
+   "lat": 35.095235,
+   "lon": -106.650854,
+   "street": "500 Mountain Rd NW",
+   "city": "Albuquerque",
+   "region": "NM",
+   "postcode": "87102",
+   "country": "US",
+   "tz": "America/Denver",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(505) 848-1390",
+   "web": "https://www.cabq.gov/family/crei/community-centers/johnny-tapia-community-center-at-wells-park/johnny-tapia-community-center-at-wells-park",
+   "facility": "recCenter",
+   "playTimes": "Badminton: Tue & Thu 10 AM-12 PM and 5:30-7:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nv-desert-breeze-community-center",
+   "name": "Desert Breeze Community Center",
+   "lat": 36.125814,
+   "lon": -115.277481,
+   "street": "8275 Spring Mountain Rd",
+   "city": "Las Vegas",
+   "region": "NV",
+   "postcode": "89117",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 2
+   },
+   "priceNote": "散客 $2/人次",
+   "phone": "(702) 455-8334",
+   "web": "https://www.clarkcountynv.gov/government/departments/parks___recreation/open-gym-db",
+   "facility": "recCenter",
+   "playTimes": "Open gym badminton: adults 18+ Mon 12:30-2:30 PM & Fri 10:30 AM-12 PM ($2); seniors 55+ Fri 9-10:30 AM (free). Weekday open gym pauses in summer.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nv-vegas-badminton-academy",
+   "name": "Vegas Badminton Academy",
+   "aliases": [
+    "VBA"
+   ],
+   "lat": 36.077747,
+   "lon": -115.248046,
+   "street": "7175 W Patrick Ln",
+   "unit": "Ste 120",
+   "city": "Las Vegas",
+   "region": "NV",
+   "postcode": "89113",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 4,
+   "price": {
+    "perCourtHour": 30
+   },
+   "priceNote": "包场 $30/场·时",
+   "phone": "(725) 294-4049",
+   "web": "https://vegasbadmintonacademy.com/",
+   "facility": "dedicated",
+   "playTimes": "Open daily 6 AM-11 PM (members and their guests; online court booking).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-nv-neil-road-recreation-center",
+   "name": "Neil Road Recreation Center",
+   "aliases": [
+    "NRRC",
+    "Gallop Badminton Club"
+   ],
+   "lat": 39.488812,
+   "lon": -119.780359,
+   "street": "3925 Neil Rd",
+   "city": "Reno",
+   "region": "NV",
+   "postcode": "89502",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(775) 689-8484",
+   "web": "http://gallop.c1.biz/",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (18+), half gym / 4 courts: Mon, Wed & Thu 6-9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-350-avenue-x-school-gym",
+   "name": "350 Avenue X School Gym",
+   "aliases": [
+    "WB Brooklyn Badminton Club",
+    "New York Brooklyn Badminton",
+    "BrooklynBadmin"
+   ],
+   "lat": 40.590492,
+   "lon": -73.970138,
+   "street": "350 Avenue X",
+   "city": "Brooklyn",
+   "region": "NY",
+   "postcode": "11223",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 6,
+   "price": {
+    "perPerson": 17
+   },
+   "priceNote": "散客 $17/人次",
+   "phone": "(917) 345-7878",
+   "web": "http://www.brooklynbadmin.com/",
+   "facility": "school",
+   "playTimes": "Club nights Tue & Thu evenings, about 7-10 PM (homepage says 7:45-10 PM). Walk in, no reservation needed.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-dragon-badminton-dyker-1400-benson-ave-g",
+   "name": "Dragon Badminton - Dyker (1400 Benson Ave gym)",
+   "aliases": [
+    "Dragon Badminton Club"
+   ],
+   "lat": 40.610958,
+   "lon": -74.01347,
+   "street": "1400 Benson Ave",
+   "city": "Brooklyn",
+   "region": "NY",
+   "postcode": "11228",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(347) 866-4880",
+   "web": "https://www.dragonbadminton.com/locations-schedules-pricing",
+   "facility": "school",
+   "playTimes": "Open play Sat 3:30-6:30 PM (walk-in).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-john-dewey-high-school-gym",
+   "name": "John Dewey High School Gym",
+   "aliases": [
+    "Brooklyn Badminton"
+   ],
+   "lat": 40.587536,
+   "lon": -73.983444,
+   "street": "2485 Stillwell Ave",
+   "city": "Brooklyn",
+   "region": "NY",
+   "postcode": "11214",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 8,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 90
+   },
+   "priceNote": "散客 $15/人次 · 包场 $90/场·时",
+   "phone": "(718) 283-4563",
+   "web": "https://www.brooklynbadminton.com/",
+   "facility": "school",
+   "playTimes": "Open play: Mon-Fri 7-11 PM; Sat 1-6 PM; Sun 10 AM-2 PM & 2-6 PM. Enter on Stillwell Ave near Harway Ave.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-al-oerter-recreation-center",
+   "name": "Al Oerter Recreation Center",
+   "aliases": [
+    "NYC Parks Al Oerter",
+    "NYC Parks"
+   ],
+   "lat": 40.751565,
+   "lon": -73.834222,
+   "street": "131-40 Fowler Ave",
+   "city": "Flushing",
+   "region": "NY",
+   "postcode": "11355",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(718) 353-7853",
+   "web": "https://www.nycgovparks.org/facilities/recreationcenters/Q099-NMD01",
+   "facility": "recCenter",
+   "playTimes": "Adult Open Badminton (18+): Tue 12-2:45 PM; Thu 12-2:45 PM & 7:45-9:45 PM. Teen Open Badminton: Thu 3-4:15 PM, Fri 3:15-4:30 PM. Free with NYC Parks membership.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ny-new-york-badminton-center-flushing",
@@ -1901,8 +4599,61 @@
    },
    "priceNote": "散客 $22/人次 · 包场 $100/场·时",
    "phone": "(347) 955-7859",
-   "web": "https://www.newyorkcitybadminton.com/",
-   "facility": "dedicated"
+   "web": "https://www.newyorkcitybadminton.com/flushing",
+   "facility": "dedicated",
+   "playTimes": "Open 7 days; opening time varies, closes midnight (late 12-3 AM slot also listed). Open play by online sign-up; private courts bookable.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-roy-wilkins-recreation-center",
+   "name": "Roy Wilkins Recreation Center",
+   "aliases": [
+    "NYC Parks Roy Wilkins",
+    "NYC Parks"
+   ],
+   "lat": 40.688072,
+   "lon": -73.770111,
+   "street": "177th St & Baisley Blvd",
+   "city": "Jamaica",
+   "region": "NY",
+   "postcode": "11434",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(718) 276-8686",
+   "web": "https://www.nycgovparks.org/facilities/recreationcenters/Q448",
+   "facility": "recCenter",
+   "playTimes": "Family Badminton: Thu 8-9:30 PM. Free with NYC Parks membership.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-kotofit-long-island-city",
+   "name": "Kotofit - Long Island City",
+   "aliases": [
+    "Kotofit LIC"
+   ],
+   "lat": 40.75108,
+   "lon": -73.949881,
+   "street": "43-56 10th St",
+   "city": "Long Island City",
+   "region": "NY",
+   "postcode": "11101",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 5,
+   "price": {
+    "perPerson": 24,
+    "perCourtHour": 80
+   },
+   "priceNote": "散客 $24/人次 · 包场 $80/场·时",
+   "phone": "(551) 866-1650",
+   "web": "https://www.kotofit.com/locations/club/new-york-nyc-long-island-city",
+   "facility": "multiSport",
+   "playTimes": "Open daily 6 AM-2 AM (app-based entry); open play and private courts booked in the Kotofit app.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ny-long-island-badminton-center",
@@ -1918,10 +4669,140 @@
    "postcode": "11747",
    "country": "US",
    "tz": "America/New_York",
-   "courts": 20,
    "phone": "(516) 916-3364",
    "web": "https://longislandbadmintoncenter.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Open daily 7 AM-1 AM (reservation page says 7 AM-midnight; hours shift with first/last booking). Courts by online reservation; ask the desk about open play.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-humanities-hs-gym-w-18th-st",
+   "name": "Humanities HS Gym (W 18th St)",
+   "aliases": [
+    "NYBC Manhattan (18th St)",
+    "NY Badminton Center - Manhattan",
+    "New York Badminton Center (NYBC)"
+   ],
+   "lat": 40.742913,
+   "lon": -74.002113,
+   "street": "351 W 18th St",
+   "city": "New York",
+   "region": "NY",
+   "postcode": "10011",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 5,
+   "price": {
+    "perPerson": 28
+   },
+   "priceNote": "散客 $28/人次",
+   "phone": "(516) 727-3221",
+   "web": "https://www.newyorkcitybadminton.com/manhattan",
+   "facility": "school",
+   "playTimes": "NYBC open play: Tue 7-11 PM (sign up online).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-jackie-robinson-recreation-center",
+   "name": "Jackie Robinson Recreation Center",
+   "aliases": [
+    "NYC Parks Jackie Robinson",
+    "NYC Parks"
+   ],
+   "lat": 40.823407,
+   "lon": -73.9429,
+   "street": "85 Bradhurst Ave",
+   "city": "New York",
+   "region": "NY",
+   "postcode": "10039",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(212) 234-9606",
+   "web": "https://www.nycgovparks.org/facilities/recreationcenters/M014",
+   "facility": "recCenter",
+   "playTimes": "Open play badminton (18+): Mon, Wed & Fri 1-2:15 PM. Free with NYC Parks membership.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-robert-wagner-jr-hs-gym-e-76th-st",
+   "name": "Robert Wagner Jr. HS Gym (E 76th St)",
+   "aliases": [
+    "NYBC Manhattan (76th St)",
+    "New York Badminton Center (NYBC)"
+   ],
+   "lat": 40.771968,
+   "lon": -73.958011,
+   "street": "220 E 76th St",
+   "city": "New York",
+   "region": "NY",
+   "postcode": "10021",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 4,
+   "price": {
+    "perPerson": 28
+   },
+   "priceNote": "散客 $28/人次",
+   "phone": "(516) 727-3221",
+   "web": "https://www.newyorkcitybadminton.com/manhattan",
+   "facility": "school",
+   "playTimes": "NYBC sessions: Wed & Fri 6:30-9 PM; closed in summer (Jul-Sep).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-lost-battalion-hall-recreation-center",
+   "name": "Lost Battalion Hall Recreation Center",
+   "aliases": [
+    "NYC Parks Lost Battalion Hall",
+    "NYC Parks"
+   ],
+   "lat": 40.731541,
+   "lon": -73.865573,
+   "street": "93-29 Queens Blvd",
+   "city": "Rego Park",
+   "region": "NY",
+   "postcode": "11374",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(718) 520-5310",
+   "web": "https://www.nycgovparks.org/facilities/recreationcenters/Q401",
+   "facility": "recCenter",
+   "playTimes": "Adult Open Badminton (18+): Tue & Thu 10:30 AM-2 PM. Family Open Badminton: Fri 7-8:45 PM. Teen Open Badminton: Mon & Fri 5-7 PM. Free with NYC Parks membership.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-tiger-badminton-training-center",
+   "name": "Tiger Badminton Training Center",
+   "aliases": [
+    "Tiger Badminton",
+    "Tiger Badminton Rego Park Center"
+   ],
+   "lat": 40.728874,
+   "lon": -73.859691,
+   "street": "97-30 Queens Blvd",
+   "unit": "5th Floor",
+   "city": "Rego Park",
+   "region": "NY",
+   "postcode": "11374",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perCourtHour": 100
+   },
+   "priceNote": "包场 $100/场·时",
+   "phone": "(646) 577-3351",
+   "web": "https://tigerbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Court rental in 60-minute blocks; opening hours not clearly published (check with the office).",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-ny-brooklyn-badminton-center",
@@ -1938,7 +4819,6 @@
    "postcode": "11385",
    "country": "US",
    "tz": "America/New_York",
-   "courts": 7,
    "price": {
     "perPerson": 23,
     "perCourtHour": 100
@@ -1946,7 +4826,888 @@
    "priceNote": "散客 $23/人次 · 包场 $100/场·时",
    "phone": "(516) 988-8955",
    "web": "https://www.brooklynbadmintoncenter.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Open daily (hours not published); open play bookable online. Game Night: Fri 9 PM-12 AM, Sat 8-11 PM ($15).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-long-island-sports-center",
+   "name": "Long Island Sports Center",
+   "aliases": [
+    "LISC"
+   ],
+   "lat": 40.800457,
+   "lon": -73.650093,
+   "street": "22 Lumber Rd",
+   "city": "Roslyn",
+   "region": "NY",
+   "postcode": "11576",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 8,
+   "phone": "(516) 621-1402",
+   "web": "https://www.longislandsportscenter.com/",
+   "facility": "dedicated",
+   "playTimes": "Open daily 8 AM-10 PM (seasonal changes possible). Courts by advance reservation.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ny-bell-sports-center-ecc-north-campus",
+   "name": "Bell Sports Center - ECC North Campus",
+   "aliases": [
+    "Rally Niagara Badminton",
+    "SUNY Erie North Campus"
+   ],
+   "lat": 42.966081,
+   "lon": -78.724432,
+   "street": "6205 Main St",
+   "city": "Williamsville",
+   "region": "NY",
+   "postcode": "14221",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "phone": "(716) 250-7738",
+   "web": "https://www.rallyniagarabadminton.com/",
+   "facility": "school",
+   "playTimes": "Rally Niagara badminton open play daily (Sun-Sat) 6-10:30 PM (fall schedule).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-oh-carriage-place-community-center",
+   "name": "Carriage Place Community Center",
+   "aliases": [
+    "Carriage Place Park",
+    "Carriage Place Gymnasium",
+    "Columbus Recreation and Parks"
+   ],
+   "lat": 40.068042,
+   "lon": -83.092976,
+   "street": "4900 Sawmill Rd",
+   "city": "Columbus",
+   "region": "OH",
+   "postcode": "43235",
+   "country": "US",
+   "tz": "America/New_York",
+   "phone": "(614) 645-3300",
+   "web": "https://anc.apm.activecommunities.com/columbusrecparks1/activity/search/detail/6029",
+   "facility": "recCenter",
+   "playTimes": "Adult open badminton (18+): Sat 12:30–3:30 PM; Fri 6:15–8:45 PM is a registered league in fall and open play otherwise.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-oh-schiller-community-center",
+   "name": "Schiller Community Center",
+   "aliases": [
+    "Schiller Park",
+    "Schiller Lower Gymnasium",
+    "Columbus Recreation and Parks"
+   ],
+   "lat": 39.942211,
+   "lon": -82.990474,
+   "street": "1069 Jaeger St",
+   "city": "Columbus",
+   "region": "OH",
+   "postcode": "43206",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(614) 645-3300",
+   "web": "https://anc.apm.activecommunities.com/columbusrecparks1/activity/search/detail/7195",
+   "facility": "recCenter",
+   "playTimes": "Adult open badminton (18+): Mon 6:30–8:45 PM, lower gym.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-oh-tuttle-community-center",
+   "name": "Tuttle Community Center",
+   "aliases": [
+    "Tuttle Park",
+    "Tuttle Gymnasium",
+    "Columbus Recreation and Parks"
+   ],
+   "lat": 40.009783,
+   "lon": -83.016431,
+   "street": "240 W Oakland Ave",
+   "city": "Columbus",
+   "region": "OH",
+   "postcode": "43201",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(614) 645-3300",
+   "web": "https://anc.apm.activecommunities.com/columbusrecparks1/activity/search/detail/5777",
+   "facility": "recCenter",
+   "playTimes": "Adult open badminton (18+): Wed 6–7:50 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-oh-westgate-community-center",
+   "name": "Westgate Community Center",
+   "aliases": [
+    "Westgate Park",
+    "Westgate Gymnasium",
+    "Columbus Recreation and Parks"
+   ],
+   "lat": 39.945149,
+   "lon": -83.081448,
+   "street": "455 S Westgate Ave",
+   "city": "Columbus",
+   "region": "OH",
+   "postcode": "43204",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(614) 645-3300",
+   "web": "https://anc.apm.activecommunities.com/columbusrecparks1/activity/search/detail/7043",
+   "facility": "recCenter",
+   "playTimes": "Adult open badminton (18+, no instruction): Fri 9:30–11:30 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-oh-dublin-community-recreation-center",
+   "name": "Dublin Community Recreation Center",
+   "aliases": [
+    "DCRC",
+    "Dublin Rec Center",
+    "City of Dublin Recreation Services"
+   ],
+   "lat": 40.103806,
+   "lon": -83.136604,
+   "street": "5600 Post Rd",
+   "city": "Dublin",
+   "region": "OH",
+   "postcode": "43017",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 18
+   },
+   "priceNote": "散客 $18/人次",
+   "phone": "614.410.4550",
+   "web": "https://dublinohiousa.gov/dcrc/leagues/",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton: Tue & Thu 6–8 AM and 9:45–11:30 AM; Sat 8–9:30 AM; Sun 8:15–10:15 AM; after-hours badminton Sat & Sun 8:30–10:30 PM. Leagues Thu & Fri 6:30–9:15 PM, Sun 5–7:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-oh-lazelle-woods-community-center",
+   "name": "Lazelle Woods Community Center",
+   "aliases": [
+    "Lazelle Woods Park",
+    "Lazelle Gymnasium",
+    "Columbus Recreation and Parks"
+   ],
+   "lat": 40.131807,
+   "lon": -82.990737,
+   "street": "8140 Sancus Blvd",
+   "city": "Westerville",
+   "region": "OH",
+   "postcode": "43081",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(614) 645-5330",
+   "web": "https://anc.apm.activecommunities.com/columbusrecparks1/activity/search/detail/7454",
+   "facility": "recCenter",
+   "playTimes": "Badminton open gym (ages 12+): Sat 11 AM–1 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ok-sterling-badminton",
+   "name": "Sterling Badminton",
+   "aliases": [
+    "Sterling Pickleball & Badminton"
+   ],
+   "lat": 35.59739,
+   "lon": -97.523855,
+   "street": "600 NW 125th St",
+   "city": "Oklahoma City",
+   "region": "OK",
+   "postcode": "73114",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 12,
+    "perCourtHour": 20
+   },
+   "priceNote": "散客 $12/人次 · 包场 $20/场·时",
+   "phone": "(405) 635-7109",
+   "web": "https://sterlingbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open until midnight (e.g. 9 AM-12 AM), but closes by 9:30 PM unless there are reservations or members in the building.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-or-oregon-badminton-academy",
+   "name": "Oregon Badminton Academy",
+   "aliases": [
+    "OBA"
+   ],
+   "lat": 45.47762,
+   "lon": -122.79216,
+   "street": "11150 SW Allen Blvd",
+   "unit": "Ste 200",
+   "city": "Beaverton",
+   "region": "OR",
+   "postcode": "97005",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 13,
+    "perCourtHour": 24
+   },
+   "priceNote": "散客 $13/人次 · 包场 $24/场·时",
+   "phone": "(503) 430-7861",
+   "web": "https://orbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Court hours (posted schedule): Mon-Thu 9 AM-10 PM (Wed to 9 PM), Fri 4-10 PM, Sat-Sun 9 AM-7 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-or-tualatin-hills-athletic-center",
+   "name": "Tualatin Hills Athletic Center",
+   "lat": 45.520649,
+   "lon": -122.839497,
+   "street": "50 NW 158th Ave",
+   "city": "Beaverton",
+   "region": "OR",
+   "postcode": "97006",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 8
+   },
+   "priceNote": "散客 $8/人次",
+   "phone": "(503) 629-6330",
+   "web": "https://www.tualatinhillsparks.org/237/Athletic-Center-Drop-in-Sports",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (all ages): Mon-Fri 6-8:30 AM; Mon & Thu 3:30-5:30 PM (limited courts); Sat 5-9:45 PM; Sun 10 AM-2 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-or-cedar-hills-recreation-center",
+   "name": "Cedar Hills Recreation Center",
+   "lat": 45.5076,
+   "lon": -122.796822,
+   "street": "11640 SW Park Way",
+   "city": "Portland",
+   "region": "OR",
+   "postcode": "97225",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 8
+   },
+   "priceNote": "散客 $8/人次",
+   "web": "https://www.tualatinhillsparks.org/701/Drop-In-Schedules",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (all ages): Thu 7-8:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-hampton-community-center",
+   "name": "Hampton Community Center",
+   "aliases": [
+    "Hampton Township gym",
+    "Pittsburgh Badminton Club"
+   ],
+   "lat": 40.581612,
+   "lon": -79.935241,
+   "street": "3200 Lochner Way",
+   "city": "Allison Park",
+   "region": "PA",
+   "postcode": "15101",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 6,
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "web": "https://sites.google.com/view/pittsburghbc/home",
+   "facility": "recCenter",
+   "playTimes": "Pittsburgh Badminton Club: Tue 7-9 PM (register in the OpenSports app).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-levelup-pickleball-club",
+   "name": "LevelUp Pickleball Club",
+   "aliases": [
+    "LevelUp Canonsburg",
+    "Pittsburgh Badminton Club"
+   ],
+   "lat": 40.308266,
+   "lon": -80.130536,
+   "street": "33 Mayview Rd",
+   "city": "Canonsburg",
+   "region": "PA",
+   "postcode": "15317",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 6,
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(412) 206-5755",
+   "web": "https://www.leveluppickleballclub.com/",
+   "facility": "multiSport",
+   "playTimes": "Open daily 7 AM-10 PM. Pittsburgh Badminton Club play usually daily 7:45-9:45 PM and Sat-Sun 7:30-11 AM (register in LevelUp's CourtReserve).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-pisa-cheswick",
+   "name": "PISA - Cheswick",
+   "aliases": [
+    "PISA Cheswick gym",
+    "Pittsburgh Badminton Club"
+   ],
+   "lat": 40.552746,
+   "lon": -79.838618,
+   "street": "22 Rich Hill Rd",
+   "city": "Cheswick",
+   "region": "PA",
+   "postcode": "15024",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 6,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "web": "https://sites.google.com/view/pittsburghbc/home",
+   "facility": "multiSport",
+   "playTimes": "Pittsburgh Badminton Club: Mon 7-9 PM (register in the OpenSports app; waitlisted players may not play).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-squash-tigers-exton",
+   "name": "Squash Tigers - Exton",
+   "aliases": [
+    "Philadelphia Badminton - Exton Center",
+    "Philadelphia Badminton"
+   ],
+   "lat": 40.024974,
+   "lon": -75.616291,
+   "street": "4 Tabas Ln",
+   "city": "Exton",
+   "region": "PA",
+   "postcode": "19341",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 3,
+   "phone": "(412) 951-3916",
+   "web": "https://www.philadelphiabadminton.com/extoncenter.html",
+   "facility": "multiSport",
+   "playTimes": "3 dedicated badminton courts with 24/7 open play (book via ClubHopper). Organized open play by Philadelphia Badminton: Wed 7:30-9:30 PM, Sat & Sun 9-11 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-all-american-field-house",
+   "name": "All American Field House",
+   "aliases": [
+    "A.A. Field House",
+    "Pittsburgh Badminton Club"
+   ],
+   "lat": 40.431642,
+   "lon": -79.784878,
+   "street": "1 Racquet Ln",
+   "city": "Monroeville",
+   "region": "PA",
+   "postcode": "15146",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 12,
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "web": "https://sites.google.com/view/pittsburghbc/home",
+   "facility": "multiSport",
+   "playTimes": "Pittsburgh Badminton Club: Fri 7-9 PM and Sun 6-8 PM (up to 12 courts; OpenSports registration, confirmed players only).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-club-28-badminton-philadelphia",
+   "name": "Club 28 Badminton - Philadelphia",
+   "aliases": [
+    "Club28",
+    "Club 28 Badminton",
+    "Club28 Badminton Philadelphia"
+   ],
+   "lat": 39.988624,
+   "lon": -75.093866,
+   "street": "3569 Edgemont St",
+   "city": "Philadelphia",
+   "region": "PA",
+   "postcode": "19134",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 12,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 45
+   },
+   "priceNote": "散客 $15/人次 · 包场 $45/场·时",
+   "phone": "(917) 708-2727",
+   "web": "https://www.club28badminton.com/philadelphia",
+   "facility": "dedicated",
+   "playTimes": "Open play 3-hour sessions: Mon-Fri 4:30-7:30 & 7:30-10:30 PM; Sat-Sun 10 AM-1 PM, 1-4 PM, 4-7 PM. Private courts bookable online.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-pennsylvania-badminton-center",
+   "name": "Pennsylvania Badminton Center",
+   "aliases": [
+    "Club 28 - Tulip St",
+    "Club 28 Badminton"
+   ],
+   "lat": 39.990392,
+   "lon": -75.10604,
+   "street": "3254 Tulip St",
+   "city": "Philadelphia",
+   "region": "PA",
+   "postcode": "19134",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 17,
+    "perCourtHour": 55
+   },
+   "priceNote": "散客 $17/人次 · 包场 $55/场·时",
+   "phone": "(917) 708-2727",
+   "web": "https://www.club28badminton.com/philadelphia",
+   "facility": "dedicated",
+   "playTimes": "Open play Mon-Thu 4 PM-1 AM, Fri 1 PM-1 AM, Sat-Sun 8 AM-1 AM (3-hour sessions).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-smashville-pottstown",
+   "name": "Smashville - Pottstown",
+   "aliases": [
+    "Smashville",
+    "Smashville Badminton"
+   ],
+   "lat": 40.245206,
+   "lon": -75.647192,
+   "street": "310 E High St",
+   "city": "Pottstown",
+   "region": "PA",
+   "postcode": "19464",
+   "country": "US",
+   "tz": "America/New_York",
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://smashville.us/go/",
+   "facility": "dedicated",
+   "playTimes": "Member-run club play 7 days a week, 7-10 PM; free kids & family sessions Tue & Thu. Play by advance reservation; drop-ins text ahead.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-pa-smashville-mainline-west-conshohocken",
+   "name": "Smashville Mainline - West Conshohocken",
+   "aliases": [
+    "Smashville Mainline",
+    "Smashville KOP"
+   ],
+   "lat": 40.072764,
+   "lon": -75.325867,
+   "street": "60 Portland Rd",
+   "city": "West Conshohocken",
+   "region": "PA",
+   "postcode": "19428",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 10
+   },
+   "priceNote": "散客 $10/人次",
+   "web": "https://smashville.us/go/",
+   "facility": "dedicated",
+   "playTimes": "Mon, Wed, Fri & Sat 7:45-10 PM (or until close). Play by advance reservation.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-sc-the-pavilion-recreation-complex",
+   "name": "The Pavilion Recreation Complex",
+   "aliases": [
+    "The Pavilion",
+    "Greenville Badminton Club"
+   ],
+   "lat": 34.884276,
+   "lon": -82.301375,
+   "street": "400 Scottswood Rd",
+   "city": "Taylors",
+   "region": "SC",
+   "postcode": "29687",
+   "country": "US",
+   "tz": "America/New_York",
+   "phone": "864-322-7529",
+   "web": "https://greenvillebadmintonclub.com/",
+   "facility": "recCenter",
+   "playTimes": "Greenville Badminton Club: Mon & Thu 6:30-8 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tn-southeast-regional-community-center",
+   "name": "Southeast Regional Community Center",
+   "aliases": [
+    "Southeast Community Center",
+    "Metro Nashville Parks and Recreation"
+   ],
+   "lat": 36.048544,
+   "lon": -86.657736,
+   "street": "5260 Hickory Hollow Pkwy",
+   "unit": "Suite 202",
+   "city": "Antioch",
+   "region": "TN",
+   "postcode": "37013",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 3
+   },
+   "priceNote": "散客 $3/人次",
+   "phone": "615-862-8902",
+   "web": "https://www.nashville.gov/departments/parks/community-centers-and-recreation/regional-recreation-centers/southeast-community-center",
+   "facility": "recCenter",
+   "playTimes": "Badminton: Mon 6-8 PM (half gym), Sat 8-11 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tn-sevier-park-regional-community-center",
+   "name": "Sevier Park Regional Community Center",
+   "aliases": [
+    "Sevier Park Community Center",
+    "Metro Nashville Parks and Recreation"
+   ],
+   "lat": 36.119326,
+   "lon": -86.787446,
+   "street": "3021 Lealand Ln",
+   "city": "Nashville",
+   "region": "TN",
+   "postcode": "37204",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 3
+   },
+   "priceNote": "散客 $3/人次",
+   "phone": "615-862-8466",
+   "web": "https://www.nashville.gov/departments/parks/community-centers-and-recreation/regional-recreation-centers/sevier-park-community-center",
+   "facility": "recCenter",
+   "playTimes": "Open badminton: Mon & Wed 9 AM-12 PM; Thu 6:45-8 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-cliff-nelson-recreation-center",
+   "name": "Cliff Nelson Recreation Center",
+   "aliases": [
+    "City of Arlington Parks & Recreation"
+   ],
+   "lat": 32.66837,
+   "lon": -97.1811,
+   "street": "4600 W Bardin Rd",
+   "city": "Arlington",
+   "region": "TX",
+   "postcode": "76017",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(817) 561-2819",
+   "web": "https://anc.apm.activecommunities.com/arlingtonparks/activity/search?activity_keyword=badminton",
+   "facility": "recCenter",
+   "playTimes": "Adult badminton (18+): Mon & Fri in Gym West; session times are not shown in the online catalog.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-austin-recreation-center",
+   "name": "Austin Recreation Center",
+   "aliases": [
+    "City of Austin Parks and Recreation"
+   ],
+   "lat": 30.277667,
+   "lon": -97.750198,
+   "street": "1301 Shoal Creek Blvd",
+   "city": "Austin",
+   "region": "TX",
+   "postcode": "78701",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(512) 978-2370",
+   "web": "https://www.austintexas.gov/parks/austin-recreation-center",
+   "facility": "recCenter",
+   "playTimes": "Open play badminton: Sun 2:15-3:45 PM in the gym.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-arise-sports-complex",
+   "name": "Arise Sports Complex",
+   "aliases": [
+    "Arise Sports",
+    "Badminton Center (Brookshire)"
+   ],
+   "lat": 29.780424,
+   "lon": -95.967582,
+   "street": "542 Koomey Rd",
+   "city": "Brookshire",
+   "region": "TX",
+   "postcode": "77423",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 14,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 8
+   },
+   "priceNote": "散客 $15/人次 · 包场 $8/场·时",
+   "phone": "(310) 428-6564",
+   "web": "https://www.arisesportscomplex.com/",
+   "facility": "dedicated",
+   "playTimes": "Members 24/7; non-member day pass 9 AM-10:30 PM daily.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-carrollton-badminton-center",
+   "name": "Carrollton Badminton Center",
+   "aliases": [
+    "CBC"
+   ],
+   "lat": 32.93464,
+   "lon": -96.918732,
+   "street": "2052 McKenzie Dr",
+   "unit": "Ste 200 (back building)",
+   "city": "Carrollton",
+   "region": "TX",
+   "postcode": "75006",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 9,
+   "price": {
+    "perPerson": 13,
+    "perCourtHour": 48
+   },
+   "priceNote": "散客 $13/人次 · 包场 $48/场·时",
+   "phone": "(469) 430-8824",
+   "web": "https://carrolltonbadmintoncenter.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 5-11 PM; Sat-Sun 8 AM-10 PM. Walk-in open play during all opening hours.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-topshot-sports-club",
+   "name": "TopShot Sports Club",
+   "aliases": [
+    "TopShot"
+   ],
+   "lat": 30.529688,
+   "lon": -97.790838,
+   "street": "840 N Vista Ridge Blvd",
+   "city": "Cedar Park",
+   "region": "TX",
+   "postcode": "78613",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15
+   },
+   "priceNote": "散客 $15/人次",
+   "phone": "(512) 456-0009",
+   "web": "https://topshottx.com/",
+   "facility": "multiSport",
+   "playTimes": "Open daily 5 AM-11 PM (front desk from 9 AM; 5-9 AM is for members with early access). Open play during off-peak times and set weekend hours.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-the-core-coppell",
+   "name": "The CORE (Coppell)",
+   "aliases": [
+    "The CORE",
+    "Coppell CORE"
+   ],
+   "lat": 32.979626,
+   "lon": -96.987005,
+   "street": "234 E Parkway Blvd",
+   "city": "Coppell",
+   "region": "TX",
+   "postcode": "75019",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(972) 304-7077",
+   "web": "https://www.coppelltx.gov/Facilities/Facility/Details/The-CORE-39",
+   "facility": "recCenter",
+   "playTimes": "Open play badminton: Mon 7:30-9:30 PM (west court), Wed 7:30-9:30 PM (both courts), Sat 8-10 AM (both courts).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-houston-badminton-academy-cypress",
+   "name": "Houston Badminton Academy - Cypress",
+   "aliases": [
+    "HBA Cypress"
+   ],
+   "lat": 29.950024,
+   "lon": -95.682183,
+   "street": "17518 South Dr",
+   "city": "Cypress",
+   "region": "TX",
+   "postcode": "77433",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 7,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $15/人次 · 包场 $40/场·时",
+   "phone": "(512) 947-6871",
+   "web": "https://badmintontx.com/cypress-badminton/",
+   "facility": "dedicated",
+   "playTimes": "Open play for everyone: weekdays 5:30-10 PM; weekends 6:30-10 AM; Sat 5:30-9 PM; Sun 1:30-5:30 PM. Courts bookable 24/7 outside classes.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-chisholm-trail-community-center",
+   "name": "Chisholm Trail Community Center",
+   "aliases": [
+    "CTCC",
+    "City of Fort Worth Park & Recreation"
+   ],
+   "lat": 32.6069,
+   "lon": -97.4014,
+   "street": "4936 McPherson Blvd",
+   "city": "Fort Worth",
+   "region": "TX",
+   "postcode": "76123",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(817) 392-8120",
+   "web": "https://anc.apm.activecommunities.com/cityoffortworth/activity/search?activity_keyword=badminton",
+   "facility": "recCenter",
+   "playTimes": "Adult open play badminton (18+): Thu 6-7:45 PM, Sat 12-2 PM, Sun 1:30-4:30 PM, in Gymnasium A.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-frisco-badminton-academy",
+   "name": "Frisco Badminton Academy",
+   "aliases": [
+    "Frisco Badminton",
+    "FBA"
+   ],
+   "lat": 33.165991,
+   "lon": -96.82656,
+   "street": "6226 All Stars Ave",
+   "city": "Frisco",
+   "region": "TX",
+   "postcode": "75033",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 20,
+   "price": {
+    "perPerson": 13
+   },
+   "priceNote": "散客 $13/人次",
+   "phone": "(214) 618-0491",
+   "web": "https://friscobadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 12 PM-11:30 PM; Sat-Sun 6 AM-11:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-fonde-community-center",
+   "name": "Fonde Community Center",
+   "aliases": [
+    "Fonde Recreation Center",
+    "Houston Parks and Recreation Department",
+    "Houston Badminton Club"
+   ],
+   "lat": 29.763069,
+   "lon": -95.375501,
+   "street": "110 Sabine St",
+   "city": "Houston",
+   "region": "TX",
+   "postcode": "77007",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(713) 226-4466",
+   "web": "https://anc.apm.activecommunities.com/houstonparks/activity/search?activity_keyword=badminton",
+   "facility": "recCenter",
+   "playTimes": "Adult badminton (18+): Mon & Thu 6-9 PM (season Aug/Sep-May).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-sagemont-community-center",
+   "name": "Sagemont Community Center",
+   "aliases": [
+    "Houston Parks and Recreation Department"
+   ],
+   "lat": 29.599465,
+   "lon": -95.216061,
+   "street": "11507 Hughes Rd",
+   "city": "Houston",
+   "region": "TX",
+   "postcode": "77089",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 0
+   },
+   "priceNote": "免费",
+   "phone": "(281) 922-2343",
+   "web": "https://anc.apm.activecommunities.com/houstonparks/activity/search?activity_keyword=badminton",
+   "facility": "recCenter",
+   "playTimes": "Adult badminton (18+): Tue & Thu 6-7:45 PM, Sat 10 AM-2 PM (season Sep-May).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-twin-tigers-badminton-academy",
+   "name": "Twin Tigers Badminton Academy",
+   "aliases": [
+    "Twin Tigers Sports",
+    "Twin Tigers Badminton Building"
+   ],
+   "lat": 29.607575,
+   "lon": -95.506957,
+   "street": "15019 Fondren Rd",
+   "city": "Houston",
+   "region": "TX",
+   "postcode": "77489",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 4,
+   "price": {
+    "perCourtHour": 25
+   },
+   "priceNote": "包场 $25/场·时",
+   "phone": "(210) 593-8832",
+   "web": "https://twintigerssports.com/",
+   "facility": "dedicated",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-tx-dfw-badminton-center",
@@ -1954,7 +5715,8 @@
    "aliases": [
     "DFWBC",
     "DFW Badminton",
-    "DFW Badminton Center Irving"
+    "DFW Badminton Center Irving",
+    "DFW Irving Badminton Center"
    ],
    "lat": 32.874375,
    "lon": -96.974826,
@@ -1966,13 +5728,249 @@
    "tz": "America/Chicago",
    "courts": 13,
    "price": {
-    "perPerson": 11,
+    "perPerson": 10,
     "perCourtHour": 48
    },
-   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
+   "priceNote": "散客 $10/人次 · 包场 $48/场·时",
    "phone": "(469) 200-0276",
    "web": "https://dfwbadmintoncenter.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 4 PM-12 AM (peak from 5 PM); Sat-Sun 8 AM-10 PM. Walk-in open play: Sat & Sun 8-10 PM, Mon & Fri 10 PM-12 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-justin-sports",
+   "name": "Justin Sports",
+   "aliases": [
+    "Justin Sports Facility"
+   ],
+   "lat": 33.053732,
+   "lon": -97.317449,
+   "street": "10710 Sam Reynolds Rd",
+   "city": "Justin",
+   "region": "TX",
+   "postcode": "76247",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 10,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $10/人次 · 包场 $40/场·时",
+   "phone": "(469) 222-2511",
+   "web": "https://justinsports.us/",
+   "facility": "multiSport",
+   "playTimes": "Open daily 5 AM-10 PM (based on the day-pass windows); unlimited open play with a day pass or membership.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-bad-n-pickle",
+   "name": "Bad N Pickle",
+   "aliases": [
+    "Schafer Badminton Academy - Katy",
+    "Pickleball Katy",
+    "Schafer Badminton Academy"
+   ],
+   "lat": 29.755881,
+   "lon": -95.798629,
+   "street": "24825 Roesner Rd",
+   "city": "Katy",
+   "region": "TX",
+   "postcode": "77494",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $15/人次 · 包场 $40/场·时",
+   "phone": "(832) 530-6062",
+   "web": "https://badnpickle.com/",
+   "facility": "multiSport",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-austin-badminton-academy-leander",
+   "name": "Austin Badminton Academy - Leander",
+   "aliases": [
+    "Austin Badminton Leander"
+   ],
+   "lat": 30.577583,
+   "lon": -97.86407,
+   "street": "11561 Hero Way",
+   "unit": "Building 2, Ste 240",
+   "city": "Leander",
+   "region": "TX",
+   "postcode": "78641",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 17,
+   "price": {
+    "perPerson": 13
+   },
+   "priceNote": "散客 $13/人次",
+   "phone": "(512) 614-7122",
+   "web": "https://austinbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Walk-in day pass/open play. Member access: Gold weekdays 4-10 PM, weekends 7 AM-10 PM; Platinum 24/7 biometric access.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-lewisville-badminton-center",
+   "name": "Lewisville Badminton Center",
+   "aliases": [
+    "LBC"
+   ],
+   "lat": 32.99322,
+   "lon": -96.980124,
+   "street": "2801 Rockbrook Dr",
+   "city": "Lewisville",
+   "region": "TX",
+   "postcode": "75067",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 28,
+   "price": {
+    "perPerson": 13,
+    "perCourtHour": 10
+   },
+   "priceNote": "散客 $13/人次 · 包场 $10/场·时",
+   "phone": "(214) 449-0823",
+   "web": "https://lewisvillebadmintoncenter.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 5-11 PM; Sat-Sun 8 AM-10 PM (open play listed to 11 PM on weekends). Walk-in open play during opening hours.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-vistara-sports",
+   "name": "Vistara Sports",
+   "aliases": [
+    "Texas Badminton Center",
+    "TBC",
+    "Vistara Sports Lewisville"
+   ],
+   "lat": 32.994168,
+   "lon": -97.000254,
+   "street": "400 W Vista Ridge Mall Dr",
+   "city": "Lewisville",
+   "region": "TX",
+   "postcode": "75067",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 18,
+   "price": {
+    "perPerson": 13,
+    "perCourtHour": 10
+   },
+   "priceNote": "散客 $13/人次 · 包场 $10/场·时",
+   "phone": "(972) 315-7495",
+   "web": "https://vistarasports.com/",
+   "facility": "multiSport",
+   "playTimes": "Mon-Thu & Sat-Sun 5 AM-11 PM; Fri 5 AM-12 AM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-mckinney-badminton-center",
+   "name": "McKinney Badminton Center",
+   "aliases": [
+    "MBC"
+   ],
+   "lat": 33.220506,
+   "lon": -96.62577,
+   "street": "1650 Corporate Dr",
+   "city": "McKinney",
+   "region": "TX",
+   "postcode": "75069",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 16,
+   "price": {
+    "perPerson": 12,
+    "perCourtHour": 48
+   },
+   "priceNote": "散客 $12/人次 · 包场 $48/场·时",
+   "phone": "(214) 326-0702",
+   "web": "https://mckinneybadmintoncenter.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 4-11 PM; Sat-Sun 8 AM-10 PM. Walk-in open play Mon-Fri 5-11 PM, Sat-Sun 8 AM-10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-velocity-badminton-mckinney",
+   "name": "Velocity Badminton - McKinney",
+   "aliases": [
+    "Velocity Badminton"
+   ],
+   "lat": 33.157393,
+   "lon": -96.694988,
+   "street": "4220 S Ridge Rd",
+   "city": "McKinney",
+   "region": "TX",
+   "postcode": "75070",
+   "country": "US",
+   "tz": "America/Chicago",
+   "price": {
+    "perPerson": 12,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $12/人次 · 包场 $40/场·时",
+   "phone": "(972) 369-7325",
+   "web": "https://velocitybadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 5 AM-1 PM & 4-11:30 PM; Sat-Sun 5 AM-11 PM (front desk from 8 AM).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-austin-badminton-academy-pflugerville",
+   "name": "Austin Badminton Academy - Pflugerville",
+   "aliases": [
+    "Austin Badminton",
+    "Austin Badminton Pflugerville"
+   ],
+   "lat": 30.447965,
+   "lon": -97.56099,
+   "street": "18629 Weiss Ln",
+   "unit": "Building 1, Ste 100",
+   "city": "Pflugerville",
+   "region": "TX",
+   "postcode": "78660",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 11,
+   "price": {
+    "perPerson": 13
+   },
+   "priceNote": "散客 $13/人次",
+   "phone": "(512) 614-7122",
+   "web": "https://austinbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Walk-in day pass/open play. Member access: Gold weekdays 4-10 PM, weekends 7 AM-10 PM; Platinum 24/7.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-momentum-sports",
+   "name": "Momentum Sports",
+   "aliases": [
+    "Momentum Sports USA"
+   ],
+   "lat": 30.489527,
+   "lon": -97.55618,
+   "street": "21423 Martin Ln",
+   "city": "Pflugerville",
+   "region": "TX",
+   "postcode": "78660",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 8,
+   "price": {
+    "perPerson": 13
+   },
+   "priceNote": "散客 $13/人次",
+   "phone": "(512) 456-8467",
+   "web": "https://www.momentumsportsusa.com/",
+   "facility": "multiSport",
+   "playTimes": "Badminton open play Mon-Fri 4-11 PM; Sat-Sun 7 AM-11 PM.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-tx-plano-badminton-center",
@@ -1990,15 +5988,90 @@
    "postcode": "75023",
    "country": "US",
    "tz": "America/Chicago",
-   "courts": 5,
    "price": {
-    "perPerson": 11,
     "perCourtHour": 48
    },
-   "priceNote": "散客 $11/人次 · 包场 $48/场·时",
+   "priceNote": "包场 $48/场·时",
    "phone": "(469) 677-7686",
    "web": "https://planobadmintoncenter.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Mon-Fri 12-11 PM (peak from 5 PM); Sat-Sun 8 AM-10 PM (peak from 5 PM).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-houston-badminton-academy-richmond",
+   "name": "Houston Badminton Academy - Richmond",
+   "aliases": [
+    "HBA Richmond",
+    "Houston Badminton Academy"
+   ],
+   "lat": 29.678747,
+   "lon": -95.820988,
+   "street": "10519 Hidden Lake Ln",
+   "city": "Richmond",
+   "region": "TX",
+   "postcode": "77406",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 8,
+   "price": {
+    "perPerson": 15,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $15/人次 · 包场 $40/场·时",
+   "phone": "(512) 947-6871",
+   "web": "https://badmintontx.com/richmond-badminton/",
+   "facility": "dedicated",
+   "playTimes": "Open play for everyone: weekdays 8-10:30 PM; weekends 6:30-10 AM and 5:30-9 PM. Members-only sessions weekday 5-8:30 AM and 9 AM-12 PM. Courts bookable 24/7 outside classes.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-austin-badminton-academy-round-rock",
+   "name": "Austin Badminton Academy - Round Rock",
+   "aliases": [
+    "Austin Badminton",
+    "Austin Badminton Round Rock"
+   ],
+   "lat": 30.53853,
+   "lon": -97.684378,
+   "street": "1974 Steam Way",
+   "unit": "Ste 102",
+   "city": "Round Rock",
+   "region": "TX",
+   "postcode": "78665",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 10,
+   "price": {
+    "perPerson": 13
+   },
+   "priceNote": "散客 $13/人次",
+   "phone": "(512) 614-7122",
+   "web": "https://austinbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Walk-in day pass/open play; weekend open play. Member access: Gold weekdays 4-10 PM, weekends 7 AM-10 PM; Platinum 24/7.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-clay-madsen-recreation-center",
+   "name": "Clay Madsen Recreation Center",
+   "aliases": [
+    "CMRC",
+    "City of Round Rock Parks and Recreation"
+   ],
+   "lat": 30.496341,
+   "lon": -97.66143,
+   "street": "1600 Gattis School Rd",
+   "city": "Round Rock",
+   "region": "TX",
+   "postcode": "78664",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(512) 218-3220",
+   "web": "https://www.roundrocktexas.gov/city-departments/parks-and-recreation/facilities/clay-madsen-recreation-center-2/",
+   "facility": "recCenter",
+   "playTimes": "Open play badminton: Tue & Thu 10 AM-3 PM (court 2).",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-tx-houston-badminton-center",
@@ -2016,9 +6089,141 @@
    "country": "US",
    "tz": "America/Chicago",
    "courts": 12,
+   "price": {
+    "perPerson": 10,
+    "perCourtHour": 10
+   },
+   "priceNote": "散客 $10/人次 · 包场 $10/场·时",
    "phone": "(346) 229-4921",
    "web": "https://www.houstonbadminton.com/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Weekdays 10 AM-11 PM; weekends 8:30 AM-11 PM. Open play queue busiest after 8 PM weeknights and 7 PM weekends.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-schafer-badminton-academy-stafford",
+   "name": "Schafer Badminton Academy - Stafford",
+   "aliases": [
+    "Schafer Badminton Academy"
+   ],
+   "lat": 29.631493,
+   "lon": -95.584429,
+   "street": "4755 Alpine Rd",
+   "unit": "Ste 125",
+   "city": "Stafford",
+   "region": "TX",
+   "postcode": "77477",
+   "country": "US",
+   "tz": "America/Chicago",
+   "courts": 9,
+   "price": {
+    "perCourtHour": 30
+   },
+   "priceNote": "包场 $30/场·时",
+   "web": "https://schaferbadminton.com/",
+   "facility": "dedicated",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-tx-imperial-park-recreation-center",
+   "name": "Imperial Park Recreation Center",
+   "aliases": [
+    "IPRC",
+    "City of Sugar Land Parks & Recreation"
+   ],
+   "lat": 29.612223,
+   "lon": -95.635577,
+   "street": "234 Matlage Way",
+   "city": "Sugar Land",
+   "region": "TX",
+   "postcode": "77478",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "(281) 275-2885",
+   "web": "https://www.sugarlandtx.gov/121/Imperial-Park-Recreation-Center-IPRC",
+   "facility": "recCenter",
+   "playTimes": "Members' open play badminton: Mon 4-7:45 PM weekly, plus rotating weekday daytime (8:30 AM-2 PM) and Saturday sessions on the monthly Open Play Calendar.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-ut-dimple-dell-recreation-center",
+   "name": "Dimple Dell Recreation Center",
+   "lat": 40.557179,
+   "lon": -111.86274,
+   "street": "10670 S 1000 E",
+   "city": "Sandy",
+   "region": "UT",
+   "postcode": "84094",
+   "country": "US",
+   "tz": "America/Denver",
+   "courts": 3,
+   "price": {
+    "perPerson": 7
+   },
+   "priceNote": "散客 $7/人次",
+   "phone": "(385) 468-3355",
+   "web": "https://www.saltlakecounty.gov/parks-recreation/facilities-and-golf/Recreation-Centers/dimple-dell/",
+   "facility": "recCenter",
+   "playTimes": "Open badminton play (West Gym): Mon, Wed & Fri 5:30-9 AM; Tue 7-10 PM; Sat 6-8 PM; Sun 10 AM-3 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-va-northern-virginia-badminton-club",
+   "name": "Northern Virginia Badminton Club",
+   "aliases": [
+    "NVBC",
+    "Northern Virginia Badminton Academy",
+    "NVBA"
+   ],
+   "lat": 39.023826,
+   "lon": -77.457502,
+   "street": "44590 Guilford Dr",
+   "unit": "#100",
+   "city": "Ashburn",
+   "region": "VA",
+   "postcode": "20147",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 11,
+   "price": {
+    "perPerson": 25,
+    "perCourtHour": 115
+   },
+   "priceNote": "散客 $25/人次 · 包场 $115/场·时",
+   "phone": "703-258-1300",
+   "web": "https://novabadmintonacademy.com/",
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Fri 11 AM-11 PM, Sat-Sun 8 AM-8 PM; closed Jul 4, Thanksgiving, Christmas Day, New Year's Eve and New Year's Day.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-va-royal-badminton-academy-sterling",
+   "name": "Royal Badminton Academy - Sterling",
+   "aliases": [
+    "Royal Badminton Academy",
+    "RBA Sterling",
+    "RBA"
+   ],
+   "lat": 39.018719,
+   "lon": -77.424663,
+   "street": "21598 Atlantic Blvd",
+   "unit": "Ste 100",
+   "city": "Sterling",
+   "region": "VA",
+   "postcode": "20166",
+   "country": "US",
+   "tz": "America/New_York",
+   "courts": 7,
+   "price": {
+    "perPerson": 18,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $18/人次 · 包场 $40/场·时",
+   "phone": "(571) 313-0061",
+   "web": "https://www.royalbadmintonacademy.com/",
+   "facility": "dedicated",
+   "playTimes": "Open play: Mon & Fri 7:30-11:30 PM, Sat & Sun 11 AM-5 PM. Court reservations and membership hours (from 5 AM) at other times.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-wa-bellevue-badminton-club-bellevue",
@@ -2044,7 +6249,105 @@
    "phone": "(425) 562-2950",
    "web": "https://www.bellevuebadminton.com/",
    "facility": "dedicated",
+   "playTimes": "Courts open daily 6 AM-10 PM (before 9 AM weekdays / 8 AM weekends members-only early access); front desk Mon-Fri 9 AM-10 PM, Sat-Sun 8 AM-10 PM.",
+   "checked": "2026-10-16",
    "entrance": "不接受散客 walk-in，需提前预约"
+  },
+  {
+   "id": "v-us-wa-crossroads-community-center",
+   "name": "Crossroads Community Center",
+   "lat": 47.619195,
+   "lon": -122.127642,
+   "street": "16000 NE 10th St",
+   "city": "Bellevue",
+   "region": "WA",
+   "postcode": "98008",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(425) 452-4874",
+   "web": "https://bellevuewa.gov/city-government/departments/parks/community-centers/crossroads",
+   "facility": "recCenter",
+   "playTimes": "Adult drop-in badminton: Thu 5:45-8 PM, Sat 10 AM-12 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-featherflight-badminton-bellevue",
+   "name": "FeatherFlight Badminton - Bellevue",
+   "aliases": [
+    "FeatherFlight Badminton Club and Training Academy",
+    "FeatherFlight Badminton"
+   ],
+   "lat": 47.581859,
+   "lon": -122.165785,
+   "street": "13045 SE 32nd St",
+   "city": "Bellevue",
+   "region": "WA",
+   "postcode": "98005",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 19,
+    "perCourtHour": 40
+   },
+   "priceNote": "散客 $19/人次 · 包场 $40/场·时",
+   "phone": "(352) 871-0710",
+   "web": "https://featherflightbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Fri 4-10 PM, Sat-Sun 6 AM-10 PM; court bookings 5 AM-12 AM (early/late slots need management pre-approval).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-northwest-badminton-academy",
+   "name": "Northwest Badminton Academy",
+   "aliases": [
+    "NWBA"
+   ],
+   "lat": 47.62412,
+   "lon": -122.16332,
+   "street": "13203 NE Spring Blvd",
+   "city": "Bellevue",
+   "region": "WA",
+   "postcode": "98005",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 13,
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(425) 270-3318",
+   "web": "https://www.northwestbadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Front desk / drop-in hours: Mon-Fri 3-10 PM, Sat 8 AM-10 PM, Sun 8 AM-9 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-south-bellevue-community-center",
+   "name": "South Bellevue Community Center",
+   "aliases": [
+    "SBCC"
+   ],
+   "lat": 47.571395,
+   "lon": -122.157117,
+   "street": "14509 SE Newport Way",
+   "city": "Bellevue",
+   "region": "WA",
+   "postcode": "98006",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 5
+   },
+   "priceNote": "散客 $5/人次",
+   "phone": "(425) 452-4240",
+   "web": "https://bellevuewa.gov/city-government/departments/parks/community-centers/sbcc/drop-sports",
+   "facility": "recCenter",
+   "playTimes": "Adult drop-in badminton: Mon & Wed 10:30 AM-12:30 PM and 6-8 PM (max 24). Family badminton: Sun 8-10 AM (free). Adult clinics Mon & Wed 8:30-10 AM (pre-registration).",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-wa-seattle-badminton-club",
@@ -2063,12 +6366,65 @@
    "tz": "America/Los_Angeles",
    "courts": 10,
    "price": {
-    "perPerson": 20
+    "perPerson": 25
    },
-   "priceNote": "散客 $20/人次",
+   "priceNote": "散客 $25/人次",
    "phone": "(425) 889-5958",
    "web": "https://seattlebadminton.com/sbc/",
-   "facility": "dedicated"
+   "facility": "dedicated",
+   "playTimes": "Drop-in: Wed & Fri 6 AM-12 PM ($5), Mon-Fri 12-4:30 PM ($10), Sat & Sun 9 AM-4 PM ($25), Sat 6-10 PM & Sun 6:30-10 PM ($20). Front desk: Mon/Tue/Thu 12-11 PM, Wed & Fri 6 AM-11 PM, Sat-Sun 7 AM-10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-mercer-island-community-and-event-center",
+   "name": "Mercer Island Community and Event Center",
+   "aliases": [
+    "MICEC"
+   ],
+   "lat": 47.589137,
+   "lon": -122.227747,
+   "street": "8236 SE 24th St",
+   "city": "Mercer Island",
+   "region": "WA",
+   "postcode": "98040",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 8
+   },
+   "priceNote": "散客 $8/人次",
+   "phone": "(206) 275-7609",
+   "web": "https://www.mercerisland.gov/parksrec/page/drop-sports",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (ages 11+; minors need a signed waiver): Tue, Thu & Sat 2:45-5 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-bellevue-badminton-club-mukilteo",
+   "name": "Bellevue Badminton Club - Mukilteo",
+   "aliases": [
+    "Bellevue Badminton Club",
+    "BBC",
+    "BBC Mukilteo"
+   ],
+   "lat": 47.883602,
+   "lon": -122.283188,
+   "street": "3616 South Rd",
+   "unit": "Bldg D",
+   "city": "Mukilteo",
+   "region": "WA",
+   "postcode": "98275",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 36
+   },
+   "priceNote": "包场 $36/场·时",
+   "phone": "(425) 374-8094",
+   "web": "https://www.bellevuebadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Courts open daily 6 AM-10 PM (early mornings members-only); front desk Mon-Fri 9 AM-10 PM, Sat-Sun 9 AM-10 PM.",
+   "checked": "2026-10-16"
   },
   {
    "id": "v-us-wa-bellevue-badminton-club-redmond",
@@ -2094,7 +6450,302 @@
    "phone": "(425) 522-4895",
    "web": "https://www.bellevuebadminton.com/",
    "facility": "dedicated",
+   "playTimes": "Courts open Mon-Thu 6 AM-10 PM, Fri 6 AM-11 PM, Sat-Sun 6 AM-10 PM (early mornings members-only); front desk Mon-Thu 9 AM-10 PM, Fri 9 AM-11 PM, Sat-Sun 9 AM-10 PM.",
+   "checked": "2026-10-16",
    "entrance": "不接受散客 walk-in，需提前预约"
+  },
+  {
+   "id": "v-us-wa-redmond-senior-community-center",
+   "name": "Redmond Senior & Community Center",
+   "lat": 47.680082,
+   "lon": -122.127629,
+   "street": "8703 160th Ave NE",
+   "city": "Redmond",
+   "region": "WA",
+   "postcode": "98052",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perPerson": 8
+   },
+   "priceNote": "散客 $8/人次",
+   "phone": "(425) 556-2900",
+   "web": "https://www.redmond.gov/2127/Redmond-Senior-Community-Center",
+   "facility": "recCenter",
+   "playTimes": "Badminton in the gym (day pass): Mon & Wed 8-9:30 AM (1 court), Tue & Thu 1-4 PM (1 court), Fri & Sat 1-4 PM (2 gym courts).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-bellevue-badminton-club-renton",
+   "name": "Bellevue Badminton Club - Renton",
+   "aliases": [
+    "Bellevue Badminton Club",
+    "BBC",
+    "BBC Renton"
+   ],
+   "lat": 47.472324,
+   "lon": -122.223249,
+   "street": "846 Lind Ave SW",
+   "city": "Renton",
+   "region": "WA",
+   "postcode": "98057",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 36
+   },
+   "priceNote": "包场 $36/场·时",
+   "phone": "(425) 277-4721",
+   "web": "https://www.bellevuebadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Courts open daily 6 AM-10 PM (early mornings members-only); front desk Mon-Fri 9 AM-10 PM, Sat-Sun 9 AM-10 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-ballard-community-center",
+   "name": "Ballard Community Center",
+   "lat": 47.672494,
+   "lon": -122.392891,
+   "street": "6020 28th Ave NW",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98107",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 684-4093",
+   "web": "https://www.seattle.gov/parks/community-centers/ballard-community-center",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (15+): Sun 10 AM-1 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-hiawatha-community-center",
+   "name": "Hiawatha Community Center",
+   "lat": 47.579249,
+   "lon": -122.38654,
+   "street": "2700 California Ave SW",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98116",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 684-7441",
+   "web": "https://www.seattle.gov/parks/community-centers/hiawatha-community-center",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (18+): Tue 5:30-7 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-international-district-chinatown-communi",
+   "name": "International District/Chinatown Community Center",
+   "lat": 47.596478,
+   "lon": -122.322543,
+   "street": "719 8th Ave S",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98104",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 233-0042",
+   "web": "https://www.seattle.gov/parks/community-centers/international-districtchinatown-community-center",
+   "facility": "recCenter",
+   "playTimes": "Adult badminton (18+): Tue 9:45 AM-1 PM, Sat 12-2:30 PM. All-ages badminton: Tue 3-5:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-jefferson-community-center",
+   "name": "Jefferson Community Center",
+   "lat": 47.569639,
+   "lon": -122.307591,
+   "street": "3801 Beacon Ave S",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98108",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 684-7481",
+   "web": "https://www.seattle.gov/parks/community-centers/jefferson-community-center",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (16+): Tue 6-8:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-magnolia-community-center",
+   "name": "Magnolia Community Center",
+   "lat": 47.642189,
+   "lon": -122.400892,
+   "street": "2550 34th Ave W",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98199",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 386-4235",
+   "web": "https://www.seattle.gov/parks/community-centers/magnolia-community-center",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (18+): Mon 5:45-7:45 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-magnuson-community-center",
+   "name": "Magnuson Community Center",
+   "lat": 47.681271,
+   "lon": -122.262159,
+   "street": "7110 62nd Ave NE",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98115",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 684-7026",
+   "web": "https://www.seattle.gov/parks/community-centers/magnuson-community-center",
+   "facility": "recCenter",
+   "playTimes": "Adult drop-in badminton (18+): Mon 6-8:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-meadowbrook-community-center",
+   "name": "Meadowbrook Community Center",
+   "lat": 47.705028,
+   "lon": -122.290954,
+   "street": "10517 35th Ave NE",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98125",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 684-7522",
+   "web": "https://www.seattle.gov/parks/community-centers/meadowbrook-community-center",
+   "facility": "recCenter",
+   "playTimes": "Adult drop-in badminton (18+): Fri 5-8:15 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-miller-community-center",
+   "name": "Miller Community Center",
+   "lat": 47.62099,
+   "lon": -122.307259,
+   "street": "330 19th Ave E",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98112",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 684-4753",
+   "web": "https://www.seattle.gov/parks/community-centers/miller-community-center",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (18+): Tue 6-8:30 PM, Fri 10 AM-1 PM. Teen Badminton Academy (ages 11-15): Fri 4-5:30 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-ravenna-eckstein-community-center",
+   "name": "Ravenna-Eckstein Community Center",
+   "lat": 47.676031,
+   "lon": -122.303906,
+   "street": "6535 Ravenna Ave NE",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98115",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 684-7534",
+   "web": "https://www.seattle.gov/parks/community-centers/ravenna-eckstein-community-center",
+   "facility": "recCenter",
+   "playTimes": "Drop-in badminton (16+): Tue & Thu 5-7 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-yesler-community-center",
+   "name": "Yesler Community Center",
+   "lat": 47.601641,
+   "lon": -122.320493,
+   "street": "917 E Yesler Way",
+   "city": "Seattle",
+   "region": "WA",
+   "postcode": "98122",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "phone": "(206) 386-1245",
+   "web": "https://www.seattle.gov/parks/community-centers/yesler-community-center",
+   "facility": "recCenter",
+   "playTimes": "Adult drop-in badminton (18+): Sat 2-3:55 PM.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-northwest-badminton-club",
+   "name": "Northwest Badminton Club",
+   "aliases": [
+    "NWBC",
+    "Northwest Badminton Club Snoqualmie"
+   ],
+   "lat": 47.525743,
+   "lon": -121.867956,
+   "street": "8304 Bracken Pl SE",
+   "unit": "Ste 200",
+   "city": "Snoqualmie",
+   "region": "WA",
+   "postcode": "98065",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "courts": 10,
+   "price": {
+    "perPerson": 20
+   },
+   "priceNote": "散客 $20/人次",
+   "phone": "(425) 465-7110",
+   "web": "https://www.northwestbadmintonclub.com/",
+   "facility": "dedicated",
+   "playTimes": "Courts bookable 7 days a week during opening hours; guest drop-in for all levels. Opening hours not published.",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wa-bellevue-badminton-club-tukwila",
+   "name": "Bellevue Badminton Club - Tukwila",
+   "aliases": [
+    "Bellevue Badminton Club Southcenter",
+    "BBC Southcenter",
+    "Bellevue Badminton Club",
+    "BBC"
+   ],
+   "lat": 47.436188,
+   "lon": -122.2602,
+   "street": "5830 Segale Park Drive C",
+   "city": "Tukwila",
+   "region": "WA",
+   "postcode": "98188",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "price": {
+    "perCourtHour": 38
+   },
+   "priceNote": "包场 $38/场·时",
+   "phone": "(425) 568-2127",
+   "web": "https://www.bellevuebadminton.com/",
+   "facility": "dedicated",
+   "playTimes": "Open Mon-Fri 9 AM-11 PM, Sat-Sun 8 AM-11 PM (no door-code early access).",
+   "checked": "2026-10-16"
+  },
+  {
+   "id": "v-us-wi-memorial-high-school-mscr-adult-badminto",
+   "name": "Memorial High School (MSCR adult badminton)",
+   "aliases": [
+    "Vel Phillips Memorial High School",
+    "MSCR Badminton",
+    "Madison School & Community Recreation (MSCR)"
+   ],
+   "lat": 43.063912,
+   "lon": -89.502591,
+   "street": "201 S Gammon Rd",
+   "city": "Madison",
+   "region": "WI",
+   "postcode": "53717",
+   "country": "US",
+   "tz": "America/Chicago",
+   "phone": "608.204.3000",
+   "web": "https://www.mscr.org/programs/sports/non-league-sports-adult/",
+   "facility": "school",
+   "playTimes": "Adult badminton (18+, registration): Mon & Tue 7:30–9:30 PM, Sep–May.",
+   "checked": "2026-10-16"
   }
  ]
 }
