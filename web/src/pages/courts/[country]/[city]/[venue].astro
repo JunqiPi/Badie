@@ -139,14 +139,14 @@ const jsonLd = {
                 <ul class="mt-5 space-y-2 border-t-2 border-stroke/15 pt-4 font-bold">
                   {venue.web && (
                     <li>
-                      <a href={venue.web} rel="nofollow noopener" class="underline decoration-2 underline-offset-4 hover:text-ink-secondary">
+                      <a href={venue.web} rel="nofollow noopener" class="link">
                         Official website
                       </a>
                     </li>
                   )}
                   {venue.phone && (
                     <li>
-                      <a href={`tel:${venue.phone.replace(/[^+\d]/g, '')}`} class="hover:text-ink-secondary">
+                      <a href={`tel:${venue.phone.replace(/[^+\d]/g, '')}`} class="transition-colors hover:text-ink-secondary">
                         {venue.phone}
                       </a>
                     </li>

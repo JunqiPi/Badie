@@ -2,7 +2,7 @@
 @import "@fontsource-variable/nunito";
 @import "@fontsource/anton";
 
-/* 与 iOS Theme.swift 一致的 “Court Pop” 设计变量 */
+/* 与 iOS Theme.swift 一致的 “Court Pop” 设计变量。文字色都按 WCAG AA（正文 ≥ 4.5:1）挑过 */
 @theme {
   --color-backdrop: #e6dece;
   --color-canvas: #f5f0e6;
@@ -10,10 +10,11 @@
   --color-surface-muted: #ede6d8;
   --color-ink: #17140f;
   --color-ink-secondary: #5b554b;
-  --color-ink-tertiary: #8c8579;
+  --color-ink-tertiary: #6b6459;
   --color-stroke: #17140f;
   --color-shadow: #17140f;
   --color-on-accent: #17140f;
+  --color-focus: #3d2fd0;
   --color-lime: #d4f33f;
   --color-lavender: #c8beff;
   --color-peach: #ffc98f;
@@ -24,6 +25,40 @@
   --color-danger: #c92a2f;
   --font-sans: "Nunito Variable", ui-rounded, system-ui, sans-serif;
   --font-display: "Anton", "Arial Narrow", sans-serif;
+
+  --animate-enter: enter var(--dur-2) var(--ease-out) both;
+  --animate-pop: pop var(--dur-2) var(--ease-out) both;
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+
+  @keyframes enter {
+    from { opacity: 0; transform: translateY(8px); }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.96); }
+  }
+  @keyframes shimmer {
+    50% { opacity: 0.55; }
+  }
+}
+
+:root {
+  /* 动效：进场用减速曲线，时长按距离 / 面积递增（小控件 120ms，卡片 200ms，大面板 320ms） */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  /* 形状与页边距：手机 16px，平板 24px，桌面 32px */
+  --r-control: 14px;
+  --r-card: 20px;
+  --gutter: 1rem;
+}
+
+@media (min-width: 640px) {
+  :root { --gutter: 1.5rem; }
+}
+
+@media (min-width: 1024px) {
+  :root { --gutter: 2rem; }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -34,9 +69,10 @@
     --color-surface-muted: #2c2737;
     --color-ink: #f4efe6;
     --color-ink-secondary: #b9b2a6;
-    --color-ink-tertiary: #857d90;
+    --color-ink-tertiary: #a097ad;
     --color-stroke: #756a90;
     --color-shadow: #07060a;
+    --color-focus: #c8beff;
     --color-lavender: #b3a6ff;
     --color-peach: #f5b97a;
     --color-pink: #f79cc0;
@@ -47,25 +83,144 @@
   }
 }
 
-@utility sticker {
-  background: var(--color-surface);
-  border: 2px solid var(--color-stroke);
-  border-radius: 20px;
-  box-shadow: 3px 4px 0 var(--color-shadow);
+@layer base {
+  html {
+    scrollbar-gutter: stable;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-backdrop);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+  ::selection {
+    background: var(--color-lime);
+    color: var(--color-on-accent);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  [id] { scroll-margin-top: 1.5rem; }
 }
 
-@utility lift {
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
-  &:hover {
-    transform: translate(-1px, -2px);
-    box-shadow: 5px 6px 0 var(--color-shadow);
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  /* 公开站是多页面：同源跳转用浏览器原生的淡入淡出，不需要任何脚本 */
+  @view-transition { navigation: auto; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-/* 静态色块：只有描边。硬投影留给能点的东西（卡片链接、按钮），不然“可点”的信号就失效了 */
+/* 页面内容的统一宽度和左右边距 */
+@utility page {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* 静态色块：只有描边。硬投影留给能点的东西和浮层，不然“可点”的信号就失效了 */
 @utility tile {
   border: 2px solid var(--color-stroke);
-  border-radius: 20px;
+  border-radius: var(--r-card);
+}
+
+@utility sticker {
+  background: var(--color-surface);
+  border: 2px solid var(--color-stroke);
+  border-radius: var(--r-card);
+  box-shadow: 3px 4px 0 var(--color-shadow);
+}
+
+/* 能点的卡片：只在有悬停的设备上抬起（手机上不会“粘住”），按下时压回去 */
+@utility lift {
+  transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out), background-color var(--dur-1);
+  @media (hover: hover) {
+    &:hover {
+      transform: translate(-1px, -2px);
+      box-shadow: 5px 6px 0 var(--color-shadow);
+    }
+  }
+  &:active {
+    transform: translate(1px, 2px);
+    box-shadow: 1px 1px 0 var(--color-shadow);
+  }
+}
+
+@utility button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.15rem;
+  border: 2px solid var(--color-stroke);
+  border-radius: var(--r-control);
+  box-shadow: 0 4px 0 var(--color-shadow);
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: var(--button-fg, var(--color-on-accent));
+  background: var(--button-bg, var(--color-lime));
+  cursor: pointer;
+  user-select: none;
+  transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out), filter var(--dur-1);
+  @media (hover: hover) {
+    &:hover:not(:disabled, [aria-disabled="true"]) {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 0 var(--color-shadow);
+      filter: brightness(1.04);
+    }
+  }
+  &:active:not(:disabled, [aria-disabled="true"]) {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 var(--color-shadow);
+  }
+  &:disabled, &[aria-disabled="true"] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: translateY(4px);
+  }
+}
+
+@utility button-quiet {
+  --button-bg: var(--color-surface);
+  --button-fg: var(--color-ink);
+}
+
+@utility button-danger {
+  --button-bg: var(--color-danger);
+  --button-fg: #fff;
+}
+
+/* 输入框、下拉框：44px 高（触控目标），焦点用统一的焦点框，出错时 aria-invalid 变红 */
+@utility field {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--color-stroke);
+  border-radius: var(--r-control);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-weight: 700;
+  transition: border-color var(--dur-1), box-shadow var(--dur-1);
+  &::placeholder { color: var(--color-ink-tertiary); font-weight: 600; }
+  @media (hover: hover) {
+    &:hover:not(:focus, :disabled) { box-shadow: 0 2px 0 var(--color-shadow); }
+  }
+  &[aria-invalid="true"] { border-color: var(--color-danger); }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
 @utility chip {
@@ -77,32 +232,52 @@
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 800;
+  line-height: 1.4;
   color: var(--color-on-accent);
 }
 
-@utility button {
+/* 可以按下 / 取消的筛选项（aria-pressed） */
+@utility toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  min-height: 2.75rem;
-  padding: 0 1.1rem;
+  gap: 0.35rem;
+  min-height: 2.5rem;
+  padding: 0 1rem;
   border: 2px solid var(--color-stroke);
-  border-radius: 14px;
-  box-shadow: 0 4px 0 var(--color-shadow);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.875rem;
   font-weight: 800;
-  color: var(--button-fg, var(--color-on-accent));
-  background: var(--button-bg, var(--color-lime));
-  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
-  &:active {
-    transform: translateY(4px);
-    box-shadow: 0 0 0 var(--color-shadow);
+  cursor: pointer;
+  transition: background-color var(--dur-1), transform var(--dur-1) var(--ease-out);
+  @media (hover: hover) {
+    &:hover { background: var(--color-surface-muted); }
+  }
+  &:active { transform: scale(0.96); }
+  &[aria-pressed="true"], &[aria-checked="true"] {
+    background: var(--color-butter);
+    color: var(--color-on-accent);
   }
 }
 
-@utility button-quiet {
-  --button-bg: var(--color-surface);
-  --button-fg: var(--color-ink);
+@utility link {
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition: color var(--dur-1), text-decoration-color var(--dur-1);
+  @media (hover: hover) {
+    &:hover { text-decoration-color: var(--color-lime); }
+  }
+}
+
+/* 加载占位：形状和真实内容一致，避免内容出来时页面跳动 */
+@utility skeleton {
+  border-radius: var(--r-control);
+  background: var(--color-surface-muted);
+  animation: var(--animate-shimmer);
 }
 
 @utility eyebrow {
@@ -119,18 +294,4 @@
   line-height: 0.95;
   letter-spacing: 0.005em;
   text-transform: uppercase;
-}
-
-@layer base {
-  body {
-    background: var(--color-backdrop);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-  }
-}
-
-a:focus-visible,
-button:focus-visible {
-  outline: 3px solid var(--color-lavender);
-  outline-offset: 2px;
 }

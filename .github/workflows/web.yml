@@ -37,12 +37,13 @@ jobs:
       - run: npm ci
       - run: npm run check
 
-      # 这三个值都可以公开，放在仓库 Variables（不是 Secrets）
+      # 这几个值都可以公开，放在仓库 Variables（不是 Secrets）
       - run: npm run build
         env:
           SITE_URL: ${{ vars.SITE_URL }}
           PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
 
       # 只有 main 部署；没配 Cloudflare 时跳过
       - name: Deploy to Cloudflare Pages

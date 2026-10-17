@@ -16,6 +16,7 @@ const nav = [
   { label: 'How it works', href: '/#how' },
   { label: 'About', href: '/#about' },
 ];
+const section = Astro.url.pathname.startsWith('/courts/') ? '/courts/' : undefined;
 ---
 
 <!doctype html>
@@ -37,39 +38,52 @@ const nav = [
     <link rel="sitemap" href="/sitemap-index.xml" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
-  <body class="min-h-screen antialiased lg:p-4">
-    <div class="min-h-screen bg-canvas lg:min-h-[calc(100vh-2rem)] lg:rounded-[32px] lg:border-2 lg:border-stroke">
-      <header class="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
-        <a href="/" class="flex items-center gap-2 text-2xl font-black tracking-tight">
+  <body class="min-h-dvh antialiased lg:p-4">
+    <a href="#main" class="button sr-only z-50 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
+    <div class="min-h-dvh bg-canvas lg:min-h-[calc(100dvh-2rem)] lg:rounded-[32px] lg:border-2 lg:border-stroke">
+      <header class="page relative flex items-center justify-between gap-4 py-5">
+        <a href="/" class="flex items-center gap-2 text-2xl font-black">
           <span class="sticker grid size-9 place-items-center rounded-xl! bg-lime text-on-accent">B</span>
           Badie
         </a>
-        <nav aria-label="Main" class="absolute top-0 left-1/2 hidden -translate-x-1/2 rounded-b-[22px] bg-ink px-8 py-3 lg:block">
-          <ul class="flex gap-8 text-sm font-extrabold text-canvas">
-            {nav.map((item) => <li><a href={item.href} class="hover:text-lime">{item.label}</a></li>)}
+        <nav aria-label="Main" class="absolute top-0 left-1/2 hidden -translate-x-1/2 rounded-b-[22px] bg-ink px-3 lg:block">
+          <ul class="flex text-sm font-extrabold text-canvas">
+            {
+              nav.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={item.href === section ? 'page' : undefined}
+                    class="block px-5 py-3 underline-offset-[6px] decoration-lime decoration-2 transition-colors hover:text-lime aria-[current=page]:underline"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
           </ul>
         </nav>
-        <a href="/courts/" class="font-extrabold text-ink-secondary hover:text-ink lg:hidden">Courts</a>
-        <a href="/#app" class="hidden rounded-full border-2 border-stroke px-5 py-2 text-sm font-extrabold hover:bg-surface lg:inline-flex">
-          Get the app
-        </a>
+        <div class="flex items-center gap-2">
+          <a href="/courts/" class="link px-2 py-2 lg:hidden">Courts</a>
+          <a href="/app/" class="button min-h-10 px-4 text-sm">Open app</a>
+        </div>
       </header>
 
-      <main class="mx-auto max-w-6xl px-5 pb-20 lg:px-8">
+      <main id="main" class="page pb-20">
         <slot />
       </main>
 
       <footer class="border-t-2 border-stroke/15">
-        <div class="mx-auto grid max-w-6xl gap-8 px-5 py-10 text-sm text-ink-secondary sm:grid-cols-[2fr_1fr] lg:px-8">
+        <div class="page grid gap-8 py-10 text-sm text-ink-secondary sm:grid-cols-[2fr_1fr]">
           <div class="space-y-2">
             <p class="font-extrabold text-ink">Badie</p>
             <p class="max-w-prose">A free, nonprofit app for finding badminton partners at your level and courts near you. No ads.</p>
             <slot name="attribution" />
           </div>
           <div>
-            <p class="eyebrow mb-3">Courts</p>
-            <ul class="space-y-1">
-              {countries.map((country) => <li><a href={country.path} class="hover:text-ink">{country.name}</a></li>)}
+            <p class="eyebrow mb-2">Courts</p>
+            <ul>
+              {countries.map((country) => <li><a href={country.path} class="inline-block py-1 transition-colors hover:text-ink">{country.name}</a></li>)}
             </ul>
           </div>
         </div>

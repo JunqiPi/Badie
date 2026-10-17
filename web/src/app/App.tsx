@@ -31,7 +31,7 @@ export default function App() {
   }, [path]);
 
   if (!supabase) return <Message text="The web app isn’t connected to a server yet." />;
-  if (session === undefined || (session && profile === undefined)) return <Message text="Loading…" />;
+  if (session === undefined || (session && profile === undefined)) return <Message busy text="Loading…" />;
   if (!session) return <SignIn />;
   if (!profile) return <Onboarding userId={session.user.id} onDone={setProfile} />;
 
@@ -43,8 +43,6 @@ export default function App() {
         <ComingSoon title="Find partners" body="Tell Badie when you’re free and which courts you can reach, and get matched with players at your level." />
       ) : path.startsWith('/app/games/') ? (
         <ComingSoon title="My games" body="Upcoming games, check-in, splitting the court fee and confirming results." />
-      ) : path.startsWith('/app/messages/') ? (
-        <ComingSoon title="Messages" body="Chat with friends and the players in your games and groups." />
       ) : (
         <Courts userId={session.user.id} />
       )}
@@ -52,6 +50,13 @@ export default function App() {
   );
 }
 
-function Message({ text }: { text: string }) {
-  return <p className="grid min-h-screen place-items-center font-bold text-ink-secondary">{text}</p>;
+function Message({ text, busy }: { text: string; busy?: boolean }) {
+  return (
+    <p role="status" className="grid min-h-dvh place-items-center bg-canvas font-bold text-ink-secondary">
+      <span className="flex items-center gap-3">
+        {busy && <span aria-hidden="true" className="size-5 animate-spin rounded-full border-[3px] border-current border-t-transparent" />}
+        {text}
+      </span>
+    </p>
+  );
 }

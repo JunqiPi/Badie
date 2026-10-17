@@ -17,7 +17,7 @@ const subtitle = englishName(venue);
       {subtitle && <p class="text-sm font-bold text-ink-secondary">{subtitle}</p>}
       <p class="mt-1 truncate text-sm text-ink-secondary">{formatAddress(venue)}</p>
     </div>
-    {distanceKm !== undefined && <span class="shrink-0 text-sm font-extrabold text-ink-tertiary">{distanceKm.toFixed(1)} km</span>}
+    {distanceKm !== undefined && <span class="shrink-0 text-sm font-extrabold tabular-nums text-ink-tertiary">{distanceKm.toFixed(1)} km</span>}
   </div>
   {
     (venue.courts || venue.price?.perPerson !== undefined || !venue.confirmed) && (

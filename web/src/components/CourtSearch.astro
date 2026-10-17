@@ -7,7 +7,7 @@ const { class: className } = Astro.props;
 ---
 
 <form action="/courts/" role="search" data-court-search class:list={['relative', className]}>
-  <label class="sticker flex items-center gap-3 rounded-2xl! px-4 focus-within:outline-3 focus-within:outline-lavender">
+  <label class="sticker flex items-center gap-3 rounded-2xl! px-4 transition-shadow focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-focus">
     <svg viewBox="0 0 24 24" class="size-5 shrink-0 fill-none stroke-ink-secondary" stroke-width="2.5" aria-hidden="true">
       <circle cx="11" cy="11" r="7"></circle>
       <path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
@@ -16,12 +16,15 @@ const { class: className } = Astro.props;
     <input
       name="q"
       type="search"
+      role="combobox"
+      aria-expanded="false"
+      aria-autocomplete="list"
       autocomplete="off"
       placeholder="Search a city or court"
       class="h-14 w-full bg-transparent font-bold outline-none placeholder:text-ink-tertiary"
     />
   </label>
-  <ul hidden class="sticker absolute inset-x-0 top-full z-10 mt-2 max-h-96 overflow-auto rounded-2xl! p-2"></ul>
+  <ul hidden role="listbox" aria-label="Suggestions" class="sticker animate-pop absolute inset-x-0 top-full z-30 mt-2 max-h-96 overflow-auto rounded-2xl! p-1.5"></ul>
 </form>
 
 <script>
@@ -34,45 +37,78 @@ const { class: className } = Astro.props;
       .then((response) => response.json() as Promise<Entry[]>)
       .then((entries) => entries.map((entry) => ({ ...entry, key: fold(entry.n) }))));
 
-  function item(entry: Entry) {
-    const li = document.createElement('li');
-    const link = document.createElement('a');
-    link.href = entry.p;
-    link.className = 'flex items-center justify-between gap-3 rounded-xl px-3 py-2 hover:bg-surface-muted focus:bg-surface-muted';
-    const text = document.createElement('span');
-    text.innerHTML = '<span class="block font-extrabold"></span><span class="block text-sm text-ink-secondary"></span>';
-    text.children[0].textContent = entry.n;
-    text.children[1].textContent = entry.s;
-    const kind = document.createElement('span');
-    kind.className = `chip ${entry.k === 'city' ? 'bg-peach' : 'bg-sky'}`;
-    kind.textContent = entry.k === 'city' ? 'Area' : 'Court';
-    link.append(text, kind);
-    li.append(link);
-    return li;
-  }
-
+  let uid = 0;
   for (const form of document.querySelectorAll<HTMLFormElement>('[data-court-search]')) {
     const input = form.querySelector('input')!;
     const list = form.querySelector('ul')!;
+    list.id = `court-search-${++uid}`;
+    input.setAttribute('aria-controls', list.id);
+    let active = -1;
+
+    const options = () => [...list.querySelectorAll<HTMLAnchorElement>('[role="option"]')];
+    const setOpen = (open: boolean) => {
+      list.hidden = !open;
+      input.setAttribute('aria-expanded', String(open));
+      if (!open) input.removeAttribute('aria-activedescendant');
+    };
+    const highlight = (next: number) => {
+      const all = options();
+      active = (next + all.length) % all.length;
+      all.forEach((option, i) => option.setAttribute('aria-selected', String(i === active)));
+      input.setAttribute('aria-activedescendant', all[active].id);
+      all[active].scrollIntoView({ block: 'nearest' });
+    };
+
+    function option(entry: Entry, i: number) {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = entry.p;
+      link.id = `${list.id}-${i}`;
+      link.role = 'option';
+      link.tabIndex = -1;
+      link.setAttribute('aria-selected', 'false');
+      link.className = 'flex items-center justify-between gap-3 rounded-xl px-3 py-2 aria-selected:bg-surface-muted hover:bg-surface-muted';
+      const text = document.createElement('span');
+      text.innerHTML = '<span class="block font-extrabold"></span><span class="block text-sm text-ink-secondary"></span>';
+      text.children[0].textContent = entry.n;
+      text.children[1].textContent = entry.s;
+      const kind = document.createElement('span');
+      kind.className = `chip ${entry.k === 'city' ? 'bg-peach' : 'bg-sky'}`;
+      kind.textContent = entry.k === 'city' ? 'Area' : 'Court';
+      link.append(text, kind);
+      li.append(link);
+      return li;
+    }
+
     input.addEventListener('focus', load, { once: true });
     input.addEventListener('input', async () => {
       const query = fold(input.value.trim());
-      if (query.length < 2) {
-        list.hidden = true;
-        return;
-      }
+      active = -1;
+      if (query.length < 2) return setOpen(false);
       const hits = (await load())
         .filter((entry) => entry.key!.includes(query))
         .sort((a, b) => Number(b.key!.startsWith(query)) - Number(a.key!.startsWith(query)) || Number(a.k !== 'city') - Number(b.k !== 'city'))
         .slice(0, 8);
-      list.replaceChildren(...hits.map(item));
-      list.hidden = hits.length === 0;
+      list.replaceChildren(...hits.map(option));
+      setOpen(hits.length > 0);
+    });
+    input.addEventListener('keydown', (event) => {
+      if (list.hidden) return;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        highlight(active + (event.key === 'ArrowDown' ? 1 : -1));
+      } else if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    });
+    form.addEventListener('focusout', (event) => {
+      if (!form.contains(event.relatedTarget as Node)) setOpen(false);
     });
     form.addEventListener('submit', (event) => {
-      const first = list.querySelector('a');
-      if (first) {
+      const chosen = options()[Math.max(active, 0)];
+      if (chosen) {
         event.preventDefault();
-        location.href = first.href;
+        location.href = chosen.href;
       }
     });
   }

@@ -15,6 +15,7 @@
 | `SUPABASE_URL` | Variables | `https://<project ref>.supabase.co` |
 | `SUPABASE_PUBLISHABLE_KEY` | Variables | Project Settings → API Keys → Publishable key（`sb_publishable_…`，可以公开） |
 | `SITE_URL` | Variables | `https://badie.rsvp` |
+| `TURNSTILE_SITE_KEY` | Variables | Cloudflare → Turnstile 的 Site Key（可以公开） |
 
 **Secret key（`sb_secret_…`）不需要放进 GitHub，也绝不能进前端。**
 
@@ -46,6 +47,15 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
 5. Authentication → Emails → Templates：**Magic Link 和 Confirm signup 两个模板**都换成 `supabase/templates/otp.html` 的内容，主题 `Your Badie sign-in code`。
 6. Authentication → Sign In / Providers → Email：Email OTP length 设 6，过期时间 3600 秒。
 7. Authentication → Rate Limits：发信上限调到每小时 30 封左右。
+
+## 3.5 防机器人与滥用
+
+1. **人机验证（Turnstile，免费）**：Cloudflare → Turnstile → Add widget：Hostname 填 `badie.rsvp`，Widget mode 选 **Managed**。
+   - Site Key 存为 Variable `TURNSTILE_SITE_KEY`，推一次 main 让网站带上验证框。
+   - **网站部署后**再到 Supabase → Authentication → Attack Protection → Enable CAPTCHA protection，选 Turnstile，填 Secret Key。顺序反过来会让所有人登录失败。
+2. Supabase → Authentication → Rate Limits：发验证码邮件每小时 30 封左右；每个 IP 每 5 分钟登录 / 注册请求 30 次、验证码校验 30 次（默认值即可）。
+3. Cloudflare → badie.rsvp → Security → Bots：打开 **Bot Fight Mode**；AI Crawl Control 里拦截 AI 训练爬虫，放行搜索引擎和 AI 搜索（与 robots.txt 一致）。
+4. 网站已经带上：内容安全策略（只允许自身脚本和 Turnstile）、禁止被嵌入 iframe、`/app/` 不进搜索引擎；数据库里所有写操作走带检查的函数，每人每天最多加 3 家球馆。
 
 ## 4. 登录相关网址
 

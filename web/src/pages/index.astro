@@ -124,7 +124,7 @@ const steps = [
         <p class="eyebrow">Court directory</p>
         <h2 class="display mt-3 text-5xl">Courts by country</h2>
       </div>
-      <a href="/courts/" class="font-extrabold underline decoration-2 underline-offset-4 hover:text-ink-secondary">See all courts</a>
+      <a href="/courts/" class="link">See all courts</a>
     </div>
     <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {countries.map((country, index) => <CountryCard country={country} tint={tints[index % tints.length]} />)}
@@ -143,13 +143,12 @@ const steps = [
     <div id="app" class="tile flex scroll-mt-8 flex-col justify-between gap-6 bg-lime p-8 text-on-accent">
       <div>
         <p class="eyebrow text-on-accent/70">The app</p>
-        <h2 class="display mt-3 text-4xl">iPhone app in testing</h2>
+        <h2 class="display mt-3 text-4xl">Play from any browser</h2>
         <p class="mt-4 max-w-prose font-medium">
-          The iPhone app is in testing now. A web version with the same features is on the way, so Android and desktop
-          players can join too.
+          Badie works on the web on any phone or computer, no download needed. The iPhone app is in testing.
         </p>
       </div>
-      <a href="/courts/" class="button button-quiet self-start">Browse courts meanwhile</a>
+      <a href="/app/" class="button button-quiet self-start">Open Badie</a>
     </div>
   </section>
 </Base>

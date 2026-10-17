@@ -12,7 +12,7 @@ const { items } = Astro.props;
       items.map((item, index) => (
         <li class="flex gap-1">
           {index > 0 && <span aria-hidden="true">/</span>}
-          <a href={item.href} class="hover:text-ink">{item.label}</a>
+          <a href={item.href} class="py-1 transition-colors hover:text-ink">{item.label}</a>
         </li>
       ))
     }

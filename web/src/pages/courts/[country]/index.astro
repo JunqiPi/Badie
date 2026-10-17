@@ -66,17 +66,17 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
       <section class="mt-14">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <h2 class="eyebrow">All {country.cities.length.toLocaleString('en')} areas A–Z</h2>
-          <label class="tile flex items-center gap-2 bg-surface px-3">
+          <label class="w-full sm:w-56">
             <span class="sr-only">Filter areas</span>
-            <input data-area-filter type="search" placeholder="Filter areas" class="h-10 w-48 bg-transparent font-bold outline-none placeholder:text-ink-tertiary" />
+            <input data-area-filter type="search" placeholder="Filter areas" class="field" />
           </label>
         </div>
         <details data-area-list open={country.cities.length <= 60} class="mt-5">
-          <summary class="cursor-pointer font-extrabold underline decoration-2 underline-offset-4">Show all areas</summary>
+          <summary class="link inline-block cursor-pointer py-1">Show all areas</summary>
           <ul class="mt-4 columns-1 gap-8 sm:columns-2 lg:columns-3">
             {alphabetical.map((city) => (
               <li data-area={cityName(city).toLowerCase()} class="break-inside-avoid">
-                <a href={city.path} class="flex justify-between gap-3 rounded-lg px-2 py-1.5 font-bold hover:bg-surface">
+                <a href={city.path} class="flex justify-between gap-3 rounded-lg px-2 py-1.5 font-bold transition-colors hover:bg-surface">
                   <span class="truncate">{cityName(city)}</span>
                   <span class="text-ink-tertiary">{city.venues.length}</span>
                 </a>

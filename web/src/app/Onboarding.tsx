@@ -1,10 +1,12 @@
 import { useState, type SubmitEvent } from 'react';
 import { supabase, type Profile } from './supabase';
+import { Button, Field } from './ui';
 
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
 const countries = ['US', 'CA', 'GB', 'AU', 'NZ', 'SG', 'MY', 'HK', 'TW', 'JP', 'KR', 'IN', 'ID', 'TH', 'VN', 'PH', 'DE', 'FR', 'DK', 'CN']
   .map((code) => ({ code, name: code === 'HK' ? 'Hong Kong' : (regionNames.of(code) ?? code) }))
   .sort((a, b) => a.name.localeCompare(b.name));
+
 function guessCountry() {
   try {
     const region = new Intl.Locale(navigator.language).maximize().region;
@@ -15,51 +17,68 @@ function guessCountry() {
   return 'US';
 }
 
+// 与数据库约束一致：2–12 个字，不能留联系方式或链接（防广告）
+export function nicknameProblem(nickname: string) {
+  const name = nickname.trim();
+  if (name.length < 2) return 'At least 2 characters.';
+  if (name.length > 12) return 'At most 12 characters.';
+  if (/\d{5,}|https?:|www\.|@|\.(com|net|org|io|me)\b/i.test(name)) return 'No phone numbers, emails or links.';
+}
+
 export function Onboarding({ userId, onDone }: { userId: string; onDone: (profile: Profile) => void }) {
   const [nickname, setNickname] = useState('');
+  const [touched, setTouched] = useState(false);
   const [country, setCountry] = useState(guessCountry);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  const valid = nickname.trim().length >= 2 && nickname.trim().length <= 12;
+  const problem = nicknameProblem(nickname);
 
   async function save(event: SubmitEvent) {
     event.preventDefault();
+    setTouched(true);
+    if (problem) return;
+    setBusy(true);
     const { data, error } = await supabase!
       .from('profiles')
       .insert({ id: userId, nickname: nickname.trim(), country_code: country })
       .select()
       .single();
-    if (error) setError(error.message);
+    setBusy(false);
+    if (error) setError('Couldn’t save. Try a different nickname.');
     else onDone(data as Profile);
   }
 
   return (
-    <div className="mx-auto grid min-h-screen max-w-md content-center px-5">
-      <form onSubmit={save} className="sticker grid gap-4 p-6">
+    <div className="grid min-h-dvh place-items-center bg-canvas px-[var(--gutter)] py-10">
+      <form onSubmit={save} noValidate className="sticker animate-enter grid w-full max-w-md gap-5 p-6 sm:p-8">
         <div>
           <p className="eyebrow">Welcome</p>
           <h1 className="display mt-2 text-4xl">What should players call you?</h1>
         </div>
-        <label className="grid gap-1 font-extrabold">
-          Nickname
-          <input
-            required
-            maxLength={12}
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            className="tile h-12 bg-surface px-4 font-bold outline-none focus:border-lavender"
-          />
-          <span className="text-sm font-bold text-ink-tertiary">2–12 characters. No phone numbers or links.</span>
-        </label>
-        <label className="grid gap-1 font-extrabold">
-          Where do you play?
-          <select value={country} onChange={(e) => setCountry(e.target.value)} className="tile h-12 bg-surface px-3 font-bold">
-            {countries.map((c) => (
-              <option key={c.code} value={c.code}>{c.name}</option>
-            ))}
-          </select>
-        </label>
-        {error && <p role="alert" className="text-sm font-bold text-danger">{error}</p>}
-        <button disabled={!valid} className="button disabled:opacity-50">Continue</button>
+        <Field label="Nickname" hint="2–12 characters. No phone numbers or links." error={(touched && problem) || error}>
+          {(props) => (
+            <input
+              {...props}
+              autoFocus
+              autoComplete="nickname"
+              maxLength={12}
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              onBlur={() => setTouched(true)}
+              className="field h-12"
+            />
+          )}
+        </Field>
+        <Field label="Where do you play?" hint="You’ll be matched with players in the same country.">
+          {(props) => (
+            <select {...props} value={country} onChange={(e) => setCountry(e.target.value)} className="field h-12">
+              {countries.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          )}
+        </Field>
+        <Button busy={busy}>Continue</Button>
       </form>
     </div>
   );
