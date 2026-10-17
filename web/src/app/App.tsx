@@ -24,7 +24,7 @@ export default function App() {
   const [profile, setProfile] = useState<Profile | null>();
   // 先加载界面语言再显示，避免先闪一下英文
   const [ready, setReady] = useState(false);
-  useLocale();
+  const locale = useLocale();
 
   useEffect(() => {
     setLocale(detect()).finally(() => setReady(true));
@@ -41,6 +41,12 @@ export default function App() {
     if (!session) return setProfile(session === null ? null : undefined);
     supabase!.from('profiles').select().eq('id', session.user.id).maybeSingle().then(({ data }) => setProfile(data as Profile | null));
   }, [session?.user.id]);
+
+  // 通知和邮件用你正在用的界面语言
+  useEffect(() => {
+    if (!ready || !profile || profile.locale === locale) return;
+    supabase!.from('profiles').update({ locale }).eq('id', profile.id).select().single().then(({ data }) => data && setProfile(data as Profile));
+  }, [ready, profile?.locale, locale]);
 
   useEffect(() => {
     if (path === '/app/' || path === '/app') navigate('/app/play/', true);

@@ -92,6 +92,8 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 2. Supabase → Integrations → Vault → Add new secret：Name 填 `resend_api_key`，Secret 粘 key。**不要在 SQL Editor 里写 key**（会留在查询历史里）。
 3. 发件人是 `games@badie.rsvp`，Resend 验证过根域名就能用。免费额度每天 100 封；超了 Resend 会拒发，匹配本身不受影响。
 
+通知和邮件用收件人的界面语言（资料里的 `locale`，网页/App 换语言时自动更新），时间按球馆当地时间。新增通知文字时，在迁移里给 `notification_texts` 补上 9 种语言的译文（测试会检查每种语言齐全、占位符一致）。
+
 ## 9. 上线检查
 
 - 用一个**从没用过的邮箱**走一遍：收验证码 → 登录 → 填昵称 → 定级问卷 → 附近球馆 → 收藏。

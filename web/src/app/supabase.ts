@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
-import { t } from './i18n';
+import { t, type Locale } from './i18n';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
 // 只用 publishable key（sb_publishable_…）；secret key 绝不进前端
@@ -17,6 +17,8 @@ export interface Profile {
   assessed_at: string | null;
   show_on_boards: boolean;
   challenge_policy: 'everyone' | 'similar' | 'friends' | 'nobody';
+  /** 通知和邮件用的语言 */
+  locale: Locale;
 }
 
 export interface Venue {
