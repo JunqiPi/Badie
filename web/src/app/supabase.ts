@@ -49,7 +49,7 @@ export interface NearbyVenue {
 // 约球（数据都来自数据库函数，只含本人能看的内容）
 
 export type Mode = 'singles' | 'doubles';
-export type Player = { nickname: string; rating: number; team: 1 | 2; me: boolean; checked_in?: boolean };
+export type Player = { id: string; nickname: string; rating: number; team: 1 | 2; me: boolean; checked_in?: boolean; reviewed?: boolean };
 type Place = { id: string; name: string; city: string; street?: string; tz?: string | null };
 
 export interface Ticket {
@@ -87,6 +87,7 @@ export interface Game {
   checked_in: boolean;
   my_report: { outcome: Outcome | null } | null;
   result: { status: 'awaiting' | 'verified' | 'disputed' | 'unsure' | 'expired'; outcome: Outcome | null };
+  review_until: string;
   players: Player[];
 }
 
@@ -94,18 +95,72 @@ export interface PlayRecord {
   wins: number;
   losses: number;
   games_played: number;
+  no_shows: number;
   late_cancels: number;
 }
 
-/** 调用数据库函数；页面可见时每 30 秒、切回页面时自动刷新（别人确认了、约成了能及时看到） */
-export function useLive<T>(fn: string, every = 30_000) {
+// 社交
+
+export interface PlayerCard {
+  id: string;
+  nickname: string;
+  rating: number;
+  assessed: boolean;
+  games_band: string;
+  new_player: boolean;
+  reliable: boolean;
+  tags: string[];
+  relationship: 'self' | 'friend' | 'requested' | 'incoming' | 'blocked' | 'none';
+  games_together: number;
+  last_game: { starts_at: string; venue: string; tz: string | null } | null;
+  mutual_friends: number;
+}
+
+export type ThreadKind = 'game' | 'dm';
+
+export interface ThreadSummary {
+  kind: ThreadKind;
+  id: string;
+  starts_at: string | null;
+  venue: string | null;
+  tz: string | null;
+  nickname: string | null;
+  access: 'open' | 'closed';
+  last: { body: string; created_at: string; mine: boolean } | null;
+  unread: number;
+}
+
+export interface Thread {
+  access: 'open' | 'closed';
+  friend: boolean;
+  game: { starts_at: string; ends_at: string; venue: string; tz: string | null } | null;
+  members: { id: string; nickname: string; me: boolean }[];
+  messages: { id: number; body: string; created_at: string; sender: string; mine: boolean }[];
+}
+
+export type Friend = { id: string; nickname: string; rating: number; created_at?: string };
+export type InboxCounts = { messages: number; updates: number; requests: number };
+
+export interface Update {
+  id: number;
+  kind: string;
+  title: string;
+  body: string;
+  link: string | null;
+  created_at: string;
+  read_at: string | null;
+}
+
+/** 调用数据库函数；页面可见时定时（默认 30 秒）、切回页面时自动刷新（别人确认了、约成了能及时看到） */
+export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record<string, unknown>; every?: number } = {}) {
   const [data, setData] = useState<T>();
   const [failed, setFailed] = useState(false);
+  const key = JSON.stringify(args ?? {});
   const refresh = useCallback(async () => {
-    const { data, error } = await supabase!.rpc(fn);
+    const { data, error } = await supabase!.rpc(fn, JSON.parse(key));
     setFailed(Boolean(error));
     if (!error) setData(data as T);
-  }, [fn]);
+  }, [fn, key]);
   useEffect(() => {
     refresh();
     const visible = () => document.visibilityState === 'visible' && refresh();
@@ -135,5 +190,13 @@ const problems: Record<string, string> = {
   cannot_report: 'Results can be reported from the start until 7 days after the game.',
   result_locked: 'Both sides already agreed on this result.',
   retake_too_soon: 'You can retake the quiz 90 days after your last one.',
+  cannot_review: 'Reviews are open for 48 hours after the game.',
+  already_reviewed: 'You’ve already reviewed this player.',
+  chat_closed: 'This chat is closed.',
+  invalid_message: 'Type a message first (up to 1,000 characters).',
+  too_many_messages: 'You’re sending messages too fast. Wait a minute.',
+  not_allowed: 'You can only do this with players you’ve been matched with.',
+  blocked: 'Unblock this player first.',
+  no_request: 'This friend request is no longer open.',
 };
 export const problem = (error: { message: string }) => problems[error.message] ?? 'Something went wrong. Try again.';

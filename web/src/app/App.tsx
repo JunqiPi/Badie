@@ -4,8 +4,10 @@ import { Courts } from './Courts';
 import { GameDetail, Games } from './Games';
 import { LevelQuiz } from './LevelQuiz';
 import { Me } from './Me';
+import { Chat, Messages } from './Messages';
 import { Onboarding } from './Onboarding';
 import { Play } from './Play';
+import { PlayerPage } from './Player';
 import { navigate, usePath } from './router';
 import { Shell } from './Shell';
 import { SignIn } from './SignIn';
@@ -57,10 +59,19 @@ export default function App() {
     );
   }
 
-  const game = path.match(/^\/app\/games\/([0-9a-f-]{36})\//)?.[1];
+  const id = (prefix: string) => path.match(new RegExp(`^/app/${prefix}/([0-9a-f-]{36})/`))?.[1];
+  const game = id('games');
+  const player = id('players');
+  const chat = path.match(/^\/app\/messages\/(game|dm)\/([0-9a-f-]{36})\//);
   return (
     <Shell path={path}>
-      {path.startsWith('/app/me/') ? (
+      {player ? (
+        <PlayerPage key={player} id={player} />
+      ) : chat ? (
+        <Chat key={chat[2]} kind={chat[1] as 'game' | 'dm'} id={chat[2]} />
+      ) : path.startsWith('/app/messages/') ? (
+        <Messages />
+      ) : path.startsWith('/app/me/') ? (
         <Me profile={profile} email={session.user.email} onChange={setProfile} />
       ) : path.startsWith('/app/play/') ? (
         <Play profile={profile} />

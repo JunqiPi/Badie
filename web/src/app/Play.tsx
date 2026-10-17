@@ -156,7 +156,13 @@ export function Players({ players, mode }: { players: Player[]; mode: Mode }) {
         <ul key={i} className={`grid gap-2 ${i === 1 ? 'order-3 text-right' : ''}`} aria-label={mode === 'doubles' ? `Team ${i + 1}` : undefined}>
           {team.map((p, n) => (
             <li key={n} className="min-w-0">
-              <span className="block truncate font-black">{p.me ? 'You' : p.nickname}</span>
+              {p.me ? (
+                <span className="block truncate font-black">You</span>
+              ) : (
+                <Link to={`/app/players/${p.id}/`} className="block truncate font-black underline decoration-transparent decoration-2 underline-offset-4 transition-colors hover:decoration-current">
+                  {p.nickname}
+                </Link>
+              )}
               <span className="text-sm font-bold opacity-75">Level {tier(p.rating).label}{p.checked_in ? ' · checked in' : ''}</span>
             </li>
           ))}

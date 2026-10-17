@@ -1,16 +1,21 @@
 import { useState } from 'react';
 import { money } from './Courts';
 import { Players } from './Play';
+import { Reviews } from './Review';
 import { Link } from './router';
 import { problem, supabase, useLive, type Game, type Outcome, type PlayRecord } from './supabase';
 import { day, hours, relative } from './time';
 import { Button, EmptyState, PageHeader, Skeleton, toast } from './ui';
 
 const live = (g: Game) => g.status === 'scheduled' && new Date(g.ends_at).getTime() > Date.now();
+/** 结束后 48 小时内还有没评价的球友 */
+const toReview = (g: Game) =>
+  g.status === 'scheduled' && Date.now() > new Date(g.ends_at).getTime() && Date.now() < new Date(g.review_until).getTime() &&
+  g.players.some((p) => !p.me && !p.reviewed);
 
 export function Games() {
   const { data: games, failed } = useLive<Game[]>('my_games');
-  const { data: record } = useLive<PlayRecord>('my_record', 300_000);
+  const { data: record } = useLive<PlayRecord>('my_record', { every: 300_000 });
   const upcoming = games?.filter(live).reverse() ?? [];
   const past = games?.filter((g) => !live(g)) ?? [];
 
@@ -77,14 +82,15 @@ const resultText: Record<Game['result']['status'], string> = {
 
 function GameRow({ game: g }: { game: Game }) {
   const started = new Date(g.starts_at).getTime() < Date.now();
-  const label = g.status === 'cancelled' ? 'Cancelled' : started ? resultText[g.result.status] : relative(g.starts_at);
+  const rate = toReview(g);
+  const label = g.status === 'cancelled' ? 'Cancelled' : rate ? 'Rate players' : started ? resultText[g.result.status] : relative(g.starts_at);
   return (
     <Link to={`/app/games/${g.id}/`} className="sticker lift flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
       <span className="min-w-0">
         <span className="block font-black">{day(g.starts_at, g.venue.tz)} · {hours(g.starts_at, g.ends_at, g.venue.tz)}</span>
         <span className="block truncate text-sm text-ink-secondary">{g.mode === 'doubles' ? 'Doubles' : 'Singles'} at {g.venue.name}</span>
       </span>
-      <span className={`chip ${g.status === 'cancelled' ? 'bg-surface-muted text-ink' : g.result.status === 'awaiting' && started ? 'bg-butter' : 'bg-mint'}`}>{label}</span>
+      <span className={`chip ${g.status === 'cancelled' ? 'bg-surface-muted text-ink' : rate || (g.result.status === 'awaiting' && started) ? 'bg-butter' : 'bg-mint'}`}>{label}</span>
     </Link>
   );
 }
@@ -138,9 +144,13 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => void }) {
         </section>
 
         {scheduled && now >= start && <Result game={g} canReport={canReport} busy={busy} act={act} />}
+        {toReview(g) && <Reviews game={g} onDone={onChange} />}
       </div>
 
       <aside className="grid gap-4">
+        {scheduled && now <= end + 48 * 3600000 && (
+          <Link to={`/app/messages/game/${g.id}/`} className="button justify-self-start">Message players</Link>
+        )}
         <section aria-label="Court" className="tile grid gap-3 bg-surface p-5">
           <p className="eyebrow">Court</p>
           <p className="text-lg font-black">{g.venue.name}</p>
