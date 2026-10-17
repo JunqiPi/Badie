@@ -295,3 +295,14 @@
   letter-spacing: 0.005em;
   text-transform: uppercase;
 }
+
+/* 中日韩、泰文、印地文：Anton 没有这些字，标题改用系统字体的粗体；行高放宽免得裁掉上下的笔画，不加字距 */
+:is(:lang(zh), :lang(ja), :lang(ko), :lang(th), :lang(hi)) .display {
+  font-family: var(--font-sans);
+  font-weight: 900;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+:is(:lang(zh), :lang(ja), :lang(ko), :lang(th), :lang(hi)) .eyebrow {
+  letter-spacing: 0.04em;
+}

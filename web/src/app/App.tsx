@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { Courts } from './Courts';
 import { GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
+import { detect, setLocale, t, useLocale } from './i18n';
 import { Groups } from './Groups';
 import { LevelQuiz } from './LevelQuiz';
 import { Me } from './Me';
@@ -21,6 +22,13 @@ export default function App() {
   const path = usePath();
   const [session, setSession] = useState<Session | null>();
   const [profile, setProfile] = useState<Profile | null>();
+  // 先加载界面语言再显示，避免先闪一下英文
+  const [ready, setReady] = useState(false);
+  useLocale();
+
+  useEffect(() => {
+    setLocale(detect()).finally(() => setReady(true));
+  }, []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -38,8 +46,9 @@ export default function App() {
     if (path === '/app/' || path === '/app') navigate('/app/play/', true);
   }, [path]);
 
-  if (!supabase) return <Message text="The web app isn’t connected to a server yet." />;
-  if (session === undefined || (session && profile === undefined)) return <Message busy text="Loading…" />;
+  if (!ready) return <Message busy />;
+  if (!supabase) return <Message text={t('The web app isn’t connected to a server yet.')} />;
+  if (session === undefined || (session && profile === undefined)) return <Message busy text={t('Loading…')} />;
   if (!session) return <SignIn />;
   if (!profile) {
     return (
@@ -99,7 +108,7 @@ export default function App() {
   );
 }
 
-function Message({ text, busy }: { text: string; busy?: boolean }) {
+function Message({ text, busy }: { text?: string; busy?: boolean }) {
   return (
     <p role="status" className="grid min-h-dvh place-items-center bg-canvas font-bold text-ink-secondary">
       <span className="flex items-center gap-3">

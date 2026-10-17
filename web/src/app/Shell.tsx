@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { t } from './i18n';
 import { Icon } from './icons';
 import { Link } from './router';
 import { useLive, type InboxCounts } from './supabase';
@@ -39,10 +40,10 @@ export function Shell({ path, children }: { path: string; children: ReactNode })
   // 换页时（比如刚看完消息）马上更新未读数
   useEffect(() => void refresh(), [path, refresh]);
   const unread = counts ? counts.messages + counts.updates + counts.requests : 0;
-  const label = (s: (typeof sections)[number], text: string) => (s.icon === 'chat' && unread ? `${text}, ${unread} unread` : text);
+  const label = (s: (typeof sections)[number], text: string) => (s.icon === 'chat' && unread ? t('{label}, {n} unread', { label: t(text), n: unread }) : t(text));
   return (
     <div className="min-h-dvh bg-canvas lg:grid lg:grid-cols-[15rem_1fr]">
-      <a href="#main" className="button sr-only z-50 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
+      <a href="#main" className="button sr-only z-50 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">{t('Skip to content')}</a>
 
       <aside className="hidden border-r-2 border-stroke/15 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:gap-8 lg:px-4 lg:py-6">
         <div className="px-2"><Logo /></div>
@@ -57,7 +58,7 @@ export function Shell({ path, children }: { path: string; children: ReactNode })
                   className="flex min-h-11 items-center gap-3 rounded-[var(--r-control)] border-2 border-transparent px-3 font-extrabold text-ink-secondary transition-colors duration-[var(--dur-1)] hover:bg-surface hover:text-ink aria-[current=page]:border-stroke aria-[current=page]:bg-lime aria-[current=page]:text-on-accent"
                 >
                   <Icon name={s.icon} />
-                  {s.label}
+                  {t(s.label)}
                   {s.icon === 'chat' && <Badge count={unread} />}
                 </Link>
               </li>
@@ -69,7 +70,7 @@ export function Shell({ path, children }: { path: string; children: ReactNode })
       <div className="min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0">
         <header className="flex items-center justify-between border-b-2 border-stroke/15 px-[var(--gutter)] py-3 lg:hidden">
           <Logo small />
-          <span className="eyebrow">{current?.label}</span>
+          <span className="eyebrow">{current && t(current.label)}</span>
         </header>
         {/* key 让每次换页都重新播放进场动画 */}
         <main id="main" key={current?.path} className="page animate-enter py-6 lg:py-10">
@@ -91,7 +92,7 @@ export function Shell({ path, children }: { path: string; children: ReactNode })
                   <Icon name={s.icon} className="size-5" />
                   {s.icon === 'chat' && <Badge count={unread} small />}
                 </span>
-                {s.short}
+                {t(s.short)}
               </Link>
             </li>
           ))}

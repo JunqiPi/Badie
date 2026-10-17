@@ -1,16 +1,20 @@
 import { useState, type SubmitEvent } from 'react';
+import { currentLocale, t } from './i18n';
 import { supabase, type Profile } from './supabase';
 import { Button, Field } from './ui';
 
-const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
-const countries = ['US', 'CA', 'GB', 'AU', 'NZ', 'SG', 'MY', 'HK', 'TW', 'JP', 'KR', 'IN', 'ID', 'TH', 'VN', 'PH', 'DE', 'FR', 'DK', 'CN']
-  .map((code) => ({ code, name: code === 'HK' ? 'Hong Kong' : (regionNames.of(code) ?? code) }))
-  .sort((a, b) => a.name.localeCompare(b.name));
+const codes = ['US', 'CA', 'GB', 'AU', 'NZ', 'SG', 'MY', 'HK', 'TW', 'JP', 'KR', 'IN', 'ID', 'TH', 'VN', 'PH', 'DE', 'FR', 'DK', 'CN'];
+
+/** 国家 / 地区名按界面语言显示 */
+function countries() {
+  const names = new Intl.DisplayNames([currentLocale()], { type: 'region' });
+  return codes.map((code) => ({ code, name: names.of(code) ?? code })).sort((a, b) => a.name.localeCompare(b.name, currentLocale()));
+}
 
 function guessCountry() {
   try {
     const region = new Intl.Locale(navigator.language).maximize().region;
-    if (countries.some((c) => c.code === region)) return region!;
+    if (codes.includes(region!)) return region!;
   } catch {
     // 有些浏览器给的语言标签不合法（如 "C"），按首发市场处理
   }
@@ -20,9 +24,9 @@ function guessCountry() {
 // 与数据库约束一致：2–12 个字，不能留联系方式或链接（防广告）
 export function nicknameProblem(nickname: string) {
   const name = nickname.trim();
-  if (name.length < 2) return 'At least 2 characters.';
-  if (name.length > 12) return 'At most 12 characters.';
-  if (/\d{5,}|https?:|www\.|@|\.(com|net|org|io|me)\b/i.test(name)) return 'No phone numbers, emails or links.';
+  if (name.length < 2) return t('At least 2 characters.');
+  if (name.length > 12) return t('At most 12 characters.');
+  if (/\d{5,}|https?:|www\.|@|\.(com|net|org|io|me)\b/i.test(name)) return t('No phone numbers, emails or links.');
 }
 
 export function Onboarding({ userId, onDone }: { userId: string; onDone: (profile: Profile) => void }) {
@@ -44,7 +48,7 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
       .select()
       .single();
     setBusy(false);
-    if (error) setError('Couldn’t save. Try a different nickname.');
+    if (error) setError(t('Couldn’t save. Try a different nickname.'));
     else onDone(data as Profile);
   }
 
@@ -52,10 +56,10 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
     <div className="grid min-h-dvh place-items-center bg-canvas px-[var(--gutter)] py-10">
       <form onSubmit={save} noValidate className="sticker animate-enter grid w-full max-w-md gap-5 p-6 sm:p-8">
         <div>
-          <p className="eyebrow">Welcome</p>
-          <h1 className="display mt-2 text-4xl">What should players call you?</h1>
+          <p className="eyebrow">{t('Welcome')}</p>
+          <h1 className="display mt-2 text-4xl">{t('What should players call you?')}</h1>
         </div>
-        <Field label="Nickname" hint="2–12 characters. No phone numbers or links." error={(touched && problem) || error}>
+        <Field label={t('Nickname')} hint={t('2–12 characters. No phone numbers or links.')} error={(touched && problem) || error}>
           {(props) => (
             <input
               {...props}
@@ -69,16 +73,16 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
             />
           )}
         </Field>
-        <Field label="Where do you play?" hint="You’ll be matched with players in the same country.">
+        <Field label={t('Where do you play?')} hint={t('You’ll be matched with players in the same country.')}>
           {(props) => (
             <select {...props} value={country} onChange={(e) => setCountry(e.target.value)} className="field h-12">
-              {countries.map((c) => (
+              {countries().map((c) => (
                 <option key={c.code} value={c.code}>{c.name}</option>
               ))}
             </select>
           )}
         </Field>
-        <Button busy={busy}>Continue</Button>
+        <Button busy={busy}>{t('Continue')}</Button>
       </form>
     </div>
   );

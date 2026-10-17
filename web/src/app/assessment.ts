@@ -1,6 +1,9 @@
 // 定级问卷：与 iOS SkillAssessment.swift 同一套题和算法（见 Badie-iOS/docs/DESIGN.md §13.3）。
 // 技术题定出 4+ 以内的档位，再按台阶往上推：5 看被动球和战术，6 看俱乐部里的位置；经历给保底。最高 6+
 
+// 带 .ts 后缀：这个文件也直接给 Node 跑单元测试
+import { currentLocale, t } from './i18n.ts';
+
 const third = 1 / 3;
 
 type Kind = 'technique' | 'ladder' | 'experience' | 'recency';
@@ -62,14 +65,14 @@ export const questions: Question[] = [
     ['Walks to reach the shuttle', 1],
     ['Runs for the shuttle, but without set footwork', 2],
     ['Knows chassé and lunge steps; reaches all six corners, but not smoothly', 3],
-    ['Correct footwork all over the court, but not fast enough off the mark', 4],
+    ['Correct footwork all over the court, but not fast enough off the mark or around the court', 4],
     ['Easy footwork all over the court; above-average first step and speed', 5],
     ['Footwork is instinctive, with no blind spots on court', 6],
   ]),
-  q('passive', 'ladder', 'Defense under pressure', 'When returning hard smashes, or pushed to the baseline or into corners:', [
+  q('passive', 'ladder', 'Smash defense & balls under pressure', 'When returning hard smashes, or pushed to the baseline or into corners:', [
     'Rarely gets it back, or makes an error',
     'Can only block straight to the net or lift, can’t change direction; easy points for the opponent',
-    'Sometimes recovers: returns deep or to the net to get back in position',
+    'Sometimes recovers: returns to the opponent’s back court or net to get back in position',
     'Solid defense, returns mostly on target, escapes most pressure',
     'Defends smashes that aren’t clear winners with controlled placement, and counter-drives average smashes',
   ]),
@@ -92,7 +95,7 @@ export const questions: Question[] = [
     'Mostly just getting it over and waiting for errors',
     'Targets the opponent’s weak spots (like the backhand)',
     'Moves opponents around with placement and pace: pushing deep, dropping short',
-    'Combines tactics and skill: builds attacks with deception and direction changes, adapts to opponents',
+    'Combines tactics and skill: builds sustained attacks with deception and direction changes, adapts to opponents',
     'Plans a game plan for each opponent and executes it on court',
   ]),
   q('standing', 'ladder', 'Standing in your club', 'Compared with the club or regular games you usually play in, where do you stand?', [
@@ -100,10 +103,10 @@ export const questions: Question[] = [
     'Middle of the pack, trades points with most people',
     'Upper half, beats most people',
     ['Rising star: trades wins with the strongest players', 6 - third],
-    ['Near the top: rarely lose regular games, people ask you for tips', 6],
+    ['Near the top: you rarely lose regular games, and people often ask you for tips', 6],
     ['Club ace: a core player in club matches, starting to play amateur / semi-pro tournaments', 6 + third],
   ]),
-  q('experience', 'experience', 'Tournaments & training', 'Pick the highest that applies:', [
+  q('experience', 'experience', 'Tournament & training experience', 'Pick the highest that applies', [
     'None',
     ['Taken 20+ lessons', 2],
     ['Played E or D division tournaments', 3],
@@ -117,7 +120,9 @@ export const questions: Question[] = [
 ];
 
 const techniqueIds = questions.filter((x) => x.kind === 'technique').map((x) => x.id);
-const list = (names: string[]) => new Intl.ListFormat('en').format(names.map((n) => n.toLowerCase()));
+// 技术名翻译后用当前语言的“和”连起来；英文在句中用小写
+const list = (names: string[]) =>
+  new Intl.ListFormat(currentLocale()).format(names.map((n) => (currentLocale() === 'en' ? n.toLowerCase() : t(n))));
 
 export type Assessment = { rating: number; needsCalibration: boolean; isReturning: boolean; limitingGate?: string };
 
@@ -146,15 +151,15 @@ export function evaluate(answers: Record<string, number>): Assessment | undefine
     rating = topTwo >= 5 && option('stability') >= 3 ? 4 + third : 4;
   } else if (all === 3) {
     rating = most >= 4 ? 4 - third : topTwo >= 4 ? 3 + third : 3;
-    gate = `To reach level 4, work on ${below(4)}.`;
+    gate = t('To reach level 4, work on: {skills}', { skills: below(4) });
   } else {
     rating = most >= 3 ? 3 - third : most >= 2 ? (topTwo >= 3 ? 2 + third : 2) : topTwo >= 2 ? 2 - third : 1 + third;
-    gate = `To reach level 3, work on ${below(3)}.`;
+    gate = t('To reach level 3, work on: {skills}', { skills: below(3) });
   }
   // 4 级还要有双打的基本意识
   if (rating >= 4 - 0.01 && option('doubles') < 2) {
     rating = 4 - third;
-    gate = 'To reach level 4, build basic doubles awareness: serve and return, covering, and net coverage.';
+    gate = t('To reach level 4: build basic doubles awareness of serve and return, covering, and net coverage');
   }
 
   // 2. 被动球：4+ 之后，有时能过渡出来 → 5−；多数能摆脱、并会用落点和节奏 → 5
@@ -171,15 +176,15 @@ export function evaluate(answers: Record<string, number>): Assessment | undefine
       let reached = Math.min(standing, 6 - third);
       if (standing >= 6 - 0.01) {
         if (topTwo >= 6) reached = 6;
-        else gate = 'To reach level 6, get one or two skills to level 6 (signature shots).';
+        else gate = t('To reach level 6: get one or two skills to level 6 (signature shots)');
       }
       if (standing >= 6 + third - 0.01 && reached >= 6 - 0.01) {
         if (option('experience') >= 3) reached = 6 + third;
-        else gate = 'To reach 6+, you need tournament or junior training experience.';
+        else gate = t('To reach 6+: you need tournament or junior training experience');
       }
       rating = reached;
     } else {
-      gate = 'To reach 6−, get most skills to level 5 and stay steady in long rallies.';
+      gate = t('To reach 6−: most skills at level 5 and steady in long rallies');
     }
   }
 
@@ -208,12 +213,13 @@ export function tier(rating: number) {
   const step = Math.round(rating * 3);
   const level = Math.round(step / 3);
   const modifier = step - level * 3;
-  return { level, label: `${level}${modifier < 0 ? '−' : modifier > 0 ? '+' : ''}`, name: names[level - 1], summary: summaries[level - 1] };
+  return { level, label: `${level}${modifier < 0 ? '−' : modifier > 0 ? '+' : ''}`, name: t(names[level - 1]), summary: t(summaries[level - 1] ?? '') };
 }
 
 /** 对手平均强弱：“opponents 0.3 levels stronger on average” */
 export const gapText = (gap: number) =>
-  Math.abs(gap) < 0.05 ? 'opponents about your level' : `opponents ${Math.abs(gap).toFixed(1)} levels ${gap > 0 ? 'stronger' : 'weaker'} on average`;
+  Math.abs(gap) < 0.05 ? t('opponents about your level')
+  : gap > 0 ? t('opponents {n} levels stronger on average', { n: gap.toFixed(1) })
+  : t('opponents {n} levels weaker on average', { n: Math.abs(gap).toFixed(1) });
 
-/** “1 opponent” / “3 opponents” */
-export const count = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
+

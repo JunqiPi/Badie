@@ -21,7 +21,7 @@ await alex.getByRole('link', { name: 'Start a group' }).click();
 await alex.getByLabel('Name', { exact: true }).fill('Thu doubles');
 await alex.getByRole('combobox', { name: 'Court' }).fill('Los Angeles Badminton');
 await alex.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
-await alex.getByLabel('Day').selectOption(`${tomorrow}s`);
+await alex.getByLabel('Day of the week').selectOption(tomorrow);
 await alex.getByLabel('Spots').fill('8');
 await alex.getByRole('button', { name: 'Create group' }).click();
 await alex.getByRole('heading', { name: 'Thu doubles' }).waitFor();

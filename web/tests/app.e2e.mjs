@@ -34,5 +34,13 @@ await page.waitForFunction(() => document.querySelector('[aria-label="Add to my 
 await page.reload();
 await page.getByRole('heading', { name: /Courts near/ }).waitFor();
 
+// 换成中文：界面跟着变，刷新后仍记住；再换回英文
+await page.getByRole('link', { name: 'Me', exact: true }).first().click();
+await page.getByLabel('Language').selectOption('zh-Hans');
+await page.getByRole('link', { name: '球馆' }).first().waitFor();
+await page.reload();
+await page.getByLabel('语言').selectOption('en');
+await page.getByRole('link', { name: 'Courts' }).first().waitFor();
+
 console.log(`ok: ${email} signed in, saw ${names.length} courts, favourited one, session kept`);
 await browser.close();

@@ -1,4 +1,5 @@
 import { useEffect, useId, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { currentLocale, languages, setLocale, t, type Locale } from './i18n';
 
 /** 按钮：busy 时显示转圈并禁用，防止重复提交 */
 export function Button({ busy, variant, className = '', children, disabled, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -95,5 +96,17 @@ export function Toasts() {
         </p>
       ))}
     </div>
+  );
+}
+
+/** 界面语言：选了就记住（只存在这个浏览器里） */
+export function LanguagePicker({ className = '' }: { className?: string }) {
+  return (
+    <label className={`flex items-center gap-2 text-sm font-bold text-ink-secondary ${className}`}>
+      <span>{t('Language')}</span>
+      <select value={currentLocale()} onChange={(e) => setLocale(e.target.value as Locale, true)} className="field min-h-10 w-auto py-1">
+        {languages.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
+      </select>
+    </label>
   );
 }

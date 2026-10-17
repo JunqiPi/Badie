@@ -1,6 +1,7 @@
 import { useEffect, useState, type SubmitEvent } from 'react';
 import { tier } from './assessment';
 import { PlayTabs } from './Groups';
+import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Link } from './router';
 import { problem, supabase, useLive, type Mode, type Player, type Profile, type Ticket } from './supabase';
@@ -9,39 +10,39 @@ import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
 
 export function Play({ profile }: { profile: Profile }) {
   const { data: tickets, failed, refresh } = useLive<Ticket[]>('my_matchmaking');
-  const open = tickets?.filter((t) => ['searching', 'offered', 'paused'].includes(t.status)) ?? [];
-  const recent = tickets?.filter((t) => !open.includes(t)) ?? [];
+  const open = tickets?.filter((ticket) => ['searching', 'offered', 'paused'].includes(ticket.status)) ?? [];
+  const recent = tickets?.filter((ticket) => !open.includes(ticket)) ?? [];
 
   return (
     <div>
-      <PageHeader eyebrow="Play" title="Find a game">
-        Tell us when you’re free and where you can play. We’ll match you with players at your level and email you when there’s a match.
+      <PageHeader eyebrow={t('Play')} title={t('Find a game')}>
+        {t('Tell us when you’re free and where you can play. We’ll match you with players at your level and email you when there’s a match.')}
       </PageHeader>
       <PlayTabs current="play" />
 
       {!profile.assessed_at && (
         <div className="tile mb-8 flex flex-wrap items-center justify-between gap-4 bg-lavender p-5 text-on-accent">
           <div>
-            <p className="font-black">You’re starting at level 3</p>
-            <p className="font-medium">Take the 2-minute level quiz so you’re matched with the right players.</p>
+            <p className="font-black">{t('You’re starting at level 3')}</p>
+            <p className="font-medium">{t('Take the 2-minute level quiz so you’re matched with the right players.')}</p>
           </div>
-          <Link to="/app/level/" className="button button-quiet">Take the quiz</Link>
+          <Link to="/app/level/" className="button button-quiet">{t('Take the quiz')}</Link>
         </div>
       )}
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
         <section aria-labelledby="requests" className="grid gap-4">
-          <h2 id="requests" className="text-xl font-black">Your requests</h2>
+          <h2 id="requests" className="text-xl font-black">{t('Your requests')}</h2>
           {tickets === undefined && !failed && [0, 1].map((i) => <Skeleton key={i} className="h-36" />)}
-          {failed && tickets === undefined && <EmptyState title="Couldn’t load your requests">Check your connection and try again.</EmptyState>}
+          {failed && tickets === undefined && <EmptyState title={t('Couldn’t load your requests')}>{t('Check your connection and try again.')}</EmptyState>}
           {tickets && open.length === 0 && (
-            <EmptyState title="No open requests">Create one and we’ll look for players while you get on with your day.</EmptyState>
+            <EmptyState title={t('No open requests')}>{t('Create one and we’ll look for players while you get on with your day.')}</EmptyState>
           )}
-          {open.map((t) => <TicketCard key={t.id} ticket={t} onChange={refresh} />)}
+          {open.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onChange={refresh} />)}
           {recent.length > 0 && (
             <>
-              <h3 className="mt-4 eyebrow">Recent</h3>
-              {recent.map((t) => <TicketCard key={t.id} ticket={t} onChange={refresh} />)}
+              <h3 className="mt-4 eyebrow">{t('Recent')}</h3>
+              {recent.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onChange={refresh} />)}
             </>
           )}
         </section>
@@ -61,9 +62,12 @@ const statusText: Record<Ticket['status'], { label: string; tone: string }> = {
   cancelled: { label: 'Cancelled', tone: 'bg-surface-muted text-ink' },
 };
 
-function TicketCard({ ticket: t, onChange }: { ticket: Ticket; onChange: () => void }) {
+const toleranceText = (tolerance: Ticket['skill_tolerance']) =>
+  tolerance === 8 ? t('any level') : t('within {n} level|within {n} levels', { n: tolerance });
+
+function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void }) {
   const [busy, setBusy] = useState<string>();
-  const tz = t.offer?.venue.tz;
+  const tz = ticket.offer?.venue.tz;
 
   async function act(name: string, fn: string, args: Record<string, unknown>, done?: string) {
     setBusy(name);
@@ -74,34 +78,34 @@ function TicketCard({ ticket: t, onChange }: { ticket: Ticket; onChange: () => v
     onChange();
   }
 
-  if (t.offer) {
-    const o = t.offer;
+  if (ticket.offer) {
+    const o = ticket.offer;
     const waiting = o.my_response === 'accepted';
     return (
       <article className="sticker animate-enter grid gap-4 bg-butter p-5 text-on-accent sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
-            <p className="eyebrow text-on-accent!">{t.mode === 'doubles' ? 'Doubles match found' : 'Singles match found'}</p>
+            <p className="eyebrow text-on-accent!">{ticket.mode === 'doubles' ? t('Doubles match found') : t('Singles match found')}</p>
             <h3 className="mt-1 text-2xl font-black">{day(o.starts_at, tz)} · {hours(o.starts_at, o.ends_at, tz)}</h3>
             <p className="font-bold">{o.venue.name}, {o.venue.city}</p>
           </div>
         </div>
-        <Players players={o.players} mode={t.mode} />
+        <Players players={o.players} mode={ticket.mode} />
         {waiting ? (
           <p className="font-bold" role="status">
-            You’re in. Waiting for the others ({o.accepted} of {o.players.length} confirmed). We’ll email you when it’s on.
+            {t('You’re in. Waiting for the others ({accepted} of {total} confirmed). We’ll email you when it’s on.', { accepted: o.accepted, total: o.players.length })}
           </p>
         ) : (
           <>
             <p className="font-bold">
-              Confirm by {moment(o.respond_by, tz)} ({relative(o.respond_by)}). Declining is fine and doesn’t count against you.
+              {t('Confirm by {time} ({relative}). Declining is fine and doesn’t count against you.', { time: moment(o.respond_by, tz), relative: relative(o.respond_by) })}
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button busy={busy === 'accept'} disabled={Boolean(busy)} onClick={() => act('accept', 'respond_offer', { p_offer: o.id, p_accept: true }, 'Confirmed')}>
-                I’m in
+              <Button busy={busy === 'accept'} disabled={Boolean(busy)} onClick={() => act('accept', 'respond_offer', { p_offer: o.id, p_accept: true }, t('Confirmed'))}>
+                {t('I’m in')}
               </Button>
-              <Button variant="quiet" busy={busy === 'decline'} disabled={Boolean(busy)} onClick={() => act('decline', 'respond_offer', { p_offer: o.id, p_accept: false }, 'Declined. We’ll keep looking.')}>
-                Can’t make it
+              <Button variant="quiet" busy={busy === 'decline'} disabled={Boolean(busy)} onClick={() => act('decline', 'respond_offer', { p_offer: o.id, p_accept: false }, t('Declined. We’ll keep looking.'))}>
+                {t('Can’t make it')}
               </Button>
             </div>
           </>
@@ -110,36 +114,36 @@ function TicketCard({ ticket: t, onChange }: { ticket: Ticket; onChange: () => v
     );
   }
 
-  const status = statusText[t.status];
-  const venueTz = t.venues[0]?.tz;
+  const status = statusText[ticket.status];
+  const venueTz = ticket.venues[0]?.tz;
   return (
     <article className="tile animate-enter grid gap-3 bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className={`chip ${status.tone}`}>
-          {t.status === 'searching' && <span aria-hidden="true" className="size-2 animate-pulse rounded-full bg-current" />}
-          {status.label}
+          {ticket.status === 'searching' && <span aria-hidden="true" className="size-2 animate-pulse rounded-full bg-current" />}
+          {t(status.label)}
         </span>
         <span className="text-sm font-bold text-ink-tertiary">
-          {t.mode === 'doubles' ? 'Doubles' : 'Singles'} · {t.skill_tolerance === 8 ? 'any level' : `within ${t.skill_tolerance} level${t.skill_tolerance > 1 ? 's' : ''}`}
+          {ticket.mode === 'doubles' ? t('Doubles') : t('Singles')} · {toleranceText(ticket.skill_tolerance)}
         </span>
       </div>
       <div>
-        <h3 className="text-lg font-black">{day(t.starts_at, venueTz)} · {hours(t.starts_at, t.ends_at, venueTz)}</h3>
-        <p className="text-ink-secondary">{t.venues.map((v) => v.name).join(' · ')}</p>
+        <h3 className="text-lg font-black">{day(ticket.starts_at, venueTz)} · {hours(ticket.starts_at, ticket.ends_at, venueTz)}</h3>
+        <p className="text-ink-secondary">{ticket.venues.map((v) => v.name).join(' · ')}</p>
       </div>
-      {t.status === 'paused' && <p className="font-semibold">You missed a confirmation, so we stopped sending you matches for this time.</p>}
-      {t.status === 'expired' && <p className="text-ink-secondary">Nothing counts against you. Try a wider time window or more courts next time.</p>}
-      {(t.status === 'searching' || t.status === 'paused' || t.status === 'matched') && (
+      {ticket.status === 'paused' && <p className="font-semibold">{t('You missed a confirmation, so we stopped sending you matches for this time.')}</p>}
+      {ticket.status === 'expired' && <p className="text-ink-secondary">{t('Nothing counts against you. Try a wider time window or more courts next time.')}</p>}
+      {(ticket.status === 'searching' || ticket.status === 'paused' || ticket.status === 'matched') && (
         <div className="flex flex-wrap gap-3">
-          {t.status === 'paused' && (
-            <Button busy={busy === 'resume'} disabled={Boolean(busy)} onClick={() => act('resume', 'resume_ticket', { p_ticket: t.id }, 'Looking again')}>
-              Keep looking
+          {ticket.status === 'paused' && (
+            <Button busy={busy === 'resume'} disabled={Boolean(busy)} onClick={() => act('resume', 'resume_ticket', { p_ticket: ticket.id }, t('Looking again'))}>
+              {t('Keep looking')}
             </Button>
           )}
-          {t.status === 'matched' && t.game_id && <Link to={`/app/games/${t.game_id}/`} className="button">View game</Link>}
-          {t.status !== 'matched' && (
-            <Button variant="quiet" busy={busy === 'cancel'} disabled={Boolean(busy)} onClick={() => act('cancel', 'cancel_ticket', { p_ticket: t.id }, 'Request cancelled')}>
-              Cancel request
+          {ticket.status === 'matched' && ticket.game_id && <Link to={`/app/games/${ticket.game_id}/`} className="button">{t('View game')}</Link>}
+          {ticket.status !== 'matched' && (
+            <Button variant="quiet" busy={busy === 'cancel'} disabled={Boolean(busy)} onClick={() => act('cancel', 'cancel_ticket', { p_ticket: ticket.id }, t('Request cancelled'))}>
+              {t('Cancel request')}
             </Button>
           )}
         </div>
@@ -153,17 +157,19 @@ export function Players({ players, mode }: { players: Player[]; mode: Mode }) {
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
       {teams.map((team, i) => (
-        <ul key={i} className={`grid gap-2 ${i === 1 ? 'order-3 text-right' : ''}`} aria-label={mode === 'doubles' ? `Team ${i + 1}` : undefined}>
+        <ul key={i} className={`grid gap-2 ${i === 1 ? 'order-3 text-right' : ''}`} aria-label={mode === 'doubles' ? t('Team {n}', { n: i + 1 }) : undefined}>
           {team.map((p, n) => (
             <li key={n} className="min-w-0">
               {p.me ? (
-                <span className="block truncate font-black">You</span>
+                <span className="block truncate font-black">{t('You')}</span>
               ) : (
                 <Link to={`/app/players/${p.id}/`} className="block truncate font-black underline decoration-transparent decoration-2 underline-offset-4 transition-colors hover:decoration-current">
                   {p.nickname}
                 </Link>
               )}
-              <span className="text-sm font-bold opacity-75">Level {tier(p.rating).label}{p.checked_in ? ' · checked in' : ''}</span>
+              <span className="text-sm font-bold opacity-75">
+                {t('Level {level}', { level: tier(p.rating).label })}{p.checked_in ? ` · ${t('checked in')}` : ''}
+              </span>
             </li>
           ))}
         </ul>
@@ -201,11 +207,11 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
   const endsAt = zoned(date, to, tz);
   const hoursLong = (endsAt.getTime() - startsAt.getTime()) / 3600000;
   const issue = !courts.length
-    ? 'Pick at least one court.'
+    ? t('Pick at least one court.')
     : hoursLong < 1 || hoursLong > 8
-      ? 'Pick a window between 1 and 8 hours.'
+      ? t('Pick a window between 1 and 8 hours.')
       : startsAt.getTime() < Date.now() + 2.5 * 3600000
-        ? 'Pick a start at least 2½ hours from now.'
+        ? t('Pick a start at least 2½ hours from now.')
         : undefined;
 
   async function submit(event: SubmitEvent) {
@@ -223,56 +229,59 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
     });
     setBusy(false);
     if (error) return setError(problem(error));
-    toast('Request sent. We’re looking for players.');
+    toast(t('Request sent. We’re looking for players.'));
     onCreated();
   }
 
   const suggestions = favorites.filter((f) => !courts.some((c) => c.id === f.id));
+  const times = halfHours();
 
   return (
     <form onSubmit={submit} noValidate aria-labelledby="new-request" className="sticker grid gap-5 p-5 sm:p-6 lg:sticky lg:top-6">
-      <h2 id="new-request" className="text-xl font-black">New request</h2>
+      <h2 id="new-request" className="text-xl font-black">{t('New request')}</h2>
 
       <fieldset className="grid gap-2">
-        <legend className="mb-2 font-extrabold">Game</legend>
+        <legend className="mb-2 font-extrabold">{t('Game')}</legend>
         <div className="flex gap-2">
           {(['doubles', 'singles'] as const).map((m) => (
             <button type="button" key={m} onClick={() => setMode(m)} aria-pressed={mode === m} className="toggle flex-1">
-              {m === 'doubles' ? 'Doubles' : 'Singles'}
+              {m === 'doubles' ? t('Doubles') : t('Singles')}
             </button>
           ))}
         </div>
       </fieldset>
 
-      <Field label="Day">
+      <Field label={t('Day')}>
         {(props) => <input {...props} type="date" value={date} min={today(tz)} max={today(tz, 13)} onChange={(e) => setDate(e.target.value)} className="field" />}
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
-        <Field label="From">
+        <Field label={t('From')}>
           {(props) => (
             <select {...props} value={from} onChange={(e) => setFrom(Number(e.target.value))} className="field">
-              {halfHours.slice(0, -2).map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
+              {times.slice(0, -2).map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
             </select>
           )}
         </Field>
-        <Field label="Until">
+        <Field label={t('Until')}>
           {(props) => (
             <select {...props} value={to} onChange={(e) => setTo(Number(e.target.value))} className="field">
-              {halfHours.slice(2).map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
+              {times.slice(2).map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
             </select>
           )}
         </Field>
       </div>
-      <p className="-mt-3 text-sm text-ink-tertiary">A wider window makes a match more likely. Games last up to 2 hours.</p>
+      <p className="-mt-3 text-sm text-ink-tertiary">{t('A wider window makes a match more likely. Games last up to 2 hours.')}</p>
 
       <fieldset className="grid gap-2">
-        <legend className="mb-2 font-extrabold">Courts you can get to <span className="font-semibold text-ink-tertiary">(up to 3)</span></legend>
+        <legend className="mb-2 font-extrabold">
+          {t('Courts you can get to')} <span className="font-semibold text-ink-tertiary">{t('(up to 3)')}</span>
+        </legend>
         {courts.length > 0 && (
           <ul className="flex flex-wrap gap-2">
             {courts.map((c) => (
               <li key={c.id}>
-                <button type="button" onClick={() => toggleCourt(c)} aria-pressed="true" aria-label={`Remove ${c.name}`} className="toggle">
+                <button type="button" onClick={() => toggleCourt(c)} aria-pressed="true" aria-label={t('Remove {name}', { name: c.name })} className="toggle">
                   {c.name} <span aria-hidden="true">×</span>
                 </button>
               </li>
@@ -283,7 +292,7 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
           <>
             <CourtSearch onPick={toggleCourt} />
             {suggestions.length > 0 && (
-              <ul className="flex flex-wrap gap-2" aria-label="My courts">
+              <ul className="flex flex-wrap gap-2" aria-label={t('My courts')}>
                 {suggestions.map((c) => (
                   <li key={c.id}>
                     <button type="button" onClick={() => toggleCourt(c)} aria-pressed="false" className="toggle">+ {c.name}</button>
@@ -296,10 +305,10 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
       </fieldset>
 
       <fieldset className="grid gap-2">
-        <legend className="mb-2 font-extrabold">Opponents’ level</legend>
+        <legend className="mb-2 font-extrabold">{t('Opponents’ level')}</legend>
         <div className="flex flex-wrap gap-2">
           {([[1, 'Within 1 level'], [2, 'Within 2'], [8, 'Any']] as const).map(([value, label]) => (
-            <button type="button" key={value} onClick={() => setTolerance(value)} aria-pressed={tolerance === value} className="toggle">{label}</button>
+            <button type="button" key={value} onClick={() => setTolerance(value)} aria-pressed={tolerance === value} className="toggle">{t(label)}</button>
           ))}
         </div>
       </fieldset>
@@ -307,13 +316,13 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
       <label className="flex items-start gap-3">
         <input type="checkbox" checked={autoAccept} onChange={(e) => setAutoAccept(e.target.checked)} className="mt-1 size-5 accent-[var(--color-lime)]" />
         <span>
-          <span className="block font-extrabold">Accept matches automatically</span>
-          <span className="block text-sm text-ink-tertiary">Skip the confirmation step when a match fits this request.</span>
+          <span className="block font-extrabold">{t('Accept matches automatically')}</span>
+          <span className="block text-sm text-ink-tertiary">{t('Skip the confirmation step when a match fits this request.')}</span>
         </span>
       </label>
 
       {error && <p role="alert" className="font-bold text-danger">{error}</p>}
-      <Button busy={busy}>Find players</Button>
+      <Button busy={busy}>{t('Find players')}</Button>
     </form>
   );
 }

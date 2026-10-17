@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { count, gapText } from './assessment';
+import { gapText } from './assessment';
 import { money } from './Courts';
+import { t } from './i18n';
 import { Players } from './Play';
 import { Reviews } from './Review';
 import { Link } from './router';
@@ -23,18 +24,18 @@ export function Games() {
 
   return (
     <div>
-      <PageHeader eyebrow="My games" title="My games" />
+      <PageHeader eyebrow={t('My games')} title={t('My games')} />
       <GamesTabs current="games" />
       <Challenges />
       {record && <RecordCard record={record} />}
 
       <section aria-labelledby="upcoming" className="mt-8 grid gap-3">
-        <h2 id="upcoming" className="text-xl font-black">Upcoming</h2>
+        <h2 id="upcoming" className="text-xl font-black">{t('Upcoming')}</h2>
         {games === undefined && !failed && [0, 1].map((i) => <Skeleton key={i} className="h-24" />)}
-        {failed && games === undefined && <EmptyState title="Couldn’t load your games">Check your connection and try again.</EmptyState>}
+        {failed && games === undefined && <EmptyState title={t('Couldn’t load your games')}>{t('Check your connection and try again.')}</EmptyState>}
         {games && upcoming.length === 0 && (
-          <EmptyState title="No games coming up" action={<Link to="/app/play/" className="button">Find a game</Link>}>
-            Create a request and we’ll match you with players at your level.
+          <EmptyState title={t('No games coming up')} action={<Link to="/app/play/" className="button">{t('Find a game')}</Link>}>
+            {t('Create a request and we’ll match you with players at your level.')}
           </EmptyState>
         )}
         {upcoming.map((g) => <GameRow key={g.id} game={g} />)}
@@ -42,7 +43,7 @@ export function Games() {
 
       {past.length > 0 && (
         <section aria-labelledby="past" className="mt-10 grid gap-3">
-          <h2 id="past" className="text-xl font-black">Past</h2>
+          <h2 id="past" className="text-xl font-black">{t('Past')}</h2>
           {past.map((g) => <GameRow key={g.id} game={g} />)}
         </section>
       )}
@@ -52,13 +53,13 @@ export function Games() {
 
 function RecordCard({ record }: { record: PlayRecord }) {
   const stats = [
-    ['Win rate', record.games ? `${Math.round((record.wins / record.games) * 100)}%` : '–'],
-    ['Wins – losses', `${record.wins}–${record.losses}`],
-    ['Games played', String(record.games_played)],
+    [t('Win rate'), record.games ? `${Math.round((record.wins / record.games) * 100)}%` : '–'],
+    [t('Wins – losses'), `${record.wins}–${record.losses}`],
+    [t('Games played'), String(record.games_played)],
   ];
   return (
-    <section aria-label="This month" className="tile grid gap-4 bg-surface p-5 sm:p-6">
-      <p className="eyebrow">This month</p>
+    <section aria-label={t('This month')} className="tile grid gap-4 bg-surface p-5 sm:p-6">
+      <p className="eyebrow">{t('This month')}</p>
       <dl className="grid grid-cols-3 gap-3">
         {stats.map(([label, value]) => (
           <div key={label}>
@@ -68,10 +69,10 @@ function RecordCard({ record }: { record: PlayRecord }) {
         ))}
       </dl>
       <p className="text-sm text-ink-tertiary">
-        {record.games > 0 && `${count(record.games, 'confirmed game')} against ${count(record.opponents, 'opponent')}, ${gapText(record.gap)}. `}
-        {record.public ? 'Shown on your profile.' : `Shown on your profile from 5 confirmed games (${record.games} so far).`}
-        {' '}Up to 3 games a month count against the same opponents.
-        {record.late_cancels > 0 && ` Late cancellations: ${record.late_cancels}.`}
+        {record.games > 0 && `${t('{n} confirmed game|{n} confirmed games', { n: record.games })} · ${t('{n} opponent|{n} opponents', { n: record.opponents })} · ${gapText(record.gap)}. `}
+        {record.public ? t('Shown on your profile.') : t('Shown on your profile from 5 confirmed games ({n} so far).', { n: record.games })}
+        {' '}{t('Up to 3 games a month count against the same opponents.')}
+        {record.late_cancels > 0 && ` ${t('Late cancellations: {n}.', { n: record.late_cancels })}`}
       </p>
     </section>
   );
@@ -88,12 +89,14 @@ const resultText: Record<Game['result']['status'], string> = {
 function GameRow({ game: g }: { game: Game }) {
   const started = new Date(g.starts_at).getTime() < Date.now();
   const rate = toReview(g);
-  const label = g.status === 'cancelled' ? 'Cancelled' : rate ? 'Rate players' : started ? resultText[g.result.status] : relative(g.starts_at);
+  const label = g.status === 'cancelled' ? t('Cancelled') : rate ? t('Rate players') : started ? t(resultText[g.result.status]) : relative(g.starts_at);
   return (
     <Link to={`/app/games/${g.id}/`} className="sticker lift flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
       <span className="min-w-0">
         <span className="block font-black">{day(g.starts_at, g.venue.tz)} · {hours(g.starts_at, g.ends_at, g.venue.tz)}</span>
-        <span className="block truncate text-sm text-ink-secondary">{g.mode === 'doubles' ? 'Doubles' : 'Singles'} at {g.venue.name}</span>
+        <span className="block truncate text-sm text-ink-secondary">
+          {g.mode === 'doubles' ? t('Doubles at {venue}', { venue: g.venue.name }) : t('Singles at {venue}', { venue: g.venue.name })}
+        </span>
       </span>
       <span className={`chip ${g.status === 'cancelled' ? 'bg-surface-muted text-ink' : rate || (g.result.status === 'awaiting' && started) ? 'bg-butter' : 'bg-mint'}`}>{label}</span>
     </Link>
@@ -104,7 +107,9 @@ export function GameDetail({ id }: { id: string }) {
   const { data: games, refresh } = useLive<Game[]>('my_games');
   const game = games?.find((g) => g.id === id);
   if (!games) return <Skeleton className="h-96" />;
-  if (!game) return <EmptyState title="Game not found" action={<Link to="/app/games/" className="button">My games</Link>}>It may be older than 60 days.</EmptyState>;
+  if (!game) {
+    return <EmptyState title={t('Game not found')} action={<Link to="/app/games/" className="button">{t('My games')}</Link>}>{t('It may be older than 60 days.')}</EmptyState>;
+  }
   return <GameView game={game} onChange={refresh} />;
 }
 
@@ -138,13 +143,13 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => void }) {
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
       <div className="grid gap-6">
         <div>
-          <Link to="/app/games/" className="link text-sm">My games</Link>
-          <p className="eyebrow mt-6">{g.mode === 'doubles' ? 'Doubles' : 'Singles'}{g.status === 'cancelled' ? ' · Cancelled' : ''}</p>
+          <Link to="/app/games/" className="link text-sm">{t('My games')}</Link>
+          <p className="eyebrow mt-6">{g.mode === 'doubles' ? t('Doubles') : t('Singles')}{g.status === 'cancelled' ? ` · ${t('Cancelled')}` : ''}</p>
           <h1 className="display mt-2 text-[clamp(2.5rem,6vw,3.75rem)]">{day(g.starts_at, tz)}</h1>
           <p className="mt-2 text-xl font-black">{hours(g.starts_at, g.ends_at, tz)}</p>
         </div>
 
-        <section aria-label="Players" className="sticker p-5 sm:p-6">
+        <section aria-label={t('Players')} className="sticker p-5 sm:p-6">
           <Players players={g.players} mode={g.mode} />
         </section>
 
@@ -154,44 +159,47 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => void }) {
 
       <aside className="grid gap-4">
         {scheduled && now <= end + 48 * 3600000 && (
-          <Link to={`/app/messages/game/${g.id}/`} className="button justify-self-start">Message players</Link>
+          <Link to={`/app/messages/game/${g.id}/`} className="button justify-self-start">{t('Message players')}</Link>
         )}
-        <section aria-label="Court" className="tile grid gap-3 bg-surface p-5">
-          <p className="eyebrow">Court</p>
+        <section aria-label={t('Court')} className="tile grid gap-3 bg-surface p-5">
+          <p className="eyebrow">{t('Court')}</p>
           <p className="text-lg font-black">{g.venue.name}</p>
           <p className="text-ink-secondary">{[g.venue.street, g.venue.city].filter(Boolean).join(', ')}</p>
           {cost !== undefined && (
-            <p className="font-bold">About {money(Math.ceil(cost), g.venue.country)} each <span className="font-semibold text-ink-tertiary">(split at the court)</span></p>
+            <p className="font-bold">
+              {t('About {price} each', { price: money(Math.ceil(cost), g.venue.country) })}{' '}
+              <span className="font-semibold text-ink-tertiary">{t('(split at the court)')}</span>
+            </p>
           )}
-          <a className="button button-quiet justify-self-start" href={`https://maps.apple.com/?q=${encodeURIComponent(g.venue.name)}&ll=${g.venue.lat},${g.venue.lon}`}>Directions</a>
+          <a className="button button-quiet justify-self-start" href={`https://maps.apple.com/?q=${encodeURIComponent(g.venue.name)}&ll=${g.venue.lat},${g.venue.lon}`}>{t('Directions')}</a>
         </section>
 
         {scheduled && (canCheckIn || g.checked_in || now < start) && (
-          <section aria-label="Check in" className="tile grid gap-3 bg-surface p-5">
+          <section aria-label={t('Check in')} className="tile grid gap-3 bg-surface p-5">
             {g.checked_in ? (
-              <p className="font-black">You’re checked in.</p>
+              <p className="font-black">{t('You’re checked in.')}</p>
             ) : canCheckIn ? (
-              <Button busy={busy === 'checkin'} onClick={() => act('checkin', 'check_in', { p_game: g.id }, 'Checked in')}>I’m here</Button>
+              <Button busy={busy === 'checkin'} onClick={() => act('checkin', 'check_in', { p_game: g.id }, t('Checked in'))}>{t('I’m here')}</Button>
             ) : (
-              <p className="text-ink-secondary">Check in when you arrive. It opens 30 minutes before the start.</p>
+              <p className="text-ink-secondary">{t('Check in when you arrive. It opens 30 minutes before the start.')}</p>
             )}
           </section>
         )}
 
         {canCancel && (
-          <section aria-label="Can’t make it" className="tile grid gap-3 bg-surface p-5">
+          <section aria-label={t('Can’t make it')} className="tile grid gap-3 bg-surface p-5">
             {confirmCancel ? (
               <>
                 <p className="font-bold" role="alert">
-                  {late ? 'The game starts in under 2 hours, so this counts as a late cancellation.' : 'The other players will be put back in the queue first.'}
+                  {late ? t('The game starts in under 2 hours, so this counts as a late cancellation.') : t('The other players will be put back in the queue first.')}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="danger" busy={busy === 'cancel'} onClick={() => act('cancel', 'cancel_game', { p_game: g.id }, 'Game cancelled')}>Cancel game</Button>
-                  <Button variant="quiet" onClick={() => setConfirmCancel(false)}>Keep it</Button>
+                  <Button variant="danger" busy={busy === 'cancel'} onClick={() => act('cancel', 'cancel_game', { p_game: g.id }, t('Game cancelled'))}>{t('Cancel game')}</Button>
+                  <Button variant="quiet" onClick={() => setConfirmCancel(false)}>{t('Keep it')}</Button>
                 </div>
               </>
             ) : (
-              <Button variant="quiet" onClick={() => setConfirmCancel(true)}>Can’t make it</Button>
+              <Button variant="quiet" onClick={() => setConfirmCancel(true)}>{t('Can’t make it')}</Button>
             )}
           </section>
         )}
@@ -213,32 +221,32 @@ function Result({ game: g, canReport, busy, act }: {
   const choices: [Outcome | null, string][] = [[mine, 'We won'], [theirs, 'We lost'], ['friendly', 'Just for fun'], [null, 'Can’t remember']];
   const summary =
     status === 'verified'
-      ? outcome === 'friendly' ? 'Confirmed: a friendly game, no winner.' : `Confirmed: you ${outcome === mine ? 'won' : 'lost'}.`
+      ? outcome === 'friendly' ? t('Confirmed: a friendly game, no winner.') : outcome === mine ? t('Confirmed: you won.') : t('Confirmed: you lost.')
       : status === 'disputed'
-        ? 'Your reports don’t match. Either side can change theirs within 7 days of the game.'
+        ? t('Your reports don’t match. Either side can change theirs within 7 days of the game.')
         : status === 'unsure'
-          ? 'One side doesn’t remember the result, so this game won’t count.'
+          ? t('One side doesn’t remember the result, so this game won’t count.')
           : status === 'expired'
-            ? 'No result was agreed within 7 days.'
+            ? t('No result was agreed within 7 days.')
             : g.my_report
-              ? 'Waiting for the other side to report.'
-              : 'How did it go? The result counts once both sides agree.';
+              ? t('Waiting for the other side to report.')
+              : t('How did it go? The result counts once both sides agree.');
 
   return (
     <section aria-labelledby="result" className="tile grid gap-4 bg-surface p-5 sm:p-6">
-      <h2 id="result" className="text-xl font-black">Result</h2>
+      <h2 id="result" className="text-xl font-black">{t('Result')}</h2>
       <p role="status" className="text-ink-secondary">{summary}</p>
       {canReport && (
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Report the result">
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('Report the result')}>
           {choices.map(([value, label]) => (
             <button
               key={label}
-              onClick={() => act('report', 'report_result', { p_game: g.id, p_outcome: value }, 'Result saved')}
+              onClick={() => act('report', 'report_result', { p_game: g.id, p_outcome: value }, t('Result saved'))}
               disabled={Boolean(busy)}
               aria-pressed={g.my_report !== null && reported === value}
               className="toggle"
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
@@ -264,36 +272,38 @@ function Challenges() {
 
   return (
     <section aria-labelledby="challenges" className="mb-8 grid gap-3">
-      <h2 id="challenges" className="text-xl font-black">Challenges</h2>
+      <h2 id="challenges" className="text-xl font-black">{t('Challenges')}</h2>
       {data.incoming.map((c) => (
         <article key={c.id} className="sticker grid gap-3 bg-butter p-5 text-on-accent">
           <p className="font-black">
-            <Link to={`/app/players/${c.player.id}/`} className="underline">{c.player.nickname}</Link> challenged you to singles
+            <Link to={`/app/players/${c.player.id}/`} className="underline">{c.player.nickname}</Link> {t('challenged you to singles')}
           </p>
-          <p className="font-bold">{day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} at {c.venue.name}</p>
+          <p className="font-bold">
+            {day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} · {c.venue.name}
+          </p>
           {c.message && <p className="font-medium">“{c.message}”</p>}
-          <p className="text-sm font-semibold">Answer by {day(c.expires_at, c.venue.tz)}. Declining is fine, they’ll only see it didn’t happen.</p>
+          <p className="text-sm font-semibold">{t('Answer by {date}. Declining is fine, they’ll only see it didn’t happen.', { date: day(c.expires_at, c.venue.tz) })}</p>
           <div className="flex flex-wrap gap-2">
-            <Button busy={busy === `yes-${c.id}`} disabled={Boolean(busy)} onClick={() => act(`yes-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: true }, 'Game on!')}>Accept</Button>
-            <Button variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: false }, 'Declined')}>Decline</Button>
+            <Button busy={busy === `yes-${c.id}`} disabled={Boolean(busy)} onClick={() => act(`yes-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: true }, t('Game on!'))}>{t('Accept')}</Button>
+            <Button variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: false }, t('Declined'))}>{t('Decline')}</Button>
           </div>
         </article>
       ))}
       {data.outgoing.map((c) => (
         <article key={c.id} className="tile flex flex-wrap items-center justify-between gap-3 bg-surface p-4">
           <span className="min-w-0">
-            <span className="block font-black">You challenged {c.player.nickname}</span>
-            <span className="block text-sm text-ink-secondary">{day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} at {c.venue.name}</span>
+            <span className="block font-black">{t('You challenged {name}', { name: c.player.nickname })}</span>
+            <span className="block text-sm text-ink-secondary">{day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} · {c.venue.name}</span>
           </span>
           {c.status === 'pending' ? (
             <span className="flex items-center gap-3">
-              <span className="chip bg-sky">Waiting</span>
-              <button className="link text-sm" disabled={Boolean(busy)} onClick={() => act(`w-${c.id}`, 'withdraw_challenge', { p_challenge: c.id }, 'Challenge withdrawn')}>Withdraw</button>
+              <span className="chip bg-sky">{t('Waiting')}</span>
+              <button className="link text-sm" disabled={Boolean(busy)} onClick={() => act(`w-${c.id}`, 'withdraw_challenge', { p_challenge: c.id }, t('Challenge withdrawn'))}>{t('Withdraw')}</button>
             </span>
           ) : c.status === 'accepted' && c.game_id ? (
-            <Link to={`/app/games/${c.game_id}/`} className="chip bg-mint">Game on</Link>
+            <Link to={`/app/games/${c.game_id}/`} className="chip bg-mint">{t('Game on')}</Link>
           ) : (
-            <span className="chip bg-surface-muted text-ink">Didn’t happen</span>
+            <span className="chip bg-surface-muted text-ink">{t('Didn’t happen')}</span>
           )}
         </article>
       ))}

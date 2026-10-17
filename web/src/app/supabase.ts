@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
+import { t } from './i18n';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
 // 只用 publishable key（sb_publishable_…）；secret key 绝不进前端
@@ -303,4 +304,4 @@ const problems: Record<string, string> = {
   daily_limit: 'You’ve used today’s challenges.',
   target_busy: 'They have too many open challenges. Try later.',
 };
-export const problem = (error: { message: string }) => problems[error.message] ?? 'Something went wrong. Try again.';
+export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');

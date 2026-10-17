@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Combobox } from './Combobox';
+import { t } from './i18n';
 import { Icon } from './icons';
 import { supabase } from './supabase';
 import { Button, toast } from './ui';
 
-export type Centre = { lat: number; lon: number; label: string };
+/** label 为空 = 我的位置 */
+export type Centre = { lat: number; lon: number; label?: string };
 type Area = { k: 'city' | 'court'; n: string; s: string; c?: [number, number] };
 
 let areas: Promise<Area[]> | undefined;
@@ -20,11 +22,11 @@ export function AreaPicker({ onPick }: { onPick: (centre: Centre) => void }) {
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setLocating(false);
-        onPick({ lat: p.coords.latitude, lon: p.coords.longitude, label: 'you' });
+        onPick({ lat: p.coords.latitude, lon: p.coords.longitude });
       },
       () => {
         setLocating(false);
-        toast('Location is off. Search an area instead.', 'error');
+        toast(t('Location is off. Search an area instead.'), 'error');
       },
       { timeout: 10000 },
     );
@@ -33,11 +35,11 @@ export function AreaPicker({ onPick }: { onPick: (centre: Centre) => void }) {
   return (
     <>
       <Button busy={locating} onClick={locate}>
-        <Icon name="pin" /> Use my location
+        <Icon name="pin" /> {t('Use my location')}
       </Button>
       <Combobox
-        label="Search an area"
-        placeholder="Search an area"
+        label={t('Search an area')}
+        placeholder={t('Search an area')}
         options={hits}
         className="w-full sm:w-72"
         onQuery={(query) => {
@@ -60,7 +62,7 @@ export function AreaPicker({ onPick }: { onPick: (centre: Centre) => void }) {
 export type Court = { id: string; name: string; city: string; time_zone_id: string | null };
 
 /** 按名字搜球馆 */
-export function CourtSearch({ onPick, label = 'Search courts' }: { onPick: (court: Court) => void; label?: string }) {
+export function CourtSearch({ onPick, label = t('Search courts') }: { onPick: (court: Court) => void; label?: string }) {
   const [hits, setHits] = useState<Court[]>([]);
   async function search(query: string) {
     const q = query.replace(/[%_*(),.]/g, ' ').trim();
@@ -71,7 +73,7 @@ export function CourtSearch({ onPick, label = 'Search courts' }: { onPick: (cour
   return (
     <Combobox
       label={label}
-      placeholder="Search courts by name"
+      placeholder={t('Search courts by name')}
       options={hits}
       onQuery={search}
       onPick={onPick}

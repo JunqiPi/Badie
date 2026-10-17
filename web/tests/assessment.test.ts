@@ -60,7 +60,7 @@ test('俱乐部位置推到 6', () => {
   assert.equal(code(profile(4, { standing: 5 })), '4');
   const notYet = evaluate(profile(4, { overrides: { smash: 5, net: 5 }, passive: 3, stability: 4, tactics: 3, standing: 4 }))!;
   assert.equal(tier(notYet.rating).label, '5+');
-  assert.match(notYet.limitingGate!, /most skills to level 5/);
+  assert.match(notYet.limitingGate!, /most skills at level 5/);
 });
 
 test('问卷最高 6+', () => {
