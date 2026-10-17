@@ -14,7 +14,7 @@
 | `SUPABASE_PROJECT_REF` | Variables | 项目网址 `supabase.com/dashboard/project/<这一段>` |
 | `SUPABASE_URL` | Variables | `https://<project ref>.supabase.co` |
 | `SUPABASE_PUBLISHABLE_KEY` | Variables | Project Settings → API Keys → Publishable key（`sb_publishable_…`，可以公开） |
-| `SITE_URL` | Variables | 正式域名，如 `https://example.com` |
+| `SITE_URL` | Variables | `https://badie.rsvp` |
 
 **Secret key（`sb_secret_…`）不需要放进 GitHub，也绝不能进前端。**
 
@@ -40,9 +40,9 @@
 Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06 之后的免费新项目不能改模板（默认模板里没有验证码）。所以要配自己的发信服务：
 
 1. 注册 Resend（免费：每月 3,000 封、每天 100 封）。
-2. Domains → Add Domain，填发信子域，如 `mail.example.com`；按提示在 Cloudflare DNS 里加记录（SPF、DKIM、MX），再加一条 DMARC：`_dmarc.example.com` TXT `v=DMARC1; p=none;`。等 Resend 显示 Verified。
+2. Domains → Add Domain，填 `badie.rsvp`（Resend 的 SPF/MX 放在 `send.badie.rsvp` 子域，不影响根域收信）；选 Cloudflare 自动配置，或按提示手动加记录（SPF、DKIM、MX），再加一条 DMARC：`_dmarc.badie.rsvp` TXT `v=DMARC1; p=none;`。等 Resend 显示 Verified。
 3. API Keys → Create（Sending access），**直接粘到下一步，不用存进 GitHub**。
-4. Supabase → Authentication → Emails → SMTP Settings：开启；Host `smtp.resend.com`，Port `465`，Username `resend`，Password 填 Resend API key；发件人 `noreply@mail.example.com`，名称 `Badie`。
+4. Supabase → Authentication → Emails → SMTP Settings：开启；Host `smtp.resend.com`，Port `465`，Username `resend`，Password 填 Resend API key；发件人 `noreply@badie.rsvp`，名称 `Badie`。
 5. Authentication → Emails → Templates：**Magic Link 和 Confirm signup 两个模板**都换成 `supabase/templates/otp.html` 的内容，主题 `Your Badie sign-in code`。
 6. Authentication → Sign In / Providers → Email：Email OTP length 设 6，过期时间 3600 秒。
 7. Authentication → Rate Limits：发信上限调到每小时 30 封左右。
@@ -51,8 +51,8 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
 
 Authentication → URL Configuration：
 
-- Site URL：`https://example.com`
-- Redirect URLs：`https://example.com/app/**`、`http://localhost:4321/**`（以后接 Google / Apple 登录用）
+- Site URL：`https://badie.rsvp`
+- Redirect URLs：`https://badie.rsvp/app/**`、`http://localhost:4321/**`（以后接 Google / Apple 登录用）
 
 ## 5. 第一次部署
 
@@ -63,7 +63,7 @@ Authentication → URL Configuration：
 
 ## 6. 绑定域名
 
-Workers & Pages → badie → Custom domains → Set up a domain：先加根域名，再加 `www`。**先在这里加，不要先手动建 DNS 记录**（会出 522 错误）。
+Workers & Pages → badie → Custom domains → Set up a domain：先加 `badie.rsvp`，再加 `www.badie.rsvp`。**先在这里加，不要先手动建 DNS 记录**（会出 522 错误）。然后 Rules → Redirect Rules 用模板 “Redirect from WWW to root” 把 www 301 到根域名。`.rsvp` 强制 HTTPS，Pages 自带证书，不用额外设置。
 
 ## 7. 把自己设为管理员
 
