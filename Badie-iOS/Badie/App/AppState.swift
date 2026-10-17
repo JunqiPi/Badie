@@ -211,7 +211,17 @@ final class AppState: ObservableObject {
     }
 
     func showPlayer(_ userId: String) {
-        guard userId != currentUser?.id, backend.user(id: userId) != nil else { return }
-        presentedPlayer = PlayerSheetItem(id: userId)
+        guard userId != currentUser?.id else { return }
+        guard backend.isRemote else {
+            if backend.user(id: userId) != nil { presentedPlayer = PlayerSheetItem(id: userId) }
+            return
+        }
+        // 正式后端：先用缓存打开，同时拉取最新资料；没见过的人拉到了再打开
+        if backend.user(id: userId) != nil { presentedPlayer = PlayerSheetItem(id: userId) }
+        Task {
+            if await backend.refreshRemotePlayer(userId) != nil, presentedPlayer == nil {
+                presentedPlayer = PlayerSheetItem(id: userId)
+            }
+        }
     }
 }

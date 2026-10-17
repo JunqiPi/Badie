@@ -31,6 +31,8 @@ extension MockBackend {
         guard let me = currentUser, userId != me.id else { return .friendsOnly }
         if blockedIds(of: me.id).contains(userId) { return .blocked }
         if isFriend(userId) { return .allowed }
+        // 正式后端：私信只能发给球友，同一场球局的人去球局群聊
+        if isRemote { return sharedOpenGame(with: userId, now: now).map { .gameChat(gameId: $0.id) } ?? .friendsOnly }
         if let thread = db.threads[MessageThread.id(for: me.id, userId)] {
             if thread.isPendingRequest {
                 // 对方发来的请求：回复即接受
@@ -164,6 +166,7 @@ extension MockBackend {
         case .tooLong: throw BackendError.messageTooLong
         case .valid: break
         }
+        if isRemote { return try await remoteSendMessage(content.trimmingCharacters(in: .whitespacesAndNewlines), threadId: threadId) }
         guard let thread = db.threads[threadId], thread.isGroup else { throw BackendError.chatClosed }
         guard canPost(in: thread, now: now) else { throw BackendError.chatClosed }
         await networkDelay(0.1...0.3)

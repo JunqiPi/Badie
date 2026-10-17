@@ -21,8 +21,10 @@ final class MockBackend {
     /// 正式后端：设置后登录和已接入的功能走服务器，本地 db 只当缓存（见 MockBackend+Remote）
     var remote: SupabaseClient?
     var isRemote: Bool { remote != nil }
-    /// 上次从服务器拉取约球和球局的时间（避免刷新太频繁）
+    /// 上次从服务器拉取约球、球局、会话的时间（避免刷新太频繁）
     var remoteRefreshedAt: Date?
+    /// 每个会话上次拉取消息的时间
+    var remoteThreadLoadedAt: [String: Date] = [:]
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?
@@ -375,7 +377,9 @@ final class MockBackend {
 
     func markInboxRead(id: String? = nil) {
         guard let userId = currentUserId, var items = db.inbox[userId] else { return }
-        for index in items.indices where id == nil || items[index].id == id {
+        // 服务器一次把通知全部记为已读
+        if isRemote, items.contains(where: { !$0.isRead }) { runRemote { try await $0.call("mark_notifications_read") } }
+        for index in items.indices where isRemote || id == nil || items[index].id == id {
             items[index].isRead = true
         }
         db.inbox[userId] = items

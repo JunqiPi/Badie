@@ -53,6 +53,7 @@ extension MockBackend {
     }
 
     func sendFriendRequest(to userId: String, note: String) async throws {
+        if isRemote { return try await remoteSendFriendRequest(to: userId) }
         let me = try requireUser()
         guard userId != me.id else { throw BackendError.cannotFriendSelf }
         guard db.users[userId] != nil else { throw BackendError.userNotFound }
@@ -89,6 +90,11 @@ extension MockBackend {
     }
 
     func respond(to requestId: String, accept: Bool) async throws {
+        if let remote {
+            guard let request = db.friendRequests.first(where: { $0.id == requestId }) else { throw BackendError.userNotFound }
+            try await remote.call("respond_friend_request", ["p_user": request.fromUserId, "p_accept": accept])
+            return try await refreshRemoteSocial()
+        }
         guard let me = currentUserId else { throw BackendError.notSignedIn }
         guard let index = db.friendRequests.firstIndex(where: { $0.id == requestId && $0.toUserId == me }) else {
             throw BackendError.userNotFound
@@ -113,6 +119,10 @@ extension MockBackend {
     }
 
     func removeFriend(_ userId: String) async throws {
+        if let remote {
+            try await remote.call("remove_friend", ["p_user": userId])
+            return try await refreshRemoteSocial()
+        }
         guard let me = currentUserId else { throw BackendError.notSignedIn }
         await networkDelay()
         db.friendships.removeAll { $0.involves(me) && $0.involves(userId) }
@@ -176,6 +186,7 @@ extension MockBackend {
         emit(.friendsChanged)
         emit(.friendRequestsChanged)
         emit(.threadsChanged)
+        runRemote { try await $0.call("block_user", ["p_user": userId]) }
     }
 
     func unblock(_ userId: String) {
@@ -184,9 +195,18 @@ extension MockBackend {
         scheduleSave()
         emit(.friendsChanged)
         emit(.threadsChanged)
+        runRemote { try await $0.call("unblock_user", ["p_user": userId]) }
     }
 
     func report(_ userId: String, reason: ReportReason, detail: String) async {
+        if isRemote {
+            do {
+                try await remoteReport(userId, reason: reason, detail: detail)
+            } catch {
+                emit(.remoteFailed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription))
+            }
+            return
+        }
         guard let me = currentUserId else { return }
         await networkDelay()
         db.reports.append(ReportRecord(reporterId: me, reportedUserId: userId, reason: reason,
@@ -235,6 +255,7 @@ extension MockBackend {
         }
         let threadId = MessageThread.id(for: me.id, userId)
         let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+        if isRemote { return try await remoteSendMessage(trimmed, threadId: threadId) }
         var isRequest = false
         switch messagePermission(with: userId) {
         case .allowed:
@@ -323,6 +344,17 @@ extension MockBackend {
 
     /// 标记已读（产生已读回执）
     func markThreadRead(_ threadId: String) {
+        // 正式后端：打开会话时拉取消息（服务器同时记为已读），3 秒内不重复拉
+        if isRemote, Date().timeIntervalSince(remoteThreadLoadedAt[threadId] ?? .distantPast) > 3 {
+            remoteThreadLoadedAt[threadId] = Date()
+            Task {
+                do {
+                    try await loadRemoteThread(threadId)
+                } catch {
+                    emit(.remoteFailed((error as? LocalizedError)?.errorDescription ?? error.localizedDescription))
+                }
+            }
+        }
         guard let me = currentUserId, var thread = db.threads[threadId] else { return }
         let hadUnread = thread.unreadCount(for: me) > 0
         thread.unreadCounts[me] = 0

@@ -264,6 +264,71 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(review["p_play_again"] as? Bool, true)
     }
 
+    func testFriendsThreadsAndNotificationsComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        let casey = "6f1c2c3e-0000-4000-8000-000000000003"
+        server.on("POST /rest/v1/rpc/my_friends",
+                  #"{"friends":[{"id":"\#(blake)","nickname":"Blake","rating":4.33}],"requests":[{"id":"\#(casey)","nickname":"Casey","rating":3,"created_at":"2026-10-17T10:00:00+00:00"}]}"#)
+        server.on("POST /rest/v1/rpc/my_threads",
+                  #"[{"kind":"dm","id":"\#(blake)","starts_at":null,"venue":null,"tz":null,"name":"Blake","access":"open","last":{"body":"See you","created_at":"2026-10-17T12:00:00+00:00","mine":false},"unread":2},{"kind":"game","id":"g1","starts_at":"2026-10-17T18:00:00+00:00","venue":"Test Court","tz":null,"name":null,"access":"open","last":{"body":"On my way","created_at":"2026-10-17T17:50:00+00:00","mine":true},"unread":0}]"#)
+        server.on("GET /rest/v1/notifications",
+                  #"[{"id":7,"kind":"friend_request","title":"Friend request","body":"Casey wants to be friends.","link":"/app/players/\#(casey)/","created_at":"2026-10-17T10:00:00+00:00","read_at":null},{"id":6,"kind":"review","title":"How was your game?","body":"…","link":"/app/games/g1/","created_at":"2026-10-17T09:00:00+00:00","read_at":"2026-10-17T09:30:00+00:00"}]"#)
+        try await backend.refreshRemoteSocial()
+
+        XCTAssertEqual(backend.friends().map(\.id), [blake])
+        XCTAssertTrue(backend.isFriend(blake))
+        XCTAssertEqual(backend.incomingRequests().map(\.fromUserId), [casey])
+        XCTAssertEqual(backend.user(id: casey)?.nickname, "Casey")
+        XCTAssertEqual(backend.messagePermission(with: blake), .allowed)
+        XCTAssertEqual(backend.messagePermission(with: casey), .friendsOnly, "正式后端：私信只发给球友")
+
+        let dm = MessageThread.id(for: userId, blake)
+        XCTAssertEqual(backend.thread(id: dm)?.unreadCount(for: userId), 2)
+        XCTAssertEqual(backend.thread(id: dm)?.lastMessage?.senderId, blake)
+        XCTAssertEqual(backend.thread(id: "game-g1")?.lastMessage?.senderId, userId)
+        XCTAssertEqual(backend.totalUnread(), 2)
+
+        let inbox = backend.inbox()
+        XCTAssertEqual(inbox.map(\.kind), [.friendRequest, .surveyDue])
+        XCTAssertEqual(inbox.first?.relatedId, casey, "点开去对方资料")
+        XCTAssertEqual(inbox.last?.relatedId, "g1")
+        XCTAssertEqual(inbox.map(\.isRead), [false, true])
+
+        // 接受申请：按对方的 ID 调用
+        server.requests = []
+        server.on("POST /rest/v1/rpc/respond_friend_request", "")
+        server.on("POST /rest/v1/rpc/my_friends", #"{"friends":[],"requests":[]}"#)
+        server.on("POST /rest/v1/rpc/my_threads", "[]")
+        server.on("GET /rest/v1/notifications", "[]")
+        let request = try XCTUnwrap(backend.incomingRequests().first)
+        try await backend.respond(to: request.id, accept: true)
+        XCTAssertEqual(server.json(0)["p_user"] as? String, casey)
+        XCTAssertEqual(server.json(0)["p_accept"] as? Bool, true)
+    }
+
+    func testOpeningAndSendingInAThread() async throws {
+        let backend = try await signedInBackend()
+        let thread = #"{"access":"open","friend":true,"game":null,"group":null,"members":[{"id":"\#(userId)","nickname":"Alex","me":true},{"id":"\#(blake)","nickname":"Blake","me":false}],"messages":[{"id":1,"body":"Hi","created_at":"2026-10-17T12:00:00+00:00","sender":"\#(blake)","mine":false},{"id":2,"body":"Hello","created_at":"2026-10-17T12:01:00+00:00","sender":"\#(userId)","mine":true}]}"#
+        server.on("POST /rest/v1/rpc/send_message", "")
+        server.on("POST /rest/v1/rpc/open_thread", thread)
+        let sent = try await backend.sendMessage("  Hello  ", to: blake)
+
+        XCTAssertEqual(server.json(0)["p_kind"] as? String, "dm")
+        XCTAssertEqual(server.json(0)["p_id"] as? String, blake)
+        XCTAssertEqual(server.json(0)["p_body"] as? String, "Hello")
+        XCTAssertEqual(sent.content, "Hello")
+        let dm = MessageThread.id(for: userId, blake)
+        XCTAssertEqual(backend.messages(threadId: dm).map(\.content), ["Hi", "Hello"])
+        XCTAssertEqual(backend.messages(threadId: dm).first?.senderId, blake)
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/send_message", "")
+        server.on("POST /rest/v1/rpc/open_thread", thread)
+        _ = try await backend.sendGroupMessage("Court 3", threadId: "game-g1")
+        XCTAssertEqual(server.json(0)["p_kind"] as? String, "game")
+        XCTAssertEqual(server.json(0)["p_id"] as? String, "g1")
+    }
+
     func testRestoreWithoutSessionSignsOutLocally() async {
         let backend = MockBackend(store: .inMemory, seedsWorld: false)
         backend.createAccount(phone: "+16265550123", nickname: "Old", level: 3, seedsDemoContent: false)

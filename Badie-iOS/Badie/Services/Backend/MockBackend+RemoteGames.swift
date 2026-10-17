@@ -83,7 +83,7 @@ extension MockBackend {
 
     // MARK: 刷新
 
-    /// 拉取我的请求、提议、球局写进缓存。force 为 false 时 10 秒内只刷新一次
+    /// 拉取我的请求、提议、球局、球友、会话、通知写进缓存。force 为 false 时 10 秒内只刷新一次
     func refreshRemoteActivity(force: Bool = true) async {
         guard let remote, let me = currentUser else { return }
         if !force, let last = remoteRefreshedAt, Date().timeIntervalSince(last) < 10 { return }
@@ -92,6 +92,7 @@ extension MockBackend {
             let tickets: [RemoteTicket] = try await remote.rpc("my_matchmaking")
             let games: [RemoteGame] = try await remote.rpc("my_games")
             apply(tickets: tickets, games: games, me: me)
+            try await refreshRemoteSocial()
         } catch RemoteError.notSignedIn {
             signOutLocally()
         } catch {
