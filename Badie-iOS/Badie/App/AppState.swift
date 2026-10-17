@@ -92,7 +92,12 @@ final class AppState: ObservableObject {
         withAnimation(AppTheme.Motion.gentle) {
             phase = currentUser == nil ? .onboarding : .main
         }
+        // 正式后端：先用缓存进入，再在后台核对登录状态和资料
+        if backend.isRemote { Task { await backend.restoreRemoteSession() } }
     }
+
+    /// 正式后端用邮箱登录，演示环境用手机号
+    var isRemote: Bool { backend.isRemote }
 
     private func handle(_ event: BackendEvent) {
         switch event {
@@ -118,6 +123,20 @@ final class AppState: ObservableObject {
 
     func verify(phone: String, code: String) async throws -> AuthOutcome {
         try await backend.verify(phone: phone, code: code)
+    }
+
+    func requestCode(email: String) async throws {
+        try await backend.remoteSendCode(email: email)
+    }
+
+    func verify(email: String, code: String) async throws -> AuthOutcome {
+        try await backend.remoteVerify(email: email, code: code)
+    }
+
+    func registerRemote(nickname: String, gender: Gender, avatar: Avatar, assessment: SkillAssessmentSummary?,
+                        answers: [String: Int]) async throws {
+        _ = try await backend.remoteRegister(nickname: nickname, gender: gender, avatar: avatar, assessment: assessment, answers: answers)
+        showToast(String(localized: "注册成功，欢迎加入 🏸"), style: .success)
     }
 
     func register(

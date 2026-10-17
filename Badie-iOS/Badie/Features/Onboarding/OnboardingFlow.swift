@@ -15,7 +15,10 @@ struct OnboardingForm {
     var phoneCountry: CountryInfo = .deviceCountry
     var phoneNumber: PhoneNumber { PhoneNumber(country: phoneCountry, national: phone) }
     var agreed = false
+    /// 正式后端用邮箱登录
+    var email = ""
     var code = ""
+    var codeSent = false
     var issuedCode: String?
     var nickname = ""
     var gender: Gender = .unspecified
@@ -151,7 +154,7 @@ struct OnboardingFlow: View {
     private var content: some View {
         switch step {
         case .welcome: welcome
-        case .phone: phoneStep
+        case .phone: if appState.isRemote { emailStep } else { phoneStep }
         case .code: codeStep
         case .profile: profileStep
         case .level: levelStep
@@ -256,11 +259,57 @@ struct OnboardingFlow: View {
         .onAppear { phoneFocused = true }
     }
 
+    // MARK: Email（正式后端）
+
+    private var emailStep: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+            stepTitle(String(localized: "用邮箱\n登录或注册"), subtitle: String(localized: "我们会把登录验证码发到你的邮箱，无需密码。"))
+            TextField(String(localized: "邮箱"), text: $form.email)
+                .font(.system(.title3, design: .rounded, weight: .bold))
+                .keyboardType(.emailAddress)
+                .textContentType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.continue)
+                .onSubmit { if canContinue { primaryAction() } }
+                .focused($phoneFocused)
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .frame(minHeight: 52)
+                .sticker(AppTheme.Colors.surface, radius: 14, shadow: phoneFocused ? AppTheme.Elevation.low : .zero,
+                         stroke: errorText == nil ? AppTheme.Colors.stroke : AppTheme.Colors.danger)
+                .onChange(of: form.email) { _, _ in errorText = nil }
+                .accessibilityLabel("邮箱")
+            if let errorText {
+                Text(errorText)
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.danger)
+            }
+            Button {
+                Haptics.selection()
+                form.agreed.toggle()
+            } label: {
+                HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
+                    Image(systemName: form.agreed ? "checkmark.square.fill" : "square")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(form.agreed ? AppTheme.Colors.ink : AppTheme.Colors.inkTertiary)
+                    Text("我已阅读并同意《用户协议》和《隐私政策》，了解邮箱仅用于登录与安全验证，不会展示给其他球友。")
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(form.agreed ? [.isSelected, .isButton] : .isButton)
+        }
+        .onAppear { phoneFocused = true }
+    }
+
     // MARK: Code
 
     private var codeStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle(String(localized: "输入验证码"), subtitle: String(localized: "已发送至 \(form.phoneNumber.masked)"))
+            stepTitle(String(localized: "输入验证码"), subtitle: String(localized: "已发送至 \(appState.isRemote ? form.email : form.phoneNumber.masked)"))
             ZStack {
                 TextField("", text: $form.code)
                     .keyboardType(.numberPad)
@@ -491,7 +540,7 @@ struct OnboardingFlow: View {
             }
             .buttonStyle(.brutal(step == .welcome ? .inverse : .primary))
             .disabled(!canContinue || isWorking)
-            if step == .welcome {
+            if step == .welcome && !appState.isRemote {
                 Text("登录即可体验，附近球友为演示数据")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
@@ -505,7 +554,7 @@ struct OnboardingFlow: View {
 
     private var primaryTitle: String {
         switch step {
-        case .welcome: return String(localized: "手机号登录 / 注册")
+        case .welcome: return appState.isRemote ? String(localized: "邮箱登录 / 注册") : String(localized: "手机号登录 / 注册")
         case .phone: return String(localized: "获取验证码")
         case .code: return String(localized: "验证")
         case .profile, .level: return String(localized: "下一步")
@@ -516,7 +565,9 @@ struct OnboardingFlow: View {
     private var canContinue: Bool {
         switch step {
         case .welcome: return true
-        case .phone: return form.phoneNumber.national.count >= form.phoneCountry.phone.lengths.lowerBound && form.agreed
+        case .phone:
+            if appState.isRemote { return !form.email.isEmpty && form.agreed }
+            return form.phoneNumber.national.count >= form.phoneCountry.phone.lengths.lowerBound && form.agreed
         case .code: return form.code.count == 6
         case .profile: return MockBackend.isValidNickname(form.nickname)
         case .level: return form.level != nil
@@ -532,13 +583,20 @@ struct OnboardingFlow: View {
         case .welcome:
             advance(to: .phone)
         case .phone:
-            guard form.phoneNumber.isValid else {
-                errorText = BackendError.invalidPhone.errorDescription
-                return
+            if appState.isRemote {
+                guard MockBackend.isValidEmail(form.email) else {
+                    errorText = String(localized: "邮箱地址好像不对。")
+                    return
+                }
+            } else {
+                guard form.phoneNumber.isValid else {
+                    errorText = BackendError.invalidPhone.errorDescription
+                    return
+                }
             }
             Task {
                 await sendCode()
-                if form.issuedCode != nil { advance(to: .code) }
+                if form.codeSent { advance(to: .code) }
             }
         case .code:
             submitCode()
@@ -559,7 +617,12 @@ struct OnboardingFlow: View {
         isWorking = true
         defer { isWorking = false }
         do {
-            form.issuedCode = try await appState.requestCode(phone: form.phoneNumber.e164)
+            if appState.isRemote {
+                try await appState.requestCode(email: form.email)
+            } else {
+                form.issuedCode = try await appState.requestCode(phone: form.phoneNumber.e164)
+            }
+            form.codeSent = true
             form.code = ""
             resendRemaining = 60
         } catch {
@@ -573,7 +636,10 @@ struct OnboardingFlow: View {
             isWorking = true
             defer { isWorking = false }
             do {
-                switch try await appState.verify(phone: form.phoneNumber.e164, code: form.code) {
+                let outcome = appState.isRemote
+                    ? try await appState.verify(email: form.email, code: form.code)
+                    : try await appState.verify(phone: form.phoneNumber.e164, code: form.code)
+                switch outcome {
                 case .signedIn(let user):
                     appState.showToast(String(localized: "欢迎回来，\(user.nickname)"), style: .success)
                 case .needsProfile:
@@ -594,6 +660,22 @@ struct OnboardingFlow: View {
         defer { isWorking = false }
         let slots = Array(form.timePresets.sorted { $0.rawValue < $1.rawValue }.flatMap(\.slots).prefix(TimeSlotConstants.maximumRecurringSlots))
         do {
+            if appState.isRemote {
+                try await appState.registerRemote(
+                    nickname: form.nickname, gender: form.gender, avatar: form.avatar,
+                    assessment: result.map {
+                        SkillAssessmentSummary(level: level, needsCalibration: $0.needsCalibration,
+                                               isReturning: $0.isReturning, assessedAt: Date(), rating: $0.tier.rating)
+                    },
+                    answers: form.assessmentAnswers
+                )
+                try? appState.backend.saveRecurringSlots(slots)
+                if result == nil { appState.backend.markAssessmentSkipped() }
+                for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
+                    locationManager.toggleFavorite(venueId)
+                }
+                return
+            }
             try await appState.register(
                 phone: form.phoneNumber.e164,
                 nickname: form.nickname,

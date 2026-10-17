@@ -486,13 +486,15 @@ struct ReassessSheet: View {
             if let result = SkillAssessment.evaluate(answers) {
                 VStack(spacing: AppTheme.Spacing.xs) {
                     Button("使用 \(result.tier.displayText)") {
-                        do {
-                            try appState.backend.updateAssessment(result)
-                            Haptics.success()
-                            appState.showToast(String(localized: "问卷等级已更新为 \(result.tier.text)"), style: .success)
-                            dismiss()
-                        } catch {
-                            appState.showError(error)
+                        Task {
+                            do {
+                                try await appState.backend.saveAssessment(result, answers: answers)
+                                Haptics.success()
+                                appState.showToast(String(localized: "问卷等级已更新为 \(result.tier.text)"), style: .success)
+                                dismiss()
+                            } catch {
+                                appState.showError(error)
+                            }
                         }
                     }
                     .buttonStyle(.brutalPrimary)

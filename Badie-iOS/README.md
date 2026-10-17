@@ -58,4 +58,6 @@ BadieTests/  模型、匹配算法、后端业务规则测试
 
 ### 关于后端
 
-目前没有线上服务。`Services/Backend/MockBackend` 在本机扮演服务器：JSON 持久化账户与数据，模拟附近球友（有空时间、回复消息、通过好友申请、加入球局、签到、互评），并通过 `BackendEvent` 事件流推送变化。接入真实服务时，只需实现同样的接口与事件，Manager 和界面层不用改。
+演示模式下，`Services/Backend/MockBackend` 在本机扮演服务器：JSON 持久化账户与数据，模拟附近球友（有空时间、回复消息、通过好友申请、加入球局、签到、互评），并通过 `BackendEvent` 事件流推送变化。单元测试和截图都用这个模式。
+
+正式后端（Supabase，与网页共用）正在逐个接入，启动参数 `-BBRemote YES` 打开：邮箱验证码登录，资料、定级、收藏球馆存在服务器上，本地数据库只当缓存（`MockBackend+Remote`、`Services/Remote/SupabaseClient`）。服务器还不支持的功能在这个模式下会隐藏，之后逐个补上；全部接入后再默认打开。

@@ -16,6 +16,13 @@ struct DatabaseStore {
         DatabaseStore(url: FileManager.default.temporaryDirectory.appendingPathComponent("badie-demo-database.json"))
     }
 
+    /// 正式后端模式的本地缓存（和演示数据分开）
+    static var remoteCache: DatabaseStore {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        return DatabaseStore(url: base.appendingPathComponent("Badie", isDirectory: true).appendingPathComponent("remote-cache.json"))
+    }
+
     static var inMemory: DatabaseStore { DatabaseStore(url: nil) }
 
     private static let encoder: JSONEncoder = {

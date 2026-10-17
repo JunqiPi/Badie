@@ -36,7 +36,20 @@ struct AppEnvironment {
             return DemoLauncher.makeEnvironment(screen: screen)
         }
         #endif
+        if RemoteMode.isEnabled {
+            let backend = MockBackend(store: .remoteCache, seedsWorld: false)
+            backend.simulationEnabled = false
+            backend.latencyEnabled = false
+            backend.remote = SupabaseClient()
+            backend.remote?.onSessionExpired = { [weak backend] in backend?.signOutLocally() }
+            return AppEnvironment(backend: backend)
+        }
         return AppEnvironment(backend: .shared)
     }
+}
+
+/// 正式后端开关。功能接入完之前默认关闭；用启动参数 `-BBRemote YES` 打开
+enum RemoteMode {
+    static var isEnabled: Bool { UserDefaults.standard.bool(forKey: "BBRemote") }
 }
 

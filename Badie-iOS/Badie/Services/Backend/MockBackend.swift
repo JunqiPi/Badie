@@ -18,6 +18,9 @@ final class MockBackend {
     var simulationEnabled = true
     /// 机器人行为时间倍率（演示截图时可加速）
     var simulationSpeed: Double = 1
+    /// 正式后端：设置后登录和已接入的功能走服务器，本地 db 只当缓存（见 MockBackend+Remote）
+    var remote: SupabaseClient?
+    var isRemote: Bool { remote != nil }
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?
@@ -26,10 +29,11 @@ final class MockBackend {
     /// 模拟球友之间的对局按天生成（同一天、同一世界中心结果固定）
     var botRecordCache: [String: [MatchRecord]] = [:]
 
-    init(store: DatabaseStore) {
+    /// seedsWorld：生成附近的模拟球友（正式后端模式下不需要）
+    init(store: DatabaseStore, seedsWorld: Bool = true) {
         self.store = store
         db = store.load() ?? Database()
-        ensureWorld()
+        if seedsWorld { ensureWorld() }
         AvatarPhotos.source = { [weak self] userId in self?.db.avatarPhotos[userId] }
     }
 
@@ -215,6 +219,7 @@ final class MockBackend {
     }
 
     func signOut() {
+        if let remote { Task { await remote.signOut() } }
         db.currentUserId = nil
         saveNow()
         emit(.sessionChanged)
@@ -290,6 +295,7 @@ final class MockBackend {
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))
+        pushRemote(["show_on_boards": privacy.showsOnLeaderboards, "challenge_policy": privacy.challengePolicy.serverValue])
     }
 
     func updateProfile(_ updated: User) async throws -> User {
@@ -297,6 +303,10 @@ final class MockBackend {
         guard Self.isValidNickname(updated.nickname) else { throw BackendError.invalidNickname }
         guard !Self.advertises(updated.nickname), !Self.advertises(updated.bio) else { throw BackendError.profileContainsContact }
         await networkDelay()
+        if let remote, updated.nickname != user.nickname {
+            try await remote.update("profiles", query: "id=eq.\(user.id)",
+                                    ["nickname": updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines)])
+        }
         user.nickname = updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines)
         user.bio = String(updated.bio.prefix(60))
         user.gender = updated.gender
@@ -401,5 +411,6 @@ final class MockBackend {
         }
         db.favoriteCourtIds[id] = favorites
         scheduleSave()
+        pushRemoteFavorite(courtId, isFavorite: favorites.contains(courtId))
     }
 }
