@@ -329,6 +329,66 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(server.json(0)["p_id"] as? String, "g1")
     }
 
+    private func groupPage(myStatus: String) -> String {
+        let start = ISO8601DateFormatter().string(from: Date().addingTimeInterval(2 * 86400))
+        let end = ISO8601DateFormatter().string(from: Date().addingTimeInterval(2 * 86400 + 7200))
+        return #"{"id":"grp1","name":"Thu doubles","summary":"Friendly","level_min":3,"level_max":5,"join_policy":"approval","venue":{"id":"v-test-court","name":"Test Court","city":"Irvine","tz":"America/Los_Angeles"},"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":"$12"}],"activity":{"sessions":6,"average":7.5},"my_role":"owner","invite_code":"ABC2LX","sessions":[{"id":"s1","starts_at":"\#(start)","ends_at":"\#(end)","capacity":8,"cancelled":false,"confirmed":1,"waitlist":0,"my_status":"\#(myStatus)","players":[{"id":"\#(userId)","nickname":"Alex","waitlisted":false}]}],"members":[{"id":"\#(userId)","nickname":"Alex","rating":4,"role":"owner"},{"id":"\#(blake)","nickname":"Blake","rating":4.33,"role":"member"}],"pending":[{"id":"6f1c2c3e-0000-4000-8000-000000000003","nickname":"Casey","rating":3,"role":null}]}"#
+    }
+
+    func testGroupsComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
+        try await backend.loadRemoteGroup("grp1")
+
+        let group = try XCTUnwrap(backend.group(id: "grp1"))
+        XCTAssertEqual(group.ownerId, userId)
+        XCTAssertEqual(Set(group.memberIds), [userId, blake])
+        XCTAssertTrue(group.isOrganizer(userId))
+        XCTAssertEqual(group.pendingIds, ["6f1c2c3e-0000-4000-8000-000000000003"])
+        XCTAssertEqual(group.inviteCode, "ABC2LX")
+        XCTAssertEqual(group.joinPolicy, .approval)
+        XCTAssertEqual(group.levelRange, 3...5)
+        XCTAssertEqual(group.schedules.first?.weekday, 5, "服务器 4 = 周四；本地 1 = 周日，所以周四是 5")
+        XCTAssertEqual(group.schedules.first?.feeNote, "$12")
+        XCTAssertEqual(backend.activity(of: "grp1").sessionsLast30Days, 6)
+        XCTAssertEqual(backend.myGroups().map(\.id), ["grp1"])
+        XCTAssertEqual(backend.mySessions().map(\.id), ["s1"])
+        XCTAssertEqual(backend.session(id: "s1")?.status(of: userId), .signedUp)
+        XCTAssertNotNil(backend.venue(id: "v-test-court"), "服务器上的球馆进本地库")
+    }
+
+    func testGroupActionsCallTheServer() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
+        try await backend.loadRemoteGroup("grp1")
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/sign_up_session", #""waitlisted""#)
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "waitlisted:2")
+            .replacingOccurrences(of: #""waitlist":0"#, with: #""waitlist":2"#)
+            .replacingOccurrences(of: #""players":[{"id":"\#(userId)","nickname":"Alex","waitlisted":false}]"#, with: #""players":null"#))
+        let result = try await backend.remoteSignUp(sessionId: "s1")
+        XCTAssertEqual(server.json(0)["p_session"] as? String, "s1")
+        XCTAssertEqual(result, .waitlisted(position: 2), "看不到名单时按 my_status 放我的位置")
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/create_group", #""grp1""#)
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
+        let schedule = GroupSchedule(id: "s", weekday: 5, startMinutes: 19 * 60 + 30, endMinutes: 22 * 60, capacity: 8, feeNote: nil)
+        _ = try await backend.remoteCreateGroup(name: " Thu doubles ", venueId: "v-test-court", schedules: [schedule],
+                                                levelRange: 3...5, joinPolicy: .approval, summary: "")
+        let create = server.json(0)
+        XCTAssertEqual(create["p_name"] as? String, "Thu doubles")
+        XCTAssertEqual(create["p_policy"] as? String, "approval")
+        let schedules = try XCTUnwrap(create["p_schedules"] as? [[String: Any]])
+        XCTAssertEqual(schedules.first?["weekday"] as? Int, 4, "本地周四 5 → 服务器 4")
+        XCTAssertEqual(schedules.first?["start"] as? Int, 1170)
+
+        server.on("POST /rest/v1/rpc/find_group", "null")
+        let missing = try await backend.remoteFindGroup(code: "ZZZZZZ")
+        XCTAssertNil(missing)
+    }
+
     func testRestoreWithoutSessionSignsOutLocally() async {
         let backend = MockBackend(store: .inMemory, seedsWorld: false)
         backend.createAccount(phone: "+16265550123", nickname: "Old", level: 3, seedsDemoContent: false)

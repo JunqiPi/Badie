@@ -6,7 +6,10 @@ extension MockBackend {
 
     // MARK: Queries
 
-    func group(id: String) -> PlayGroup? { db.groups[id] }
+    func group(id: String) -> PlayGroup? {
+        refreshRemoteGroupIfStale(id)
+        return db.groups[id]
+    }
 
     func group(code: String) -> PlayGroup? {
         let normalized = Room.normalize(code)
@@ -22,11 +25,19 @@ extension MockBackend {
     /// 某个球馆的球群
     func groups(atVenue venueId: String) -> [PlayGroup] {
         guard let target = venue(id: venueId) else { return [] }
+        if isRemote {
+            loadRemoteGroupsNear(target.location, radiusKm: 5)
+            return sortedByActivity(db.groups.values.filter { $0.venueId == venueId })
+        }
         return sortedByActivity(db.groups.values.filter { venue(id: $0.venueId).map { VenueCluster.same($0, target) } ?? false })
     }
 
     /// 附近的球群（按真实活跃度排序）
     func groups(near center: Coordinate, radiusKm: Double) -> [PlayGroup] {
+        if isRemote {
+            loadRemoteGroupsNear(center, radiusKm: radiusKm)
+            return sortedByActivity((remoteNearbyGroups?.ids ?? []).compactMap { db.groups[$0] })
+        }
         let blocked = blockedIds()
         return sortedByActivity(db.groups.values.filter { group in
             guard !blocked.contains(group.ownerId), let venue = venue(id: group.venueId) else { return false }
@@ -44,6 +55,7 @@ extension MockBackend {
 
     /// 近 30 天开了几场、平均每场几人（对外只显示这个，不显示成员总数）
     func activity(of groupId: String, now: Date = Date()) -> GroupActivity {
+        if isRemote { return remoteGroupActivity[groupId] ?? GroupActivity(sessionsLast30Days: 0, averageTurnout: 0) }
         let recent = db.groupSessions.values.filter { session in
             session.groupId == groupId && !session.isCancelled
                 && session.slot.endTime <= now && now.timeIntervalSince(session.slot.endTime) <= 30 * 86400
@@ -56,7 +68,7 @@ extension MockBackend {
     /// 未来 14 天的场次（按需生成）
     func upcomingSessions(groupId: String, now: Date = Date()) -> [GroupSession] {
         guard let group = db.groups[groupId] else { return [] }
-        materializeSessions(for: group, from: now, days: GroupSession.daysAhead)
+        if !isRemote { materializeSessions(for: group, from: now, days: GroupSession.daysAhead) }
         return db.groupSessions.values
             .filter { $0.groupId == groupId && $0.isUpcoming(now: now) }
             .sorted { $0.slot.startTime < $1.slot.startTime }
@@ -65,7 +77,9 @@ extension MockBackend {
     /// 我报名（或候补）的未来场次
     func mySessions(now: Date = Date()) -> [GroupSession] {
         guard let me = currentUserId else { return [] }
-        for group in myGroups() { materializeSessions(for: group, from: now, days: GroupSession.daysAhead) }
+        if !isRemote {
+            for group in myGroups() { materializeSessions(for: group, from: now, days: GroupSession.daysAhead) }
+        }
         return db.groupSessions.values
             .filter { $0.isUpcoming(now: now) && $0.status(of: me) != .none }
             .sorted { $0.slot.startTime < $1.slot.startTime }
@@ -281,6 +295,7 @@ extension MockBackend {
 
     /// 生成某段时间内的场次（已有的不重复生成）；模拟球友按确定性规则报名
     func materializeSessions(for group: PlayGroup, from start: Date, days: Int) {
+        guard !isRemote else { return }
         let calendar = Calendar.current
         let firstDay = calendar.startOfDay(for: start)
         for offset in 0..<max(1, days) {
@@ -304,6 +319,7 @@ extension MockBackend {
 
     /// 模拟世界里的球群：在离世界中心最近的两家球馆各有一个，由模拟球友组织，附带过去 30 天的场次
     func ensureGroups(now: Date = Date()) {
+        guard !isRemote else { return }
         let venues = worldVenues.sorted { $0.distance(from: db.worldCenter) < $1.distance(from: db.worldCenter) }
         guard venues.count >= 2 else { return }
         let hasNearby = db.groups.values.contains { group in

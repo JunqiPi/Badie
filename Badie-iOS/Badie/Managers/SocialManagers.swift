@@ -426,46 +426,57 @@ final class GroupManager: ObservableObject {
 
     func user(_ id: String) -> User? { backend.user(id: id) }
 
+    // 正式后端的操作要等服务器，所以都是 async；演示环境直接在本地完成
+
     @discardableResult
     func create(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                joinPolicy: PlayGroup.JoinPolicy, summary: String) throws -> PlayGroup {
-        let group = try backend.createGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
-                                            joinPolicy: joinPolicy, summary: summary)
+                joinPolicy: PlayGroup.JoinPolicy, summary: String) async throws -> PlayGroup {
+        let group = backend.isRemote
+            ? try await backend.remoteCreateGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
+                                                  joinPolicy: joinPolicy, summary: summary)
+            : try backend.createGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
+                                      joinPolicy: joinPolicy, summary: summary)
         reload()
         return group
     }
 
+    /// 输群号找球群（正式后端要问服务器）
+    func find(code: String) async -> PlayGroup? {
+        guard backend.isRemote else { return backend.group(code: code) }
+        return try? await backend.remoteFindGroup(code: code)
+    }
+
     @discardableResult
-    func join(_ groupId: String) throws -> PlayGroup {
-        let group = try backend.joinGroup(id: groupId)
+    func join(_ groupId: String) async throws -> PlayGroup {
+        let group = backend.isRemote ? try await backend.remoteJoinGroup(groupId) : try backend.joinGroup(id: groupId)
         reload()
         return group
     }
 
-    func leave(_ groupId: String) throws {
-        try backend.leaveGroup(id: groupId)
+    func leave(_ groupId: String) async throws {
+        if backend.isRemote { try await backend.remoteLeaveGroup(groupId) } else { try backend.leaveGroup(id: groupId) }
         reload()
     }
 
-    func approve(_ userId: String, in groupId: String) throws {
-        try backend.approveMember(userId, groupId: groupId)
+    func approve(_ userId: String, in groupId: String) async throws {
+        if backend.isRemote { try await backend.remoteApprove(userId, groupId: groupId) } else { try backend.approveMember(userId, groupId: groupId) }
         reload()
     }
 
     @discardableResult
-    func signUp(_ sessionId: String) throws -> MockBackend.SignupResult {
-        let result = try backend.signUp(sessionId: sessionId)
+    func signUp(_ sessionId: String) async throws -> MockBackend.SignupResult {
+        let result = backend.isRemote ? try await backend.remoteSignUp(sessionId: sessionId) : try backend.signUp(sessionId: sessionId)
         reload()
         return result
     }
 
-    func cancelSignup(_ sessionId: String) throws {
-        try backend.cancelSignup(sessionId: sessionId)
+    func cancelSignup(_ sessionId: String) async throws {
+        if backend.isRemote { try await backend.remoteCancelSignup(sessionId: sessionId) } else { try backend.cancelSignup(sessionId: sessionId) }
         reload()
     }
 
-    func cancelSession(_ sessionId: String) throws {
-        try backend.cancelSession(sessionId)
+    func cancelSession(_ sessionId: String) async throws {
+        if backend.isRemote { try await backend.remoteCancelSession(sessionId) } else { try backend.cancelSession(sessionId) }
         reload()
     }
 }

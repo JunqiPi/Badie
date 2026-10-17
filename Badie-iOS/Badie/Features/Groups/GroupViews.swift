@@ -167,12 +167,14 @@ struct GroupDetailView: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .confirmationDialog("退出这个球群？", isPresented: $confirmsLeave, titleVisibility: .visible) {
             Button("退出", role: .destructive) {
-                do {
-                    try groupManager.leave(groupId)
-                    appState.showToast(String(localized: "已退出，已报名的场次也一并取消"))
-                    router.pop()
-                } catch {
-                    appState.showError(error)
+                Task {
+                    do {
+                        try await groupManager.leave(groupId)
+                        appState.showToast(String(localized: "已退出，已报名的场次也一并取消"))
+                        router.pop()
+                    } catch {
+                        appState.showError(error)
+                    }
                 }
             }
         } message: {
@@ -254,13 +256,15 @@ struct GroupDetailView: View {
                     .font(AppTheme.Typography.subheadline)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Button {
-                    do {
-                        let joined = try groupManager.join(group.id)
-                        Haptics.success()
-                        appState.showToast(joined.isMember(me ?? "") ? String(localized: "已加入「\(joined.name)」") : String(localized: "已提交申请，组织者同意后通知你"),
-                                           style: .success)
-                    } catch {
-                        appState.showError(error)
+                    Task {
+                        do {
+                            let joined = try await groupManager.join(group.id)
+                            Haptics.success()
+                            appState.showToast(joined.isMember(me ?? "") ? String(localized: "已加入「\(joined.name)」") : String(localized: "已提交申请，组织者同意后通知你"),
+                                               style: .success)
+                        } catch {
+                            appState.showError(error)
+                        }
                     }
                 } label: {
                     Text(group.joinPolicy == .open ? String(localized: "加入球群") : String(localized: "申请加入"))
@@ -346,7 +350,7 @@ struct GroupDetailView: View {
                         }
                         Spacer()
                         Button("同意") {
-                            try? groupManager.approve(userId, in: group.id)
+                            Task { try? await groupManager.approve(userId, in: group.id) }
                         }
                         .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
                     }
@@ -407,26 +411,30 @@ struct SessionRow: View {
     }
 
     private func signUp() {
-        do {
-            switch try groupManager.signUp(session.id) {
-            case .confirmed:
-                Haptics.success()
-                appState.showToast(String(localized: "已报名：\(session.slot.formattedFull)"), style: .success)
-            case .waitlisted(let position):
-                appState.showToast(String(localized: "已候补第 \(position) 位，有人退出会自动递补并通知你"))
+        Task {
+            do {
+                switch try await groupManager.signUp(session.id) {
+                case .confirmed:
+                    Haptics.success()
+                    appState.showToast(String(localized: "已报名：\(session.slot.formattedFull)"), style: .success)
+                case .waitlisted(let position):
+                    appState.showToast(String(localized: "已候补第 \(position) 位，有人退出会自动递补并通知你"))
+                }
+            } catch {
+                appState.showError(error)
             }
-        } catch {
-            appState.showError(error)
         }
     }
 
     private func cancel() {
         let late = session.slot.startTime.timeIntervalSince(Date()) < GroupSession.lateCancellationWindow
-        do {
-            try groupManager.cancelSignup(session.id)
-            appState.showToast(late ? String(localized: "已取消（开场前 2 小时内，计入临时取消）") : String(localized: "已取消，名额让给候补"))
-        } catch {
-            appState.showError(error)
+        Task {
+            do {
+                try await groupManager.cancelSignup(session.id)
+                appState.showToast(late ? String(localized: "已取消（开场前 2 小时内，计入临时取消）") : String(localized: "已取消，名额让给候补"))
+            } catch {
+                appState.showError(error)
+            }
         }
     }
 }
@@ -464,12 +472,14 @@ struct SessionSheet: View {
                     }
                     if let me = appState.currentUser?.id, group.isOrganizer(me), !session.isCancelled {
                         Button("取消这一场") {
-                            do {
-                                try groupManager.cancelSession(session.id)
-                                appState.showToast(String(localized: "已取消，已报名的人会收到通知"))
-                                dismiss()
-                            } catch {
-                                appState.showError(error)
+                            Task {
+                                do {
+                                    try await groupManager.cancelSession(session.id)
+                                    appState.showToast(String(localized: "已取消，已报名的人会收到通知"))
+                                    dismiss()
+                                } catch {
+                                    appState.showError(error)
+                                }
                             }
                         }
                         .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
@@ -663,15 +673,17 @@ struct CreateGroupView: View {
         guard let venueId else { return }
         let schedule = GroupSchedule(id: "s1", weekday: weekday, startMinutes: startMinutes, endMinutes: endMinutes,
                                      capacity: capacity, feeNote: nil)
-        do {
-            let group = try groupManager.create(name: name, venueId: venueId, schedules: [schedule],
-                                                levelRange: lowerLevel...upperLevel, joinPolicy: joinPolicy, summary: summary)
-            Haptics.success()
-            appState.showToast(String(localized: "已建群，群号 \(group.inviteCode)，可以分享到微信"), style: .success)
-            router.pop()
-            router.open(.group(id: group.id))
-        } catch {
-            appState.showError(error)
+        Task {
+            do {
+                let group = try await groupManager.create(name: name, venueId: venueId, schedules: [schedule],
+                                                          levelRange: lowerLevel...upperLevel, joinPolicy: joinPolicy, summary: summary)
+                Haptics.success()
+                appState.showToast(String(localized: "已建群，群号 \(group.inviteCode)，可以分享到微信"), style: .success)
+                router.pop()
+                router.open(.group(id: group.id))
+            } catch {
+                appState.showError(error)
+            }
         }
     }
 }

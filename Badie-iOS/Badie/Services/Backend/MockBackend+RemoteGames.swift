@@ -93,6 +93,7 @@ extension MockBackend {
             let games: [RemoteGame] = try await remote.rpc("my_games")
             apply(tickets: tickets, games: games, me: me)
             try await refreshRemoteSocial()
+            try await refreshRemoteGroups()
         } catch RemoteError.notSignedIn {
             signOutLocally()
         } catch {
@@ -318,7 +319,7 @@ extension MockBackend {
 
     /// 球馆：优先用本地球馆库（信息更全），库里没有就用服务器给的基本信息
     private func court(for place: RemotePlace) -> BadmintonCourt {
-        if let venue = venue(id: place.id) { return venue }
+        if let venue = venue(id: place.id), venue.location.latitude != 0 || place.lat == nil { return venue }
         let pricing: VenuePricing
         if let perPerson = place.pricing?.perPerson {
             pricing = .dropIn(perPerson: Int(perPerson.rounded()))
@@ -327,11 +328,14 @@ extension MockBackend {
         } else {
             pricing = .unknown
         }
-        return BadmintonCourt(
+        // 存进本地球馆库，其他页面也能按 ID 找到
+        let court = BadmintonCourt(
             id: place.id, name: place.name, location: Coordinate(latitude: place.lat ?? 0, longitude: place.lon ?? 0),
             address: PostalAddress(street: place.street ?? "", city: place.city ?? "", region: "", countryCode: place.country ?? "US"),
             timeZoneId: place.tz, pricing: pricing, source: .player, status: .unconfirmed
         )
+        db.venues[place.id] = court
+        return court
     }
 
     static func iso(_ date: Date) -> String {

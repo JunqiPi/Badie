@@ -25,6 +25,10 @@ final class MockBackend {
     var remoteRefreshedAt: Date?
     /// 每个会话上次拉取消息的时间
     var remoteThreadLoadedAt: [String: Date] = [:]
+    /// 球群：上次拉取详情的时间、近 30 天活跃度、附近的球群
+    var remoteGroupLoadedAt: [String: Date] = [:]
+    var remoteGroupActivity: [String: GroupActivity] = [:]
+    var remoteNearbyGroups: (center: Coordinate, ids: [String], at: Date)?
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?

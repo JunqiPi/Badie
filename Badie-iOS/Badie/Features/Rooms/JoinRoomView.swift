@@ -4,6 +4,7 @@ import SwiftUI
 struct JoinRoomView: View {
     var initialCode: String = ""
 
+    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var roomManager: RoomManager
     @EnvironmentObject private var groupManager: GroupManager
@@ -98,16 +99,25 @@ struct JoinRoomView: View {
 
     private func join() async {
         guard code.count == Room.codeLength, !isWorking else { return }
-        guard Room.isValidCode(code) else {
+        // 正式后端只有群号（字母表和房间码不同，交给服务器查）
+        guard appState.isRemote || Room.isValidCode(code) else {
             errorText = String(localized: "房间码格式不对，请检查是否输入了 0/O/1/I/L")
             Haptics.error()
             return
         }
         // 群号：打开球群页面（在那里加入）
-        if let group = groupManager.group(code: code) {
+        isWorking = true
+        let found = await groupManager.find(code: code)
+        isWorking = false
+        if let group = found {
             Haptics.success()
             router.pop()
             router.open(.group(id: group.id))
+            return
+        }
+        if appState.isRemote {
+            errorText = BackendError.groupNotFound.errorDescription
+            Haptics.error()
             return
         }
         isWorking = true
@@ -127,6 +137,7 @@ struct JoinRoomView: View {
 // MARK: - 附近公开球局列表
 
 struct PublicGamesView: View {
+    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var roomManager: RoomManager
