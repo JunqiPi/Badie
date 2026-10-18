@@ -54,7 +54,7 @@ const section = Astro.url.pathname.startsWith('/courts/') ? '/courts/' : undefin
                   <a
                     href={item.href}
                     aria-current={item.href === section ? 'page' : undefined}
-                    class="block px-5 py-3 underline-offset-[6px] decoration-lime decoration-2 transition-colors hover:text-lime aria-[current=page]:underline"
+                    class="block px-5 py-3 underline-offset-[6px] decoration-2 hover:underline aria-[current=page]:underline aria-[current=page]:decoration-lime dark:aria-[current=page]:decoration-current"
                   >
                     {item.label}
                   </a>
