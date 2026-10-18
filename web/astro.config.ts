@@ -23,7 +23,7 @@ export default defineConfig({
     csp: {
       directives: [
         "default-src 'self'",
-        "img-src 'self' data:",
+        `img-src 'self' data: ${supabase?.origin ?? ''}`,
         "font-src 'self'",
         `connect-src 'self' ${supabase ? `${supabase.origin} ${supabase.origin.replace(/^http/, 'ws')}` : ''} ${turnstile}`,
         `frame-src ${turnstile}`,

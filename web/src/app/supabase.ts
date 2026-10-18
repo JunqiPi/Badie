@@ -8,6 +8,9 @@ const key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefine
 
 export const supabase = url && key ? createClient(url, key) : undefined;
 
+/** 照片头像的地址（公开桶，文件名随机） */
+export const avatarUrl = (path: string) => supabase!.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+
 export interface Profile {
   id: string;
   nickname: string;
@@ -23,6 +26,8 @@ export interface Profile {
   show_as_regular: boolean;
   /** 同球群的人可以给我发消息请求 */
   allow_message_requests: boolean;
+  /** 照片头像在 avatars 桶里的位置（App 里上传） */
+  avatar_path: string | null;
   /** 高水平认证（管理员审核通过后才有） */
   verified_kind: VerificationKind | null;
   verified_rating: number | null;
@@ -152,6 +157,8 @@ export interface PlayerCard {
   /** 能不能私信：request = 同球群，可以发一条消息请求 */
   message: { status: 'friends' | 'open' | 'requested' | 'request' | 'new_account' | 'none'; group?: string };
   verified: VerificationKind | null;
+  /** 照片头像在 avatars 桶里的位置 */
+  avatar: string | null;
 }
 
 /** 收藏了同一家球馆、愿意被看到的常客 */

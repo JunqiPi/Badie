@@ -19,6 +19,7 @@ extension MockBackend {
         let allowMessageRequests: Bool?
         let verifiedKind: String?
         let verifiedRating: Double?
+        let avatarPath: String?
         let locale: String
         let createdAt: Date?
     }
@@ -84,6 +85,8 @@ extension MockBackend {
     func signOutLocally() {
         guard db.currentUserId != nil else { return }
         remoteIsAdmin = false
+        remoteAvatarPath = nil
+        remoteAvatarChecked = []
         db.currentUserId = nil
         saveNow()
         emit(.sessionChanged)
@@ -92,6 +95,8 @@ extension MockBackend {
     /// 注销：服务器删除账号和数据（以后的球局取消、球群交接），成功后清空本机缓存
     func remoteDeleteAccount() async throws {
         let remote = try requireRemote()
+        // 照片文件先删掉（账号删了以后就没权限删了）
+        if let path = remoteAvatarPath { try? await remote.removeFile("avatars", path: path) }
         try await remote.call("delete_account")
         await remote.signOut()
         store.erase()
@@ -113,8 +118,11 @@ extension MockBackend {
         db.favoriteCourtIds[profile.id] = favorites.map(\.venueId)
         // 写缓存之前查：缓存会通知界面刷新，设置页据此决定是否显示演示模式开关
         remoteIsAdmin = (try? await client.rpc("is_admin", as: Bool.self)) ?? false
+        var user = cache(profile, email: session.email)
         try? await refreshRemoteVerification()
-        let user = cache(profile, email: session.email)
+        remoteAvatarPath = profile.avatarPath
+        await applyAvatar(profile.avatarPath, to: profile.id)
+        user = db.users[profile.id] ?? user
         if profile.locale != Self.serverLocale {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["locale": Self.serverLocale])
         }

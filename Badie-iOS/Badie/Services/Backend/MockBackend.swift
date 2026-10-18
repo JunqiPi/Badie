@@ -44,6 +44,10 @@ final class MockBackend {
     var remoteMessageOptions: [String: RemoteMessageOption] = [:]
     /// 我最近的一次高水平认证申请
     var remoteVerification: VerificationRequest?
+    /// 照片头像：我的照片在桶里的位置；这次启动查过头像的人、等着一起查的人
+    var remoteAvatarPath: String?
+    var remoteAvatarChecked: Set<String> = []
+    var remoteAvatarQueue: [String] = []
     /// 有多少人在找：每个请求的人数，和按天的人数（上次拉取的地点、半径和时间）
     var remotePools: [String: (available: Int, compatible: Int)] = [:]
     var remotePoolLoadedAt: [String: Date] = [:]
@@ -357,6 +361,7 @@ final class MockBackend {
     /// 上传头像照片：其他球友在列表、资料页、聊天里都能看到
     @discardableResult
     func uploadAvatarPhoto(_ jpeg: Data) async throws -> User {
+        if isRemote { return try await remoteUploadAvatar(jpeg) }
         guard var user = currentUser else { throw BackendError.notSignedIn }
         await networkDelay()
         db.avatarPhotos[user.id] = jpeg
@@ -374,6 +379,7 @@ final class MockBackend {
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))
+        if isRemote { remoteRemoveAvatar() }
     }
 
     func updateCurrentUserLocation(_ coordinate: Coordinate) {

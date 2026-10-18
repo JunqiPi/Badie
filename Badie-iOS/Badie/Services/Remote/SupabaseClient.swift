@@ -88,6 +88,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "cooldown": return String(localized: "距上次挑战满一周后，才能再挑战 TA。")
         case "too_many_outgoing": return String(localized: "同时最多只能有 3 个待回复的挑战。")
         case "invalid_partner": return String(localized: "请选一位那段时间有空的球友当搭档。")
+        case "invalid_avatar": return String(localized: "照片上传失败，请重试。")
         // 高水平认证
         case "invalid_evidence": return String(localized: "链接格式不对，请复制完整的网页地址")
         case "invalid_level": return String(localized: "这类证据不能认证这个等级。")
@@ -186,9 +187,26 @@ final class SupabaseClient {
         _ = try await send("rest/v1/\(table)?\(query)", method: "DELETE")
     }
 
+    // MARK: 文件（头像照片）
+
+    /// 上传到存储桶：POST /storage/v1/object/<bucket>/<path>
+    func upload(_ bucket: String, path: String, data: Data, contentType: String) async throws {
+        _ = try await send("storage/v1/object/\(bucket)/\(path)", rawBody: data, contentType: contentType)
+    }
+
+    func removeFile(_ bucket: String, path: String) async throws {
+        _ = try await send("storage/v1/object/\(bucket)/\(path)", method: "DELETE")
+    }
+
+    /// 下载公开桶里的文件（不需要登录）
+    func download(_ bucket: String, path: String) async throws -> Data {
+        try await send("storage/v1/object/public/\(bucket)/\(path)", method: "GET", authorized: false)
+    }
+
     // MARK: 请求
 
-    private func send(_ path: String, method: String = "POST", body: [String: Any]? = nil, authorized: Bool = true) async throws -> Data {
+    private func send(_ path: String, method: String = "POST", body: [String: Any]? = nil, rawBody: Data? = nil, contentType: String? = nil,
+                      authorized: Bool = true) async throws -> Data {
         guard let url = URL(string: SupabaseConfig.url + "/" + path) else { throw RemoteError.server("bad_url") }
         var request = URLRequest(url: url, timeoutInterval: 20)
         request.httpMethod = method
@@ -200,6 +218,9 @@ final class SupabaseClient {
         if let body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        } else if let rawBody {
+            request.setValue(contentType, forHTTPHeaderField: "Content-Type")
+            request.httpBody = rawBody
         }
         let data: Data
         let response: URLResponse

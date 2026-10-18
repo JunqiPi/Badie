@@ -95,21 +95,18 @@ struct EditProfileView: View {
                         }
                     }
                 }
-                // 正式后端还不存照片：只用文字头像
-                if !appState.isRemote {
-                    PhotosPicker(selection: $photoItem, matching: .images) {
-                        Image(systemName: "camera.fill")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.onAccent)
-                            .frame(width: 38, height: 38)
-                            .background(Circle().fill(AppTheme.Colors.lime))
-                            .overlay(Circle().strokeBorder(Color(hex: 0x17140F), lineWidth: 2))
-                    }
-                    .accessibilityLabel("从相册选择头像")
+                PhotosPicker(selection: $photoItem, matching: .images) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.onAccent)
+                        .frame(width: 38, height: 38)
+                        .background(Circle().fill(AppTheme.Colors.lime))
+                        .overlay(Circle().strokeBorder(Color(hex: 0x17140F), lineWidth: 2))
                 }
+                .accessibilityLabel("从相册选择头像")
             }
             .frame(maxWidth: .infinity)
-            if photo != nil && !appState.isRemote {
+            if photo != nil {
                 Button("移除照片，使用文字头像") {
                     appState.backend.removeAvatarPhoto()
                     photo = nil
@@ -118,11 +115,9 @@ struct EditProfileView: View {
             } else {
                 AvatarPaletteEditor(avatar: $avatar)
             }
-            if !appState.isRemote {
-                Text("上传的照片会显示给其他球友")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
-            }
+            Text("上传的照片会显示给其他球友")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.inkTertiary)
         }
     }
 

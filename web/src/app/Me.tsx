@@ -46,18 +46,20 @@ export function Me({ profile, email, onChange }: { profile: Profile; email?: str
       <AdminLink />
       <Button variant="quiet" onClick={() => supabase!.auth.signOut()} className="mt-8">{t('Sign out')}</Button>
 
-      <DeleteAccount />
+      <DeleteAccount avatar={profile.avatar_path} />
     </div>
   );
 }
 
 /** 注销：先说清会删掉什么，再点一次才删 */
-function DeleteAccount() {
+function DeleteAccount({ avatar }: { avatar: string | null }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function remove() {
     setBusy(true);
+    // 照片文件先删掉（账号删了以后就没权限删了）
+    if (avatar) await supabase!.storage.from('avatars').remove([avatar]);
     const { error } = await supabase!.rpc('delete_account');
     if (error) {
       setBusy(false);

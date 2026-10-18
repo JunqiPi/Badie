@@ -334,6 +334,7 @@ extension MockBackend {
         user.nickname = nickname
         if let rating { user.selfReportedRating = rating }
         db.users[id] = user
+        queueAvatarCheck(id)
     }
 }
 

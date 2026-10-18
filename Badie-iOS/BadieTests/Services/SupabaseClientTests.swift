@@ -14,12 +14,17 @@ final class SupabaseClientTests: XCTestCase {
             routes.append((key, status, body))
         }
 
+        /// 路径里有随机部分时按前缀匹配
+        func onPrefix(_ prefix: String, status: Int = 200, _ body: String) {
+            routes.append((prefix + "*", status, body))
+        }
+
         func handle(_ request: URLRequest) -> (Data, URLResponse) {
             requests.append(request)
             let key = "\(request.httpMethod ?? "GET") \(request.url?.path ?? "")"
             var status = 404
             var body = #"{"message":"not_found"}"#
-            if let index = routes.firstIndex(where: { $0.key == key }) {
+            if let index = routes.firstIndex(where: { $0.key == key || ($0.key.hasSuffix("*") && key.hasPrefix(String($0.key.dropLast()))) }) {
                 (status, body) = (routes[index].status, routes[index].body)
                 routes.remove(at: index)
             }
@@ -799,6 +804,35 @@ final class SupabaseClientTests: XCTestCase {
         await backend.refreshRemotePlayer(blake)
         XCTAssertEqual(backend.user(id: blake)?.verificationStatus, .national)
         XCTAssertEqual(backend.user(id: blake)?.displayTier, SkillTier(level: 8))
+    }
+
+    func testAvatarPhotosGoThroughStorage() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/set_avatar", "")
+        let jpeg = Data([0xFF, 0xD8, 0xFF, 0xE0])
+        let pathPattern = #"^/storage/v1/object/avatars/\#(userId)/[0-9a-f-]{36}\.jpg$"#
+        // 上传：路径是 <我的 id>/<随机>.jpg，然后换上
+        server.onPrefix("POST /storage/v1/object/avatars/\(userId)/", "{}")
+        let user = try await backend.uploadAvatarPhoto(jpeg)
+        let upload = try XCTUnwrap(server.requests.first)
+        XCTAssertNotNil(upload.url?.path.range(of: pathPattern, options: .regularExpression))
+        XCTAssertEqual(upload.value(forHTTPHeaderField: "Content-Type"), "image/jpeg")
+        XCTAssertEqual(upload.httpBody, jpeg)
+        let path = String(upload.url!.path.dropFirst("/storage/v1/object/avatars/".count))
+        XCTAssertEqual(server.json(1)["p_path"] as? String, path)
+        XCTAssertNotNil(user.avatar.photoVersion)
+
+        // 别人的照片：见到了就批量查地址，下载后显示
+        server.requests = []
+        server.on("POST /rest/v1/rpc/avatars", #"[{"id":"\#(blake)","path":"\#(blake)/0f0e0d0c-0000-4000-8000-000000000001.jpg"}]"#)
+        server.on("GET /storage/v1/object/public/avatars/\(blake)/0f0e0d0c-0000-4000-8000-000000000001.jpg", "JPEG")
+        backend.cacheRemoteUser(id: blake, nickname: "Blake", rating: 4)
+        await waitFor { backend.user(id: self.blake)?.avatar.photoVersion != nil }
+        XCTAssertEqual(server.json(0)["p_users"] as? [String], [blake])
+        XCTAssertEqual(backend.db.avatarPhotos[blake], Data("JPEG".utf8))
+        backend.cacheRemoteUser(id: blake, nickname: "Blake", rating: 4)
+        try? await Task.sleep(nanoseconds: 400_000_000)
+        XCTAssertEqual(server.requests.count, 2, "同一个人这次启动只查一次")
     }
 
     func testAdminFlagComesFromServer() async throws {

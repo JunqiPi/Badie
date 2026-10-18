@@ -15,6 +15,10 @@ create function pg_temp.login(n int) returns void language sql as $$
   select set_config('role', 'authenticated', true),
          set_config('request.jwt.claims', json_build_object('sub', pg_temp.u(n), 'role', 'authenticated')::text, true);
 $$;
+-- 队列里 1 号的申请（库里可能有别的测试留下的申请）
+create function pg_temp.queued() returns uuid language sql as $$
+  select (x ->> 'id')::uuid from jsonb_array_elements(public.admin_verification_queue()) x where x ->> 'user_id' = pg_temp.u(1)::text
+$$;
 insert into public.admin_users (user_id) values (pg_temp.u(2));
 
 -- 证据按类型检查
@@ -39,13 +43,13 @@ select throws_ok($$ select public.admin_verification_queue() $$, '42501', 'admin
 reset role;
 insert into public.admin_users (user_id) values (pg_temp.u(1));
 select pg_temp.login(1);
-select throws_ok($$ select public.admin_review_verification((public.admin_verification_queue() -> 0 ->> 'id')::uuid, 7) $$,
+select throws_ok($$ select public.admin_review_verification(pg_temp.queued(), 7) $$,
                  '42501', 'not_allowed', '管理员不能审核自己的申请');
 reset role;
 delete from public.admin_users where user_id = pg_temp.u(1);
 select pg_temp.login(2);
-select is(jsonb_array_length(public.admin_verification_queue()), 1, '管理员看到待审核的申请');
-select public.admin_review_verification((public.admin_verification_queue() -> 0 ->> 'id')::uuid, 7);
+select ok(pg_temp.queued() is not null, '管理员看到待审核的申请');
+select public.admin_review_verification(pg_temp.queued(), 7);
 reset role;
 select is((select array[verified_kind::text, rating::text] from public.profiles where id = pg_temp.u(1)), '{national,7.00}', '通过后显示认证档位');
 select is((select title from public.notifications where user_id = pg_temp.u(1) and kind = 'verification'), 'Level verified: 7', '收到通知');
@@ -65,7 +69,7 @@ select is((select rating from public.profiles where id = pg_temp.u(1)), 7.00, '�
 select pg_temp.login(1);
 select public.request_verification('national', 8.33, '12345678901234X', 'Alex Chen');
 select pg_temp.login(2);
-select public.admin_review_verification((public.admin_verification_queue() -> 0 ->> 'id')::uuid, null, 'Name doesn’t match');
+select public.admin_review_verification(pg_temp.queued(), null, 'Name doesn’t match');
 reset role;
 select is((select body from public.notifications where user_id = pg_temp.u(1) and title = 'Verification not approved'), 'Name doesn’t match',
           '不通过的说明发给本人');

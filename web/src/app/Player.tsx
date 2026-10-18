@@ -3,7 +3,7 @@ import { gapText, tier } from './assessment';
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Link } from './router';
-import { problem, supabase, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
+import { avatarUrl, problem, supabase, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
 import { day, halfHours, today, zoned } from './time';
 import { Button, EmptyState, Field, Skeleton, toast } from './ui';
 import { kindLabel } from './Verification';
@@ -36,14 +36,20 @@ export function PlayerPage({ id }: { id: string }) {
       <button onClick={() => history.back()} className="link justify-self-start text-sm">{t('Back')}</button>
 
       <section aria-labelledby="player" className="sticker grid gap-4 p-6 sm:p-8">
-        <div>
-          <p className="eyebrow">{card.relationship === 'friend' ? t('Friend') : t('Player')}</p>
-          <h1 id="player" className="display mt-2 text-[clamp(2.5rem,7vw,4rem)] break-words">{card.nickname}</h1>
-          <p className="mt-2 text-lg font-black">
-            {t('Level {level}', { level: level.label })} · {level.name}
-            {!card.assessed && <span className="font-semibold text-ink-tertiary"> {t('(not assessed yet)')}</span>}
-          </p>
+        <div className="flex items-start gap-5">
+          {card.avatar && (
+            <img src={avatarUrl(card.avatar)} alt="" width={88} height={88} className="size-22 shrink-0 rounded-full border-2 border-stroke object-cover" />
+          )}
+          <div className="min-w-0">
+            <p className="eyebrow">{card.relationship === 'friend' ? t('Friend') : t('Player')}</p>
+            <h1 id="player" className="display mt-2 text-[clamp(2.5rem,7vw,4rem)] break-words">{card.nickname}</h1>
+            <p className="mt-2 text-lg font-black">
+              {t('Level {level}', { level: level.label })} · {level.name}
+              {!card.assessed && <span className="font-semibold text-ink-tertiary"> {t('(not assessed yet)')}</span>}
+            </p>
+          </div>
         </div>
+        {card.avatar && <RemovePhoto userId={card.id} onDone={refresh} />}
         <ul className="flex flex-wrap gap-2" aria-label={t('Highlights')}>
           {card.verified && <li className="chip bg-mint" title={kindLabel(card.verified)}>{t('Verified level')}</li>}
           {card.new_player ? <li className="chip bg-sky">{t('New player')}</li> : card.reliable && <li className="chip bg-mint">{t('Reliable')}</li>}
@@ -104,6 +110,22 @@ function useAction(onChange: () => void) {
     return !error;
   }
   return { busy, run };
+}
+
+/** 管理员：撤下不合适的照片 */
+function RemovePhoto({ userId, onDone }: { userId: string; onDone: () => void }) {
+  const { data: admin } = useLive<boolean>('is_admin', { every: 3_600_000 });
+  const [busy, setBusy] = useState(false);
+  if (!admin) return null;
+  async function remove() {
+    setBusy(true);
+    const { error } = await supabase!.rpc('admin_clear_avatar', { p_user: userId });
+    setBusy(false);
+    if (error) return toast(problem(error), 'error');
+    toast(t('Photo removed'));
+    onDone();
+  }
+  return <Button variant="quiet" busy={busy} onClick={remove} className="justify-self-start">{t('Remove photo (admin)')}</Button>;
 }
 
 /** 不是球友时的私信入口：同球群可以发一条消息请求 */
