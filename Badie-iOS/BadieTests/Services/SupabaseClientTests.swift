@@ -769,6 +769,38 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(server.json(0)["p_partner"] as? String, "dana")
     }
 
+    func testVerificationGoesThroughTheServer() async throws {
+        let backend = try await signedInBackend()
+        let created = "2026-10-17T10:00:00+00:00"
+        server.on("POST /rest/v1/rpc/request_verification", #""v1""#)
+        server.on("POST /rest/v1/rpc/my_verification",
+                  #"{"id":"v1","kind":"tournament","claimed_rating":7,"evidence":"https://usab.tournamentsoftware.com/x","name_on_record":"Alex Chen","note":"","status":"pending","created_at":"\#(created)","reviewed_at":null,"review_note":null,"approved_rating":null}"#)
+        let request = try await backend.sendVerificationRequest(kind: .tournament, tier: SkillTier(level: 7),
+                                                                evidenceURL: " usab.tournamentsoftware.com/x ", nameOnRecord: "Alex Chen", note: "")
+        let body = server.json(0)
+        XCTAssertEqual(body["p_kind"] as? String, "tournament")
+        XCTAssertEqual(body["p_rating"] as? Double ?? 0, 7, accuracy: 0.01)
+        XCTAssertEqual(body["p_evidence"] as? String, "usab.tournamentsoftware.com/x")
+        XCTAssertEqual(request.status, .pending)
+        XCTAssertEqual(backend.myVerificationRequest()?.kind, .tournament)
+
+        // 审核通过后：资料里带着认证类型和档位
+        let profile = #"{"id":"\#(userId)","nickname":"Alex","country_code":"US","rating":7,"assessed_at":null,"show_on_boards":true,"challenge_policy":"everyone","verified_kind":"tournament","verified_rating":7,"locale":"\#(MockBackend.serverLocale)"}"#
+        server.on("GET /rest/v1/profiles", "[\(profile)]")
+        server.on("GET /rest/v1/favorite_venues", "[]")
+        server.on("POST /rest/v1/rpc/my_verification", "null")
+        try await backend.refreshRemoteProfile()
+        XCTAssertEqual(backend.currentUser?.verificationStatus, .tournament)
+        XCTAssertEqual(backend.currentUser?.displayTier, SkillTier(level: 7), "认证后不受 7− 的上限限制")
+
+        // 别人的资料页：认证过的人按服务器的档位显示
+        server.on("POST /rest/v1/rpc/player_card",
+                  #"{"id":"\#(blake)","nickname":"Blake","rating":8,"tags":[],"win_rate":null,"challenge":"hidden","verified":"national"}"#)
+        await backend.refreshRemotePlayer(blake)
+        XCTAssertEqual(backend.user(id: blake)?.verificationStatus, .national)
+        XCTAssertEqual(backend.user(id: blake)?.displayTier, SkillTier(level: 8))
+    }
+
     func testAdminFlagComesFromServer() async throws {
         let backend = try await signedInBackend()
         XCTAssertFalse(backend.remoteIsAdmin, "查不到（这里是 404）就当普通用户")

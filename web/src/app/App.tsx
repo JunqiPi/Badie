@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Courts } from './Courts';
+import { Admin } from './Verification';
 import { GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
 import { detect, setLocale, t, useLocale } from './i18n';
@@ -109,6 +110,8 @@ export default function App() {
         <Rankings />
       ) : path.startsWith('/app/messages/') ? (
         <Messages />
+      ) : path.startsWith('/app/admin/') ? (
+        <Admin />
       ) : path.startsWith('/app/me/') ? (
         <Me profile={profile} email={session.user.email} onChange={setProfile} />
       ) : path.startsWith('/app/play/') ? (

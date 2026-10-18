@@ -88,6 +88,12 @@ enum RemoteError: LocalizedError, Equatable {
         case "cooldown": return String(localized: "距上次挑战满一周后，才能再挑战 TA。")
         case "too_many_outgoing": return String(localized: "同时最多只能有 3 个待回复的挑战。")
         case "invalid_partner": return String(localized: "请选一位那段时间有空的球友当搭档。")
+        // 高水平认证
+        case "invalid_evidence": return String(localized: "链接格式不对，请复制完整的网页地址")
+        case "invalid_level": return String(localized: "这类证据不能认证这个等级。")
+        case "invalid_name": return String(localized: "请填写成绩或证书上的姓名")
+        case "verification_pending": return String(localized: "你已有一份申请在审核中。")
+        case "too_many_verifications": return String(localized: "30 天内最多申请 3 次。")
         case "daily_limit": return String(localized: "今天的挑战次数已用完。")
         case "target_busy": return String(localized: "TA 待处理的挑战太多了，请稍后再试。")
         case "admin_account": return String(localized: "管理员账号不能在这里注销，请先让其他管理员撤掉你的权限。")

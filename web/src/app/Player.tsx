@@ -6,6 +6,7 @@ import { Link } from './router';
 import { problem, supabase, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
 import { day, halfHours, today, zoned } from './time';
 import { Button, EmptyState, Field, Skeleton, toast } from './ui';
+import { kindLabel } from './Verification';
 
 export const tagLabels: Record<string, string> = {
   friendly: 'Friendly',
@@ -44,6 +45,7 @@ export function PlayerPage({ id }: { id: string }) {
           </p>
         </div>
         <ul className="flex flex-wrap gap-2" aria-label={t('Highlights')}>
+          {card.verified && <li className="chip bg-mint" title={kindLabel(card.verified)}>{t('Verified level')}</li>}
           {card.new_player ? <li className="chip bg-sky">{t('New player')}</li> : card.reliable && <li className="chip bg-mint">{t('Reliable')}</li>}
           <li className="chip bg-surface-muted text-ink">{t(card.games_band)}</li>
           {card.tags.map((tag) => <li key={tag} className="chip bg-lavender">{t(tagLabels[tag] ?? tag)}</li>)}

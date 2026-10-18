@@ -7386,6 +7386,64 @@
         }
       }
     },
+    "30 天内最多申请 3 次。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can apply up to 3 times in 30 days."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 दिनों में ज़्यादा से ज़्यादा 3 बार आवेदन कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu bisa mengajukan paling banyak 3 kali dalam 30 hari."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 日間に申請できるのは 3 回までです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30일 동안 최대 3번 신청할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda boleh memohon paling banyak 3 kali dalam 30 hari."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยื่นได้สูงสุด 3 ครั้งใน 30 วัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có thể nộp tối đa 3 lần trong 30 ngày."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 天內最多申請 3 次。"
+          }
+        }
+      }
+    },
     "48 小时内有效 · 评价匿名汇总，双方都提交后才计入" : {
       "localizations" : {
         "en" : {
@@ -20166,6 +20224,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "你已經有 5 個進行中的請求，請先取消一個。"
+          }
+        }
+      }
+    },
+    "你已有一份申请在审核中。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You already have a request under review."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपका एक अनुरोध पहले से समीक्षा में है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu sudah punya permintaan yang sedang ditinjau."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すでに審査中の申請があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미 심사 중인 신청이 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda sudah ada permohonan yang sedang disemak."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คุณมีคำขอที่กำลังตรวจอยู่แล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đã có một yêu cầu đang được xét duyệt."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你已有一份申請在審核中。"
           }
         }
       }
@@ -97065,6 +97181,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這次沒約到人，已結束"
+          }
+        }
+      }
+    },
+    "这类证据不能认证这个等级。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That level isn’t available for this evidence."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस सबूत से यह लेवल नहीं मिल सकता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Level itu tidak tersedia untuk bukti ini."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この証拠ではそのレベルは認証できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 증거로는 그 레벨을 인증할 수 없어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tahap itu tidak tersedia untuk bukti ini."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ระดับนี้ใช้กับหลักฐานประเภทนี้ไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xác minh trình độ đó bằng bằng chứng này."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這類證據不能認證這個等級。"
           }
         }
       }

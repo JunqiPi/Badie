@@ -75,6 +75,8 @@ extension MockBackend {
         /// 'available'、'hidden' 或不能挑战的原因
         let challenge: String?
         let message: RemoteMessageOption?
+        /// 认证类型（tournament / national / bwf），没认证是 null
+        let verified: String?
     }
 
     // MARK: 刷新
@@ -315,6 +317,8 @@ extension MockBackend {
         emit(.rankingsChanged)
         emit(.friendsChanged)
         if var user = db.users[card.id] {
+            // 认证过的人按服务器的档位显示（不受未认证 7− 的上限限制）
+            user.applyVerification(card.verified.flatMap(VerificationStatus.init(server:)) ?? .unverified, tier: SkillTier(rating: card.rating))
             user.reputation.publicTags = card.tags.compactMap { SurveyTag(server: $0) }
             user.reputation.publishedAt = card.tags.isEmpty ? nil : Date()
             db.users[card.id] = user

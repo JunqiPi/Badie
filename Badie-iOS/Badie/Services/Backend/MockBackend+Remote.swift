@@ -17,6 +17,8 @@ extension MockBackend {
         let discoverable: Bool?
         let showAsRegular: Bool?
         let allowMessageRequests: Bool?
+        let verifiedKind: String?
+        let verifiedRating: Double?
         let locale: String
         let createdAt: Date?
     }
@@ -111,6 +113,7 @@ extension MockBackend {
         db.favoriteCourtIds[profile.id] = favorites.map(\.venueId)
         // 写缓存之前查：缓存会通知界面刷新，设置页据此决定是否显示演示模式开关
         remoteIsAdmin = (try? await client.rpc("is_admin", as: Bool.self)) ?? false
+        try? await refreshRemoteVerification()
         let user = cache(profile, email: session.email)
         if profile.locale != Self.serverLocale {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["locale": Self.serverLocale])
@@ -139,6 +142,11 @@ extension MockBackend {
         user.privacy.findableByNickname = profile.discoverable ?? true
         user.privacy.showsAsRegular = profile.showAsRegular ?? false
         user.privacy.allowsMessageRequests = profile.allowMessageRequests ?? true
+        if let kind = profile.verifiedKind.flatMap(VerificationStatus.init(server:)), let rating = profile.verifiedRating {
+            user.applyVerification(kind, tier: SkillTier(rating: rating))
+        } else {
+            user.applyVerification(.unverified, tier: SkillTier(rating: profile.rating))
+        }
         db.users[user.id] = user
         let signingIn = db.currentUserId != user.id
         db.currentUserId = user.id

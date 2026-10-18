@@ -169,31 +169,28 @@ struct EditProfileView: View {
                         .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
                     }
                 }
-                // 高水平认证要人工审核，正式后端还没有
-                if !appState.isRemote {
-                    Divider()
-                    Button {
-                        router.open(.verification)
-                    } label: {
-                        HStack(spacing: AppTheme.Spacing.sm) {
-                            Image(systemName: "checkmark.seal.fill")
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(verificationTitle(user))
-                                    .font(AppTheme.Typography.subheadlineBold)
-                                Text("问卷最高 6+。打过州 / 地区公开赛最高组、有全国排名、运动员等级证书或 BWF 世界排名，可以凭证据认证 7− 到 9+")
-                                    .font(AppTheme.Typography.caption)
-                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
-                            Spacer(minLength: 0)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .bold))
+                Divider()
+                Button {
+                    router.open(.verification)
+                } label: {
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        Image(systemName: "checkmark.seal.fill")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(verificationTitle(user))
+                                .font(AppTheme.Typography.subheadlineBold)
+                            Text("问卷最高 6+。打过州 / 地区公开赛最高组、有全国排名、运动员等级证书或 BWF 世界排名，可以凭证据认证 7− 到 9+")
+                                .font(AppTheme.Typography.caption)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
-                        .foregroundStyle(AppTheme.Colors.ink)
-                        .contentShape(Rectangle())
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .bold))
                     }
-                    .buttonStyle(.plain)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
             .card(AppTheme.Colors.surface, shadow: .zero)
         }

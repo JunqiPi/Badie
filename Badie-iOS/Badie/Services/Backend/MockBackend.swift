@@ -42,6 +42,8 @@ final class MockBackend {
     var remoteRegulars: [VenueRegular] = []
     var remoteRegularsLoadedAt: Date?
     var remoteMessageOptions: [String: RemoteMessageOption] = [:]
+    /// 我最近的一次高水平认证申请
+    var remoteVerification: VerificationRequest?
     /// 有多少人在找：每个请求的人数，和按天的人数（上次拉取的地点、半径和时间）
     var remotePools: [String: (available: Int, compatible: Int)] = [:]
     var remotePoolLoadedAt: [String: Date] = [:]

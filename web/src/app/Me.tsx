@@ -5,6 +5,7 @@ import { nicknameProblem } from './Onboarding';
 import { Link } from './router';
 import { problem, supabase, type Profile } from './supabase';
 import { Button, Field, LanguagePicker, PageHeader, toast } from './ui';
+import { AdminLink, Verification } from './Verification';
 
 export function Me({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
   const [nickname, setNickname] = useState(profile.nickname);
@@ -37,10 +38,12 @@ export function Me({ profile, email, onChange }: { profile: Profile; email?: str
       </form>
 
       <Level profile={profile} />
+      <Verification profile={profile} />
       <Settings profile={profile} onChange={onChange} />
 
       <div className="tile mt-6 bg-surface p-6"><LanguagePicker /></div>
 
+      <AdminLink />
       <Button variant="quiet" onClick={() => supabase!.auth.signOut()} className="mt-8">{t('Sign out')}</Button>
 
       <DeleteAccount />

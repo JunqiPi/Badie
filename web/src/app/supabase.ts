@@ -23,9 +23,15 @@ export interface Profile {
   show_as_regular: boolean;
   /** 同球群的人可以给我发消息请求 */
   allow_message_requests: boolean;
+  /** 高水平认证（管理员审核通过后才有） */
+  verified_kind: VerificationKind | null;
+  verified_rating: number | null;
   /** 通知和邮件用的语言 */
   locale: Locale;
 }
+
+/** 认证用的证据：赛事成绩、全国排名 / 运动员等级证书、BWF 世界排名 */
+export type VerificationKind = 'tournament' | 'national' | 'bwf';
 
 export interface Venue {
   id: string;
@@ -145,6 +151,7 @@ export interface PlayerCard {
   challenge: string;
   /** 能不能私信：request = 同球群，可以发一条消息请求 */
   message: { status: 'friends' | 'open' | 'requested' | 'request' | 'new_account' | 'none'; group?: string };
+  verified: VerificationKind | null;
 }
 
 /** 收藏了同一家球馆、愿意被看到的常客 */
@@ -360,6 +367,12 @@ const problems: Record<string, string> = {
   invalid_schedule: 'Add 1 to 3 weekly sessions.',
   no_contact_info: 'Leave out phone numbers and links.',
   invalid_partner: 'Pick a friend who’s free then as your partner.',
+  invalid_evidence: 'Check the link. It needs to be the right kind of page for this evidence.',
+  invalid_level: 'That level isn’t available for this evidence.',
+  invalid_name: 'Enter the name shown on the results or certificate.',
+  verification_pending: 'You already have a request under review.',
+  too_many_verifications: 'You can apply up to 3 times in 30 days.',
+  request_not_found: 'This request was already handled.',
   request_pending: 'You already sent a message request. Wait for them to accept.',
   too_many_message_requests: 'You’ve sent a lot of message requests today. Try again tomorrow.',
   too_many_groups: 'You’ve reached the limit for groups.',

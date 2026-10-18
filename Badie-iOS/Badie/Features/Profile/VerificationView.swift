@@ -228,15 +228,17 @@ struct VerificationView: View {
 
     private func submit() {
         isSubmitting = true
-        defer { isSubmitting = false }
-        do {
-            try appState.backend.submitVerification(kind: kind, tier: tier, evidenceURL: link,
-                                                    nameOnRecord: nameOnRecord, note: note)
-            Haptics.success()
-            appState.showToast(String(localized: "已提交，审核结果会发到通知里"), style: .success)
-        } catch {
-            Haptics.error()
-            appState.showError(error)
+        Task {
+            defer { isSubmitting = false }
+            do {
+                try await appState.backend.sendVerificationRequest(kind: kind, tier: tier, evidenceURL: link,
+                                                                   nameOnRecord: nameOnRecord, note: note)
+                Haptics.success()
+                appState.showToast(String(localized: "已提交，审核结果会发到通知里"), style: .success)
+            } catch {
+                Haptics.error()
+                appState.showError(error)
+            }
         }
     }
 }

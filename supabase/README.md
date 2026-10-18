@@ -12,3 +12,4 @@ npx supabase@2 db reset     # 改了迁移后重建本地数据库
 - `seed.sql` 是 App 内置场馆目录（`Badie-iOS/Badie/Resources/*.json`）生成的，改了目录要运行 `python3 supabase/scripts/build_venue_seed.py`（CI 会检查）。它可以重复执行：每次部署都用它同步生产库（按 id 新增或更新目录字段，球友确认和收藏不受影响；从目录删掉的场馆隐藏并进审核队列）。
 - 客户端不直接写表：球馆的添加、确认、举报都走 `add_venue`、`confirm_venue`、`report_venue`，规则与 iOS 模拟后端一致。
 - 密钥（Apple/Google 登录、APNs）只放在 Supabase 后台和 GitHub Secrets，`config.toml` 里用 `env(...)` 引用，绝不提交。
+- 管理员只能在 Supabase 后台的 SQL 编辑器里添加（`insert into admin_users (user_id) values (...)`）。管理员登录网页后，“我的”页面会出现审核入口（`/app/admin/`），用来审核高水平认证；不能审核自己的申请，每次操作都记进 `moderation_log`。

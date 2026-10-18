@@ -6,8 +6,17 @@ extension MockBackend {
 
     /// 我最近的一次认证申请
     func myVerificationRequest() -> VerificationRequest? {
+        if isRemote { return remoteVerification }
         guard let me = currentUserId else { return nil }
         return db.verificationRequests.filter { $0.userId == me }.max { $0.submittedAt < $1.submittedAt }
+    }
+
+    /// 界面用：正式后端交给服务器检查和保存，否则在本地
+    @discardableResult
+    func sendVerificationRequest(kind: VerificationStatus, tier: SkillTier, evidenceURL: String, nameOnRecord: String,
+                                 note: String) async throws -> VerificationRequest {
+        guard isRemote else { return try submitVerification(kind: kind, tier: tier, evidenceURL: evidenceURL, nameOnRecord: nameOnRecord, note: note) }
+        return try await remoteSubmitVerification(kind: kind, tier: tier, evidenceURL: evidenceURL, nameOnRecord: nameOnRecord, note: note)
     }
 
     @discardableResult
@@ -43,6 +52,7 @@ extension MockBackend {
     }
 
     func cancelVerificationRequest() {
+        if isRemote { return remoteCancelVerification() }
         guard let me = currentUserId else { return }
         db.verificationRequests.removeAll { $0.userId == me && $0.status == .pending }
         scheduleSave()
