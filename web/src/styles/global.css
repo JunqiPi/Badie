@@ -23,6 +23,7 @@
   --color-butter: #ffe36e;
   --color-mint: #9fe8c3;
   --color-danger: #c92a2f;
+  --color-on-danger: #ffffff;
   --font-sans: "Nunito Variable", ui-rounded, system-ui, sans-serif;
   --font-display: "Anton", "Arial Narrow", sans-serif;
 
@@ -80,6 +81,7 @@
     --color-butter: #f2d45c;
     --color-mint: #86d9b0;
     --color-danger: #ff6b6e;
+    --color-on-danger: #17140f;
   }
 }
 
@@ -201,7 +203,7 @@
 
 @utility button-danger {
   --button-bg: var(--color-danger);
-  --button-fg: #fff;
+  --button-fg: var(--color-on-danger);
 }
 
 /* 输入框、下拉框：44px 高（触控目标），焦点用统一的焦点框，出错时 aria-invalid 变红 */

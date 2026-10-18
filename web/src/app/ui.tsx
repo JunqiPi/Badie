@@ -1,17 +1,20 @@
 import { useEffect, useId, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { currentLocale, languages, setLocale, t, type Locale } from './i18n';
 
+// 类名要写全：Tailwind 只生成在源码里原样出现过的类
+const variants = { quiet: 'button-quiet', danger: 'button-danger' };
+
 /** 按钮：busy 时显示转圈并禁用，防止重复提交 */
 export function Button({ busy, variant, className = '', children, disabled, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
   busy?: boolean;
-  variant?: 'quiet' | 'danger';
+  variant?: keyof typeof variants;
 }) {
   return (
     <button
       {...props}
       disabled={disabled || busy}
       aria-busy={busy || undefined}
-      className={`button ${variant ? `button-${variant}` : ''} ${className}`}
+      className={`button ${variant ? variants[variant] : ''} ${className}`}
     >
       {busy && <span aria-hidden="true" className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />}
       {children}
