@@ -140,7 +140,6 @@ struct JoinRoomView: View {
 
 struct PublicGamesView: View {
     @EnvironmentObject private var appState: AppState
-    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var roomManager: RoomManager
     @EnvironmentObject private var locationManager: LocationManager
