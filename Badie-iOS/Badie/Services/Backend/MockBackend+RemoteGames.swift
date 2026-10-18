@@ -154,6 +154,49 @@ extension MockBackend {
         return ticket
     }
 
+    // MARK: 有多少人在找（只有人数）
+
+    private struct RemotePool: Decodable {
+        let available: Int
+        let compatible: Int
+    }
+
+    /// 我的请求：同一天附近找同类球局的人数，和其中条件都合适的人数。先返回缓存，后台每分钟最多拉一次
+    func remotePoolSummary(for ticketId: String) -> (available: Int, compatible: Int) {
+        if Date().timeIntervalSince(remotePoolLoadedAt[ticketId] ?? .distantPast) > 60, let remote {
+            remotePoolLoadedAt[ticketId] = Date()
+            Task {
+                guard let pool = try? await remote.rpc("ticket_pool", ["p_ticket": ticketId], as: RemotePool?.self) else { return }
+                remotePools[ticketId] = (pool.available, pool.compatible)
+                emit(.matchmakingChanged)
+            }
+        }
+        return remotePools[ticketId] ?? (0, 0)
+    }
+
+    /// 日期条：某天附近有多少人在找。同一片区域 5 分钟内只拉一次
+    func remoteAvailableCount(on day: Date, center: Coordinate, radiusKm: Double) -> Int {
+        let cached = remotePoolByDay
+        let stale = cached.map { Date().timeIntervalSince($0.at) > 300 || $0.radiusKm != radiusKm || $0.center.distanceKm(to: center) > 2 } ?? true
+        if stale, let remote {
+            remotePoolByDay = (center, radiusKm, Date(), cached?.counts ?? [:])
+            Task {
+                let args: [String: Any] = ["p_lat": center.latitude, "p_lon": center.longitude, "p_radius_km": radiusKm,
+                                           "p_tz": TimeZone.current.identifier]
+                guard let counts = try? await remote.rpc("pool_by_day", args, as: [String: Int].self) else { return }
+                remotePoolByDay = (center, radiusKm, Date(), counts)
+                emit(.matchmakingChanged)
+            }
+        }
+        return cached?.counts[Self.dayKey(day)] ?? 0
+    }
+
+    /// 服务器按本机时区分天：yyyy-MM-dd
+    static func dayKey(_ day: Date) -> String {
+        let parts = Calendar.current.dateComponents([.year, .month, .day], from: day)
+        return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+
     /// 同步接口里的服务器操作：先改本地（界面马上有反应），再让服务器处理；失败就提示并按服务器的数据恢复
     func runRemote(_ update: () -> Void = {}, _ operation: @escaping (SupabaseClient) async throws -> Void) {
         guard let remote else { return }

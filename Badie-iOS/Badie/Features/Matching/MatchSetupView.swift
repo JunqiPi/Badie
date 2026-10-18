@@ -120,7 +120,7 @@ struct MatchSetupView: View {
             DateStrip(
                 days: days,
                 selection: $matchManager.draft.day,
-                counts: { matchManager.isRemote ? nil : matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) }
+                counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) }
             )
         }
     }

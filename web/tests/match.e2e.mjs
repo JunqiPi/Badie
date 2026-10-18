@@ -39,6 +39,7 @@ async function request(page) {
 
 await request(alex);
 await alex.getByText('Looking for players', { exact: true }).waitFor();
+await alex.getByText('Nearby that day: 0 looking, 0 a good fit.').waitFor();
 await request(blake);
 await blake.getByText('Singles match found').waitFor();
 await blake.getByRole('button', { name: 'I’m in' }).click();

@@ -65,6 +65,17 @@ const statusText: Record<Ticket['status'], { label: string; tone: string }> = {
 const toleranceText = (tolerance: Ticket['skill_tolerance']) =>
   tolerance === 8 ? t('any level') : t('within {n} level|within {n} levels', { n: tolerance });
 
+/** 只有人数：同一天附近在找同类球局的人，和其中条件都合适的人 */
+function Pool({ ticket }: { ticket: Ticket }) {
+  const { data } = useLive<{ available: number; compatible: number }>('ticket_pool', { args: { p_ticket: ticket.id }, every: 60_000 });
+  if (!data) return null;
+  return (
+    <p className="text-sm font-bold text-ink-secondary">
+      {t(ticket.last_minute ? 'Nearby right now: {available} looking, {compatible} a good fit.' : 'Nearby that day: {available} looking, {compatible} a good fit.', { ...data })}
+    </p>
+  );
+}
+
 function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void }) {
   const [busy, setBusy] = useState<string>();
   const tz = ticket.offer?.venue.tz;
@@ -133,6 +144,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
         <h3 className="text-lg font-black">{day(ticket.starts_at, venueTz)} · {hours(ticket.starts_at, ticket.ends_at, venueTz)}</h3>
         <p className="text-ink-secondary">{ticket.venues.map((v) => v.name).join(' · ')}</p>
       </div>
+      {ticket.status === 'searching' && <Pool ticket={ticket} />}
       {ticket.status === 'paused' && <p className="font-semibold">{t('You missed a confirmation, so we stopped sending you matches for this time.')}</p>}
       {ticket.status === 'expired' && (
         <p className="text-ink-secondary">

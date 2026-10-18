@@ -30,6 +30,7 @@ extension MockBackend {
 
     /// 这个请求现在的情况：附近那天有空的人数、其中符合全部条件（水平/时间/球馆）的人数
     func poolSummary(for ticketId: String, now: Date = Date()) -> (available: Int, compatible: Int) {
+        if isRemote { return remotePoolSummary(for: ticketId) }
         guard let ticket = db.tickets[ticketId], let owner = db.users[ticket.userId] else { return (0, 0) }
         let pool = matchmakingPool(for: ticket, now: now)
         let nearby = pool.filter { !$0.slots.isEmpty && $0.location.distanceKm(to: ticket.origin) <= ticket.radiusKm }

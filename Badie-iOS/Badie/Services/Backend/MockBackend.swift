@@ -42,6 +42,10 @@ final class MockBackend {
     var remoteRegulars: [VenueRegular] = []
     var remoteRegularsLoadedAt: Date?
     var remoteMessageOptions: [String: RemoteMessageOption] = [:]
+    /// 有多少人在找：每个请求的人数，和按天的人数（上次拉取的地点、半径和时间）
+    var remotePools: [String: (available: Int, compatible: Int)] = [:]
+    var remotePoolLoadedAt: [String: Date] = [:]
+    var remotePoolByDay: (center: Coordinate, radiusKm: Double, at: Date, counts: [String: Int])?
     /// 服务器上的管理员（只用来显示演示模式开关；审核权限在服务器上另外检查）
     var remoteIsAdmin = false
     /// 上次按位置拉取球馆的地点、半径和时间

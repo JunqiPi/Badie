@@ -165,11 +165,9 @@ struct TicketWaitingView: View {
 
                     TicketSummaryCard(ticket: ticket)
 
-                    if !matchManager.isRemote {
-                        HStack(spacing: AppTheme.Spacing.sm) {
-                            StatTile(value: "\(summary.available)", label: ticket.isLastMinute ? String(localized: "附近正在找人") : String(localized: "附近那天有空"))
-                            StatTile(value: "\(summary.compatible)", label: String(localized: "条件都合适"))
-                        }
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        StatTile(value: "\(summary.available)", label: ticket.isLastMinute ? String(localized: "附近正在找人") : String(localized: "附近那天有空"))
+                        StatTile(value: "\(summary.compatible)", label: String(localized: "条件都合适"))
                     }
 
                     timingNote

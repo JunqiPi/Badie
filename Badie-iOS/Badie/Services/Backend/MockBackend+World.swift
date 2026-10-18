@@ -178,8 +178,8 @@ extension MockBackend {
 
     /// 某天有空的附近球友数量（用于首页日期条）
     func availableCount(on day: Date, radiusKm: Double) -> Int {
-        guard !isRemote else { return 0 }
         let center = currentUser?.location ?? db.worldCenter
+        if isRemote { return remoteAvailableCount(on: day, center: center, radiusKm: radiusKm) }
         let blocked = blockedIds()
         return db.bots.keys.filter { id in
             guard !blocked.contains(id), let location = db.users[id]?.location else { return false }

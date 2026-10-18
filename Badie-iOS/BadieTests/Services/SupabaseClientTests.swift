@@ -294,6 +294,23 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(match.lockAt.timeIntervalSinceNow, 2400, accuracy: 2, "锁定时间用服务器给的（开赛前 20 分钟）")
     }
 
+    func testPoolCountsComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        let day = Calendar.current.startOfDay(for: Date().addingTimeInterval(2 * 86400))
+        server.on("POST /rest/v1/rpc/pool_by_day", #"{"\#(MockBackend.dayKey(day))":4}"#)
+        XCTAssertEqual(backend.availableCount(on: day, radiusKm: 15), 0, "先返回缓存，后台去拉")
+        await waitFor { backend.availableCount(on: day, radiusKm: 15) == 4 }
+        XCTAssertEqual(backend.availableCount(on: day, radiusKm: 15), 4)
+        XCTAssertEqual(server.json(0)["p_radius_km"] as? Double, 15)
+        XCTAssertEqual(server.json(0)["p_tz"] as? String, TimeZone.current.identifier)
+
+        server.on("POST /rest/v1/rpc/ticket_pool", #"{"available":3,"compatible":1}"#)
+        _ = backend.poolSummary(for: "t1")
+        await waitFor { backend.poolSummary(for: "t1").available == 3 }
+        XCTAssertEqual(backend.poolSummary(for: "t1").compatible, 1)
+        XCTAssertEqual(server.requests.count, 2, "1 分钟内不重复拉")
+    }
+
     func testPlayerSearchGoesToServer() async throws {
         let backend = try await signedInBackend()
         server.on("POST /rest/v1/rpc/find_players",
