@@ -10,6 +10,8 @@ hidden.add('/captcha/');
 // 网页应用只连自己的 Supabase 项目（本地开发 / CI 是本机的 Supabase）
 const supabase = process.env.PUBLIC_SUPABASE_URL ? new URL(process.env.PUBLIC_SUPABASE_URL) : undefined;
 const turnstile = 'https://challenges.cloudflare.com';
+// 球馆地图的矢量瓦片、字体和图标（OpenFreeMap，免费、不用密钥）
+const maps = 'https://tiles.openfreemap.org';
 
 export default defineConfig({
   site: process.env.SITE_URL || 'http://localhost:4321',
@@ -22,9 +24,10 @@ export default defineConfig({
     csp: {
       directives: [
         "default-src 'self'",
-        `img-src 'self' data: ${supabase?.origin ?? ''}`,
+        `img-src 'self' data: blob: ${supabase?.origin ?? ''} ${maps}`,
         "font-src 'self'",
-        `connect-src 'self' ${supabase ? `${supabase.origin} ${supabase.origin.replace(/^http/, 'ws')}` : ''} ${turnstile}`,
+        `connect-src 'self' ${supabase ? `${supabase.origin} ${supabase.origin.replace(/^http/, 'ws')}` : ''} ${turnstile} ${maps}`,
+        "worker-src 'self' blob:",
         `frame-src ${turnstile}`,
         "object-src 'none'",
         "base-uri 'self'",

@@ -12,34 +12,31 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
   title="Badminton courts by country — Badie"
   description={`${allVenues.length.toLocaleString('en')} badminton courts in ${countries.length} countries, from government open data, OpenStreetMap and players.`}
 >
-  <section class="grid gap-8 py-6 lg:grid-cols-[1fr_1fr] lg:items-end">
+  <header class="grid gap-4 lg:grid-cols-[1fr_28rem] lg:items-end">
     <div>
-      <p class="eyebrow">Court directory</p>
-      <h1 class="display mt-3 text-[clamp(3rem,7vw,5.5rem)]">Badminton courts</h1>
-    </div>
-    <div>
-      <p class="mb-4 max-w-prose text-ink-secondary">
-        {allVenues.length.toLocaleString('en')} courts in {countries.length} countries. Search an area or a court, or browse below.
+      <p class="text-subhead font-bold text-ink-secondary" data-t="{n} courts in {countries} countries" data-n={allVenues.length} data-countries={countries.length}>
+        {allVenues.length.toLocaleString('en')} courts in {countries.length} countries
       </p>
-      <CourtSearch />
+      <h1 class="text-display lg:text-[2.75rem]" data-t="Courts">Courts</h1>
     </div>
+    <CourtSearch />
+  </header>
+
+  <div class="mt-8"><Courts client:only="react" /></div>
+
+  <section class="mt-12 grid gap-6" aria-labelledby="countries">
+    <h2 id="countries" class="text-title2" data-t="Browse by country">Browse by country</h2>
+    {
+      byContinent().map((group) => (
+        <div class="grid gap-3">
+          <h3 class="text-footnote font-bold text-ink-secondary">{group.continent}</h3>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {group.countries.map((country) => (
+              <CountryCard country={country} tint={tints[countries.indexOf(country) % tints.length]} />
+            ))}
+          </div>
+        </div>
+      ))
+    }
   </section>
-
-  <Courts client:only="react" />
-
-  {
-    byContinent().map((group) => (
-      <section class="mt-12">
-        <div class="flex items-center gap-4">
-          <h2 class="eyebrow shrink-0">{group.continent}</h2>
-          <span class="h-0.5 flex-1 bg-stroke/15" />
-        </div>
-        <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {group.countries.map((country) => (
-            <CountryCard country={country} tint={tints[countries.indexOf(country) % tints.length]} />
-          ))}
-        </div>
-      </section>
-    ))
-  }
 </Base>
