@@ -114,7 +114,7 @@ returns jsonb language sql stable security definer set search_path = '' as $$
   select jsonb_build_object(
     'id', r.id, 'mode', r.mode, 'visibility', r.visibility, 'status', r.status, 'closed_reason', r.closed_reason,
     'game_id', r.game_id, 'starts_at', r.starts_at, 'ends_at', r.ends_at, 'level_min', r.level_min, 'level_max', r.level_max,
-    'tags', r.tags, 'note', r.note, 'capacity', public.room_capacity(r.mode),
+    'tags', r.tags, 'note', r.note, 'capacity', public.room_capacity(r.mode), 'last_activity_at', r.last_activity_at,
     'going', (select count(*) from public.room_members m where m.room_id = r.id and not m.waitlisted),
     'waitlist', (select count(*) from public.room_members m where m.room_id = r.id and m.waitlisted),
     'owner', (select jsonb_build_object('id', p.id, 'nickname', p.nickname, 'rating', p.rating) from public.profiles p where p.id = r.owner_id),

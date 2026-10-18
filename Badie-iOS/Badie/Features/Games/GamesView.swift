@@ -153,22 +153,14 @@ struct GamesView: View {
 
     private var quickActions: some View {
         HStack(spacing: AppTheme.Spacing.md) {
-            if !appState.isRemote {
-                quickAction(icon: "sportscourt.fill", title: String(localized: "发起球局"), subtitle: String(localized: "有场地缺人"), tint: AppTheme.Colors.peach) {
-                    router.open(.createRoom(nil, invitee: nil))
-                }
+            quickAction(icon: "sportscourt.fill", title: String(localized: "发起球局"), subtitle: String(localized: "有场地缺人"), tint: AppTheme.Colors.peach) {
+                router.open(.createRoom(nil, invitee: nil))
             }
             quickAction(icon: "person.3.fill", title: String(localized: "固定局"), subtitle: String(localized: "每周固定的球群"), tint: AppTheme.Colors.sky) {
                 router.open(.groups)
             }
-            if appState.isRemote {
-                quickAction(icon: "number", title: String(localized: "球群号"), subtitle: String(localized: "输入球群号加入"), tint: AppTheme.Colors.lavender) {
-                    router.open(.joinRoom(code: nil))
-                }
-            } else {
-                quickAction(icon: "number", title: String(localized: "房间码"), subtitle: String(localized: "房间码或群号"), tint: AppTheme.Colors.lavender) {
-                    router.open(.joinRoom(code: nil))
-                }
+            quickAction(icon: "number", title: String(localized: "房间码"), subtitle: String(localized: "房间码或群号"), tint: AppTheme.Colors.lavender) {
+                router.open(.joinRoom(code: nil))
             }
         }
     }

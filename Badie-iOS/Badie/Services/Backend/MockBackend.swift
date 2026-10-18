@@ -29,6 +29,9 @@ final class MockBackend {
     var remoteGroupLoadedAt: [String: Date] = [:]
     var remoteGroupActivity: [String: GroupActivity] = [:]
     var remoteNearbyGroups: (center: Coordinate, ids: [String], at: Date)?
+    /// 球局（房间）：上次拉取详情的时间、附近的公开局
+    var remoteRoomLoadedAt: [String: Date] = [:]
+    var remoteNearbyRooms: (center: Coordinate, ids: [String], at: Date)?
     /// 榜单与胜率：服务器给的本周 / 本月数据，以及对每位球友能否发起挑战
     var remoteBoardLoadedAt: [String: Date] = [:]
     var remoteWeeklyBoards: [String: RemoteWeeklyBoard] = [:]

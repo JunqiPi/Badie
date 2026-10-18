@@ -175,6 +175,10 @@ extension MockBackend {
         case "friend_request": return .friendRequest
         case "review": return .surveyDue
         case "group": return .groupUpdate
+        case "room": return .roomJoined
+        case "room_promoted": return .waitlistPromoted
+        case "room_removed": return .kicked
+        case "room_closed": return .roomClosed
         case "challenge": return .challenge
         default: return .system
         }

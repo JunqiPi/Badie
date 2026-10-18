@@ -121,21 +121,11 @@ struct Room: Identifiable, Codable, Hashable {
     var isReady: Bool { participants.count == requiredPlayerCount }
     var openSeats: Int { max(0, requiredPlayerCount - participants.count) }
 
-    /// 私密房间 30 分钟无活动过期；公开局在开始时间后过期
-    func isExpired(now: Date = Date()) -> Bool {
-        switch visibility {
-        case .privateRoom:
-            return now.timeIntervalSince(lastActivityAt) > Self.expirationDuration
-        case .publicListing:
-            guard let slot else { return now.timeIntervalSince(lastActivityAt) > Self.expirationDuration }
-            return now >= slot.startTime
-        }
-    }
+    /// 和服务器一致：定了时间的到开始时间还没开局就关闭；没定时间的 30 分钟没有动静就关闭
+    func isExpired(now: Date = Date()) -> Bool { now >= expiresAt() }
 
-    /// 自动关闭的时间：有时间的公开局在开始时，其余在最后活动 30 分钟后
     func expiresAt() -> Date {
-        if visibility == .publicListing, let slot { return slot.startTime }
-        return lastActivityAt.addingTimeInterval(Self.expirationDuration)
+        slot?.startTime ?? lastActivityAt.addingTimeInterval(Self.expirationDuration)
     }
 
     func contains(_ userId: String) -> Bool {

@@ -222,8 +222,7 @@ struct PlayerProfileSheet: View {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     messageButton(user)
                     if friendManager.isFriend(user.id) {
-                        // 正式后端没有房间：约球走快速匹配或挑战
-                        if allowsInvite && !appState.isRemote {
+                        if allowsInvite {
                             Button {
                                 dismiss()
                                 router.open(.createRoom(nil, invitee: user.id), in: .games)
@@ -376,11 +375,14 @@ struct NotificationsView: View {
         case .friendRequest, .friendAccepted:
             if let id = item.relatedId { appState.showPlayer(id) }
         case .roomInvite, .roomJoined, .waitlistPromoted:
-            if let code = item.relatedId {
-                if let room = roomManager.myRooms.first(where: { $0.code == code }) {
+            // 模拟后端给的是房间码，正式后端给的是房间 ID
+            if let key = item.relatedId {
+                if let room = roomManager.myRooms.first(where: { $0.code == key || $0.id == key }) {
                     router.open(.room(id: room.id))
+                } else if appState.isRemote {
+                    router.open(.room(id: key))
                 } else {
-                    router.open(.joinRoom(code: code))
+                    router.open(.joinRoom(code: key))
                 }
             }
         case .surveyDue:

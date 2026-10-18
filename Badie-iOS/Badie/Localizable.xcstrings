@@ -11579,6 +11579,64 @@
         }
       }
     },
+    "一次最多邀请 10 位好友。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite up to 10 friends at a time."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक बार में 10 दोस्तों तक को इनवाइट करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undang maksimal 10 teman sekaligus."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一度に招待できるのは 10 人までです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 번에 친구를 10명까지 초대할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jemput sehingga 10 rakan pada satu masa."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชวนได้ครั้งละไม่เกิน 10 คน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mời tối đa 10 bạn mỗi lần."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一次最多邀請 10 位好友。"
+          }
+        }
+      }
+    },
     "一般" : {
       "localizations" : {
         "en" : {
@@ -16382,6 +16440,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "人機驗證沒有通過，請再試一次。"
+          }
+        }
+      }
+    },
+    "人还没齐，满员后才能开始。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not everyone’s here yet. Start once every spot is filled."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अभी सब नहीं आए। सभी जगहें भरने पर शुरू करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belum lengkap. Mulai setelah semua slot terisi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだ人数がそろっていません。全員そろってから開始できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 인원이 다 차지 않았어요. 다 차면 시작할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belum cukup orang. Mulakan selepas semua tempat diisi."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ผู้เล่นยังไม่ครบ เริ่มได้เมื่อครบทุกที่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa đủ người. Đủ chỗ rồi mới bắt đầu được."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "人還沒齊，滿員後才能開始。"
           }
         }
       }
@@ -39088,64 +39204,6 @@
         }
       }
     },
-    "好友发来的 6 位球群号" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6-character group number from a friend"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "दोस्त से मिला 6 अक्षरों का ग्रुप नंबर"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nomor grup 6 karakter dari teman"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "友達から届いた 6 文字のグループ番号"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "친구가 보낸 6자리 그룹 번호"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nombor kumpulan 6 aksara daripada rakan"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "หมายเลขกลุ่ม 6 ตัวจากเพื่อน"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mã nhóm 6 ký tự từ bạn bè"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "好友傳來的 6 位球群編號"
-          }
-        }
-      }
-    },
     "好友申请" : {
       "localizations" : {
         "en" : {
@@ -44494,6 +44552,64 @@
         }
       }
     },
+    "已报名" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taken"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "भरी हुई"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terisi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参加済み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "참가 확정"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sudah diisi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มีคนแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã có người"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已報名"
+          }
+        }
+      }
+    },
     "已报名 %lld/%lld" : {
       "localizations" : {
         "en" : {
@@ -48690,6 +48806,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始定級"
+          }
+        }
+      }
+    },
+    "开始时间已经过了，请重新选择。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That start time has passed. Pick another."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "शुरू होने का समय निकल गया है। दूसरा समय चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waktu mulai sudah lewat. Pilih waktu lain."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始時刻を過ぎています。別の時間を選んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시작 시간이 지났어요. 다른 시간을 골라 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masa mula sudah berlalu. Pilih masa lain."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลยเวลาเริ่มแล้ว เลือกเวลาใหม่นะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giờ bắt đầu đã qua. Hãy chọn giờ khác."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始時間已經過了，請重新選擇。"
           }
         }
       }
@@ -63829,6 +64003,64 @@
         }
       }
     },
+    "最低水平不能高于最高水平。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The lowest level can’t be above the highest."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सबसे कम लेवल सबसे ऊँचे लेवल से ज़्यादा नहीं हो सकता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Level terendah tidak boleh di atas level tertinggi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最低レベルは最高レベルより上にできません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최저 레벨은 최고 레벨보다 높을 수 없어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tahap terendah tidak boleh melebihi tahap tertinggi."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ระดับต่ำสุดต้องไม่สูงกว่าระดับสูงสุด"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cấp thấp nhất không thể cao hơn cấp cao nhất."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最低水平不能高於最高水平。"
+          }
+        }
+      }
+    },
     "最后一步" : {
       "localizations" : {
         "en" : {
@@ -77417,60 +77649,60 @@
         }
       }
     },
-    "生成 6 位房间码，分享给好友加入；30 分钟无活动自动关闭。" : {
+    "生成 6 位房间码，分享给好友加入；还没定时间的房间 30 分钟无活动会自动关闭。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Get a 6-character room code to share with friends. Closes after 30 minutes of inactivity."
+            "value" : "Get a 6-character room code to share with friends. Without a set time, it closes after 30 minutes of inactivity."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "दोस्तों से शेयर करने के लिए 6 कैरेक्टर का रूम कोड पाएँ। 30 मिनट तक कोई गतिविधि न होने पर बंद हो जाता है।"
+            "value" : "दोस्तों से शेयर करने के लिए 6 कैरेक्टर का रूम कोड पाएँ। समय तय न हो तो 30 मिनट तक कोई गतिविधि न होने पर बंद हो जाता है।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dapatkan kode room 6 karakter untuk dibagikan ke teman. Ditutup setelah 30 menit tidak aktif."
+            "value" : "Dapatkan kode room 6 karakter untuk dibagikan ke teman. Tanpa waktu yang ditentukan, room ditutup setelah 30 menit tidak aktif."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6 文字のルームコードを作って友達と共有。30 分間操作がないと自動で閉じます。"
+            "value" : "6 文字のルームコードを作って友達と共有。日時が未定のままだと、30 分間操作がないと自動で閉じます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6자리 방 코드를 만들어 친구에게 공유하세요. 30분 동안 활동이 없으면 자동으로 닫혀요."
+            "value" : "6자리 방 코드를 만들어 친구에게 공유하세요. 시간을 정하지 않으면 30분 동안 활동이 없을 때 자동으로 닫혀요."
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dapatkan kod bilik 6 aksara untuk dikongsi dengan rakan. Ditutup selepas 30 minit tiada aktiviti."
+            "value" : "Dapatkan kod bilik 6 aksara untuk dikongsi dengan rakan. Tanpa masa yang ditetapkan, bilik ditutup selepas 30 minit tiada aktiviti."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "รับรหัสห้อง 6 ตัวไว้แชร์ให้เพื่อนเข้าร่วม ห้องจะปิดเมื่อไม่มีความเคลื่อนไหว 30 นาที"
+            "value" : "รับรหัสห้อง 6 ตัวไว้แชร์ให้เพื่อนเข้าร่วม ถ้ายังไม่ได้ตั้งเวลา ห้องจะปิดเมื่อไม่มีความเคลื่อนไหว 30 นาที"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tạo mã phòng 6 ký tự để chia sẻ với bạn bè. Tự đóng sau 30 phút không hoạt động."
+            "value" : "Tạo mã phòng 6 ký tự để chia sẻ với bạn bè. Nếu chưa đặt giờ, phòng tự đóng sau 30 phút không hoạt động."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "產生 6 位房間碼，分享給好友加入；30 分鐘無活動自動關閉。"
+            "value" : "產生 6 位房間碼，分享給好友加入；還沒定時間的房間 30 分鐘無活動會自動關閉。"
           }
         }
       }
@@ -92221,64 +92453,6 @@
         }
       }
     },
-    "输入好友发来的\n6 位球群号" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter the 6-character group number\nfrom your friend"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "दोस्त से मिला 6 अक्षरों का\nग्रुप नंबर डालें"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masukkan nomor grup 6 karakter\ndari temanmu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "友達から届いた\n6 文字のグループ番号を入力"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "친구가 보낸\n6자리 그룹 번호를 입력하세요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masukkan nombor kumpulan 6 aksara\ndaripada rakan anda"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "กรอกหมายเลขกลุ่ม 6 ตัว\nที่เพื่อนส่งมา"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nhập mã nhóm 6 ký tự\nbạn bè gửi"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "輸入好友傳來的\n6 位球群編號"
-          }
-        }
-      }
-    },
     "输入房间码 / 群号" : {
       "localizations" : {
         "en" : {
@@ -92333,122 +92507,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入房間碼 / 群組 ID"
-          }
-        }
-      }
-    },
-    "输入球群号" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enter group number"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ग्रुप नंबर डालें"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masukkan nomor grup"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループ番号を入力"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "그룹 번호 입력"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masukkan nombor kumpulan"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "กรอกหมายเลขกลุ่ม"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nhập mã nhóm"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "輸入球群編號"
-          }
-        }
-      }
-    },
-    "输入球群号加入" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Join with a group number"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ग्रुप नंबर से जुड़ें"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gabung dengan nomor grup"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "グループ番号で参加"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "그룹 번호로 참여"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sertai dengan nombor kumpulan"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เข้าร่วมด้วยหมายเลขกลุ่ม"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tham gia bằng mã nhóm"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "輸入球群編號加入"
           }
         }
       }
@@ -96833,6 +96891,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "進行中"
+          }
+        }
+      }
+    },
+    "进行中的房间太多了，先结束或解散一个吧。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You have too many open rooms. Finish or close one first."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपके बहुत सारे खुले रूम हैं। पहले कोई एक पूरा या बंद करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Room aktifmu terlalu banyak. Selesaikan atau tutup satu dulu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進行中のルームが多すぎます。先にどれかを終えるか解散してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "진행 중인 방이 너무 많아요. 먼저 하나를 끝내거나 닫아 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terlalu banyak bilik aktif. Selesaikan atau tutup satu dahulu."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คุณมีห้องที่เปิดอยู่มากเกินไป ปิดสักห้องก่อนนะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có quá nhiều phòng đang mở. Hãy kết thúc hoặc đóng bớt một phòng."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進行中的房間太多了，先結束或解散一個吧。"
           }
         }
       }

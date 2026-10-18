@@ -16,11 +16,11 @@ struct JoinRoomView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: appState.isRemote ? String(localized: "球群号") : String(localized: "房间码 / 群号"))
+            ScreenHeader(title: String(localized: "房间码 / 群号"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text(appState.isRemote ? String(localized: "输入好友发来的\n6 位球群号") : String(localized: "输入好友发来的\n6 位房间码或群号"))
+                        Text("输入好友发来的\n6 位房间码或群号")
                             .font(AppTheme.Typography.title)
                             .foregroundStyle(AppTheme.Colors.ink)
                             .fixedSize(horizontal: false, vertical: true)
@@ -101,7 +101,7 @@ struct JoinRoomView: View {
 
     private func join() async {
         guard code.count == Room.codeLength, !isWorking else { return }
-        // 正式后端只有群号（字母表和房间码不同，交给服务器查）
+        // 正式后端的房间码和群号同一套字母，交给服务器查
         guard appState.isRemote || Room.isValidCode(code) else {
             errorText = String(localized: "房间码格式不对，请检查是否输入了 0/O/1/I/L")
             Haptics.error()
@@ -115,11 +115,6 @@ struct JoinRoomView: View {
             Haptics.success()
             router.pop()
             router.open(.group(id: group.id))
-            return
-        }
-        if appState.isRemote {
-            errorText = BackendError.groupNotFound.errorDescription
-            Haptics.error()
             return
         }
         isWorking = true

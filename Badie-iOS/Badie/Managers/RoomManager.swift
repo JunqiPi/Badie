@@ -48,8 +48,9 @@ final class RoomManager: ObservableObject {
 
     func room(id: String) -> Room? { backend.room(id: id) }
 
-    /// 每 30 秒检查一次过期房间（私密房间 30 分钟无活动自动关闭）
+    /// 每 30 秒检查一次过期房间（正式后端由服务器关闭）
     private func startExpirationChecks() {
+        guard !backend.isRemote else { return }
         expirationTask?.cancel()
         expirationTask = Task { [weak self] in
             while !Task.isCancelled {
@@ -63,45 +64,53 @@ final class RoomManager: ObservableObject {
     // MARK: Actions
 
     func create(_ draft: RoomDraft) async throws -> Room {
-        let room = try await backend.createRoom(draft)
+        let room = backend.isRemote ? try await backend.remoteCreateRoom(draft) : try await backend.createRoom(draft)
         reload()
         return room
     }
 
     func join(code: String) async throws -> Room {
-        let room = try await backend.joinRoom(code: code)
+        let room = backend.isRemote ? try await backend.remoteJoinRoom(code: code) : try await backend.joinRoom(code: code)
         reload()
         return room
     }
 
     func joinPublic(_ room: Room) async throws -> Room {
-        let joined = try await backend.joinPublicRoom(id: room.id)
+        let joined = backend.isRemote ? try await backend.remoteJoinPublicRoom(id: room.id) : try await backend.joinPublicRoom(id: room.id)
         reload()
         return joined
     }
 
     func leave(_ room: Room) async throws {
-        try await backend.leaveRoom(id: room.id)
+        if backend.isRemote { try await backend.remoteLeaveRoom(id: room.id) } else { try await backend.leaveRoom(id: room.id) }
         reload()
     }
 
     func kick(_ participant: RoomParticipant, from room: Room) async throws {
-        try await backend.kick(participant.userId, from: room.id)
+        if backend.isRemote {
+            try await backend.remoteKick(participant.userId, from: room.id)
+        } else {
+            try await backend.kick(participant.userId, from: room.id)
+        }
         reload()
     }
 
     func invite(_ userIds: [String], to room: Room) async throws {
-        try await backend.invite(userIds, to: room.id)
+        if backend.isRemote { try await backend.remoteInvite(userIds, to: room.id) } else { try await backend.invite(userIds, to: room.id) }
         reload()
     }
 
     func updateDetails(_ room: Room, court: BadmintonCourt?, slot: TimeSlot?) async throws {
-        _ = try await backend.updateRoomDetails(roomId: room.id, court: court, slot: slot)
+        if backend.isRemote {
+            try await backend.remoteUpdateRoomDetails(roomId: room.id, court: court, slot: slot)
+        } else {
+            _ = try await backend.updateRoomDetails(roomId: room.id, court: court, slot: slot)
+        }
         reload()
     }
 
     func start(_ room: Room) async throws -> Game {
-        let game = try await backend.startRoom(id: room.id)
+        let game = backend.isRemote ? try await backend.remoteStartRoom(id: room.id) : try await backend.startRoom(id: room.id)
         reload()
         return game
     }

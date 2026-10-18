@@ -89,6 +89,17 @@ enum RemoteError: LocalizedError, Equatable {
         case "daily_limit": return String(localized: "今天的挑战次数已用完。")
         case "target_busy": return String(localized: "TA 待处理的挑战太多了，请稍后再试。")
         case "admin_account": return String(localized: "管理员账号不能在这里注销，请先让其他管理员撤掉你的权限。")
+        // 球局（房间）
+        case "already_started": return String(localized: "开始时间已经过了，请重新选择。")
+        case "missing_details": return String(localized: "公开球局需要设置球馆和时间")
+        case "invalid_level_range": return String(localized: "最低水平不能高于最高水平。")
+        case "too_many_rooms": return String(localized: "进行中的房间太多了，先结束或解散一个吧。")
+        case "room_not_found": return BackendError.roomNotFound.localizedDescription
+        case "room_closed": return BackendError.roomClosed.localizedDescription
+        case "room_full": return BackendError.roomFull.localizedDescription
+        case "not_room_owner": return BackendError.notRoomOwner.localizedDescription
+        case "not_enough_players": return String(localized: "人还没齐，满员后才能开始。")
+        case "too_many_invites": return String(localized: "一次最多邀请 10 位好友。")
         default: return String(localized: "出了点问题，请重试。")
         }
     }

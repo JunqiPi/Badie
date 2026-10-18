@@ -417,6 +417,102 @@ final class SupabaseClientTests: XCTestCase {
         }
     }
 
+    // MARK: 球局（房间）
+
+    private let roomId = "8d1c2c3e-0000-4000-8000-0000000000aa"
+
+    /// room_page / my_rooms / rooms_near 的一条；members 为 nil 时是外人看到的样子
+    private func roomJSON(status: String = "open", reason: String = "null", owner: String? = nil, myStatus: String = "owner",
+                          code: String = #""ABC234""#, members: String? = nil, going: Int = 2, waitlist: Int = 0) -> String {
+        let host = owner ?? userId
+        let other = host == userId ? blake : userId
+        let list = members ?? #"[{"id":"\#(host)","nickname":"Host","rating":4,"waitlisted":false,"me":\#(host == userId)},{"id":"\#(other)","nickname":"Other","rating":4.33,"waitlisted":false,"me":\#(other == userId)}]"#
+        return #"{"id":"\#(roomId)","mode":"doubles","visibility":"public","status":"\#(status)","closed_reason":\#(reason),"game_id":null,"starts_at":"2026-10-25T02:00:00+00:00","ends_at":"2026-10-25T04:00:00+00:00","level_min":3,"level_max":5,"tags":["casual","not_a_tag"],"note":"Court 3","capacity":4,"going":\#(going),"waitlist":\#(waitlist),"last_activity_at":"2026-10-18T02:00:00+00:00","owner":{"id":"\#(host)","nickname":"Host","rating":4},"venue":\#(venue),"my_status":\#(myStatus == "null" ? "null" : "\"\(myStatus)\""),"code":\#(code),"members":\#(list)}"#
+    }
+
+    func testMyRoomsComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/my_rooms", "[\(roomJSON(owner: blake, myStatus: "member"))]")
+        server.on("POST /rest/v1/rpc/room_page", roomJSON(owner: blake, myStatus: "member"))
+        try await backend.refreshRemoteRooms()
+
+        let room = try XCTUnwrap(backend.myOpenRooms().first)
+        XCTAssertEqual(room.code, "ABC234")
+        XCTAssertEqual(room.ownerId, blake)
+        XCTAssertEqual(room.participants.map(\.userId), [blake, userId])
+        XCTAssertEqual(room.visibility, .publicListing)
+        XCTAssertEqual(room.levelRange, 3...5)
+        XCTAssertEqual(room.tags, [.casual], "不认识的标签跳过")
+        XCTAssertEqual(room.court?.name, "Test Court")
+        XCTAssertEqual(room.slot?.startTime, ISO8601DateFormatter().date(from: "2026-10-25T02:00:00Z"))
+
+        // 房主解散后不在“我的房间”里了：再拉一次，提示房间已关闭
+        var notices: [String] = []
+        backend.subscribe { event in
+            if case .roomClosed(let code, let reason) = event { notices.append("\(code) \(reason)") }
+        }
+        server.on("POST /rest/v1/rpc/my_rooms", "[]")
+        server.on("POST /rest/v1/rpc/room_page", roomJSON(status: "closed", reason: #""owner_closed""#, owner: blake, myStatus: "member"))
+        try await backend.refreshRemoteRooms()
+        XCTAssertEqual(backend.room(id: roomId)?.status, .closed(.ownerClosed))
+        XCTAssertTrue(backend.myOpenRooms().isEmpty)
+        XCTAssertEqual(notices, ["ABC234 ownerClosed"])
+    }
+
+    func testNearbyRoomsHideWhoIsPlaying() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/rooms_near", "[\(roomJSON(owner: blake, myStatus: "null", code: "null", members: "null", going: 3, waitlist: 1))]")
+        XCTAssertTrue(backend.publicRooms(radiusKm: 30).isEmpty, "先返回缓存（空），后台去拉")
+        await waitFor { !backend.publicRooms(radiusKm: 30).isEmpty }
+
+        let room = try XCTUnwrap(backend.publicRooms(radiusKm: 30).first)
+        XCTAssertEqual(room.code, "", "外人拿不到房间码")
+        XCTAssertEqual(room.participants.count, 3)
+        XCTAssertEqual(room.participants.first?.userId, blake, "房主是谁看得到")
+        XCTAssertEqual(room.participants.filter(\.isAnonymous).count, 2, "其他人只占位")
+        XCTAssertEqual(room.waitlist.count, 1)
+        XCTAssertEqual(server.requests.count, 1, "60 秒内同一位置不重复拉")
+    }
+
+    func testRoomActionsCallTheServer() async throws {
+        let backend = try await signedInBackend()
+        var draft = RoomDraft()
+        draft.visibility = .privateRoom
+        draft.tags = [.casual, .coaching]
+        draft.levelRange = 2...6
+        draft.note = "  Court 3 "
+        server.on("POST /rest/v1/rpc/create_room", #""\#(roomId)""#)
+        server.on("POST /rest/v1/rpc/room_page", roomJSON())
+        let created = try await backend.remoteCreateRoom(draft)
+        XCTAssertEqual(created.id, roomId)
+        let body = server.json(0)
+        XCTAssertEqual(body["p_visibility"] as? String, "private")
+        XCTAssertEqual(body["p_tags"] as? [String], ["casual", "coaching"])
+        XCTAssertEqual(body["p_level_min"] as? Int, 2)
+        XCTAssertEqual(body["p_note"] as? String, "Court 3")
+        XCTAssertTrue(body["p_venue"] is NSNull, "私密局可以先不定球馆")
+        XCTAssertTrue(body["p_starts_at"] is NSNull)
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/join_room_code", status: 400, #"{"code":"P0002","details":null,"hint":null,"message":"room_not_found"}"#)
+        do {
+            _ = try await backend.remoteJoinRoom(code: "ZZZZZZ")
+            XCTFail("找不到房间要报错")
+        } catch {
+            XCTAssertEqual((error as? LocalizedError)?.errorDescription, BackendError.roomNotFound.localizedDescription)
+        }
+
+        // 自己退出不算“被移出”
+        var kicked = false
+        backend.subscribe { event in if case .kicked = event { kicked = true } }
+        server.on("POST /rest/v1/rpc/leave_room", "null")
+        server.on("POST /rest/v1/rpc/room_page", roomJSON(owner: blake, myStatus: "null", code: "null", members: "null", going: 1))
+        backend.db.rooms[roomId]?.ownerId = blake
+        try await backend.remoteLeaveRoom(id: roomId)
+        XCTAssertFalse(kicked)
+        XCTAssertFalse(backend.room(id: roomId)?.contains(userId) ?? true)
+    }
+
     func testRankingsComeFromServer() async throws {
         let backend = try await signedInBackend()
         let week = Rankings.week(containing: Date())

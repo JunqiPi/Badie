@@ -25,7 +25,7 @@ struct RoomLobbyView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: room?.visibility == .publicListing ? String(localized: "公开球局") : String(localized: "私密房间")) {
-                if let room {
+                if let room, !room.code.isEmpty {
                     ShareLink(item: room.inviteText) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 17, weight: .bold))
@@ -40,11 +40,11 @@ struct RoomLobbyView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                         statusBanner(room)
-                        codeCard(room)
+                        if !room.code.isEmpty { codeCard(room) }
                         detailsCard(room)
                         seatsSection(room)
                         if !room.waitlist.isEmpty { waitlistSection(room) }
-                        if !room.invitedUserIds.isEmpty { invitedSection(room) }
+                        if room.contains(me ?? ""), !room.invitedUserIds.isEmpty { invitedSection(room) }
                     }
                     .padding(.horizontal, AppTheme.Spacing.screen)
                     .padding(.bottom, AppTheme.Spacing.xxl)
@@ -106,7 +106,7 @@ struct RoomLobbyView: View {
     private func statusBanner(_ room: Room) -> some View {
         switch room.status {
         case .open:
-            if room.visibility == .privateRoom {
+            if room.slot == nil {
                 TimelineView(.periodic(from: .now, by: 30)) { context in
                     let minutes = max(0, Int(room.expiresAt().timeIntervalSince(context.date) / 60))
                     NoticeBanner(icon: "timer", text: String(localized: "30 分钟无活动会自动关闭 · 剩约 \(minutes) 分钟"), tint: AppTheme.Colors.butter)
@@ -200,7 +200,7 @@ struct RoomLobbyView: View {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: AppTheme.Spacing.md), GridItem(.flexible(), spacing: AppTheme.Spacing.md)],
                       spacing: AppTheme.Spacing.md) {
                 ForEach(room.participants) { participant in
-                    seatCard(participant, room: room)
+                    if participant.isAnonymous { takenSeat } else { seatCard(participant, room: room) }
                 }
                 ForEach(0..<room.openSeats, id: \.self) { _ in
                     Button {
@@ -226,6 +226,20 @@ struct RoomLobbyView: View {
                 }
             }
         }
+    }
+
+    /// 看不到名单时（还没加入的公开局）：只显示这里有人
+    private var takenSeat: some View {
+        VStack(spacing: AppTheme.Spacing.sm) {
+            Image(systemName: "person.fill")
+                .font(.system(size: 22, weight: .heavy))
+            Text("已报名")
+                .font(AppTheme.Typography.footnoteBold)
+        }
+        .foregroundStyle(AppTheme.Colors.inkSecondary)
+        .frame(maxWidth: .infinity, minHeight: 124)
+        .sticker(AppTheme.Colors.surfaceMuted, radius: AppTheme.Radius.lg, shadow: .zero)
+        .accessibilityElement(children: .combine)
     }
 
     private func seatCard(_ participant: RoomParticipant, room: Room) -> some View {
@@ -271,7 +285,7 @@ struct RoomLobbyView: View {
     private func waitlistSection(_ room: Room) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             SectionTitle(title: String(localized: "候补"), detail: String(localized: "\(room.waitlist.count) 人 · 有人退出自动递补"))
-            ForEach(Array(room.waitlist.enumerated()), id: \.element.id) { index, participant in
+            ForEach(Array(room.waitlist.enumerated()).filter { !$0.element.isAnonymous }, id: \.element.id) { index, participant in
                 HStack(spacing: AppTheme.Spacing.md) {
                     Text("\(index + 1)")
                         .font(AppTheme.Typography.headline)
@@ -336,7 +350,8 @@ struct RoomLobbyView: View {
     @ViewBuilder
     private func joinButton(_ room: Room) -> some View {
         let level = appState.currentUser?.displayLevel ?? 0
-        if room.visibility == .publicListing && !room.accepts(level: level) {
+        let levelBlocked = room.visibility == .publicListing && !room.accepts(level: level) && !room.invitedUserIds.contains(me ?? "")
+        if levelBlocked {
             Text("这个局要求 \(room.levelRangeText)，你的等级是 \(appState.currentUser?.displayTier.text ?? "Lv.\(level)")")
                 .font(AppTheme.Typography.footnoteBold)
                 .foregroundStyle(AppTheme.Colors.danger)
@@ -350,7 +365,7 @@ struct RoomLobbyView: View {
             }
         }
         .buttonStyle(.brutalPrimary)
-        .disabled(isWorking || (room.visibility == .publicListing && !room.accepts(level: level)))
+        .disabled(isWorking || levelBlocked)
     }
 
     private func startTitle(_ room: Room) -> String {

@@ -41,7 +41,17 @@ struct PublicRoomCard: View {
             HStack(spacing: AppTheme.Spacing.sm) {
                 HStack(spacing: -8) {
                     ForEach(room.participants) { participant in
-                        AvatarView(participant: participant, size: 28)
+                        if participant.isAnonymous {
+                            // 还没加入的公开局看不到是谁
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .frame(width: 28, height: 28)
+                                .background(Circle().fill(AppTheme.Colors.surfaceMuted))
+                                .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+                        } else {
+                            AvatarView(participant: participant, size: 28)
+                        }
                     }
                     ForEach(0..<room.openSeats, id: \.self) { _ in
                         Circle()

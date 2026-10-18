@@ -71,9 +71,9 @@ struct HomeView: View {
 
                 groupsSection
                     .padding(.horizontal, AppTheme.Spacing.screen)
-                // 正式后端没有公开球局和同馆常客
+                publicGamesSection
+                // 正式后端没有同馆常客
                 if !appState.isRemote {
-                    publicGamesSection
                     playersSection
                 }
                 courtsSection

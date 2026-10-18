@@ -65,7 +65,7 @@ struct CreateRoomView: View {
                             $0 == .privateRoom ? String(localized: "仅邀请（私密）") : String(localized: "公开到附近")
                         }
                         Text(visibility == .privateRoom
-                             ? String(localized: "生成 6 位房间码，分享给好友加入；30 分钟无活动自动关闭。")
+                             ? String(localized: "生成 6 位房间码，分享给好友加入；还没定时间的房间 30 分钟无活动会自动关闭。")
                              : String(localized: "附近符合水平的球友都能看到并报名，满员后可候补，有人退出自动递补。"))
                             .font(AppTheme.Typography.footnote)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)

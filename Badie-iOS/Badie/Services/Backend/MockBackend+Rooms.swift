@@ -4,26 +4,32 @@ import Foundation
 
 extension MockBackend {
 
-    func room(id: String) -> Room? { db.rooms[id] }
+    func room(id: String) -> Room? {
+        refreshRemoteRoomIfStale(id)
+        return db.rooms[id]
+    }
 
     func room(code: String) -> Room? {
         let normalized = Room.normalize(code)
         return db.rooms.values.first { $0.code == normalized }
     }
 
-    /// 我参与（或在候补中）的开放房间
+    /// 我参与（或在候补中、被邀请）的开放房间
     func myOpenRooms() -> [Room] {
         guard let me = currentUserId else { return [] }
         return db.rooms.values
-            .filter { $0.status.isOpen && ($0.contains(me) || $0.isWaitlisted(me)) }
+            .filter { $0.status.isOpen && ($0.contains(me) || $0.isWaitlisted(me) || $0.invitedUserIds.contains(me)) }
             .sorted { ($0.slot?.startTime ?? $0.createdAt) < ($1.slot?.startTime ?? $1.createdAt) }
     }
 
     /// 附近的公开球局（排除屏蔽关系、已满且候补满的局）
     func publicRooms(radiusKm: Double) -> [Room] {
-        guard !isRemote else { return [] }
         let me = currentUserId ?? ""
         let center = currentUser?.location ?? db.worldCenter
+        if isRemote {
+            loadRemoteRoomsNear(center, radiusKm: radiusKm)
+            return (remoteNearbyRooms?.ids ?? []).compactMap { db.rooms[$0] }.filter(\.status.isOpen)
+        }
         let blocked = blockedIds()
         return db.rooms.values
             .filter { $0.visibility == .publicListing && $0.status.isOpen && !$0.isExpired() }
@@ -118,7 +124,7 @@ extension MockBackend {
         case .started, .closed: throw BackendError.roomClosed
         }
         if room.isExpired() {
-            closeRoom(&room, reason: room.visibility == .privateRoom ? .expired : .startTimePassed)
+            closeRoom(&room, reason: room.slot == nil ? .expired : .startTimePassed)
             throw BackendError.roomExpired
         }
         if room.contains(me.id) || room.isWaitlisted(me.id) { return room }
@@ -274,7 +280,7 @@ extension MockBackend {
     /// 定期检查：私密房间 30 分钟无活动关闭，公开局过开始时间关闭
     func expireRooms(now: Date = Date()) {
         for var room in db.rooms.values where room.status.isOpen && room.isExpired(now: now) {
-            closeRoom(&room, reason: room.visibility == .privateRoom ? .expired : .startTimePassed)
+            closeRoom(&room, reason: room.slot == nil ? .expired : .startTimePassed)
         }
         refreshPublicRooms(force: false)
     }
