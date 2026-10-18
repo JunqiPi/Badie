@@ -286,13 +286,14 @@ export interface Update {
 
 /** 调用数据库函数；页面可见时定时（默认 30 秒）、切回页面时自动刷新（别人确认了、约成了能及时看到） */
 export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record<string, unknown>; every?: number } = {}) {
-  const [data, setData] = useState<T>();
+  // 记下结果对应的参数：换了参数（另一个人、上一周）就不再显示旧数据
+  const [result, setResult] = useState<{ key: string; data: T }>();
   const [failed, setFailed] = useState(false);
   const key = JSON.stringify(args ?? {});
   const refresh = useCallback(async () => {
     const { data, error } = await supabase!.rpc(fn, JSON.parse(key));
     setFailed(Boolean(error));
-    if (!error) setData(data as T);
+    if (!error) setResult({ key, data: data as T });
   }, [fn, key]);
   useEffect(() => {
     refresh();
@@ -304,7 +305,7 @@ export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record
       document.removeEventListener('visibilitychange', visible);
     };
   }, [refresh, every]);
-  return { data, failed, refresh };
+  return { data: result?.key === key ? result.data : undefined, failed, refresh };
 }
 
 /** 数据库函数报的错 → 给人看的话 */

@@ -596,8 +596,8 @@ final class SupabaseClientTests: XCTestCase {
     func testRankingsComeFromServer() async throws {
         let backend = try await signedInBackend()
         let week = Rankings.week(containing: Date())
-        server.on("POST /rest/v1/rpc/weekly_board",
-                  #"{"week_starts":"2026-10-12T00:00:00+00:00","entries":[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"rank":1,"points":45,"games":3,"wins":2,"me":false}],"me":null,"progress":{"games":1,"opponents":1,"points":10},"eligible":true}"#)
+        let weekly = #"{"week_starts":"2026-10-12T00:00:00+00:00","entries":[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"rank":1,"points":45,"games":3,"wins":2,"me":false}],"me":null,"progress":{"games":1,"opponents":1,"points":10},"eligible":true}"#
+        server.on("POST /rest/v1/rpc/weekly_board", weekly)
         XCTAssertTrue(backend.weeklyLeaderboard(week: week).isEmpty, "先返回缓存（空），后台去拉")
         await waitFor { !backend.weeklyLeaderboard(week: week).isEmpty }
         let entry = try XCTUnwrap(backend.weeklyLeaderboard(week: week).first)
@@ -607,17 +607,32 @@ final class SupabaseClientTests: XCTestCase {
         let score = backend.weeklyScore(for: userId, week: week)
         XCTAssertEqual(score.points, 10)
         XCTAssertEqual(score.games, 1)
-        let lastWeek = Rankings.week(containing: week.start.addingTimeInterval(-1))
-        XCTAssertTrue(backend.weeklyLeaderboard(week: lastWeek).isEmpty, "服务器只有本周")
+        XCTAssertEqual(server.json(0)["p_offset"] as? Int, 0)
 
-        server.on("POST /rest/v1/rpc/venue_board",
-                  #"{"venue":{"id":"v1","name":"Court","city":"Irvine"},"bands":[{"band":2,"entries":[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"rank":1,"games":5,"wins":3,"me":false}]}]}"#)
+        // 上周单独拉一份（p_offset = 1）；更早的服务器不提供
+        server.requests = []
+        server.on("POST /rest/v1/rpc/weekly_board", weekly)
+        let lastWeek = Rankings.week(containing: week.start.addingTimeInterval(-1))
+        _ = backend.weeklyLeaderboard(week: lastWeek)
+        await waitFor { !backend.weeklyLeaderboard(week: lastWeek).isEmpty }
+        XCTAssertEqual(server.json(0)["p_offset"] as? Int, 1)
+        let older = Rankings.week(containing: lastWeek.start.addingTimeInterval(-1))
+        XCTAssertTrue(backend.weeklyLeaderboard(week: older).isEmpty, "服务器只有本周和上周")
+
+        let venueBoard = #"{"venue":{"id":"v1","name":"Court","city":"Irvine"},"bands":[{"band":2,"entries":[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"rank":1,"games":5,"wins":3,"me":false}]}]}"#
+        server.on("POST /rest/v1/rpc/venue_board", venueBoard)
         let month = Rankings.month(containing: Date())
         _ = backend.venueLeaderboard(venueId: "v1", month: month)
         await waitFor { !backend.venueLeaderboard(venueId: "v1", month: month).isEmpty }
         let band = try XCTUnwrap(backend.venueLeaderboard(venueId: "v1", month: month).first)
         XCTAssertEqual(band.bracket, .intermediate)
         XCTAssertEqual(band.entries.first?.score, 5, "场馆榜按场次")
+        let lastMonth = Rankings.month(containing: month.start.addingTimeInterval(-1))
+        server.requests = []
+        server.on("POST /rest/v1/rpc/venue_board", venueBoard)
+        _ = backend.venueLeaderboard(venueId: "v1", month: lastMonth)
+        await waitFor { !backend.venueLeaderboard(venueId: "v1", month: lastMonth).isEmpty }
+        XCTAssertEqual(server.json(0)["p_offset"] as? Int, 1, "上月")
 
         server.on("POST /rest/v1/rpc/my_record", #"{"games":6,"wins":4,"opponents":3,"gap":0.5,"public":true,"losses":2,"games_played":7,"no_shows":0,"late_cancels":0}"#)
         _ = backend.winRate(for: userId, month: month)

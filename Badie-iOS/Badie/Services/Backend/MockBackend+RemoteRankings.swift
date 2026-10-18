@@ -1,8 +1,8 @@
 import Foundation
 
 // MARK: - 正式后端：胜率、周榜、场馆月榜、挑战
-/// 服务器只算本周、本月：查以前的周和月时返回空。榜单在后台按需拉取（60 秒内同一个只拉一次），
-/// 拉完发 rankingsChanged，界面据此重新读取
+/// 服务器的榜单有本期和上一期（上周、上月），胜率只有本月：更早的返回空。榜单在后台按需拉取
+/// （60 秒内同一个只拉一次），拉完发 rankingsChanged，界面据此重新读取
 extension MockBackend {
 
     struct RemoteWinRate: Decodable {
@@ -86,25 +86,33 @@ extension MockBackend {
         return remoteWinRates[userId] ?? empty
     }
 
+    /// 0 = 本期，1 = 上一期（紧挨着本期结束），更早的服务器不提供
+    static func remoteOffset(of period: DateInterval, current: DateInterval) -> Int? {
+        if period.start == current.start { return 0 }
+        return period.end == current.start ? 1 : nil
+    }
+
     func remoteWeeklyBoard(countryCode: String?, week: DateInterval) -> RemoteWeeklyBoard? {
-        guard week.contains(Date()) else { return nil }
+        guard let offset = Self.remoteOffset(of: week, current: Rankings.week(containing: Date())) else { return nil }
         let scope = countryCode == nil ? "global" : "country"
-        refreshRemoteBoard("weekly-\(scope)") {
-            let board: RemoteWeeklyBoard = try await self.requireRemote().rpc("weekly_board", ["p_scope": scope])
+        let key = "\(scope)-\(offset)"
+        refreshRemoteBoard("weekly-\(key)") {
+            let board: RemoteWeeklyBoard = try await self.requireRemote().rpc("weekly_board", ["p_scope": scope, "p_offset": offset])
             board.entries.forEach { self.cacheRemoteUser(id: $0.id, nickname: $0.nickname, rating: $0.rating) }
-            self.remoteWeeklyBoards[scope] = board
+            self.remoteWeeklyBoards[key] = board
         }
-        return remoteWeeklyBoards[scope]
+        return remoteWeeklyBoards[key]
     }
 
     func remoteVenueBoard(venueId: String, month: DateInterval) -> [(bracket: LevelBracket, entries: [Rankings.Entry])] {
-        guard month.contains(Date()) else { return [] }
-        refreshRemoteBoard("venue-\(venueId)") {
-            let board: RemoteVenueBoard = try await self.requireRemote().rpc("venue_board", ["p_venue": venueId])
+        guard let offset = Self.remoteOffset(of: month, current: Rankings.month(containing: Date())) else { return [] }
+        let key = "\(venueId)-\(offset)"
+        refreshRemoteBoard("venue-\(key)") {
+            let board: RemoteVenueBoard = try await self.requireRemote().rpc("venue_board", ["p_venue": venueId, "p_offset": offset])
             board.bands.flatMap(\.entries).forEach { self.cacheRemoteUser(id: $0.id, nickname: $0.nickname, rating: $0.rating) }
-            self.remoteVenueBoards[venueId] = board
+            self.remoteVenueBoards[key] = board
         }
-        return (remoteVenueBoards[venueId]?.bands ?? []).compactMap { band in
+        return (remoteVenueBoards[key]?.bands ?? []).compactMap { band in
             LevelBracket(rawValue: band.band).map { ($0, band.entries.map { Self.entry($0, score: $0.games) }) }
         }
     }
@@ -113,7 +121,7 @@ extension MockBackend {
         Rankings.Entry(userId: remote.id, rank: remote.rank, score: score, games: remote.games, wins: remote.wins)
     }
 
-    /// 我在本周榜上的分数和场次（不在榜上时用进度）
+    /// 我在这周榜上的分数和场次（不在榜上时用进度）
     func remoteWeeklyScore(countryCode: String?, week: DateInterval) -> (points: Int, games: Int, wins: Int, opponents: Int) {
         guard let board = remoteWeeklyBoard(countryCode: countryCode, week: week) else { return (0, 0, 0, 0) }
         if let mine = board.entries.first(where: { $0.id == currentUserId }) {

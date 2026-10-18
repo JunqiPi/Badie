@@ -1,7 +1,7 @@
 -- 胜率、榜单和约战测试（与 iOS RankingTests、ChallengeTests 的规则一致）
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(27);
+select plan(33);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000004' || lpad(n::text, 2, '0'))::uuid, 'r' || n || '@test.local' from generate_series(1, 10) n;
@@ -18,11 +18,10 @@ create function pg_temp.login(n int) returns void language sql as $$
   select set_config('role', 'authenticated', true),
          set_config('request.jwt.claims', json_build_object('sub', pg_temp.u(n), 'role', 'authenticated')::text, true);
 $$;
--- 一场双方确认过的单打：本周和本月开头之后第 k 分钟开始，winner 赢
-create function pg_temp.played(k int, a int, b int, winner int) returns void language plpgsql as $$
+-- 一场双方确认过的单打：start 开始，winner 赢
+create function pg_temp.played_at(start timestamptz, a int, b int, winner int) returns void language plpgsql as $$
 declare
   id uuid;
-  start timestamptz := greatest(date_trunc('week', now() at time zone 'UTC') at time zone 'UTC', date_trunc('month', now())) + k * interval '1 minute';
 begin
   insert into public.games (mode, starts_at, ends_at, venue_id) values ('singles', start, start + interval '1 hour', 'v-us-ca-21-badminton-club-21bc')
     returning games.id into id;
@@ -31,6 +30,11 @@ begin
   insert into public.result_reports (game_id, reporter_id, outcome)
     select id, pg_temp.u(p), case when winner = a then 'team1' else 'team2' end::public.result_outcome from unnest(array[a, b]) p;
 end
+$$;
+-- 本周和本月开头之后第 k 分钟开始
+create function pg_temp.played(k int, a int, b int, winner int) returns void language sql as $$
+  select pg_temp.played_at(greatest(date_trunc('week', now() at time zone 'UTC') at time zone 'UTC', date_trunc('month', now())) + k * interval '1 minute',
+                           a, b, winner)
 $$;
 create function pg_temp.entry(board jsonb, n int) returns jsonb language sql as $$
   select e from jsonb_array_elements(board -> 'entries') e where e ->> 'id' = pg_temp.u(n)::text
@@ -87,6 +91,19 @@ select is((select e ->> 'games' from jsonb_array_elements(public.venue_board('v-
            where e ->> 'id' = pg_temp.u(1)::text), '3', '同一天最多计 3 场');
 select is((select e ->> 'rank' from jsonb_array_elements(public.venue_board('v-us-ca-21-badminton-club-21bc') -> 'bands' -> 0 -> 'entries') e
            where e ->> 'id' = pg_temp.u(5)::text), '2', '场数相同比胜场：1 号是馆主，5 号第二');
+
+-- 上一期：上周 / 上月的榜单只算那一期的比赛
+select is(jsonb_array_length(public.weekly_board('global', 1) -> 'entries'), 0, '上周还没有比赛');
+reset role;
+select pg_temp.played_at((date_trunc('week', now() at time zone 'UTC') at time zone 'UTC') - interval '6 days', 1, 2, 2);
+select pg_temp.login(1);
+select is(public.weekly_board('global', 1) -> 'progress' ->> 'games', '1', '上周打的算进上周');
+select is(public.weekly_board('global') -> 'progress' ->> 'games', '6', '不算进本周');
+select is((public.weekly_board('global', 1) ->> 'week_starts')::timestamptz,
+          (public.weekly_board('global') ->> 'week_starts')::timestamptz - interval '7 days', '上周从上周一开始');
+select is(jsonb_array_length(public.venue_board('v-us-ca-21-badminton-club-21bc', 1) -> 'bands'), 0, '上月还没有比赛');
+select is((public.venue_board('v-us-ca-21-badminton-club-21bc', 5) ->> 'month_starts')::timestamptz,
+          date_trunc('month', now()) - interval '1 month', '只能往前看一期');
 
 -- 约战
 select is(public.player_card(pg_temp.u(2)) ->> 'challenge', 'available', '水平相近的人可以挑战');

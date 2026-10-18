@@ -16,11 +16,15 @@ export function GamesTabs({ current }: { current: 'games' | 'rankings' }) {
 }
 
 const scopes = [['global', 'Everyone'], ['country', 'My country'], ['level', 'My level']] as const;
+const weeks = ['This week', 'Last week'] as const;
+const months = ['This month', 'Last month'] as const;
 const bands = ['', 'Levels 1–2', 'Levels 3–4', 'Levels 5–6', 'Levels 7+'];
 
 export function Rankings() {
   const [scope, setScope] = useState<(typeof scopes)[number][0]>('global');
-  const { data: board } = useLive<WeeklyBoard>('weekly_board', { args: { p_scope: scope }, every: 120_000 });
+  // 0 = 本周，1 = 上周
+  const [week, setWeek] = useState(0);
+  const { data: board } = useLive<WeeklyBoard>('weekly_board', { args: { p_scope: scope, p_offset: week }, every: 120_000 });
 
   return (
     <div>
@@ -33,18 +37,21 @@ export function Rankings() {
         <section aria-labelledby="weekly" className="grid gap-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 id="weekly" className="text-xl font-black">{t('This week')}</h2>
+              <h2 id="weekly" className="text-xl font-black">{t(weeks[week])}</h2>
               <p className="text-sm text-ink-tertiary">{t('Resets every Monday (UTC). Loss 10, win 15, more against stronger players.')}</p>
             </div>
-            <div role="group" aria-label={t('Who to compare with')} className="flex flex-wrap gap-2">
-              {scopes.map(([value, label]) => (
-                <button key={value} onClick={() => setScope(value)} aria-pressed={scope === value} className="toggle">{t(label)}</button>
-              ))}
-            </div>
+            <Periods labels={weeks} value={week} onChange={setWeek} />
           </div>
-          {board && <MyPosition board={board} />}
+          <div role="group" aria-label={t('Who to compare with')} className="flex flex-wrap gap-2">
+            {scopes.map(([value, label]) => (
+              <button key={value} onClick={() => setScope(value)} aria-pressed={scope === value} className="toggle">{t(label)}</button>
+            ))}
+          </div>
+          {board && <MyPosition board={board} past={week > 0} />}
           {!board ? <Skeleton className="h-64" /> : board.entries.length === 0 ? (
-            <EmptyState title={t('No one on the board yet')}>{t('Players appear after 3 confirmed games against 2 or more opponents this week.')}</EmptyState>
+            week > 0 ? <EmptyState title={t('No one made the board last week')} /> : (
+              <EmptyState title={t('No one on the board yet')}>{t('Players appear after 3 confirmed games against 2 or more opponents this week.')}</EmptyState>
+            )
           ) : (
             <Board entries={board.entries} unit="pts" />
           )}
@@ -56,7 +63,21 @@ export function Rankings() {
   );
 }
 
-function MyPosition({ board }: { board: WeeklyBoard }) {
+/** 本期 / 上一期 */
+function Periods({ labels, value, onChange }: { labels: readonly string[]; value: number; onChange: (value: number) => void }) {
+  return (
+    <div role="group" aria-label={t('Period')} className="flex gap-2">
+      {labels.map((label, i) => (
+        <button key={label} onClick={() => onChange(i)} aria-pressed={value === i} className="toggle">{t(label)}</button>
+      ))}
+    </div>
+  );
+}
+
+function MyPosition({ board, past }: { board: WeeklyBoard; past: boolean }) {
+  if (past) {
+    return board.me ? <p role="status" className="tile bg-lavender p-4 font-bold text-on-accent">{t('You finished #{rank} with {points} points.', { ...board.me })}</p> : null;
+  }
   const text = !board.eligible
     ? t('You’re not on the boards: new accounts join after 7 days, and you can turn boards on in Me.')
     : board.me
@@ -92,7 +113,8 @@ type Court = { id: string; name: string };
 function CourtBoards() {
   const [courts, setCourts] = useState<Court[]>();
   const [court, setCourt] = useState<string>();
-  const { data: board } = useLive<VenueBoard>('venue_board', { args: { p_venue: court ?? '' }, every: 300_000 });
+  const [month, setMonth] = useState(0);
+  const { data: board } = useLive<VenueBoard>('venue_board', { args: { p_venue: court ?? '', p_offset: month }, every: 300_000 });
 
   useEffect(() => {
     supabase!.from('favorite_venues').select('venues(id, name)').then(({ data }) => {
@@ -114,12 +136,17 @@ function CourtBoards() {
         </EmptyState>
       )}
       {courts && courts.length > 0 && (
-        <select aria-label={t('Court')} value={court} onChange={(e) => setCourt(e.target.value)} className="field">
-          {courts.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
+        <>
+          <select aria-label={t('Court')} value={court} onChange={(e) => setCourt(e.target.value)} className="field">
+            {courts.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <Periods labels={months} value={month} onChange={setMonth} />
+        </>
       )}
       {court && !board && <Skeleton className="h-40" />}
-      {court && board && board.bands.length === 0 && <p className="text-ink-secondary">{t('No one qualifies yet this month: 3 games against 2 opponents.')}</p>}
+      {court && board && board.bands.length === 0 && (
+        <p className="text-ink-secondary">{month > 0 ? t('No one qualified last month.') : t('No one qualifies yet this month: 3 games against 2 opponents.')}</p>
+      )}
       {court && board?.bands.map((b) => (
         <div key={b.band} className="grid gap-2">
           <p className="eyebrow">{t(bands[b.band])}</p>
