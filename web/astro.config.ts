@@ -6,6 +6,7 @@ import { noindexPaths } from './src/lib/venues';
 
 const hidden = noindexPaths();
 hidden.add('/app/');
+hidden.add('/captcha/');
 
 // 网页应用只连自己的 Supabase 项目（本地开发 / CI 是本机的 Supabase）
 const supabase = process.env.PUBLIC_SUPABASE_URL ? new URL(process.env.PUBLIC_SUPABASE_URL) : undefined;

@@ -8,6 +8,8 @@ import Security
 enum SupabaseConfig {
     static let url = "https://yeffnjdpjejlplqryjfx.supabase.co"
     static let publishableKey = "sb_publishable_oTHxEWYt2Gg8omKs98IHoQ_jNM0Blig"
+    /// 网站上的人机验证页（见 web/src/pages/captcha.astro）
+    static let captchaPage = URL(string: "https://badie.rsvp/captcha/")!
 }
 
 /// 登录状态（存在钥匙串里，App 重开后仍保持登录）
@@ -39,6 +41,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "otp_expired", "otp_disabled": return String(localized: "验证码无效。请查看最新的一封邮件，或重新发送。")
         case "over_email_send_rate_limit", "over_request_rate_limit": return String(localized: "尝试次数过多，请等一分钟再试。")
         case "email_address_invalid", "validation_failed": return String(localized: "邮箱地址好像不对。")
+        case "captcha_failed": return String(localized: "人机验证没有通过，请再试一次。")
         // 约球
         case "too_soon": return String(localized: "开始时间至少要在 2.5 小时后。")
         case "too_far": return String(localized: "最多只能提前两周安排。")
@@ -111,8 +114,11 @@ final class SupabaseClient {
     // MARK: 登录
 
     /// 发 6 位验证码到邮箱（没注册过的邮箱会自动建账号）
-    func sendCode(email: String) async throws {
-        _ = try await send("auth/v1/otp", body: ["email": email, "create_user": true], authorized: false)
+    /// 发验证码邮件；开启了人机验证时要带上 Turnstile 令牌
+    func sendCode(email: String, captchaToken: String? = nil) async throws {
+        var body: [String: Any] = ["email": email, "create_user": true]
+        if let captchaToken, !captchaToken.isEmpty { body["gotrue_meta_security"] = ["captcha_token": captchaToken] }
+        _ = try await send("auth/v1/otp", body: body, authorized: false)
     }
 
     func verify(email: String, code: String) async throws -> RemoteSession {

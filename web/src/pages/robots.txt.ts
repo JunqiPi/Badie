@@ -8,7 +8,7 @@ export const GET: APIRoute = ({ site }) =>
   new Response(
     [
       ...trainingCrawlers.map((bot) => `User-agent: ${bot}\nDisallow: /\n`),
-      'User-agent: *\nAllow: /\nDisallow: /app/\n',
+      'User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /captcha/\n',
       `Sitemap: ${new URL('/sitemap-index.xml', site)}\n`,
     ].join('\n'),
   );

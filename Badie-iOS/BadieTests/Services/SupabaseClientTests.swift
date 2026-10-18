@@ -80,6 +80,25 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(server.json(0)["token"] as? String, "123456")
     }
 
+    func testCaptchaTokenGoesWithTheCodeRequest() async throws {
+        server.on("POST /auth/v1/otp", "{}")
+        server.on("POST /auth/v1/otp", "{}")
+        server.on("POST /auth/v1/otp", status: 400, #"{"code":400,"error_code":"captcha_failed","msg":"captcha protection: request disallowed"}"#)
+        let client = client()
+        try await client.sendCode(email: "alex@example.com", captchaToken: "turnstile-token")
+        try await client.sendCode(email: "alex@example.com", captchaToken: "")
+
+        let security = server.json(0)["gotrue_meta_security"] as? [String: Any]
+        XCTAssertEqual(security?["captcha_token"] as? String, "turnstile-token")
+        XCTAssertNil(server.json(1)["gotrue_meta_security"], "网站没开启人机验证时不带")
+        do {
+            try await client.sendCode(email: "alex@example.com", captchaToken: nil)
+            XCTFail("应该报错")
+        } catch {
+            XCTAssertEqual((error as? LocalizedError)?.errorDescription, RemoteError.server("captcha_failed").errorDescription)
+        }
+    }
+
     func testDatabaseErrorBecomesReadableMessage() async throws {
         server.on("POST /rest/v1/rpc/submit_ticket", status: 400, #"{"code":"22023","message":"too_soon","details":null,"hint":null}"#)
         let client = client(session: session(expiresIn: 3600))

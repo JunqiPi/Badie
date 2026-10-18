@@ -53,6 +53,7 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
 1. **人机验证（Turnstile，免费）**：Cloudflare → Turnstile → Add widget：Hostname 填 `badie.rsvp`，Widget mode 选 **Managed**。
    - Site Key 存为 Variable `TURNSTILE_SITE_KEY`，推一次 main 让网站带上验证框。
    - **网站部署后**再到 Supabase → Authentication → Attack Protection → Enable CAPTCHA protection，选 Turnstile，填 Secret Key。顺序反过来会让所有人登录失败。
+   - iOS App 不用另外配置：登录时用看不见的网页视图打开 `https://badie.rsvp/captcha/`，用的是同一个 Site Key。打开 CAPTCHA 之前装的旧版 App 会发不出验证码，要更新。
 2. Supabase → Authentication → Rate Limits：发验证码邮件每小时 30 封左右；每个 IP 每 5 分钟登录 / 注册请求 30 次、验证码校验 30 次（默认值即可）。
 3. Cloudflare → badie.rsvp → Security → Bots：打开 **Bot Fight Mode**；AI Crawl Control 里拦截 AI 训练爬虫，放行搜索引擎和 AI 搜索（与 robots.txt 一致）。
 4. 网站已经带上：内容安全策略（只允许自身脚本和 Turnstile）、禁止被嵌入 iframe、`/app/` 不进搜索引擎；数据库里所有写操作走带检查的函数，每人每天最多加 3 家球馆。

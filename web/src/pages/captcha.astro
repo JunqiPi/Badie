@@ -1,0 +1,59 @@
+---
+// App 登录用的人机验证：iOS 用看不见的网页视图打开这个页面，拿到 Cloudflare Turnstile 令牌后交给 App，
+// App 再随“发验证码”请求交给 Supabase（站点密钥只配在网站上，App 不用另外配置）。
+// 和网页登录一样只在 Cloudflare 觉得可疑时才显示验证框；网站没配置 site key 时直接告诉 App 不需要验证
+const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Badie</title>
+  </head>
+  <body>
+    <div id="widget" data-sitekey={siteKey}></div>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: transparent;
+      }
+      body {
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+      }
+    </style>
+    <script>
+      type Message = { token?: string; interactive?: boolean; error?: string };
+      type Turnstile = { render: (el: HTMLElement, options: Record<string, unknown>) => string };
+
+      // 只有 App 里的网页视图有这个通道；在普通浏览器里打开什么也不会发生
+      const post = (message: Message) => (window as any).webkit?.messageHandlers?.captcha?.postMessage(message);
+      const widget = document.getElementById('widget')!;
+      const siteKey = widget.dataset.sitekey;
+
+      if (!siteKey) {
+        post({ token: '' });
+      } else {
+        const script = document.createElement('script');
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+        script.onerror = () => post({ error: 'load' });
+        script.onload = () =>
+          ((window as any).turnstile as Turnstile).render(widget, {
+            sitekey: siteKey,
+            appearance: 'interaction-only',
+            callback: (token: string) => post({ token }),
+            'before-interactive-callback': () => post({ interactive: true }),
+            'expired-callback': () => post({ error: 'expired' }),
+            'error-callback': () => post({ error: 'failed' }),
+          });
+        document.head.append(script);
+      }
+    </script>
+  </body>
+</html>

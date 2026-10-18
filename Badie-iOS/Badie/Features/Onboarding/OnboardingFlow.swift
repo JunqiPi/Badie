@@ -89,6 +89,7 @@ struct OnboardingFlow: View {
     @State private var isWorking = false
     @State private var errorText: String?
     @State private var resendRemaining = 0
+    @StateObject private var captcha = CaptchaModel()
     @State private var showVenuePicker = false
     @FocusState private var codeFocused: Bool
     @FocusState private var phoneFocused: Bool
@@ -359,7 +360,7 @@ struct OnboardingFlow: View {
                 Task { await sendCode() }
             }
             .buttonStyle(TextActionStyle())
-            .disabled(resendRemaining > 0 || isWorking)
+            .disabled(resendRemaining > 0 || isWorking || (appState.isRemote && !captcha.isReady))
         }
         .onAppear { codeFocused = true }
     }
@@ -531,6 +532,10 @@ struct OnboardingFlow: View {
 
     private var footer: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
+            // 发验证码前的人机验证：填邮箱和输入验证码（重新发送）两步都要
+            if appState.isRemote && (step == .phone || step == .code) {
+                captchaArea
+            }
             Button {
                 primaryAction()
             } label: {
@@ -557,6 +562,26 @@ struct OnboardingFlow: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea(edges: .bottom))
     }
 
+    /// 平时看不见；Cloudflare 要人点一下时才展开验证框
+    private var captchaArea: some View {
+        VStack(spacing: AppTheme.Spacing.xs) {
+            CaptchaView(model: captcha)
+                .frame(height: captcha.needsInteraction ? 72 : 1)
+                .opacity(captcha.needsInteraction ? 1 : 0.01)
+                .accessibilityHidden(!captcha.needsInteraction)
+            if captcha.failed {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Text("人机验证没加载出来，请检查网络后重试。")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.danger)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("重试") { captcha.reset() }
+                        .buttonStyle(TextActionStyle())
+                }
+            }
+        }
+    }
+
     private var primaryTitle: String {
         switch step {
         case .welcome: return appState.isRemote ? String(localized: "邮箱登录 / 注册") : String(localized: "手机号登录 / 注册")
@@ -571,7 +596,7 @@ struct OnboardingFlow: View {
         switch step {
         case .welcome: return true
         case .phone:
-            if appState.isRemote { return !form.email.isEmpty && form.agreed }
+            if appState.isRemote { return !form.email.isEmpty && form.agreed && captcha.isReady }
             return form.phoneNumber.national.count >= form.phoneCountry.phone.lengths.lowerBound && form.agreed
         case .code: return form.code.count == 6
         case .profile: return MockBackend.isValidNickname(form.nickname)
@@ -623,7 +648,9 @@ struct OnboardingFlow: View {
         defer { isWorking = false }
         do {
             if appState.isRemote {
-                try await appState.requestCode(email: form.email)
+                // 令牌只能用一次：不管成没成功都换一个新的，留给“重新发送”
+                defer { captcha.reset() }
+                try await appState.requestCode(email: form.email, captchaToken: captcha.token)
             } else {
                 form.issuedCode = try await appState.requestCode(phone: form.phoneNumber.e164)
             }

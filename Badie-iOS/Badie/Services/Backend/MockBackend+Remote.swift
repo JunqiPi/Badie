@@ -29,8 +29,8 @@ extension MockBackend {
 
     // MARK: 登录
 
-    func remoteSendCode(email: String) async throws {
-        try await requireRemote().sendCode(email: Self.normalizedEmail(email))
+    func remoteSendCode(email: String, captchaToken: String?) async throws {
+        try await requireRemote().sendCode(email: Self.normalizedEmail(email), captchaToken: captchaToken)
     }
 
     /// 验证码对了：有资料就直接登录，没有就去填资料

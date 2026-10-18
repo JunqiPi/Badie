@@ -2,7 +2,7 @@
 // 需要本地 Supabase（supabase start）和已启动的网站（BASE_URL）
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { signUp } from './helpers.mjs';
+import { base, signUp } from './helpers.mjs';
 
 const email = `player${Date.now()}@test.local`;
 
@@ -12,6 +12,19 @@ const context = await browser.newContext({
   geolocation: { latitude: 34.0765, longitude: -118.0462 },
   permissions: ['geolocation'],
 });
+// App 登录用的人机验证页：没配置 site key（本地、CI）时直接告诉 App 不需要验证
+const probe = await context.newPage();
+const messages = [];
+await probe.exposeFunction('captchaMessage', (message) => messages.push(message));
+await probe.addInitScript(() => {
+  const app = /** @type {any} */ (window);
+  app.webkit = { messageHandlers: { captcha: { postMessage: (message) => app.captchaMessage(message) } } };
+});
+await probe.goto(`${base}/captcha/`);
+for (let i = 0; i < 50 && messages.length === 0; i++) await probe.waitForTimeout(100);
+assert.deepEqual(messages, [{ token: '' }]);
+await probe.close();
+
 const page = await context.newPage();
 
 await signUp(page, email, 'Alex');

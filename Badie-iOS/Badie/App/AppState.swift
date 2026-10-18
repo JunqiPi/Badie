@@ -130,8 +130,8 @@ final class AppState: ObservableObject {
         try await backend.verify(phone: phone, code: code)
     }
 
-    func requestCode(email: String) async throws {
-        try await backend.remoteSendCode(email: email)
+    func requestCode(email: String, captchaToken: String?) async throws {
+        try await backend.remoteSendCode(email: email, captchaToken: captchaToken)
     }
 
     func verify(email: String, code: String) async throws -> AuthOutcome {
