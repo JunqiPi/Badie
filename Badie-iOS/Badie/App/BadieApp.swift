@@ -3,45 +3,29 @@ import SwiftUI
 @main
 @MainActor
 struct BadieApp: App {
-    @StateObject private var appState: AppState
-    @StateObject private var router: Router
-    @StateObject private var locationManager: LocationManager
-    @StateObject private var matchManager: MatchManager
-    @StateObject private var friendManager: FriendManager
-    @StateObject private var messageManager: MessageManager
-    @StateObject private var roomManager: RoomManager
-    @StateObject private var surveyManager: SurveyManager
-    @StateObject private var inboxManager: InboxManager
-    @StateObject private var groupManager: GroupManager
+    @StateObject private var host = AppHost()
 
     init() {
-        let environment = AppEnvironment.makeForLaunch()
-        _appState = StateObject(wrappedValue: environment.appState)
-        _router = StateObject(wrappedValue: environment.router)
-        _locationManager = StateObject(wrappedValue: environment.locationManager)
-        _matchManager = StateObject(wrappedValue: environment.matchManager)
-        _friendManager = StateObject(wrappedValue: environment.friendManager)
-        _messageManager = StateObject(wrappedValue: environment.messageManager)
-        _roomManager = StateObject(wrappedValue: environment.roomManager)
-        _surveyManager = StateObject(wrappedValue: environment.surveyManager)
-        _inboxManager = StateObject(wrappedValue: environment.inboxManager)
-        _groupManager = StateObject(wrappedValue: environment.groupManager)
         NotificationRouter.shared.install()
     }
 
     var body: some Scene {
         WindowGroup {
+            let environment = host.environment
             RootView()
-                .environmentObject(appState)
-                .environmentObject(router)
-                .environmentObject(locationManager)
-                .environmentObject(matchManager)
-                .environmentObject(friendManager)
-                .environmentObject(messageManager)
-                .environmentObject(roomManager)
-                .environmentObject(surveyManager)
-                .environmentObject(inboxManager)
-                .environmentObject(groupManager)
+                .environmentObject(host)
+                .environmentObject(environment.appState)
+                .environmentObject(environment.router)
+                .environmentObject(environment.locationManager)
+                .environmentObject(environment.matchManager)
+                .environmentObject(environment.friendManager)
+                .environmentObject(environment.messageManager)
+                .environmentObject(environment.roomManager)
+                .environmentObject(environment.surveyManager)
+                .environmentObject(environment.inboxManager)
+                .environmentObject(environment.groupManager)
+                // 换了环境就从头建界面，不留旧环境的页面和状态
+                .id(host.generation)
         }
     }
 }

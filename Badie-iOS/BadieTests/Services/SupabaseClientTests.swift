@@ -468,6 +468,20 @@ final class SupabaseClientTests: XCTestCase {
         } catch {}
     }
 
+    func testAdminFlagComesFromServer() async throws {
+        let backend = try await signedInBackend()
+        XCTAssertFalse(backend.remoteIsAdmin, "查不到（这里是 404）就当普通用户")
+
+        server.on("GET /rest/v1/profiles", #"[{"id":"\#(userId)","nickname":"Alex","country_code":"US","rating":4,"assessed_at":null,"show_on_boards":true,"challenge_policy":"everyone","locale":"\#(MockBackend.serverLocale)"}]"#)
+        server.on("GET /rest/v1/favorite_venues", "[]")
+        server.on("POST /rest/v1/rpc/is_admin", "true")
+        try await backend.refreshRemoteProfile()
+        XCTAssertTrue(backend.remoteIsAdmin)
+
+        backend.signOutLocally()
+        XCTAssertFalse(backend.remoteIsAdmin, "退出登录后不再是管理员")
+    }
+
     func testDeletingTheAccountClearsTheCache() async throws {
         let backend = try await signedInBackend()
         server.on("POST /rest/v1/rpc/delete_account", "")

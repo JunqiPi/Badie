@@ -35,6 +35,8 @@ final class MockBackend {
     var remoteVenueBoards: [String: RemoteVenueBoard] = [:]
     var remoteWinRates: [String: Rankings.WinRate] = [:]
     var remoteChallengeStatus: [String: String] = [:]
+    /// 服务器上的管理员（只用来显示演示模式开关；审核权限在服务器上另外检查）
+    var remoteIsAdmin = false
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?
@@ -234,6 +236,7 @@ final class MockBackend {
 
     func signOut() {
         if let remote { Task { await remote.signOut() } }
+        remoteIsAdmin = false
         db.currentUserId = nil
         saveNow()
         emit(.sessionChanged)

@@ -99,6 +99,9 @@ final class AppState: ObservableObject {
     /// 正式后端用邮箱登录，演示环境用手机号
     var isRemote: Bool { backend.isRemote }
 
+    /// 管理员可以在设置里打开演示模式
+    var isAdmin: Bool { backend.remoteIsAdmin }
+
     private func handle(_ event: BackendEvent) {
         switch event {
         case .sessionChanged:

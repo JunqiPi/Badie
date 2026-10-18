@@ -81,6 +81,7 @@ enum TimePreset: String, CaseIterable, Identifiable, Hashable {
 
 struct OnboardingFlow: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var host: AppHost
     @EnvironmentObject private var locationManager: LocationManager
 
     @State private var step: OnboardingStep = .welcome
@@ -544,6 +545,10 @@ struct OnboardingFlow: View {
                 Text("登录即可体验，附近球友为演示数据")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
+                if DemoMode.isEnabled {
+                    Button("退出演示模式") { host.setDemoMode(false) }
+                        .buttonStyle(TextActionStyle())
+                }
             }
         }
         .padding(.horizontal, AppTheme.Spacing.screen)

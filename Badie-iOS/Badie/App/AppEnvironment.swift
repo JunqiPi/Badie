@@ -36,23 +36,60 @@ struct AppEnvironment {
             return DemoLauncher.makeEnvironment(screen: screen)
         }
         #endif
-        if RemoteMode.isEnabled {
-            let backend = MockBackend(store: .remoteCache, seedsWorld: false)
-            backend.simulationEnabled = false
-            backend.latencyEnabled = false
-            backend.remote = SupabaseClient()
-            backend.remote?.onSessionExpired = { [weak backend] in backend?.signOutLocally() }
-            let environment = AppEnvironment(backend: backend)
-            // 地图上找到的球馆服务器上没有，不能用来约球
-            environment.locationManager.allowsMapSearch = false
-            return environment
+        return DemoMode.isEnabled ? makeDemo() : makeLive()
+    }
+
+    /// 正式后端（Supabase，与网页共用），本地数据库只当缓存
+    static func makeLive() -> AppEnvironment {
+        let backend = MockBackend(store: .remoteCache, seedsWorld: false)
+        backend.simulationEnabled = false
+        backend.latencyEnabled = false
+        backend.remote = SupabaseClient()
+        backend.remote?.onSessionExpired = { [weak backend] in backend?.signOutLocally() }
+        let environment = AppEnvironment(backend: backend)
+        // 地图上找到的球馆服务器上没有，不能用来约球
+        environment.locationManager.allowsMapSearch = false
+        return environment
+    }
+
+    /// 演示模式：本机模拟的球友和球局，所有功能都能用；第一次打开时直接用演示账号进入
+    static func makeDemo() -> AppEnvironment {
+        let backend = MockBackend.shared
+        if backend.currentUser == nil && backend.db.accounts.isEmpty {
+            backend.createAccount(phone: "+16265550123", nickname: "阿杰", avatar: Avatar(symbol: "", paletteIndex: 4), level: 4,
+                                  preferredMode: .doubles, location: Coordinate.fallbackCenter)
         }
-        return AppEnvironment(backend: .shared)
+        return AppEnvironment(backend: backend)
     }
 }
 
-/// 正式后端开关。功能接入完之前默认关闭；用启动参数 `-BBRemote YES` 打开
-enum RemoteMode {
-    static var isEnabled: Bool { UserDefaults.standard.bool(forKey: "BBRemote") }
+/// 演示模式开关：只有管理员能在设置里打开，其他人一直用正式后端。
+/// 开发时也可以用启动参数 `-BBDemo YES` 直接进入
+enum DemoMode {
+    private static let key = "BBDemo"
+
+    static var isEnabled: Bool {
+        get { UserDefaults.standard.bool(forKey: key) }
+        set { UserDefaults.standard.set(newValue, forKey: key) }
+    }
 }
 
+/// 持有当前这套环境。打开或关闭演示模式时整套换掉：
+/// 界面从头重建，旧管理器的后台循环（都是弱引用）随旧对象释放而停止
+@MainActor
+final class AppHost: ObservableObject {
+    @Published private(set) var environment: AppEnvironment
+    /// 每换一次环境加一，用作根视图的 id
+    private(set) var generation = 0
+
+    init() {
+        environment = AppEnvironment.makeForLaunch()
+    }
+
+    func setDemoMode(_ isOn: Bool) {
+        guard DemoMode.isEnabled != isOn else { return }
+        DemoMode.isEnabled = isOn
+        generation += 1
+        environment = isOn ? .makeDemo() : .makeLive()
+    }
+}

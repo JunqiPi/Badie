@@ -78,6 +78,7 @@ extension MockBackend {
     /// 只清本地登录状态（服务器那边已经失效或从没登录过）
     func signOutLocally() {
         guard db.currentUserId != nil else { return }
+        remoteIsAdmin = false
         db.currentUserId = nil
         saveNow()
         emit(.sessionChanged)
@@ -105,6 +106,8 @@ extension MockBackend {
         guard let profile = rows.first else { return nil }
         let favorites: [FavoriteRow] = try await client.select("favorite_venues", query: "select=venue_id&order=created_at")
         db.favoriteCourtIds[profile.id] = favorites.map(\.venueId)
+        // 写缓存之前查：缓存会通知界面刷新，设置页据此决定是否显示演示模式开关
+        remoteIsAdmin = (try? await client.rpc("is_admin", as: Bool.self)) ?? false
         let user = cache(profile, email: session.email)
         if profile.locale != Self.serverLocale {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["locale": Self.serverLocale])

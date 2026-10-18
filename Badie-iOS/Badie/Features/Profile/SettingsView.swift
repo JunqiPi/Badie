@@ -3,6 +3,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var host: AppHost
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var locationManager: LocationManager
 
@@ -129,13 +130,32 @@ struct SettingsView: View {
                     }
 
                     if !appState.isRemote {
-                        section(String(localized: "演示数据")) {
+                        section(String(localized: "演示模式")) {
                             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                                Text("当前没有接入线上服务：附近球友、公开球局为本机模拟数据，会自动回复消息、加入球局和互评，方便完整体验流程。")
+                                Text("附近球友、公开球局都是本机模拟数据，会自动回复消息、加入球局和互评。服务器上的数据不受影响。")
                                     .font(AppTheme.Typography.footnote)
                                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                                     .fixedSize(horizontal: false, vertical: true)
-                                Button("重置演示数据") { showReset = true }
+                                HStack(spacing: AppTheme.Spacing.sm) {
+                                    if DemoMode.isEnabled {
+                                        Button("退出演示模式") { host.setDemoMode(false) }
+                                            .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
+                                    }
+                                    Button("重置演示数据") { showReset = true }
+                                        .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                                }
+                            }
+                            .card(AppTheme.Colors.surface, shadow: .zero)
+                        }
+                    } else if appState.isAdmin {
+                        // 只有服务器上的管理员看得到：用来给别人演示还没接入服务器的功能
+                        section(String(localized: "管理员")) {
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                                Text("演示模式用本机模拟的球友和球局，房间、公开球局、同馆常客等功能都能体验。不会改动服务器上的数据，其他用户看不到这个开关。")
+                                    .font(AppTheme.Typography.footnote)
+                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Button("进入演示模式") { host.setDemoMode(true) }
                                     .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
                             }
                             .card(AppTheme.Colors.surface, shadow: .zero)

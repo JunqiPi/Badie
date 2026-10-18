@@ -48810,64 +48810,6 @@
         }
       }
     },
-    "当前没有接入线上服务：附近球友、公开球局为本机模拟数据，会自动回复消息、加入球局和互评，方便完整体验流程。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not connected to online services: nearby players and public games are simulated on this device. They auto-reply to messages, join games, and leave reviews so you can try the full flow."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ऑनलाइन सर्विस से कनेक्ट नहीं: आसपास के खिलाड़ी और पब्लिक गेम इस डिवाइस पर सिम्युलेट किए गए हैं। ये मैसेज का अपने-आप जवाब देते हैं, गेम में शामिल होते हैं और रिव्यू देते हैं, ताकि आप पूरा फ़्लो आज़मा सकें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Belum terhubung ke layanan online: pemain sekitar dan game publik adalah simulasi di perangkat ini. Mereka otomatis membalas pesan, bergabung ke game, dan memberi ulasan supaya kamu bisa mencoba alurnya secara lengkap."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "オンラインサービスに接続していません：近くのプレイヤーや公開ゲームはこの端末上のシミュレーションデータです。メッセージへの自動返信、ゲームへの参加、相互評価が自動で行われるので、一連の流れを体験できます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "온라인 서비스에 연결되어 있지 않아요: 근처 플레이어와 공개 게임은 이 기기의 시뮬레이션 데이터예요. 메시지 자동 답장, 게임 참가, 상호 평가가 자동으로 이뤄져 전체 흐름을 체험할 수 있어요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidak disambungkan ke perkhidmatan dalam talian: pemain berdekatan dan permainan awam disimulasikan pada peranti ini. Ia membalas mesej, menyertai permainan dan memberi ulasan secara automatik supaya anda boleh mencuba aliran penuh."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ยังไม่ได้เชื่อมต่อบริการออนไลน์: ผู้เล่นใกล้ๆ และเกมสาธารณะเป็นข้อมูลจำลองในเครื่องนี้ จะตอบข้อความ เข้าร่วมเกม และรีวิวอัตโนมัติ เพื่อให้คุณลองใช้งานได้ครบทุกขั้นตอน"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chưa kết nối dịch vụ trực tuyến: người chơi gần đây và trận công khai là dữ liệu mô phỏng trên thiết bị. Chúng tự động trả lời tin nhắn, tham gia trận và đánh giá để bạn trải nghiệm đầy đủ quy trình."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "目前沒有連接線上服務：附近球友、公開球局為本機模擬資料，會自動回覆訊息、加入球局和互評，方便完整體驗流程。"
-          }
-        }
-      }
-    },
     "待付" : {
       "localizations" : {
         "en" : {
@@ -73699,64 +73641,6 @@
         }
       }
     },
-    "演示数据" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Demo data"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "डेमो डेटा"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Data demo"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "デモデータ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "데모 데이터"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Data demo"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ข้อมูลตัวอย่าง"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dữ liệu demo"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "示範資料"
-          }
-        }
-      }
-    },
     "演示数据已重置" : {
       "localizations" : {
         "en" : {
@@ -73811,6 +73695,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "示範資料已重設"
+          }
+        }
+      }
+    },
+    "演示模式" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo mode"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेमो मोड"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode demo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デモモード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데모 모드"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mod demo"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โหมดเดโม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chế độ demo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "示範模式"
+          }
+        }
+      }
+    },
+    "演示模式用本机模拟的球友和球局，房间、公开球局、同馆常客等功能都能体验。不会改动服务器上的数据，其他用户看不到这个开关。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo mode uses players and games simulated on this device, so you can show rooms, public games, court regulars and every other feature. It doesn't change anything on the server, and other users don't see this switch."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेमो मोड इसी डिवाइस पर सिम्युलेट किए गए खिलाड़ी और गेम इस्तेमाल करता है, ताकि आप रूम, पब्लिक गेम, कोर्ट के नियमित खिलाड़ी और बाकी सभी फ़ीचर दिखा सकें। सर्वर पर कुछ नहीं बदलता, और दूसरे यूज़र को यह स्विच नहीं दिखता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode demo memakai pemain dan game simulasi di perangkat ini, jadi kamu bisa menunjukkan room, game publik, pemain tetap GOR, dan semua fitur lain. Tidak ada yang berubah di server, dan pengguna lain tidak melihat tombol ini."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デモモードではこの端末でシミュレーションしたプレイヤーとゲームを使い、ルーム、公開ゲーム、常連プレイヤーなどすべての機能を試せます。サーバー上のデータは変わらず、他のユーザーにはこのスイッチは表示されません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데모 모드는 이 기기에서 만든 플레이어와 게임으로 방, 공개 게임, 단골 플레이어 등 모든 기능을 보여줄 수 있어요. 서버의 데이터는 바뀌지 않고, 다른 사용자에게는 이 스위치가 보이지 않아요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mod demo menggunakan pemain dan permainan simulasi pada peranti ini, jadi anda boleh menunjukkan bilik, permainan awam, pemain tetap dewan dan semua ciri lain. Tiada apa yang berubah di pelayan, dan pengguna lain tidak nampak suis ini."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "โหมดเดโมใช้ผู้เล่นและเกมจำลองในเครื่องนี้ จึงแสดงห้อง เกมสาธารณะ ขาประจำสนาม และทุกฟีเจอร์ได้ ไม่มีการเปลี่ยนแปลงข้อมูลบนเซิร์ฟเวอร์ และผู้ใช้อื่นจะไม่เห็นสวิตช์นี้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chế độ demo dùng người chơi và trận đấu mô phỏng trên máy này, nên bạn có thể giới thiệu phòng, trận công khai, người chơi quen sân và mọi tính năng khác. Không thay đổi gì trên máy chủ, và người dùng khác không thấy công tắc này."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "示範模式使用本機模擬的球友和球局，房間、公開球局、同館常客等功能都能體驗。不會改動伺服器上的資料，其他使用者看不到這個開關。"
           }
         }
       }
@@ -81567,6 +81567,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "簽到紀錄會計入履約率，爽約和臨時取消會被記錄"
+          }
+        }
+      }
+    },
+    "管理员" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एडमिन"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理者"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관리자"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pentadbir"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ผู้ดูแลระบบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quản trị viên"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理員"
           }
         }
       }
@@ -96489,6 +96547,64 @@
         }
       }
     },
+    "进入演示模式" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch to demo mode"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेमो मोड पर जाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beralih ke mode demo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デモモードに切り替え"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데모 모드로 전환"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tukar ke mod demo"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สลับไปโหมดเดโม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển sang chế độ demo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進入示範模式"
+          }
+        }
+      }
+    },
     "进攻" : {
       "localizations" : {
         "en" : {
@@ -96891,6 +97007,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "退出房間？"
+          }
+        }
+      }
+    },
+    "退出演示模式" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave demo mode"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डेमो मोड से बाहर निकलें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keluar dari mode demo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "デモモードを終了"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데모 모드 끝내기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keluar daripada mod demo"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ออกจากโหมดเดโม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thoát chế độ demo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出示範模式"
           }
         }
       }
@@ -100859,6 +101033,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "附近正在找人"
+          }
+        }
+      }
+    },
+    "附近球友、公开球局都是本机模拟数据，会自动回复消息、加入球局和互评。服务器上的数据不受影响。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby players and public games are simulated on this device. They reply to messages, join games and leave reviews. Nothing on the server changes."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आसपास के खिलाड़ी और पब्लिक गेम इसी डिवाइस पर सिम्युलेट किए गए हैं। वे मैसेज का जवाब देते हैं, गेम में शामिल होते हैं और रिव्यू देते हैं। सर्वर का डेटा नहीं बदलता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain terdekat dan game publik adalah simulasi di perangkat ini. Mereka membalas pesan, ikut game, dan memberi ulasan. Data di server tidak berubah."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くのプレイヤーや公開ゲームはこの端末上のシミュレーションです。メッセージへの返信、ゲームへの参加、相互評価も自動で行われます。サーバー上のデータは変わりません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주변 플레이어와 공개 게임은 이 기기에서 만든 시뮬레이션이에요. 메시지에 답하고, 게임에 참여하고, 리뷰도 남겨요. 서버의 데이터는 바뀌지 않아요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain berdekatan dan permainan awam ialah simulasi pada peranti ini. Mereka membalas mesej, menyertai permainan dan memberi ulasan. Data di pelayan tidak berubah."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ผู้เล่นใกล้คุณและเกมสาธารณะเป็นข้อมูลจำลองในเครื่องนี้ ระบบจะตอบข้อความ เข้าร่วมเกม และรีวิวให้อัตโนมัติ ข้อมูลบนเซิร์ฟเวอร์ไม่เปลี่ยนแปลง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Người chơi gần bạn và trận công khai đều là dữ liệu mô phỏng trên máy này. Họ tự trả lời tin nhắn, tham gia trận và đánh giá. Dữ liệu trên máy chủ không thay đổi."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近球友、公開球局都是本機模擬資料，會自動回覆訊息、加入球局和互評。伺服器上的資料不受影響。"
           }
         }
       }
