@@ -397,16 +397,15 @@ struct AddFriendView: View {
                         section(title: String(localized: "搜索结果"), users: results, emptyText: String(localized: "没有找到“\(query)”"))
                     }
                     section(title: String(localized: "一起打过球的人"), users: coPlayers, emptyText: String(localized: "打完球后，这里会出现一起打过的人"))
-                    if !appState.isRemote {
-                        section(title: String(localized: "同馆常客"), users: regulars, emptyText: String(localized: "设置常去球馆后，这里会显示公开了自己是常客的球友"))
-                    }
+                    section(title: String(localized: "同馆常客"), users: regulars, emptyText: String(localized: "设置常去球馆后，这里会显示公开了自己是常客的球友"))
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
         }
-        .onAppear {
+        .task {
             coPlayers = friendManager.recentCoPlayers()
+            await friendManager.refreshRegulars()
             regulars = friendManager.venueRegulars().map(\.user).filter { !friendManager.isFriend($0.id) }
         }
         .task(id: query) {

@@ -344,8 +344,8 @@ extension MockBackend {
 
     /// 标记已读（产生已读回执）
     func markThreadRead(_ threadId: String) {
-        // 正式后端：打开会话时拉取消息（服务器同时记为已读），3 秒内不重复拉
-        if isRemote, Date().timeIntervalSince(remoteThreadLoadedAt[threadId] ?? .distantPast) > 3 {
+        // 正式后端：打开会话时拉取消息（服务器同时记为已读），3 秒内不重复拉；还不能私信的人没有会话可拉
+        if isRemote, canOpenRemoteThread(threadId), Date().timeIntervalSince(remoteThreadLoadedAt[threadId] ?? .distantPast) > 3 {
             remoteThreadLoadedAt[threadId] = Date()
             Task {
                 do {

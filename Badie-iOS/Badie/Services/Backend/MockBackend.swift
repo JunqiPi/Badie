@@ -38,6 +38,10 @@ final class MockBackend {
     var remoteVenueBoards: [String: RemoteVenueBoard] = [:]
     var remoteWinRates: [String: Rankings.WinRate] = [:]
     var remoteChallengeStatus: [String: String] = [:]
+    /// 同馆常客（上次拉取的时间），以及对每位球友能不能私信（资料页上服务器给的）
+    var remoteRegulars: [VenueRegular] = []
+    var remoteRegularsLoadedAt: Date?
+    var remoteMessageOptions: [String: RemoteMessageOption] = [:]
     /// 服务器上的管理员（只用来显示演示模式开关；审核权限在服务器上另外检查）
     var remoteIsAdmin = false
     /// 上次按位置拉取球馆的地点、半径和时间
@@ -318,7 +322,8 @@ final class MockBackend {
         scheduleSave()
         emit(.userUpdated(user))
         pushRemote(["show_on_boards": privacy.showsOnLeaderboards, "challenge_policy": privacy.challengePolicy.serverValue,
-                    "discoverable": privacy.findableByNickname])
+                    "discoverable": privacy.findableByNickname, "show_as_regular": privacy.showsAsRegular,
+                    "allow_message_requests": privacy.allowsMessageRequests])
     }
 
     func updateProfile(_ updated: User) async throws -> User {

@@ -19,6 +19,10 @@ export interface Profile {
   challenge_policy: 'everyone' | 'similar' | 'friends' | 'nobody';
   /** 别人可以按昵称搜到我 */
   discoverable: boolean;
+  /** 在收藏了同一家球馆的人那里显示为常客 */
+  show_as_regular: boolean;
+  /** 同球群的人可以给我发消息请求 */
+  allow_message_requests: boolean;
   /** 通知和邮件用的语言 */
   locale: Locale;
 }
@@ -139,6 +143,16 @@ export interface PlayerCard {
   win_rate: WinRate | null;
   /** 'available'、'hidden'（不显示按钮）或不能挑战的原因 */
   challenge: string;
+  /** 能不能私信：request = 同球群，可以发一条消息请求 */
+  message: { status: 'friends' | 'open' | 'requested' | 'request' | 'new_account' | 'none'; group?: string };
+}
+
+/** 收藏了同一家球馆、愿意被看到的常客 */
+export interface Regular {
+  id: string;
+  nickname: string;
+  rating: number;
+  venue: { id: string; name: string };
 }
 
 // 榜单与约战
@@ -181,14 +195,22 @@ export interface ThreadSummary {
   tz: string | null;
   /** 球群名或私信对象的昵称 */
   name: string | null;
-  access: 'open' | 'closed';
+  access: ThreadAccess;
+  /** 还没接受的消息请求：incoming = 对方发给我的 */
+  request: 'incoming' | 'outgoing' | null;
   last: { body: string; created_at: string; mine: boolean } | null;
   unread: number;
 }
 
+/** request = 可以发一条消息请求，requested = 已发出，等对方接受 */
+export type ThreadAccess = 'open' | 'closed' | 'request' | 'requested';
+
 export interface Thread {
-  access: 'open' | 'closed';
+  access: ThreadAccess;
   friend: boolean;
+  request: 'incoming' | 'outgoing' | null;
+  /** 可以发请求时：你们共同的球群 */
+  group_name: string | null;
   game: { starts_at: string; ends_at: string; venue: string; tz: string | null } | null;
   group: { name: string; venue: string } | null;
   members: { id: string; nickname: string; me: boolean }[];
@@ -334,6 +356,8 @@ const problems: Record<string, string> = {
   no_request: 'This friend request is no longer open.',
   invalid_schedule: 'Add 1 to 3 weekly sessions.',
   no_contact_info: 'Leave out phone numbers and links.',
+  request_pending: 'You already sent a message request. Wait for them to accept.',
+  too_many_message_requests: 'You’ve sent a lot of message requests today. Try again tomorrow.',
   too_many_groups: 'You’ve reached the limit for groups.',
   group_not_found: 'Group not found.',
   level_out_of_range: 'Your level is outside the range they accept.',

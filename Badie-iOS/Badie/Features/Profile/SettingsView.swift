@@ -74,31 +74,28 @@ struct SettingsView: View {
 
                     section(String(localized: "谁能看到我、联系我")) {
                         VStack(spacing: AppTheme.Spacing.md) {
-                            // 正式后端没有同馆常客和消息请求
-                            if !appState.isRemote {
-                                Toggle(isOn: privacyBinding(\.showsAsRegular)) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("在常去球馆的“同馆常客”里显示我")
-                                            .font(AppTheme.Typography.bodyBold)
-                                            .foregroundStyle(AppTheme.Colors.ink)
-                                        Text("只显示昵称、等级和球馆，不显示时间和位置")
-                                            .font(AppTheme.Typography.caption)
-                                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                    }
+                            Toggle(isOn: privacyBinding(\.showsAsRegular)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("在常去球馆的“同馆常客”里显示我")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("只显示昵称、等级和球馆，不显示时间和位置")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
                                 }
-                                InsetDivider()
-                                Toggle(isOn: privacyBinding(\.allowsMessageRequests)) {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text("允许同球群的人给我发消息请求")
-                                            .font(AppTheme.Typography.bodyBold)
-                                            .foregroundStyle(AppTheme.Colors.ink)
-                                        Text("关闭后只有球友能私信你；球局群聊不受影响")
-                                            .font(AppTheme.Typography.caption)
-                                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                    }
-                                }
-                                InsetDivider()
                             }
+                            InsetDivider()
+                            Toggle(isOn: privacyBinding(\.allowsMessageRequests)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("允许同球群的人给我发消息请求")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("关闭后只有球友能私信你；球局群聊不受影响")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
+                            InsetDivider()
                             Toggle(isOn: privacyBinding(\.findableByNickname)) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("可以按昵称找到我")
@@ -132,8 +129,7 @@ struct SettingsView: View {
                             privacyLine(appState.isRemote ? String(localized: "邮箱只用于登录与安全验证，不会展示给任何球友")
                                                           : String(localized: "手机号只用于登录与安全验证，不会展示给任何球友"))
                             privacyLine(String(localized: "位置只用于计算距离，球友看到的是大概范围（如“5 英里内”），不是精确距离"))
-                            privacyLine(appState.isRemote ? String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊")
-                                                          : String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"))
+                            privacyLine(String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"))
                             privacyLine(String(localized: "评价匿名汇总，不展示单条评价与评价人"))
                             privacyLine(String(localized: "屏蔽对方不会通知对方"))
                         }

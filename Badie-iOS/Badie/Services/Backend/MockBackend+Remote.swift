@@ -15,6 +15,8 @@ extension MockBackend {
         let showOnBoards: Bool
         let challengePolicy: String
         let discoverable: Bool?
+        let showAsRegular: Bool?
+        let allowMessageRequests: Bool?
         let locale: String
         let createdAt: Date?
     }
@@ -135,6 +137,8 @@ extension MockBackend {
         user.privacy.showsOnLeaderboards = profile.showOnBoards
         user.privacy.challengePolicy = ChallengePolicy(server: profile.challengePolicy)
         user.privacy.findableByNickname = profile.discoverable ?? true
+        user.privacy.showsAsRegular = profile.showAsRegular ?? false
+        user.privacy.allowsMessageRequests = profile.allowMessageRequests ?? true
         db.users[user.id] = user
         let signingIn = db.currentUserId != user.id
         db.currentUserId = user.id

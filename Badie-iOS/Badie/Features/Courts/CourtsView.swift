@@ -132,6 +132,7 @@ struct CourtDetailSheet: View {
     @State private var showNavigation = false
     @State private var showReport = false
     @State private var hasConfirmed = false
+    @State private var regularsCount: Int?
 
     /// 最新数据（确认后状态会变化）
     private var venue: BadmintonCourt { appState.backend.venue(id: court.id) ?? court }
@@ -183,9 +184,7 @@ struct CourtDetailSheet: View {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     StatTile(value: venue.formattedDistance(from: locationManager.coordinate), label: String(localized: "距离"))
                     StatTile(value: venue.courtCount.map { "\($0)" } ?? "–", label: String(localized: "场地数"))
-                    if !appState.isRemote {
-                        StatTile(value: "\(appState.backend.regularsCount(for: venue.id))", label: String(localized: "人常去"))
-                    }
+                    StatTile(value: regularsCount.map { "\($0)" } ?? "–", label: String(localized: "人常去"))
                 }
 
                 VStack(alignment: .leading, spacing: 0) {
@@ -272,6 +271,10 @@ struct CourtDetailSheet: View {
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .onAppear { hasConfirmed = appState.venueService.hasConfirmed(venue.id) }
+        // 收藏或取消后人数会变
+        .task(id: locationManager.isFavorite(venue.id)) {
+            regularsCount = await appState.backend.fetchRegularsCount(for: venue.id)
+        }
         .confirmationDialog("选择导航方式", isPresented: $showNavigation, titleVisibility: .visible) {
             ForEach(MapsLauncher.apps(for: venue)) { app in
                 Button(app.title) {

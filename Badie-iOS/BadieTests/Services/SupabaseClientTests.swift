@@ -407,6 +407,65 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(server.json(0)["p_accept"] as? Bool, true)
     }
 
+    func testMessageRequestsFollowTheServer() async throws {
+        let backend = try await signedInBackend()
+        let casey = "6f1c2c3e-0000-4000-8000-000000000003"
+        // Casey 发来的请求在会话列表里；Blake 的资料页说可以发一条请求
+        server.on("POST /rest/v1/rpc/my_friends", #"{"friends":[],"requests":[]}"#)
+        server.on("POST /rest/v1/rpc/my_threads",
+                  #"[{"kind":"dm","id":"\#(casey)","starts_at":null,"venue":null,"tz":null,"name":"Casey","access":"open","request":"incoming","last":{"body":"Hi from the club","created_at":"2026-10-17T12:00:00+00:00","mine":false},"unread":1}]"#)
+        server.on("GET /rest/v1/notifications",
+                  #"[{"id":9,"kind":"message_request","title":"Casey wants to chat","body":"…","link":"/app/messages/dm/\#(casey)/","created_at":"2026-10-17T12:00:00+00:00","read_at":null}]"#)
+        try await backend.refreshRemoteSocial()
+        XCTAssertEqual(backend.incomingMessageRequests().map(\.id), [MessageThread.id(for: userId, casey)])
+        XCTAssertEqual(backend.messagePermission(with: casey), .allowed, "回复就算接受")
+        XCTAssertEqual(backend.inbox().first?.kind, .messageRequest)
+        XCTAssertEqual(backend.inbox().first?.relatedId, casey, "点开去和 TA 的会话")
+
+        server.on("POST /rest/v1/rpc/player_card",
+                  #"{"id":"\#(blake)","nickname":"Blake","rating":4.33,"tags":[],"win_rate":null,"challenge":"hidden","message":{"status":"request","group":"Sunday Club"}}"#)
+        await backend.refreshRemotePlayer(blake)
+        XCTAssertEqual(backend.messagePermission(with: blake), .request(groupName: "Sunday Club"))
+
+        // 接受：先改本地，再告诉服务器
+        server.requests = []
+        server.on("POST /rest/v1/rpc/respond_message_request", "")
+        backend.acceptMessageRequest(threadId: MessageThread.id(for: userId, casey))
+        XCTAssertTrue(backend.incomingMessageRequests().isEmpty)
+        await waitFor { !self.server.requests.isEmpty }
+        XCTAssertEqual(server.json(0)["p_user"] as? String, casey)
+        XCTAssertEqual(server.json(0)["p_accept"] as? Bool, true)
+    }
+
+    func testRegularsAndPrivacyComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        XCTAssertFalse(backend.currentUser?.privacy.showsAsRegular ?? true, "常客默认不显示")
+        XCTAssertTrue(backend.currentUser?.privacy.allowsMessageRequests ?? false)
+
+        server.on("POST /rest/v1/rpc/venues_near", #"[{"venue":\#(venueJSON()),"distance_m":1200}]"#)
+        backend.refreshRemoteVenues(near: Coordinate(latitude: 34.14, longitude: -118.13), radiusKm: 25)
+        await waitFor { backend.venue(id: "v-1a2b3c4d") != nil }
+        server.on("POST /rest/v1/rpc/venue_regulars",
+                  #"[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"venue":{"id":"v-1a2b3c4d","name":"Pasadena Badminton"}}]"#)
+        try await backend.refreshRemoteRegulars(force: true)
+        XCTAssertEqual(backend.venueRegulars().map(\.user.nickname), ["Blake"])
+        XCTAssertEqual(backend.venueRegulars().first?.venue.id, "v-1a2b3c4d")
+
+        server.on("GET /rest/v1/venue_regular_counts", #"[{"regulars":7}]"#)
+        let count = await backend.fetchRegularsCount(for: "v-1a2b3c4d")
+        XCTAssertEqual(count, 7)
+
+        server.requests = []
+        server.on("PATCH /rest/v1/profiles", "")
+        var privacy = try XCTUnwrap(backend.currentUser?.privacy)
+        privacy.showsAsRegular = true
+        privacy.allowsMessageRequests = false
+        backend.updatePrivacy(privacy)
+        await waitFor { !self.server.requests.isEmpty }
+        XCTAssertEqual(server.json(0)["show_as_regular"] as? Bool, true)
+        XCTAssertEqual(server.json(0)["allow_message_requests"] as? Bool, false)
+    }
+
     func testOpeningAndSendingInAThread() async throws {
         let backend = try await signedInBackend()
         let thread = #"{"access":"open","friend":true,"game":null,"group":null,"members":[{"id":"\#(userId)","nickname":"Alex","me":true},{"id":"\#(blake)","nickname":"Blake","me":false}],"messages":[{"id":1,"body":"Hi","created_at":"2026-10-17T12:00:00+00:00","sender":"\#(blake)","mine":false},{"id":2,"body":"Hello","created_at":"2026-10-17T12:01:00+00:00","sender":"\#(userId)","mine":true}]}"#

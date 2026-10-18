@@ -49,6 +49,7 @@ export function PlayerPage({ id }: { id: string }) {
           {card.tags.map((tag) => <li key={tag} className="chip bg-lavender">{t(tagLabels[tag] ?? tag)}</li>)}
         </ul>
         {card.relationship !== 'self' && <Actions card={card} onChange={refresh} />}
+        {card.relationship !== 'self' && card.relationship !== 'friend' && <MessageOption card={card} />}
       </section>
 
       {rate && (
@@ -101,6 +102,21 @@ function useAction(onChange: () => void) {
     return !error;
   }
   return { busy, run };
+}
+
+/** 不是球友时的私信入口：同球群可以发一条消息请求 */
+function MessageOption({ card }: { card: PlayerCard }) {
+  const { status, group } = card.message;
+  if (status === 'open') return <Link to={`/app/messages/dm/${card.id}/`} className="button button-quiet justify-self-start">{t('Message')}</Link>;
+  if (status === 'requested') return <p className="text-sm font-bold text-ink-secondary">{t('Message request sent')}</p>;
+  if (status === 'new_account') return <p className="text-sm text-ink-tertiary">{t('After 3 games you can send message requests to people in your groups.')}</p>;
+  if (status !== 'request') return null;
+  return (
+    <div className="grid justify-items-start gap-1">
+      <Link to={`/app/messages/dm/${card.id}/`} className="button button-quiet">{t('Send a message request')}</Link>
+      <p className="text-sm text-ink-tertiary">{t('You’re both in {group}.', { group: group ?? '' })}</p>
+    </div>
+  );
 }
 
 function Actions({ card, onChange }: { card: PlayerCard; onChange: () => void }) {

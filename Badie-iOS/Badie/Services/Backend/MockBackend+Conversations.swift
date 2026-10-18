@@ -31,8 +31,7 @@ extension MockBackend {
         guard let me = currentUser, userId != me.id else { return .friendsOnly }
         if blockedIds(of: me.id).contains(userId) { return .blocked }
         if isFriend(userId) { return .allowed }
-        // 正式后端：私信只能发给球友，同一场球局的人去球局群聊
-        if isRemote { return sharedOpenGame(with: userId, now: now).map { .gameChat(gameId: $0.id) } ?? .friendsOnly }
+        if isRemote { return remoteMessagePermission(with: userId, me: me.id, now: now) }
         if let thread = db.threads[MessageThread.id(for: me.id, userId)] {
             if thread.isPendingRequest {
                 // 对方发来的请求：回复即接受
@@ -72,16 +71,22 @@ extension MockBackend {
     /// 接受对方的消息请求
     func acceptMessageRequest(threadId: String) {
         guard let me = currentUserId, var thread = db.threads[threadId], thread.isPendingRequest,
-              thread.requestFrom != me, thread.participantIds.contains(me) else { return }
+              let from = thread.requestFrom, from != me, thread.participantIds.contains(me) else { return }
         thread.isPendingRequest = false
         db.threads[threadId] = thread
         scheduleSave()
         emit(.threadsChanged)
         emit(.messagesChanged(threadId: threadId))
+        if isRemote { remoteRespondMessageRequest(from: from, accept: true) }
     }
 
     /// 忽略：只对自己隐藏，对方不会知道被忽略（仍显示“等待接受”）
     func declineMessageRequest(threadId: String) {
+        if isRemote, let me = currentUserId, let from = db.threads[threadId]?.requestFrom, from != me {
+            db.threads[threadId] = nil
+            emit(.threadsChanged)
+            return remoteRespondMessageRequest(from: from, accept: false)
+        }
         deleteThread(threadId)
     }
 

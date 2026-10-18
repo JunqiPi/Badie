@@ -72,10 +72,7 @@ struct HomeView: View {
                 groupsSection
                     .padding(.horizontal, AppTheme.Spacing.screen)
                 publicGamesSection
-                // 正式后端没有同馆常客
-                if !appState.isRemote {
-                    playersSection
-                }
+                playersSection
                 courtsSection
                     .padding(.horizontal, AppTheme.Spacing.screen)
             }
@@ -85,6 +82,11 @@ struct HomeView: View {
         .refreshable {
             locationManager.refreshCourts()
             roomManager.reload()
+            await friendManager.refreshRegulars()
+            reloadPlayers()
+        }
+        .task {
+            await friendManager.refreshRegulars()
             reloadPlayers()
         }
         .onAppear {

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type SubmitEvent } from 'react';
 import { tier } from './assessment';
 import { t } from './i18n';
-import { Link } from './router';
-import { problem, supabase, useLive, type FoundPlayer, type Friend, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
+import { Link, navigate } from './router';
+import { problem, supabase, useLive, type FoundPlayer, type Friend, type Regular, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
 import { day, hours, relative } from './time';
 import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
 
@@ -54,6 +54,7 @@ function Chats() {
             </span>
           </span>
           <span className="grid shrink-0 justify-items-end gap-1">
+            {thread.request === 'incoming' && <span className="chip bg-butter">{t('Message request')}</span>}
             {thread.last && <span className="text-xs font-bold text-ink-tertiary">{relative(thread.last.created_at)}</span>}
             {thread.unread > 0 && <span className="chip bg-lime" aria-label={t('{n} unread', { n: thread.unread })}>{thread.unread}</span>}
           </span>
@@ -119,6 +120,7 @@ function Friends() {
   return (
     <div className="grid gap-8">
       <FindPlayers onAdded={refresh} />
+      <Regulars />
       {data.requests.length > 0 && (
         <section aria-labelledby="requests" className="grid gap-3">
           <h2 id="requests" className="eyebrow">{t('Friend requests')}</h2>
@@ -214,6 +216,30 @@ function FindPlayers({ onAdded }: { onAdded: () => void }) {
   );
 }
 
+/** 同馆常客：收藏了同一家球馆、自己愿意被看到的人 */
+function Regulars() {
+  const { data: regulars } = useLive<Regular[]>('venue_regulars', { every: 300_000 });
+  if (!regulars?.length) return null;
+  return (
+    <section aria-labelledby="regulars" className="grid gap-3">
+      <div>
+        <h2 id="regulars" className="eyebrow">{t('Regulars at your courts')}</h2>
+        <p className="text-sm text-ink-tertiary">{t('Players who starred the same courts and chose to show up here.')}</p>
+      </div>
+      {regulars.map((r) => (
+        <Link key={r.id} to={`/app/players/${r.id}/`} className="sticker lift flex items-center gap-3 p-4">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-black">{r.nickname}</span>
+            <span className="block truncate text-sm font-bold text-ink-tertiary">
+              {t('Level {level}', { level: tier(r.rating).label })} · {r.venue.name}
+            </span>
+          </span>
+        </Link>
+      ))}
+    </section>
+  );
+}
+
 function preview(thread: ThreadSummary) {
   if (thread.last) return thread.last.mine ? t('You: {message}', { message: thread.last.body }) : thread.last.body;
   if (thread.kind === 'game') return t('Game chat · say hi to your partners');
@@ -251,7 +277,16 @@ export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
     const { error } = await supabase!.rpc('send_message', { p_kind: kind, p_id: id, p_body: draft });
     setBusy(false);
     if (error) return toast(problem(error), 'error');
+    if (thread?.access === 'request') toast(t('Message request sent'));
     setDraft('');
+    refresh();
+  }
+
+  /** 收到的消息请求：接受后可以继续聊；忽略的话对方不会知道 */
+  async function respond(accept: boolean) {
+    const { error } = await supabase!.rpc('respond_message_request', { p_user: id, p_accept: accept });
+    if (error) return toast(problem(error), 'error');
+    if (!accept) return navigate('/app/messages/');
     refresh();
   }
 
@@ -308,7 +343,24 @@ export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
         <div ref={end} />
       </div>
 
-      {thread.access === 'open' ? (
+      {thread.request === 'incoming' && (
+        <div className="tile grid gap-3 bg-butter p-4 text-on-accent">
+          <p className="font-black">{t('{name} wants to chat', { name: other?.nickname ?? '' })}</p>
+          <p className="text-sm">{t('You’re in the same group. Accept or reply to keep chatting. If you ignore it, they won’t know.')}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => respond(true)}>{t('Accept')}</Button>
+            <Button variant="quiet" onClick={() => respond(false)}>{t('Ignore')}</Button>
+          </div>
+        </div>
+      )}
+
+      {thread.access === 'request' && (
+        <p className="text-sm text-ink-secondary">
+          {t('You’re both in {group}. Send one message to start: text only, no links or contact details. You can keep chatting once they accept.', { group: thread.group_name ?? '' })}
+        </p>
+      )}
+
+      {thread.access === 'open' || thread.access === 'request' ? (
         <form onSubmit={send} className="flex items-end gap-2">
           <label className="sr-only" htmlFor="draft">{t('Message')}</label>
           <textarea id="draft" rows={2} maxLength={1000} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey}
@@ -317,7 +369,9 @@ export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
         </form>
       ) : (
         <p className="text-ink-secondary" role="status">
-          {thread.game ? t('This chat closed 48 hours after the game.') : t('You can only message friends.')}
+          {thread.game ? t('This chat closed 48 hours after the game.')
+            : thread.access === 'requested' ? t('Message request sent. You can keep chatting once they accept.')
+            : t('You can only message friends.')}
         </p>
       )}
     </div>

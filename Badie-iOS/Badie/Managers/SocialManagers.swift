@@ -46,6 +46,11 @@ final class FriendManager: ObservableObject {
         backend.venueRegulars(limit: limit)
     }
 
+    /// 正式后端：从服务器拉最新的常客（5 分钟内不重复拉）
+    func refreshRegulars() async {
+        try? await backend.refreshRemoteRegulars()
+    }
+
     func recentCoPlayers(limit: Int = 20) -> [User] {
         backend.recentCoPlayers(limit: limit)
     }

@@ -115,7 +115,7 @@ const policies = [
 
 /** 被搜到、上榜和约战设置：界面马上切换并保存，失败就切回去 */
 function Settings({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
-  async function save(patch: Partial<Pick<Profile, 'discoverable' | 'show_on_boards' | 'challenge_policy'>>) {
+  async function save(patch: Partial<Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy'>>) {
     onChange({ ...profile, ...patch });
     const { data, error } = await supabase!.from('profiles').update(patch).eq('id', profile.id).select().single();
     if (error) {
@@ -133,6 +133,20 @@ function Settings({ profile, onChange }: { profile: Profile; onChange: (p: Profi
         <span>
           <span className="block font-extrabold">{t('Let players find me by nickname')}</span>
           <span className="block text-sm text-ink-tertiary">{t('They see your nickname and level, and can send a friend request.')}</span>
+        </span>
+      </label>
+      <label className="flex items-start gap-3">
+        <input type="checkbox" checked={profile.show_as_regular} onChange={(e) => save({ show_as_regular: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
+        <span>
+          <span className="block font-extrabold">{t('Show me as a regular at my courts')}</span>
+          <span className="block text-sm text-ink-tertiary">{t('Players who starred the same court see your nickname, level and the court. Never when you play or where you are.')}</span>
+        </span>
+      </label>
+      <label className="flex items-start gap-3">
+        <input type="checkbox" checked={profile.allow_message_requests} onChange={(e) => save({ allow_message_requests: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
+        <span>
+          <span className="block font-extrabold">{t('Allow message requests from my groups')}</span>
+          <span className="block text-sm text-ink-tertiary">{t('When off, only friends can message you. Game and group chats still work.')}</span>
         </span>
       </label>
       <label className="flex items-start gap-3">

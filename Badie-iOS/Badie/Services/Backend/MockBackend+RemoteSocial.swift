@@ -1,8 +1,8 @@
 import Foundation
 
 // MARK: - 正式后端：球友、私信、通知、球友资料
-/// 和约球一样：操作调数据库函数，然后重新拉取写进缓存。私信只能发给球友（服务器规则），
-/// 球局和球群群聊照常；消息请求、按昵称搜人这类服务器不支持的功能在这个模式下隐藏
+/// 和约球一样：操作调数据库函数，然后重新拉取写进缓存。私信规则在服务器上（球友、同球群的消息请求），
+/// 球局和球群群聊照常
 extension MockBackend {
 
     struct RemoteFriend: Decodable {
@@ -30,6 +30,8 @@ extension MockBackend {
         let venue: String?
         let name: String?
         let access: String
+        /// 还没接受的消息请求：incoming = 对方发给我的，outgoing = 我发的
+        let request: String?
         let last: Last?
         let unread: Int
     }
@@ -72,6 +74,7 @@ extension MockBackend {
         let winRate: RemoteWinRate?
         /// 'available'、'hidden' 或不能挑战的原因
         let challenge: String?
+        let message: RemoteMessageOption?
     }
 
     // MARK: 刷新
@@ -86,6 +89,7 @@ extension MockBackend {
         apply(friends: friends, me: me)
         apply(threads: threads, me: me)
         apply(notifications: notes, me: me)
+        try? await refreshRemoteRegulars()
         scheduleSave()
     }
 
@@ -135,7 +139,9 @@ extension MockBackend {
                 id: id, participantIds: participants, lastMessage: last,
                 lastActivityAt: last?.sentAt ?? summary.startsAt ?? existing?.lastActivityAt ?? Date(),
                 unreadCounts: [me: summary.unread], clearedAt: existing?.clearedAt ?? [:], context: context,
-                title: summary.kind == "dm" ? nil : summary.name ?? summary.venue
+                title: summary.kind == "dm" ? nil : summary.name ?? summary.venue,
+                requestFrom: summary.request == "incoming" ? summary.id : summary.request == "outgoing" ? me : nil,
+                isPendingRequest: summary.request != nil
             )
             if let last, existing?.lastMessage?.sentAt != last.sentAt || existing?.lastMessage?.content != last.content {
                 emit(.messagesChanged(threadId: id))
@@ -161,6 +167,8 @@ extension MockBackend {
         if note.kind == "offer" || note.kind == "offer_auto" {
             return db.tickets.values.first { $0.offerId != nil }?.id
         }
+        // 消息请求的链接是 /app/messages/dm/<对方 id>/
+        if note.kind == "message_request" { return note.link?.split(separator: "/").last.map(String.init) }
         let parts = (note.link ?? "").split(separator: "/")
         return parts.count >= 3 ? String(parts[2]) : nil
     }
@@ -180,6 +188,7 @@ extension MockBackend {
         case "room_removed": return .kicked
         case "room_closed": return .roomClosed
         case "challenge": return .challenge
+        case "message_request": return .messageRequest
         default: return .system
         }
     }
@@ -227,8 +236,15 @@ extension MockBackend {
 
     func remoteSendMessage(_ content: String, threadId: String) async throws -> Message {
         guard let remote, let target = serverThread(threadId) else { throw RemoteError.notSignedIn }
+        let wasRequest = target.kind == "dm" && remoteMessageOptions[target.id]?.status == "request"
+            && db.threads[threadId]?.isPendingRequest != true
         try await remote.call("send_message", ["p_kind": target.kind, "p_id": target.id, "p_body": content])
         try await loadRemoteThread(threadId)
+        if wasRequest {
+            // 发出的是消息请求：之后等对方接受（会话列表会标出来）
+            remoteMessageOptions[target.id] = RemoteMessageOption(status: "requested", group: nil)
+            try? await refreshRemoteSocial()
+        }
         return db.messages[threadId]?.last ?? Message(threadId: threadId, senderId: currentUserId ?? "", content: content)
     }
 
@@ -292,6 +308,7 @@ extension MockBackend {
         guard let card else { return db.users[userId] }
         cacheRemoteUser(id: card.id, nickname: card.nickname, rating: card.rating)
         remoteChallengeStatus[card.id] = card.challenge
+        remoteMessageOptions[card.id] = card.message
         if let rate = card.winRate {
             remoteWinRates[card.id] = Rankings.WinRate(games: rate.games, wins: rate.wins, opponents: rate.opponents, averageGap: rate.gap)
         }

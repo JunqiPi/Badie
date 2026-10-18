@@ -183,9 +183,12 @@ extension MockBackend {
 
     /// 把这里设为常去球馆的人数（含模拟球友）
     func regularsCount(for venueId: String) -> Int {
-        // 正式后端没有常客功能
-        guard !isRemote else { return 0 }
-        return db.favoriteCourtIds.values.filter { $0.contains(venueId) }.count
+        db.favoriteCourtIds.values.filter { $0.contains(venueId) }.count
+    }
+
+    /// 同上；正式后端向服务器查（失败时为 nil）
+    func fetchRegularsCount(for venueId: String) async -> Int? {
+        isRemote ? await remoteRegularsCount(for: venueId) : regularsCount(for: venueId)
     }
 
     /// 签到打过球的人自动算作确认了地址
