@@ -118,7 +118,8 @@ jobs:
 
       - name: Capture screenshots
         if: always() && steps.build.outcome == 'success'
-        timeout-minutes: 25
+        # 79 张约 14 分钟；模拟器慢的时候安装和预热还要多花近 10 分钟
+        timeout-minutes: 35
         run: bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/Badie.app screenshots
 
       - name: Upload screenshots
