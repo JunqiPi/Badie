@@ -1,26 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Courts } from './Courts';
-import { Admin } from './Verification';
-import { GameDetail, Games } from './Games';
+import { Admin, VerificationPage } from './Verification';
+import { Challenges, GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
-import { detect, setLocale, t, useLocale } from './i18n';
+import { startLocale, t, useLocale } from './i18n';
 import { Groups } from './Groups';
+import { Home } from './Home';
+import { type IconName } from './icons';
+import { Empty, LargeTitle, type Tint } from './kit';
+import { About, LevelGuide } from './Levels';
 import { LevelQuiz } from './LevelQuiz';
-import { Me } from './Me';
+import { Me, Settings } from './Me';
 import { NewGroup } from './NewGroup';
 import { NewRoom } from './NewRoom';
-import { Chat, Messages } from './Messages';
+import { Messages, Notifications } from './Messages';
 import { Onboarding } from './Onboarding';
 import { Play } from './Play';
 import { PlayerPage } from './Player';
 import { Rankings } from './Rankings';
-import { RoomPage } from './Room';
+import { JoinRoom, RoomPage } from './Room';
 import { Rooms } from './Rooms';
-import { navigate, usePath } from './router';
-import { Shell } from './Shell';
+import { enableSpa, navigate, usePath } from './router';
+import { Loading, Shell, signInFirst } from './Shell';
 import { SignIn } from './SignIn';
-import { supabase, type Profile, type ThreadKind } from './supabase';
+import { supabase, useLive, type InboxCounts, type Profile, type ThreadKind } from './supabase';
+
+enableSpa();
+
+/** 旧地址（/app/…，邮件和通知里还有）→ 新地址 */
+const modern = (path: string) => (path.startsWith('/app/') ? path.slice(4) : path).replace(/^\/level\//, '/level-quiz/');
 
 export default function App() {
   const path = usePath();
@@ -31,11 +39,15 @@ export default function App() {
   const locale = useLocale();
 
   useEffect(() => {
-    setLocale(detect()).finally(() => setReady(true));
+    startLocale().finally(() => setReady(true));
   }, []);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (modern(path) !== path) navigate(modern(path) + location.search + location.hash, true);
+  }, [path]);
+
+  useEffect(() => {
+    if (!supabase) return setSession(null);
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
     return () => data.subscription.unsubscribe();
@@ -52,88 +64,110 @@ export default function App() {
     supabase!.from('profiles').update({ locale }).eq('id', profile.id).select().single().then(({ data }) => data && setProfile(data as Profile));
   }, [ready, profile?.locale, locale]);
 
+  // 登录完回到登录前想去的页面
   useEffect(() => {
-    if (path === '/app/' || path === '/app') navigate('/app/play/', true);
-  }, [path]);
+    if (session && path === '/signin/') navigate(new URLSearchParams(location.search).get('next')?.match(/^\/[^/]/)?.input ?? '/', true);
+  }, [session, path]);
 
-  if (!ready) return <Message busy />;
-  if (!supabase) return <Message text={t('The web app isn’t connected to a server yet.')} />;
-  if (session === undefined || (session && profile === undefined)) return <Message busy text={t('Loading…')} />;
-  if (!session) return <SignIn />;
-  if (!profile) {
-    return (
+  if (!ready || session === undefined || (session && profile === undefined)) return <Loading />;
+
+  const guest = !session;
+  const shell = (children: ReactNode, me: Profile | null = profile ?? null) => (
+    <Frame path={path} me={me} guest={guest}>{children}</Frame>
+  );
+
+  if (session && !profile) {
+    return shell(
       <Onboarding
         userId={session.user.id}
         onDone={(created) => {
           setProfile(created);
-          navigate('/app/level/', true);
+          navigate('/level-quiz/', true);
         }}
-      />
+      />,
     );
   }
-  if (path.startsWith('/app/level/')) {
-    return (
+  if (path.startsWith('/level-quiz/') && profile) {
+    return shell(
       <LevelQuiz
         onDone={(saved) => {
           if (saved) setProfile(saved);
-          navigate('/app/play/', true);
+          navigate('/', true);
         }}
-      />
+      />,
     );
   }
+  if (path.startsWith('/signin/')) return shell(<SignIn />);
 
-  const id = (prefix: string) => path.match(new RegExp(`^/app/${prefix}/([0-9a-f-]{36})/`))?.[1];
+  // 不用登录也能看的页面
+  if (path === '/') return shell(<Home profile={profile ?? null} />);
+  if (path.startsWith('/levels/')) return shell(<LevelGuide profile={profile ?? null} />);
+  if (path.startsWith('/about/')) return shell(<About />);
+
+  if (!profile) return shell(<SignInPage path={path} />);
+
+  const id = (prefix: string) => path.match(new RegExp(`^/${prefix}/([0-9a-f-]{36})/`))?.[1];
   const game = id('games');
   const player = id('players');
   const group = id('groups');
   const room = id('rooms');
-  const chat = path.match(/^\/app\/messages\/(game|group|dm)\/([0-9a-f-]{36})\//);
-  return (
-    <Shell path={path}>
-      {player ? (
-        <PlayerPage key={player} id={player} />
-      ) : chat ? (
-        <Chat key={chat[2]} kind={chat[1] as ThreadKind} id={chat[2]} />
-      ) : group ? (
-        <GroupPage key={group} id={group} />
-      ) : room ? (
-        <RoomPage key={room} id={room} />
-      ) : path.startsWith('/app/rooms/new/') ? (
-        <NewRoom profile={profile} />
-      ) : path.startsWith('/app/rooms/') ? (
-        <Rooms />
-      ) : path.startsWith('/app/groups/new/') ? (
-        <NewGroup profile={profile} />
-      ) : path.startsWith('/app/groups/') ? (
-        <Groups />
-      ) : path.startsWith('/app/rankings/') ? (
-        <Rankings />
-      ) : path.startsWith('/app/messages/') ? (
-        <Messages />
-      ) : path.startsWith('/app/admin/') ? (
-        <Admin />
-      ) : path.startsWith('/app/me/') ? (
-        <Me profile={profile} email={session.user.email} onChange={setProfile} />
-      ) : path.startsWith('/app/play/') ? (
-        <Play profile={profile} />
-      ) : game ? (
-        <GameDetail id={game} />
-      ) : path.startsWith('/app/games/') ? (
-        <Games />
-      ) : (
-        <Courts userId={session.user.id} />
-      )}
-    </Shell>
+  const chat = path.match(/^\/messages\/(game|group|dm)\/([0-9a-f-]{36})\//);
+  return shell(
+    player ? <PlayerPage key={player} id={player} />
+    : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />
+    : group ? <GroupPage key={group} id={group} />
+    : room ? <RoomPage key={room} id={room} />
+    : game ? <GameDetail id={game} />
+    : path.startsWith('/rooms/new/') ? <NewRoom profile={profile} />
+    : path.startsWith('/rooms/') ? <Rooms />
+    : path.startsWith('/join/') ? <JoinRoom />
+    : path.startsWith('/groups/new/') ? <NewGroup profile={profile} />
+    : path.startsWith('/groups/') ? <Groups />
+    : path.startsWith('/rankings/') ? <Rankings />
+    : path.startsWith('/challenges/') ? <Challenges />
+    : path.startsWith('/games/') ? <Games />
+    : path.startsWith('/play/') ? <Play profile={profile} />
+    : path.startsWith('/messages/') ? <Messages />
+    : path.startsWith('/notifications/') ? <Notifications />
+    : path.startsWith('/admin/') ? <Admin />
+    : path.startsWith('/verification/') ? <VerificationPage profile={profile} />
+    : path.startsWith('/settings/') ? <Settings profile={profile} email={session!.user.email} onChange={setProfile} />
+    : path.startsWith('/me/') ? <Me profile={profile} onChange={setProfile} />
+    : <NotFound />,
   );
 }
 
-function Message({ text, busy }: { text?: string; busy?: boolean }) {
+/** 外壳 + 未读数（只有登录了才查） */
+function Frame({ path, me, guest, children }: { path: string; me: Profile | null; guest: boolean; children: ReactNode }) {
+  return me ? <SignedInFrame path={path} me={me}>{children}</SignedInFrame> : <Shell path={path} me={null} guest={guest}>{children}</Shell>;
+}
+
+function SignedInFrame({ path, me, children }: { path: string; me: Profile; children: ReactNode }) {
+  const { data: counts, refresh } = useLive<InboxCounts>('inbox_counts');
+  // 换页时（比如刚看完消息）马上更新未读数
+  useEffect(() => void refresh(), [path, refresh]);
+  return <Shell path={path} me={me} guest={false} counts={counts}>{children}</Shell>;
+}
+
+const lockedPages: { match: RegExp; title: string; icon: IconName; tint: Tint; text: string }[] = [
+  { match: /^\/games\//, title: 'Games', icon: 'games', tint: 'peach', text: 'Your upcoming games, results and reviews live here.' },
+  { match: /^\/messages\//, title: 'Messages', icon: 'chats', tint: 'sky', text: 'Chat with the players in your games, your groups and your friends.' },
+  { match: /^\/me\//, title: 'Me', icon: 'me', tint: 'lavender', text: 'Your level, win rate, reliability and settings.' },
+];
+
+/** 没登录时打开要账号的页面：说明这里有什么，再给登录按钮 */
+function SignInPage({ path }: { path: string }) {
+  const page = lockedPages.find((p) => p.match.test(path));
   return (
-    <p role="status" className="grid min-h-dvh place-items-center bg-canvas font-bold text-ink-secondary">
-      <span className="flex items-center gap-3">
-        {busy && <span aria-hidden="true" className="size-5 animate-spin rounded-full border-[3px] border-current border-t-transparent" />}
-        {text}
-      </span>
-    </p>
+    <div className="mx-auto grid max-w-2xl gap-6">
+      {page && <LargeTitle title={t(page.title)} />}
+      <Empty icon={page?.icon ?? 'lock'} tint={page?.tint ?? 'lime'} title={t('Sign in to continue')} action={{ label: t('Sign in'), to: signInFirst(path) }}>
+        {page ? t(page.text) : t('You need a free account for this page.')} {t('It’s free: just your email, no password.')}
+      </Empty>
+    </div>
   );
+}
+
+function NotFound() {
+  return <Empty icon="question" tint="butter" title={t('Page not found')} action={{ label: t('Home'), to: '/' }}>{t('The link may be old or mistyped.')}</Empty>;
 }

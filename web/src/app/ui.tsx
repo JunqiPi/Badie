@@ -1,8 +1,10 @@
 import { useEffect, useId, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
-import { currentLocale, languages, setLocale, t, type Locale } from './i18n';
+import { Icon } from './icons';
+import { t } from './i18n';
+import { IconButton, IconTile } from './kit';
 
 // 类名要写全：Tailwind 只生成在源码里原样出现过的类
-const variants = { quiet: 'button-quiet', danger: 'button-danger' };
+const variants = { quiet: 'button-quiet', danger: 'button-danger', inverse: 'button-inverse' };
 
 /** 按钮：busy 时显示转圈并禁用，防止重复提交 */
 export function Button({ busy, variant, className = '', children, disabled, ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -33,31 +35,37 @@ export function Field({ label, hint, error, children }: {
   const describedBy = [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(' ') || undefined;
   return (
     <div className="grid gap-1.5">
-      <label htmlFor={id} className="font-extrabold">{label}</label>
+      <label htmlFor={id} className="text-footnote font-bold text-ink-secondary">{label}</label>
       {children({ id, 'aria-describedby': describedBy, 'aria-invalid': error ? true : undefined })}
-      {hint && !error && <p id={`${id}-hint`} className="text-sm font-semibold text-ink-tertiary">{hint}</p>}
-      {error && <p id={`${id}-error`} className="text-sm font-bold text-danger">{error}</p>}
+      {hint && !error && <p id={`${id}-hint`} className="text-caption text-ink-tertiary">{hint}</p>}
+      {error && <p id={`${id}-error`} className="text-caption font-bold text-danger">{error}</p>}
     </div>
   );
 }
 
-/** 页面标题：每个页面同样的层级和间距 */
-/** eyebrow 是所在的版块；和标题一样时省略 */
-export function PageHeader({ eyebrow, title, children }: { eyebrow?: string; title: string; children?: ReactNode }) {
+/** 二级页面的标题：返回按钮 + 大标题，下面一段说明 */
+export function PageHeader({ back, eyebrow, title, children }: { back?: string; eyebrow?: string; title: string; children?: ReactNode }) {
   return (
-    <header className="mb-8">
-      {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
-      <h1 className="display text-[clamp(2.5rem,6vw,3.75rem)]">{title}</h1>
-      {children && <div className="mt-3 max-w-prose text-lg text-ink-secondary">{children}</div>}
+    <header className="mb-6 grid gap-2">
+      <div className="flex items-center gap-3">
+        {back && <IconButton icon="chevronLeft" label={t('Back')} to={back} />}
+        <div className="min-w-0">
+          {eyebrow && <p className="text-subhead font-bold text-ink-secondary">{eyebrow}</p>}
+          <h1 className="text-title lg:text-display">{title}</h1>
+        </div>
+      </div>
+      {children && <div className="max-w-prose text-subhead text-ink-secondary">{children}</div>}
     </header>
   );
 }
 
+/** 空状态：歪一点的图标格 + 标题 + 说明 + 按钮 */
 export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="tile grid justify-items-start gap-3 bg-surface p-6">
-      <p className="text-lg font-black">{title}</p>
-      {children && <div className="max-w-prose text-ink-secondary">{children}</div>}
+    <div className="sticker grid justify-items-center gap-3 p-6 text-center">
+      <IconTile icon="sparkle" tint="lavender" size="lg" className="-rotate-6" />
+      <p className="text-title3">{title}</p>
+      {children && <div className="max-w-prose text-subhead text-ink-secondary">{children}</div>}
       {action}
     </div>
   );
@@ -89,28 +97,17 @@ export function Toasts() {
     return () => void toastListeners.delete(setItems);
   }, []);
   return (
-    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 grid justify-items-center gap-2 px-4 lg:bottom-6">
+    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--tabbar)+0.5rem)] z-50 grid justify-items-center gap-2 px-5 lg:top-20 lg:bottom-auto">
       {items.map((t) => (
         <p
           key={t.id}
           role={t.tone === 'error' ? 'alert' : 'status'}
-          className={`sticker animate-pop max-w-md px-4 py-3 font-bold ${t.tone === 'error' ? 'bg-pink text-on-accent' : ''}`}
+          className={`animate-pop flex max-w-md items-center gap-2 rounded-[16px] border-2 border-stroke px-4 py-3 text-subhead font-bold text-on-accent shadow-low ${t.tone === 'error' ? 'bg-pink' : 'bg-lime'}`}
         >
+          <Icon name={t.tone === 'error' ? 'warning' : 'checkCircle'} className="size-5" />
           {t.text}
         </p>
       ))}
     </div>
-  );
-}
-
-/** 界面语言：选了就记住（只存在这个浏览器里） */
-export function LanguagePicker({ className = '' }: { className?: string }) {
-  return (
-    <label className={`flex items-center gap-2 text-sm font-bold text-ink-secondary ${className}`}>
-      <span>{t('Language')}</span>
-      <select value={currentLocale()} onChange={(e) => setLocale(e.target.value as Locale, true)} className="field min-h-10 w-auto py-1">
-        {languages.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
-      </select>
-    </label>
   );
 }

@@ -25,7 +25,7 @@ export function GroupPage({ id }: { id: string }) {
 
   if (g === undefined) return <Skeleton className="h-96 max-w-3xl" />;
   if (g === null) {
-    return <EmptyState title={t('Group not found')} action={<Link to="/app/groups/" className="button">{t('Groups')}</Link>}>{t('It may have been removed.')}</EmptyState>;
+    return <EmptyState title={t('Group not found')} action={<Link to="/groups/" className="button">{t('Groups')}</Link>}>{t('It may have been removed.')}</EmptyState>;
   }
   const member = g.my_role === 'owner' || g.my_role === 'organizer' || g.my_role === 'member';
   const organizer = g.my_role === 'owner' || g.my_role === 'organizer';
@@ -40,7 +40,7 @@ export function GroupPage({ id }: { id: string }) {
   async function copyInvite() {
     const text = t('Join “{name}” on Badie: {times} at {court}. Level {min}–{max}. Open {link} and enter group number {code}.', {
       name: g!.name, times: g!.schedules.map(scheduleText).join(', '), court: g!.venue.name, min: g!.level_min, max: g!.level_max,
-      link: `${location.origin}/app/groups/`, code: g!.invite_code ?? '',
+      link: `${location.origin}/join/`, code: g!.invite_code ?? '',
     });
     try {
       await navigator.clipboard.writeText(text);
@@ -53,7 +53,7 @@ export function GroupPage({ id }: { id: string }) {
   return (
     <div className="grid gap-6">
       <div>
-        <Link to="/app/groups/" className="link text-sm">{t('Groups')}</Link>
+        <Link to="/groups/" className="link text-sm">{t('Groups')}</Link>
         <p className="eyebrow mt-6">{g.venue.name}, {g.venue.city}</p>
         <h1 className="display mt-2 text-[clamp(2.5rem,6vw,3.75rem)] break-words">{g.name}</h1>
         {g.summary && <p className="mt-3 max-w-prose text-lg text-ink-secondary">{g.summary}</p>}
@@ -89,7 +89,7 @@ export function GroupPage({ id }: { id: string }) {
             {g.my_role === 'pending' && <p className="font-bold">{t('Request sent. An organizer will review it.')}</p>}
             {member && (
               <>
-                <Link to={`/app/messages/group/${g.id}/`} className="button">{t('Group chat')}</Link>
+                <Link to={`/messages/group/${g.id}/`} className="button">{t('Group chat')}</Link>
                 <div>
                   <p className="eyebrow">{t('Group number')}</p>
                   <p className="mt-1 font-mono text-2xl font-black tracking-[0.3em]">{g.invite_code}</p>
@@ -111,7 +111,7 @@ export function GroupPage({ id }: { id: string }) {
               <h2 id="requests" className="eyebrow">{t('Join requests')}</h2>
               {g.pending.map((p) => (
                 <div key={p.id} className="flex flex-wrap items-center gap-2">
-                  <Link to={`/app/players/${p.id}/`} className="link min-w-0 flex-1 truncate">{p.nickname} · {tier(p.rating).label}</Link>
+                  <Link to={`/players/${p.id}/`} className="link min-w-0 flex-1 truncate">{p.nickname} · {tier(p.rating).label}</Link>
                   <Button busy={busy === `ok-${p.id}`} onClick={() => act(`ok-${p.id}`, 'respond_join_request', { p_group: g.id, p_user: p.id, p_accept: true }, t('Approved'))}>{t('Approve')}</Button>
                   <Button variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${p.id}`, 'respond_join_request', { p_group: g.id, p_user: p.id, p_accept: false })}>{t('Decline')}</Button>
                 </div>
@@ -125,7 +125,7 @@ export function GroupPage({ id }: { id: string }) {
               <ul className="grid gap-2">
                 {g.members.map((m) => (
                   <li key={m.id} className="flex items-center gap-2">
-                    <Link to={`/app/players/${m.id}/`} className="min-w-0 flex-1 truncate font-bold hover:underline">
+                    <Link to={`/players/${m.id}/`} className="min-w-0 flex-1 truncate font-bold hover:underline">
                       {m.nickname} <span className="font-semibold text-ink-tertiary">· {tier(m.rating).label}{m.role !== 'member' ? ` · ${t(roles[m.role])}` : ''}</span>
                     </Link>
                     {organizer && m.role === 'member' && (confirm === `remove-${m.id}` ? (
@@ -190,7 +190,7 @@ function Session({ session: s, tz, member, organizer, busy, confirm, setConfirm,
           <summary className="link cursor-pointer text-sm">{t('Who’s going')}</summary>
           <p className="mt-2 text-sm">
             {s.players.map((p, i) => (
-              <span key={p.id}>{i > 0 && ', '}<Link to={`/app/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>{p.waitlisted && ` ${t('(waiting)')}`}</span>
+              <span key={p.id}>{i > 0 && ', '}<Link to={`/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>{p.waitlisted && ` ${t('(waiting)')}`}</span>
             ))}
           </p>
         </details>

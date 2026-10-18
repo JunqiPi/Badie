@@ -61,3 +61,29 @@ export function wallClock(iso: string, tz: string) {
     .formatToParts(new Date(iso)).map((x) => [x.type, x.value]));
   return { date: `${p.year}-${p.month}-${p.day}`, minutes: Number(p.hour) * 60 + Number(p.minute) };
 }
+
+const localZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+const capitalize = (text: string) => text.charAt(0).toLocaleUpperCase(currentLocale()) + text.slice(1);
+
+/** “7:30 PM” / “19:30” */
+export const timeOf = (iso: string, tz?: string | null) => format(tz, { hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
+
+/** “Today” / “Tomorrow” / “Sat, Oct 18”（按球馆时区算哪天） */
+export function dayName(iso: string, tz?: string | null) {
+  const zone = tz ?? localZone();
+  const date = wallClock(iso, zone).date;
+  const offset = [0, 1].find((n) => today(zone, n) === date);
+  if (offset === undefined) return day(iso, tz);
+  return capitalize(new Intl.RelativeTimeFormat(currentLocale(), { numeric: 'auto' }).format(offset, 'day'));
+}
+
+/** 接下来 n 天的日期（本地时区），给日期条用 */
+export const nextDays = (n: number) => Array.from({ length: n }, (_, i) => today(localZone(), i));
+
+/** 日期条上的一格：“Sat” + “18”；今天显示“Today” */
+export function dateChip(date: string, index: number) {
+  const noon = new Date(`${date}T12:00:00Z`);
+  const weekdayName = new Intl.DateTimeFormat(currentLocale(), { weekday: 'short', timeZone: 'UTC' }).format(noon);
+  const label = index === 0 ? capitalize(new Intl.RelativeTimeFormat(currentLocale(), { numeric: 'auto' }).format(0, 'day')) : weekdayName;
+  return { label, day: noon.getUTCDate() };
+}

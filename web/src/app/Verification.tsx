@@ -4,6 +4,7 @@ import { t } from './i18n';
 import { Link } from './router';
 import { problem, supabase, useLive, type Profile, type VerificationKind } from './supabase';
 import { day } from './time';
+import { ScreenHeader, Starburst } from './kit';
 import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
 
 /** 每类证据能认证的档位（和服务器、iOS 一致） */
@@ -37,6 +38,20 @@ interface Request {
 }
 
 /** 资料页：认证状态和申请表。问卷最高 6+，7− 起要凭公开可查的证据由人工审核 */
+/** 高水平认证页（iOS 的 VerificationView） */
+export function VerificationPage({ profile }: { profile: Profile }) {
+  return (
+    <div className="mx-auto grid max-w-2xl gap-5">
+      <ScreenHeader title={t('Level verification')} back="/me/" />
+      <div className="sticker flex items-center gap-4 bg-lime p-5 text-on-accent">
+        <Starburst size={64}>7+</Starburst>
+        <p className="text-subhead font-bold">{t('Levels 7 to 9 need proof: tournament results, a national ranking or certificate, or a BWF profile. An admin checks it, usually within 3 working days.')}</p>
+      </div>
+      <Verification profile={profile} />
+    </div>
+  );
+}
+
 export function Verification({ profile }: { profile: Profile }) {
   const { data: request, refresh } = useLive<Request | null>('my_verification', { every: 300_000 });
   const [open, setOpen] = useState(false);
@@ -50,8 +65,8 @@ export function Verification({ profile }: { profile: Profile }) {
   }
 
   return (
-    <section aria-labelledby="verification" className="tile mt-6 grid gap-3 bg-surface p-6">
-      <h2 id="verification" className="eyebrow">{t('Verified level')}</h2>
+    <section aria-labelledby="verification" className="sticker grid gap-3 p-5">
+      <h2 id="verification" className="text-headline">{t('Verified level')}</h2>
       {profile.verified_kind && profile.verified_rating && (
         <p className="font-bold">
           <span className="chip bg-mint">{t('Verified {level}', { level: tier(profile.verified_rating).label })}</span>{' '}
@@ -72,11 +87,11 @@ export function Verification({ profile }: { profile: Profile }) {
               {t('Your request from {date} wasn’t approved.', { date: day(request.created_at) })} {request.review_note}
             </p>
           )}
-          <p className="text-sm text-ink-tertiary">
+          <p className="text-footnote text-ink-secondary">
             {t('The quiz goes up to 6+. If you’ve played the top draw of a state open, have a national ranking or certificate, or a BWF ranking, you can show it to get 7− to 9+.')}
           </p>
           {open ? <RequestForm onDone={() => { setOpen(false); refresh(); }} onCancel={() => setOpen(false)} />
-            : <Button variant="quiet" onClick={() => setOpen(true)} className="justify-self-start">{t('Verify a higher level')}</Button>}
+            : <Button onClick={() => setOpen(true)} className="justify-self-start">{t('Verify a higher level')}</Button>}
         </>
       )}
     </section>
@@ -149,7 +164,7 @@ export function AdminLink() {
   if (!admin) return null;
   return (
     <div className="mt-6">
-      <Link to="/app/admin/" className="button button-quiet">{t('Review queue')}</Link>
+      <Link to="/admin/" className="button button-quiet">{t('Review queue')}</Link>
     </div>
   );
 }
@@ -174,7 +189,7 @@ export function Admin() {
   if (failed && !queue) return <EmptyState title={t('Admins only')}>{t('This page is for reviewers.')}</EmptyState>;
   return (
     <div className="max-w-3xl">
-      <PageHeader eyebrow={t('Admin')} title={t('Level verification')} />
+      <PageHeader back="/me/" eyebrow={t('Admin')} title={t('Level verification')} />
       {!queue ? <Skeleton className="h-40" /> : queue.length === 0 ? (
         <EmptyState title={t('Nothing to review')} />
       ) : (
@@ -203,7 +218,7 @@ function Review({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   return (
     <article className="tile grid gap-3 bg-surface p-5">
       <p className="font-black">
-        <Link to={`/app/players/${item.user_id}/`} className="link">{item.nickname}</Link>{' '}
+        <Link to={`/players/${item.user_id}/`} className="link">{item.nickname}</Link>{' '}
         <span className="font-bold text-ink-secondary">
           · {t('now {level}', { level: tier(item.rating).label })} · {t('asks for {level}', { level: tier(item.claimed_rating).label })}
         </span>

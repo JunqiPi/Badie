@@ -1,154 +1,26 @@
 ---
-import Base from '../layouts/Base.astro';
-import CountryCard from '../components/CountryCard.astro';
-import CourtSearch from '../components/CourtSearch.astro';
+import App from '../layouts/App.astro';
 import { allVenues, countries } from '../lib/venues';
 
 const courtCount = allVenues.length.toLocaleString('en');
-const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
-const stats = [
-  { value: courtCount, label: 'courts listed', tint: 'bg-sky' },
-  { value: String(countries.length), label: 'countries', tint: 'bg-peach' },
-  { value: '1–9', label: 'level scale, so games stay even', tint: 'bg-lavender' },
-  { value: '$0', label: 'no ads, no fees, nonprofit', tint: 'bg-mint' },
-];
-const steps = [
-  {
-    title: 'Set your level',
-    body: 'A short questionnaire places you on a 1–9 scale. Players you meet can confirm it after games.',
-    tint: 'bg-lavender',
-  },
-  {
-    title: 'Get matched',
-    body: 'Pick the courts you can reach and when you are free. Badie finds players at your level with the same window.',
-    tint: 'bg-peach',
-  },
-  {
-    title: 'Play, then confirm',
-    body: 'After the game both sides confirm who won. Only matching results count toward win rate and leaderboards.',
-    tint: 'bg-mint',
-  },
-];
 ---
 
-<Base
+<App
   title="Badie — find badminton partners and courts"
   description={`Find badminton partners at your level and browse ${courtCount} badminton courts. Free, no ads, nonprofit.`}
 >
-  <section class="grid items-center gap-10 py-8 lg:grid-cols-[1.15fr_1fr] lg:py-14">
-    <div>
-      <p class="eyebrow">Free · Nonprofit · No ads</p>
-      <h1 class="display mt-4 text-[clamp(3.25rem,9vw,6.75rem)]">Find your next badminton partner</h1>
-      <p class="mt-6 max-w-xl text-lg text-ink-secondary">
-        Badie matches you with players at your level who are free when you are, at courts you can actually get to.
-      </p>
-      <CourtSearch class="mt-8 max-w-xl" />
-      <p class="mt-3 text-sm font-bold text-ink-tertiary">Try “El Monte”, “Bristol” or “Aberdeen”.</p>
-    </div>
-
-    <div class="relative mx-auto w-full max-w-md pt-10 pb-24 lg:max-w-lg" role="img" aria-label="Example of a match in the Badie app">
-      <div class="sticker rotate-[-2deg] overflow-hidden" aria-hidden="true">
-        <div class="flex items-center justify-between border-b-2 border-stroke bg-lime px-5 py-3 text-on-accent">
-          <span class="font-black">Match found</span>
-          <span class="chip bg-surface text-ink">Tonight</span>
-        </div>
-        <div class="space-y-4 p-5">
-          <div>
-            <p class="eyebrow">7:00 – 9:00 PM · Doubles</p>
-            <p class="mt-1 text-xl font-black">Los Angeles Badminton Club</p>
-            <p class="text-sm font-bold text-ink-secondary">El Monte · 2.1 km away</p>
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="flex -space-x-2">
-              {
-                ['bg-lavender', 'bg-peach', 'bg-mint', 'bg-sky'].map((tint, index) => (
-                  <span class:list={['grid size-10 place-items-center rounded-full border-2 border-stroke text-sm font-black text-on-accent', tint]}>
-                    {['A', 'J', 'M', 'K'][index]}
-                  </span>
-                ))
-              }
-            </div>
-            <span class="chip bg-butter">Lv.4 · 4/4</span>
-          </div>
-        </div>
-      </div>
-      <div class="sticker absolute right-2 bottom-0 w-40 rotate-[4deg] bg-lavender! p-4 text-on-accent sm:-right-6" aria-hidden="true">
-        <p class="eyebrow text-on-accent/70">Your level</p>
-        <p class="display text-5xl">4</p>
-        <p class="text-sm font-extrabold">Intermediate</p>
-      </div>
-      <svg viewBox="0 0 120 120" class="absolute -bottom-6 left-10 hidden size-28 sm:block animate-[spin_24s_linear_infinite] motion-reduce:animate-none" aria-hidden="true">
-        <defs><path id="ring" d="M60 60m-44 0a44 44 0 1 1 88 0a44 44 0 1 1-88 0"></path></defs>
-        <circle cx="60" cy="60" r="30" class="fill-ink"></circle>
-        <text class="fill-ink text-[11px] font-black tracking-[0.2em] uppercase">
-          <textPath href="#ring">Free · No ads · Nonprofit ·</textPath>
-        </text>
-        <path d="M60 44l4 12h12l-10 7 4 12-10-7-10 7 4-12-10-7h12z" class="fill-lime"></path>
-      </svg>
-    </div>
-  </section>
-
-  <section class="mt-16 grid grid-cols-2 gap-3 lg:grid-cols-4" aria-label="Badie in numbers">
-    {
-      stats.map((stat) => (
-        <div class:list={['tile p-5 text-on-accent', stat.tint]}>
-          <p class="display text-5xl lg:text-6xl">{stat.value}</p>
-          <p class="mt-2 text-sm font-extrabold">{stat.label}</p>
-        </div>
-      ))
-    }
-  </section>
-
-  <section id="how" class="mt-20 scroll-mt-8">
-    <p class="eyebrow">How it works</p>
-    <h2 class="display mt-3 text-5xl">Three steps to an even game</h2>
-    <ol class="mt-8 grid gap-4 lg:grid-cols-3">
-      {
-        steps.map((step, index) => (
-          <li class="tile relative overflow-hidden bg-surface p-6">
-            <span class="display absolute -top-3 right-3 text-[6.5rem] leading-none opacity-10" aria-hidden="true">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <span class:list={['chip', step.tint]}>Step {index + 1}</span>
-            <h3 class="mt-4 text-xl font-black">{step.title}</h3>
-            <p class="relative mt-2 text-ink-secondary">{step.body}</p>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
-
-  <section class="mt-20">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p class="eyebrow">Court directory</p>
-        <h2 class="display mt-3 text-5xl">Courts by country</h2>
-      </div>
-      <a href="/courts/" class="link">See all courts</a>
-    </div>
-    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {countries.map((country, index) => <CountryCard country={country} tint={tints[index % tints.length]} />)}
-    </div>
-  </section>
-
-  <section id="about" class="mt-20 grid scroll-mt-8 gap-4 lg:grid-cols-[1fr_1fr]">
-    <div class="tile bg-ink p-8 text-canvas">
-      <p class="eyebrow text-canvas/70">About</p>
-      <h2 class="display mt-3 text-4xl">Built by a player, for players</h2>
-      <p class="mt-4 max-w-prose text-canvas/80">
-        Badie is a free, nonprofit project. There are no ads and nothing to buy. Court data comes from government open
-        data, OpenStreetMap and players themselves.
-      </p>
-    </div>
-    <div id="app" class="tile flex scroll-mt-8 flex-col justify-between gap-6 bg-lime p-8 text-on-accent">
-      <div>
-        <p class="eyebrow text-on-accent/70">The app</p>
-        <h2 class="display mt-3 text-4xl">Play from any browser</h2>
-        <p class="mt-4 max-w-prose font-medium">
-          Badie works on the web on any phone or computer, no download needed. The iPhone app is in testing.
-        </p>
-      </div>
-      <a href="/app/" class="button button-quiet self-start">Open Badie</a>
-    </div>
-  </section>
-</Base>
+  <h1 class="display text-5xl">Up for a game tonight?</h1>
+  <p class="max-w-prose text-lg">
+    Badie matches you with badminton players at your level who are free when you are, at courts you can actually get to. Free, nonprofit, no ads.
+  </p>
+  <ol class="grid max-w-prose gap-2">
+    <li><strong>Set your level.</strong> A 2-minute quiz places you on a 1–9 scale.</li>
+    <li><strong>Get matched.</strong> Pick your courts and when you’re free.</li>
+    <li><strong>Play, then confirm.</strong> Both sides confirm the result for win rate and leaderboards.</li>
+  </ol>
+  <ul class="grid gap-1">
+    <li><a class="link" href="/courts/">{courtCount} badminton courts in {countries.length} countries</a></li>
+    <li><a class="link" href="/levels/">Badminton level chart (1–9)</a></li>
+    <li><a class="link" href="/about/">About Badie</a></li>
+  </ul>
+</App>

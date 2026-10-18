@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { tier } from './assessment';
 import { t } from './i18n';
 import { SlotFields, slotTimes, type Slot } from './NewRoom';
-import { Link } from './router';
+import { IconTile, ScreenHeader } from './kit';
+import { Link, navigate } from './router';
 import { RoomChips, roomWhen } from './Rooms';
 import { problem, supabase, useLive, type Friend, type RoomDetail } from './supabase';
 import { today, wallClock } from './time';
@@ -34,7 +35,7 @@ export function RoomPage({ id }: { id: string }) {
   if (r === undefined) return <Skeleton className="h-96 max-w-3xl" />;
   if (r === null) {
     return (
-      <EmptyState title={t('Game not found')} action={<Link to="/app/rooms/" className="button">{t('Open games')}</Link>}>
+      <EmptyState title={t('Game not found')} action={<Link to="/rooms/" className="button">{t('Open games')}</Link>}>
         {t('It may be private, or the host closed it.')}
       </EmptyState>
     );
@@ -55,7 +56,7 @@ export function RoomPage({ id }: { id: string }) {
 
   async function copyInvite() {
     const text = t('Join my badminton game on Badie: {when} at {court}. Open {link} and enter code {code}.', {
-      when: roomWhen(r!), court: r!.venue?.name ?? '', link: `${location.origin}/app/rooms/`, code: r!.code ?? '',
+      when: roomWhen(r!), court: r!.venue?.name ?? '', link: `${location.origin}/join/`, code: r!.code ?? '',
     });
     try {
       await navigator.clipboard.writeText(text);
@@ -68,7 +69,7 @@ export function RoomPage({ id }: { id: string }) {
   return (
     <div className="grid gap-6">
       <div>
-        <Link to="/app/rooms/" className="link text-sm">{t('Open games')}</Link>
+        <Link to="/rooms/" className="link text-sm">{t('Open games')}</Link>
         <p className="eyebrow mt-6">{r.venue ? `${r.venue.name}, ${r.venue.city}` : t('Court not set yet')}</p>
         <h1 className="display mt-2 text-[clamp(2.25rem,6vw,3.5rem)] break-words">{roomWhen(r)}</h1>
         <div className="mt-4"><RoomChips room={r} /></div>
@@ -81,7 +82,7 @@ export function RoomPage({ id }: { id: string }) {
       {r.status === 'started' && (
         <div className="tile flex flex-wrap items-center justify-between gap-3 bg-mint p-5 text-on-accent">
           <p className="font-black">{t('Game on! Everyone’s in.')}</p>
-          {inside && r.game_id && <Link to={`/app/games/${r.game_id}/`} className="button button-quiet">{t('View game')}</Link>}
+          {inside && r.game_id && <Link to={`/games/${r.game_id}/`} className="button button-quiet">{t('View game')}</Link>}
         </div>
       )}
       {r.status === 'closed' && r.closed_reason && (
@@ -101,7 +102,7 @@ export function RoomPage({ id }: { id: string }) {
               {going.map((m) => (
                 <li key={m.id} className="flex min-h-11 items-center gap-2">
                   {m.me ? <span className="min-w-0 flex-1 truncate font-black">{t('You')}</span> : (
-                    <Link to={`/app/players/${m.id}/`} className="min-w-0 flex-1 truncate font-bold hover:underline">{m.nickname}</Link>
+                    <Link to={`/players/${m.id}/`} className="min-w-0 flex-1 truncate font-bold hover:underline">{m.nickname}</Link>
                   )}
                   <span className="text-sm font-semibold text-ink-tertiary">
                     {tier(m.rating).label}{m.id === r.owner.id ? ` · ${t('Host')}` : ''}
@@ -262,5 +263,55 @@ function EditSlot({ room, onSaved }: { room: RoomDetail; onSaved: () => void }) 
         <Button busy={busy} onClick={save} className="justify-self-start">{t('Save')}</Button>
       </div>
     </details>
+  );
+}
+
+/** 输入房间码 / 群号（iOS 的 JoinRoomView）：先找球局，找不到再找球群 */
+export function JoinRoom() {
+  const [code, setCode] = useState(() => (new URLSearchParams(location.search).get('code') ?? '').toUpperCase().slice(0, 6));
+  const [error, setError] = useState<string>();
+  const [busy, setBusy] = useState(false);
+
+  async function join(event: SubmitEvent) {
+    event.preventDefault();
+    setBusy(true);
+    const { data, error } = await supabase!.rpc('join_room_code', { p_code: code });
+    if (!error) return navigate(`/rooms/${data}/`);
+    if (error.message === 'room_not_found') {
+      const { data: group } = await supabase!.rpc('find_group', { p_code: code });
+      if (group) return navigate(`/groups/${group}/`);
+    }
+    setBusy(false);
+    setError(problem(error));
+  }
+
+  return (
+    <div className="mx-auto grid max-w-lg gap-5">
+      <ScreenHeader title={t('Enter room code / group ID')} back="/games/" />
+      <form onSubmit={join} noValidate className="sticker grid gap-4 bg-lavender p-6 text-on-accent">
+        <IconTile icon="hash" tint="surface" size="xl" className="-rotate-6" />
+        <div>
+          <h2 className="text-title2">{t('Have a code?')}</h2>
+          <p className="text-subhead">{t('6-digit room code or group code from a friend')}</p>
+        </div>
+        <label htmlFor="code" className="sr-only">{t('Code')}</label>
+        <input
+          id="code"
+          value={code}
+          maxLength={6}
+          autoFocus
+          autoCapitalize="characters"
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? 'code-error' : undefined}
+          onChange={(e) => { setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); setError(undefined); }}
+          placeholder="ABC234"
+          className="field h-16 bg-white text-center font-mono text-[1.75rem] font-black tracking-[0.4em] text-[#17140f] uppercase placeholder:text-[#17140f]/30"
+        />
+        {error && <p id="code-error" role="alert" className="font-bold">{error}</p>}
+        <Button busy={busy} disabled={code.length !== 6} className="button-lg button-inverse">{t('Join')}</Button>
+      </form>
+    </div>
   );
 }

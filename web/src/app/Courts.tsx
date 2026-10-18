@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { currentLocale, t } from './i18n';
+import { currentLocale, t, useLocale } from './i18n';
 import { Icon } from './icons';
 import { AreaPicker, type Centre } from './pickers';
+import { navigate } from './router';
+import { signInFirst } from './Shell';
 import { supabase, type NearbyVenue, type Venue } from './supabase';
 import { Button, EmptyState, PageHeader, Skeleton, toast } from './ui';
 
@@ -15,7 +17,13 @@ export const money = (amount: number, country: string) =>
     : new Intl.NumberFormat(currentLocale(), { style: 'currency', currency: { US: 'USD', GB: 'GBP', HK: 'HKD', SG: 'SGD', MY: 'MYR', TW: 'TWD', JP: 'JPY' }[country] ?? 'USD', maximumFractionDigits: 0 }).format(amount);
 export const address = (v: Venue) => [[v.street, v.unit].filter(Boolean).join(', '), v.city, [v.region, v.postal_code].filter(Boolean).join(' ')].filter(Boolean).join(', ');
 
-export function Courts({ userId }: { userId: string }) {
+/** 球馆页上方“我附近的球馆”（静态页面里的 React 岛）：定位或搜城市，列表 + 详情，登录后可以收藏 */
+export function Courts() {
+  useLocale();
+  const [userId, setUserId] = useState<string>();
+  useEffect(() => {
+    supabase?.auth.getSession().then(({ data }) => setUserId(data.session?.user.id));
+  }, []);
   const [centre, setCentre] = useState<Centre>();
   const [radius, setRadius] = useState(15);
   const [results, setResults] = useState<NearbyVenue[]>();
@@ -24,8 +32,9 @@ export function Courts({ userId }: { userId: string }) {
   const detail = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    if (!userId) return;
     supabase!.from('favorite_venues').select('venue_id').then(({ data }) => setFavorites(new Set(data?.map((f) => f.venue_id))));
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (!centre) return;
@@ -48,6 +57,7 @@ export function Courts({ userId }: { userId: string }) {
 
   // 先改界面再请求，失败了改回来
   async function toggleFavorite(venue: Venue) {
+    if (!userId) return navigate(signInFirst('/courts/'));
     const was = favorites.has(venue.id);
     const next = new Set(favorites);
     if (was) next.delete(venue.id);

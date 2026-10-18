@@ -59,6 +59,10 @@ export async function setLocale(next: Locale, remember = false) {
 
 export const currentLocale = () => locale;
 
+/** 第一次打开：按存过的选择或浏览器语言加载（App 和静态页上的顶栏共用，只加载一次） */
+let starting: Promise<void> | undefined;
+export const startLocale = () => (starting ??= setLocale(detect()).catch(() => undefined));
+
 /** 语言变了就重新渲染 */
 export function useLocale() {
   return useSyncExternalStore(
@@ -67,6 +71,7 @@ export function useLocale() {
       return () => listeners.delete(notify);
     },
     () => locale,
+    () => 'en' as Locale,
   );
 }
 

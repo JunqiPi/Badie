@@ -1,0 +1,18 @@
+---
+import App from '../../layouts/App.astro';
+import { levels } from '../../app/levels';
+---
+
+<App title="Badminton level chart 1–9 — Badie" description="What each badminton level from 1 to 9 looks like on court: rallies, footwork, attack and defense, up to state, national and international level.">
+  <h1 class="display text-5xl">Badminton level chart</h1>
+  <ol class="grid gap-4">
+    {
+      levels.map((l) => (
+        <li>
+          <h2 class="text-xl font-black">Level {l.level}: {l.name}</h2>
+          <ul class="list-disc pl-5">{l.anchors.map((a) => <li>{a}</li>)}</ul>
+        </li>
+      ))
+    }
+  </ol>
+</App>

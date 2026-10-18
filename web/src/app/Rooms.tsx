@@ -1,6 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
 import { km } from './Courts';
-import { PlayTabs } from './Groups';
 import { t } from './i18n';
 import { AreaPicker, type Centre } from './pickers';
 import { Link, navigate } from './router';
@@ -34,7 +33,7 @@ export function RoomChips({ room: r }: { room: RoomSummary }) {
 function RoomCard({ room: r }: { room: RoomSummary }) {
   const open = r.capacity - r.going;
   return (
-    <Link to={`/app/rooms/${r.id}/`} className="sticker lift grid gap-2 p-5">
+    <Link to={`/rooms/${r.id}/`} className="sticker lift grid gap-2 p-5">
       <span className="flex flex-wrap items-start justify-between gap-2">
         <span className="text-lg font-black">{roomWhen(r)}</span>
         {r.my_status === 'owner' ? <span className="chip bg-butter">{t('Hosting')}</span>
@@ -75,10 +74,10 @@ export function Rooms() {
     event.preventDefault();
     setJoining(true);
     const { data, error } = await supabase!.rpc('join_room_code', { p_code: code });
-    if (!error) return navigate(`/app/rooms/${data}/`);
+    if (!error) return navigate(`/rooms/${data}/`);
     if (error.message === 'room_not_found') {
       const { data: group } = await supabase!.rpc('find_group', { p_code: code });
-      if (group) return navigate(`/app/groups/${group}/`);
+      if (group) return navigate(`/groups/${group}/`);
     }
     setJoining(false);
     setCodeError(problem(error));
@@ -87,10 +86,9 @@ export function Rooms() {
 
   return (
     <div>
-      <PageHeader eyebrow={t('Play')} title={t('Open games')}>
+      <PageHeader back="/games/" title={t('Nearby games')}>
         {t('Someone has a court and needs players. Join one at your level, or post your own when you’re short a player or two.')}
       </PageHeader>
-      <PlayTabs current="rooms" />
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <div className="grid gap-10">
@@ -118,7 +116,7 @@ export function Rooms() {
           <div className="tile grid gap-3 bg-lavender p-5 text-on-accent">
             <p className="font-black">{t('Have a court, need players?')}</p>
             <p className="font-medium">{t('Post the time and level. Players nearby join in one tap, and you start the game when it’s full.')}</p>
-            <Link to="/app/rooms/new/" className="button button-quiet justify-self-start">{t('Post a game')}</Link>
+            <Link to="/rooms/new/" className="button button-quiet justify-self-start">{t('Post a game')}</Link>
           </div>
           <form onSubmit={join} noValidate className="tile grid gap-3 bg-surface p-5">
             <Field label={t('Have a code?')} hint={t('A 6-character room code or group number from a friend.')} error={codeError}>

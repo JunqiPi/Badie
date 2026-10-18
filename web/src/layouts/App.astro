@@ -1,0 +1,53 @@
+---
+// App 的入口页面：首页、等级对照表、关于……都挂同一个 App。
+// 槽里的静态内容给搜索引擎和不开脚本的人看；有脚本时先显示转圈，App 加载后接管
+import '../styles/global.css';
+import App from '../app/App';
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#17140f" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Badie" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body class="min-h-dvh antialiased">
+    <App client:only="react">
+      <div slot="fallback">
+        <div class="js-only min-h-dvh">
+          <div class="h-16 bg-bar"></div>
+          <p role="status" class="grid min-h-[60dvh] place-items-center">
+            <span aria-hidden="true" class="size-6 animate-spin rounded-full border-[3px] border-ink-secondary border-t-transparent"></span>
+            <span class="sr-only">Loading…</span>
+          </p>
+        </div>
+        <div class="static-only page grid gap-6 py-10">
+          <a href="/" class="text-[1.75rem] font-black">badie.</a>
+          <slot />
+        </div>
+      </div>
+    </App>
+  </body>
+</html>

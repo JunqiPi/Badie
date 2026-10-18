@@ -1,110 +1,110 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type SubmitEvent } from 'react';
-import { tier } from './assessment';
 import { t } from './i18n';
+import { Icon, type IconName } from './icons';
+import { Avatar, CountBadge, Divider, Empty, IconButton, IconTile, LargeTitle, LevelBadge, ScreenHeader, Segmented, type Tint } from './kit';
 import { Link, navigate } from './router';
 import { problem, supabase, useLive, type FoundPlayer, type Friend, type Regular, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
 import { day, hours, relative } from './time';
-import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
+import { Button, Field, Skeleton, toast } from './ui';
 
-const tabs = [['chats', 'Chats'], ['updates', 'Updates'], ['friends', 'Friends']] as const;
-type Tab = (typeof tabs)[number][0];
+type Tab = 'chats' | 'friends';
 
-export function Messages() {
-  const initial = new URLSearchParams(location.search).get('tab');
-  const [tab, setTab] = useState<Tab>(tabs.some(([value]) => value === initial) ? (initial as Tab) : 'chats');
+/** 消息：桌面上左边会话列表、右边聊天；手机上列表和聊天各占一屏 */
+export function Messages({ open }: { open?: { kind: ThreadKind; id: string } }) {
+  const initial = new URLSearchParams(location.search).get('tab') === 'friends' ? 'friends' : 'chats';
+  const [tab, setTab] = useState<Tab>(initial);
+  const { data: threads } = useLive<ThreadSummary[]>('my_threads', { every: 15_000 });
+  const { data: friends, refresh: refreshFriends } = useLive<{ friends: Friend[]; requests: Friend[] }>('my_friends', { every: 60_000 });
+  const unread = threads?.reduce((sum, th) => sum + (th.unread > 0 ? 1 : 0), 0) ?? 0;
   const pick = (next: Tab) => {
     setTab(next);
-    history.replaceState(null, '', `?tab=${next}`);
+    history.replaceState(null, '', next === 'friends' ? '/messages/?tab=friends' : '/messages/');
   };
 
+  const list = (
+    <div className={`grid content-start gap-4 ${open ? 'hidden lg:grid' : ''}`}>
+      <LargeTitle title={t('Messages')}>
+        <IconButton icon="userPlus" label={t('Find players')} onClick={() => pick('friends')} />
+      </LargeTitle>
+      <Segmented
+        label={t('Messages')}
+        value={tab}
+        onChange={pick}
+        options={[
+          { value: 'chats', label: t('Chats'), badge: unread },
+          { value: 'friends', label: t('Players'), badge: friends?.requests.length ?? 0 },
+        ]}
+      />
+      <div key={tab} className="animate-enter">
+        {tab === 'chats' ? <ChatList threads={threads} open={open} /> : <Friends data={friends} refresh={refreshFriends} />}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="max-w-3xl">
-      <PageHeader title={t('Messages')} />
-      <div role="tablist" aria-label={t('Messages')} className="mb-6 flex gap-2">
-        {tabs.map(([value, label]) => (
-          <button key={value} role="tab" id={`tab-${value}`} aria-selected={tab === value} aria-controls="panel" onClick={() => pick(value)}
-                  className="toggle aria-selected:bg-butter aria-selected:text-on-accent">
-            {t(label)}
-          </button>
-        ))}
-      </div>
-      <div id="panel" role="tabpanel" aria-labelledby={`tab-${tab}`} key={tab} className="animate-enter">
-        {tab === 'chats' ? <Chats /> : tab === 'updates' ? <Updates /> : <Friends />}
-      </div>
+    <div className="grid gap-6 lg:grid-cols-[24rem_minmax(0,1fr)] lg:items-start lg:gap-8">
+      {list}
+      {open ? (
+        <Chat key={open.id} kind={open.kind} id={open.id} />
+      ) : (
+        <div className="hidden lg:block lg:sticky lg:top-24">
+          <Empty icon="chats" tint="sky" title={t('Pick a chat')}>
+            {t('Each confirmed game gets a group chat. Friends can message each other anytime.')}
+          </Empty>
+        </div>
+      )}
     </div>
   );
 }
 
-function Chats() {
-  const { data: threads } = useLive<ThreadSummary[]>('my_threads', { every: 15_000 });
-  if (!threads) return <List>{[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}</List>;
+const threadIcon: Record<ThreadKind, [IconName, Tint]> = { game: ['games', 'lime'], group: ['group', 'lavender'], dm: ['user', 'sky'] };
+
+function ChatList({ threads, open }: { threads?: ThreadSummary[]; open?: { id: string } }) {
+  if (!threads) return <div className="grid gap-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-16" />)}</div>;
   if (!threads.length) {
-    return <EmptyState title={t('No chats yet')}>{t('Each confirmed game gets a group chat. Friends can message each other anytime.')}</EmptyState>;
+    return (
+      <Empty icon="chats" tint="sky" title={t('No chats yet')}>
+        {t('Each confirmed game gets a group chat. Friends can message each other anytime.')}
+      </Empty>
+    );
   }
   return (
-    <List>
-      {threads.map((thread) => (
-        <Link key={`${thread.kind}-${thread.id}`} to={`/app/messages/${thread.kind}/${thread.id}/`} className="sticker lift flex items-center gap-4 p-4">
-          <span className="min-w-0 flex-1">
-            <span className="block truncate font-black">
-              {thread.kind === 'game' ? `${day(thread.starts_at!, thread.tz)} · ${thread.venue}` : thread.name}
-            </span>
-            <span className={`block truncate text-sm ${thread.unread ? 'font-bold text-ink' : 'text-ink-secondary'}`}>
-              {preview(thread)}
-            </span>
-          </span>
-          <span className="grid shrink-0 justify-items-end gap-1">
-            {thread.request === 'incoming' && <span className="chip bg-butter">{t('Message request')}</span>}
-            {thread.last && <span className="text-xs font-bold text-ink-tertiary">{relative(thread.last.created_at)}</span>}
-            {thread.unread > 0 && <span className="chip bg-lime" aria-label={t('{n} unread', { n: thread.unread })}>{thread.unread}</span>}
-          </span>
-        </Link>
-      ))}
-    </List>
-  );
-}
-
-function Updates() {
-  const [updates, setUpdates] = useState<Update[]>();
-  useEffect(() => {
-    supabase!
-      .from('notifications')
-      .select('id, kind, title, body, link, created_at, read_at')
-      .order('id', { ascending: false })
-      .limit(50)
-      .then(({ data }) => {
-        setUpdates((data ?? []) as Update[]);
-        // 显示过就算已读（这次打开仍保留未读的样式）
-        if (data?.some((u) => !u.read_at)) supabase!.rpc('mark_notifications_read');
-      });
-  }, []);
-  if (!updates) return <List>{[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}</List>;
-  if (!updates.length) return <EmptyState title={t('Nothing new')}>{t('Matches, confirmations and friend requests show up here.')}</EmptyState>;
-  return (
-    <List>
-      {updates.map((u) => {
-        const content = (
-          <>
-            <span className="flex items-baseline justify-between gap-3">
-              <span className="font-black">{u.title}</span>
-              <span className="shrink-0 text-xs font-bold text-ink-tertiary">{relative(u.created_at)}</span>
-            </span>
-            <span className="mt-1 block text-ink-secondary">{u.body}</span>
-          </>
-        );
-        const tone = u.read_at ? 'bg-surface' : 'bg-butter/40';
-        return u.link ? (
-          <Link key={u.id} to={u.link} className={`sticker lift block p-4 ${tone}`}>{content}</Link>
-        ) : (
-          <div key={u.id} className={`tile p-4 ${tone}`}>{content}</div>
+    <ul className="sticker grid p-2" aria-label={t('Chats')}>
+      {threads.map((th, i) => {
+        const [icon, tint] = threadIcon[th.kind];
+        return (
+          <li key={`${th.kind}-${th.id}`}>
+            {i > 0 && <div className="mx-2"><Divider /></div>}
+            <Link
+              to={`/messages/${th.kind}/${th.id}/`}
+              aria-current={open?.id === th.id ? 'page' : undefined}
+              className="press flex items-center gap-3 rounded-[14px] p-2.5 hover:bg-surface-muted/70 aria-[current=page]:bg-lime/35"
+            >
+              {th.kind === 'dm' ? <Avatar id={th.id} name={th.name ?? '?'} size={44} /> : <IconTile icon={icon} tint={tint} />}
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline gap-2">
+                  <span className="min-w-0 flex-1 truncate font-bold">
+                    {th.kind === 'game' ? `${day(th.starts_at!, th.tz)} · ${th.venue}` : th.name}
+                  </span>
+                  {th.last && <span className="shrink-0 text-caption text-ink-tertiary">{relative(th.last.created_at)}</span>}
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className={`min-w-0 flex-1 truncate text-footnote ${th.unread ? 'font-bold text-ink' : 'text-ink-secondary'}`}>
+                    {th.request === 'incoming' ? t('Message request') : preview(th)}
+                  </span>
+                  <CountBadge count={th.unread} />
+                  {th.unread > 0 && <span className="sr-only">{t('{n} unread', { n: th.unread })}</span>}
+                </span>
+              </span>
+            </Link>
+          </li>
         );
       })}
-    </List>
+    </ul>
   );
 }
 
-function Friends() {
-  const { data, refresh } = useLive<{ friends: Friend[]; requests: Friend[] }>('my_friends', { every: 60_000 });
+function Friends({ data, refresh }: { data?: { friends: Friend[]; requests: Friend[] }; refresh: () => void }) {
   const [busy, setBusy] = useState<string>();
 
   async function respond(id: string, accept: boolean) {
@@ -116,39 +116,52 @@ function Friends() {
     refresh();
   }
 
-  if (!data) return <List>{[0, 1].map((i) => <Skeleton key={i} className="h-16" />)}</List>;
+  if (!data) return <div className="grid gap-3">{[0, 1].map((i) => <Skeleton key={i} className="h-16" />)}</div>;
   return (
-    <div className="grid gap-8">
-      <FindPlayers onAdded={refresh} />
-      <Regulars />
+    <div className="grid gap-6">
       {data.requests.length > 0 && (
-        <section aria-labelledby="requests" className="grid gap-3">
-          <h2 id="requests" className="eyebrow">{t('Friend requests')}</h2>
+        <section aria-labelledby="requests" className="grid gap-2">
+          <h2 id="requests" className="text-title3">{t('Friend requests')}</h2>
           {data.requests.map((r) => (
-            <div key={r.id} className="tile flex flex-wrap items-center gap-3 bg-surface p-4">
-              <Link to={`/app/players/${r.id}/`} className="link min-w-0 flex-1 truncate">{r.nickname}</Link>
-              <Button busy={busy === r.id} onClick={() => respond(r.id, true)}>{t('Accept')}</Button>
-              <Button variant="quiet" disabled={busy === r.id} onClick={() => respond(r.id, false)}>{t('Ignore')}</Button>
+            <div key={r.id} className="sticker flex flex-wrap items-center gap-3 bg-butter p-3 text-on-accent">
+              <Link to={`/players/${r.id}/`} className="flex min-w-0 flex-1 items-center gap-3">
+                <Avatar id={r.id} name={r.nickname} size={40} />
+                <span className="truncate font-bold">{r.nickname}</span>
+              </Link>
+              <Button className="button-sm" busy={busy === r.id} onClick={() => respond(r.id, true)}>{t('Accept')}</Button>
+              <Button className="button-sm" variant="quiet" disabled={busy === r.id} onClick={() => respond(r.id, false)}>{t('Ignore')}</Button>
             </div>
           ))}
         </section>
       )}
-      <section aria-labelledby="friends" className="grid gap-3">
-        <h2 id="friends" className="eyebrow">{t('Friends')}</h2>
+      <section aria-labelledby="friends" className="grid gap-2">
+        <h2 id="friends" className="text-title3">{t('Friends')}</h2>
         {data.friends.length === 0 ? (
-          <EmptyState title={t('No friends yet')}>{t('After a game, pick “I’d play with them again”. If they pick you too, you become friends.')}</EmptyState>
+          <Empty icon="handshake" tint="mint" title={t('No friends yet')}>
+            {t('After a game, pick “I’d play with them again”. If they pick you too, you become friends.')}
+          </Empty>
         ) : (
-          data.friends.map((f) => (
-            <div key={f.id} className="tile flex items-center gap-3 bg-surface p-4">
-              <Link to={`/app/players/${f.id}/`} className="min-w-0 flex-1">
-                <span className="block truncate font-black">{f.nickname}</span>
-                <span className="text-sm font-bold text-ink-tertiary">{t('Level {level}', { level: tier(f.rating).label })}</span>
-              </Link>
-              <Link to={`/app/messages/dm/${f.id}/`} className="button button-quiet">{t('Message')}</Link>
-            </div>
-          ))
+          <ul className="sticker grid p-2">
+            {data.friends.map((f, i) => (
+              <li key={f.id}>
+                {i > 0 && <div className="mx-2"><Divider /></div>}
+                <div className="flex items-center gap-3 p-2.5">
+                  <Link to={`/players/${f.id}/`} className="press flex min-w-0 flex-1 items-center gap-3">
+                    <Avatar id={f.id} name={f.nickname} size={44} />
+                    <span className="grid min-w-0 justify-items-start gap-0.5">
+                      <span className="max-w-full truncate font-bold">{f.nickname}</span>
+                      <LevelBadge rating={f.rating} named={false} compact />
+                    </span>
+                  </Link>
+                  <Link to={`/messages/dm/${f.id}/`} className="button button-sm button-quiet">{t('Message')}</Link>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
+      <FindPlayers onAdded={refresh} />
+      <Regulars />
     </div>
   );
 }
@@ -188,28 +201,31 @@ function FindPlayers({ onAdded }: { onAdded: () => void }) {
   }
 
   return (
-    <section aria-labelledby="find" className="grid gap-3">
-      <h2 id="find" className="eyebrow">{t('Find players')}</h2>
+    <section aria-labelledby="find" className="grid gap-2">
+      <h2 id="find" className="text-title3">{t('Find players')}</h2>
       <Field label={t('Nickname')} hint={t('Only players who allow it show up.')} error={error}>
         {(props) => (
           <input {...props} type="search" value={query} maxLength={12} autoComplete="off" spellCheck={false}
                  onChange={(e) => setQuery(e.target.value)} className="field" />
         )}
       </Field>
-      {found?.length === 0 && <p className="text-ink-secondary">{t('No one by that name. They may have turned off search.')}</p>}
+      {found?.length === 0 && <p className="text-footnote text-ink-secondary">{t('No one by that name. They may have turned off search.')}</p>}
       {found?.map((p) => (
-        <div key={p.id} className="tile flex items-center gap-3 bg-surface p-4">
-          <Link to={`/app/players/${p.id}/`} className="min-w-0 flex-1">
-            <span className="block truncate font-black">{p.nickname}</span>
-            <span className="text-sm font-bold text-ink-tertiary">
-              {t('Level {level}', { level: tier(p.rating).label })}
-              {p.mutual_friends > 0 && ` · ${t('{n} friend in common|{n} friends in common', { n: p.mutual_friends })}`}
+        <div key={p.id} className="sticker flex items-center gap-3 p-3">
+          <Link to={`/players/${p.id}/`} className="press flex min-w-0 flex-1 items-center gap-3">
+            <Avatar id={p.id} name={p.nickname} size={40} />
+            <span className="min-w-0">
+              <span className="block truncate font-bold">{p.nickname}</span>
+              <span className="flex items-center gap-1.5 text-caption text-ink-secondary">
+                <LevelBadge rating={p.rating} named={false} compact />
+                {p.mutual_friends > 0 && t('{n} friend in common|{n} friends in common', { n: p.mutual_friends })}
+              </span>
             </span>
           </Link>
           {p.relationship === 'friend' ? <span className="chip bg-mint">{t('Friend')}</span>
             : p.relationship === 'requested' ? <span className="chip bg-surface-muted text-ink">{t('Requested')}</span>
             : p.relationship === 'incoming' ? <span className="chip bg-butter">{t('Wants to be friends')}</span>
-            : <Button busy={busy === p.id} disabled={Boolean(busy)} onClick={() => add(p.id)}>{t('Add friend')}</Button>}
+            : <Button className="button-sm" busy={busy === p.id} disabled={Boolean(busy)} onClick={() => add(p.id)}>{t('Add friend')}</Button>}
         </div>
       ))}
     </section>
@@ -221,21 +237,26 @@ function Regulars() {
   const { data: regulars } = useLive<Regular[]>('venue_regulars', { every: 300_000 });
   if (!regulars?.length) return null;
   return (
-    <section aria-labelledby="regulars" className="grid gap-3">
+    <section aria-labelledby="regulars" className="grid gap-2">
       <div>
-        <h2 id="regulars" className="eyebrow">{t('Regulars at your courts')}</h2>
-        <p className="text-sm text-ink-tertiary">{t('Players who starred the same courts and chose to show up here.')}</p>
+        <h2 id="regulars" className="text-title3">{t('Regulars at your courts')}</h2>
+        <p className="text-footnote text-ink-secondary">{t('Players who starred the same courts and chose to show up here.')}</p>
       </div>
-      {regulars.map((r) => (
-        <Link key={r.id} to={`/app/players/${r.id}/`} className="sticker lift flex items-center gap-3 p-4">
-          <span className="min-w-0 flex-1">
-            <span className="block truncate font-black">{r.nickname}</span>
-            <span className="block truncate text-sm font-bold text-ink-tertiary">
-              {t('Level {level}', { level: tier(r.rating).label })} · {r.venue.name}
-            </span>
-          </span>
-        </Link>
-      ))}
+      <ul className="sticker grid p-2">
+        {regulars.map((r, i) => (
+          <li key={r.id}>
+            {i > 0 && <div className="mx-2"><Divider /></div>}
+            <Link to={`/players/${r.id}/`} className="press flex items-center gap-3 rounded-[14px] p-2.5 hover:bg-surface-muted/70">
+              <Avatar id={r.id} name={r.nickname} size={40} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-bold">{r.nickname}</span>
+                <span className="block truncate text-footnote text-ink-secondary">{r.venue.name}</span>
+              </span>
+              <LevelBadge rating={r.rating} named={false} compact />
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -247,28 +268,44 @@ function preview(thread: ThreadSummary) {
   return '';
 }
 
-const List = ({ children }: { children: ReactNode }) => <div className="grid gap-3">{children}</div>;
-
 // 见面前不需要转账、代付或验证码：非好友的消息里出现这些就提醒
 const risky = /(\+?\d[\d\s().-]{8,}\d|we ?chat|weixin|whatsapp|telegram|venmo|zelle|cash ?app|paypal|gift ?card|verification code|deposit)/i;
 
-export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
+/** 聊天（iOS 的 ChatView）：我的消息是柠檬绿气泡，别人的是白色 */
+function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
   const { data: thread, failed, refresh } = useLive<Thread>('open_thread', { args: { p_kind: kind, p_id: id }, every: 5_000 });
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
+  const log = useRef<HTMLDivElement>(null);
   const count = thread?.messages.length ?? 0;
 
-  useEffect(() => end.current?.scrollIntoView({ block: 'end' }), [count]);
+  useEffect(() => {
+    log.current?.scrollTo({ top: log.current.scrollHeight });
+  }, [count]);
+
+  const frame = (children: ReactNode) => (
+    <section aria-label={t('Chat')} className="sticker flex h-[calc(100dvh-7rem)] flex-col overflow-hidden lg:sticky lg:top-24 lg:h-[calc(100dvh-8.5rem)]">
+      {children}
+    </section>
+  );
 
   if (failed && !thread) {
-    return <EmptyState title={t('Chat not available')} action={<Link to="/app/messages/" className="button">{t('Messages')}</Link>}>{t('You can only see chats you’re part of.')}</EmptyState>;
+    return (
+      <Empty icon="lock" tint="peach" title={t('Chat not available')} action={{ label: t('Messages'), to: '/messages/' }}>
+        {t('You can only see chats you’re part of.')}
+      </Empty>
+    );
   }
-  if (!thread) return <Skeleton className="h-96 max-w-3xl" />;
+  if (!thread) return frame(<Skeleton className="m-4 flex-1" />);
 
   const other = thread.members.find((m) => !m.me);
   const names = Object.fromEntries(thread.members.map((m) => [m.id, m.nickname]));
   const warn = !thread.friend && thread.messages.some((m) => !m.mine && risky.test(m.body));
+  const title = thread.game ? `${day(thread.game.starts_at, thread.game.tz)} · ${thread.game.venue}` : thread.group ? thread.group.name : other?.nickname ?? '';
+  const subtitle = thread.game
+    ? `${hours(thread.game.starts_at, thread.game.ends_at, thread.game.tz)} · ${thread.members.filter((m) => !m.me).map((m) => m.nickname).join(', ')}`
+    : thread.group ? `${thread.group.venue} · ${t('{n} member|{n} members', { n: thread.members.length })}` : undefined;
+  const titleLink = thread.game ? `/games/${id}/` : thread.group ? `/groups/${id}/` : `/players/${other?.id}/`;
 
   async function send(event?: SubmitEvent) {
     event?.preventDefault();
@@ -286,7 +323,7 @@ export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
   async function respond(accept: boolean) {
     const { error } = await supabase!.rpc('respond_message_request', { p_user: id, p_accept: accept });
     if (error) return toast(problem(error), 'error');
-    if (!accept) return navigate('/app/messages/');
+    if (!accept) return navigate('/messages/');
     refresh();
   }
 
@@ -297,82 +334,153 @@ export function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
     }
   }
 
-  return (
-    <div className="grid max-w-3xl gap-4">
-      <div>
-        <Link to="/app/messages/" className="link text-sm">{t('Messages')}</Link>
-        {thread.game ? (
-          <>
-            <h1 className="mt-4 text-2xl font-black">{day(thread.game.starts_at, thread.game.tz)} · {hours(thread.game.starts_at, thread.game.ends_at, thread.game.tz)}</h1>
-            <p className="text-ink-secondary">
-              {thread.game.venue} ·{' '}
-              {thread.members.filter((m) => !m.me).map((m, i) => (
-                <span key={m.id}>{i > 0 && ', '}<Link to={`/app/players/${m.id}/`} className="link">{m.nickname}</Link></span>
-              ))}
-            </p>
-          </>
-        ) : thread.group ? (
-          <>
-            <h1 className="mt-4 text-2xl font-black"><Link to={`/app/groups/${id}/`} className="hover:underline">{thread.group.name}</Link></h1>
-            <p className="text-ink-secondary">{thread.group.venue} · {t('{n} member|{n} members', { n: thread.members.length })}</p>
-          </>
-        ) : (
-          <h1 className="mt-4 text-2xl font-black">
-            <Link to={`/app/players/${other?.id}/`} className="hover:underline">{other?.nickname}</Link>
-          </h1>
+  return frame(
+    <>
+      <header className="flex items-center gap-3 border-b-2 border-stroke p-3">
+        <span className="lg:hidden"><IconButton icon="chevronLeft" label={t('Back')} to="/messages/" /></span>
+        {kind === 'dm' && other ? <Avatar id={other.id} name={other.nickname} size={40} /> : <IconTile icon={threadIcon[kind][0]} tint={threadIcon[kind][1]} />}
+        <Link to={titleLink} className="min-w-0 flex-1 hover:underline">
+          <h1 className="truncate text-headline">{title}</h1>
+          {subtitle && <p className="truncate text-footnote text-ink-secondary">{subtitle}</p>}
+        </Link>
+      </header>
+
+      <div ref={log} role="log" aria-live="polite" aria-label={t('Messages')} className="grid flex-1 content-start gap-3 overflow-y-auto bg-canvas/60 p-4">
+        {warn && (
+          <p role="note" className="tile flex gap-2 bg-peach p-3 text-footnote font-bold text-on-accent">
+            <Icon name="shield" className="size-5" />
+            {t('You never need to pay, send a deposit or share a verification code before playing. Split court fees at the court.')}
+          </p>
         )}
-      </div>
-
-      {warn && (
-        <p role="note" className="tile bg-peach p-4 font-bold text-on-accent">
-          {t('You never need to pay, send a deposit or share a verification code before playing. Split court fees at the court.')}
-        </p>
-      )}
-
-      <div role="log" aria-live="polite" aria-label={t('Messages')} className="tile grid max-h-[60dvh] min-h-64 content-start gap-3 overflow-y-auto bg-surface p-4">
-        {thread.messages.length === 0 && <p className="text-center text-ink-tertiary">{t('No messages yet. Say hi!')}</p>}
+        {thread.messages.length === 0 && <p className="py-10 text-center text-ink-secondary">{t('No messages yet. Say hi!')}</p>}
         {thread.messages.map((m) => (
-          <div key={m.id} className={`grid max-w-[80%] gap-1 ${m.mine ? 'justify-self-end text-right' : 'justify-self-start'}`}>
-            {!m.mine && !thread.friend && <span className="text-xs font-extrabold text-ink-secondary">{names[m.sender] ?? t('Player')}</span>}
-            <p className={`rounded-[var(--r-control)] border-2 border-stroke px-3 py-2 text-left break-words whitespace-pre-wrap ${m.mine ? 'bg-lime text-on-accent' : 'bg-surface-muted'}`}>
-              {m.body}
-            </p>
-            <span className="text-xs text-ink-tertiary">{relative(m.created_at)}</span>
+          <div key={m.id} className={`flex max-w-[85%] items-end gap-2 ${m.mine ? 'justify-self-end' : 'justify-self-start'}`}>
+            {!m.mine && <Avatar id={m.sender} name={names[m.sender] ?? '?'} size={28} />}
+            <div className={`grid gap-0.5 ${m.mine ? 'justify-items-end' : ''}`}>
+              {!m.mine && kind !== 'dm' && <span className="px-1 text-caption text-ink-secondary">{names[m.sender] ?? t('Player')}</span>}
+              <p className={`rounded-[18px] border-2 border-stroke px-3.5 py-2 break-words whitespace-pre-wrap ${m.mine ? 'rounded-br-[6px] bg-lime text-on-accent' : 'rounded-bl-[6px] bg-surface'}`}>
+                {m.body}
+              </p>
+              <span className="px-1 text-[11px] text-ink-tertiary">{relative(m.created_at)}</span>
+            </div>
           </div>
         ))}
-        <div ref={end} />
       </div>
 
       {thread.request === 'incoming' && (
-        <div className="tile grid gap-3 bg-butter p-4 text-on-accent">
-          <p className="font-black">{t('{name} wants to chat', { name: other?.nickname ?? '' })}</p>
-          <p className="text-sm">{t('You’re in the same group. Accept or reply to keep chatting. If you ignore it, they won’t know.')}</p>
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => respond(true)}>{t('Accept')}</Button>
-            <Button variant="quiet" onClick={() => respond(false)}>{t('Ignore')}</Button>
+        <div className="grid gap-2 border-t-2 border-stroke bg-butter p-3 text-on-accent">
+          <p className="font-bold">{t('{name} wants to chat', { name: other?.nickname ?? '' })}</p>
+          <p className="text-footnote">{t('You’re in the same group. Accept or reply to keep chatting. If you ignore it, they won’t know.')}</p>
+          <div className="flex gap-2">
+            <Button className="button-sm" onClick={() => respond(true)}>{t('Accept')}</Button>
+            <Button className="button-sm" variant="quiet" onClick={() => respond(false)}>{t('Ignore')}</Button>
           </div>
         </div>
       )}
 
       {thread.access === 'request' && (
-        <p className="text-sm text-ink-secondary">
+        <p className="border-t-2 border-stroke bg-surface-muted p-3 text-footnote text-ink-secondary">
           {t('You’re both in {group}. Send one message to start: text only, no links or contact details. You can keep chatting once they accept.', { group: thread.group_name ?? '' })}
         </p>
       )}
 
       {thread.access === 'open' || thread.access === 'request' ? (
-        <form onSubmit={send} className="flex items-end gap-2">
+        <form onSubmit={send} className="flex items-end gap-2 border-t-2 border-stroke bg-surface p-3">
           <label className="sr-only" htmlFor="draft">{t('Message')}</label>
-          <textarea id="draft" rows={2} maxLength={1000} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey}
-                    placeholder={t('Write a message')} className="field min-h-12 flex-1 resize-none" />
-          <Button busy={busy} disabled={!draft.trim()}>{t('Send')}</Button>
+          <textarea id="draft" rows={1} maxLength={1000} value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={onKey}
+                    placeholder={t('Write a message')} className="field max-h-32 min-h-11 flex-1 resize-none rounded-[22px] py-2.5" />
+          <button type="submit" disabled={!draft.trim() || busy} aria-label={t('Send')}
+                  className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-stroke bg-lime text-on-accent transition-transform active:scale-92 disabled:bg-surface-muted disabled:text-ink-tertiary">
+            <Icon name="send" className="size-5" />
+          </button>
         </form>
       ) : (
-        <p className="text-ink-secondary" role="status">
+        <p className="border-t-2 border-stroke bg-surface-muted p-3 text-center text-footnote font-bold text-ink-secondary" role="status">
           {thread.game ? t('This chat closed 48 hours after the game.')
             : thread.access === 'requested' ? t('Message request sent. You can keep chatting once they accept.')
             : t('You can only message friends.')}
         </p>
+      )}
+    </>,
+  );
+}
+
+// MARK: 通知（顶栏的铃铛）
+
+const updateIcons: Record<string, [IconName, Tint]> = {
+  offer: ['bolt', 'lime'],
+  offer_auto: ['bolt', 'lime'],
+  matched: ['checkCircle', 'mint'],
+  cancelled: ['xCircle', 'pink'],
+  missed: ['warning', 'peach'],
+  requeued: ['swap', 'sky'],
+  expired: ['hourglass', 'muted'],
+  review: ['star', 'pink'],
+  friend: ['handshake', 'mint'],
+  friend_request: ['userPlus', 'lavender'],
+  message_request: ['chat', 'sky'],
+  challenge: ['challenge', 'peach'],
+  group: ['group', 'sky'],
+  room: ['court', 'peach'],
+  room_closed: ['court', 'muted'],
+  room_promoted: ['court', 'lime'],
+  room_removed: ['court', 'muted'],
+  verification: ['verified', 'lime'],
+  report: ['shield', 'butter'],
+  nudge: ['bell', 'butter'],
+};
+
+export function Notifications() {
+  const [updates, setUpdates] = useState<Update[]>();
+  useEffect(() => {
+    supabase!
+      .from('notifications')
+      .select('id, kind, title, body, link, created_at, read_at')
+      .order('id', { ascending: false })
+      .limit(50)
+      .then(({ data }) => {
+        setUpdates((data ?? []) as Update[]);
+        // 显示过就算已读（这次打开仍保留未读的样式）
+        if (data?.some((u) => !u.read_at)) supabase!.rpc('mark_notifications_read');
+      });
+  }, []);
+
+  return (
+    <div className="mx-auto grid max-w-2xl gap-5">
+      <ScreenHeader title={t('Notifications')} back="/" />
+      {!updates ? (
+        <div className="grid gap-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}</div>
+      ) : !updates.length ? (
+        <Empty icon="bell" tint="butter" title={t('Nothing new')}>{t('Matches, confirmations and friend requests show up here.')}</Empty>
+      ) : (
+        <ul className="sticker grid p-2">
+          {updates.map((u, i) => {
+            const [icon, tint] = updateIcons[u.kind] ?? ['bell', 'butter'];
+            const body = (
+              <>
+                <IconTile icon={icon} tint={tint} />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline gap-2">
+                    <span className="min-w-0 flex-1 font-bold">{u.title}</span>
+                    <span className="shrink-0 text-caption text-ink-tertiary">{relative(u.created_at)}</span>
+                  </span>
+                  <span className="block text-footnote text-ink-secondary">{u.body}</span>
+                </span>
+                {!u.read_at && <span className="size-2.5 shrink-0 rounded-full bg-danger-fill" aria-label={t('New')} />}
+              </>
+            );
+            return (
+              <li key={u.id}>
+                {i > 0 && <div className="mx-2"><Divider /></div>}
+                {u.link ? (
+                  <Link to={u.link} className="press flex items-center gap-3 rounded-[14px] p-2.5 hover:bg-surface-muted/70">{body}</Link>
+                ) : (
+                  <div className="flex items-center gap-3 p-2.5">{body}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       )}
     </div>
   );

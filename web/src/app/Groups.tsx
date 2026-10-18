@@ -7,20 +7,6 @@ import { supabase, useLive, type GroupSummary, type MyGroups, type Schedule } fr
 import { clock, day, hours, weekday } from './time';
 import { Button, EmptyState, Field, PageHeader, Skeleton } from './ui';
 
-const ways = [['play', 'Find a game'], ['rooms', 'Open games'], ['groups', 'Groups']] as const;
-
-/** “约球”下的三个页面：帮我匹配 / 别人发起的球局 / 固定的球群 */
-export function PlayTabs({ current }: { current: (typeof ways)[number][0] }) {
-  return (
-    <nav aria-label={t('Ways to play')} className="mb-8 flex flex-wrap gap-2">
-      {ways.map(([key, label]) => (
-        <Link key={key} to={`/app/${key}/`} aria-current={current === key ? 'page' : undefined}
-              className="toggle aria-[current=page]:bg-butter aria-[current=page]:text-on-accent">{t(label)}</Link>
-      ))}
-    </nav>
-  );
-}
-
 export const scheduleText = (s: Schedule) => `${t('Every {day}', { day: weekday(s.weekday) })} · ${clock(s.start)} – ${clock(s.end)}`;
 
 export const activityText = (a: GroupSummary['activity']) =>
@@ -30,7 +16,7 @@ export const activityText = (a: GroupSummary['activity']) =>
 
 export function GroupCard({ group: g }: { group: GroupSummary }) {
   return (
-    <Link to={`/app/groups/${g.id}/`} className="sticker lift grid gap-2 p-5">
+    <Link to={`/groups/${g.id}/`} className="sticker lift grid gap-2 p-5">
       <span className="flex flex-wrap items-start justify-between gap-2">
         <span className="text-lg font-black">{g.name}</span>
         {g.my_role === 'pending' ? <span className="chip bg-peach">{t('Requested')}</span> : g.my_role && <span className="chip bg-mint">{t('Joined')}</span>}
@@ -63,16 +49,15 @@ export function Groups() {
   async function find(event: SubmitEvent) {
     event.preventDefault();
     const { data } = await supabase!.rpc('find_group', { p_code: code });
-    if (data) navigate(`/app/groups/${data}/`);
+    if (data) navigate(`/groups/${data}/`);
     else setCodeError(t('No group with that number. Check the 6 characters.'));
   }
 
   return (
     <div>
-      <PageHeader eyebrow={t('Play')} title={t('Groups')}>
+      <PageHeader back="/games/" title={t('Groups')}>
         {t('Regular weekly sessions at one court. Sign up in one tap; if it’s full you’re on the waitlist and move up automatically.')}
       </PageHeader>
-      <PlayTabs current="groups" />
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <div className="grid gap-10">
@@ -80,7 +65,7 @@ export function Groups() {
             <section aria-labelledby="next" className="grid gap-3">
               <h2 id="next" className="text-xl font-black">{t('Your next sessions')}</h2>
               {mine.sessions.map((s) => (
-                <Link key={s.id} to={`/app/groups/${s.group_id}/`} className="sticker lift flex flex-wrap items-center justify-between gap-3 p-4">
+                <Link key={s.id} to={`/groups/${s.group_id}/`} className="sticker lift flex flex-wrap items-center justify-between gap-3 p-4">
                   <span className="min-w-0">
                     <span className="block font-black">{day(s.starts_at, s.tz)} · {hours(s.starts_at, s.ends_at, s.tz)}</span>
                     <span className="block truncate text-sm text-ink-secondary">{t('{group} at {venue}', { group: s.group, venue: s.venue })}</span>
@@ -123,7 +108,7 @@ export function Groups() {
           <div className="tile grid gap-3 bg-lavender p-5 text-on-accent">
             <p className="font-black">{t('Run a regular session?')}</p>
             <p className="font-medium">{t('Bring sign-ups and the waitlist out of the group chat.')}</p>
-            <Link to="/app/groups/new/" className="button button-quiet justify-self-start">{t('Start a group')}</Link>
+            <Link to="/groups/new/" className="button button-quiet justify-self-start">{t('Start a group')}</Link>
           </div>
         </aside>
       </div>

@@ -1,6 +1,7 @@
 ---
+// 球馆目录（国家 / 城市 / 球馆）这些静态页面：外壳和 App 是同一套（顶栏、标签栏、语言切换），内容是构建时生成的
 import '../styles/global.css';
-import { countries } from '../lib/venues';
+import { SiteShell } from '../app/Shell';
 
 interface Props {
   title: string;
@@ -11,24 +12,19 @@ interface Props {
 
 const { title, description, noindex = false, jsonLd } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const nav = [
-  { label: 'Courts', href: '/courts/' },
-  { label: 'How it works', href: '/#how' },
-  { label: 'About', href: '/#about' },
-];
-const section = Astro.url.pathname.startsWith('/courts/') ? '/courts/' : undefined;
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#17140f" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Badie" />
     <meta property="og:title" content={title} />
@@ -38,56 +34,10 @@ const section = Astro.url.pathname.startsWith('/courts/') ? '/courts/' : undefin
     <link rel="sitemap" href="/sitemap-index.xml" />
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
-  <body class="min-h-dvh antialiased lg:p-4">
-    <a href="#main" class="button sr-only z-50 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
-    <div class="min-h-dvh bg-canvas lg:min-h-[calc(100dvh-2rem)] lg:rounded-[32px] lg:border-2 lg:border-stroke">
-      <header class="page relative flex items-center justify-between gap-4 py-5">
-        <a href="/" class="flex items-center gap-2 text-2xl font-black">
-          <span class="sticker grid size-9 place-items-center rounded-xl! bg-lime text-on-accent">B</span>
-          Badie
-        </a>
-        <nav aria-label="Main" class="absolute top-0 left-1/2 hidden -translate-x-1/2 rounded-b-[22px] bg-ink px-3 lg:block">
-          <ul class="flex text-sm font-extrabold text-canvas">
-            {
-              nav.map((item) => (
-                <li>
-                  <a
-                    href={item.href}
-                    aria-current={item.href === section ? 'page' : undefined}
-                    class="block px-5 py-3 underline-offset-[6px] decoration-2 hover:underline aria-[current=page]:underline aria-[current=page]:decoration-lime dark:aria-[current=page]:decoration-current"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))
-            }
-          </ul>
-        </nav>
-        <div class="flex items-center gap-2">
-          <a href="/courts/" class="link px-2 py-2 lg:hidden">Courts</a>
-          <a href="/app/" class="button min-h-10 px-4 text-sm">Open app</a>
-        </div>
-      </header>
-
-      <main id="main" class="page pb-20">
-        <slot />
-      </main>
-
-      <footer class="border-t-2 border-stroke/15">
-        <div class="page grid gap-8 py-10 text-sm text-ink-secondary sm:grid-cols-[2fr_1fr]">
-          <div class="space-y-2">
-            <p class="font-extrabold text-ink">Badie</p>
-            <p class="max-w-prose">A free, nonprofit app for finding badminton partners at your level and courts near you. No ads.</p>
-            <slot name="attribution" />
-          </div>
-          <div>
-            <p class="eyebrow mb-2">Courts</p>
-            <ul>
-              {countries.map((country) => <li><a href={country.path} class="inline-block py-1 transition-colors hover:text-ink">{country.name}</a></li>)}
-            </ul>
-          </div>
-        </div>
-      </footer>
-    </div>
+  <body class="min-h-dvh antialiased">
+    <SiteShell client:load path={Astro.url.pathname}>
+      <slot />
+      <div class="mt-16 text-caption text-ink-tertiary"><slot name="attribution" /></div>
+    </SiteShell>
   </body>
 </html>

@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import CountryCard from '../../components/CountryCard.astro';
 import CourtSearch from '../../components/CourtSearch.astro';
+import { Courts } from '../../app/Courts';
 import { allVenues, byContinent, countries } from '../../lib/venues';
 
 const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
@@ -23,6 +24,8 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
       <CourtSearch />
     </div>
   </section>
+
+  <Courts client:only="react" />
 
   {
     byContinent().map((group) => (

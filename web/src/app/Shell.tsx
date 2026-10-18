@@ -1,105 +1,269 @@
-import { useEffect, type ReactNode } from 'react';
-import { t } from './i18n';
-import { Icon } from './icons';
-import { Link } from './router';
-import { useLive, type InboxCounts } from './supabase';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { currentLocale, languages, setLocale, startLocale, t, useLocale, type Locale } from './i18n';
+import { Icon, type IconName } from './icons';
+import { Avatar, CountBadge, IconTile, Wordmark, type Tint } from './kit';
+import { Link, navigate } from './router';
+import { supabase, type InboxCounts, type Profile } from './supabase';
 import { Toasts } from './ui';
 
-export const sections = [
-  { path: '/app/play/', label: 'Play', short: 'Play', icon: 'play' },
-  { path: '/app/games/', label: 'My games', short: 'Games', icon: 'games' },
-  { path: '/app/messages/', label: 'Messages', short: 'Messages', icon: 'chat' },
-  { path: '/app/courts/', label: 'Courts', short: 'Courts', icon: 'courts' },
-  { path: '/app/me/', label: 'Me', short: 'Me', icon: 'me' },
-] as const;
+/** 顶层的几个 tab：每个都是真正的页面。球馆只在桌面顶栏里，手机上和 iOS 一样从首页进 */
+const tabs: { to: string; label: string; icon: IconName; active: IconName; match: RegExp; desktopOnly?: boolean }[] = [
+  { to: '/', label: 'Home', icon: 'homeOutline', active: 'home', match: /^\/(play\/|notifications\/)?$/ },
+  { to: '/games/', label: 'Games', icon: 'ticketOutline', active: 'games', match: /^\/(games|rooms|groups|join|challenges|rankings)\// },
+  { to: '/courts/', label: 'Courts', icon: 'pin', active: 'pin', match: /^\/courts\//, desktopOnly: true },
+  { to: '/messages/', label: 'Messages', icon: 'chatsOutline', active: 'chats', match: /^\/messages\// },
+  { to: '/me/', label: 'Me', icon: 'meOutline', active: 'me', match: /^\/(me|settings|verification|levels|level-quiz|admin)\// },
+];
 
-function Logo({ small }: { small?: boolean }) {
-  return (
-    <a href="/" className={`flex items-center gap-2 font-black ${small ? 'text-xl' : 'text-2xl'}`}>
-      <span className={`sticker grid place-items-center bg-lime text-on-accent ${small ? 'size-8 rounded-lg! text-sm' : 'size-9 rounded-xl!'}`}>B</span>
-      Badie
-    </a>
-  );
-}
+/** 没登录时点了要账号的东西：先登录，登录完回到这里 */
+export const signInFirst = (next: string) => `/signin/?next=${encodeURIComponent(next)}`;
 
-/** 未读数只挂在“消息”上：聊天 + 通知 + 好友申请 */
-function Badge({ count, small }: { count: number; small?: boolean }) {
-  if (!count) return null;
-  return (
-    <span className={`grid place-items-center rounded-full border-2 border-stroke bg-pink font-black text-on-accent tabular-nums ${small ? 'absolute -top-1 -right-1 h-5 min-w-5 px-1 text-[0.65rem]' : 'ml-auto h-6 min-w-6 px-1.5 text-xs'}`}>
-      {count > 99 ? '99+' : count}
-    </span>
-  );
-}
+export function Shell({ path, me, guest, counts, children }: { path: string; me: Profile | null; guest: boolean; counts?: InboxCounts; children: ReactNode }) {
+  const menu = useRef<HTMLDialogElement>(null);
+  const current = tabs.find((tab) => tab.match.test(path));
+  const messages = counts ? counts.messages + counts.requests : 0;
+  const badge = (tab: (typeof tabs)[number]) => (tab.to === '/messages/' ? messages : 0);
+  const name = (tab: (typeof tabs)[number]) => (badge(tab) ? t('{label}, {n} unread', { label: t(tab.label), n: badge(tab) }) : t(tab.label));
+  const openMenu = () => menu.current?.showModal();
+  // 聊天页和 iOS 一样不显示底部标签栏，输入框贴着屏幕底边
+  const chatting = /^\/messages\/(game|group|dm)\//.test(path);
 
-export function Shell({ path, children }: { path: string; children: ReactNode }) {
-  // 球局和球群算在“约球”下面，榜单算在“我的球局”下面
-  const current = sections.find((s) =>
-    path.startsWith(s.path) || (s.icon === 'play' && /^\/app\/(groups|rooms)\//.test(path)) || (s.icon === 'games' && path.startsWith('/app/rankings/')));
-  const { data: counts, refresh } = useLive<InboxCounts>('inbox_counts');
-  // 换页时（比如刚看完消息）马上更新未读数
-  useEffect(() => void refresh(), [path, refresh]);
-  const unread = counts ? counts.messages + counts.updates + counts.requests : 0;
-  const label = (s: (typeof sections)[number], text: string) => (s.icon === 'chat' && unread ? t('{label}, {n} unread', { label: t(text), n: unread }) : t(text));
   return (
-    <div className="min-h-dvh bg-canvas lg:grid lg:grid-cols-[15rem_1fr]">
+    <div className={`min-h-dvh bg-canvas ${chatting ? 'max-lg:[--tabbar:0px]' : ''}`}>
       <a href="#main" className="button sr-only z-50 focus:not-sr-only focus:fixed focus:top-3 focus:left-3">{t('Skip to content')}</a>
 
-      <aside className="hidden border-r-2 border-stroke/15 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:gap-8 lg:px-4 lg:py-6">
-        <div className="px-2"><Logo /></div>
-        <nav aria-label="App">
-          <ul className="grid gap-1">
-            {sections.map((s) => (
-              <li key={s.path}>
+      <header className="sticky top-0 z-30 bg-bar text-on-bar">
+        <div className="page flex h-16 items-center gap-2 lg:gap-6">
+          <Link to="/" aria-label={t('Badie home')} className="press -ml-1 rounded-lg px-1">
+            <Wordmark inverse className="text-[1.6rem]" />
+          </Link>
+          <nav aria-label={t('Main')} className="hidden lg:block">
+            <ul className="flex gap-1">
+              {tabs.map((tab) => (
+                <li key={tab.to}>
+                  <Link
+                    to={tab.to}
+                    aria-current={current === tab ? 'page' : undefined}
+                    aria-label={name(tab)}
+                    className="relative flex h-10 items-center gap-2 rounded-full px-4 text-subhead font-bold text-on-bar/80 transition-colors duration-[var(--dur-1)] hover:bg-on-bar/10 hover:text-on-bar aria-[current=page]:bg-lime aria-[current=page]:text-on-accent"
+                  >
+                    <Icon name={current === tab ? tab.active : tab.icon} className="size-5" />
+                    {t(tab.label)}
+                    <CountBadge count={badge(tab)} className="border-bar!" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="ml-auto flex items-center gap-2">
+            <LanguageSwitch />
+            {me ? (
+              <>
                 <Link
-                  to={s.path}
-                  aria-current={current === s ? 'page' : undefined}
-                  aria-label={label(s, s.label)}
-                  className="flex min-h-11 items-center gap-3 rounded-[var(--r-control)] border-2 border-transparent px-3 font-extrabold text-ink-secondary transition-colors duration-[var(--dur-1)] hover:bg-surface hover:text-ink aria-[current=page]:border-stroke aria-[current=page]:bg-lime aria-[current=page]:text-on-accent"
+                  to="/notifications/"
+                  aria-label={counts?.updates ? t('Notifications, {n} unread', { n: counts.updates }) : t('Notifications')}
+                  className="press relative grid size-10 place-items-center rounded-full text-on-bar hover:bg-on-bar/10"
                 >
-                  <Icon name={s.icon} />
-                  {t(s.label)}
-                  {s.icon === 'chat' && <Badge count={unread} />}
+                  <Icon name="bell" className="size-5" />
+                  <CountBadge count={counts?.updates ?? 0} className="absolute -top-0.5 -right-0.5 border-bar!" />
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
-
-      <div className="min-w-0 pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0">
-        <header className="flex items-center justify-between border-b-2 border-stroke/15 px-[var(--gutter)] py-3 lg:hidden">
-          <Logo small />
-          <span className="eyebrow">{current && t(current.label)}</span>
-        </header>
-        {/* key 让每次换页都重新播放进场动画 */}
-        <main id="main" key={current?.path} className="page animate-enter py-6 lg:py-10">
-          {children}
-        </main>
-      </div>
-
-      <nav aria-label="App" className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-stroke bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden">
-        <ul className="grid grid-cols-5">
-          {sections.map((s) => (
-            <li key={s.path}>
-              <Link
-                to={s.path}
-                aria-current={current === s ? 'page' : undefined}
-                aria-label={label(s, s.short)}
-                className="group flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-extrabold text-ink-tertiary transition-colors aria-[current=page]:text-ink"
-              >
-                <span className="relative grid h-7 w-12 place-items-center rounded-full transition-colors duration-[var(--dur-1)] group-aria-[current=page]:bg-lime group-aria-[current=page]:text-on-accent">
-                  <Icon name={s.icon} className="size-5" />
-                  {s.icon === 'chat' && <Badge count={unread} small />}
-                </span>
-                {t(s.short)}
+                <Link to="/me/" aria-label={t('My profile')} className="press hidden rounded-full lg:block">
+                  <Avatar id={me.id} name={me.nickname} photo={me.avatar_path} size={38} className="border-on-bar!" />
+                </Link>
+              </>
+            ) : guest && !path.startsWith('/signin/') && (
+              <Link to={signInFirst(path)} className="flex h-10 items-center rounded-full px-3 text-subhead font-bold text-on-bar hover:bg-on-bar/10">
+                {t('Sign in')}
               </Link>
+            )}
+            <button type="button" onClick={openMenu} className="button button-sm hidden border-lime! shadow-none! lg:inline-flex">
+              <Icon name="plus" className="size-4" />
+              {t('Set up a game')}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* key 让每次换 tab 都重新播放进场动画 */}
+      <main id="main" key={current?.to ?? path} className="page animate-enter pt-5 pb-[calc(var(--tabbar)+1.5rem)] lg:pt-8 lg:pb-16">
+        {children}
+      </main>
+      <Footer />
+
+      {!chatting && <TabBar current={current?.to} badge={badge} name={name} onCreate={openMenu} />}
+      <CreateMenu dialog={menu} signedIn={Boolean(me)} />
+      <Toasts />
+    </div>
+  );
+}
+
+/** 静态页面（球馆目录）用的同一套外壳：自己查登录状态，链接是普通的整页跳转 */
+export function SiteShell({ path, children }: { path: string; children?: ReactNode }) {
+  const [me, setMe] = useState<Profile | null>();
+  useEffect(() => {
+    startLocale();
+    supabase?.auth.getSession().then(async ({ data }) => {
+      if (!data.session) return setMe(null);
+      const { data: profile } = await supabase!.from('profiles').select().eq('id', data.session.user.id).maybeSingle();
+      setMe((profile as Profile | null) ?? null);
+    });
+  }, []);
+  return <Shell path={path} me={me ?? null} guest={me === null}>{children}</Shell>;
+}
+
+/** 页脚：真正的页面链接（不是本页的锚点） */
+function Footer() {
+  const columns: [string, [string, string][]][] = [
+    ['Play', [['Home', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Regular games', '/groups/']]],
+    ['Courts', [['Nearby venues', '/courts/'], ['Level Chart', '/levels/'], ['Leaderboard', '/rankings/']]],
+    ['Badie', [['About Badie', '/about/'], ['Me', '/me/']]],
+  ];
+  return (
+    <footer className="hidden border-t-2 border-stroke/10 lg:block">
+      <div className="page grid grid-cols-[2fr_1fr_1fr_1fr] gap-8 py-10 text-footnote">
+        <div className="grid content-start gap-2">
+          <Wordmark className="text-[1.5rem]" />
+          <p className="max-w-xs text-ink-secondary">{t('A free, nonprofit app for finding badminton partners at your level and courts near you. No ads.')}</p>
+        </div>
+        {columns.map(([title, links]) => (
+          <nav key={title} aria-label={t(title)} className="grid content-start gap-1.5">
+            <p className="font-bold">{t(title)}</p>
+            {links.map(([label, to]) => <Link key={to} to={to} className="text-ink-secondary hover:text-ink hover:underline">{t(label)}</Link>)}
+          </nav>
+        ))}
+      </div>
+    </footer>
+  );
+}
+
+/** 手机底部的悬浮标签栏（iOS 的 FloatingTabBar）：中间是柠檬绿的“约球”按钮 */
+function TabBar({ current, badge, name, onCreate }: {
+  current?: string;
+  badge: (tab: (typeof tabs)[number]) => number;
+  name: (tab: (typeof tabs)[number]) => string;
+  onCreate: () => void;
+}) {
+  const mobile = tabs.filter((tab) => !tab.desktopOnly);
+  const item = (tab: (typeof tabs)[number]) => (
+    <li key={tab.to} className="flex-1">
+      <Link
+        to={tab.to}
+        aria-current={current === tab.to ? 'page' : undefined}
+        aria-label={name(tab)}
+        className="press group flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-bold text-ink-tertiary aria-[current=page]:text-ink"
+      >
+        <span className="relative">
+          <Icon name={current === tab.to ? tab.active : tab.icon} className="size-6" />
+          <CountBadge count={badge(tab)} className="absolute -top-2 -right-3" />
+        </span>
+        {t(tab.label)}
+        <span aria-hidden="true" className="size-[5px] rounded-full group-aria-[current=page]:bg-ink" />
+      </Link>
+    </li>
+  );
+  return (
+    <nav aria-label={t('Main')} className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[calc(0.5rem+env(safe-area-inset-bottom))] lg:hidden">
+      {/* 标签栏后面用画布色铺满、上沿渐隐，滚动的内容不会从四周露出来 */}
+      <div aria-hidden="true" className="absolute inset-x-0 -top-9 bottom-0 bg-linear-to-b from-canvas/0 via-canvas to-canvas" />
+      <ul className="sticker relative flex h-[68px] items-center rounded-dock! px-2 shadow-dock!">
+        {item(mobile[0])}
+        {item(mobile[1])}
+        <li className="flex flex-1 justify-center">
+          <button
+            type="button"
+            onClick={onCreate}
+            aria-label={t('Set up a game')}
+            className="-mt-9 grid size-[62px] place-items-center rounded-full border-2 border-stroke bg-lime text-on-accent shadow-dock transition-transform duration-[var(--dur-1)] active:scale-92"
+          >
+            <Icon name="plus" className="size-7" />
+          </button>
+        </li>
+        {item(mobile[2])}
+        {item(mobile[3])}
+      </ul>
+    </nav>
+  );
+}
+
+const createOptions: { to: string; icon: IconName; tint: Tint; title: string; subtitle: string }[] = [
+  { to: '/play/', icon: 'bolt', tint: 'lime', title: 'Quick Match', subtitle: 'Auto-find buddies by level, time and distance' },
+  { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Have a court and need players, or playing with friends? Open it to others' },
+  { to: '/groups/', icon: 'group', tint: 'sky', title: 'Regular games · Groups', subtitle: 'Same time and venue weekly. One-tap sign-up, auto-waitlist' },
+  { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Enter room code / group ID', subtitle: '6-digit room code or group code from a friend' },
+];
+
+/** “约一场”菜单：手机上是底部弹出的面板，桌面上是居中的对话框 */
+function CreateMenu({ dialog, signedIn }: { dialog: React.RefObject<HTMLDialogElement | null>; signedIn: boolean }) {
+  const go = (to: string) => {
+    dialog.current?.close();
+    navigate(signedIn ? to : signInFirst(to));
+  };
+  return (
+    <dialog
+      ref={dialog}
+      aria-labelledby="create-title"
+      // 点到面板外面（遮罩）就关掉
+      onClick={(event) => event.target === event.currentTarget && event.currentTarget.close()}
+      className="m-0 mt-auto w-full max-w-none bg-transparent p-0 text-ink open:animate-sheet lg:m-auto lg:max-w-lg lg:open:animate-pop"
+    >
+      <div className="rounded-t-[28px] border-2 border-b-0 border-stroke bg-canvas px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom))] lg:rounded-[28px] lg:border-b-2 lg:p-6 lg:shadow-card">
+        <div aria-hidden="true" className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-ink/20 lg:hidden" />
+        <div className="mb-4 flex items-center justify-between">
+          <h2 id="create-title" className="text-title">{t('Set up a game')}</h2>
+          <form method="dialog">
+            <button className="press grid size-10 place-items-center rounded-full hover:bg-surface-muted" aria-label={t('Close')}>
+              <Icon name="x" className="size-5" />
+            </button>
+          </form>
+        </div>
+        <ul className="grid gap-3">
+          {createOptions.map((o) => (
+            <li key={o.to}>
+              <button type="button" onClick={() => go(o.to)} className="sticker lift flex w-full items-center gap-4 p-4 text-left">
+                <IconTile icon={o.icon} tint={o.tint} size="lg" />
+                <span className="min-w-0 flex-1">
+                  <span className="block text-headline">{t(o.title)}</span>
+                  <span className="block text-footnote text-ink-secondary">{t(o.subtitle)}</span>
+                </span>
+                <Icon name="chevronRight" className="size-4 text-ink-tertiary" />
+              </button>
             </li>
           ))}
         </ul>
-      </nav>
+      </div>
+    </dialog>
+  );
+}
 
-      <Toasts />
-    </div>
+/** 语言切换：在最外层的顶栏里。第一次打开按浏览器语言，选过就记住 */
+export function LanguageSwitch() {
+  const locale = useLocale();
+  const name = languages.find(([code]) => code === locale)?.[1];
+  return (
+    <label className="relative flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-footnote font-bold text-on-bar hover:bg-on-bar/10 has-focus-visible:outline-3 has-focus-visible:outline-focus sm:px-3">
+      <Icon name="globe" className="size-5" />
+      <span className="hidden sm:inline">{name}</span>
+      <Icon name="chevronDown" className="hidden size-3 sm:block" />
+      <select
+        aria-label={t('Language')}
+        value={currentLocale()}
+        onChange={(event) => setLocale(event.target.value as Locale, true)}
+        className="absolute inset-0 cursor-pointer appearance-none opacity-0"
+      >
+        {languages.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+      </select>
+    </label>
+  );
+}
+
+/** 页面加载数据前的整页转圈 */
+export function Loading({ text }: { text?: string }) {
+  return (
+    <p role="status" className="grid min-h-[50dvh] place-items-center font-bold text-ink-secondary">
+      <span className="flex items-center gap-3">
+        <span aria-hidden="true" className="size-5 animate-spin rounded-full border-[3px] border-current border-t-transparent" />
+        {text ?? <span className="sr-only">{t('Loading…')}</span>}
+      </span>
+    </p>
   );
 }

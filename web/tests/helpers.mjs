@@ -21,7 +21,7 @@ export async function signUp(page, email, nickname) {
   page.on('pageerror', (error) => {
     throw error;
   });
-  await page.goto(`${base}/app/`);
+  await page.goto(`${base}/signin/`);
   await page.getByLabel('Email').fill(email);
   await page.getByRole('button', { name: 'Email me a code' }).click();
   await page.getByLabel('Sign-in code').fill(await emailedCode(email));

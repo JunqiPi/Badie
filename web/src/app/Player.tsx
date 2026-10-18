@@ -23,7 +23,7 @@ export function PlayerPage({ id }: { id: string }) {
   if (card === undefined) return <Skeleton className="h-96 max-w-2xl" />;
   if (card === null) {
     return (
-      <EmptyState title={t('Player not found')} action={<Link to="/app/games/" className="button">{t('My games')}</Link>}>
+      <EmptyState title={t('Player not found')} action={<Link to="/games/" className="button">{t('My games')}</Link>}>
         {t('You can see players you’ve been matched or played with, and your friends.')}
       </EmptyState>
     );
@@ -131,13 +131,13 @@ function RemovePhoto({ userId, onDone }: { userId: string; onDone: () => void })
 /** 不是球友时的私信入口：同球群可以发一条消息请求 */
 function MessageOption({ card }: { card: PlayerCard }) {
   const { status, group } = card.message;
-  if (status === 'open') return <Link to={`/app/messages/dm/${card.id}/`} className="button button-quiet justify-self-start">{t('Message')}</Link>;
+  if (status === 'open') return <Link to={`/messages/dm/${card.id}/`} className="button button-quiet justify-self-start">{t('Message')}</Link>;
   if (status === 'requested') return <p className="text-sm font-bold text-ink-secondary">{t('Message request sent')}</p>;
   if (status === 'new_account') return <p className="text-sm text-ink-tertiary">{t('After 3 games you can send message requests to people in your groups.')}</p>;
   if (status !== 'request') return null;
   return (
     <div className="grid justify-items-start gap-1">
-      <Link to={`/app/messages/dm/${card.id}/`} className="button button-quiet">{t('Send a message request')}</Link>
+      <Link to={`/messages/dm/${card.id}/`} className="button button-quiet">{t('Send a message request')}</Link>
       <p className="text-sm text-ink-tertiary">{t('You’re both in {group}.', { group: group ?? '' })}</p>
     </div>
   );
@@ -152,7 +152,7 @@ function Actions({ card, onChange }: { card: PlayerCard; onChange: () => void })
     case 'friend':
       return (
         <div className="flex flex-wrap gap-3">
-          <Link to={`/app/messages/dm/${card.id}/`} className="button">{t('Message')}</Link>
+          <Link to={`/messages/dm/${card.id}/`} className="button">{t('Message')}</Link>
           {confirmRemove ? (
             <Button variant="quiet" busy={busy === 'remove'} onClick={() => run('remove', 'remove_friend', user, t('Removed from friends'))}>
               {t('Yes, remove friend')}

@@ -1,0 +1,118 @@
+import { tier } from './assessment';
+import { t } from './i18n';
+import { Icon } from './icons';
+import { LargeTitle, Notice, Tag, fill, type Tint } from './kit';
+import { levels } from './levels';
+import { Link } from './router';
+import { signInFirst } from './Shell';
+import type { Profile } from './supabase';
+
+const levelTints: Tint[] = ['mint', 'butter', 'pink', 'lavender', 'sky', 'peach', 'lime', 'lavender', 'butter'];
+
+/** 等级对照表（iOS 的 SkillLevelGuideView）：不用登录也能看 */
+export function LevelGuide({ profile }: { profile: Profile | null }) {
+  const mine = profile ? tier(profile.rating).level : undefined;
+  return (
+    <div className="mx-auto grid max-w-3xl gap-5">
+      <LargeTitle title={t('Level Chart')} subtitle={t('Badie levels 1–9')} />
+      <p className="text-subhead text-ink-secondary">
+        {t('Levels 1–9, each split into three tiers (−, base, +), for 27 tiers in total. Each level from 3 to 6 adds one more dimension: can you do the shots → how good are your attacking shots → can you get out of trouble on defensive shots, plus tactics → where you stand in your club. Expand any level to see its skill breakdown (footwork, power, front and back court, attack and defense). Judge by what you can do consistently, not shots you pull off once in a while. 7 and up means state, national, and international level, based only on verifiable results, rankings, and certificates.')}
+      </p>
+
+      {profile ? (
+        !profile.assessed_at && (
+          <Notice icon="list" tint="lime" action={{ label: t('Take the quiz'), to: '/level-quiz/' }}>{t('Not sure? The 2-minute quiz places you.')}</Notice>
+        )
+      ) : (
+        <Notice icon="list" tint="lime" action={{ label: t('Take the quiz'), to: signInFirst('/level-quiz/') }}>{t('Not sure? The 2-minute quiz places you.')}</Notice>
+      )}
+
+      <dl className="tile grid gap-1.5 bg-surface-muted p-4 text-footnote">
+        {[['−', 'Just reached this level; some strokes aren’t consistent yet'], [t('Base'), 'Consistently does everything at this level'], ['+', 'Solid at this level, with some next-level skills']].map(([mark, meaning]) => (
+          <div key={mark} className="flex gap-3">
+            <dt className="w-10 shrink-0 font-black">{mark}</dt>
+            <dd>{t(meaning)}</dd>
+          </div>
+        ))}
+        <p className="mt-1 text-caption text-ink-secondary">{t('From level 7 up, the gaps are big, so each tier has its own name and is set by evidence.')}</p>
+      </dl>
+
+      <ol className="grid gap-3">
+        {levels.map((l) => (
+          <li key={l.level} id={`level-${l.level}`} className={`sticker grid gap-3 p-4 ${l.level === mine ? 'bg-lime/35' : ''}`}>
+            <div className="flex items-center gap-3">
+              <span className={`grid size-11 shrink-0 place-items-center rounded-[12px] border-2 border-stroke text-title3 ${fill[levelTints[l.level - 1]]}`}>{l.level}</span>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-headline">{t(l.name)}</h2>
+                <p className="text-caption text-ink-secondary">{[l.usFlight && `≈ ${t(l.usFlight)}`, t(l.experience)].filter(Boolean).join(' · ')}</p>
+              </div>
+              {l.level === mine ? <Tag tint="lime">{t('You’re here')}</Tag> : l.level > 6 && <Tag icon="lock" tint="muted">{t('Verification required')}</Tag>}
+            </div>
+            <ul className="grid gap-1.5">
+              {l.anchors.map((a) => (
+                <li key={a} className="flex gap-2 text-subhead">
+                  <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 rounded-full bg-ink" />
+                  {t(a)}
+                </li>
+              ))}
+            </ul>
+            {l.notes.length > 0 && (
+              <details className="group" open={l.level === mine}>
+                <summary className="flex min-h-9 cursor-pointer list-none items-center gap-1.5 text-footnote font-bold text-ink-secondary hover:text-ink [&::-webkit-details-marker]:hidden">
+                  <Icon name="list" className="size-4" />
+                  {t('Skill breakdown ({n})', { n: l.notes.length })}
+                  <Icon name="chevronDown" className="ml-auto size-3.5 transition-transform group-open:rotate-180" />
+                </summary>
+                <dl className="mt-2 grid gap-2 rounded-[12px] bg-surface-muted p-3 text-footnote">
+                  {l.notes.map(([name, text]) => (
+                    <div key={name} className="grid gap-x-3 sm:grid-cols-[7rem_1fr]">
+                      <dt className="font-bold">{t(name)}</dt>
+                      <dd>{t(text)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
+            )}
+            {l.level > 6 && (
+              <Link to={profile ? '/verification/' : signInFirst('/verification/')} className="text-footnote font-bold underline underline-offset-4">
+                {t('Apply for verification')}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ol>
+      <p className="text-caption text-ink-tertiary">
+        {t('Breakdowns follow the level descriptions shared on the Zhongyu Online forum, USTA NTRP and public tournament results.')}
+      </p>
+    </div>
+  );
+}
+
+/** 关于 Badie：非营利、数据来源、安全 */
+export function About() {
+  const facts: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
+    { icon: 'heart', tint: 'pink', title: 'Free and nonprofit', text: 'There’s nothing to buy and no ads. Badie exists to get more people playing even games.' },
+    { icon: 'eyeSlash', tint: 'sky', title: 'Private by default', text: 'Your exact location never leaves your device. Players see your nickname and level, not your contact details.' },
+    { icon: 'reliable', tint: 'mint', title: 'Reliability counts', text: 'No-shows and late cancellations are tracked, so the players you meet actually turn up.' },
+    { icon: 'map', tint: 'butter', title: 'Where court data comes from', text: 'Government open data, OpenStreetMap and players themselves. Players confirm courts they’ve played at.' },
+  ];
+  return (
+    <div className="mx-auto grid max-w-3xl gap-6">
+      <LargeTitle title={t('About Badie')} subtitle={t('Built by a player, for players')} />
+      <ul className="grid gap-3 sm:grid-cols-2">
+        {facts.map((f) => (
+          <li key={f.title} className={`sticker grid content-start gap-2 p-5 ${fill[f.tint]}`}>
+            <Icon name={f.icon} className="size-7" />
+            <h2 className="text-title3">{t(f.title)}</h2>
+            <p className="text-subhead">{t(f.text)}</p>
+          </li>
+        ))}
+      </ul>
+      <section className="sticker grid gap-3 bg-[#17140f] p-5 text-[#f5f0e6]">
+        <h2 className="text-title3">{t('Play from any browser')}</h2>
+        <p className="text-subhead">{t('Badie works on the web on any phone or computer, no download needed. The iPhone app is in testing.')}</p>
+        <Link to="/" className="button justify-self-start">{t('Open Badie')}</Link>
+      </section>
+    </div>
+  );
+}

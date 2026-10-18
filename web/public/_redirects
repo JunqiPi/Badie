@@ -1,1 +1,19 @@
-/app/* /app/ 200
+# 旧地址（邮件和通知里的 /app/…）永久跳到新地址
+/app/* /:splat 301
+# App 里的页面：都由首页那份 HTML 打开，App 按地址显示对应的页面
+/signin/* / 200
+/play/* / 200
+/games/* / 200
+/rooms/* / 200
+/groups/* / 200
+/join/* / 200
+/challenges/* / 200
+/rankings/* / 200
+/messages/* / 200
+/notifications/* / 200
+/players/* / 200
+/me/* / 200
+/settings/* / 200
+/verification/* / 200
+/level-quiz/* / 200
+/admin/* / 200

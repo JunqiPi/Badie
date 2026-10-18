@@ -40,15 +40,15 @@ export function NewGroup({ profile }: { profile: Profile }) {
     });
     setBusy(false);
     if (error) return setError(problem(error));
-    navigate(`/app/groups/${data}/`, true);
+    navigate(`/groups/${data}/`, true);
   }
 
   const levels = Array.from({ length: 9 }, (_, i) => i + 1);
   const times = halfHours();
   return (
     <div className="max-w-2xl">
-      <p className="mb-6"><Link to="/app/groups/" className="link text-sm">{t('Groups')}</Link></p>
-      <PageHeader eyebrow={t('Play')} title={t('Start a group')}>
+      <p className="mb-6"><Link to="/groups/" className="link text-sm">{t('Groups')}</Link></p>
+      <PageHeader back="/groups/" title={t('Start a group')}>
         {t('For a session that happens every week at the same court. Members sign up in one tap and get a group chat.')}
       </PageHeader>
 

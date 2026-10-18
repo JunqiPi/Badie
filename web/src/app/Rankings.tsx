@@ -5,16 +5,6 @@ import { Link } from './router';
 import { supabase, useLive, type BoardEntry, type VenueBoard, type WeeklyBoard } from './supabase';
 import { EmptyState, PageHeader, Skeleton } from './ui';
 
-/** “我的球局”下的两个页面 */
-export function GamesTabs({ current }: { current: 'games' | 'rankings' }) {
-  return (
-    <nav aria-label={t('Games')} className="mb-8 flex gap-2">
-      <Link to="/app/games/" aria-current={current === 'games' ? 'page' : undefined} className="toggle aria-[current=page]:bg-butter aria-[current=page]:text-on-accent">{t('My games')}</Link>
-      <Link to="/app/rankings/" aria-current={current === 'rankings' ? 'page' : undefined} className="toggle aria-[current=page]:bg-butter aria-[current=page]:text-on-accent">{t('Rankings')}</Link>
-    </nav>
-  );
-}
-
 const scopes = [['global', 'Everyone'], ['country', 'My country'], ['level', 'My level']] as const;
 const weeks = ['This week', 'Last week'] as const;
 const months = ['This month', 'Last month'] as const;
@@ -28,10 +18,9 @@ export function Rankings() {
 
   return (
     <div>
-      <PageHeader eyebrow={t('My games')} title={t('Rankings')}>
+      <PageHeader back="/games/" title={t('Leaderboard')}>
         {t('Every confirmed game earns points, wins or losses, so playing more counts. Results both sides confirmed only.')}
       </PageHeader>
-      <GamesTabs current="rankings" />
 
       <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
         <section aria-labelledby="weekly" className="grid gap-4">
@@ -94,7 +83,7 @@ function Board({ entries, unit }: { entries: BoardEntry[]; unit: 'pts' | 'games'
       {entries.map((e) => (
         <li key={e.id} className={`flex items-center gap-3 px-4 py-3 ${e.me ? 'bg-butter/40' : ''}`}>
           <span className={`w-8 shrink-0 text-center font-black tabular-nums ${e.rank <= 3 ? 'text-lg' : 'text-ink-tertiary'}`}>{e.rank}</span>
-          <Link to={`/app/players/${e.id}/`} className="min-w-0 flex-1">
+          <Link to={`/players/${e.id}/`} className="min-w-0 flex-1">
             <span className="block truncate font-black">{e.me ? t('{name} (you)', { name: e.nickname }) : e.nickname}</span>
             <span className="text-sm text-ink-tertiary">
               {[t('Level {level}', { level: tier(e.rating).label }), unit === 'pts' && t('{n} game|{n} games', { n: e.games }), t('{n} win|{n} wins', { n: e.wins })].filter(Boolean).join(' · ')}
@@ -131,7 +120,7 @@ function CourtBoards() {
         <p className="text-sm text-ink-tertiary">{t('Most confirmed games at a court this month, by level. Up to 3 a day and 4 against the same opponent.')}</p>
       </div>
       {courts?.length === 0 && (
-        <EmptyState title={t('Save a court first')} action={<Link to="/app/courts/" className="button button-quiet">{t('Courts')}</Link>}>
+        <EmptyState title={t('Save a court first')} action={<Link to="/courts/" className="button button-quiet">{t('Courts')}</Link>}>
           {t('Boards show for the courts you’ve starred.')}
         </EmptyState>
       )}

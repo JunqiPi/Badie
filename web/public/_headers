@@ -7,7 +7,38 @@
   Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
-/app/*
+# 个人页面不进搜索引擎
+/signin/*
+  X-Robots-Tag: noindex
+/play/*
+  X-Robots-Tag: noindex
+/games/*
+  X-Robots-Tag: noindex
+/rooms/*
+  X-Robots-Tag: noindex
+/groups/*
+  X-Robots-Tag: noindex
+/join/*
+  X-Robots-Tag: noindex
+/challenges/*
+  X-Robots-Tag: noindex
+/rankings/*
+  X-Robots-Tag: noindex
+/messages/*
+  X-Robots-Tag: noindex
+/notifications/*
+  X-Robots-Tag: noindex
+/players/*
+  X-Robots-Tag: noindex
+/me/*
+  X-Robots-Tag: noindex
+/settings/*
+  X-Robots-Tag: noindex
+/verification/*
+  X-Robots-Tag: noindex
+/level-quiz/*
+  X-Robots-Tag: noindex
+/admin/*
   X-Robots-Tag: noindex
 
 /_astro/*

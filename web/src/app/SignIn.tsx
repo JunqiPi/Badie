@@ -2,7 +2,8 @@ import { useEffect, useState, type SubmitEvent } from 'react';
 import { useCaptcha } from './captcha';
 import { t } from './i18n';
 import { supabase } from './supabase';
-import { Button, Field, LanguagePicker } from './ui';
+import { CardFan, Tag } from './kit';
+import { Button, Field } from './ui';
 
 const RESEND_SECONDS = 60;
 
@@ -53,16 +54,27 @@ export function SignIn() {
     if (error) setError(t('That code didn’t work. Check the latest email, or send a new one.'));
   }
 
+  const headline = t('Find a *buddy*\nfor a game\ntonight.').split('*');
   return (
-    <div className="grid min-h-dvh place-items-center bg-canvas px-[var(--gutter)] py-10">
-      <div className="animate-enter grid w-full max-w-md gap-6">
-        <a href="/" className="flex items-center gap-2 text-2xl font-black">
-          <span className="sticker grid size-9 place-items-center rounded-xl! bg-lime text-on-accent">B</span>
-          Badie
-        </a>
+    <div className="mx-auto grid max-w-5xl items-center gap-8 lg:grid-cols-2 lg:gap-12 lg:py-6">
+      <div className="grid gap-5">
+        <CardFan />
+        <h1 className="display text-[2.5rem] whitespace-pre-line lg:text-[3.25rem]">
+          {headline.map((part, i) => (i % 2 ? <mark key={i} className="marker">{part}</mark> : part))}
+        </h1>
+        <p className="max-w-md text-subhead text-ink-secondary">
+          {t('Get matched with nearby players by level, time and distance. Costs split evenly and transparently, check in on arrival, and reliable players get games more easily.')}
+        </p>
+        <ul className="flex flex-wrap gap-2">
+          <li><Tag icon="level" tint="lavender">{t('Level match')}</Tag></li>
+          <li><Tag icon="coins" tint="peach">{t('Fair cost split')}</Tag></li>
+          <li><Tag icon="verified" tint="mint">{t('Check in')}</Tag></li>
+        </ul>
+      </div>
+      <div className="grid gap-4">
         <div className="sticker p-6 sm:p-8">
-          <h1 className="display text-4xl">{sent ? t('Check your email') : t('Sign in')}</h1>
-          <p className="mt-2 text-ink-secondary">
+          <h2 className="text-title">{sent ? t('Check your email') : t('Sign in / Sign up with email')}</h2>
+          <p className="mt-2 text-subhead text-ink-secondary">
             {sent ? t('We sent a 6-digit code to {email}.', { email: email.trim() }) : t('We’ll email you a sign-in code. No password needed.')}
           </p>
 
@@ -80,7 +92,7 @@ export function SignIn() {
                     required
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                    className="field h-14 text-center text-2xl tracking-[0.4em]"
+                    className="field h-16 text-center font-mono text-[1.75rem] font-black tracking-[0.4em]"
                   />
                 )}
               </Field>
@@ -95,7 +107,7 @@ export function SignIn() {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="field h-12"
+                    className="field"
                   />
                 )}
               </Field>
@@ -105,7 +117,7 @@ export function SignIn() {
             <div ref={captcha.container} className="empty:hidden" />
             {captcha.failed && <p className="text-sm font-bold text-danger">{t('The security check didn’t load. Turn off content blockers for this page and refresh.')}</p>}
 
-            <Button busy={busy} disabled={!sent && !captcha.ready}>{sent ? t('Sign in') : t('Email me a code')}</Button>
+            <Button busy={busy} disabled={!sent && !captcha.ready} className="button-lg button-inverse">{sent ? t('Sign in') : t('Email me a code')}</Button>
 
             {sent && (
               <div className="flex flex-wrap justify-between gap-3 text-sm">
@@ -119,10 +131,9 @@ export function SignIn() {
             )}
           </form>
         </div>
-        <p className="text-center text-sm font-semibold text-ink-tertiary">
+        <p className="text-center text-footnote text-ink-secondary">
           {t('Can’t find it? Check spam, or search your inbox for “Badie”.')}
         </p>
-        <LanguagePicker className="justify-self-center" />
       </div>
     </div>
   );

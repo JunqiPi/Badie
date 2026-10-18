@@ -4,11 +4,14 @@ import type { APIRoute } from 'astro';
 // robots.txt 只约束守规矩的爬虫，真正的拦截在 Cloudflare（Bot Fight Mode、AI Crawl Control）
 const trainingCrawlers = ['GPTBot', 'CCBot', 'Google-Extended', 'ClaudeBot', 'anthropic-ai', 'Applebot-Extended', 'Bytespider', 'meta-externalagent', 'Diffbot', 'cohere-training-data-crawler'];
 
+// 个人页面（要登录的）不用抓
+const privatePaths = ['/app/', '/captcha/', '/signin/', '/play/', '/games/', '/rooms/', '/groups/', '/join/', '/challenges/', '/rankings/', '/messages/', '/notifications/', '/players/', '/me/', '/settings/', '/verification/', '/level-quiz/', '/admin/'];
+
 export const GET: APIRoute = ({ site }) =>
   new Response(
     [
       ...trainingCrawlers.map((bot) => `User-agent: ${bot}\nDisallow: /\n`),
-      'User-agent: *\nAllow: /\nDisallow: /app/\nDisallow: /captcha/\n',
+      `User-agent: *\nAllow: /\n${privatePaths.map((path) => `Disallow: ${path}\n`).join('')}`,
       `Sitemap: ${new URL('/sitemap-index.xml', site)}\n`,
     ].join('\n'),
   );

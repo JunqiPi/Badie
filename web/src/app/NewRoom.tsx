@@ -97,14 +97,14 @@ export function NewRoom({ profile }: { profile: Profile }) {
     });
     setBusy(false);
     if (error) return setError(problem(error));
-    navigate(`/app/rooms/${data}/`, true);
+    navigate(`/rooms/${data}/`, true);
   }
 
   const levels = Array.from({ length: 9 }, (_, i) => i + 1);
   return (
     <div className="max-w-2xl">
-      <p className="mb-6"><Link to="/app/rooms/" className="link text-sm">{t('Open games')}</Link></p>
-      <PageHeader eyebrow={t('Play')} title={t('Post a game')}>
+      <p className="mb-6"><Link to="/rooms/" className="link text-sm">{t('Open games')}</Link></p>
+      <PageHeader back="/games/" title={t('Start a game')}>
         {t('You have the court; we’ll help fill it. You’re counted as one of the players.')}
       </PageHeader>
 

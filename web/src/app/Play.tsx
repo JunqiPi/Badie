@@ -1,6 +1,5 @@
 import { useEffect, useState, type SubmitEvent } from 'react';
 import { tier } from './assessment';
-import { PlayTabs } from './Groups';
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Link } from './router';
@@ -15,10 +14,9 @@ export function Play({ profile }: { profile: Profile }) {
 
   return (
     <div>
-      <PageHeader eyebrow={t('Play')} title={t('Find a game')}>
+      <PageHeader back="/" title={t('Quick Match')}>
         {t('Tell us when you’re free and where you can play. We’ll match you with players at your level and email you when there’s a match.')}
       </PageHeader>
-      <PlayTabs current="play" />
 
       {!profile.assessed_at && (
         <div className="tile mb-8 flex flex-wrap items-center justify-between gap-4 bg-lavender p-5 text-on-accent">
@@ -26,7 +24,7 @@ export function Play({ profile }: { profile: Profile }) {
             <p className="font-black">{t('You’re starting at level 3')}</p>
             <p className="font-medium">{t('Take the 2-minute level quiz so you’re matched with the right players.')}</p>
           </div>
-          <Link to="/app/level/" className="button button-quiet">{t('Take the quiz')}</Link>
+          <Link to="/level-quiz/" className="button button-quiet">{t('Take the quiz')}</Link>
         </div>
       )}
 
@@ -167,7 +165,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
               {t('Keep looking')}
             </Button>
           )}
-          {ticket.status === 'matched' && ticket.game_id && <Link to={`/app/games/${ticket.game_id}/`} className="button">{t('View game')}</Link>}
+          {ticket.status === 'matched' && ticket.game_id && <Link to={`/games/${ticket.game_id}/`} className="button">{t('View game')}</Link>}
           {ticket.status !== 'matched' && (
             <Button variant="quiet" busy={busy === 'cancel'} disabled={Boolean(busy)} onClick={() => act('cancel', 'cancel_ticket', { p_ticket: ticket.id }, t('Request cancelled'))}>
               {t('Cancel request')}
@@ -190,7 +188,7 @@ export function Players({ players, mode }: { players: Player[]; mode: Mode }) {
               {p.me ? (
                 <span className="block truncate font-black">{t('You')}</span>
               ) : (
-                <Link to={`/app/players/${p.id}/`} className="block truncate font-black underline decoration-transparent decoration-2 underline-offset-4 transition-colors hover:decoration-current">
+                <Link to={`/players/${p.id}/`} className="block truncate font-black underline decoration-transparent decoration-2 underline-offset-4 transition-colors hover:decoration-current">
                   {p.nickname}
                 </Link>
               )}

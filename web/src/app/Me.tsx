@@ -1,21 +1,247 @@
-import { useState, type SubmitEvent } from 'react';
-import { tier } from './assessment';
+import { useState, type ReactNode, type SubmitEvent } from 'react';
+import { gapText, tier } from './assessment';
 import { currentLocale, t } from './i18n';
+import { Icon } from './icons';
+import { Avatar, Divider, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile, Tag } from './kit';
 import { nicknameProblem } from './Onboarding';
 import { Link } from './router';
-import { problem, supabase, type Profile } from './supabase';
-import { Button, Field, LanguagePicker, PageHeader, toast } from './ui';
-import { AdminLink, Verification } from './Verification';
+import { problem, supabase, useLive, type Friend, type PlayerCard, type PlayRecord, type Profile } from './supabase';
+import { Button, Field, toast } from './ui';
+import { AdminLink } from './Verification';
 
-export function Me({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
+const verifiedText = { tournament: 'Tournament verified', national: 'Ranking verified', bwf: 'BWF verified' } as const;
+
+/** 我的（iOS 的 ProfileView）：身份卡、场次和履约、本月胜率、菜单 */
+export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => void }) {
+  const { data: card } = useLive<PlayerCard | null>('player_card', { args: { p_user: profile.id }, every: 300_000 });
+  const { data: record } = useLive<PlayRecord>('my_record', { every: 300_000 });
+  const { data: friends } = useLive<{ friends: Friend[]; requests: Friend[] }>('my_friends', { every: 120_000 });
+  const total = record ? record.games_played + record.no_shows + record.late_cancels : 0;
+  const reliability = record && total ? Math.round((record.games_played / total) * 100) : 100;
+
+  return (
+    <div className="grid gap-6">
+      <LargeTitle title={t('Me')}>
+        <IconButton icon="gear" label={t('Settings')} to="/settings/" />
+      </LargeTitle>
+
+      {!profile.assessed_at && (
+        <Notice icon="list" action={{ label: t('Take the quiz'), to: '/level-quiz/' }}>
+          {t('You haven’t taken the level quiz yet, so you’re matched as level 3.')}
+        </Notice>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
+        <div className="grid min-w-0 gap-6">
+          <section aria-label={t('My profile')} className="sticker grid gap-4 bg-lavender p-5 text-on-accent sm:p-6">
+            <div className="flex items-center gap-4">
+              <span className="relative shrink-0">
+                <span aria-hidden="true" className="absolute inset-0 translate-x-[3px] translate-y-1 rounded-full bg-[#17140f]" />
+                <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={76} className="relative" />
+              </span>
+              <div className="grid min-w-0 gap-1.5">
+                <h2 className="truncate text-title2">{profile.nickname}</h2>
+                <ul className="flex flex-wrap gap-1.5">
+                  <li><LevelBadge rating={profile.rating} /></li>
+                  {card?.reliable && <li><Tag icon="reliable" tint="mint">{t('Reliable')}</Tag></li>}
+                  {card?.new_player && <li><Tag icon="sparkle" tint="butter">{t('New player · calibrating')}</Tag></li>}
+                  {profile.verified_kind && <li><Tag icon="verified" tint="lime">{t(verifiedText[profile.verified_kind])}</Tag></li>}
+                </ul>
+              </div>
+            </div>
+            <p className="text-subhead">{profile.assessed_at ? tier(profile.rating).summary : t('Take the 2-minute level quiz so you’re matched with the right players.')}</p>
+            <Link to="/settings/" className="button bg-white! text-[#17140f]!">{t('Edit Profile')}</Link>
+          </section>
+
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            <StatTile icon="games" tint="peach" value={record?.games_played ?? '–'} label={t('Games')} />
+            <StatTile icon="reliable" tint="mint" value={record ? `${reliability}%` : '–'} label={t('Reliability')} />
+            <StatTile icon="users" tint="sky" value={friends?.friends.length ?? '–'} label={t('Friends')} />
+          </div>
+
+          {record && <WinRate record={record} />}
+          {record && <Attendance record={record} />}
+        </div>
+
+        <aside className="grid min-w-0 gap-6" aria-label={t('More')}>
+          <nav aria-label={t('Me')} className="sticker grid px-4 py-1">
+            <Row icon="users" tint="lavender" title={t('My friends')} value={friends?.friends.length} badge={friends?.requests.length} to="/messages/?tab=friends" />
+            <Divider />
+            <Row icon="list" tint="lime" title={t('Level guide')} value={`Lv.${tier(profile.rating).label}`} to="/levels/" />
+            <Divider />
+            <Row icon="history" tint="peach" title={t('Past games')} to="/games/?tab=ended" />
+            <Divider />
+            <Row icon="trophy" tint="butter" title={t('Leaderboard')} to="/rankings/" />
+            <Divider />
+            <Row icon="challenge" tint="pink" title={t('Challenges')} to="/challenges/" />
+            <Divider />
+            <Row icon="heart" tint="pink" title={t('Venues & favorites')} to="/courts/" />
+            <Divider />
+            <Row icon="verified" tint="mint" title={t('Level verification')} value={profile.verified_kind ? t('Verified') : undefined} to="/verification/" />
+            <Divider />
+            <Row icon="gear" tint="muted" title={t('Settings')} to="/settings/" />
+          </nav>
+          <AdminLink />
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+/** 本月胜率：满 5 场显示百分比，不够就显示进度 */
+function WinRate({ record }: { record: PlayRecord }) {
+  const minimum = 5;
+  return (
+    <section aria-labelledby="win-rate" className="sticker grid gap-3 p-5">
+      <h2 id="win-rate" className="text-headline">{t('Win rate this month')}</h2>
+      {record.games >= minimum ? (
+        <p className="flex items-baseline gap-2">
+          <span className="text-[2.75rem] leading-none font-black tabular-nums">{Math.round((record.wins / record.games) * 100)}%</span>
+          <span className="text-footnote font-bold text-ink-secondary">{t('{wins}W {losses}L', { wins: record.wins, losses: record.losses })}</span>
+        </p>
+      ) : (
+        <>
+          <p className="text-subhead font-bold">{t('{n} confirmed this month. Win rate shows from {minimum} games.', { n: record.games, minimum })}</p>
+          <Progress value={record.games / minimum} />
+        </>
+      )}
+      {record.games > 0 && (
+        <p className="text-footnote font-bold text-ink-secondary">
+          {t('{n} confirmed game|{n} confirmed games', { n: record.games })} · {t('{n} opponent|{n} opponents', { n: record.opponents })} · {gapText(record.gap)}
+        </p>
+      )}
+      <p className="flex gap-1.5 text-caption text-ink-tertiary">
+        <Icon name="info" className="mt-px size-3.5" />
+        {t('Only games confirmed by both sides count. Resets on the 1st of each month; up to 3 games per opponent per month.')}
+      </p>
+    </section>
+  );
+}
+
+/** 履约记录：完成、爽约、临时取消 */
+function Attendance({ record }: { record: PlayRecord }) {
+  const good = record.no_shows === 0 && record.late_cancels <= 1;
+  return (
+    <section className="sticker flex items-start gap-3 p-5">
+      <span className={`grid size-11 shrink-0 place-items-center rounded-[13px] border-2 border-stroke text-on-accent ${good ? 'bg-mint' : 'bg-pink'}`}>
+        <Icon name={good ? 'reliable' : 'shield'} className="size-5" />
+      </span>
+      <div className="min-w-0">
+        <h2 className="text-headline">{good ? t('Attendance · Good') : t('Attendance · Needs care')}</h2>
+        <p className="text-footnote font-bold text-ink-secondary">
+          {t('{played} played · {noShows} no-shows · {late} late cancellations', { played: record.games_played, noShows: record.no_shows, late: record.late_cancels })}
+        </p>
+        <p className="text-caption text-ink-secondary">{t('Leaving within 2 hours of start counts as a late cancellation.')}</p>
+      </div>
+    </section>
+  );
+}
+
+const Progress = ({ value }: { value: number }) => (
+  <span className="block h-3 overflow-hidden rounded-full border-2 border-stroke bg-surface-muted" role="progressbar" aria-valuenow={Math.round(value * 100)} aria-valuemin={0} aria-valuemax={100}>
+    <span className="block h-full bg-lime" style={{ width: `${Math.min(100, value * 100)}%` }} />
+  </span>
+);
+
+// MARK: 设置
+
+const policies = [
+  ['similar', 'Players within 1 level'],
+  ['everyone', 'Anyone in my country'],
+  ['friends', 'Friends only'],
+  ['nobody', 'No one'],
+] as const;
+
+type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy'>;
+
+/** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
+export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
+  async function save(patch: Partial<Toggles>) {
+    onChange({ ...profile, ...patch });
+    const { data, error } = await supabase!.from('profiles').update(patch).eq('id', profile.id).select().single();
+    if (error) {
+      onChange(profile);
+      return toast(t('Couldn’t save. Try again.'), 'error');
+    }
+    onChange(data as Profile);
+    toast(t('Saved'));
+  }
+
+  return (
+    <div className="mx-auto grid max-w-2xl gap-6">
+      <ScreenHeader title={t('Settings')} back="/me/" />
+      <Nickname profile={profile} email={email} onChange={onChange} />
+
+      <Group title={t('Who can find me')}>
+        <Switch checked={profile.discoverable} onChange={(v) => save({ discoverable: v })} title={t('Let players find me by nickname')}
+                text={t('They see your nickname and level, and can send a friend request.')} />
+        <Divider />
+        <Switch checked={profile.show_as_regular} onChange={(v) => save({ show_as_regular: v })} title={t('Show me as a regular at my courts')}
+                text={t('Players who starred the same court see your nickname, level and the court. Never when you play or where you are.')} />
+        <Divider />
+        <Switch checked={profile.allow_message_requests} onChange={(v) => save({ allow_message_requests: v })} title={t('Allow message requests from my groups')}
+                text={t('When off, only friends can message you. Game and group chats still work.')} />
+        <Divider />
+        <Switch checked={profile.show_on_boards} onChange={(v) => save({ show_on_boards: v })} title={t('Show me on leaderboards')}
+                text={t('Weekly and court boards show your nickname, level and games.')} />
+      </Group>
+
+      <Group title={t('Who can challenge me')}>
+        <div role="radiogroup" aria-label={t('Who can challenge me')} className="flex flex-wrap gap-2 py-3">
+          {policies.map(([value, label]) => (
+            <button key={value} type="button" role="radio" aria-checked={profile.challenge_policy === value} onClick={() => save({ challenge_policy: value })} className="toggle">
+              {t(label)}
+            </button>
+          ))}
+        </div>
+      </Group>
+
+      <Level profile={profile} />
+      <Group title={t('Level verification')}>
+        <Row icon="verified" tint="mint" title={t('Verify a high level')} subtitle={t('Tournament results, a national ranking or a BWF profile.')} to="/verification/" />
+      </Group>
+
+      <Group title={t('Account')}>
+        <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => supabase!.auth.signOut()} />
+        <Divider />
+        <DeleteAccount avatar={profile.avatar_path} />
+      </Group>
+    </div>
+  );
+}
+
+function Group({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="grid gap-2">
+      <h2 className="px-1 text-footnote font-bold text-ink-secondary">{title}</h2>
+      <div className="sticker grid px-4">{children}</div>
+    </section>
+  );
+}
+
+/** 开关（role=switch）：柠檬绿是开 */
+function Switch({ checked, onChange, title, text }: { checked: boolean; onChange: (value: boolean) => void; title: string; text: string }) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 py-3.5">
+      <span className="min-w-0 flex-1">
+        <span className="block font-bold">{title}</span>
+        <span className="block text-footnote text-ink-secondary">{text}</span>
+      </span>
+      <input type="checkbox" role="switch" checked={checked} onChange={(e) => onChange(e.target.checked)}
+             className="relative mt-0.5 h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
+    </label>
+  );
+}
+
+function Nickname({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
   const [nickname, setNickname] = useState(profile.nickname);
   const [busy, setBusy] = useState(false);
-  const problem = nicknameProblem(nickname);
+  const issue = nicknameProblem(nickname);
   const changed = nickname.trim() !== profile.nickname;
 
   async function save(event: SubmitEvent) {
     event.preventDefault();
-    if (problem || !changed) return;
+    if (issue || !changed) return;
     setBusy(true);
     const { data, error } = await supabase!.from('profiles').update({ nickname: nickname.trim() }).eq('id', profile.id).select().single();
     setBusy(false);
@@ -25,29 +251,41 @@ export function Me({ profile, email, onChange }: { profile: Profile; email?: str
   }
 
   return (
-    <div className="max-w-xl">
-      <PageHeader eyebrow={t('Me')} title={profile.nickname}>{email}</PageHeader>
+    <form onSubmit={save} noValidate className="sticker grid gap-4 p-5">
+      <div className="flex items-center gap-3">
+        <Avatar id={profile.id} name={nickname || profile.nickname} photo={profile.avatar_path} size={56} />
+        <div className="min-w-0">
+          <p className="text-headline">{t('Profile')}</p>
+          {email && <p className="truncate text-footnote text-ink-secondary">{email}</p>}
+        </div>
+      </div>
+      <Field label={t('Nickname')} hint={t('2–12 characters. No phone numbers or links.')} error={changed ? issue : undefined}>
+        {(props) => <input {...props} maxLength={12} value={nickname} onChange={(e) => setNickname(e.target.value)} className="field" />}
+      </Field>
+      <p className="text-caption text-ink-tertiary">{t('Add or change your photo in the iPhone app.')}</p>
+      <Button busy={busy} disabled={!changed || Boolean(issue)} className="justify-self-start">{t('Save')}</Button>
+    </form>
+  );
+}
 
-      <form onSubmit={save} noValidate className="tile grid gap-4 bg-surface p-6">
-        <Field label={t('Nickname')} hint={t('2–12 characters. No phone numbers or links.')} error={changed ? problem : undefined}>
-          {(props) => (
-            <input {...props} maxLength={12} value={nickname} onChange={(e) => setNickname(e.target.value)} className="field h-12" />
-          )}
-        </Field>
-        <Button busy={busy} disabled={!changed || Boolean(problem)} className="justify-self-start">{t('Save')}</Button>
-      </form>
-
-      <Level profile={profile} />
-      <Verification profile={profile} />
-      <Settings profile={profile} onChange={onChange} />
-
-      <div className="tile mt-6 bg-surface p-6"><LanguagePicker /></div>
-
-      <AdminLink />
-      <Button variant="quiet" onClick={() => supabase!.auth.signOut()} className="mt-8">{t('Sign out')}</Button>
-
-      <DeleteAccount avatar={profile.avatar_path} />
-    </div>
+function Level({ profile }: { profile: Profile }) {
+  const level = tier(profile.rating);
+  const retakeAt = profile.assessed_at ? new Date(new Date(profile.assessed_at).getTime() + 90 * 86400000) : undefined;
+  return (
+    <section aria-labelledby="level" className="sticker grid gap-3 p-5">
+      <h2 id="level" className="text-footnote font-bold text-ink-secondary">{t('Level')}</h2>
+      <p className="flex items-center gap-2"><LevelBadge rating={profile.rating} /></p>
+      <p className="text-subhead text-ink-secondary">
+        {profile.assessed_at ? level.summary : t('You haven’t taken the level quiz yet, so you’re matched as level 3.')}
+      </p>
+      {!retakeAt || retakeAt.getTime() <= Date.now() ? (
+        <Link to="/level-quiz/" className="button justify-self-start">{profile.assessed_at ? t('Retake the quiz') : t('Take the level quiz')}</Link>
+      ) : (
+        <p className="text-footnote text-ink-tertiary">
+          {t('You can retake the quiz from {date}.', { date: retakeAt.toLocaleDateString(currentLocale(), { month: 'long', day: 'numeric' }) })}
+        </p>
+      )}
+    </section>
   );
 }
 
@@ -70,103 +308,16 @@ function DeleteAccount({ avatar }: { avatar: string | null }) {
     await supabase!.auth.signOut({ scope: 'local' });
   }
 
+  if (!confirming) return <Row icon="trash" tint="pink" title={t('Delete account')} danger onClick={() => setConfirming(true)} />;
   return (
-    <section aria-labelledby="delete-account" className="tile mt-10 grid gap-3 bg-surface p-6">
-      <h2 id="delete-account" className="eyebrow">{t('Delete account')}</h2>
-      <p className="text-sm text-ink-secondary">
+    <div className="grid gap-3 py-3.5" role="alert">
+      <p className="text-footnote text-ink-secondary">
         {t('This deletes your profile, friends, messages, reviews and game history, and can’t be undone. Upcoming games are cancelled and the other players are told. Groups you run go to the next organizer.')}
       </p>
-      {confirming ? (
-        <div className="flex flex-wrap gap-2">
-          <Button variant="danger" busy={busy} onClick={remove}>{t('Yes, delete my account')}</Button>
-          <Button variant="quiet" disabled={busy} onClick={() => setConfirming(false)}>{t('Cancel')}</Button>
-        </div>
-      ) : (
-        <Button variant="quiet" onClick={() => setConfirming(true)} className="justify-self-start">{t('Delete account')}</Button>
-      )}
-    </section>
-  );
-}
-
-function Level({ profile }: { profile: Profile }) {
-  const level = tier(profile.rating);
-  const retakeAt = profile.assessed_at ? new Date(new Date(profile.assessed_at).getTime() + 90 * 86400000) : undefined;
-  return (
-    <section aria-labelledby="level" className="tile mt-6 grid gap-3 bg-surface p-6">
-      <p id="level" className="eyebrow">{t('Level')}</p>
-      <p>
-        <span className="display text-5xl">{level.label}</span> <span className="text-lg font-black">{level.name}</span>
-      </p>
-      <p className="text-ink-secondary">
-        {profile.assessed_at ? level.summary : t('You haven’t taken the level quiz yet, so you’re matched as level 3.')}
-      </p>
-      {!retakeAt || retakeAt.getTime() <= Date.now() ? (
-        <Link to="/app/level/" className="button justify-self-start">{profile.assessed_at ? t('Retake the quiz') : t('Take the level quiz')}</Link>
-      ) : (
-        <p className="text-sm text-ink-tertiary">
-          {t('You can retake the quiz from {date}.', { date: retakeAt.toLocaleDateString(currentLocale(), { month: 'long', day: 'numeric' }) })}
-        </p>
-      )}
-    </section>
-  );
-}
-
-const policies = [
-  ['similar', 'Players within 1 level'],
-  ['everyone', 'Anyone in my country'],
-  ['friends', 'Friends only'],
-  ['nobody', 'No one'],
-] as const;
-
-/** 被搜到、上榜和约战设置：界面马上切换并保存，失败就切回去 */
-function Settings({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
-  async function save(patch: Partial<Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy'>>) {
-    onChange({ ...profile, ...patch });
-    const { data, error } = await supabase!.from('profiles').update(patch).eq('id', profile.id).select().single();
-    if (error) {
-      onChange(profile);
-      return toast(t('Couldn’t save. Try again.'), 'error');
-    }
-    onChange(data as Profile);
-    toast(t('Saved'));
-  }
-  return (
-    <section aria-labelledby="settings" className="tile mt-6 grid gap-5 bg-surface p-6">
-      <h2 id="settings" className="eyebrow">{t('Who can find me')}</h2>
-      <label className="flex items-start gap-3">
-        <input type="checkbox" checked={profile.discoverable} onChange={(e) => save({ discoverable: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
-        <span>
-          <span className="block font-extrabold">{t('Let players find me by nickname')}</span>
-          <span className="block text-sm text-ink-tertiary">{t('They see your nickname and level, and can send a friend request.')}</span>
-        </span>
-      </label>
-      <label className="flex items-start gap-3">
-        <input type="checkbox" checked={profile.show_as_regular} onChange={(e) => save({ show_as_regular: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
-        <span>
-          <span className="block font-extrabold">{t('Show me as a regular at my courts')}</span>
-          <span className="block text-sm text-ink-tertiary">{t('Players who starred the same court see your nickname, level and the court. Never when you play or where you are.')}</span>
-        </span>
-      </label>
-      <label className="flex items-start gap-3">
-        <input type="checkbox" checked={profile.allow_message_requests} onChange={(e) => save({ allow_message_requests: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
-        <span>
-          <span className="block font-extrabold">{t('Allow message requests from my groups')}</span>
-          <span className="block text-sm text-ink-tertiary">{t('When off, only friends can message you. Game and group chats still work.')}</span>
-        </span>
-      </label>
-      <label className="flex items-start gap-3">
-        <input type="checkbox" checked={profile.show_on_boards} onChange={(e) => save({ show_on_boards: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
-        <span>
-          <span className="block font-extrabold">{t('Show me on leaderboards')}</span>
-          <span className="block text-sm text-ink-tertiary">{t('Weekly and court boards show your nickname, level and games.')}</span>
-        </span>
-      </label>
-      <label className="grid gap-1.5">
-        <span className="font-extrabold">{t('Who can challenge me')}</span>
-        <select value={profile.challenge_policy} onChange={(e) => save({ challenge_policy: e.target.value as Profile['challenge_policy'] })} className="field">
-          {policies.map(([value, label]) => <option key={value} value={value}>{t(label)}</option>)}
-        </select>
-      </label>
-    </section>
+      <div className="flex flex-wrap gap-2">
+        <Button variant="danger" busy={busy} onClick={remove}>{t('Yes, delete my account')}</Button>
+        <Button variant="quiet" disabled={busy} onClick={() => setConfirming(false)}>{t('Cancel')}</Button>
+      </div>
+    </div>
   );
 }
