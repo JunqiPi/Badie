@@ -67,25 +67,28 @@ struct TicketStatusCard: View {
     var body: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             let status = TicketStatus(ticket: ticket, offer: offer, now: context.date)
+            // 亮绿底上用固定的深色字（深色模式下 ink 是浅色）
+            let ink = status.needsAction ? AppTheme.Colors.onAccent : AppTheme.Colors.ink
+            let secondary = status.needsAction ? AppTheme.Colors.onAccent.opacity(0.75) : AppTheme.Colors.inkSecondary
             HStack(spacing: AppTheme.Spacing.md) {
                 IconTile(systemName: status.icon, fill: status.tint, size: 44)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("约球请求 · \(ticket.mode.title)")
                         .font(AppTheme.Typography.overline)
                         .tracking(0.6)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .foregroundStyle(secondary)
                     Text(ticket.slot.formattedFull)
                         .font(AppTheme.Typography.headline)
-                        .foregroundStyle(AppTheme.Colors.ink)
+                        .foregroundStyle(ink)
                     Text(status.title)
                         .font(AppTheme.Typography.footnoteBold)
-                        .foregroundStyle(status.needsAction ? AppTheme.Colors.ink : AppTheme.Colors.inkSecondary)
+                        .foregroundStyle(status.needsAction ? ink : secondary)
                         .lineLimit(2)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .heavy))
-                    .foregroundStyle(AppTheme.Colors.ink)
+                    .foregroundStyle(ink)
             }
             .padding(AppTheme.Spacing.lg)
             .sticker(status.needsAction ? AppTheme.Colors.lime : AppTheme.Colors.surface, radius: AppTheme.Radius.lg)

@@ -217,10 +217,10 @@ struct ChatView: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Label("\(other?.nickname ?? String(localized: "TA")) 想和你聊天", systemImage: "envelope.badge.fill")
                 .font(AppTheme.Typography.headline)
-                .foregroundStyle(AppTheme.Colors.ink)
+                .foregroundStyle(AppTheme.Colors.onAccent)
             Text("你们在同一个球群。接受后才能互相发消息；忽略的话对方不会知道。")
                 .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: AppTheme.Spacing.sm) {
                 Button("忽略") {
@@ -441,11 +441,11 @@ struct ReportSheet: View {
                             HStack {
                                 Text(option.title)
                                     .font(AppTheme.Typography.bodyBold)
-                                    .foregroundStyle(AppTheme.Colors.ink)
+                                    .foregroundStyle(reason == option ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
                                 Spacer()
                                 Image(systemName: reason == option ? "largecircle.fill.circle" : "circle")
                                     .font(.system(size: 20, weight: .bold))
-                                    .foregroundStyle(reason == option ? AppTheme.Colors.ink : AppTheme.Colors.inkTertiary)
+                                    .foregroundStyle(reason == option ? AppTheme.Colors.onAccent : AppTheme.Colors.inkTertiary)
                             }
                             .padding(AppTheme.Spacing.md)
                             .sticker(reason == option ? AppTheme.Colors.pink : AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)

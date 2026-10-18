@@ -399,6 +399,10 @@ struct OfferView: View {
     }
 
     /// 确认进度：谁确认了、还在等谁；拒绝/超时的座位只显示“补位中”
+    /// 黄底（轮到我确认）上用固定的深色字：深色模式下 ink 是浅色
+    private var cardInk: Color { awaitsMe ? AppTheme.Colors.onAccent : AppTheme.Colors.ink }
+    private var cardSecondary: Color { awaitsMe ? AppTheme.Colors.onAccent.opacity(0.75) : AppTheme.Colors.inkSecondary }
+
     private var confirmationCard: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
@@ -408,17 +412,17 @@ struct OfferView: View {
                     Spacer()
                     Text("\(offer.acceptedCount)/\(offer.seats.count) 已确认")
                         .font(AppTheme.Typography.footnoteBold)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .foregroundStyle(cardSecondary)
                 }
                 ForEach(Array(offer.seats.enumerated()), id: \.offset) { _, seat in
                     seatRow(seat)
                 }
                 Label(deadlineText(now: context.date), systemImage: "clock.badge.exclamationmark.fill")
                     .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(awaitsMe ? AppTheme.Colors.ink : AppTheme.Colors.inkSecondary)
+                    .foregroundStyle(awaitsMe ? cardInk : cardSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            .foregroundStyle(AppTheme.Colors.ink)
+            .foregroundStyle(cardInk)
             .padding(AppTheme.Spacing.lg)
             .sticker(awaitsMe ? AppTheme.Colors.butter : AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
         }
@@ -437,11 +441,12 @@ struct OfferView: View {
             if seat.isVacant {
                 Image(systemName: "person.fill.questionmark")
                     .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.ink)
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(AppTheme.Colors.surfaceMuted))
                 Text("一位球友这次来不了")
                     .font(AppTheme.Typography.subheadlineBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .foregroundStyle(cardSecondary)
                 Spacer()
                 statusPill(String(localized: "补位中"), icon: "arrow.triangle.2.circlepath", fill: AppTheme.Colors.surfaceMuted)
             } else if let user = matchManager.user(id: seat.userId) {
@@ -453,7 +458,7 @@ struct OfferView: View {
                 Spacer()
                 if !matchManager.isRemote || user.id == ticket.userId {
                     if seat.response == .accepted {
-                        statusPill(String(localized: "已确认"), icon: "checkmark", fill: AppTheme.Colors.mint)
+                        TagPill(text: String(localized: "已确认"), icon: "checkmark", fill: AppTheme.Colors.mint)
                     } else {
                         statusPill(String(localized: "等待确认"), icon: "hourglass", fill: AppTheme.Colors.surface)
                     }

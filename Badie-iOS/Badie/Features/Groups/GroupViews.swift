@@ -250,11 +250,11 @@ struct GroupDetailView: View {
             if let me, group.isPending(me) {
                 Label("已申请加入，等组织者同意", systemImage: "hourglass")
                     .font(AppTheme.Typography.bodyBold)
-                    .foregroundStyle(AppTheme.Colors.ink)
+                    .foregroundStyle(AppTheme.Colors.onAccent)
             } else {
                 Text(group.joinPolicy == .open ? String(localized: "水平符合就能直接加入，加入后就能报名每周的场次。") : String(localized: "这个群需要组织者同意。"))
                     .font(AppTheme.Typography.subheadline)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
                 Button {
                     Task {
                         do {
@@ -276,7 +276,7 @@ struct GroupDetailView: View {
                     ForEach(group.schedules) { schedule in
                         Label("\(schedule.weekdayTitle) \(schedule.timeText) · \(schedule.capacity) 个名额", systemImage: "calendar")
                             .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
                     }
                 }
             }
