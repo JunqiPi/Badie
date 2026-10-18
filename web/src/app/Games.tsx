@@ -8,7 +8,7 @@ import { Link } from './router';
 import { GamesTabs } from './Rankings';
 import { problem, supabase, useLive, type Game, type MyChallenges, type Outcome, type PlayRecord } from './supabase';
 import { day, hours, relative } from './time';
-import { Button, EmptyState, PageHeader, Skeleton, toast } from './ui';
+import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
 
 const live = (g: Game) => g.status === 'scheduled' && new Date(g.ends_at).getTime() > Date.now();
 /** 结束后 48 小时内还有没评价的球友 */
@@ -113,7 +113,7 @@ export function GameDetail({ id }: { id: string }) {
   return <GameView game={game} onChange={refresh} />;
 }
 
-function GameView({ game: g, onChange }: { game: Game; onChange: () => void }) {
+function GameView({ game: g, onChange }: { game: Game; onChange: () => Promise<void> }) {
   const [busy, setBusy] = useState<string>();
   const [confirmCancel, setConfirmCancel] = useState(false);
   const now = Date.now();
@@ -132,7 +132,7 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => void }) {
     setBusy(undefined);
     if (error) toast(problem(error), 'error');
     else toast(done);
-    onChange();
+    await onChange();
   }
 
   const players = g.mode === 'doubles' ? 4 : 2;
@@ -173,6 +173,8 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => void }) {
           )}
           <a className="button button-quiet justify-self-start" href={`https://maps.apple.com/?q=${encodeURIComponent(g.venue.name)}&ll=${g.venue.lat},${g.venue.lon}`}>{t('Directions')}</a>
         </section>
+
+        {scheduled && <Fees game={g} busy={busy} act={act} />}
 
         {scheduled && (canCheckIn || g.checked_in || now < start) && (
           <section aria-label={t('Check in')} className="tile grid gap-3 bg-surface p-5">
@@ -217,6 +219,7 @@ function Result({ game: g, canReport, busy, act }: {
   const mine: Outcome = g.my_team === 1 ? 'team1' : 'team2';
   const theirs: Outcome = g.my_team === 1 ? 'team2' : 'team1';
   const reported = g.my_report?.outcome;
+  const [score, setScore] = useState(g.my_report?.score ?? '');
   const { status, outcome } = g.result;
   const choices: [Outcome | null, string][] = [[mine, 'We won'], [theirs, 'We lost'], ['friendly', 'Just for fun'], [null, 'Can’t remember']];
   const summary =
@@ -236,12 +239,19 @@ function Result({ game: g, canReport, busy, act }: {
     <section aria-labelledby="result" className="tile grid gap-4 bg-surface p-5 sm:p-6">
       <h2 id="result" className="text-xl font-black">{t('Result')}</h2>
       <p role="status" className="text-ink-secondary">{summary}</p>
+      {g.score && <p className="font-black tabular-nums">{t('Score: {score}', { score: g.score })}</p>}
+      {canReport && (
+        <Field label={t('Score (optional)')} hint={t('Pick the result below to save it.')}>
+          {(props) => <input {...props} value={score} maxLength={40} inputMode="numeric" placeholder="21:18 19:21 21:15"
+                             onChange={(e) => setScore(e.target.value)} className="field max-w-xs tabular-nums" />}
+        </Field>
+      )}
       {canReport && (
         <div className="flex flex-wrap gap-2" role="group" aria-label={t('Report the result')}>
           {choices.map(([value, label]) => (
             <button
               key={label}
-              onClick={() => act('report', 'report_result', { p_game: g.id, p_outcome: value }, t('Result saved'))}
+              onClick={() => act('report', 'report_result', { p_game: g.id, p_outcome: value, p_score: score }, t('Result saved'))}
               disabled={Boolean(busy)}
               aria-pressed={g.my_report !== null && reported === value}
               className="toggle"
@@ -251,6 +261,48 @@ function Result({ game: g, canReport, busy, act }: {
           ))}
         </div>
       )}
+    </section>
+  );
+}
+
+/** 场地费 AA：只是记账。自己标自己，房间开的局房主可以替所有人标 */
+function Fees({ game: g, busy, act }: {
+  game: Game;
+  busy?: string;
+  act: (name: string, fn: string, args: Record<string, unknown>, done: string) => Promise<void>;
+}) {
+  // 勾上马上显示，等服务器的最新数据回来再以它为准（失败会恢复原样）
+  const [pending, setPending] = useState<Record<string, boolean>>({});
+  const me = g.players.find((p) => p.me);
+  const host = g.host_id !== null && g.host_id === me?.id;
+  const isPaid = (p: Game['players'][number]) => pending[p.id] ?? Boolean(p.paid);
+  const paid = g.players.filter(isPaid).length;
+
+  async function mark(id: string, value: boolean) {
+    setPending((all) => ({ ...all, [id]: value }));
+    await act(`paid-${id}`, 'mark_paid', { p_game: g.id, p_user: id, p_paid: value }, t('Saved'));
+    setPending(({ [id]: _, ...rest }) => rest);
+  }
+  return (
+    <section aria-labelledby="fees" className="tile grid gap-3 bg-surface p-5">
+      <h2 id="fees" className="flex items-baseline justify-between gap-2">
+        <span className="eyebrow">{t('Court fee')}</span>
+        <span className="text-sm font-bold text-ink-tertiary tabular-nums">{t('{n} of {total} paid', { n: paid, total: g.players.length })}</span>
+      </h2>
+      <ul className="grid gap-1">
+        {g.players.map((p) => (
+          <li key={p.id}>
+            <label className="flex min-h-11 items-center gap-3">
+              <input type="checkbox" checked={isPaid(p)} disabled={Boolean(busy) || !(p.me || host)}
+                     onChange={(e) => mark(p.id, e.target.checked)}
+                     className="size-5 accent-[var(--color-lime)]" />
+              <span className="min-w-0 flex-1 truncate font-bold">{p.me ? t('You') : p.nickname}</span>
+              <span className="text-sm font-semibold text-ink-tertiary">{isPaid(p) ? t('Paid') : t('Not yet')}</span>
+            </label>
+          </li>
+        ))}
+      </ul>
+      <p className="text-sm text-ink-tertiary">{host ? t('As the host, you can mark anyone.') : t('Mark yourself once you’ve paid your share.')}</p>
     </section>
   );
 }

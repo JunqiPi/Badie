@@ -70543,6 +70543,64 @@
         }
       }
     },
+    "比分只能填数字，如 21:18 19:21。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scores can only have numbers, like 21:18 19:21."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्कोर में सिर्फ़ अंक हो सकते हैं, जैसे 21:18 19:21।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skor hanya boleh berisi angka, misalnya 21:18 19:21."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スコアは数字だけで入力してください（例：21:18 19:21）。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "점수는 숫자로만 입력해 주세요. 예: 21:18 19:21"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skor hanya boleh mengandungi nombor, contohnya 21:18 19:21."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คะแนนใส่ได้เฉพาะตัวเลข เช่น 21:18 19:21"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tỷ số chỉ được nhập số, ví dụ 21:18 19:21."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比分只能填數字，如 21:18 19:21。"
+          }
+        }
+      }
+    },
     "比分（可选）" : {
       "localizations" : {
         "en" : {

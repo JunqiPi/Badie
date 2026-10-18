@@ -377,21 +377,19 @@ struct GameDetailView: View {
                         TagPill(text: String(localized: "发起人"), fill: AppTheme.Colors.butter)
                     }
                     Spacer()
-                    if !appState.isRemote {
-                        Button {
-                            Haptics.selection()
-                            matchManager.togglePaid(game, userId: player.id)
-                        } label: {
-                            TagPill(text: paid ? String(localized: "已付") : String(localized: "待付"), icon: paid ? "checkmark" : nil,
-                                    fill: paid ? AppTheme.Colors.mint : AppTheme.Colors.surface,
-                                    foreground: paid ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
-                                .frame(minHeight: 44)
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(!canToggle || game.status == .cancelled)
-                        .accessibilityLabel("\(player.nickname) \(paid ? String(localized: "已付") : String(localized: "待付"))")
-                        .accessibilityHint(canToggle ? String(localized: "点按切换付款状态") : "")
+                    Button {
+                        Haptics.selection()
+                        matchManager.togglePaid(game, userId: player.id)
+                    } label: {
+                        TagPill(text: paid ? String(localized: "已付") : String(localized: "待付"), icon: paid ? "checkmark" : nil,
+                                fill: paid ? AppTheme.Colors.mint : AppTheme.Colors.surface,
+                                foreground: paid ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
+                            .frame(minHeight: 44)
                     }
+                    .buttonStyle(.plain)
+                    .disabled(!canToggle || game.status == .cancelled)
+                    .accessibilityLabel("\(player.nickname) \(paid ? String(localized: "已付") : String(localized: "待付"))")
+                    .accessibilityHint(canToggle ? String(localized: "点按切换付款状态") : "")
                 }
             }
         }
@@ -444,15 +442,13 @@ struct GameDetailView: View {
                     .buttonStyle(PressableStyle(scale: 0.98))
                 }
             }
-            if !appState.isRemote {
-                Button {
-                    let invitee = game.otherPlayerIds(excluding: me ?? "").first
-                    router.open(.createRoom(game.mode, invitee: invitee))
-                } label: {
-                    Label("和他们再约一场", systemImage: "arrow.triangle.2.circlepath")
-                }
-                .buttonStyle(.brutal(.primary, size: .medium))
+            Button {
+                let invitee = game.otherPlayerIds(excluding: me ?? "").first
+                router.open(.createRoom(game.mode, invitee: invitee))
+            } label: {
+                Label("和他们再约一场", systemImage: "arrow.triangle.2.circlepath")
             }
+            .buttonStyle(.brutal(.primary, size: .medium))
         }
     }
 
@@ -707,7 +703,8 @@ struct CompleteGameSheet: View {
 
     @State private var outcome: Outcome?
     @State private var score = ""
-    @EnvironmentObject private var appState: AppState
+
+    private var scoreIsValid: Bool { GameResult.isValidScore(score) }
 
     var body: some View {
         ScrollView {
@@ -724,10 +721,11 @@ struct CompleteGameSheet: View {
                         optionRow(option)
                     }
                 }
-                // 正式后端只记输赢，不存比分
-                if outcome != .unsure && !appState.isRemote {
+                if outcome != .unsure {
                     BrutalTextField(label: String(localized: "比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
-                                    keyboard: .numbersAndPunctuation, characterLimit: 40)
+                                    keyboard: .numbersAndPunctuation,
+                                    errorText: scoreIsValid ? nil : String(localized: "比分只能填数字，如 21:18 19:21。"),
+                                    characterLimit: 40)
                 }
                 Label("打了好几局就按赢得多的一方算。双方一致才计入胜率；记不清就选“记不清了”，不算分歧", systemImage: "checkmark.shield")
                     .font(AppTheme.Typography.caption)
@@ -742,7 +740,7 @@ struct CompleteGameSheet: View {
                 onComplete(outcome, outcome == .unsure ? "" : score)
             }
             .buttonStyle(.brutalPrimary)
-            .disabled(outcome == nil)
+            .disabled(outcome == nil || (outcome != .unsure && !scoreIsValid))
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.vertical, AppTheme.Spacing.lg)
             .background(AppTheme.Colors.canvas)

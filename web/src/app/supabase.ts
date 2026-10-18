@@ -56,7 +56,7 @@ export interface NearbyVenue {
 // 约球（数据都来自数据库函数，只含本人能看的内容）
 
 export type Mode = 'singles' | 'doubles';
-export type Player = { id: string; nickname: string; rating: number; team: 1 | 2; me: boolean; checked_in?: boolean; reviewed?: boolean };
+export type Player = { id: string; nickname: string; rating: number; team: 1 | 2; me: boolean; checked_in?: boolean; reviewed?: boolean; paid?: boolean };
 type Place = { id: string; name: string; city: string; street?: string; tz?: string | null };
 
 export interface Ticket {
@@ -92,9 +92,13 @@ export interface Game {
   ends_at: string;
   status: 'scheduled' | 'cancelled';
   venue: Place & { lat: number; lon: number; pricing: Venue['pricing']; country: string };
+  /** 房间开的局才有发起人：可以替所有人标 AA 付没付 */
+  host_id: string | null;
   my_team: 1 | 2;
   checked_in: boolean;
-  my_report: { outcome: Outcome | null } | null;
+  my_report: { outcome: Outcome | null; score: string | null } | null;
+  /** 最近一次填的比分 */
+  score: string | null;
   result: { status: 'awaiting' | 'verified' | 'disputed' | 'unsure' | 'expired'; outcome: Outcome | null };
   review_until: string;
   players: Player[];
@@ -355,5 +359,6 @@ const problems: Record<string, string> = {
   not_enough_players: 'Start when every spot is filled.',
   too_many_invites: 'Invite up to 10 friends at a time.',
   too_many_searches: 'You’re searching too fast. Try again in a few minutes.',
+  invalid_score: 'Scores can only have numbers, like 21:18 19:21.',
 };
 export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');

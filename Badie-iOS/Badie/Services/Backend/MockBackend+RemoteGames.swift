@@ -30,6 +30,7 @@ extension MockBackend {
         let me: Bool
         let checkedIn: Bool?
         let reviewed: Bool?
+        let paid: Bool?
     }
 
     struct RemoteOffer: Decodable {
@@ -62,6 +63,7 @@ extension MockBackend {
     struct RemoteGame: Decodable {
         struct Report: Decodable {
             let outcome: String?
+            let score: String?
         }
 
         struct Result: Decodable {
@@ -75,10 +77,14 @@ extension MockBackend {
         let endsAt: Date
         let status: String
         let venue: RemotePlace
+        /// 房间开的局才有发起人
+        let hostId: String?
         let myTeam: Int
         let checkedIn: Bool
         let myReport: Report?
         let result: Result?
+        /// 最近一次填的比分
+        let score: String?
         let reviewUntil: Date
         let players: [RemotePlayer]?
     }
@@ -163,7 +169,7 @@ extension MockBackend {
     }
 
     /// 赛果：didWin 为 nil 表示友谊局（不计胜负），unsure 表示记不清
-    func remoteReportResult(gameId: String, didWin: Bool?, unsure: Bool = false) async throws {
+    func remoteReportResult(gameId: String, didWin: Bool?, score: String = "", unsure: Bool = false) async throws {
         let remote = try requireRemote()
         guard let game = db.games[gameId], let me = currentUserId, let mine = game.team(of: me) else { throw BackendError.gameNotFound }
         let outcome: Any
@@ -174,7 +180,7 @@ extension MockBackend {
         } else {
             outcome = "friendly"
         }
-        try await remote.call("report_result", ["p_game": gameId, "p_outcome": outcome])
+        try await remote.call("report_result", ["p_game": gameId, "p_outcome": outcome, "p_score": score])
         await refreshRemoteActivity()
     }
 
@@ -265,9 +271,12 @@ extension MockBackend {
         let myTeam = remote.myTeam - 1
         return Game(
             id: remote.id, mode: mode, court: court, slot: slot, playerIds: players.map(\.id), teams: teams,
-            hostId: players.first?.id ?? me.id, origin: .quickMatch, status: status, createdAt: cached?.createdAt ?? remote.startsAt,
-            checkIns: checkIns, paidPlayerIds: [], cost: CostSplit.estimate(court: court, slot: slot, mode: mode),
-            result: mine.map { report in GameResult(didWin: report.unsure ? nil : report.winningTeam.map { $0 == myTeam }, score: "") },
+            hostId: remote.hostId ?? "", origin: .quickMatch, status: status, createdAt: cached?.createdAt ?? remote.startsAt,
+            checkIns: checkIns, paidPlayerIds: players.filter { $0.paid == true }.map(\.id),
+            cost: CostSplit.estimate(court: court, slot: slot, mode: mode),
+            result: mine.map { report in
+                GameResult(didWin: report.unsure ? nil : report.winningTeam.map { $0 == myTeam }, score: remote.score ?? "")
+            },
             cancelledBy: nil, cancelledLate: false, reminderEnabled: cached?.reminderEnabled ?? true, resultReports: reports
         )
     }
@@ -280,13 +289,14 @@ extension MockBackend {
         let opponents = teams[1 - myTeam]
         var reports: [ResultReport] = []
         if let report = remote.myReport {
-            reports.append(ResultReport(reporterId: me, winningTeam: index(report.outcome), score: "", reportedAt: Date(),
-                                        unsure: report.outcome == nil))
+            reports.append(ResultReport(reporterId: me, winningTeam: index(report.outcome), score: report.score ?? "",
+                                        reportedAt: Date(), unsure: report.outcome == nil))
         }
         guard let result = remote.result, let opponent = opponents.first else { return reports }
         switch result.status {
         case "verified":
-            reports.append(ResultReport(reporterId: opponent, winningTeam: index(result.outcome), score: "", reportedAt: Date()))
+            reports.append(ResultReport(reporterId: opponent, winningTeam: index(result.outcome), score: remote.score ?? "",
+                                        reportedAt: Date()))
         case "disputed":
             let mine = reports.first?.winningTeam
             reports.append(ResultReport(reporterId: opponent, winningTeam: mine == 0 ? 1 : 0, score: "", reportedAt: Date()))

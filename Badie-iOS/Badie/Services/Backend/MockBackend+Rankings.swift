@@ -13,7 +13,7 @@ extension MockBackend {
 
     /// 确认或修改我报的赛果；didWin 为 nil 表示不计胜负
     func reportResult(gameId: String, didWin: Bool?, score: String) async throws {
-        if isRemote { return try await remoteReportResult(gameId: gameId, didWin: didWin) }
+        if isRemote { return try await remoteReportResult(gameId: gameId, didWin: didWin, score: score) }
         try await submitResult(gameId: gameId) { game, me in
             ResultReport(reporterId: me, winningTeam: self.winningTeam(in: game, for: me, didWin: didWin),
                          score: String(score.prefix(40)), reportedAt: Date())

@@ -240,6 +240,44 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(survey.matchId, "g1")
     }
 
+    func testScoresAndCourtFeesSyncWithServer() async throws {
+        let backend = try await signedInBackend()
+        let iso = { (offset: TimeInterval) in ISO8601DateFormatter().string(from: Date().addingTimeInterval(offset)) }
+        let paidPlayers = players().replacingOccurrences(of: #""reviewed":false}]"#, with: #""reviewed":false,"paid":true}]"#)
+        let games = #"[{"id":"g1","mode":"singles","starts_at":"\#(iso(-3 * 3600))","ends_at":"\#(iso(-3600))","status":"scheduled","venue":\#(venue),"host_id":"\#(userId)","my_team":1,"checked_in":true,"my_report":{"outcome":"team1","score":"21:15 21:18"},"result":{"status":"awaiting","outcome":null},"score":"21:15 21:18","review_until":"\#(iso(47 * 3600))","players":\#(paidPlayers)}]"#
+        server.on("POST /rest/v1/rpc/my_matchmaking", "[]")
+        server.on("POST /rest/v1/rpc/my_games", games)
+        await backend.refreshRemoteActivity()
+
+        let game = try XCTUnwrap(backend.game(id: "g1"))
+        XCTAssertEqual(game.hostId, userId, "房间开的局：服务器给的发起人")
+        XCTAssertTrue(game.hasPaid(blake))
+        XCTAssertFalse(game.hasPaid(userId))
+        XCTAssertEqual(game.report(by: userId)?.score, "21:15 21:18")
+        XCTAssertEqual(game.result?.score, "21:15 21:18")
+
+        // 发起人替别人标记：本地马上变，再同步到服务器
+        server.requests = []
+        server.on("POST /rest/v1/rpc/mark_paid", "")
+        backend.togglePaid(gameId: "g1", userId: blake)
+        XCTAssertFalse(backend.game(id: "g1")?.hasPaid(blake) ?? true)
+        await waitFor { !self.server.requests.isEmpty }
+        let mark = server.json(0)
+        XCTAssertEqual(mark["p_user"] as? String, blake)
+        XCTAssertEqual(mark["p_paid"] as? Bool, false)
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/report_result", #""awaiting""#)
+        try await backend.reportResult(gameId: "g1", didWin: false, score: "18:21")
+        XCTAssertEqual(server.json(0)["p_outcome"] as? String, "team2")
+        XCTAssertEqual(server.json(0)["p_score"] as? String, "18:21")
+
+        XCTAssertTrue(GameResult.isValidScore(""))
+        XCTAssertTrue(GameResult.isValidScore("21:18, 19-21 / 21:15"))
+        XCTAssertFalse(GameResult.isValidScore("我们赢了"))
+        XCTAssertFalse(GameResult.isValidScore(String(repeating: "1", count: 41)))
+    }
+
     func testLastMinuteRequestsComeFromServer() async throws {
         let backend = try await signedInBackend()
         let iso = { (offset: TimeInterval) in ISO8601DateFormatter().string(from: Date().addingTimeInterval(offset)) }

@@ -134,6 +134,12 @@ struct GameResult: Codable, Hashable {
     /// 当前用户视角是否获胜（nil = 未记录）
     var didWin: Bool?
     var score: String
+
+    /// 比分只能是数字和分隔符（如 21:18 19:21），最多 40 个字，和服务器的检查一致
+    static func isValidScore(_ score: String) -> Bool {
+        let trimmed = score.trimmingCharacters(in: .whitespaces)
+        return trimmed.isEmpty || (trimmed.count <= 40 && trimmed.range(of: #"^[0-9 :,/-]+$"#, options: .regularExpression) != nil)
+    }
 }
 
 /// 已确认的一场球

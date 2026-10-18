@@ -48,7 +48,7 @@ await alex.reload();
 await alex.getByRole('button', { name: 'I’m in' }).click();
 await alex.getByText('Game on', { exact: true }).waitFor();
 await alex.getByRole('link', { name: 'View game' }).click();
-await alex.getByText('Blake').waitFor();
+await alex.getByRole('link', { name: 'Blake' }).waitFor();
 
 // 把这局挪到已经开始
 sql(`update games set starts_at = date_trunc('hour', now()) - interval '1 hour', ends_at = date_trunc('hour', now()) + interval '1 hour'
@@ -56,16 +56,23 @@ sql(`update games set starts_at = date_trunc('hour', now()) - interval '1 hour',
 await alex.reload();
 await alex.getByRole('button', { name: 'I’m here' }).click();
 await alex.getByText('You’re checked in.').waitFor();
+await alex.getByLabel('Score (optional)').fill('21:15 21:18');
 await alex.getByRole('button', { name: 'We won' }).click();
 await alex.getByText('Waiting for the other side to report.').waitFor();
+await alex.getByText('Score: 21:15 21:18').waitFor();
+// 场地费：标自己已付，不能替对方标（匹配的局没有发起人）
+await alex.getByRole('checkbox', { name: /You/ }).check();
+await alex.getByText('1 of 2 paid').waitFor();
+if (await alex.getByRole('checkbox', { name: /Blake/ }).isEnabled()) throw new Error('should not mark someone else as paid');
 
 await blake.goto(`${base}/app/games/`);
 await blake.getByRole('link', { name: /Singles at Los Angeles Badminton Club/ }).click();
 await blake.getByRole('button', { name: 'We lost' }).click();
 await blake.getByText('Confirmed: you lost.').waitFor();
+await blake.getByText('Score: 21:15 21:18').waitFor();
 
 await alex.goto(`${base}/app/games/`);
 await alex.getByText('100%').waitFor();
 
-console.log('ok: two players matched, confirmed, checked in and agreed on the result');
+console.log('ok: two players matched, confirmed, checked in, agreed on the result and score, and marked the court fee');
 await browser.close();

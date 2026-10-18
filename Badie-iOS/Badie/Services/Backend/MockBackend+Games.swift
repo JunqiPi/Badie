@@ -77,18 +77,20 @@ extension MockBackend {
         return game
     }
 
-    /// 标记 AA 已付：本人可标记自己，发起人可标记所有人
+    /// 标记 AA 已付：本人可标记自己，发起人可标记所有人。正式后端先改本地，再同步到服务器
     func togglePaid(gameId: String, userId: String) {
         guard let me = currentUserId, var game = db.games[gameId] else { return }
         guard userId == me || game.hostId == me else { return }
-        if let index = game.paidPlayerIds.firstIndex(of: userId) {
-            game.paidPlayerIds.remove(at: index)
-        } else {
+        let paid = !game.hasPaid(userId)
+        if paid {
             game.paidPlayerIds.append(userId)
+        } else {
+            game.paidPlayerIds.removeAll { $0 == userId }
         }
         db.games[gameId] = game
         scheduleSave()
         emit(.gamesChanged)
+        runRemote { try await $0.call("mark_paid", ["p_game": gameId, "p_user": userId, "p_paid": paid]) }
     }
 
     func setReminder(gameId: String, enabled: Bool) {
@@ -101,7 +103,7 @@ extension MockBackend {
 
     /// 结束球局：申报我方赛果（等对方确认），生成互评问卷
     func completeGame(id: String, didWin: Bool?, score: String) async throws {
-        if isRemote { return try await remoteReportResult(gameId: id, didWin: didWin) }
+        if isRemote { return try await remoteReportResult(gameId: id, didWin: didWin, score: score) }
         var me = try requireUser()
         guard var game = db.games[id], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
         guard game.status == .confirmed else { throw BackendError.gameAlreadyFinished }

@@ -60,6 +60,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "cannot_check_in": return String(localized: "开始前 30 分钟才能签到。")
         case "cannot_report": return String(localized: "从球局开始到结束后 7 天内，都可以填报赛果。")
         case "result_locked": return String(localized: "双方已经确认了这个赛果。")
+        case "invalid_score": return String(localized: "比分只能填数字，如 21:18 19:21。")
         case "retake_too_soon": return String(localized: "距上次测试满 90 天后，才能重新测试。")
         // 评价、球友、私信
         case "cannot_review": return String(localized: "评价在球局结束后 48 小时内开放。")
