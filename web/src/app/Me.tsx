@@ -3,7 +3,7 @@ import { tier } from './assessment';
 import { currentLocale, t } from './i18n';
 import { nicknameProblem } from './Onboarding';
 import { Link } from './router';
-import { supabase, type Profile } from './supabase';
+import { problem, supabase, type Profile } from './supabase';
 import { Button, Field, LanguagePicker, PageHeader, toast } from './ui';
 
 export function Me({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
@@ -42,7 +42,44 @@ export function Me({ profile, email, onChange }: { profile: Profile; email?: str
       <div className="tile mt-6 bg-surface p-6"><LanguagePicker /></div>
 
       <Button variant="quiet" onClick={() => supabase!.auth.signOut()} className="mt-8">{t('Sign out')}</Button>
+
+      <DeleteAccount />
     </div>
+  );
+}
+
+/** 注销：先说清会删掉什么，再点一次才删 */
+function DeleteAccount() {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  async function remove() {
+    setBusy(true);
+    const { error } = await supabase!.rpc('delete_account');
+    if (error) {
+      setBusy(false);
+      return toast(problem(error), 'error');
+    }
+    toast(t('Your account was deleted.'));
+    // 服务器上的登录已随账号删除，只需清掉本机的
+    await supabase!.auth.signOut({ scope: 'local' });
+  }
+
+  return (
+    <section aria-labelledby="delete-account" className="tile mt-10 grid gap-3 bg-surface p-6">
+      <h2 id="delete-account" className="eyebrow">{t('Delete account')}</h2>
+      <p className="text-sm text-ink-secondary">
+        {t('This deletes your profile, friends, messages, reviews and game history, and can’t be undone. Upcoming games are cancelled and the other players are told. Groups you run go to the next organizer.')}
+      </p>
+      {confirming ? (
+        <div className="flex flex-wrap gap-2">
+          <Button variant="danger" busy={busy} onClick={remove}>{t('Yes, delete my account')}</Button>
+          <Button variant="quiet" disabled={busy} onClick={() => setConfirming(false)}>{t('Cancel')}</Button>
+        </div>
+      ) : (
+        <Button variant="quiet" onClick={() => setConfirming(true)} className="justify-self-start">{t('Delete account')}</Button>
+      )}
+    </section>
   );
 }
 

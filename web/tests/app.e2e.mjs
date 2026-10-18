@@ -1,4 +1,4 @@
-// 网页应用端到端测试：邮箱验证码登录 → 建资料（跳过定级）→ 附近球馆 → 收藏 → 重新打开仍保持登录
+// 网页应用端到端测试：邮箱验证码登录 → 建资料（跳过定级）→ 附近球馆 → 收藏 → 重新打开仍保持登录 → 换语言 → 注销账号
 // 需要本地 Supabase（supabase start）和已启动的网站（BASE_URL）
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
@@ -42,5 +42,12 @@ await page.reload();
 await page.getByLabel('语言').selectOption('en');
 await page.getByRole('link', { name: 'Courts' }).first().waitFor();
 
-console.log(`ok: ${email} signed in, saw ${names.length} courts, favourited one, session kept`);
+// 注销：要点两次；之后回到登录页，刷新也不会再登录
+await page.getByRole('button', { name: 'Delete account' }).click();
+await page.getByRole('button', { name: 'Yes, delete my account' }).click();
+await page.getByRole('heading', { name: 'Sign in' }).waitFor();
+await page.reload();
+await page.getByRole('heading', { name: 'Sign in' }).waitFor();
+
+console.log(`ok: ${email} signed in, saw ${names.length} courts, favourited one, session kept, account deleted`);
 await browser.close();

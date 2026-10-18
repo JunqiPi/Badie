@@ -40950,6 +40950,64 @@
         }
       }
     },
+    "将删除你的资料、球友、私信、评价和球局记录，且无法恢复。以后的球局会取消并通知其他球友；你管理的球群交给下一位组织者。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This deletes your profile, friends, messages, reviews and game history, and can’t be undone. Upcoming games are cancelled and the other players are told. Groups you run go to the next organizer."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इससे आपकी प्रोफ़ाइल, दोस्त, मैसेज, रिव्यू और गेम हिस्ट्री डिलीट हो जाएगी, और इसे वापस नहीं लाया जा सकता। आने वाले गेम कैंसिल होंगे और दूसरे खिलाड़ियों को बताया जाएगा। आपके चलाए ग्रुप अगले ऑर्गनाइज़र को मिल जाएँगे।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ini menghapus profil, teman, pesan, ulasan, dan riwayat game-mu, dan tidak bisa dibatalkan. Game mendatang dibatalkan dan pemain lain diberi tahu. Grup yang kamu kelola diserahkan ke penyelenggara berikutnya."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロフィール、フレンド、メッセージ、レビュー、ゲーム履歴が削除され、元に戻せません。予定のゲームはキャンセルされ、他のプレイヤーに通知されます。あなたが運営するグループは次のオーガナイザーに引き継がれます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프로필, 친구, 메시지, 리뷰, 게임 기록이 삭제되며 되돌릴 수 없어요. 예정된 게임은 취소되고 다른 플레이어에게 알려요. 운영 중인 그룹은 다음 운영진에게 넘어가요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ini akan memadam profil, rakan, mesej, ulasan dan sejarah permainan anda, dan tidak boleh dibatalkan. Permainan akan datang dibatalkan dan pemain lain dimaklumkan. Kumpulan yang anda uruskan diserahkan kepada penganjur seterusnya."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ระบบจะลบโปรไฟล์ เพื่อน ข้อความ รีวิว และประวัติเกมของคุณ และย้อนกลับไม่ได้ เกมที่กำลังจะมาถึงจะถูกยกเลิกและแจ้งผู้เล่นคนอื่น กลุ่มที่คุณดูแลจะส่งต่อให้ผู้จัดคนถัดไป"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thao tác này xóa hồ sơ, bạn bè, tin nhắn, đánh giá và lịch sử trận đấu của bạn, và không thể hoàn tác. Các trận sắp tới sẽ bị hủy và người chơi khác sẽ được báo. Nhóm bạn quản lý sẽ chuyển cho người tổ chức tiếp theo."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將刪除你的資料、球友、私訊、評價和球局紀錄，且無法復原。之後的球局會取消並通知其他球友；你管理的球群交給下一位組織者。"
+          }
+        }
+      }
+    },
     "将删除你的资料、球友关系、聊天记录、球局与评价，且无法恢复。" : {
       "localizations" : {
         "en" : {
@@ -81509,6 +81567,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "簽到紀錄會計入履約率，爽約和臨時取消會被記錄"
+          }
+        }
+      }
+    },
+    "管理员账号不能在这里注销，请先让其他管理员撤掉你的权限。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin accounts can’t be deleted here. Ask another admin to remove your access first."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एडमिन अकाउंट यहाँ डिलीट नहीं किए जा सकते। पहले किसी दूसरे एडमिन से अपनी एक्सेस हटवाएँ।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akun admin tidak bisa dihapus di sini. Minta admin lain mencabut aksesmu terlebih dahulu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理者アカウントはここでは削除できません。先に他の管理者に権限を外してもらってください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "관리자 계정은 여기서 삭제할 수 없어요. 먼저 다른 관리자에게 권한 해제를 요청하세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akaun admin tidak boleh dipadam di sini. Minta admin lain menarik balik akses anda dahulu."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลบบัญชีผู้ดูแลระบบที่นี่ไม่ได้ ให้ผู้ดูแลคนอื่นถอนสิทธิ์ของคุณก่อน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể xóa tài khoản quản trị viên ở đây. Hãy nhờ quản trị viên khác gỡ quyền của bạn trước."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理員帳號不能在這裡刪除，請先請其他管理員移除你的權限。"
           }
         }
       }

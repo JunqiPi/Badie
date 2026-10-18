@@ -146,11 +146,8 @@ struct SettingsView: View {
                         VStack(spacing: AppTheme.Spacing.sm) {
                             Button("退出登录") { showSignOut = true }
                                 .buttonStyle(BrutalButtonStyle(kind: .accent(AppTheme.Colors.butter), size: .medium))
-                            // 正式后端还没有删除账号的函数：上线前要补上（App Store 要求）
-                            if !appState.isRemote {
-                                Button("注销账号并删除数据") { showDelete = true }
-                                    .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
-                            }
+                            Button("注销账号并删除数据") { showDelete = true }
+                                .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
                         }
                     }
 
@@ -179,7 +176,8 @@ struct SettingsView: View {
             Button("取消", role: .cancel) {}
             Button("永久删除", role: .destructive) { appState.deleteAccount() }
         } message: {
-            Text("将删除你的资料、球友关系、聊天记录、球局与评价，且无法恢复。")
+            Text(appState.isRemote ? String(localized: "将删除你的资料、球友、私信、评价和球局记录，且无法恢复。以后的球局会取消并通知其他球友；你管理的球群交给下一位组织者。")
+                                   : String(localized: "将删除你的资料、球友关系、聊天记录、球局与评价，且无法恢复。"))
         }
         .alert("重置演示数据？", isPresented: $showReset) {
             Button("取消", role: .cancel) {}

@@ -468,6 +468,17 @@ final class SupabaseClientTests: XCTestCase {
         } catch {}
     }
 
+    func testDeletingTheAccountClearsTheCache() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/delete_account", "")
+        server.on("POST /auth/v1/logout", status: 204, "")
+        try await backend.remoteDeleteAccount()
+        XCTAssertEqual(server.requests.first?.url?.path, "/rest/v1/rpc/delete_account")
+        XCTAssertNil(backend.currentUser)
+        XCTAssertNil(backend.remote?.session, "本机的登录也清掉")
+        XCTAssertTrue(backend.db.users.isEmpty, "缓存里不留这个账号的数据")
+    }
+
     func testRestoreWithoutSessionSignsOutLocally() async {
         let backend = MockBackend(store: .inMemory, seedsWorld: false)
         backend.createAccount(phone: "+16265550123", nickname: "Old", level: 3, seedsDemoContent: false)

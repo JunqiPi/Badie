@@ -83,6 +83,17 @@ extension MockBackend {
         emit(.sessionChanged)
     }
 
+    /// 注销：服务器删除账号和数据（以后的球局取消、球群交接），成功后清空本机缓存
+    func remoteDeleteAccount() async throws {
+        let remote = try requireRemote()
+        try await remote.call("delete_account")
+        await remote.signOut()
+        store.erase()
+        db = Database()
+        saveNow()
+        emit(.sessionChanged)
+    }
+
     // MARK: 资料
 
     /// 读自己的资料和收藏写进缓存；还没建资料时返回 nil

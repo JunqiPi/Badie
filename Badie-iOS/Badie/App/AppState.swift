@@ -175,8 +175,19 @@ final class AppState: ObservableObject {
     }
 
     func deleteAccount() {
-        backend.deleteAccount()
-        showToast(String(localized: "账号与数据已删除"))
+        guard backend.isRemote else {
+            backend.deleteAccount()
+            showToast(String(localized: "账号与数据已删除"))
+            return
+        }
+        Task {
+            do {
+                try await backend.remoteDeleteAccount()
+                showToast(String(localized: "账号与数据已删除"))
+            } catch {
+                showError(error)
+            }
+        }
     }
 
     func resetDemoData() {

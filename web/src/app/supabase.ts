@@ -305,5 +305,6 @@ const problems: Record<string, string> = {
   too_many_outgoing: 'You can have 3 open challenges at a time.',
   daily_limit: 'You’ve used today’s challenges.',
   target_busy: 'They have too many open challenges. Try later.',
+  admin_account: 'Admin accounts can’t be deleted here. Ask another admin to remove your access first.',
 };
 export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');

@@ -81,6 +81,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "too_many_outgoing": return String(localized: "同时最多只能有 3 个待回复的挑战。")
         case "daily_limit": return String(localized: "今天的挑战次数已用完。")
         case "target_busy": return String(localized: "TA 待处理的挑战太多了，请稍后再试。")
+        case "admin_account": return String(localized: "管理员账号不能在这里注销，请先让其他管理员撤掉你的权限。")
         default: return String(localized: "出了点问题，请重试。")
         }
     }
