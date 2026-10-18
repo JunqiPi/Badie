@@ -38972,6 +38972,64 @@
         }
       }
     },
+    "好友发来的 6 位球群号" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "6-character group number from a friend"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दोस्त से मिला 6 अक्षरों का ग्रुप नंबर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nomor grup 6 karakter dari teman"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "友達から届いた 6 文字のグループ番号"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "친구가 보낸 6자리 그룹 번호"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombor kumpulan 6 aksara daripada rakan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หมายเลขกลุ่ม 6 ตัวจากเพื่อน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mã nhóm 6 ký tự từ bạn bè"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "好友傳來的 6 位球群編號"
+          }
+        }
+      }
+    },
     "好友申请" : {
       "localizations" : {
         "en" : {
@@ -70955,6 +71013,64 @@
         }
       }
     },
+    "没找到？目前只能选已收录的球馆。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not listed? For now you can only pick venues already on Badie."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लिस्ट में नहीं है? अभी आप सिर्फ़ पहले से जुड़े वेन्यू ही चुन सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak ada? Untuk saat ini kamu hanya bisa memilih GOR yang sudah terdaftar."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見つからない？現在は登録済みの会場からのみ選べます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "목록에 없나요? 지금은 등록된 체육관만 선택할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiada dalam senarai? Buat masa ini anda hanya boleh memilih dewan yang sudah tersenarai."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่เจอ? ตอนนี้เลือกได้เฉพาะสนามที่มีในระบบแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không có trong danh sách? Hiện bạn chỉ có thể chọn sân đã có sẵn."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒找到？目前只能選已收錄的球館。"
+          }
+        }
+      }
+    },
     "没有共同球友" : {
       "localizations" : {
         "en" : {
@@ -76077,6 +76193,64 @@
         }
       }
     },
+    "球群号" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group number"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप नंबर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nomor grup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループ番号"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그룹 번호"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombor kumpulan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หมายเลขกลุ่ม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mã nhóm"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "球群編號"
+          }
+        }
+      }
+    },
     "球群名称" : {
       "localizations" : {
         "en" : {
@@ -77181,6 +77355,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用於尋找附近的球館和球友，只在使用 App 時取得"
+          }
+        }
+      }
+    },
+    "用同一邮箱登录即可恢复你的数据。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign in with the same email to get your data back."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपना डेटा वापस पाने के लिए उसी ईमेल से साइन इन करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masuk dengan email yang sama untuk memulihkan datamu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同じメールアドレスでログインするとデータを復元できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "같은 이메일로 로그인하면 데이터를 다시 불러올 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log masuk dengan e-mel yang sama untuk memulihkan data anda."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เข้าสู่ระบบด้วยอีเมลเดิมเพื่อกู้คืนข้อมูลของคุณ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đăng nhập bằng cùng email để khôi phục dữ liệu của bạn."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用同一個電子郵件登入即可恢復你的資料。"
           }
         }
       }
@@ -91699,6 +91931,64 @@
         }
       }
     },
+    "输入好友发来的\n6 位球群号" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter the 6-character group number\nfrom your friend"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दोस्त से मिला 6 अक्षरों का\nग्रुप नंबर डालें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masukkan nomor grup 6 karakter\ndari temanmu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "友達から届いた\n6 文字のグループ番号を入力"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "친구가 보낸\n6자리 그룹 번호를 입력하세요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masukkan nombor kumpulan 6 aksara\ndaripada rakan anda"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กรอกหมายเลขกลุ่ม 6 ตัว\nที่เพื่อนส่งมา"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhập mã nhóm 6 ký tự\nbạn bè gửi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入好友傳來的\n6 位球群編號"
+          }
+        }
+      }
+    },
     "输入房间码 / 群号" : {
       "localizations" : {
         "en" : {
@@ -91753,6 +92043,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入房間碼 / 群組 ID"
+          }
+        }
+      }
+    },
+    "输入球群号" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter group number"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप नंबर डालें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masukkan nomor grup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループ番号を入力"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그룹 번호 입력"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masukkan nombor kumpulan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กรอกหมายเลขกลุ่ม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhập mã nhóm"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入球群編號"
+          }
+        }
+      }
+    },
+    "输入球群号加入" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join with a group number"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप नंबर से जुड़ें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gabung dengan nomor grup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループ番号で参加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그룹 번호로 참여"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sertai dengan nombor kumpulan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เข้าร่วมด้วยหมายเลขกลุ่ม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tham gia bằng mã nhóm"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入球群編號加入"
           }
         }
       }
@@ -98183,6 +98589,64 @@
         }
       }
     },
+    "邮箱只用于登录与安全验证，不会展示给任何球友" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your email is only used for sign-in and security, and is never shown to other players"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपका ईमेल सिर्फ़ साइन-इन और सुरक्षा के लिए है, और दूसरे खिलाड़ियों को कभी नहीं दिखाया जाता"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email-mu hanya untuk masuk dan keamanan, dan tidak akan ditampilkan ke pemain lain"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メールアドレスはログインと安全確認にのみ使用され、他のプレイヤーには表示されません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이메일은 로그인과 보안 인증에만 사용되며 다른 플레이어에게 표시되지 않아요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-mel anda hanya digunakan untuk log masuk dan keselamatan, dan tidak akan ditunjukkan kepada pemain lain"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อีเมลใช้สำหรับเข้าสู่ระบบและความปลอดภัยเท่านั้น จะไม่แสดงให้ผู้เล่นคนใดเห็น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email chỉ dùng để đăng nhập và bảo mật, không bao giờ hiển thị cho người chơi khác"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電子郵件只用於登入與安全驗證，不會顯示給任何球友"
+          }
+        }
+      }
+    },
     "邮箱地址好像不对。" : {
       "localizations" : {
         "en" : {
@@ -100685,6 +101149,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "附近那天有空"
+          }
+        }
+      }
+    },
+    "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strangers can't message you directly. Friends can chat, and players in the same game use the game chat"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अनजान लोग आपको सीधे मैसेज नहीं कर सकते। दोस्त चैट कर सकते हैं, और एक ही गेम के खिलाड़ी गेम चैट इस्तेमाल करते हैं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orang asing tidak bisa langsung mengirim pesan ke kamu. Teman bisa chat, dan pemain di game yang sama memakai chat game"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "知らない人は直接メッセージを送れません。フレンドとはチャット可、同じゲームの人はゲームチャットを使います"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모르는 사람은 바로 메시지를 보낼 수 없어요. 친구와는 채팅할 수 있고, 같은 게임 참가자는 게임 채팅을 사용해요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orang yang tidak dikenali tidak boleh menghantar mesej terus kepada anda. Rakan boleh bersembang, dan pemain dalam permainan yang sama guna sembang permainan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คนแปลกหน้าส่งข้อความหาคุณโดยตรงไม่ได้ เพื่อนแชตกันได้ และผู้เล่นในเกมเดียวกันใช้แชตเกม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Người lạ không thể nhắn tin trực tiếp cho bạn. Bạn bè có thể trò chuyện, người cùng trận dùng chat trận"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "陌生人不能直接私訊你：好友可以聊，同一場球局用球局群聊"
           }
         }
       }

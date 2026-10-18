@@ -9,7 +9,7 @@ extension MockBackend {
     /// 按昵称或 4 位 ID 搜索球友
     func searchUsers(query: String) -> [User] {
         let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, let me = currentUserId else { return [] }
+        guard !isRemote, !text.isEmpty, let me = currentUserId else { return [] }
         let blocked = blockedIds()
         return db.users.values
             .filter { $0.id != me && !blocked.contains($0.id) }

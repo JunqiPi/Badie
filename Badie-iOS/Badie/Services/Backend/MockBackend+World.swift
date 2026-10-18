@@ -178,6 +178,7 @@ extension MockBackend {
 
     /// 某天有空的附近球友数量（用于首页日期条）
     func availableCount(on day: Date, radiusKm: Double) -> Int {
+        guard !isRemote else { return 0 }
         let center = currentUser?.location ?? db.worldCenter
         let blocked = blockedIds()
         return db.bots.keys.filter { id in
@@ -189,7 +190,7 @@ extension MockBackend {
     /// 同馆常客：和我有相同常去球馆、并且本人开启了“显示在常客里”的球友。
     /// 不按距离、不显示在线状态（防定位与骚扰，见 docs/DESIGN.md §12）
     func venueRegulars(limit: Int = 20) -> [VenueRegular] {
-        guard let me = currentUserId else { return [] }
+        guard !isRemote, let me = currentUserId else { return [] }
         let mine = favoriteCourtIds().compactMap { venue(id: $0) }
         guard !mine.isEmpty else { return [] }
         let blocked = blockedIds().union(db.bots.keys.filter { blockedIds(of: $0).contains(me) })

@@ -141,6 +141,9 @@ final class MatchManager: ObservableObject {
 
     func user(id: String) -> User? { backend.user(id: id) }
 
+    /// 正式后端：服务器不支持的功能（临时局、附近人数、谁确认了、补位、房间）在界面上隐藏
+    var isRemote: Bool { backend.isRemote }
+
     // MARK: Tickets
 
     /// 进行中或暂停的请求（首页/球局页展示）

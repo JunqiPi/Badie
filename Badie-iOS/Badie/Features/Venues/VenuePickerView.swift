@@ -38,6 +38,8 @@ struct VenuePickerView: View {
     @FocusState private var searchFocused: Bool
 
     private var backend: MockBackend { appState.backend }
+    /// 正式后端只能选已收录的球馆：本机添加的球馆服务器上没有
+    private var canAdd: Bool { allowsAdding && !appState.isRemote }
     private var venueService: any VenueService { appState.venueService }
 
     var body: some View {
@@ -53,10 +55,11 @@ struct VenuePickerView: View {
                     } else {
                         searchContent
                     }
-                    if allowsAdding {
+                    if canAdd {
                         addVenueFooter
                     } else {
-                        Text("没找到？注册完成后可以在“附近球馆”里添加。")
+                        Text(appState.isRemote ? String(localized: "没找到？目前只能选已收录的球馆。")
+                                               : String(localized: "没找到？注册完成后可以在“附近球馆”里添加。"))
                             .font(AppTheme.Typography.footnote)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                     }
@@ -160,7 +163,7 @@ struct VenuePickerView: View {
             .padding(.horizontal, AppTheme.Spacing.lg)
             .frame(minHeight: 48)
             .sticker(AppTheme.Colors.surface, radius: 14, shadow: searchFocused ? AppTheme.Elevation.low : .zero)
-            if allowsAdding {
+            if canAdd {
                 PasteButton(payloadType: String.self) { strings in
                     guard let text = strings.first else { return }
                     Task { @MainActor in await handlePastedLink(text) }
@@ -193,7 +196,7 @@ struct VenuePickerView: View {
             NoticeBanner(icon: "mappin.slash",
                          text: String(localized: "\(locationManager.radiusText)还没有收录的球馆。搜索名称或地址，或从下面 Apple 地图的结果里选。"))
         }
-        if allowsAdding && !suggestions.isEmpty {
+        if canAdd && !suggestions.isEmpty {
             mapSection(title: String(localized: "Apple 地图上的附近结果"),
                        rows: suggestions.map { MapRowItem(id: $0.id, title: $0.name, subtitle: $0.address.compactLine) }) { id in
                 if let candidate = suggestions.first(where: { $0.id == id }) { review(candidate, source: .appleMaps) }
@@ -212,7 +215,7 @@ struct VenuePickerView: View {
         if !hits.isEmpty {
             section(String(localized: "Badie 球馆库"), detail: String(localized: "\(hits.count) 个"), venues: hits.map(\.venue))
         }
-        if allowsAdding && !visibleCompletions.isEmpty {
+        if canAdd && !visibleCompletions.isEmpty {
             mapSection(title: String(localized: "Apple 地图"),
                        rows: visibleCompletions.map { MapRowItem(id: completionId($0), title: $0.title, subtitle: $0.subtitle) }) { id in
                 if let completion = visibleCompletions.first(where: { completionId($0) == id }) { resolve(completion) }
@@ -328,14 +331,14 @@ struct VenuePickerView: View {
             return
         }
         hits = venueService.searchVenues(trimmed, near: locationManager.coordinate, limit: 15)
-        if locationManager.allowsMapSearch && allowsAdding {
+        if locationManager.allowsMapSearch && canAdd {
             mapSearch.update(query: trimmed, near: locationManager.coordinate)
         }
     }
 
     /// 出行范围内收录太少时，用 Apple 地图找附近的羽毛球场地作为建议（不会自动入库）
     private func loadSuggestionsIfNeeded() {
-        guard allowsAdding, locationManager.allowsMapSearch, locationManager.nearbyCourts.count < 3 else { return }
+        guard canAdd, locationManager.allowsMapSearch, locationManager.nearbyCourts.count < 3 else { return }
         let center = locationManager.coordinate
         Task {
             let found = await AppleMapsSearch.searchBadmintonVenues(near: center, countryCode: backend.currentCountryCode)

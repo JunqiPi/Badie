@@ -116,8 +116,11 @@ struct WeeklyLeaderboardView: View {
             SegmentedSticker(options: [Scope.global, .country], selection: $scope) { option in
                 option == .global ? String(localized: "全球") : "\(country.flag) \(country.nameZh)"
             }
-            SegmentedSticker(options: [WeekChoice.this, .last], selection: $weekChoice) { option in
-                option == .this ? String(localized: "本周") : String(localized: "上周")
+            // 正式后端只算本周
+            if !appState.isRemote {
+                SegmentedSticker(options: [WeekChoice.this, .last], selection: $weekChoice) { option in
+                    option == .this ? String(localized: "本周") : String(localized: "上周")
+                }
             }
             if let myBracket {
                 Toggle(isOn: $onlyMyBracket) {
@@ -315,8 +318,10 @@ struct VenueLeaderboardView: View {
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    SegmentedSticker(options: [MonthChoice.this, .last], selection: $monthChoice) { option in
-                        option == .this ? String(localized: "本月") : String(localized: "上月")
+                    if !appState.isRemote {
+                        SegmentedSticker(options: [MonthChoice.this, .last], selection: $monthChoice) { option in
+                            option == .this ? String(localized: "本月") : String(localized: "上月")
+                        }
                     }
                     if sections.isEmpty {
                         EmptyStateView(icon: "trophy", title: String(localized: "这个月还没有人上榜，去约一场吧"),

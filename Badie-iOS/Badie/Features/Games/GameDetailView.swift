@@ -377,19 +377,21 @@ struct GameDetailView: View {
                         TagPill(text: String(localized: "发起人"), fill: AppTheme.Colors.butter)
                     }
                     Spacer()
-                    Button {
-                        Haptics.selection()
-                        matchManager.togglePaid(game, userId: player.id)
-                    } label: {
-                        TagPill(text: paid ? String(localized: "已付") : String(localized: "待付"), icon: paid ? "checkmark" : nil,
-                                fill: paid ? AppTheme.Colors.mint : AppTheme.Colors.surface,
-                                foreground: paid ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
-                            .frame(minHeight: 44)
+                    if !appState.isRemote {
+                        Button {
+                            Haptics.selection()
+                            matchManager.togglePaid(game, userId: player.id)
+                        } label: {
+                            TagPill(text: paid ? String(localized: "已付") : String(localized: "待付"), icon: paid ? "checkmark" : nil,
+                                    fill: paid ? AppTheme.Colors.mint : AppTheme.Colors.surface,
+                                    foreground: paid ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
+                                .frame(minHeight: 44)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!canToggle || game.status == .cancelled)
+                        .accessibilityLabel("\(player.nickname) \(paid ? String(localized: "已付") : String(localized: "待付"))")
+                        .accessibilityHint(canToggle ? String(localized: "点按切换付款状态") : "")
                     }
-                    .buttonStyle(.plain)
-                    .disabled(!canToggle || game.status == .cancelled)
-                    .accessibilityLabel("\(player.nickname) \(paid ? String(localized: "已付") : String(localized: "待付"))")
-                    .accessibilityHint(canToggle ? String(localized: "点按切换付款状态") : "")
                 }
             }
         }
@@ -442,13 +444,15 @@ struct GameDetailView: View {
                     .buttonStyle(PressableStyle(scale: 0.98))
                 }
             }
-            Button {
-                let invitee = game.otherPlayerIds(excluding: me ?? "").first
-                router.open(.createRoom(game.mode, invitee: invitee))
-            } label: {
-                Label("和他们再约一场", systemImage: "arrow.triangle.2.circlepath")
+            if !appState.isRemote {
+                Button {
+                    let invitee = game.otherPlayerIds(excluding: me ?? "").first
+                    router.open(.createRoom(game.mode, invitee: invitee))
+                } label: {
+                    Label("和他们再约一场", systemImage: "arrow.triangle.2.circlepath")
+                }
+                .buttonStyle(.brutal(.primary, size: .medium))
             }
-            .buttonStyle(.brutal(.primary, size: .medium))
         }
     }
 
@@ -703,6 +707,7 @@ struct CompleteGameSheet: View {
 
     @State private var outcome: Outcome?
     @State private var score = ""
+    @EnvironmentObject private var appState: AppState
 
     var body: some View {
         ScrollView {
@@ -719,7 +724,8 @@ struct CompleteGameSheet: View {
                         optionRow(option)
                     }
                 }
-                if outcome != .unsure {
+                // 正式后端只记输赢，不存比分
+                if outcome != .unsure && !appState.isRemote {
                     BrutalTextField(label: String(localized: "比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
                                     keyboard: .numbersAndPunctuation, characterLimit: 40)
                 }

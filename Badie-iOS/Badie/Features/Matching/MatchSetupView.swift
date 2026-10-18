@@ -120,7 +120,7 @@ struct MatchSetupView: View {
             DateStrip(
                 days: days,
                 selection: $matchManager.draft.day,
-                counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) }
+                counts: { matchManager.isRemote ? nil : matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) }
             )
         }
     }
@@ -294,17 +294,22 @@ struct MatchSetupView: View {
 
     private var canRequest: Bool {
         guard let slot = matchManager.draft.slot else { return false }
+        // 正式后端没有临时局：最早 2.5 小时后开始
+        if matchManager.isRemote { return !MatchTiming.isLastMinute(start: slot.startTime) }
         return MatchTiming.canRequest(start: slot.startTime)
     }
 
     private var isLastMinute: Bool {
-        guard let slot = matchManager.draft.slot else { return false }
+        guard let slot = matchManager.draft.slot, !matchManager.isRemote else { return false }
         return MatchTiming.isLastMinute(start: slot.startTime)
     }
 
     private var timingText: String? {
         guard let slot = matchManager.draft.slot, slot.endTime > Date() else { return nil }
-        if !canRequest { return String(localized: "离开赛不到 30 分钟，来不及凑人了，换个时间试试") }
+        if !canRequest {
+            return matchManager.isRemote ? RemoteError.server("too_soon").errorDescription
+                : String(localized: "离开赛不到 30 分钟，来不及凑人了，换个时间试试")
+        }
         if isLastMinute {
             return String(localized: "临时局：只找 \(DistanceFormatter.radius(km: MatchTiming.lastMinuteRadiusKm)) 内此刻也在找人的球友，找到后要在 5–10 分钟内确认，建议打开上面的开关。")
         }

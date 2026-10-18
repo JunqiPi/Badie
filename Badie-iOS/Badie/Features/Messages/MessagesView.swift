@@ -381,19 +381,24 @@ struct AddFriendView: View {
             ScreenHeader(title: String(localized: "添加球友"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SearchField(text: $query, placeholder: String(localized: "搜索昵称或 4 位 ID"))
-                        if let me = appState.currentUser {
-                            Text("我的 ID：\(me.shortId)")
-                                .font(AppTheme.Typography.footnoteBold)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    // 正式后端只能加打过交道的人：没有按昵称搜索和同馆常客
+                    if !appState.isRemote {
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                            SearchField(text: $query, placeholder: String(localized: "搜索昵称或 4 位 ID"))
+                            if let me = appState.currentUser {
+                                Text("我的 ID：\(me.shortId)")
+                                    .font(AppTheme.Typography.footnoteBold)
+                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            }
+                        }
+                        if !query.isEmpty {
+                            section(title: String(localized: "搜索结果"), users: results, emptyText: String(localized: "没有找到“\(query)”"))
                         }
                     }
-                    if !query.isEmpty {
-                        section(title: String(localized: "搜索结果"), users: results, emptyText: String(localized: "没有找到“\(query)”"))
-                    }
                     section(title: String(localized: "一起打过球的人"), users: coPlayers, emptyText: String(localized: "打完球后，这里会出现一起打过的人"))
-                    section(title: String(localized: "同馆常客"), users: regulars, emptyText: String(localized: "设置常去球馆后，这里会显示公开了自己是常客的球友"))
+                    if !appState.isRemote {
+                        section(title: String(localized: "同馆常客"), users: regulars, emptyText: String(localized: "设置常去球馆后，这里会显示公开了自己是常客的球友"))
+                    }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)

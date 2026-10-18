@@ -162,9 +162,11 @@ struct TicketWaitingView: View {
 
                     TicketSummaryCard(ticket: ticket)
 
-                    HStack(spacing: AppTheme.Spacing.sm) {
-                        StatTile(value: "\(summary.available)", label: ticket.isLastMinute ? String(localized: "附近正在找人") : String(localized: "附近那天有空"))
-                        StatTile(value: "\(summary.compatible)", label: String(localized: "条件都合适"))
+                    if !matchManager.isRemote {
+                        HStack(spacing: AppTheme.Spacing.sm) {
+                            StatTile(value: "\(summary.available)", label: ticket.isLastMinute ? String(localized: "附近正在找人") : String(localized: "附近那天有空"))
+                            StatTile(value: "\(summary.compatible)", label: String(localized: "条件都合适"))
+                        }
                     }
 
                     timingNote
@@ -280,11 +282,16 @@ struct TicketEndedView: View {
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                             .multilineTextAlignment(.center)
                     }
-                    Button("发起公开球局，让球友来找你") {
-                        matchManager.closeFlow()
-                        router.open(.createRoom(ticket.mode, invitee: nil), in: .games)
+                    if matchManager.isRemote {
+                        Button("关闭") { matchManager.closeFlow() }
+                            .buttonStyle(.brutalSecondary)
+                    } else {
+                        Button("发起公开球局，让球友来找你") {
+                            matchManager.closeFlow()
+                            router.open(.createRoom(ticket.mode, invitee: nil), in: .games)
+                        }
+                        .buttonStyle(canGoLastMinute ? BrutalButtonStyle(kind: .secondary, size: .large) : BrutalButtonStyle(kind: .primary, size: .large))
                     }
-                    .buttonStyle(canGoLastMinute ? BrutalButtonStyle(kind: .secondary, size: .large) : BrutalButtonStyle(kind: .primary, size: .large))
                 default:
                     Button("关闭") { matchManager.closeFlow() }
                         .buttonStyle(.brutalSecondary)
@@ -296,7 +303,7 @@ struct TicketEndedView: View {
     }
 
     private var canGoLastMinute: Bool {
-        !ticket.isLastMinute && MatchTiming.canRequest(start: ticket.slot.startTime)
+        !matchManager.isRemote && !ticket.isLastMinute && MatchTiming.canRequest(start: ticket.slot.startTime)
     }
 
     private var icon: String {

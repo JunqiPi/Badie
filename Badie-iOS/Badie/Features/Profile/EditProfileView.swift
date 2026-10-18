@@ -95,18 +95,21 @@ struct EditProfileView: View {
                         }
                     }
                 }
-                PhotosPicker(selection: $photoItem, matching: .images) {
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.onAccent)
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(AppTheme.Colors.lime))
-                        .overlay(Circle().strokeBorder(Color(hex: 0x17140F), lineWidth: 2))
+                // 正式后端还不存照片：只用文字头像
+                if !appState.isRemote {
+                    PhotosPicker(selection: $photoItem, matching: .images) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundStyle(AppTheme.Colors.onAccent)
+                            .frame(width: 38, height: 38)
+                            .background(Circle().fill(AppTheme.Colors.lime))
+                            .overlay(Circle().strokeBorder(Color(hex: 0x17140F), lineWidth: 2))
+                    }
+                    .accessibilityLabel("从相册选择头像")
                 }
-                .accessibilityLabel("从相册选择头像")
             }
             .frame(maxWidth: .infinity)
-            if photo != nil {
+            if photo != nil && !appState.isRemote {
                 Button("移除照片，使用文字头像") {
                     appState.backend.removeAvatarPhoto()
                     photo = nil
@@ -115,9 +118,11 @@ struct EditProfileView: View {
             } else {
                 AvatarPaletteEditor(avatar: $avatar)
             }
-            Text("上传的照片会显示给其他球友")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
+            if !appState.isRemote {
+                Text("上传的照片会显示给其他球友")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+            }
         }
     }
 
@@ -164,28 +169,31 @@ struct EditProfileView: View {
                         .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
                     }
                 }
-                Divider()
-                Button {
-                    router.open(.verification)
-                } label: {
-                    HStack(spacing: AppTheme.Spacing.sm) {
-                        Image(systemName: "checkmark.seal.fill")
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(verificationTitle(user))
-                                .font(AppTheme.Typography.subheadlineBold)
-                            Text("问卷最高 6+。打过州 / 地区公开赛最高组、有全国排名、运动员等级证书或 BWF 世界排名，可以凭证据认证 7− 到 9+")
-                                .font(AppTheme.Typography.caption)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                // 高水平认证要人工审核，正式后端还没有
+                if !appState.isRemote {
+                    Divider()
+                    Button {
+                        router.open(.verification)
+                    } label: {
+                        HStack(spacing: AppTheme.Spacing.sm) {
+                            Image(systemName: "checkmark.seal.fill")
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(verificationTitle(user))
+                                    .font(AppTheme.Typography.subheadlineBold)
+                                Text("问卷最高 6+。打过州 / 地区公开赛最高组、有全国排名、运动员等级证书或 BWF 世界排名，可以凭证据认证 7− 到 9+")
+                                    .font(AppTheme.Typography.caption)
+                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            Spacer(minLength: 0)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .bold))
                         }
-                        Spacer(minLength: 0)
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .contentShape(Rectangle())
                     }
-                    .foregroundStyle(AppTheme.Colors.ink)
-                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
             .card(AppTheme.Colors.surface, shadow: .zero)
         }

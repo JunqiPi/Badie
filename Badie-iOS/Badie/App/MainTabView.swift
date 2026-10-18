@@ -219,6 +219,8 @@ enum CreateAction {
 struct CreateMenuSheet: View {
     let onSelect: (CreateAction) -> Void
 
+    @EnvironmentObject private var appState: AppState
+
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             Text("约一场")
@@ -227,12 +229,19 @@ struct CreateMenuSheet: View {
                 .padding(.top, AppTheme.Spacing.xl)
             option(icon: "bolt.fill", tint: AppTheme.Colors.lime, title: String(localized: "快速匹配"),
                    subtitle: String(localized: "按水平、时间和距离自动找搭子"), action: .quickMatch)
-            option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: String(localized: "发起球局"),
-                   subtitle: String(localized: "我有场地缺人 / 约好友组局，可公开招募"), action: .createRoom)
+            if !appState.isRemote {
+                option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: String(localized: "发起球局"),
+                       subtitle: String(localized: "我有场地缺人 / 约好友组局，可公开招募"), action: .createRoom)
+            }
             option(icon: "person.3.fill", tint: AppTheme.Colors.sky, title: String(localized: "固定局 · 球群"),
                    subtitle: String(localized: "每周固定时间和球馆，一键报名、自动候补"), action: .groups)
-            option(icon: "number", tint: AppTheme.Colors.lavender, title: String(localized: "输入房间码 / 群号"),
-                   subtitle: String(localized: "好友发来的 6 位房间码或群号"), action: .joinRoom)
+            if appState.isRemote {
+                option(icon: "number", tint: AppTheme.Colors.lavender, title: String(localized: "输入球群号"),
+                       subtitle: String(localized: "好友发来的 6 位球群号"), action: .joinRoom)
+            } else {
+                option(icon: "number", tint: AppTheme.Colors.lavender, title: String(localized: "输入房间码 / 群号"),
+                       subtitle: String(localized: "好友发来的 6 位房间码或群号"), action: .joinRoom)
+            }
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppTheme.Spacing.screen)

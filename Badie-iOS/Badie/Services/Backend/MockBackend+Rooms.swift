@@ -21,6 +21,7 @@ extension MockBackend {
 
     /// 附近的公开球局（排除屏蔽关系、已满且候补满的局）
     func publicRooms(radiusKm: Double) -> [Room] {
+        guard !isRemote else { return [] }
         let me = currentUserId ?? ""
         let center = currentUser?.location ?? db.worldCenter
         let blocked = blockedIds()

@@ -117,7 +117,7 @@ struct ChatView: View {
                 } label: {
                     Label("查看资料", systemImage: "person.crop.circle")
                 }
-                if friendManager.isFriend(userId) {
+                if friendManager.isFriend(userId) && !appState.isRemote {
                     Button {
                         router.open(.createRoom(nil, invitee: userId))
                     } label: {

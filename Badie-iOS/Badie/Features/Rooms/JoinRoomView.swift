@@ -16,17 +16,19 @@ struct JoinRoomView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "房间码 / 群号"))
+            ScreenHeader(title: appState.isRemote ? String(localized: "球群号") : String(localized: "房间码 / 群号"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text("输入好友发来的\n6 位房间码或群号")
+                        Text(appState.isRemote ? String(localized: "输入好友发来的\n6 位球群号") : String(localized: "输入好友发来的\n6 位房间码或群号"))
                             .font(AppTheme.Typography.title)
                             .foregroundStyle(AppTheme.Colors.ink)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text("房间码由字母和数字组成，不含 0、O、1、I、L")
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        if !appState.isRemote {
+                            Text("房间码由字母和数字组成，不含 0、O、1、I、L")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        }
                     }
                     ZStack {
                         TextField("", text: $code)

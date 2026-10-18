@@ -42,7 +42,10 @@ struct AppEnvironment {
             backend.latencyEnabled = false
             backend.remote = SupabaseClient()
             backend.remote?.onSessionExpired = { [weak backend] in backend?.signOutLocally() }
-            return AppEnvironment(backend: backend)
+            let environment = AppEnvironment(backend: backend)
+            // 地图上找到的球馆服务器上没有，不能用来约球
+            environment.locationManager.allowsMapSearch = false
+            return environment
         }
         return AppEnvironment(backend: .shared)
     }

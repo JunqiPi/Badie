@@ -222,7 +222,8 @@ struct PlayerProfileSheet: View {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     messageButton(user)
                     if friendManager.isFriend(user.id) {
-                        if allowsInvite {
+                        // 正式后端没有房间：约球走快速匹配或挑战
+                        if allowsInvite && !appState.isRemote {
                             Button {
                                 dismiss()
                                 router.open(.createRoom(nil, invitee: user.id), in: .games)

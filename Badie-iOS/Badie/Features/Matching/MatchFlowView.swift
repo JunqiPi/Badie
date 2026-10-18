@@ -451,10 +451,12 @@ struct OfferView: View {
                     .font(AppTheme.Typography.subheadlineBold)
                     .lineLimit(1)
                 Spacer()
-                if seat.response == .accepted {
-                    statusPill(String(localized: "已确认"), icon: "checkmark", fill: AppTheme.Colors.mint)
-                } else {
-                    statusPill(String(localized: "等待确认"), icon: "hourglass", fill: AppTheme.Colors.surface)
+                if !matchManager.isRemote || user.id == ticket.userId {
+                    if seat.response == .accepted {
+                        statusPill(String(localized: "已确认"), icon: "checkmark", fill: AppTheme.Colors.mint)
+                    } else {
+                        statusPill(String(localized: "等待确认"), icon: "hourglass", fill: AppTheme.Colors.surface)
+                    }
                 }
             }
         }

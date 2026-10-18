@@ -73,28 +73,31 @@ struct SettingsView: View {
 
                     section(String(localized: "谁能看到我、联系我")) {
                         VStack(spacing: AppTheme.Spacing.md) {
-                            Toggle(isOn: privacyBinding(\.showsAsRegular)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("在常去球馆的“同馆常客”里显示我")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("只显示昵称、等级和球馆，不显示时间和位置")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            // 正式后端没有同馆常客和消息请求
+                            if !appState.isRemote {
+                                Toggle(isOn: privacyBinding(\.showsAsRegular)) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("在常去球馆的“同馆常客”里显示我")
+                                            .font(AppTheme.Typography.bodyBold)
+                                            .foregroundStyle(AppTheme.Colors.ink)
+                                        Text("只显示昵称、等级和球馆，不显示时间和位置")
+                                            .font(AppTheme.Typography.caption)
+                                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                    }
                                 }
-                            }
-                            InsetDivider()
-                            Toggle(isOn: privacyBinding(\.allowsMessageRequests)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("允许同球群的人给我发消息请求")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("关闭后只有球友能私信你；球局群聊不受影响")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                InsetDivider()
+                                Toggle(isOn: privacyBinding(\.allowsMessageRequests)) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text("允许同球群的人给我发消息请求")
+                                            .font(AppTheme.Typography.bodyBold)
+                                            .foregroundStyle(AppTheme.Colors.ink)
+                                        Text("关闭后只有球友能私信你；球局群聊不受影响")
+                                            .font(AppTheme.Typography.caption)
+                                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                    }
                                 }
+                                InsetDivider()
                             }
-                            InsetDivider()
                             challengePolicyRow
                             InsetDivider()
                             Toggle(isOn: privacyBinding(\.showsOnLeaderboards)) {
@@ -114,33 +117,40 @@ struct SettingsView: View {
 
                     section(String(localized: "隐私与安全")) {
                         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                            privacyLine(String(localized: "手机号只用于登录与安全验证，不会展示给任何球友"))
+                            privacyLine(appState.isRemote ? String(localized: "邮箱只用于登录与安全验证，不会展示给任何球友")
+                                                          : String(localized: "手机号只用于登录与安全验证，不会展示给任何球友"))
                             privacyLine(String(localized: "位置只用于计算距离，球友看到的是大概范围（如“5 英里内”），不是精确距离"))
-                            privacyLine(String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"))
+                            privacyLine(appState.isRemote ? String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊")
+                                                          : String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"))
                             privacyLine(String(localized: "评价匿名汇总，不展示单条评价与评价人"))
                             privacyLine(String(localized: "屏蔽对方不会通知对方"))
                         }
                         .card(AppTheme.Colors.surface, shadow: .zero)
                     }
 
-                    section(String(localized: "演示数据")) {
-                        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                            Text("当前没有接入线上服务：附近球友、公开球局为本机模拟数据，会自动回复消息、加入球局和互评，方便完整体验流程。")
-                                .font(AppTheme.Typography.footnote)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Button("重置演示数据") { showReset = true }
-                                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                    if !appState.isRemote {
+                        section(String(localized: "演示数据")) {
+                            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                                Text("当前没有接入线上服务：附近球友、公开球局为本机模拟数据，会自动回复消息、加入球局和互评，方便完整体验流程。")
+                                    .font(AppTheme.Typography.footnote)
+                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Button("重置演示数据") { showReset = true }
+                                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                            }
+                            .card(AppTheme.Colors.surface, shadow: .zero)
                         }
-                        .card(AppTheme.Colors.surface, shadow: .zero)
                     }
 
                     section(String(localized: "账号")) {
                         VStack(spacing: AppTheme.Spacing.sm) {
                             Button("退出登录") { showSignOut = true }
                                 .buttonStyle(BrutalButtonStyle(kind: .accent(AppTheme.Colors.butter), size: .medium))
-                            Button("注销账号并删除数据") { showDelete = true }
-                                .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
+                            // 正式后端还没有删除账号的函数：上线前要补上（App Store 要求）
+                            if !appState.isRemote {
+                                Button("注销账号并删除数据") { showDelete = true }
+                                    .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
+                            }
                         }
                     }
 
@@ -163,7 +173,7 @@ struct SettingsView: View {
             Button("取消", role: .cancel) {}
             Button("退出", role: .destructive) { appState.signOut() }
         } message: {
-            Text("数据保存在本机，用同一手机号登录即可恢复。")
+            Text(appState.isRemote ? String(localized: "用同一邮箱登录即可恢复你的数据。") : String(localized: "数据保存在本机，用同一手机号登录即可恢复。"))
         }
         .alert("注销账号？", isPresented: $showDelete) {
             Button("取消", role: .cancel) {}
