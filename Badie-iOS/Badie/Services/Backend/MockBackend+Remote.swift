@@ -15,6 +15,7 @@ extension MockBackend {
         let showOnBoards: Bool
         let challengePolicy: String
         let locale: String
+        let createdAt: Date?
     }
 
     private struct FavoriteRow: Decodable {
@@ -115,6 +116,7 @@ extension MockBackend {
             user.assessment = nil
             user.assessmentSkippedAt = user.assessmentSkippedAt ?? Date()
         }
+        if let createdAt = profile.createdAt { user.joinDate = createdAt }
         user.privacy.showsOnLeaderboards = profile.showOnBoards
         user.privacy.challengePolicy = ChallengePolicy(server: profile.challengePolicy)
         db.users[user.id] = user

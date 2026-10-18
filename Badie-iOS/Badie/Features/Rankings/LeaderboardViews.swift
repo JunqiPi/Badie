@@ -92,6 +92,7 @@ struct WeeklyLeaderboardView: View {
         .onChange(of: weekChoice) { _, _ in reload() }
         .onChange(of: onlyMyBracket) { _, _ in reload() }
         .onChange(of: matchManager.games) { _, _ in reload() }
+        .onChange(of: matchManager.rankingsRevision) { _, _ in reload() }
         .sheet(isPresented: $showsRules) {
             WeeklyRulesSheet()
                 .presentationDetents([.medium, .large])
@@ -335,6 +336,7 @@ struct VenueLeaderboardView: View {
         .onAppear(perform: reload)
         .onChange(of: monthChoice) { _, _ in reload() }
         .onChange(of: matchManager.games) { _, _ in reload() }
+        .onChange(of: matchManager.rankingsRevision) { _, _ in reload() }
     }
 
     private func bracketSection(_ bracket: LevelBracket, entries: [Rankings.Entry]) -> some View {

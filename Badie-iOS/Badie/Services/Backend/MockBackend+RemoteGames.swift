@@ -94,6 +94,7 @@ extension MockBackend {
             apply(tickets: tickets, games: games, me: me)
             try await refreshRemoteSocial()
             try await refreshRemoteGroups()
+            try await refreshRemoteChallenges()
         } catch RemoteError.notSignedIn {
             signOutLocally()
         } catch {

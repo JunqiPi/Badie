@@ -77,6 +77,8 @@ final class MatchManager: ObservableObject {
     /// 全屏匹配流程是否展示
     @Published var isFlowPresented = false
     @Published private(set) var games: [Game] = []
+    /// 正式后端：榜单、胜率、挑战资格更新了（排行页据此重新读取）
+    @Published private(set) var rankingsRevision = 0
     /// 流程外的进展提示（约成了 / 等你确认）
     @Published var notice: String?
 
@@ -104,6 +106,8 @@ final class MatchManager: ObservableObject {
                 self.reloadMatchmaking(announce: false)
             case .matchmakingChanged:
                 self.reloadMatchmaking(announce: true)
+            case .rankingsChanged:
+                self.rankingsRevision += 1
             default:
                 break
             }

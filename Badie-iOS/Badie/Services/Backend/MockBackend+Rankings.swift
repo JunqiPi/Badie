@@ -145,7 +145,8 @@ extension MockBackend {
     // MARK: 胜率
 
     func winRate(for userId: String, month: DateInterval, now: Date = Date()) -> Rankings.WinRate {
-        Rankings.winRate(for: userId, records: matchRecords(in: month, now: now), month: month)
+        if isRemote { return remoteWinRate(for: userId, month: month) }
+        return Rankings.winRate(for: userId, records: matchRecords(in: month, now: now), month: month)
     }
 
     // MARK: 排行榜
@@ -183,6 +184,7 @@ extension MockBackend {
 
     /// 场馆月榜：按水平段分开，只返回有人上榜的段
     func venueLeaderboard(venueId: String, month: DateInterval, now: Date = Date()) -> [(bracket: LevelBracket, entries: [Rankings.Entry])] {
+        if isRemote { return remoteVenueBoard(venueId: venueId, month: month) }
         let records = matchRecords(in: month, now: now)
         return LevelBracket.allCases.compactMap { bracket in
             let entries = Rankings.venueBoard(venueId: venueId, records: records, month: month) { userId in
@@ -195,13 +197,17 @@ extension MockBackend {
 
     /// 全球周榜；传国家代码则只看该国家/地区的对局
     func weeklyLeaderboard(week: DateInterval, countryCode: String? = nil, now: Date = Date()) -> [Rankings.Entry] {
-        Array(Rankings.weeklyBoard(records: matchRecords(in: week, now: now), week: week, countryCode: countryCode) {
+        if isRemote {
+            return (remoteWeeklyBoard(countryCode: countryCode, week: week)?.entries ?? []).map { Self.entry($0, score: $0.points ?? 0) }
+        }
+        return Array(Rankings.weeklyBoard(records: matchRecords(in: week, now: now), week: week, countryCode: countryCode) {
             self.isListedOnBoards($0, now: now)
         }.prefix(Rankings.boardSize))
     }
 
     func weeklyScore(for userId: String, week: DateInterval, countryCode: String? = nil,
                      now: Date = Date()) -> (points: Int, games: Int, wins: Int, opponents: Int) {
+        if isRemote { return userId == currentUserId ? remoteWeeklyScore(countryCode: countryCode, week: week) : (0, 0, 0, 0) }
         let records = matchRecords(in: week, now: now).filter { countryCode == nil || $0.countryCode == countryCode }
         return Rankings.weeklyScore(for: userId, records: records, week: week)
     }
@@ -224,11 +230,13 @@ extension MockBackend {
         db.hiddenFromBoards[me, default: []].append(userId)
         scheduleSave()
         emit(.gamesChanged)
+        runRemote { _ in try await self.remoteReport(userId, reason: reason, detail: String(localized: "来自排行榜")) }
     }
 
     // MARK: 约战
 
     func challengeAvailability(for targetId: String, now: Date = Date()) -> ChallengeAvailability {
+        if isRemote { return remoteChallengeAvailability(for: targetId) }
         guard let me = currentUser, let target = db.users[targetId], targetId != me.id,
               !isBlockedEitherWay(me.id, targetId) else { return .unavailable }
         // 只能挑战同一国家/地区的人（不跨国约球）
@@ -269,6 +277,11 @@ extension MockBackend {
     @discardableResult
     func sendChallenge(to targetId: String, court: BadmintonCourt, slot: TimeSlot, message: String,
                        partnerId: String? = nil) async throws -> Challenge {
+        if isRemote {
+            // 服务器只支持单打挑战
+            guard partnerId == nil else { throw BackendError.challengeUnavailable(ChallengeAvailability.unavailable.reason ?? "") }
+            return try await remoteSendChallenge(to: targetId, court: court, slot: slot, message: message)
+        }
         let me = try requireUser()
         let availability = challengeAvailability(for: targetId)
         if let reason = availability.reason { throw BackendError.challengeUnavailable(reason) }
@@ -295,6 +308,7 @@ extension MockBackend {
     /// 接受：生成一场球局（计入排行；双打需选自己的搭档）；拒绝：对方只会看到“未成行”
     @discardableResult
     func respondToChallenge(id: String, accept: Bool, partnerId: String? = nil) async throws -> Game? {
+        if isRemote { return try await remoteRespondToChallenge(id: id, accept: accept) }
         let me = try requireUser()
         guard var challenge = db.challenges[id], challenge.targetId == me.id,
               challenge.status == .pending, !challenge.isExpired() else { throw BackendError.challengeNotFound }
@@ -316,6 +330,12 @@ extension MockBackend {
     }
 
     func withdrawChallenge(id: String) {
+        if isRemote {
+            return runRemote({
+                db.challenges[id]?.status = .withdrawn
+                emit(.gamesChanged)
+            }) { try await $0.call("withdraw_challenge", ["p_challenge": id]) }
+        }
         guard let me = currentUserId, var challenge = db.challenges[id], challenge.challengerId == me,
               challenge.status == .pending else { return }
         challenge.status = .withdrawn

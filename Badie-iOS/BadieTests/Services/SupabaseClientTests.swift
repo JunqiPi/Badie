@@ -174,6 +174,8 @@ final class SupabaseClientTests: XCTestCase {
         let profile = #"{"id":"\#(userId)","nickname":"Alex","country_code":"US","rating":4,"assessed_at":null,"show_on_boards":true,"challenge_policy":"everyone","locale":"\#(MockBackend.serverLocale)"}"#
         server.on("GET /rest/v1/profiles", "[\(profile)]")
         server.on("GET /rest/v1/favorite_venues", "[]")
+        // 当作已登录（不是刚登录），免得登录后的后台刷新混进后面的请求
+        backend.db.currentUserId = userId
         try await backend.refreshRemoteProfile()
         server.requests = []
         return backend
@@ -387,6 +389,83 @@ final class SupabaseClientTests: XCTestCase {
         server.on("POST /rest/v1/rpc/find_group", "null")
         let missing = try await backend.remoteFindGroup(code: "ZZZZZZ")
         XCTAssertNil(missing)
+    }
+
+    /// 后台拉取的榜单：等它写进缓存
+    private func waitFor(_ condition: @escaping () -> Bool) async {
+        for _ in 0..<100 where !condition() {
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+    }
+
+    func testRankingsComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        let week = Rankings.week(containing: Date())
+        server.on("POST /rest/v1/rpc/weekly_board",
+                  #"{"week_starts":"2026-10-12T00:00:00+00:00","entries":[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"rank":1,"points":45,"games":3,"wins":2,"me":false}],"me":null,"progress":{"games":1,"opponents":1,"points":10},"eligible":true}"#)
+        XCTAssertTrue(backend.weeklyLeaderboard(week: week).isEmpty, "先返回缓存（空），后台去拉")
+        await waitFor { !backend.weeklyLeaderboard(week: week).isEmpty }
+        let entry = try XCTUnwrap(backend.weeklyLeaderboard(week: week).first)
+        XCTAssertEqual(entry.userId, blake)
+        XCTAssertEqual(entry.score, 45)
+        XCTAssertEqual(server.json(0)["p_scope"] as? String, "global")
+        let score = backend.weeklyScore(for: userId, week: week)
+        XCTAssertEqual(score.points, 10)
+        XCTAssertEqual(score.games, 1)
+        let lastWeek = Rankings.week(containing: week.start.addingTimeInterval(-1))
+        XCTAssertTrue(backend.weeklyLeaderboard(week: lastWeek).isEmpty, "服务器只有本周")
+
+        server.on("POST /rest/v1/rpc/venue_board",
+                  #"{"venue":{"id":"v1","name":"Court","city":"Irvine"},"bands":[{"band":2,"entries":[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"rank":1,"games":5,"wins":3,"me":false}]}]}"#)
+        let month = Rankings.month(containing: Date())
+        _ = backend.venueLeaderboard(venueId: "v1", month: month)
+        await waitFor { !backend.venueLeaderboard(venueId: "v1", month: month).isEmpty }
+        let band = try XCTUnwrap(backend.venueLeaderboard(venueId: "v1", month: month).first)
+        XCTAssertEqual(band.bracket, .intermediate)
+        XCTAssertEqual(band.entries.first?.score, 5, "场馆榜按场次")
+
+        server.on("POST /rest/v1/rpc/my_record", #"{"games":6,"wins":4,"opponents":3,"gap":0.5,"public":true,"losses":2,"games_played":7,"no_shows":0,"late_cancels":0}"#)
+        _ = backend.winRate(for: userId, month: month)
+        await waitFor { backend.winRate(for: self.userId, month: month).games > 0 }
+        XCTAssertEqual(backend.winRate(for: userId, month: month).percentage, 67)
+    }
+
+    func testChallengesComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        let start = ISO8601DateFormatter().string(from: Date().addingTimeInterval(86400))
+        let end = ISO8601DateFormatter().string(from: Date().addingTimeInterval(86400 + 3600))
+        let expires = ISO8601DateFormatter().string(from: Date().addingTimeInterval(40 * 3600))
+        server.on("POST /rest/v1/rpc/my_challenges",
+                  #"{"incoming":[{"id":"c1","starts_at":"\#(start)","ends_at":"\#(end)","message":"Best of three?","expires_at":"\#(expires)","venue":{"name":"Court","tz":null},"player":{"id":"\#(blake)","nickname":"Blake","rating":4.33}}],"outgoing":[{"id":"c2","starts_at":"\#(start)","ends_at":"\#(end)","game_id":null,"status":"not_happening","venue":{"name":"Court","tz":null},"player":{"id":"\#(blake)","nickname":"Blake","rating":4.33}}]}"#)
+        try await backend.refreshRemoteChallenges()
+        let incoming = try XCTUnwrap(backend.challenges().first { $0.id == "c1" })
+        XCTAssertEqual(incoming.challengerId, blake)
+        XCTAssertEqual(incoming.targetId, userId)
+        XCTAssertEqual(incoming.status, .pending)
+        XCTAssertEqual(incoming.message, "Best of three?")
+        XCTAssertEqual(backend.challenges().first { $0.id == "c2" }?.status, .expired, "没成行")
+
+        server.on("POST /rest/v1/rpc/player_card",
+                  #"{"id":"\#(blake)","nickname":"Blake","rating":4.33,"tags":["friendly","fair_play"],"win_rate":{"games":5,"wins":4,"opponents":3,"gap":0,"public":true},"challenge":"friends_only"}"#)
+        _ = await backend.refreshRemotePlayer(blake)
+        XCTAssertEqual(backend.challengeAvailability(for: blake), .friendsOnly)
+        XCTAssertEqual(backend.winRate(for: blake, month: Rankings.month(containing: Date())).wins, 4)
+        XCTAssertEqual(backend.user(id: blake)?.reputation.publicTags, [.friendly, .fairPlay])
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/send_challenge", #""c3""#)
+        server.on("POST /rest/v1/rpc/my_challenges", #"{"incoming":[],"outgoing":[]}"#)
+        let court = BadmintonCourt(id: "v1", name: "Court", location: Coordinate(latitude: 0, longitude: 0),
+                                   address: PostalAddress(street: "", city: "", region: "", countryCode: "US"))
+        let slot = TimeSlot(date: Date(), startTime: Date().addingTimeInterval(86400), endTime: Date().addingTimeInterval(90000))
+        _ = try? await backend.sendChallenge(to: blake, court: court, slot: slot, message: " Rematch? ")
+        XCTAssertEqual(server.json(0)["p_target"] as? String, blake)
+        XCTAssertEqual(server.json(0)["p_venue"] as? String, "v1")
+        XCTAssertEqual(server.json(0)["p_message"] as? String, "Rematch?")
+        do {
+            _ = try await backend.sendChallenge(to: blake, court: court, slot: slot, message: "", partnerId: "someone")
+            XCTFail("服务器只支持单打挑战")
+        } catch {}
     }
 
     func testRestoreWithoutSessionSignsOutLocally() async {

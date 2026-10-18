@@ -92,6 +92,9 @@ struct HomeView: View {
         .onChange(of: matchManager.games) { _, _ in
             reloadRankings()
         }
+        .onChange(of: matchManager.rankingsRevision) { _, _ in
+            reloadRankings()
+        }
         .onChange(of: inboxManager.unreadCount) { _, _ in
             reloadRankings()
         }

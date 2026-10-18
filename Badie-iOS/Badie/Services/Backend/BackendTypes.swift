@@ -24,6 +24,8 @@ enum BackendEvent {
     case groupsChanged
     /// 正式后端：后台执行的操作失败了（提示给用户）
     case remoteFailed(String)
+    /// 正式后端：榜单、胜率或挑战资格拉到了新数据
+    case rankingsChanged
 }
 
 typealias BackendEventHandler = @MainActor (BackendEvent) -> Void

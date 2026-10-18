@@ -69,6 +69,9 @@ extension MockBackend {
         let nickname: String
         let rating: Double
         let tags: [String]
+        let winRate: RemoteWinRate?
+        /// 'available'、'hidden' 或不能挑战的原因
+        let challenge: String?
     }
 
     // MARK: 刷新
@@ -261,6 +264,12 @@ extension MockBackend {
         let card = (try? await remote.rpc("player_card", ["p_user": userId], as: RemotePlayerCard?.self)) ?? nil
         guard let card else { return db.users[userId] }
         cacheRemoteUser(id: card.id, nickname: card.nickname, rating: card.rating)
+        remoteChallengeStatus[card.id] = card.challenge
+        if let rate = card.winRate {
+            remoteWinRates[card.id] = Rankings.WinRate(games: rate.games, wins: rate.wins, opponents: rate.opponents, averageGap: rate.gap)
+        }
+        emit(.rankingsChanged)
+        emit(.friendsChanged)
         if var user = db.users[card.id] {
             user.reputation.publicTags = card.tags.compactMap { SurveyTag(server: $0) }
             user.reputation.publishedAt = card.tags.isEmpty ? nil : Date()
