@@ -46,10 +46,7 @@ struct AppEnvironment {
         backend.latencyEnabled = false
         backend.remote = SupabaseClient()
         backend.remote?.onSessionExpired = { [weak backend] in backend?.signOutLocally() }
-        let environment = AppEnvironment(backend: backend)
-        // 地图上找到的球馆服务器上没有，不能用来约球
-        environment.locationManager.allowsMapSearch = false
-        return environment
+        return AppEnvironment(backend: backend)
     }
 
     /// 演示模式：本机模拟的球友和球局，所有功能都能用；第一次打开时直接用演示账号进入

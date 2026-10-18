@@ -42,6 +42,10 @@ enum RemoteError: LocalizedError, Equatable {
         case "over_email_send_rate_limit", "over_request_rate_limit": return String(localized: "尝试次数过多，请等一分钟再试。")
         case "email_address_invalid", "validation_failed": return String(localized: "邮箱地址好像不对。")
         case "captcha_failed": return String(localized: "人机验证没有通过，请再试一次。")
+        case "venue_name_invalid": return BackendError.venueNameInvalid.localizedDescription
+        case "venue_address_incomplete": return BackendError.venueAddressIncomplete.localizedDescription
+        case "venue_rate_limited": return BackendError.venueRateLimited.localizedDescription
+        case "venue_duplicate": return String(localized: "球馆库里已有这家球馆，请直接选择它。")
         // 约球
         case "too_soon": return String(localized: "开始时间至少要在 2.5 小时后。")
         case "too_far": return String(localized: "最多只能提前两周安排。")

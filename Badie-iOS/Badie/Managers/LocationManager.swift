@@ -133,6 +133,8 @@ final class LocationManager: NSObject, ObservableObject {
     /// 从平台球馆库刷新出行范围内的球馆
     func refreshCourts() {
         nearbyCourts = backend.venues(near: coordinate, radiusKm: preferences.travelRadiusKm)
+        // 正式后端：球友新加的球馆在服务器上，拉到了会再通知（venuesChanged）
+        if backend.isRemote { backend.refreshRemoteVenues(near: coordinate, radiusKm: preferences.travelRadiusKm) }
     }
 
     // MARK: Delegate handling (main actor)
@@ -157,7 +159,8 @@ final class LocationManager: NSObject, ObservableObject {
         }
         lastRefreshLocation = location
         refreshCourts()
-        guard allowsMapSearch else { return }
+        // 后台发现会把 Apple 地图上的场地直接放进本机球馆库；正式后端只收球友确认过再提交的
+        guard allowsMapSearch, !backend.isRemote else { return }
         Task {
             await VenueDiscovery.run(backend: backend, near: Coordinate(location.coordinate))
             refreshCourts()

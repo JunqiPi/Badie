@@ -37,6 +37,8 @@ final class MockBackend {
     var remoteChallengeStatus: [String: String] = [:]
     /// 服务器上的管理员（只用来显示演示模式开关；审核权限在服务器上另外检查）
     var remoteIsAdmin = false
+    /// 上次按位置拉取球馆的地点、半径和时间
+    var remoteVenuesLoaded: (center: Coordinate, radiusKm: Double, at: Date)?
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?

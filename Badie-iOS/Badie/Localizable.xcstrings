@@ -71129,64 +71129,6 @@
         }
       }
     },
-    "没找到？目前只能选已收录的球馆。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Not listed? For now you can only pick venues already on Badie."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "लिस्ट में नहीं है? अभी आप सिर्फ़ पहले से जुड़े वेन्यू ही चुन सकते हैं।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidak ada? Untuk saat ini kamu hanya bisa memilih GOR yang sudah terdaftar."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "見つからない？現在は登録済みの会場からのみ選べます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "목록에 없나요? 지금은 등록된 체육관만 선택할 수 있어요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiada dalam senarai? Buat masa ini anda hanya boleh memilih dewan yang sudah tersenarai."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ไม่เจอ? ตอนนี้เลือกได้เฉพาะสนามที่มีในระบบแล้ว"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không có trong danh sách? Hiện bạn chỉ có thể chọn sân đã có sẵn."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "沒找到？目前只能選已收錄的球館。"
-          }
-        }
-      }
-    },
     "没有共同球友" : {
       "localizations" : {
         "en" : {
@@ -77117,6 +77059,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "球館庫裡已有這家球館"
+          }
+        }
+      }
+    },
+    "球馆库里已有这家球馆，请直接选择它。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This venue is already listed. Please select it instead."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह वेन्यू पहले से लिस्ट में है। कृपया उसे ही चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GOR ini sudah terdaftar. Silakan pilih yang itu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この会場は登録済みです。そちらを選んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 체육관은 이미 등록되어 있어요. 해당 체육관을 선택하세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dewan ini sudah tersenarai. Sila pilih yang itu."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สนามนี้มีในรายการแล้ว โปรดเลือกสนามนั้นแทน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sân này đã có trong danh sách. Hãy chọn sân đó."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "球館庫裡已有這家球館，請直接選擇它。"
           }
         }
       }

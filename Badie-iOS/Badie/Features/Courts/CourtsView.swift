@@ -80,16 +80,13 @@ struct CourtsView: View {
                         .padding(.horizontal, AppTheme.Spacing.md)
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
                     }
-                    // 正式后端只能选已收录的球馆
-                    if !appState.isRemote {
-                        Button {
-                            addDraft = AddVenueDraft(name: "", coordinate: locationManager.coordinate)
-                        } label: {
-                            Label("找不到？添加球馆", systemImage: "plus.circle.fill")
-                        }
-                        .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium, fullWidth: true))
-                        .padding(.top, AppTheme.Spacing.sm)
+                    Button {
+                        addDraft = AddVenueDraft(name: "", coordinate: locationManager.coordinate)
+                    } label: {
+                        Label("找不到？添加球馆", systemImage: "plus.circle.fill")
                     }
+                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium, fullWidth: true))
+                    .padding(.top, AppTheme.Spacing.sm)
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.vertical, AppTheme.Spacing.lg)

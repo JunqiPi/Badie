@@ -512,6 +512,66 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertTrue(backend.db.users.isEmpty, "缓存里不留这个账号的数据")
     }
 
+    // MARK: Venues
+
+    private func venueJSON(id: String = "v-1a2b3c4d", status: String = "unconfirmed") -> String {
+        #"{"id":"\#(id)","name":"Pasadena Rec Gym","aliases":[],"lat":34.15,"lon":-118.14,"street":"1 Colorado Blvd","unit":null,"city":"Pasadena","region":"CA","postal_code":"91101","country_code":"US","time_zone_id":"America/Los_Angeles","apple_place_id":"I123","court_count":4,"pricing":{"perPerson":8},"pricing_note":null,"currency_code":"USD","phone":null,"website":null,"entrance_note":null,"source":"apple_maps","status":"\#(status)","created_at":"2026-10-18T02:00:00+00:00","play_times":null,"location_approximate":false}"#
+    }
+
+    func testNearbyVenuesComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/venues_near", #"[{"venue":\#(venueJSON()),"distance_m":1200}]"#)
+        let center = Coordinate(latitude: 34.14, longitude: -118.13)
+        backend.refreshRemoteVenues(near: center, radiusKm: 25)
+        await waitFor { backend.venue(id: "v-1a2b3c4d") != nil }
+
+        let venue = try XCTUnwrap(backend.venue(id: "v-1a2b3c4d"), "球友新加的球馆从服务器拉下来")
+        XCTAssertEqual(venue.postalAddress.city, "Pasadena")
+        XCTAssertEqual(venue.source, .appleMaps)
+        XCTAssertEqual(venue.pricing, .dropIn(perPerson: 8))
+        XCTAssertEqual(server.json(0)["radius_km"] as? Double, 25)
+
+        backend.refreshRemoteVenues(near: center, radiusKm: 25)
+        XCTAssertEqual(server.requests.count, 1, "同一片区域 10 分钟内不重复拉")
+    }
+
+    func testAddingConfirmingAndReportingVenuesCallTheServer() async throws {
+        let backend = try await signedInBackend()
+        let venues = RemoteVenueService(backend: backend)
+        let candidate = VenueCandidate(name: "Pasadena Rec Gym", location: Coordinate(latitude: 34.15, longitude: -118.14),
+                                       address: PostalAddress(street: "1 Colorado Blvd", city: "Pasadena", region: "CA",
+                                                              postalCode: "91101", countryCode: "US"),
+                                       applePlaceId: "I123", timeZoneId: "America/Los_Angeles")
+
+        server.on("POST /rest/v1/rpc/add_venue", venueJSON())
+        let added = try await venues.addVenue(candidate, source: .appleMaps, aliases: ["Pasadena Rec"], courtCount: 4,
+                                              entranceNote: nil, now: Date())
+        XCTAssertEqual(added.id, "v-1a2b3c4d")
+        let body = server.json(0)
+        XCTAssertEqual(body["source"] as? String, "apple_maps")
+        XCTAssertEqual(body["apple_place_id"] as? String, "I123")
+        XCTAssertEqual(body["court_count"] as? Int, 4)
+        XCTAssertNil(body["entrance_note"], "没填的字段不传，用服务器的默认值")
+        XCTAssertNotNil(backend.venue(id: "v-1a2b3c4d"))
+
+        server.on("POST /rest/v1/rpc/add_venue", status: 409, #"{"code":"23505","details":"Old Gym","hint":null,"message":"venue_duplicate"}"#)
+        do {
+            _ = try await venues.addVenue(candidate, source: .player, aliases: [], courtCount: nil, entranceNote: nil, now: Date())
+            XCTFail("疑似重复要报错")
+        } catch {
+            XCTAssertEqual((error as? LocalizedError)?.errorDescription, RemoteError.server("venue_duplicate").errorDescription)
+        }
+
+        server.on("POST /rest/v1/rpc/confirm_venue", venueJSON(status: "confirmed"))
+        try await venues.confirmVenue("v-1a2b3c4d")
+        XCTAssertTrue(venues.hasConfirmed("v-1a2b3c4d"))
+        XCTAssertEqual(backend.venue(id: "v-1a2b3c4d")?.status, .confirmed)
+
+        server.on("POST /rest/v1/rpc/report_venue", "")
+        try await venues.reportVenue("v-1a2b3c4d", issue: .notBadminton, detail: "")
+        XCTAssertEqual(server.json(3)["issue"] as? String, "not_badminton")
+    }
+
     func testRestoreWithoutSessionSignsOutLocally() async {
         let backend = MockBackend(store: .inMemory, seedsWorld: false)
         backend.createAccount(phone: "+16265550123", nickname: "Old", level: 3, seedsDemoContent: false)
