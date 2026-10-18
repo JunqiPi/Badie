@@ -52,7 +52,7 @@ select throws_ok($$ select public.close_room(gen_random_uuid(), 'expired') $$, '
 select pg_temp.login(1);
 select throws_ok($$ select public.create_room('doubles', 'public', null, null, null, 5, 6) $$, '22023', 'missing_details', '公开局要有球馆和时间');
 select throws_ok($$ select public.create_room('doubles', 'public', 'v-us-ca-21-badminton-club-21bc', now() - interval '1 hour', now() + interval '1 hour', 5, 6) $$,
-                 '22023', 'too_soon', '不能是过去的时间');
+                 '22023', 'already_started', '不能是过去的时间');
 select throws_ok($$ select public.create_room('doubles', 'public', 'v-us-ca-21-badminton-club-21bc', pg_temp.at(1, 19), pg_temp.at(1, 19.5), 5, 6) $$,
                  '22023', 'invalid_slot', '至少 1 小时');
 select throws_ok($$ select public.create_room('doubles', 'public', 'v-us-ca-21-badminton-club-21bc', pg_temp.at(1, 19), pg_temp.at(1, 21), 5, 6, '{}', 'call 6265550123') $$,

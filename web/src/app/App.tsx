@@ -8,11 +8,14 @@ import { Groups } from './Groups';
 import { LevelQuiz } from './LevelQuiz';
 import { Me } from './Me';
 import { NewGroup } from './NewGroup';
+import { NewRoom } from './NewRoom';
 import { Chat, Messages } from './Messages';
 import { Onboarding } from './Onboarding';
 import { Play } from './Play';
 import { PlayerPage } from './Player';
 import { Rankings } from './Rankings';
+import { RoomPage } from './Room';
+import { Rooms } from './Rooms';
 import { navigate, usePath } from './router';
 import { Shell } from './Shell';
 import { SignIn } from './SignIn';
@@ -82,6 +85,7 @@ export default function App() {
   const game = id('games');
   const player = id('players');
   const group = id('groups');
+  const room = id('rooms');
   const chat = path.match(/^\/app\/messages\/(game|group|dm)\/([0-9a-f-]{36})\//);
   return (
     <Shell path={path}>
@@ -91,6 +95,12 @@ export default function App() {
         <Chat key={chat[2]} kind={chat[1] as ThreadKind} id={chat[2]} />
       ) : group ? (
         <GroupPage key={group} id={group} />
+      ) : room ? (
+        <RoomPage key={room} id={room} />
+      ) : path.startsWith('/app/rooms/new/') ? (
+        <NewRoom profile={profile} />
+      ) : path.startsWith('/app/rooms/') ? (
+        <Rooms />
       ) : path.startsWith('/app/groups/new/') ? (
         <NewGroup profile={profile} />
       ) : path.startsWith('/app/groups/') ? (

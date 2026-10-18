@@ -7,12 +7,16 @@ import { supabase, useLive, type GroupSummary, type MyGroups, type Schedule } fr
 import { clock, day, hours, weekday } from './time';
 import { Button, EmptyState, Field, PageHeader, Skeleton } from './ui';
 
-/** “约球”下的两个页面：临时约人 / 固定的球群 */
-export function PlayTabs({ current }: { current: 'play' | 'groups' }) {
+const ways = [['play', 'Find a game'], ['rooms', 'Open games'], ['groups', 'Groups']] as const;
+
+/** “约球”下的三个页面：帮我匹配 / 别人发起的球局 / 固定的球群 */
+export function PlayTabs({ current }: { current: (typeof ways)[number][0] }) {
   return (
-    <nav aria-label={t('Ways to play')} className="mb-8 flex gap-2">
-      <Link to="/app/play/" aria-current={current === 'play' ? 'page' : undefined} className="toggle aria-[current=page]:bg-butter aria-[current=page]:text-on-accent">{t('Find a game')}</Link>
-      <Link to="/app/groups/" aria-current={current === 'groups' ? 'page' : undefined} className="toggle aria-[current=page]:bg-butter aria-[current=page]:text-on-accent">{t('Groups')}</Link>
+    <nav aria-label={t('Ways to play')} className="mb-8 flex flex-wrap gap-2">
+      {ways.map(([key, label]) => (
+        <Link key={key} to={`/app/${key}/`} aria-current={current === key ? 'page' : undefined}
+              className="toggle aria-[current=page]:bg-butter aria-[current=page]:text-on-accent">{t(label)}</Link>
+      ))}
     </nav>
   );
 }

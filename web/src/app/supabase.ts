@@ -229,6 +229,38 @@ export interface MyGroups {
   sessions: { id: string; group_id: string; group: string; venue: string; tz: string | null; starts_at: string; ends_at: string; waitlisted: boolean }[];
 }
 
+// 球局（房间）：有场地缺人时发起
+
+export type RoomTag = 'beginner_friendly' | 'casual' | 'competitive' | 'women_friendly' | 'coaching';
+
+export interface RoomSummary {
+  id: string;
+  mode: Mode;
+  visibility: 'public' | 'private';
+  status: 'open' | 'started' | 'closed';
+  closed_reason: 'expired' | 'owner_closed' | 'start_time_passed' | null;
+  game_id: string | null;
+  /** 私密局可以先不定时间和球馆 */
+  starts_at: string | null;
+  ends_at: string | null;
+  level_min: number;
+  level_max: number;
+  tags: RoomTag[];
+  note: string;
+  capacity: number;
+  going: number;
+  waitlist: number;
+  owner: { id: string; nickname: string; rating: number };
+  venue: { id: string; name: string; city: string; street: string; tz: string | null } | null;
+  my_status: 'owner' | 'member' | 'waitlisted' | 'invited' | null;
+}
+
+export interface RoomDetail extends RoomSummary {
+  /** 只有房间里的人和受邀的人看得到 */
+  code: string | null;
+  members: { id: string; nickname: string; rating: number; waitlisted: boolean; me: boolean }[] | null;
+}
+
 export type Friend = { id: string; nickname: string; rating: number; created_at?: string };
 export type InboxCounts = { messages: number; updates: number; requests: number };
 
@@ -306,5 +338,15 @@ const problems: Record<string, string> = {
   daily_limit: 'You’ve used today’s challenges.',
   target_busy: 'They have too many open challenges. Try later.',
   admin_account: 'Admin accounts can’t be deleted here. Ask another admin to remove your access first.',
+  already_started: 'Pick a start time that hasn’t passed.',
+  missing_details: 'Public games need a court and a time.',
+  invalid_level_range: 'The lowest level can’t be above the highest.',
+  too_many_rooms: 'You have too many open games. Finish or cancel one first.',
+  room_not_found: 'Game not found. Check the code.',
+  room_closed: 'This game is no longer open.',
+  room_full: 'This game is full.',
+  not_room_owner: 'Only the host can do this.',
+  not_enough_players: 'Start when every spot is filled.',
+  too_many_invites: 'Invite up to 10 friends at a time.',
 };
 export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');

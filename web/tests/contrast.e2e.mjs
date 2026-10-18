@@ -114,7 +114,7 @@ for (const colorScheme of ['light', 'dark']) {
   await audit(page, `${colorScheme} level quiz`);
   await page.getByRole('button', { name: 'Skip for now' }).click();
   await page.getByRole('heading', { name: 'Find a game' }).waitFor();
-  for (const path of ['/app/play/', '/app/games/', '/app/rankings/', '/app/messages/', '/app/courts/', '/app/me/', '/app/groups/', '/app/groups/new/']) {
+  for (const path of ['/app/play/', '/app/games/', '/app/rankings/', '/app/messages/', '/app/courts/', '/app/me/', '/app/rooms/', '/app/rooms/new/', '/app/groups/', '/app/groups/new/']) {
     await page.goto(`${base}${path}`);
     await page.locator('main h1').first().waitFor();
     await page.waitForLoadState('networkidle');
@@ -133,6 +133,13 @@ for (const colorScheme of ['light', 'dark']) {
   await page.getByRole('button', { name: 'Send' }).click();
   await page.getByRole('log').getByText('See you Thursday').waitFor();
   await audit(page, `${colorScheme} group chat`);
+  await page.goto(`${base}/app/rooms/new/`);
+  await page.getByRole('combobox', { name: 'Court' }).fill('Los Angeles Badminton');
+  await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
+  await page.getByRole('button', { name: 'Casual' }).click();
+  await page.getByRole('button', { name: 'Post game' }).click();
+  await page.getByText('Open spot').first().waitFor();
+  await audit(page, `${colorScheme} room`);
   await page.goto(`${base}/app/me/`);
   await page.getByRole('button', { name: 'Delete account' }).click();
   await audit(page, `${colorScheme} delete account`);

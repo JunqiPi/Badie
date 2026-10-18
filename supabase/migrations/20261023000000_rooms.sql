@@ -92,7 +92,7 @@ begin
   if p_starts_at is null or p_ends_at is null or p_ends_at - p_starts_at not between interval '1 hour' and interval '8 hours' then
     raise exception 'invalid_slot' using errcode = '22023';
   end if;
-  if p_starts_at <= now() then raise exception 'too_soon' using errcode = '22023'; end if;
+  if p_starts_at <= now() then raise exception 'already_started' using errcode = '22023'; end if;
   if p_starts_at > now() + interval '14 days' then raise exception 'too_far' using errcode = '22023'; end if;
   if p_venue is not null and not exists (select 1 from public.venues where id = p_venue and merged_into is null and not hidden_pending_review) then
     raise exception 'invalid_venues' using errcode = '22023';
@@ -433,7 +433,7 @@ begin
   select * into r from public.rooms where id = p_room for update;
   if r.id is null or r.owner_id is distinct from auth.uid() or r.status <> 'open' then raise exception 'not_room_owner' using errcode = '42501'; end if;
   if r.venue_id is null or r.starts_at is null then raise exception 'missing_details' using errcode = '22023'; end if;
-  if r.starts_at <= now() then raise exception 'too_soon' using errcode = '22023'; end if;
+  if r.starts_at <= now() then raise exception 'already_started' using errcode = '22023'; end if;
   if (select count(*) from public.room_members where room_id = p_room and not waitlisted) <> public.room_capacity(r.mode) then
     raise exception 'not_enough_players' using errcode = '22023';
   end if;

@@ -54,3 +54,10 @@ export const weekday = (n: number) =>
 
 /** 6:00 到 23:30 的半点选项 */
 export const halfHours = () => Array.from({ length: 36 }, (_, i) => 360 + i * 30).map((minutes) => ({ minutes, label: clock(minutes) }));
+
+/** 某个时刻在该时区的日期和从 0 点起的分钟数（zoned 的反向） */
+export function wallClock(iso: string, tz: string) {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+    .formatToParts(new Date(iso)).map((x) => [x.type, x.value]));
+  return { date: `${p.year}-${p.month}-${p.day}`, minutes: Number(p.hour) * 60 + Number(p.minute) };
+}
