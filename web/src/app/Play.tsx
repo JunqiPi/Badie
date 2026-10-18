@@ -116,6 +116,8 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
 
   const status = statusText[ticket.status];
   const venueTz = ticket.venues[0]?.tz;
+  // 普通请求到点没约成、离开赛还有 30 分钟以上：可以用同样的条件转成临时局
+  const canGoLastMinute = ticket.status === 'expired' && !ticket.last_minute && new Date(ticket.starts_at).getTime() - Date.now() >= 30 * 60000;
   return (
     <article className="tile animate-enter grid gap-3 bg-surface p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -124,7 +126,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
           {t(status.label)}
         </span>
         <span className="text-sm font-bold text-ink-tertiary">
-          {ticket.mode === 'doubles' ? t('Doubles') : t('Singles')} · {toleranceText(ticket.skill_tolerance)}
+          {ticket.last_minute && `${t('Last-minute')} · `}{ticket.mode === 'doubles' ? t('Doubles') : t('Singles')} · {toleranceText(ticket.skill_tolerance)}
         </span>
       </div>
       <div>
@@ -132,7 +134,20 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
         <p className="text-ink-secondary">{ticket.venues.map((v) => v.name).join(' · ')}</p>
       </div>
       {ticket.status === 'paused' && <p className="font-semibold">{t('You missed a confirmation, so we stopped sending you matches for this time.')}</p>}
-      {ticket.status === 'expired' && <p className="text-ink-secondary">{t('Nothing counts against you. Try a wider time window or more courts next time.')}</p>}
+      {ticket.status === 'expired' && (
+        <p className="text-ink-secondary">
+          {canGoLastMinute ? t('Nothing counts against you. Still want to play? Look for players who are free right now.') : t('Nothing counts against you. Try a wider time window or more courts next time.')}
+        </p>
+      )}
+      {canGoLastMinute && (
+        <Button className="justify-self-start" busy={busy === 'retry'} disabled={Boolean(busy)}
+                onClick={() => act('retry', 'submit_ticket', {
+                  p_mode: ticket.mode, p_starts_at: ticket.starts_at, p_ends_at: ticket.ends_at, p_venue_ids: ticket.venues.map((v) => v.id),
+                  p_skill_tolerance: ticket.skill_tolerance, p_auto_accept: true,
+                }, t('Looking for players who are free right now.'))}>
+          {t('Try last-minute')}
+        </Button>
+      )}
       {(ticket.status === 'searching' || ticket.status === 'paused' || ticket.status === 'matched') && (
         <div className="flex flex-wrap gap-3">
           {ticket.status === 'paused' && (
@@ -206,12 +221,14 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
   const startsAt = zoned(date, from, tz);
   const endsAt = zoned(date, to, tz);
   const hoursLong = (endsAt.getTime() - startsAt.getTime()) / 3600000;
+  const lead = startsAt.getTime() - Date.now();
+  const lastMinute = lead >= 30 * 60000 && lead < 2.5 * 3600000;
   const issue = !courts.length
     ? t('Pick at least one court.')
     : hoursLong < 1 || hoursLong > 8
       ? t('Pick a window between 1 and 8 hours.')
-      : startsAt.getTime() < Date.now() + 2.5 * 3600000
-        ? t('Pick a start at least 2½ hours from now.')
+      : lead < 30 * 60000
+        ? t('Pick a start at least 30 minutes from now.')
         : undefined;
 
   async function submit(event: SubmitEvent) {
@@ -272,6 +289,11 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
         </Field>
       </div>
       <p className="-mt-3 text-sm text-ink-tertiary">{t('A wider window makes a match more likely. Games last up to 2 hours.')}</p>
+      {lastMinute && (
+        <p className="tile bg-peach p-4 text-sm font-bold text-on-accent">
+          {t('Last-minute game: we only match players who are looking right now, and everyone has 5–10 minutes to confirm. Turn on automatic accept below so you don’t miss it.')}
+        </p>
+      )}
 
       <fieldset className="grid gap-2">
         <legend className="mb-2 font-extrabold">

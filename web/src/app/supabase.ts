@@ -65,6 +65,8 @@ export interface Ticket {
   status: 'searching' | 'offered' | 'matched' | 'paused' | 'expired' | 'cancelled';
   skill_tolerance: 1 | 2 | 8;
   auto_accept: boolean;
+  /** 开赛前 2.5 小时内发起：只配此刻也在找的人，确认期限短 */
+  last_minute: boolean;
   game_id: string | null;
   venues: Place[];
   offer: null | {
@@ -299,7 +301,7 @@ export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record
 
 /** 数据库函数报的错 → 给人看的话 */
 const problems: Record<string, string> = {
-  too_soon: 'Pick a start at least 2½ hours from now.',
+  too_soon: 'Pick a start at least 30 minutes from now.',
   too_far: 'You can plan up to two weeks ahead.',
   invalid_slot: 'Pick a time window between 1 and 8 hours.',
   invalid_venues: 'Pick 1 to 3 courts.',

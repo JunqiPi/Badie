@@ -47,7 +47,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "venue_rate_limited": return BackendError.venueRateLimited.localizedDescription
         case "venue_duplicate": return String(localized: "球馆库里已有这家球馆，请直接选择它。")
         // 约球
-        case "too_soon": return String(localized: "开始时间至少要在 2.5 小时后。")
+        case "too_soon": return String(localized: "开始时间至少要在 30 分钟后。")
         case "too_far": return String(localized: "最多只能提前两周安排。")
         case "invalid_slot": return String(localized: "时间范围请选 1–8 小时。")
         case "invalid_venues": return String(localized: "请选 1–3 个球馆。")

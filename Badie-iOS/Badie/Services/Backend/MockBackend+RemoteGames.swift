@@ -38,6 +38,7 @@ extension MockBackend {
         let endsAt: Date
         let respondBy: Date
         let myResponse: String
+        let lockAt: Date?
         let venue: RemotePlace
         let accepted: Int
         let players: [RemotePlayer]?
@@ -52,6 +53,7 @@ extension MockBackend {
         let skillTolerance: Int
         let autoAccept: Bool
         let lockAt: Date
+        let lastMinute: Bool?
         let gameId: String?
         let venues: [RemotePlace]?
         let offer: RemoteOffer?
@@ -110,7 +112,7 @@ extension MockBackend {
             let ticket = ticket(from: remoteTicket, me: me)
             ticketCache[ticket.id] = ticket
             if let remoteOffer = remoteTicket.offer {
-                offerCache[remoteOffer.id] = offer(from: remoteOffer, mode: ticket.mode)
+                offerCache[remoteOffer.id] = offer(from: remoteOffer, mode: ticket.mode, lastMinute: ticket.isLastMinute)
             }
         }
         var gameCache: [String: Game] = [:]
@@ -212,12 +214,12 @@ extension MockBackend {
             id: remote.id, userId: me.id, mode: GameMode(server: remote.mode),
             slot: TimeSlot(date: remote.startsAt, startTime: remote.startsAt, endTime: remote.endsAt),
             courtIds: (remote.venues ?? []).map(\.id), skillTolerance: remote.skillTolerance, radiusKm: 0,
-            origin: me.location ?? db.worldCenter, autoAccept: remote.autoAccept, isLastMinute: false, status: status,
+            origin: me.location ?? db.worldCenter, autoAccept: remote.autoAccept, isLastMinute: remote.lastMinute ?? false, status: status,
             createdAt: db.tickets[remote.id]?.createdAt ?? Date(), deadline: remote.lockAt, hasPriority: false, excludedUserIds: []
         )
     }
 
-    private func offer(from remote: RemoteOffer, mode: GameMode) -> MatchOffer {
+    private func offer(from remote: RemoteOffer, mode: GameMode, lastMinute: Bool) -> MatchOffer {
         let players = remote.players ?? []
         players.forEach { cachePlayer($0) }
         let slot = TimeSlot(date: remote.startsAt, startTime: remote.startsAt, endTime: remote.endsAt)
@@ -239,8 +241,9 @@ extension MockBackend {
             id: remote.id, mode: mode, slot: slot, commonOverlap: slot, court: court,
             teams: [1, 2].map { team in players.filter { $0.team == team }.map(\.id) },
             seats: seats, cost: CostSplit.estimate(court: court, slot: slot, mode: mode), compatibility: 0,
-            createdAt: db.offers[remote.id]?.createdAt ?? Date(), lockAt: remote.startsAt.addingTimeInterval(-MatchTiming.lockLead),
-            isLastMinute: false, status: .open, backfillCount: 0
+            createdAt: db.offers[remote.id]?.createdAt ?? Date(),
+            lockAt: remote.lockAt ?? MatchTiming.lock(start: remote.startsAt, lastMinute: lastMinute),
+            isLastMinute: lastMinute, status: .open, backfillCount: 0
         )
     }
 

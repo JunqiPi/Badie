@@ -240,6 +240,22 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(survey.matchId, "g1")
     }
 
+    func testLastMinuteRequestsComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        let iso = { (offset: TimeInterval) in ISO8601DateFormatter().string(from: Date().addingTimeInterval(offset)) }
+        let offer = #"{"id":"o2","starts_at":"\#(iso(3600))","ends_at":"\#(iso(3 * 3600))","respond_by":"\#(iso(600))","my_response":"pending","lock_at":"\#(iso(2400))","venue":\#(venue),"accepted":1,"players":\#(players())}"#
+        server.on("POST /rest/v1/rpc/my_matchmaking",
+                  #"[{"id":"t2","mode":"singles","starts_at":"\#(iso(3600))","ends_at":"\#(iso(3 * 3600))","status":"offered","skill_tolerance":1,"auto_accept":false,"lock_at":"\#(iso(2400))","last_minute":true,"game_id":null,"venues":[\#(venue)],"offer":\#(offer)}]"#)
+        server.on("POST /rest/v1/rpc/my_games", "[]")
+        await backend.refreshRemoteActivity()
+
+        let ticket = try XCTUnwrap(backend.myTickets().first)
+        XCTAssertTrue(ticket.isLastMinute, "服务器标的临时局")
+        let match = try XCTUnwrap(backend.offer(id: "o2"))
+        XCTAssertTrue(match.isLastMinute)
+        XCTAssertEqual(match.lockAt.timeIntervalSinceNow, 2400, accuracy: 2, "锁定时间用服务器给的（开赛前 20 分钟）")
+    }
+
     func testActionsCallTheServer() async throws {
         let backend = try await signedInBackend()
         let refresh = {

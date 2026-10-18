@@ -280,21 +280,16 @@ struct TicketEndedView: View {
                             ArrowButtonLabel(title: String(localized: "转为临时局继续找"))
                         }
                         .buttonStyle(.brutalPrimary)
-                        Text("只找 \(DistanceFormatter.radius(km: MatchTiming.lastMinuteRadiusKm)) 内此刻也在找人的球友，找到后会替你接受，等对方确认")
+                        Text("只找此刻也在找人的球友，找到后会替你接受，等对方确认")
                             .font(AppTheme.Typography.caption)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                             .multilineTextAlignment(.center)
                     }
-                    if matchManager.isRemote {
-                        Button("关闭") { matchManager.closeFlow() }
-                            .buttonStyle(.brutalSecondary)
-                    } else {
-                        Button("发起公开球局，让球友来找你") {
-                            matchManager.closeFlow()
-                            router.open(.createRoom(ticket.mode, invitee: nil), in: .games)
-                        }
-                        .buttonStyle(canGoLastMinute ? BrutalButtonStyle(kind: .secondary, size: .large) : BrutalButtonStyle(kind: .primary, size: .large))
+                    Button("发起公开球局，让球友来找你") {
+                        matchManager.closeFlow()
+                        router.open(.createRoom(ticket.mode, invitee: nil), in: .games)
                     }
+                    .buttonStyle(canGoLastMinute ? BrutalButtonStyle(kind: .secondary, size: .large) : BrutalButtonStyle(kind: .primary, size: .large))
                 default:
                     Button("关闭") { matchManager.closeFlow() }
                         .buttonStyle(.brutalSecondary)
@@ -306,7 +301,7 @@ struct TicketEndedView: View {
     }
 
     private var canGoLastMinute: Bool {
-        !matchManager.isRemote && !ticket.isLastMinute && MatchTiming.canRequest(start: ticket.slot.startTime)
+        !ticket.isLastMinute && MatchTiming.canRequest(start: ticket.slot.startTime)
     }
 
     private var icon: String {

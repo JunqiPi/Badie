@@ -141,7 +141,7 @@ final class MatchManager: ObservableObject {
 
     func user(id: String) -> User? { backend.user(id: id) }
 
-    /// 正式后端：服务器不支持的功能（临时局、附近人数、谁确认了、补位、房间）在界面上隐藏
+    /// 正式后端：服务器不提供的信息（附近人数、谁确认了、补位）在界面上隐藏
     var isRemote: Bool { backend.isRemote }
 
     // MARK: Tickets

@@ -1,7 +1,7 @@
 -- 约球规则测试（与 iOS MatchmakingTests / RankingTests 的规则一致）
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(54);
+select plan(57);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000001' || lpad(n::text, 2, '0'))::uuid, 'm' || n || '@test.local' from generate_series(1, 13) n;
@@ -31,8 +31,14 @@ select is(public.offer_respond_by('2026-10-25 19:00-07', '2026-10-20 15:00-07', 
           '2026-10-21 09:00-07'::timestamptz, '落在夜里：顺延到早上 9 点');
 select is(public.offer_respond_by('2026-10-20 22:00-07', '2026-10-20 12:00-07', 'America/Los_Angeles'),
           '2026-10-20 14:00-07'::timestamptz, '离开赛 6–26 小时：给 2 小时');
+select is(public.offer_respond_by('2026-10-20 19:00-07', '2026-10-20 15:30-07', 'America/Los_Angeles'),
+          '2026-10-20 16:00-07'::timestamptz, '离开赛 2.5–6 小时：给 30 分钟');
 select is(public.offer_respond_by('2026-10-20 15:00-07', '2026-10-20 12:45-07', 'America/Los_Angeles'),
-          '2026-10-20 13:00-07'::timestamptz, '不晚于开赛前 2 小时');
+          '2026-10-20 12:55-07'::timestamptz, '开赛前 2.5 小时内（临时局）：10 分钟');
+select is(public.offer_respond_by('2026-10-20 15:00-07', '2026-10-20 14:15-07', 'America/Los_Angeles'),
+          '2026-10-20 14:20-07'::timestamptz, '不到 1 小时：5 分钟');
+select is(public.offer_respond_by('2026-10-20 15:00-07', '2026-10-20 14:37-07', 'America/Los_Angeles'),
+          '2026-10-20 14:40-07'::timestamptz, '最晚开赛前 20 分钟');
 
 -- 资料与等级
 select pg_temp.login(1);
@@ -51,8 +57,10 @@ select set_config('role', 'anon', true);
 select throws_ok($$ select public.submit_ticket('singles', pg_temp.at(2, 18), pg_temp.at(2, 20), '{v-us-ca-21-badminton-club-21bc}', 1, false) $$,
                  '42501', null, '未登录不能发起');
 select pg_temp.login(1);
-select throws_ok($$ select public.submit_ticket('singles', now() + interval '1 hour', now() + interval '3 hours', '{v-us-ca-21-badminton-club-21bc}', 1, false) $$,
-                 '22023', null, '开赛前 2.5 小时内不能发起');
+select throws_ok($$ select public.submit_ticket('singles', to_timestamp(ceil(extract(epoch from now()) / 1800) * 1800),
+                                                to_timestamp(ceil(extract(epoch from now()) / 1800) * 1800) + interval '2 hours',
+                                                '{v-us-ca-21-badminton-club-21bc}', 1, false) $$,
+                 '22023', 'too_soon', '开赛前 30 分钟内不能发起');
 select throws_ok($$ select public.submit_ticket('singles', pg_temp.at(2, 18.2), pg_temp.at(2, 20), '{v-us-ca-21-badminton-club-21bc}', 1, false) $$,
                  '22023', null, '时间要对齐半点');
 select throws_ok($$ select public.submit_ticket('singles', pg_temp.at(2, 18), pg_temp.at(2, 20), '{no-such-venue}', 1, false) $$,

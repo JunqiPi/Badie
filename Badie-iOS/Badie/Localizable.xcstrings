@@ -15224,60 +15224,60 @@
         }
       }
     },
-    "临时局：只找 %@ 内此刻也在找人的球友，找到后要在 5–10 分钟内确认，建议打开上面的开关。" : {
+    "临时局：只匹配此刻也在找人的球友，找到后要在 5–10 分钟内确认，建议打开上面的开关。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Last-minute game: we only look for players within %@ who are also searching right now. Once someone's found, you'll have 5–10 minutes to confirm, so we recommend turning on the switch above."
+            "value" : "Last-minute game: we only match players who are also searching right now. Once someone's found, you'll have 5–10 minutes to confirm, so we recommend turning on the switch above."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "लास्ट-मिनट गेम: हम सिर्फ़ %@ के अंदर उन खिलाड़ियों को ढूँढते हैं जो अभी खोज रहे हैं। कोई मिलने पर आपके पास कन्फ़र्म करने के लिए 5–10 मिनट होंगे, इसलिए ऊपर वाला स्विच चालू रखें।"
+            "value" : "लास्ट-मिनट गेम: हम सिर्फ़ उन खिलाड़ियों से मिलाते हैं जो अभी खोज रहे हैं। कोई मिलने पर आपके पास कन्फ़र्म करने के लिए 5–10 मिनट होंगे, इसलिए ऊपर वाला स्विच चालू रखें।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Game dadakan: kami hanya mencari pemain dalam radius %@ yang juga sedang mencari saat ini. Begitu ketemu, kamu punya 5–10 menit untuk konfirmasi, jadi sebaiknya aktifkan tombol di atas."
+            "value" : "Game dadakan: kami hanya mencocokkan pemain yang juga sedang mencari saat ini. Begitu ketemu, kamu punya 5–10 menit untuk konfirmasi, jadi sebaiknya aktifkan tombol di atas."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "今すぐゲーム：%@ 以内で今まさに相手を探しているプレイヤーだけを探します。見つかったら 5〜10 分以内に確定する必要があるので、上のスイッチをオンにすることをおすすめします。"
+            "value" : "今すぐゲーム：今まさに相手を探しているプレイヤーとだけマッチします。見つかったら 5〜10 分以内に確定する必要があるので、上のスイッチをオンにすることをおすすめします。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "번개 게임: %@ 이내에서 지금 같이 찾고 있는 플레이어만 찾아요. 찾으면 5–10분 안에 확인해야 하니 위 스위치를 켜 두는 걸 추천해요."
+            "value" : "번개 게임: 지금 같이 찾고 있는 플레이어끼리만 매칭해요. 찾으면 5–10분 안에 확인해야 하니 위 스위치를 켜 두는 걸 추천해요."
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permainan saat akhir: kami hanya cari pemain dalam lingkungan %@ yang juga sedang mencari sekarang. Sebaik ada yang ditemui, anda ada 5–10 minit untuk mengesahkan, jadi kami syorkan hidupkan suis di atas."
+            "value" : "Permainan saat akhir: kami hanya padankan pemain yang juga sedang mencari sekarang. Sebaik ada yang ditemui, anda ada 5–10 minit untuk mengesahkan, jadi kami syorkan hidupkan suis di atas."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "เกมด่วน: หาเฉพาะผู้เล่นในระยะ %@ ที่กำลังหาคนอยู่ตอนนี้ เมื่อเจอแล้วต้องยืนยันภายใน 5–10 นาที แนะนำให้เปิดสวิตช์ด้านบน"
+            "value" : "เกมด่วน: จับคู่เฉพาะผู้เล่นที่กำลังหาคนอยู่ตอนนี้ เมื่อเจอแล้วต้องยืนยันภายใน 5–10 นาที แนะนำให้เปิดสวิตช์ด้านบน"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trận gấp: chỉ tìm người chơi trong %@ cũng đang tìm người lúc này. Khi tìm được, bạn có 5–10 phút để xác nhận, nên hãy bật công tắc phía trên."
+            "value" : "Trận gấp: chỉ ghép với người chơi cũng đang tìm người lúc này. Khi tìm được, bạn có 5–10 phút để xác nhận, nên hãy bật công tắc phía trên."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "臨時局：只找 %@ 內此刻也在找人的球友，找到後要在 5–10 分鐘內確認，建議開啟上方的開關。"
+            "value" : "臨時局：只配對此刻也在找人的球友，找到後要在 5–10 分鐘內確認，建議開啟上方的開關。"
           }
         }
       }
@@ -32689,60 +32689,60 @@
         }
       }
     },
-    "只找 %@ 内此刻也在找人的球友，找到后会替你接受，等对方确认" : {
+    "只找此刻也在找人的球友，找到后会替你接受，等对方确认" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Only looks for players within %@ who are searching right now. When someone's found, we'll accept for you and wait for them to confirm"
+            "value" : "Only looks for players who are searching right now. When someone's found, we'll accept for you and wait for them to confirm"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "सिर्फ़ %@ के अंदर उन खिलाड़ियों को ढूँढता है जो अभी खोज रहे हैं। कोई मिलने पर हम आपकी ओर से स्वीकार करके उनके कन्फ़र्म का इंतज़ार करेंगे"
+            "value" : "सिर्फ़ उन खिलाड़ियों को ढूँढता है जो अभी खोज रहे हैं। कोई मिलने पर हम आपकी ओर से स्वीकार करके उनके कन्फ़र्म का इंतज़ार करेंगे"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hanya mencari pemain dalam radius %@ yang sedang mencari saat ini. Begitu ketemu, kami terima untukmu dan menunggu dia konfirmasi"
+            "value" : "Hanya mencari pemain yang sedang mencari saat ini. Begitu ketemu, kami terima untukmu dan menunggu dia konfirmasi"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 以内で今まさに相手を探しているプレイヤーだけを探します。見つかったら代わりに承諾し、相手の確定を待ちます"
+            "value" : "今まさに相手を探しているプレイヤーだけを探します。見つかったら代わりに承諾し、相手の確定を待ちます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 이내에서 지금 같이 찾고 있는 플레이어만 찾아요. 찾으면 대신 수락하고 상대 확인을 기다려요"
+            "value" : "지금 같이 찾고 있는 플레이어만 찾아요. 찾으면 대신 수락하고 상대 확인을 기다려요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hanya mencari pemain dalam lingkungan %@ yang sedang mencari sekarang. Apabila ada yang ditemui, kami akan terima bagi pihak anda dan tunggu dia mengesahkan"
+            "value" : "Hanya mencari pemain yang sedang mencari sekarang. Apabila ada yang ditemui, kami akan terima bagi pihak anda dan tunggu dia mengesahkan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "หาเฉพาะผู้เล่นในระยะ %@ ที่กำลังหาคนอยู่ตอนนี้ เมื่อเจอแล้วเราจะตอบรับแทนคุณและรออีกฝ่ายยืนยัน"
+            "value" : "หาเฉพาะผู้เล่นที่กำลังหาคนอยู่ตอนนี้ เมื่อเจอแล้วเราจะตอบรับแทนคุณและรออีกฝ่ายยืนยัน"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chỉ tìm người chơi trong %@ cũng đang tìm người lúc này. Khi tìm được, chúng tôi sẽ chấp nhận thay bạn và chờ họ xác nhận"
+            "value" : "Chỉ tìm người chơi cũng đang tìm người lúc này. Khi tìm được, chúng tôi sẽ chấp nhận thay bạn và chờ họ xác nhận"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只找 %@ 內此刻也在找人的球友，找到後會替你接受，等對方確認"
+            "value" : "只找此刻也在找人的球友，找到後會替你接受，等對方確認"
           }
         }
       }
@@ -48868,60 +48868,60 @@
         }
       }
     },
-    "开始时间至少要在 2.5 小时后。" : {
+    "开始时间至少要在 30 分钟后。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pick a start at least 2½ hours from now."
+            "value" : "Pick a start at least 30 minutes from now."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "अभी से कम से कम 2½ घंटे बाद का शुरुआती समय चुनें।"
+            "value" : "अभी से कम से कम 30 मिनट बाद का शुरुआती समय चुनें।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pilih waktu mulai minimal 2½ jam dari sekarang."
+            "value" : "Pilih waktu mulai minimal 30 menit dari sekarang."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開始時刻は今から 2 時間半以上先にしてください。"
+            "value" : "開始時刻は今から 30 分以上先にしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "지금부터 2시간 반 이후의 시작 시간을 고르세요."
+            "value" : "지금부터 30분 이후의 시작 시간을 고르세요."
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pilih masa mula sekurang-kurangnya 2½ jam dari sekarang."
+            "value" : "Pilih masa mula sekurang-kurangnya 30 minit dari sekarang."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "เลือกเวลาเริ่มอย่างน้อย 2½ ชั่วโมงจากนี้"
+            "value" : "เลือกเวลาเริ่มอย่างน้อย 30 นาทีจากนี้"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn giờ bắt đầu cách bây giờ ít nhất 2,5 giờ."
+            "value" : "Chọn giờ bắt đầu cách bây giờ ít nhất 30 phút."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開始時間至少要在 2.5 小時後。"
+            "value" : "開始時間至少要在 30 分鐘後。"
           }
         }
       }
