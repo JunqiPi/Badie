@@ -373,6 +373,7 @@ struct AddFriendView: View {
 
     @State private var query = ""
     @State private var results: [User] = []
+    @State private var searchError: String?
     @State private var coPlayers: [User] = []
     @State private var regulars: [User] = []
 
@@ -381,19 +382,19 @@ struct AddFriendView: View {
             ScreenHeader(title: String(localized: "添加球友"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    // 正式后端只能加打过交道的人：没有按昵称搜索和同馆常客
-                    if !appState.isRemote {
-                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                            SearchField(text: $query, placeholder: String(localized: "搜索昵称或 4 位 ID"))
-                            if let me = appState.currentUser {
-                                Text("我的 ID：\(me.shortId)")
-                                    .font(AppTheme.Typography.footnoteBold)
-                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            }
-                        }
-                        if !query.isEmpty {
-                            section(title: String(localized: "搜索结果"), users: results, emptyText: String(localized: "没有找到“\(query)”"))
-                        }
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        SearchField(text: $query, placeholder: appState.isRemote ? String(localized: "搜索昵称") : String(localized: "搜索昵称或 4 位 ID"))
+                        // 正式后端没有 4 位 ID：只按昵称搜，搜得到的都是允许被搜到的人
+                        Text(appState.isRemote ? String(localized: "只会搜到允许被搜到的球友") : String(localized: "我的 ID：\(appState.currentUser?.shortId ?? "")"))
+                            .font(AppTheme.Typography.footnoteBold)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    }
+                    if let searchError {
+                        Label(searchError, systemImage: "exclamationmark.circle.fill")
+                            .font(AppTheme.Typography.footnoteBold)
+                            .foregroundStyle(AppTheme.Colors.danger)
+                    } else if !query.isEmpty {
+                        section(title: String(localized: "搜索结果"), users: results, emptyText: String(localized: "没有找到“\(query)”"))
                     }
                     section(title: String(localized: "一起打过球的人"), users: coPlayers, emptyText: String(localized: "打完球后，这里会出现一起打过的人"))
                     if !appState.isRemote {
@@ -408,8 +409,21 @@ struct AddFriendView: View {
             coPlayers = friendManager.recentCoPlayers()
             regulars = friendManager.venueRegulars().map(\.user).filter { !friendManager.isFriend($0.id) }
         }
-        .onChange(of: query) { _, value in
-            results = friendManager.searchDirectory(query: value)
+        .task(id: query) {
+            let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+            searchError = nil
+            guard text.count >= (appState.isRemote ? 2 : 1) else {
+                results = []
+                return
+            }
+            // 停止输入 0.3 秒后再搜（服务器限速）
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
+            do {
+                results = try await friendManager.findPlayers(query: text)
+            } catch {
+                searchError = (error as? LocalizedError)?.errorDescription
+            }
         }
     }
 

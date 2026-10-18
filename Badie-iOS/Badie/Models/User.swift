@@ -282,6 +282,21 @@ struct PrivacySettings: Codable, Hashable {
     var challengePolicy: ChallengePolicy = .similarLevel
     /// 出现在场馆榜和周榜上（关闭后仍能看榜，但自己不上榜）
     var showsOnLeaderboards = true
+    /// 别人可以按昵称搜到我（默认开启）
+    var findableByNickname = true
+}
+
+extension PrivacySettings {
+    /// 旧数据里没有的开关用默认值，加新开关时不让整份本地数据作废
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = PrivacySettings()
+        showsAsRegular = try container.decodeIfPresent(Bool.self, forKey: .showsAsRegular) ?? defaults.showsAsRegular
+        allowsMessageRequests = try container.decodeIfPresent(Bool.self, forKey: .allowsMessageRequests) ?? defaults.allowsMessageRequests
+        challengePolicy = try container.decodeIfPresent(ChallengePolicy.self, forKey: .challengePolicy) ?? defaults.challengePolicy
+        showsOnLeaderboards = try container.decodeIfPresent(Bool.self, forKey: .showsOnLeaderboards) ?? defaults.showsOnLeaderboards
+        findableByNickname = try container.decodeIfPresent(Bool.self, forKey: .findableByNickname) ?? defaults.findableByNickname
+    }
 }
 
 // MARK: - 用户

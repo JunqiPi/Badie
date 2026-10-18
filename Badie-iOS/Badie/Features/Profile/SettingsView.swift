@@ -99,6 +99,17 @@ struct SettingsView: View {
                                 }
                                 InsetDivider()
                             }
+                            Toggle(isOn: privacyBinding(\.findableByNickname)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("可以按昵称找到我")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("对方能看到你的昵称和等级，可以发好友申请")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
+                            InsetDivider()
                             challengePolicyRow
                             InsetDivider()
                             Toggle(isOn: privacyBinding(\.showsOnLeaderboards)) {

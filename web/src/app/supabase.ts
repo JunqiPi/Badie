@@ -17,6 +17,8 @@ export interface Profile {
   assessed_at: string | null;
   show_on_boards: boolean;
   challenge_policy: 'everyone' | 'similar' | 'friends' | 'nobody';
+  /** 别人可以按昵称搜到我 */
+  discoverable: boolean;
   /** 通知和邮件用的语言 */
   locale: Locale;
 }
@@ -264,6 +266,8 @@ export interface RoomDetail extends RoomSummary {
 }
 
 export type Friend = { id: string; nickname: string; rating: number; created_at?: string };
+/** 按昵称搜到的球友 */
+export type FoundPlayer = Friend & { mutual_friends: number; relationship: 'friend' | 'requested' | 'incoming' | 'none' };
 export type InboxCounts = { messages: number; updates: number; requests: number };
 
 export interface Update {
@@ -350,5 +354,6 @@ const problems: Record<string, string> = {
   not_room_owner: 'Only the host can do this.',
   not_enough_players: 'Start when every spot is filled.',
   too_many_invites: 'Invite up to 10 friends at a time.',
+  too_many_searches: 'You’re searching too fast. Try again in a few minutes.',
 };
 export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');

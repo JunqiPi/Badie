@@ -32515,6 +32515,64 @@
         }
       }
     },
+    "只会搜到允许被搜到的球友" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only players who allow it show up"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिर्फ़ वही खिलाड़ी दिखेंगे जिन्होंने इसकी अनुमति दी है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya pemain yang mengizinkan yang muncul"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索を許可しているプレイヤーだけが表示されます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색을 허용한 플레이어만 나와요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya pemain yang membenarkannya akan muncul"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จะแสดงเฉพาะผู้เล่นที่อนุญาตให้ค้นหา"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ hiện những người cho phép tìm kiếm"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只會搜到允許被搜到的球友"
+          }
+        }
+      }
+    },
     "只匹配也能去这些球馆的球友…" : {
       "localizations" : {
         "en" : {
@@ -33625,6 +33683,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "只能選擇未來 14 天內"
+          }
+        }
+      }
+    },
+    "可以按昵称找到我" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Let players find me by nickname"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खिलाड़ी मुझे निकनेम से ढूँढ सकें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Izinkan pemain menemukanku lewat nama panggilan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ニックネームで検索されてもよい"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닉네임으로 나를 찾을 수 있게 하기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Benarkan pemain mencari saya melalui nama panggilan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ให้ผู้เล่นค้นหาฉันด้วยชื่อเล่นได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cho phép người khác tìm tôi theo biệt danh"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以按暱稱找到我"
           }
         }
       }
@@ -40946,6 +41062,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "對方正在輸入"
+          }
+        }
+      }
+    },
+    "对方能看到你的昵称和等级，可以发好友申请" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They see your nickname and level, and can send a friend request"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उन्हें आपका निकनेम और लेवल दिखेगा, और वे फ़्रेंड रिक्वेस्ट भेज सकते हैं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mereka melihat nama panggilan dan levelmu, dan bisa mengirim permintaan teman"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ニックネームとレベルが表示され、友達申請を送れるようになります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대는 내 닉네임과 레벨을 보고 친구 신청을 보낼 수 있어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mereka nampak nama panggilan dan tahap anda, dan boleh hantar permintaan rakan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อีกฝ่ายจะเห็นชื่อเล่นและระดับของคุณ และส่งคำขอเป็นเพื่อนได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Họ thấy biệt danh và cấp của bạn, và có thể gửi lời mời kết bạn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對方能看到你的暱稱和等級，可以送出好友申請"
           }
         }
       }
@@ -59700,6 +59874,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜尋地址，快速移動圖釘"
+          }
+        }
+      }
+    },
+    "搜索太频繁了，过几分钟再试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You’re searching too fast. Try again in a few minutes."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आप बहुत जल्दी-जल्दी खोज रहे हैं। कुछ मिनट बाद फिर कोशिश करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu mencari terlalu cepat. Coba lagi beberapa menit lagi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "検索の回数が多すぎます。数分後にもう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검색이 너무 잦아요. 몇 분 뒤에 다시 해 보세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda mencari terlalu kerap. Cuba lagi dalam beberapa minit."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ค้นหาบ่อยเกินไป ลองใหม่ในอีกไม่กี่นาที"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn tìm quá nhanh. Hãy thử lại sau vài phút."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋太頻繁了，過幾分鐘再試。"
+          }
+        }
+      }
+    },
+    "搜索昵称" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search nicknames"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "निकनेम खोजें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cari nama panggilan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ニックネームで検索"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닉네임 검색"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cari nama panggilan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ค้นหาชื่อเล่น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tìm biệt danh"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋暱稱"
           }
         }
       }

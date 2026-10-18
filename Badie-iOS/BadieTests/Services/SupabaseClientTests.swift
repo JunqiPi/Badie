@@ -256,6 +256,32 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(match.lockAt.timeIntervalSinceNow, 2400, accuracy: 2, "锁定时间用服务器给的（开赛前 20 分钟）")
     }
 
+    func testPlayerSearchGoesToServer() async throws {
+        let backend = try await signedInBackend()
+        server.on("POST /rest/v1/rpc/find_players",
+                  #"[{"id":"\#(blake)","nickname":"Blake","rating":4.33,"mutual_friends":1,"relationship":"requested"}]"#)
+        let found = try await backend.remoteFindPlayers("bla")
+        XCTAssertEqual(found.map(\.nickname), ["Blake"])
+        XCTAssertEqual(server.json(0)["p_query"] as? String, "bla")
+        XCTAssertTrue(backend.hasPendingRequest(to: blake), "在别处申请过的也显示等待通过")
+
+        server.on("POST /rest/v1/rpc/find_players", status: 400, #"{"code":"54000","details":null,"hint":null,"message":"too_many_searches"}"#)
+        do {
+            _ = try await backend.remoteFindPlayers("bla")
+            XCTFail("限速要报错")
+        } catch {
+            XCTAssertEqual((error as? LocalizedError)?.errorDescription, RemoteError.server("too_many_searches").errorDescription)
+        }
+    }
+
+    func testOldPrivacySettingsStillDecode() throws {
+        let old = #"{"showsAsRegular":true,"allowsMessageRequests":false,"challengePolicy":"friends","showsOnLeaderboards":false}"#
+        let privacy = try JSONDecoder().decode(PrivacySettings.self, from: Data(old.utf8))
+        XCTAssertTrue(privacy.showsAsRegular)
+        XCTAssertFalse(privacy.showsOnLeaderboards)
+        XCTAssertTrue(privacy.findableByNickname, "旧数据里没有的开关用默认值")
+    }
+
     func testActionsCallTheServer() async throws {
         let backend = try await signedInBackend()
         let refresh = {

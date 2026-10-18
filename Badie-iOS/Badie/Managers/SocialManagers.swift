@@ -36,8 +36,9 @@ final class FriendManager: ObservableObject {
         return friends.filter { $0.nickname.localizedCaseInsensitiveContains(text) }
     }
 
-    func searchDirectory(query: String) -> [User] {
-        backend.searchUsers(query: query)
+    /// 按昵称搜球友：正式后端去服务器搜（只搜得到允许被搜到的人），演示模式搜本机
+    func findPlayers(query: String) async throws -> [User] {
+        backend.isRemote ? try await backend.remoteFindPlayers(query) : backend.searchUsers(query: query)
     }
 
     /// 同馆常客（对方开启了才显示）

@@ -100,6 +100,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "not_room_owner": return BackendError.notRoomOwner.localizedDescription
         case "not_enough_players": return String(localized: "人还没齐，满员后才能开始。")
         case "too_many_invites": return String(localized: "一次最多邀请 10 位好友。")
+        case "too_many_searches": return String(localized: "搜索太频繁了，过几分钟再试。")
         default: return String(localized: "出了点问题，请重试。")
         }
     }

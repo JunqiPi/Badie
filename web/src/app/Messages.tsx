@@ -2,9 +2,9 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type S
 import { tier } from './assessment';
 import { t } from './i18n';
 import { Link } from './router';
-import { problem, supabase, useLive, type Friend, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
+import { problem, supabase, useLive, type FoundPlayer, type Friend, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
 import { day, hours, relative } from './time';
-import { Button, EmptyState, PageHeader, Skeleton, toast } from './ui';
+import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
 
 const tabs = [['chats', 'Chats'], ['updates', 'Updates'], ['friends', 'Friends']] as const;
 type Tab = (typeof tabs)[number][0];
@@ -118,6 +118,7 @@ function Friends() {
   if (!data) return <List>{[0, 1].map((i) => <Skeleton key={i} className="h-16" />)}</List>;
   return (
     <div className="grid gap-8">
+      <FindPlayers onAdded={refresh} />
       {data.requests.length > 0 && (
         <section aria-labelledby="requests" className="grid gap-3">
           <h2 id="requests" className="eyebrow">{t('Friend requests')}</h2>
@@ -147,6 +148,69 @@ function Friends() {
         )}
       </section>
     </div>
+  );
+}
+
+/** 按昵称搜球友：只搜得到允许被搜到的人；停止输入 300 毫秒后再搜（服务器限速） */
+function FindPlayers({ onAdded }: { onAdded: () => void }) {
+  const [query, setQuery] = useState('');
+  const [found, setFound] = useState<FoundPlayer[]>();
+  const [error, setError] = useState<string>();
+  const [busy, setBusy] = useState<string>();
+
+  useEffect(() => {
+    const q = query.trim();
+    setError(undefined);
+    if (q.length < 2) return setFound(undefined);
+    let current = true;
+    const timer = setTimeout(async () => {
+      const { data, error } = await supabase!.rpc('find_players', { p_query: q });
+      if (!current) return;
+      if (error) setError(problem(error));
+      else setFound(data as FoundPlayer[]);
+    }, 300);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [query]);
+
+  async function add(id: string) {
+    setBusy(id);
+    const { data, error } = await supabase!.rpc('send_friend_request', { p_user: id });
+    setBusy(undefined);
+    if (error) return toast(problem(error), 'error');
+    toast(data === 'friends' ? t('You’re now friends') : t('Friend request sent'));
+    setFound(found?.map((p) => (p.id === id ? { ...p, relationship: data === 'friends' ? 'friend' : 'requested' } : p)));
+    onAdded();
+  }
+
+  return (
+    <section aria-labelledby="find" className="grid gap-3">
+      <h2 id="find" className="eyebrow">{t('Find players')}</h2>
+      <Field label={t('Nickname')} hint={t('Only players who allow it show up.')} error={error}>
+        {(props) => (
+          <input {...props} type="search" value={query} maxLength={12} autoComplete="off" spellCheck={false}
+                 onChange={(e) => setQuery(e.target.value)} className="field" />
+        )}
+      </Field>
+      {found?.length === 0 && <p className="text-ink-secondary">{t('No one by that name. They may have turned off search.')}</p>}
+      {found?.map((p) => (
+        <div key={p.id} className="tile flex items-center gap-3 bg-surface p-4">
+          <Link to={`/app/players/${p.id}/`} className="min-w-0 flex-1">
+            <span className="block truncate font-black">{p.nickname}</span>
+            <span className="text-sm font-bold text-ink-tertiary">
+              {t('Level {level}', { level: tier(p.rating).label })}
+              {p.mutual_friends > 0 && ` · ${t('{n} friend in common|{n} friends in common', { n: p.mutual_friends })}`}
+            </span>
+          </Link>
+          {p.relationship === 'friend' ? <span className="chip bg-mint">{t('Friend')}</span>
+            : p.relationship === 'requested' ? <span className="chip bg-surface-muted text-ink">{t('Requested')}</span>
+            : p.relationship === 'incoming' ? <span className="chip bg-butter">{t('Wants to be friends')}</span>
+            : <Button busy={busy === p.id} disabled={Boolean(busy)} onClick={() => add(p.id)}>{t('Add friend')}</Button>}
+        </div>
+      ))}
+    </section>
   );
 }
 

@@ -14,6 +14,7 @@ extension MockBackend {
         let assessedAt: Date?
         let showOnBoards: Bool
         let challengePolicy: String
+        let discoverable: Bool?
         let locale: String
         let createdAt: Date?
     }
@@ -133,6 +134,7 @@ extension MockBackend {
         if let createdAt = profile.createdAt { user.joinDate = createdAt }
         user.privacy.showsOnLeaderboards = profile.showOnBoards
         user.privacy.challengePolicy = ChallengePolicy(server: profile.challengePolicy)
+        user.privacy.findableByNickname = profile.discoverable ?? true
         db.users[user.id] = user
         let signingIn = db.currentUserId != user.id
         db.currentUserId = user.id

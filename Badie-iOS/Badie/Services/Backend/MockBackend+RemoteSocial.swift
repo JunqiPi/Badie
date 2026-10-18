@@ -246,6 +246,29 @@ extension MockBackend {
         try await refreshRemoteSocial()
     }
 
+    private struct FoundPlayer: Decodable {
+        let id: String
+        let nickname: String
+        let rating: Double
+        let relationship: String
+    }
+
+    /// 按昵称搜球友：服务器只返回允许被搜到的人（不含屏蔽关系），并限速
+    func remoteFindPlayers(_ query: String) async throws -> [User] {
+        guard let me = currentUserId else { throw RemoteError.notSignedIn }
+        let found: [FoundPlayer] = try await requireRemote().rpc("find_players", ["p_query": query])
+        for player in found {
+            cacheRemoteUser(id: player.id, nickname: player.nickname, rating: player.rating)
+            // 在别的设备上申请过的，也显示“等待通过”
+            if player.relationship == "requested", !db.friendRequests.contains(where: { $0.fromUserId == me && $0.toUserId == player.id }) {
+                db.friendRequests.append(FriendRequest(id: "request-\(me)-\(player.id)", fromUserId: me, toUserId: player.id, note: "",
+                                                       sentAt: Date(), status: .pending))
+                emit(.friendRequestsChanged)
+            }
+        }
+        return found.compactMap { db.users[$0.id] }
+    }
+
     func remoteReport(_ userId: String, reason: ReportReason, detail: String) async throws {
         let remote = try requireRemote()
         let serverReason: String

@@ -39,9 +39,10 @@ grant select on g to authenticated;
 update public.game_players set checked_in_at = now() - interval '2 hours' where game_id = (select recent from g) and user_id in (pg_temp.u(1), pg_temp.u(2), pg_temp.u(4));
 
 -- 资料页只对有交集的人开放
+update public.profiles set discoverable = false where id = pg_temp.u(9);
 select pg_temp.login(1);
 select isnt(public.player_card(pg_temp.u(2)), null, '同一场打过球：能看资料');
-select is(public.player_card(pg_temp.u(9)), null, '没有交集：看不到');
+select is(public.player_card(pg_temp.u(9)), null, '没有交集、也不让搜到：看不到');
 select is(public.player_card(pg_temp.u(2)) ->> 'relationship', 'none', '还不是球友');
 select is((public.player_card(pg_temp.u(2)) ->> 'games_together')::int, 2, '一起打过的场次');
 select is(public.player_card(pg_temp.u(2)) ->> 'games_band', '1–4 games', '场次只给分档');
@@ -101,7 +102,7 @@ select throws_ok($$ select public.send_message('game', (select recent from g), '
 -- 好友申请
 select pg_temp.login(3);
 select is(public.send_friend_request(pg_temp.u(4)), 'requested', '可以给打过球的人发申请');
-select throws_ok($$ select public.send_friend_request(pg_temp.u(9)) $$, '42501', null, '不能给陌生人发申请');
+select throws_ok($$ select public.send_friend_request(pg_temp.u(9)) $$, '42501', null, '不能给不让搜到的陌生人发申请');
 select pg_temp.login(4);
 select is(jsonb_array_length(public.my_friends() -> 'requests'), 1, '收到申请');
 select lives_ok($$ select public.respond_friend_request(pg_temp.u(3), false) $$, '可以忽略');

@@ -113,17 +113,28 @@ const policies = [
   ['nobody', 'No one'],
 ] as const;
 
-/** 上榜和约战设置：改了马上保存 */
+/** 被搜到、上榜和约战设置：界面马上切换并保存，失败就切回去 */
 function Settings({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
-  async function save(patch: Partial<Pick<Profile, 'show_on_boards' | 'challenge_policy'>>) {
+  async function save(patch: Partial<Pick<Profile, 'discoverable' | 'show_on_boards' | 'challenge_policy'>>) {
+    onChange({ ...profile, ...patch });
     const { data, error } = await supabase!.from('profiles').update(patch).eq('id', profile.id).select().single();
-    if (error) return toast(t('Couldn’t save. Try again.'), 'error');
+    if (error) {
+      onChange(profile);
+      return toast(t('Couldn’t save. Try again.'), 'error');
+    }
     onChange(data as Profile);
     toast(t('Saved'));
   }
   return (
     <section aria-labelledby="settings" className="tile mt-6 grid gap-5 bg-surface p-6">
-      <h2 id="settings" className="eyebrow">{t('Rankings and challenges')}</h2>
+      <h2 id="settings" className="eyebrow">{t('Who can find me')}</h2>
+      <label className="flex items-start gap-3">
+        <input type="checkbox" checked={profile.discoverable} onChange={(e) => save({ discoverable: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
+        <span>
+          <span className="block font-extrabold">{t('Let players find me by nickname')}</span>
+          <span className="block text-sm text-ink-tertiary">{t('They see your nickname and level, and can send a friend request.')}</span>
+        </span>
+      </label>
       <label className="flex items-start gap-3">
         <input type="checkbox" checked={profile.show_on_boards} onChange={(e) => save({ show_on_boards: e.target.checked })} className="mt-1 size-5 accent-[var(--color-lime)]" />
         <span>

@@ -317,7 +317,8 @@ final class MockBackend {
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))
-        pushRemote(["show_on_boards": privacy.showsOnLeaderboards, "challenge_policy": privacy.challengePolicy.serverValue])
+        pushRemote(["show_on_boards": privacy.showsOnLeaderboards, "challenge_policy": privacy.challengePolicy.serverValue,
+                    "discoverable": privacy.findableByNickname])
     }
 
     func updateProfile(_ updated: User) async throws -> User {
