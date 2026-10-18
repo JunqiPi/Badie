@@ -3,6 +3,7 @@ import { gapText } from './assessment';
 import { money } from './Courts';
 import { t } from './i18n';
 import { Players } from './Play';
+import { PartnerSelect } from './Player';
 import { Reviews } from './Review';
 import { Link } from './router';
 import { GamesTabs } from './Rankings';
@@ -311,6 +312,8 @@ function Fees({ game: g, busy, act }: {
 function Challenges() {
   const { data, refresh } = useLive<MyChallenges>('my_challenges', { every: 60_000 });
   const [busy, setBusy] = useState<string>();
+  // 双打挑战：接受前选的搭档
+  const [partners, setPartners] = useState<Record<string, string>>({});
   if (!data || (data.incoming.length === 0 && data.outgoing.length === 0)) return null;
 
   async function act(name: string, fn: string, args: Record<string, unknown>, done: string) {
@@ -328,15 +331,22 @@ function Challenges() {
       {data.incoming.map((c) => (
         <article key={c.id} className="sticker grid gap-3 bg-butter p-5 text-on-accent">
           <p className="font-black">
-            <Link to={`/app/players/${c.player.id}/`} className="underline">{c.player.nickname}</Link> {t('challenged you to singles')}
+            <Link to={`/app/players/${c.player.id}/`} className="underline">{c.player.nickname}</Link>{' '}
+            {c.partner ? t('and {partner} challenged you to doubles', { partner: c.partner.nickname }) : t('challenged you to singles')}
           </p>
           <p className="font-bold">
             {day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} · {c.venue.name}
           </p>
           {c.message && <p className="font-medium">“{c.message}”</p>}
           <p className="text-sm font-semibold">{t('Answer by {date}. Declining is fine, they’ll only see it didn’t happen.', { date: day(c.expires_at, c.venue.tz) })}</p>
+          {c.partner && (
+            <PartnerSelect exclude={[c.player.id, c.partner.id]} value={partners[c.id] ?? ''} onChange={(id) => setPartners({ ...partners, [c.id]: id })} />
+          )}
           <div className="flex flex-wrap gap-2">
-            <Button busy={busy === `yes-${c.id}`} disabled={Boolean(busy)} onClick={() => act(`yes-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: true }, t('Game on!'))}>{t('Accept')}</Button>
+            <Button busy={busy === `yes-${c.id}`} disabled={Boolean(busy) || Boolean(c.partner && !partners[c.id])}
+                    onClick={() => act(`yes-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: true, p_partner: partners[c.id] ?? null }, t('Game on!'))}>
+              {t('Accept')}
+            </Button>
             <Button variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: false }, t('Declined'))}>{t('Decline')}</Button>
           </div>
         </article>
@@ -344,7 +354,9 @@ function Challenges() {
       {data.outgoing.map((c) => (
         <article key={c.id} className="tile flex flex-wrap items-center justify-between gap-3 bg-surface p-4">
           <span className="min-w-0">
-            <span className="block font-black">{t('You challenged {name}', { name: c.player.nickname })}</span>
+            <span className="block font-black">
+              {c.partner ? t('You and {partner} challenged {name}', { partner: c.partner.nickname, name: c.player.nickname }) : t('You challenged {name}', { name: c.player.nickname })}
+            </span>
             <span className="block text-sm text-ink-secondary">{day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} · {c.venue.name}</span>
           </span>
           {c.status === 'pending' ? (

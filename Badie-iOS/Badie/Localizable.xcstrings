@@ -90481,6 +90481,64 @@
         }
       }
     },
+    "请选一位那段时间有空的球友当搭档。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick a friend who’s free then as your partner."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उस समय खाली किसी दोस्त को पार्टनर चुनें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih teman yang kosong saat itu sebagai pasangan."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その時間に空いている友だちをパートナーに選んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그 시간에 시간이 되는 친구를 파트너로 골라 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih rakan yang lapang pada masa itu sebagai pasangan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกเพื่อนที่ว่างช่วงนั้นเป็นคู่ของคุณ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy chọn một người bạn rảnh lúc đó làm bạn đánh cặp."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請選一位那段時間有空的球友當搭檔。"
+          }
+        }
+      }
+    },
     "请选择上面已有的球馆" : {
       "localizations" : {
         "en" : {

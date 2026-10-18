@@ -174,6 +174,9 @@ export interface VenueBoard {
 
 type ChallengeBase = {
   id: string;
+  mode: Mode;
+  /** 双打：发起人带的搭档 */
+  partner: { id: string; nickname: string; rating: number } | null;
   starts_at: string;
   ends_at: string;
   venue: { name: string; tz: string | null };
@@ -356,6 +359,7 @@ const problems: Record<string, string> = {
   no_request: 'This friend request is no longer open.',
   invalid_schedule: 'Add 1 to 3 weekly sessions.',
   no_contact_info: 'Leave out phone numbers and links.',
+  invalid_partner: 'Pick a friend who’s free then as your partner.',
   request_pending: 'You already sent a message request. Wait for them to accept.',
   too_many_message_requests: 'You’ve sent a lot of message requests today. Try again tomorrow.',
   too_many_groups: 'You’ve reached the limit for groups.',

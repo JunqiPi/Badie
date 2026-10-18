@@ -3,7 +3,7 @@ import { gapText, tier } from './assessment';
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Link } from './router';
-import { problem, supabase, useLive, type PlayerCard } from './supabase';
+import { problem, supabase, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
 import { day, halfHours, today, zoned } from './time';
 import { Button, EmptyState, Field, Skeleton, toast } from './ui';
 
@@ -233,9 +233,28 @@ const challengeReasons: Record<string, string> = {
   target_busy: 'They have too many open challenges right now.',
 };
 
-/** 单打约战：选球馆和时间，对方 48 小时内回应 */
+/** 双打的搭档：自己的球友，不能是对面的人 */
+export function PartnerSelect({ exclude, value, onChange }: { exclude: string[]; value: string; onChange: (id: string) => void }) {
+  const { data } = useLive<{ friends: Friend[] }>('my_friends', { every: 300_000 });
+  const friends = data?.friends.filter((f) => !exclude.includes(f.id));
+  if (friends?.length === 0) return <p className="font-semibold">{t('Add a friend first to play doubles.')}</p>;
+  return (
+    <Field label={t('Your partner')} hint={t('A friend who’s free then.')}>
+      {(props) => (
+        <select {...props} value={value} onChange={(e) => onChange(e.target.value)} className="field">
+          <option value="">{t('Pick a friend')}</option>
+          {friends?.map((f) => <option key={f.id} value={f.id}>{f.nickname}</option>)}
+        </select>
+      )}
+    </Field>
+  );
+}
+
+/** 约战：单打或带一位球友打双打；选球馆和时间，对方 48 小时内回应 */
 function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void }) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>('singles');
+  const [partner, setPartner] = useState('');
   const [court, setCourt] = useState<Court>();
   const tz = court?.time_zone_id ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [date, setDate] = useState(() => today(tz, 1));
@@ -251,7 +270,7 @@ function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void 
   if (!open) {
     return (
       <div>
-        <Button variant="quiet" onClick={() => setOpen(true)}>{t('Challenge to singles')}</Button>
+        <Button variant="quiet" onClick={() => setOpen(true)}>{t('Challenge')}</Button>
       </div>
     );
   }
@@ -262,11 +281,13 @@ function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void 
     const ends = zoned(date, to, tz);
     const length = (ends.getTime() - starts.getTime()) / 3600000;
     if (!court) return setError(t('Pick a court.'));
+    if (mode === 'doubles' && !partner) return setError(t('Pick your partner.'));
     if (length < 1 || length > 3) return setError(t('Pick 1 to 3 hours.'));
     if (starts.getTime() < Date.now() + 2 * 3600000) return setError(t('Pick a start at least 2 hours from now.'));
     setBusy(true);
     const { error } = await supabase!.rpc('send_challenge', {
       p_target: card.id, p_venue: court.id, p_starts_at: starts.toISOString(), p_ends_at: ends.toISOString(), p_message: message,
+      p_partner: mode === 'doubles' ? partner : null,
     });
     setBusy(false);
     if (error) return setError(problem(error));
@@ -278,7 +299,22 @@ function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void 
   const times = halfHours();
   return (
     <form onSubmit={send} noValidate aria-labelledby="challenge" className="sticker grid gap-4 p-6">
-      <h2 id="challenge" className="text-lg font-black">{t('Challenge {name} to singles', { name: card.nickname })}</h2>
+      <h2 id="challenge" className="text-lg font-black">
+        {mode === 'doubles' ? t('Challenge {name} to doubles', { name: card.nickname }) : t('Challenge {name} to singles', { name: card.nickname })}
+      </h2>
+      <div role="group" aria-label={t('Game type')} className="flex gap-2">
+        {(['singles', 'doubles'] as const).map((value) => (
+          <button key={value} type="button" onClick={() => setMode(value)} aria-pressed={mode === value} className="toggle">
+            {value === 'doubles' ? t('Doubles') : t('Singles')}
+          </button>
+        ))}
+      </div>
+      {mode === 'doubles' && (
+        <>
+          <PartnerSelect exclude={[card.id]} value={partner} onChange={setPartner} />
+          <p className="text-sm text-ink-tertiary">{t('{name} picks a partner when they accept.', { name: card.nickname })}</p>
+        </>
+      )}
       <div className="grid gap-2">
         <p className="font-extrabold">{t('Court')}</p>
         {court ? (

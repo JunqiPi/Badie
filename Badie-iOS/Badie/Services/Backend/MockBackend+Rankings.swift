@@ -277,11 +277,7 @@ extension MockBackend {
     @discardableResult
     func sendChallenge(to targetId: String, court: BadmintonCourt, slot: TimeSlot, message: String,
                        partnerId: String? = nil) async throws -> Challenge {
-        if isRemote {
-            // 服务器只支持单打挑战
-            guard partnerId == nil else { throw BackendError.challengeUnavailable(ChallengeAvailability.unavailable.reason ?? "") }
-            return try await remoteSendChallenge(to: targetId, court: court, slot: slot, message: message)
-        }
+        if isRemote { return try await remoteSendChallenge(to: targetId, court: court, slot: slot, message: message, partnerId: partnerId) }
         let me = try requireUser()
         let availability = challengeAvailability(for: targetId)
         if let reason = availability.reason { throw BackendError.challengeUnavailable(reason) }
@@ -308,7 +304,7 @@ extension MockBackend {
     /// 接受：生成一场球局（计入排行；双打需选自己的搭档）；拒绝：对方只会看到“未成行”
     @discardableResult
     func respondToChallenge(id: String, accept: Bool, partnerId: String? = nil) async throws -> Game? {
-        if isRemote { return try await remoteRespondToChallenge(id: id, accept: accept) }
+        if isRemote { return try await remoteRespondToChallenge(id: id, accept: accept, partnerId: partnerId) }
         let me = try requireUser()
         guard var challenge = db.challenges[id], challenge.targetId == me.id,
               challenge.status == .pending, !challenge.isExpired() else { throw BackendError.challengeNotFound }

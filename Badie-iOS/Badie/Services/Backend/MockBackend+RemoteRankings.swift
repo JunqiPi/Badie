@@ -71,6 +71,8 @@ extension MockBackend {
             let gameId: String?
             let venue: Venue
             let player: Player
+            /// 双打：发起人带的搭档
+            let partner: Player?
         }
 
         let incoming: [Item]
@@ -186,7 +188,9 @@ extension MockBackend {
     }
 
     private func challenge(_ item: RemoteChallenges.Item, challenger: String, target: String, status: ChallengeStatus) -> Challenge {
-        cacheRemoteUser(id: item.player.id, nickname: item.player.nickname, rating: item.player.rating)
+        for player in [item.player, item.partner].compactMap({ $0 }) {
+            cacheRemoteUser(id: player.id, nickname: player.nickname, rating: player.rating)
+        }
         let court = db.challenges[item.id]?.court ?? BadmintonCourt(
             id: "challenge-\(item.id)", name: item.venue.name, location: Coordinate(latitude: 0, longitude: 0),
             address: PostalAddress(street: "", city: "", region: "", countryCode: CountryInfo.deviceCountry.code),
@@ -198,12 +202,14 @@ extension MockBackend {
                                   slot: TimeSlot(date: item.startsAt, startTime: item.startsAt, endTime: item.endsAt),
                                   message: item.message ?? "", createdAt: createdAt, status: status)
         challenge.gameId = item.gameId
+        challenge.challengerPartnerId = item.partner?.id
         return challenge
     }
 
     // MARK: 操作
 
-    func remoteSendChallenge(to targetId: String, court: BadmintonCourt, slot: TimeSlot, message: String) async throws -> Challenge {
+    func remoteSendChallenge(to targetId: String, court: BadmintonCourt, slot: TimeSlot, message: String,
+                             partnerId: String?) async throws -> Challenge {
         let remote = try requireRemote()
         let id: String = try await remote.rpc("send_challenge", [
             "p_target": targetId,
@@ -211,6 +217,7 @@ extension MockBackend {
             "p_starts_at": Self.iso(slot.startTime),
             "p_ends_at": Self.iso(slot.endTime),
             "p_message": message.trimmingCharacters(in: .whitespacesAndNewlines),
+            "p_partner": partnerId ?? NSNull(),
         ])
         remoteChallengeStatus[targetId] = "already_pending"
         try await refreshRemoteChallenges()
@@ -218,9 +225,10 @@ extension MockBackend {
         return challenge
     }
 
-    func remoteRespondToChallenge(id: String, accept: Bool) async throws -> Game? {
+    func remoteRespondToChallenge(id: String, accept: Bool, partnerId: String?) async throws -> Game? {
         let remote = try requireRemote()
-        let gameId = try await remote.rpc("respond_challenge", ["p_challenge": id, "p_accept": accept], as: String?.self)
+        let gameId = try await remote.rpc("respond_challenge", ["p_challenge": id, "p_accept": accept, "p_partner": partnerId ?? NSNull()],
+                                          as: String?.self)
         try await refreshRemoteChallenges()
         await refreshRemoteActivity()
         return gameId.flatMap { db.games[$0] }

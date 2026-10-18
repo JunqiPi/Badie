@@ -46,7 +46,7 @@ await alex.getByRole('heading', { name: 'Court champions' }).waitFor();
 await alex.waitForFunction(() => !document.querySelector('.skeleton'));
 if (await alex.getByText('Alex (you)').count()) throw new Error('this week’s games showed up on last week’s board');
 await alex.getByRole('button', { name: 'This week' }).click();
-await alex.getByText('38 pts').waitFor();
+await alex.getByRole('listitem').filter({ hasText: 'Alex (you)' }).getByText('38 pts').waitFor();
 
 // 资料页的胜率（自己看得到，3 场还不公开）
 await alex.getByRole('link', { name: /Alex \(you\)/ }).click();
@@ -55,7 +55,7 @@ await alex.getByText('Others see this from 5 confirmed games.').waitFor();
 
 // Alex 向 Blake 发起挑战，Blake 接受
 await alex.goto(`${base}/app/players/${ids.blake}/`);
-await alex.getByRole('button', { name: 'Challenge to singles' }).click();
+await alex.getByRole('button', { name: 'Challenge', exact: true }).click();
 await alex.getByRole('combobox', { name: 'Court' }).fill('Los Angeles Badminton');
 await alex.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
 await alex.getByLabel('Message (optional)').fill('Best of three?');

@@ -748,10 +748,25 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(server.json(0)["p_target"] as? String, blake)
         XCTAssertEqual(server.json(0)["p_venue"] as? String, "v1")
         XCTAssertEqual(server.json(0)["p_message"] as? String, "Rematch?")
-        do {
-            _ = try await backend.sendChallenge(to: blake, court: court, slot: slot, message: "", partnerId: "someone")
-            XCTFail("服务器只支持单打挑战")
-        } catch {}
+        XCTAssertTrue(server.json(0)["p_partner"] is NSNull, "单打不带搭档")
+
+        // 双打：发起时带搭档，接受时选自己的搭档
+        let casey = "6f1c2c3e-0000-4000-8000-000000000003"
+        server.requests = []
+        server.on("POST /rest/v1/rpc/send_challenge", #""c4""#)
+        server.on("POST /rest/v1/rpc/my_challenges",
+                  #"{"incoming":[{"id":"c5","starts_at":"\#(start)","ends_at":"\#(end)","message":"","expires_at":"\#(expires)","mode":"doubles","venue":{"name":"Court","tz":null},"player":{"id":"\#(blake)","nickname":"Blake","rating":4.33},"partner":{"id":"\#(casey)","nickname":"Casey","rating":4}}],"outgoing":[]}"#)
+        _ = try? await backend.sendChallenge(to: blake, court: court, slot: slot, message: "", partnerId: casey)
+        XCTAssertEqual(server.json(0)["p_partner"] as? String, casey)
+        let doubles = try XCTUnwrap(backend.challenges().first { $0.id == "c5" })
+        XCTAssertEqual(doubles.mode, .doubles)
+        XCTAssertEqual(doubles.challengerPartnerId, casey)
+        XCTAssertEqual(backend.user(id: casey)?.nickname, "Casey")
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/respond_challenge", "null")
+        _ = try? await backend.respondToChallenge(id: "c5", accept: true, partnerId: "dana")
+        XCTAssertEqual(server.json(0)["p_partner"] as? String, "dana")
     }
 
     func testAdminFlagComesFromServer() async throws {

@@ -323,10 +323,7 @@ struct ChallengeComposer: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    // 正式后端的挑战只有单打
-                    if !appState.isRemote {
-                        SegmentedSticker(options: GameMode.allCases, selection: $mode, title: { $0.title })
-                    }
+                    SegmentedSticker(options: GameMode.allCases, selection: $mode, title: { $0.title })
 
                     if mode == .doubles {
                         group(String(localized: "你的搭档")) {
