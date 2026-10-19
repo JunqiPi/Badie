@@ -145,7 +145,7 @@ function Footer() {
   const columns: [string, [string, string][]][] = [
     ['Play', [['Home', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Regular games', '/groups/']]],
     ['Courts', [['Nearby venues', '/courts/'], ['Level Chart', '/levels/'], ['Leaderboard', '/rankings/']]],
-    ['Badie', [['About Badie', '/about/'], ['Me', '/me/']]],
+    ['Badie', [['About Badie', '/about/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
   ];
   return (
     <footer className="hidden border-t-2 border-stroke/10 lg:block">

@@ -122,6 +122,10 @@ export function About() {
         <p className="text-subhead">{t('Badie works on the web on any phone or computer, no download needed. The iPhone app is in testing.')}</p>
         <Link to="/" className="button justify-self-start">{t('Open Badie')}</Link>
       </section>
+      <p className="flex gap-4 text-footnote font-bold">
+        <Link to="/privacy/" className="link">{t('Privacy Policy')}</Link>
+        <Link to="/terms/" className="link">{t('Terms of Service')}</Link>
+      </p>
     </div>
   );
 }

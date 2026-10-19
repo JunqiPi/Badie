@@ -217,6 +217,11 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Divider />
         <DeleteAccount avatar={profile.avatar_path} />
       </Group>
+
+      <p className="flex justify-center gap-4 text-footnote font-bold">
+        <Link to="/privacy/" className="link">{t('Privacy Policy')}</Link>
+        <Link to="/terms/" className="link">{t('Terms of Service')}</Link>
+      </p>
     </div>
   );
 }

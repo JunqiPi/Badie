@@ -151,6 +151,8 @@ struct SettingsView: View {
                             privacyLine(String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"))
                             privacyLine(String(localized: "评价匿名汇总，不展示单条评价与评价人"))
                             privacyLine(String(localized: "屏蔽对方不会通知对方"))
+                            LegalLinks()
+                                .padding(.top, AppTheme.Spacing.xs)
                         }
                         .card(AppTheme.Colors.surface, shadow: .zero)
                     }

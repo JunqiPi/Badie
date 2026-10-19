@@ -1,0 +1,38 @@
+---
+// 隐私政策、用户协议：英文正文（美国是首发市场，法律文本以英文为准），外壳和其他静态页面一样
+import Base from '../layouts/Base.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  updated: string;
+}
+
+const { title, description, updated } = Astro.props;
+---
+
+<Base title={`${title} — Badie`} description={description}>
+  <article class="legal mx-auto grid max-w-3xl gap-8">
+    <header class="grid gap-2">
+      <h1 class="text-display lg:text-[2.75rem]">{title}</h1>
+      <p class="text-subhead text-ink-secondary">Last updated {updated}</p>
+    </header>
+    <slot />
+    <footer class="sticker grid gap-2 p-5">
+      <h2 class="text-title3">Questions?</h2>
+      <p>Email <a class="link" href="mailto:support@badie.rsvp">support@badie.rsvp</a>. We reply within 30 days.</p>
+      <p class="text-footnote text-ink-secondary">
+        See also the <a class="link" href="/privacy/">Privacy Policy</a> and <a class="link" href="/terms/">Terms of Service</a>.
+      </p>
+    </footer>
+  </article>
+</Base>
+
+<style>
+  /* 正文排版：小标题、段落、列表之间的间距 */
+  .legal :global(section) { display: grid; gap: 0.75rem; }
+  .legal :global(h2) { font-size: var(--text-title3); font-weight: 800; line-height: 1.25; }
+  .legal :global(p), .legal :global(li) { line-height: 1.6; max-width: 70ch; }
+  .legal :global(ul) { display: grid; gap: 0.5rem; padding-left: 1.25rem; list-style: disc; }
+  .legal :global(strong) { font-weight: 750; }
+</style>

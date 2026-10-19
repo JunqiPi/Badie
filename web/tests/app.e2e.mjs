@@ -66,7 +66,7 @@ await page.getByRole('link', { name: 'Courts' }).first().waitFor();
 
 // 最窄的手机（320 宽）上每个页面都不能左右滑动（长球馆名、不换行的标签、并排的控件都可能把页面撑宽）
 await page.setViewportSize({ width: 320, height: 720 });
-for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', '/settings/', '/rankings/', '/challenges/', '/notifications/', '/groups/new/', '/rooms/new/', '/levels/']) {
+for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', '/settings/', '/rankings/', '/challenges/', '/notifications/', '/groups/new/', '/rooms/new/', '/levels/', '/privacy/', '/terms/']) {
   await page.goto(`${base}${path}`);
   await page.getByRole('main').waitFor();
   await page.waitForTimeout(300);

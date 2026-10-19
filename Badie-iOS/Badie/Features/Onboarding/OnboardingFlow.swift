@@ -104,6 +104,9 @@ struct OnboardingFlow: View {
     @FocusState private var phoneFocused: Bool
     /// 后台开了的第三方登录（apple / google），没开的不显示按钮
     @State private var providers: Set<String> = []
+    /// App Store 审核规则 4.8：有 Google 这类第三方登录，就必须同时提供能隐藏邮箱的登录（Apple）。
+    /// 所以 Apple 没开时，App 里也不显示 Google（网页不受影响）
+    private var socialProviders: Set<String> { providers.contains("apple") ? providers.intersection(["apple", "google"]) : [] }
     @Environment(\.webAuthenticationSession) private var webAuthenticationSession
 
     var body: some View {
@@ -340,6 +343,7 @@ struct OnboardingFlow: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(form.agreed ? [.isSelected, .isButton] : .isButton)
+                LegalLinks()
             } else {
                 // 忘了密码，或者以前用验证码登录、还没设过密码
                 HStack {
@@ -598,7 +602,7 @@ struct OnboardingFlow: View {
             if appState.isRemote && (step == .phone || step == .code) {
                 captchaArea
             }
-            if step == .welcome && !providers.isEmpty {
+            if step == .welcome && !socialProviders.isEmpty {
                 socialButtons
             }
             Button {
@@ -609,7 +613,7 @@ struct OnboardingFlow: View {
                     Text(primaryTitle)
                 }
             }
-            .buttonStyle(.brutal(step == .welcome ? (providers.isEmpty ? .inverse : .secondary) : .primary))
+            .buttonStyle(.brutal(step == .welcome ? (socialProviders.isEmpty ? .inverse : .secondary) : .primary))
             .disabled(!canContinue || isWorking)
             if step == .welcome && !appState.isRemote {
                 Text("登录即可体验，附近球友为演示数据")
@@ -636,7 +640,7 @@ struct OnboardingFlow: View {
                 .foregroundStyle(AppTheme.Colors.danger)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        if providers.contains("apple") {
+        if socialProviders.contains("apple") {
             Button {
                 attemptSignIn {
                     let credential = try await AppleSignIn().run()
@@ -649,7 +653,7 @@ struct OnboardingFlow: View {
             }
             .buttonStyle(.brutal(.inverse))
         }
-        if providers.contains("google") {
+        if socialProviders.contains("google") {
             Button {
                 attemptSignIn { try await appState.signInWithGoogle(webAuthenticationSession) }
             } label: {
@@ -663,6 +667,7 @@ struct OnboardingFlow: View {
         Text("继续即表示你同意《用户协议》和《隐私政策》。")
             .font(AppTheme.Typography.caption)
             .foregroundStyle(AppTheme.Colors.inkTertiary)
+        LegalLinks()
     }
 
     /// 平时看不见；Cloudflare 要人点一下时才展开验证框

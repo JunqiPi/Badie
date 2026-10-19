@@ -1,0 +1,125 @@
+---
+import LegalPage from '../../components/LegalPage.astro';
+---
+
+<LegalPage title="Privacy Policy" updated="October 19, 2026"
+           description="What Badie collects, why, who it is shared with, and how to delete your data.">
+  <section>
+    <p>
+      Badie is a free app that helps you find badminton partners at your level and courts near you. This policy explains what we
+      collect, why, who we share it with and the choices you have. “Badie”, “we” and “us” mean the people who run Badie.
+    </p>
+    <ul>
+      <li>We collect what we need to match you with players: your email, a nickname, your level and the games you set up.</li>
+      <li>Other players see your nickname, photo, level and game record. They never see your email.</li>
+      <li>We don’t sell your information and we don’t use advertising or analytics trackers.</li>
+      <li>You can delete your account and its data at any time in Settings.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What we collect</h2>
+    <ul>
+      <li><strong>Account:</strong> your email address and password. The password is stored only as a one-way hash by our sign-in
+        provider. If you continue with Google or Apple, we receive the name and email they share; Apple lets you hide your email
+        behind a relay address.</li>
+      <li><strong>Profile:</strong> nickname, country, app language, level and your level-quiz answers, the photo you choose to upload,
+        and your settings.</li>
+      <li><strong>Activity:</strong> match requests (date, time, courts and level range), games, check-ins, results and scores,
+        court-fee “paid” marks, groups, rooms and challenges you join, friends, messages, reviews you give and receive, reports and
+        blocks, courts you add or confirm, and level-verification applications (which can include your name as it appears in
+        tournament results and links to them).</li>
+      <li><strong>Device:</strong> if you turn on notifications, a push token for your phone or browser.</li>
+      <li><strong>Location:</strong> used on your device to find courts near you. When you search nearby, the coordinates are sent
+        with that search and are not stored. The website remembers the last area you searched in your own browser.</li>
+      <li><strong>Technical:</strong> like any website, our hosting providers process IP addresses and request logs to keep the
+        service secure and prevent abuse.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How we use it</h2>
+    <ul>
+      <li>To run Badie: match you with players, show your games, and send the notifications and emails you ask for.</li>
+      <li>To keep games reliable and safe: reliability and review tags, reports and blocks. Badie admins review reports and
+        level-verification applications.</li>
+      <li>To prevent abuse: bot checks, rate limits, and checking new passwords against known data breaches. For that check only the
+        first 5 characters of a hash of your password are sent; the password itself never leaves your device.</li>
+      <li>We don’t sell or rent personal information. If we ever add advertising or analytics, we will update this policy first.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What other players see</h2>
+    <ul>
+      <li>Your nickname, photo, level, games played, reliability and the positive tags others gave you. Reviews are only shown as
+        anonymous totals.</li>
+      <li>Leaderboards (you can turn this off), “regulars” at your courts (only if you turn it on) and search by nickname (you can
+        turn this off).</li>
+      <li>Messages are seen by the people in that conversation.</li>
+      <li>Your email address is never shown to other players.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Service providers</h2>
+    <p>We use these companies to run Badie. They process information only to provide their service to us.</p>
+    <ul>
+      <li><strong>Supabase</strong>: database, sign-in and file storage.</li>
+      <li><strong>Cloudflare</strong>: website hosting and bot checks.</li>
+      <li><strong>Email delivery providers</strong> (such as Resend): the emails you receive from us.</li>
+      <li><strong>Apple Push Notification service</strong> and your browser’s push service: notifications.</li>
+      <li><strong>Google and Apple</strong>: only if you choose to sign in with them.</li>
+      <li><strong>Have I Been Pwned</strong>: the breached-password check (it receives only a 5-character hash prefix).</li>
+      <li><strong>OpenFreeMap</strong> (maps on the website) and <strong>Apple Maps</strong> (maps and place search in the iPhone app).</li>
+    </ul>
+    <p>We may also share information when the law requires it or to protect someone’s safety.</p>
+  </section>
+
+  <section>
+    <h2>How long we keep it</h2>
+    <p>
+      We keep your information while your account exists. When you delete your account in Settings (on the website or in the app),
+      we delete your profile, photo, requests, games, messages, reviews, friends and devices. Courts you added stay in the directory
+      without your name. Copies in backups are removed as the backups expire. If you signed in with Apple, deleting your account in
+      the iPhone app also removes Badie from your Apple account.
+    </p>
+  </section>
+
+  <section>
+    <h2>Your choices and rights</h2>
+    <ul>
+      <li>Change your profile, privacy settings, notifications and match emails in Settings at any time.</li>
+      <li>You can see and correct most of your information in the app. To get a copy of your data, or for anything else, email us
+        and we will reply within 30 days.</li>
+      <li>Depending on where you live (for example California, the EU or the UK), you may have more rights, such as data
+        portability or objecting to some uses. We honor them and won’t treat you differently for using them.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Children</h2>
+    <p>
+      Badie is not for children under 13, and we don’t knowingly collect their information. If you believe a child under 13 has an
+      account, email us and we will delete it.
+    </p>
+  </section>
+
+  <section>
+    <h2>Security</h2>
+    <p>
+      Connections are encrypted, passwords are hashed, and database rules limit each player to their own private data. No system is
+      perfectly secure, so please use a password you don’t use anywhere else.
+    </p>
+  </section>
+
+  <section>
+    <h2>Where it is processed</h2>
+    <p>Our service providers may process information in the United States and other countries.</p>
+  </section>
+
+  <section>
+    <h2>Changes</h2>
+    <p>If we change this policy in a meaningful way, we will update the date above and let you know in the app.</p>
+  </section>
+</LegalPage>

@@ -88,19 +88,38 @@ Authentication → URL Configuration：
 
 网页和 App 只在 Supabase 里开了对应登录方式后才显示按钮，所以可以一个一个来，没配好之前不会出错。**密钥都直接填进 Google / Apple / Supabase 的后台，不要发到聊天里，也不要提交到仓库。**
 
-**Google（网页和 iOS 共用一个网页客户端）**
+**Google（网页和 iOS 共用一个网页客户端，免费）**
 
-1. Google Cloud Console → 新建项目 `Badie` → Google Auth Platform：
-   - Branding：名字 Badie、Logo、首页 `https://badie.rsvp`、隐私政策和用户协议的网址、授权域名 `badie.rsvp`。
-   - Audience：External，然后 Publish。
-   - Data Access（Scopes）：只要 `openid`、`userinfo.email`、`userinfo.profile`（多要敏感权限会触发 Google 审核）。
-2. Clients → Create client → Web application：
-   - Authorized redirect URIs：`https://yeffnjdpjejlplqryjfx.supabase.co/auth/v1/callback`
-3. 复制 Client ID 和 Client secret，填到 Supabase → Authentication → Sign In / Providers → Google，打开 Enable。“Skip nonce check” 保持关闭。
-   - iOS 不用另建客户端：App 在系统浏览器里走同一个网页登录（和 Safari 共用 Google 登录状态），不装 Google 的 SDK。
-   - 没有自定义域名时，Google 的确认页上显示的是 `yeffnjdpjejlplqryjfx.supabase.co`；以后想显示 badie.rsvp，需要 Supabase 的自定义域名（付费功能）。
+先把代码推到 main（按钮的代码要在线上），再按顺序做：
+
+1. 打开 console.cloud.google.com → 顶部项目选择 → New Project，名字 `Badie` → Create，切换到这个项目。
+2. 左侧菜单 Google Auth Platform → Get started：
+   - App name `Badie`，User support email 选你的邮箱 → Next；
+   - Audience 选 **External** → Next；
+   - Contact information 填你的邮箱 → Next → 勾选同意 → Create。
+3. Branding（品牌）：
+   - App home page `https://badie.rsvp`
+   - Privacy policy `https://badie.rsvp/privacy/`、Terms of service `https://badie.rsvp/terms/`（这两页随代码一起上线）
+   - Authorized domains：加 `badie.rsvp` 和 `yeffnjdpjejlplqryjfx.supabase.co`
+   - Logo 先不传：传了 Google 要做品牌审核（几个工作日），不传也能用。
+4. Data Access → Add or remove scopes：只勾 `openid`、`.../auth/userinfo.email`、`.../auth/userinfo.profile` → Update → Save。只要这三个基本权限就不需要 Google 审核。
+5. Audience → Publishing status 点 **Publish app** → Confirm（还在 Testing 时只有测试名单里的人能登录）。
+6. Clients → Create client：
+   - Application type **Web application**，名字 `Badie web`
+   - Authorized redirect URIs 加 `https://yeffnjdpjejlplqryjfx.supabase.co/auth/v1/callback`
+   - Create，弹窗里复制 Client ID 和 Client secret（secret 之后看不到原文，可以重新生成）。
+7. Supabase → Authentication → Sign In / Providers → Google：打开 Enable，粘 Client ID（Client IDs 一栏）和 Client Secret，“Skip nonce check” 保持关闭 → Save。
+8. 确认第 4 节的 Redirect URLs 已经填好（`https://badie.rsvp/signin/**`、`badie://auth-callback`）。
+9. 打开 `https://badie.rsvp/signin/`，应该出现“Continue with Google”，用自己的 Google 账号登录一次试试。
+
+说明：
+- iOS 不用另建客户端：App 在系统浏览器里走同一个网页登录（和 Safari 共用 Google 登录状态），不装 Google 的 SDK。
+- App 里只有 Apple 也开了才显示 Google（App Store 审核规则 4.8：有第三方登录就必须同时提供能隐藏邮箱的登录）。只开 Google 时，网页有 Google 按钮，App 里没有。
+- 没有自定义域名时，Google 的确认页上显示的是 `yeffnjdpjejlplqryjfx.supabase.co`；以后想显示 badie.rsvp，需要 Supabase 的自定义域名（付费功能）。
 
 **Apple（iOS 原生 + 网页）**
+
+需要 Apple Developer Program（每年 $99；把 App 上架 App Store、用 TestFlight 本来就要这个账号，Apple 登录本身不另收费）。上架前再配就行。
 
 1. Apple Developer → Certificates, Identifiers & Profiles → Identifiers：
    - App ID `com.badie.app`：勾上 **Sign in with Apple**（代码里已经带了这个 entitlement，Xcode 自动签名时会同步）。
@@ -126,6 +145,15 @@ Authentication → URL Configuration：
 ## 6. 绑定域名
 
 Workers & Pages → badie → Custom domains → Set up a domain：先加 `badie.rsvp`，再加 `www.badie.rsvp`。**先在这里加，不要先手动建 DNS 记录**（会出 522 错误）。然后 Rules → Redirect Rules 用模板 “Redirect from WWW to root” 把 www 301 到根域名。`.rsvp` 强制 HTTPS，Pages 自带证书，不用额外设置。
+
+## 6.5 联系邮箱 support@badie.rsvp
+
+隐私政策和用户协议里写的联系邮箱是 `support@badie.rsvp`，用 Cloudflare 免费转发到你自己的邮箱（你的邮箱不会出现在网站上）：
+
+1. Cloudflare → badie.rsvp → Email → Email Routing → Enable（会自动加 MX 和 SPF 记录）。
+2. Destination addresses 加你的邮箱，去邮箱里点确认。
+3. Routing rules → Create address：`support` → Send to 你的邮箱。
+4. 根域的 SPF 只能有一条：和 Resend 要求的合成 `v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com ~all`。
 
 ## 7. 把自己设为管理员
 

@@ -1,5 +1,5 @@
 import type { AuthError } from '@supabase/supabase-js';
-import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
+import { Fragment, useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { useCaptcha } from './captcha';
 import { t } from './i18n';
 import { enabledProviders, supabase } from './supabase';
@@ -75,6 +75,19 @@ function ProviderButtons({ onError }: { onError: (message: string) => void }) {
         {t('or')}
       </p>
     </>
+  );
+}
+
+/** “继续即表示同意用户协议和隐私政策”：各语言语序不同，按译文里 {terms}、{privacy} 的位置放链接 */
+function Agreement() {
+  const links: Record<string, ReactNode> = {
+    '{terms}': <a href="/terms/" className="link">{t('Terms of Service')}</a>,
+    '{privacy}': <a href="/privacy/" className="link">{t('Privacy Policy')}</a>,
+  };
+  return (
+    <p className="text-center text-footnote text-ink-secondary">
+      {t('By continuing, you agree to the {terms} and {privacy}.').split(/(\{terms\}|\{privacy\})/).map((part, i) => <Fragment key={i}>{links[part] ?? part}</Fragment>)}
+    </p>
   );
 }
 
@@ -288,11 +301,11 @@ export function SignIn() {
           <div ref={captcha.container} className="mt-4 empty:hidden" />
           {captcha.failed && <p className="mt-4 text-sm font-bold text-danger">{t('The security check didn’t load. Turn off content blockers for this page and refresh.')}</p>}
         </div>
-        {codeFor && (
+        {codeFor ? (
           <p className="text-center text-footnote text-ink-secondary">
             {t('Can’t find it? Check spam, or search your inbox for “Badie”.')}
           </p>
-        )}
+        ) : <Agreement />}
       </div>
     </div>
   );
