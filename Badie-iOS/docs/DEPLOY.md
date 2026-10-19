@@ -48,7 +48,7 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
    - 备用：Postmark（独立送达测试排第二、用户口碑最好，但 5 万封以上贵约 3 倍）。建议先注册好放着（人工审核，一般 24 小时内），出问题时 Supabase 的 SMTP 改成 `smtp.postmarkapp.com`、端口 587，几分钟就能切。
    - 以后每月超过 10 万封再考虑 Amazon SES（每 10 万封约 $10，但要申请生产权限，常被拒）。Cloudflare 的发信服务还在测试版、没有批量接口，暂不考虑。
 2. Domains → Add Domain，填 `badie.rsvp`（Resend 的 SPF/MX 放在 `send.badie.rsvp` 子域，不影响根域收信）；选 Cloudflare 自动配置，或按提示手动加记录（SPF、DKIM、MX，全部设成 DNS only），再加：
-   - DMARC：`_dmarc.badie.rsvp` TXT `v=DMARC1; p=none; rua=mailto:dmarc@badie.rsvp`；2～4 周报告干净后改成 `p=quarantine`。
+   - DMARC：`_dmarc.badie.rsvp` TXT `v=DMARC1; p=none; rua=mailto:support@badie.rsvp`；2～4 周报告干净后改成 `p=quarantine`。
    - SPF：Resend 的 SPF 在 `send.badie.rsvp` 上（加域名时自动配好，不用动根域）。根域 `badie.rsvp` 的 SPF 用第 6.5 节 Cloudflare Email Routing 自动加的那条即可。
    - 等 Resend 显示 Verified。
 3. API Keys → Create（Sending access），**直接粘到下一步，不用存进 GitHub**。
