@@ -43,7 +43,7 @@ export function Field({ label, hint, error, children }: {
   );
 }
 
-/** 密码输入框：右边“显示 / 隐藏”。autoComplete 用 current-password / new-password，浏览器和 iPhone 钥匙串才会自动填、生成强密码 */
+/** 密码输入框：右边的眼睛显示 / 隐藏。autoComplete 用 current-password / new-password，浏览器和 iPhone 钥匙串才会自动填、生成强密码 */
 export function PasswordInput({ value, onChange, autoComplete, ...props }: {
   id: string;
   value: string;
@@ -56,10 +56,10 @@ export function PasswordInput({ value, onChange, autoComplete, ...props }: {
   return (
     <div className="relative">
       <input {...props} type={shown ? 'text' : 'password'} autoComplete={autoComplete} required minLength={autoComplete === 'new-password' ? 8 : undefined}
-             value={value} onChange={(e) => onChange(e.target.value)} className="field pr-20" />
+             value={value} onChange={(e) => onChange(e.target.value)} className="field pr-14" />
       <button type="button" onClick={() => setShown(!shown)} aria-label={shown ? t('Hide password') : t('Show password')} aria-controls={props.id}
-              className="absolute inset-y-1.5 right-1.5 rounded-[10px] px-3 text-footnote font-bold text-ink-secondary hover:bg-surface-muted hover:text-ink">
-        {shown ? t('Hide') : t('Show')}
+              className="absolute inset-y-1.5 right-1.5 grid w-10 place-items-center rounded-[10px] text-ink-secondary hover:bg-surface-muted hover:text-ink">
+        <Icon name={shown ? 'eyeSlash' : 'eye'} className="size-5" />
       </button>
     </div>
   );
