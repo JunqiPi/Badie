@@ -35,12 +35,13 @@ export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => vo
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
         <div className="grid min-w-0 gap-6">
           <section aria-label={t('My profile')} className="sticker grid gap-4 bg-lavender p-5 text-on-accent sm:p-6">
-            <div className="flex items-center gap-4">
+            {/* 很窄的屏幕上名字和标签换到头像下面 */}
+            <div className="flex flex-wrap items-center gap-4">
               <span className="relative shrink-0">
                 <span aria-hidden="true" className="absolute inset-0 translate-x-[3px] translate-y-1 rounded-full bg-[#17140f]" />
                 <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={76} className="relative" />
               </span>
-              <div className="grid min-w-0 gap-1.5">
+              <div className="grid min-w-0 flex-1 basis-40 gap-1.5">
                 <h2 className="truncate text-title2">{profile.nickname}</h2>
                 <ul className="flex flex-wrap gap-1.5">
                   <li><LevelBadge rating={profile.rating} /></li>
@@ -153,7 +154,7 @@ const policies = [
   ['nobody', 'No one'],
 ] as const;
 
-type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy'>;
+type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts'>;
 
 /** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
 export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
@@ -173,7 +174,11 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       <ScreenHeader title={t('Settings')} back="/me/" />
       <Nickname profile={profile} email={email} onChange={onChange} />
 
-      <PushSettings />
+      <Group title={t('Notifications')}>
+        <PushSettings />
+        <Switch checked={profile.email_alerts} onChange={(v) => save({ email_alerts: v })} title={t('Email me about matches')}
+                text={t('Match offers, confirmations and cancellations also go to {email}.', { email: email ?? t('your email') })} />
+      </Group>
 
       <Group title={t('Who can find me')}>
         <Switch checked={profile.discoverable} onChange={(v) => save({ discoverable: v })} title={t('Let players find me by nickname')}
@@ -241,15 +246,16 @@ function PushSettings() {
 
   if (!state || state === 'unsupported') return null;
   return (
-    <Group title={t('Notifications')}>
+    <>
       {state === 'install' ? (
         <p className="py-3.5 text-footnote text-ink-secondary">{t('On iPhone, add Badie to your Home Screen first (Share → Add to Home Screen), then turn on notifications there.')}</p>
       ) : (
         <Switch checked={state === 'on'} disabled={busy || state === 'blocked'} onChange={toggle} title={t('Notifications on this device')}
                 text={state === 'blocked' ? t('Notifications are blocked for this site. Allow them in your browser’s site settings.')
-                  : t('Get a notification when you’re matched or a game changes. Emails only go out if a notification doesn’t reach you.')} />
+                  : t('Get a notification when you’re matched or a game changes.')} />
       )}
-    </Group>
+      <Divider />
+    </>
   );
 }
 
@@ -259,7 +265,8 @@ function Switch({ checked, onChange, title, text, disabled }: { checked: boolean
     <label className="flex cursor-pointer items-start gap-3 py-3.5 has-disabled:cursor-not-allowed">
       <span className="min-w-0 flex-1">
         <span className="block font-bold">{title}</span>
-        <span className="block text-footnote text-ink-secondary">{text}</span>
+        {/* 说明里可能有邮箱地址：太长时在任意处换行 */}
+        <span className="block text-footnote text-ink-secondary wrap-anywhere">{text}</span>
       </span>
       <input type="checkbox" role="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)}
              className="relative mt-0.5 disabled:opacity-50 h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
@@ -290,7 +297,7 @@ function Nickname({ profile, email, onChange }: { profile: Profile; email?: stri
         <Avatar id={profile.id} name={nickname || profile.nickname} photo={profile.avatar_path} size={56} />
         <div className="min-w-0">
           <p className="text-headline">{t('Profile')}</p>
-          {email && <p className="truncate text-footnote text-ink-secondary">{email}</p>}
+          {email && <p className="text-footnote text-ink-secondary wrap-anywhere">{email}</p>}
         </div>
       </div>
       <Field label={t('Nickname')} hint={t('2–12 characters. No phone numbers or links.')} error={changed ? issue : undefined}>

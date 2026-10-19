@@ -21,8 +21,8 @@ export function Rankings() {
   return (
     <div className="grid gap-6">
       <ScreenHeader title={t('Leaderboard')} back="/games/" />
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
-        <section aria-labelledby="weekly" className="grid min-w-0 gap-3">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
+        <section aria-labelledby="weekly" className="grid grid-cols-1 gap-3">
           <h2 id="weekly" className="sr-only">{t(weeks[week])}</h2>
           <Segmented label={t('Who to compare with')} value={scope} onChange={setScope} options={scopes.map(([value, label]) => ({ value, label: t(label) }))} />
           <Segmented label={t('Period')} value={String(week)} onChange={(v) => setWeek(Number(v))} options={weeks.map((label, i) => ({ value: String(i), label: t(label) }))} />
@@ -72,7 +72,7 @@ const medal = ['bg-butter', 'bg-sky', 'bg-peach'];
 
 function Board({ entries, unit }: { entries: BoardEntry[]; unit: 'pts' | 'games' }) {
   return (
-    <ol className="grid gap-2">
+    <ol className="grid grid-cols-1 gap-2">
       {entries.map((e) => (
         <li key={e.id}>
           <Link to={`/players/${e.id}/`} className={`sticker lift flex items-center gap-3 p-3 ${e.me ? 'bg-lime/45' : ''}`}>
@@ -110,7 +110,7 @@ function CourtBoards() {
   }, []);
 
   return (
-    <section aria-labelledby="courts" className="grid gap-4">
+    <section aria-labelledby="courts" className="grid grid-cols-1 gap-4">
       <div>
         <h2 id="courts" className="text-title3">{t('Court champions')}</h2>
         <p className="text-footnote text-ink-secondary">{t('Most confirmed games at a court this month, by level. Up to 3 a day and 4 against the same opponent.')}</p>
@@ -133,7 +133,7 @@ function CourtBoards() {
         <p className="text-footnote text-ink-secondary">{month > 0 ? t('No one qualified last month.') : t('No one qualifies yet this month: 3 games against 2 opponents.')}</p>
       )}
       {court && board?.bands.map((b) => (
-        <div key={b.band} className="grid gap-2">
+        <div key={b.band} className="grid grid-cols-1 gap-2">
           <p className="text-footnote font-bold text-ink-secondary">{t(bands[b.band])}</p>
           {b.entries[0] && <p className="flex items-center gap-2 font-bold"><Icon name="crown" className="size-4" />{t('Champion: {names}', { names: new Intl.ListFormat(currentLocale()).format(b.entries.filter((e) => e.rank === 1).map((e) => e.nickname)) })}</p>}
           <Board entries={b.entries} unit="games" />

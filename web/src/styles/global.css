@@ -158,6 +158,8 @@
     outline-offset: 2px;
   }
   [id] { scroll-margin-top: 5rem; }
+  /* fieldset 默认最小宽度是内容宽度：里面有横向滚动的日期条时会把整页撑宽 */
+  fieldset { min-inline-size: 0; }
   dialog::backdrop { background: rgb(23 20 15 / 0.45); }
 }
 

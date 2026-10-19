@@ -89,7 +89,7 @@ export function Courts() {
   }
 
   return (
-    <section aria-labelledby="near" className="grid gap-4">
+    <section aria-labelledby="near" className="grid grid-cols-1 gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="near" className="text-title2">{area?.label ? t('Courts near {place}', { place: area.label }) : t('Courts near you')}</h2>
         {area && (
@@ -107,8 +107,8 @@ export function Courts() {
       {!area ? (
         <Empty icon="map" tint="sky" title={t('Find courts around you')}>{t('Use your location, or search a city to see the courts nearby.')}</Empty>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
-          <div className="grid gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
+          <div className="grid grid-cols-1 gap-4">
             <div className="sticker h-64 overflow-hidden p-0 sm:h-80 lg:h-[26rem]">
               <Suspense fallback={<div className="skeleton h-full rounded-none!" />}>
                 <CourtMap centre={area} pins={pins} selected={selected?.id} onSelect={(id) => { const v = results?.find((r) => r.venue.id === id)?.venue; if (v) select(v); }} />
@@ -119,12 +119,12 @@ export function Courts() {
             )}
           </div>
 
-          <div className="grid gap-2">
+          <div className="grid grid-cols-1 gap-2">
             <p className="text-headline">
               {results ? t('{n} venues', { n: results.length }) : ' '}
               <span className="ml-2 text-footnote font-bold text-ink-secondary">{t('within {distance}', { distance: km(radius * 1000) })}</span>
             </p>
-            <ul className="sticker grid p-2" aria-label={t('Courts')} aria-busy={results === undefined}>
+            <ul className="sticker grid grid-cols-1 p-2" aria-label={t('Courts')} aria-busy={results === undefined}>
               {results === undefined && [0, 1, 2, 3].map((i) => <li key={i}><Skeleton className="m-2 h-14" /></li>)}
               {results?.length === 0 && (
                 <li className="p-3 text-footnote text-ink-secondary">{t('Try a wider distance, or add a court you play at from the iPhone app.')}</li>

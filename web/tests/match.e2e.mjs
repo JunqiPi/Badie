@@ -47,7 +47,7 @@ await alex.getByText('Free that day nearby').waitFor();
 await request(blake);
 await blake.getByText('Found your buddies!').waitFor();
 await blake.getByRole('button', { name: 'Confirm game' }).click();
-await blake.getByText('You’re in. We’ll email you when everyone has confirmed.').waitFor();
+await blake.getByText('You’re in. We’ll let you know when everyone has confirmed.').waitFor();
 
 await alex.reload();
 await alex.getByRole('button', { name: 'Confirm game' }).click();

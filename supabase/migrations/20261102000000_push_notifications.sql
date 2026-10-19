@@ -1,5 +1,5 @@
--- 推送通知：App（Apple 的 APNs）和浏览器（Web Push）都免费。
--- 新通知先推送；推送送达了就不再发邮件。没开推送的人照旧马上收邮件，开了推送但 2 分钟内没推到的也发邮件兜底
+-- 推送通知：App（Apple 的 APNs）和浏览器（Web Push）都免费，是主要的提醒方式。
+-- 约球邮件改成用户自己在设置里打开（默认关），打开了才发
 
 -- ---------------------------------------------------------------------------
 -- 设备
@@ -21,6 +21,14 @@ alter table public.push_devices enable row level security;
 revoke all on public.push_devices from anon, authenticated;
 
 alter table public.notifications add column push_tried_at timestamptz, add column pushed_at timestamptz;
+-- 推送和邮件都只看最近的通知（2 分钟 / 1 小时）。原来“还没发邮件”的索引不要了：
+-- 大多数人不开邮件，那些通知会一直留在里面
+drop index public.notifications_unsent_idx;
+create index notifications_recent_idx on public.notifications (created_at);
+
+-- 约球邮件：默认关，在设置里打开
+alter table public.profiles add column email_alerts boolean not null default false;
+grant update (email_alerts) on public.profiles to authenticated;
 
 -- 登记这台设备；同一个地址换了账号就转给新账号。每人最多 10 台，多了删最旧的。
 -- 浏览器的推送地址只接受几家浏览器厂商的推送服务（推送服务器会往这个地址发请求，不能让人填任意网址）
@@ -59,7 +67,7 @@ returns jsonb language sql security definer set search_path = '' as $$
   with picked as (
     update public.notifications n set push_tried_at = now()
     where n.id in (select x.id from public.notifications x
-                   where x.push_tried_at is null and x.emailed_at is null and x.created_at > now() - interval '2 minutes'
+                   where x.push_tried_at is null and x.created_at > now() - interval '2 minutes'
                      and exists (select 1 from public.push_devices d where d.user_id = x.user_id)
                    order by x.id limit 200 for update skip locked)
     returning n.id, n.user_id, n.title, n.body, n.link)
@@ -68,7 +76,7 @@ returns jsonb language sql security definer set search_path = '' as $$
   from picked p join public.push_devices d on d.user_id = p.user_id
 $$;
 
--- 结果：至少一台设备收到的通知记为已送达（就不再发邮件）；厂商说已失效的设备删掉
+-- 结果：至少一台设备收到的通知记为已送达（上线后用来看推送是否正常）；厂商说已失效的设备删掉
 create function public.push_done(p_delivered bigint[], p_dead text[])
 returns void language sql security definer set search_path = '' as $$
   update public.notifications set pushed_at = now() where id = any(p_delivered) and pushed_at is null;
@@ -77,7 +85,7 @@ $$;
 
 -- ---------------------------------------------------------------------------
 -- 有新通知、收件人又有设备时，马上叫推送服务（不用等每分钟的定时任务）。
--- 地址和暗号放在 Vault：project_url、push_secret；没配就什么都不做，邮件照常发
+-- 地址和暗号放在 Vault：project_url、push_secret；没配就什么都不做
 -- ---------------------------------------------------------------------------
 
 create function public.push_new_notifications()
@@ -101,8 +109,23 @@ create trigger notifications_push after insert on public.notifications
   referencing new table as fresh for each statement execute function public.push_new_notifications();
 
 -- ---------------------------------------------------------------------------
--- 邮件变成兜底：推送已经送达的不发；有设备的人先等 2 分钟给推送机会，没设备的马上发
+-- 约球邮件：只发给在设置里打开了的人（和推送互不影响，打开了就照发）
 -- ---------------------------------------------------------------------------
+
+-- 邮件末尾的说明换成“你打开了约球邮件”
+delete from public.notification_texts where english = 'You get this because you asked Badie to find you a game.';
+insert into public.notification_texts (locale, english, translated)
+select locale, 'You get this because you turned on match emails. Turn them off anytime in Settings.', translated from (values
+  ('zh-Hans', '你收到这封邮件，是因为你打开了约球邮件提醒。随时可以在“设置”里关闭。'),
+  ('zh-Hant', '你會收到這封信，是因為你開啟了約球郵件提醒。隨時可以在「設定」裡關閉。'),
+  ('ja', 'マッチのメール通知をオンにしているため、このメールをお送りしています。「設定」からいつでもオフにできます。'),
+  ('ko', '매칭 메일 알림을 켜 두셔서 보내 드리는 메일이에요. 언제든 설정에서 끌 수 있어요.'),
+  ('id', 'Kamu menerima ini karena mengaktifkan email pertandingan. Matikan kapan saja di Pengaturan.'),
+  ('ms', 'Anda menerima ini kerana anda menghidupkan e-mel perlawanan. Matikan bila-bila masa di Tetapan.'),
+  ('th', 'คุณได้รับอีเมลนี้เพราะเปิดอีเมลแจ้งเตือนการจับคู่ไว้ ปิดได้ทุกเมื่อในการตั้งค่า'),
+  ('vi', 'Bạn nhận được email này vì đã bật email thông báo ghép trận. Có thể tắt bất cứ lúc nào trong Cài đặt.'),
+  ('hi', 'आपको यह इसलिए मिल रहा है क्योंकि आपने मैच ईमेल चालू किए हैं। इन्हें कभी भी सेटिंग्स में बंद कर सकते हैं।')
+) as t(locale, translated);
 
 create or replace function public.send_notification_emails()
 returns void language plpgsql security definer set search_path = '' as $$
@@ -116,10 +139,9 @@ begin
   with picked as (
     update public.notifications n set emailed_at = now()
     where n.id in (select x.id from public.notifications x
-                   where x.emailed_at is null and x.pushed_at is null and x.kind in ('offer', 'matched', 'cancelled', 'missed')
+                   where x.emailed_at is null and x.kind in ('offer', 'matched', 'cancelled', 'missed')
                      and x.created_at > now() - interval '1 hour'
-                     and (x.created_at < now() - interval '2 minutes'
-                          or not exists (select 1 from public.push_devices d where d.user_id = x.user_id))
+                     and exists (select 1 from public.profiles pr where pr.id = x.user_id and pr.email_alerts)
                    order by x.id limit 100 for update skip locked)
     returning n.user_id, n.title, n.body, n.link)
   select jsonb_agg(jsonb_build_object(
@@ -127,7 +149,7 @@ begin
       'to', jsonb_build_array(u.email),
       'subject', p.title,
       'text', p.body || E'\n\nhttps://badie.rsvp' || coalesce(p.link, '/app/') || E'\n\n—\n' ||
-              public.render_text(coalesce(pr.locale, 'en'), 'You get this because you asked Badie to find you a game.')))
+              public.render_text(coalesce(pr.locale, 'en'), 'You get this because you turned on match emails. Turn them off anytime in Settings.')))
     into emails
     from picked p join auth.users u on u.id = p.user_id left join public.profiles pr on pr.id = p.user_id
     where u.email is not null;

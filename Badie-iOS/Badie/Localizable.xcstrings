@@ -28919,6 +28919,64 @@
         }
       }
     },
+    "匹配、确认和取消的消息也会发到你的登录邮箱" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match offers, confirmations and cancellations also go to the email you sign in with."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैच, पुष्टि और रद्द होने की खबर उस ईमेल पर भी भेजी जाएगी जिससे आप साइन इन करते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kabar pasangan, konfirmasi, dan pembatalan juga dikirim ke email yang kamu pakai untuk masuk."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マッチ、確定、キャンセルのお知らせを、ログインに使っているメールアドレスにも送ります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매칭, 확정, 취소 소식을 로그인한 이메일로도 보내요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berita padanan, pengesahan dan pembatalan juga dihantar ke e-mel yang anda guna untuk log masuk."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ข่าวการจับคู่ การยืนยัน และการยกเลิกจะส่งไปที่อีเมลที่คุณใช้เข้าสู่ระบบด้วย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thông báo ghép trận, xác nhận và hủy cũng được gửi tới email bạn dùng để đăng nhập."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配對、確認和取消的消息也會寄到你登入用的電子郵件。"
+          }
+        }
+      }
+    },
     "匹配成功或添加球友后，就可以在这里约时间、约球馆。" : {
       "localizations" : {
         "en" : {
@@ -83427,6 +83485,64 @@
         }
       }
     },
+    "约球消息也发邮件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email me about matches"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैच की खबर ईमेल पर भी भेजें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kirim kabar pertandingan lewat email"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マッチの知らせをメールでも受け取る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매칭 소식을 이메일로도 받기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hantar berita perlawanan melalui e-mel"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ส่งข่าวการจับคู่ทางอีเมลด้วย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gửi thông báo ghép trận qua email"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "約球消息也寄電子郵件"
+          }
+        }
+      }
+    },
     "约球请求" : {
       "localizations" : {
         "en" : {
@@ -99919,6 +100035,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "邀請（可以傳到微信）"
+          }
+        }
+      }
+    },
+    "邮件" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ईमेल"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メール"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이메일"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "E-mel"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อีเมล"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Email"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電子郵件"
           }
         }
       }

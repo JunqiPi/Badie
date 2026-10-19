@@ -36,7 +36,7 @@ export function SlotFields({ slot, onChange }: { slot: Slot; onChange: (slot: Sl
   const days = nextDays(14);
   return (
     <>
-      <fieldset className="grid gap-2">
+      <fieldset className="grid grid-cols-1 gap-2">
         <legend className="mb-2 text-headline">{t('Court')}</legend>
         {slot.court ? (
           <div className="sticker flex items-center gap-3 p-3">

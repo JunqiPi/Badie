@@ -549,12 +549,15 @@ final class SupabaseClientTests: XCTestCase {
         server.requests = []
         server.on("PATCH /rest/v1/profiles", "")
         var privacy = try XCTUnwrap(backend.currentUser?.privacy)
+        XCTAssertFalse(privacy.emailAlerts, "约球邮件默认关")
         privacy.showsAsRegular = true
         privacy.allowsMessageRequests = false
+        privacy.emailAlerts = true
         backend.updatePrivacy(privacy)
         await waitFor { !self.server.requests.isEmpty }
         XCTAssertEqual(server.json(0)["show_as_regular"] as? Bool, true)
         XCTAssertEqual(server.json(0)["allow_message_requests"] as? Bool, false)
+        XCTAssertEqual(server.json(0)["email_alerts"] as? Bool, true)
     }
 
     func testOpeningAndSendingInAThread() async throws {

@@ -1,6 +1,6 @@
 // 推送服务：数据库有新通知时调用（带 x-push-secret 暗号），取一批“通知 × 设备”，
 // 发给 Apple（iOS App）和浏览器的推送服务。只用 WebCrypto，不引第三方库。
-// 送达的告诉数据库（就不再发邮件），厂商说已失效的设备删掉；没配密钥的那一类直接算没送达，由邮件兜底。
+// 送达的告诉数据库，厂商说已失效的设备删掉；没配密钥的那一类直接算没送达。
 //
 // Secrets：PUSH_SECRET（和 Vault 里的 push_secret 一样）；
 // iOS：APPLE_TEAM_ID + APNS_KEY_ID / APNS_PRIVATE_KEY（没有就用 Apple 登录那把 APPLE_KEY_ID / APPLE_PRIVATE_KEY）；

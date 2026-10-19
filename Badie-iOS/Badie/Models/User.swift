@@ -284,6 +284,8 @@ struct PrivacySettings: Codable, Hashable {
     var showsOnLeaderboards = true
     /// 别人可以按昵称搜到我（默认开启）
     var findableByNickname = true
+    /// 约球消息也发邮件（默认关闭，主要靠推送）
+    var emailAlerts = false
 }
 
 extension PrivacySettings {
@@ -296,6 +298,7 @@ extension PrivacySettings {
         challengePolicy = try container.decodeIfPresent(ChallengePolicy.self, forKey: .challengePolicy) ?? defaults.challengePolicy
         showsOnLeaderboards = try container.decodeIfPresent(Bool.self, forKey: .showsOnLeaderboards) ?? defaults.showsOnLeaderboards
         findableByNickname = try container.decodeIfPresent(Bool.self, forKey: .findableByNickname) ?? defaults.findableByNickname
+        emailAlerts = try container.decodeIfPresent(Bool.self, forKey: .emailAlerts) ?? defaults.emailAlerts
     }
 }
 

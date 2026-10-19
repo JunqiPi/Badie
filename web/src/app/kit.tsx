@@ -207,10 +207,11 @@ export function SectionTitle({ title, detail, action, id }: { title: string; det
 /** 统计格（iOS 的 StatTile），可加图标和颜色；stacked = 图标在上（窄的格子） */
 export function StatTile({ value, label, tint = 'surface', icon, stacked = false }: { value: ReactNode; label: string; tint?: Tint; icon?: IconName; stacked?: boolean }) {
   return (
-    <div className={`tile flex min-w-0 gap-3 rounded-[14px]! px-3 py-3 ${stacked ? 'flex-col gap-1.5 lg:flex-row lg:items-center lg:gap-3' : 'items-center'} ${fill[tint]}`}>
+    <div className={`tile flex min-w-0 gap-3 rounded-[14px]! px-3 py-3 max-[359px]:px-2 ${stacked ? 'flex-col gap-1.5 lg:flex-row lg:items-center lg:gap-3' : 'items-center'} ${fill[tint]}`}>
       {icon && <IconTile icon={icon} tint="surface" size="sm" />}
       <div className="min-w-0">
-        <p className="truncate text-[1.5rem] leading-tight font-black tabular-nums">{value}</p>
+        {/* 最窄的手机上三个并排时放不下“100%”：字小一号 */}
+        <p className="truncate text-[1.5rem] leading-tight font-black tabular-nums max-[359px]:text-[1.25rem]">{value}</p>
         <p className={`truncate text-caption ${tint === 'surface' ? 'text-ink-secondary' : ''}`}>{label}</p>
       </div>
     </div>

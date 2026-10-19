@@ -2,7 +2,7 @@ import UIKit
 import UserNotifications
 
 /// 苹果推送（APNs，免费）：允许了通知就向苹果要这台设备的令牌，登录状态下交给服务器。
-/// 服务器有新通知时推过来；推送送达了就不再发邮件
+/// 服务器有新通知时推过来（约球提醒主要靠它；邮件要用户自己在设置里打开）
 @MainActor
 final class PushRegistry {
     static let shared = PushRegistry()

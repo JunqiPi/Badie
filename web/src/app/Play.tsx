@@ -18,7 +18,7 @@ export function Play({ profile }: { profile: Profile }) {
   return (
     <div>
       <PageHeader back="/" title={t('Quick Match')}>
-        {t('Tell us when you’re free and where you can play. We’ll match you with players at your level and email you when there’s a match.')}
+        {t('Tell us when you’re free and where you can play. We’ll match you with players at your level and let you know when there’s a match.')}
       </PageHeader>
 
       {!profile.assessed_at && (
@@ -37,7 +37,7 @@ export function Play({ profile }: { profile: Profile }) {
           {tickets && open.length === 0 && (
             <Empty icon="bolt" tint="lime" title={t('No open requests')}>{t('Create one and we’ll look for players while you get on with your day.')}</Empty>
           )}
-          {open.length > 0 && <PushPrompt />}
+          {open.length > 0 && <PushPrompt emailOn={profile.email_alerts} />}
           {open.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onChange={refresh} />)}
           {recent.length > 0 && (
             <>
@@ -57,14 +57,22 @@ const toleranceText = (tolerance: Ticket['skill_tolerance']) =>
   tolerance === 8 ? t('Any level') : t('Level ±{n}', { n: tolerance });
 
 
-/** 有约球请求在找人时，提示打开这台设备的推送（配上了第一时间知道）；开着或不支持时不显示 */
-function PushPrompt() {
+/** 有约球请求在找人时：提示打开这台设备的推送（配上了第一时间知道）；
+ *  这个浏览器收不到推送、也没开邮件时，提示去设置里打开邮件，免得错过要确认的匹配 */
+function PushPrompt({ emailOn }: { emailOn: boolean }) {
   const [state, setState] = useState<PushState>();
   useEffect(() => void pushState().then(setState), []);
-  if (state !== 'off') return null;
+  if (state === 'off') {
+    return (
+      <Notice icon="bell" tint="sky" action={{ label: t('Turn on'), onClick: () => enablePush().then(setState, () => toast(t('Couldn’t change notifications. Try again.'), 'error')) }}>
+        {t('Get a notification the moment we find you a match.')}
+      </Notice>
+    );
+  }
+  if (!state || state === 'on' || emailOn) return null;
   return (
-    <Notice icon="bell" tint="sky" action={{ label: t('Turn on'), onClick: () => enablePush().then(setState, () => toast(t('Couldn’t change notifications. Try again.'), 'error')) }}>
-      {t('Get a notification the moment we find you a match.')}
+    <Notice icon="bell" tint="butter" action={{ label: t('Settings'), to: '/settings/' }}>
+      {t('This browser can’t notify you, so you might miss a match. Turn on match emails in Settings.')}
     </Notice>
   );
 }
@@ -123,7 +131,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
           </span>
         </div>
         {waiting ? (
-          <p className="text-footnote font-bold" role="status">{t('You’re in. We’ll email you when everyone has confirmed.')}</p>
+          <p className="text-footnote font-bold" role="status">{t('You’re in. We’ll let you know when everyone has confirmed.')}</p>
         ) : (
           <>
             <p className="flex items-center gap-2 text-footnote font-bold">
@@ -319,13 +327,13 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
         </Notice>
       )}
 
-      <fieldset className="grid gap-2">
+      <fieldset className="grid grid-cols-1 gap-2">
         <legend className="mb-1 flex w-full justify-between text-headline">
           {t('Venues (up to {n})', { n: 3 })}
           <span className="text-footnote font-bold text-ink-secondary tabular-nums">{courts.length}/3</span>
         </legend>
         <p className="text-footnote text-ink-secondary">{t('Only match with players who picked the same venue')}</p>
-        <div className="sticker grid gap-2 p-3">
+        <div className="sticker grid grid-cols-1 gap-2 p-3">
           {courts.map((c) => (
             <div key={c.id} className="flex items-center gap-3">
               <IconTile icon="pin" tint="sky" size="sm" />
@@ -343,8 +351,10 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
           {courts.length < 3 && suggestions.length > 0 && (
             <ul className="flex flex-wrap gap-2" aria-label={t('My courts')}>
               {suggestions.map((c) => (
-                <li key={c.id}>
-                  <button type="button" onClick={() => toggleCourt(c)} className="toggle"><Icon name="plus" className="size-3.5" />{c.name}</button>
+                <li key={c.id} className="max-w-full">
+                  <button type="button" onClick={() => toggleCourt(c)} className="toggle max-w-full" title={c.name}>
+                    <Icon name="plus" className="size-3.5 shrink-0" /><span className="truncate">{c.name}</span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -446,9 +456,10 @@ export function TimeRange({ from, to, onChange, maxHours = 8 }: { from: number; 
   return (
     <fieldset className="grid gap-3">
       <legend className="mb-2 text-headline">{maxHours === 8 ? t('Time slot (1–8 hours)') : t('Time')}</legend>
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+      {/* 手机上两个放不下一行：上下排 */}
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
         <Stepper label={t('Start')} value={from} onChange={(delta) => onChange(step(from, delta, 6 * 60, 23 * 60), to)} />
-        <Icon name="arrowRight" className="size-4 text-ink-tertiary" />
+        <Icon name="arrowRight" className="size-4 text-ink-tertiary max-sm:hidden" />
         <Stepper label={t('End')} value={to} onChange={(delta) => onChange(from, step(to, delta, 7 * 60, 24 * 60))} />
       </div>
       <p className="text-footnote text-ink-secondary">

@@ -135,7 +135,7 @@ export function SignIn() {
       <div className="grid gap-4">
         <div className="sticker p-6 sm:p-8">
           <h2 className="text-title">{sent ? t('Check your email') : t('Sign in or sign up')}</h2>
-          {sent && <p className="mt-2 text-subhead text-ink-secondary">{t('We sent a 6-digit code to {email}.', { email: email.trim() })}</p>}
+          {sent && <p className="mt-2 text-subhead text-ink-secondary wrap-anywhere">{t('We sent a 6-digit code to {email}.', { email: email.trim() })}</p>}
 
           {!sent && <div className="mt-6 grid gap-5"><ProviderButtons onError={setError} /></div>}
 

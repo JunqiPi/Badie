@@ -40,9 +40,10 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
       <ol className="grid gap-3">
         {levels.map((l) => (
           <li key={l.level} id={`level-${l.level}`} className={`sticker grid gap-3 p-4 ${l.level === mine ? 'bg-lime/35' : ''}`}>
-            <div className="flex items-center gap-3">
+            {/* 手机上放不下时，标签换到下一行 */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span className={`grid size-11 shrink-0 place-items-center rounded-[12px] border-2 border-stroke text-title3 ${fill[levelTints[l.level - 1]]}`}>{l.level}</span>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-40">
                 <h2 className="text-headline">{t(l.name)}</h2>
                 <p className="text-caption text-ink-secondary">{[l.usFlight && `≈ ${t(l.usFlight)}`, t(l.experience)].filter(Boolean).join(' · ')}</p>
               </div>

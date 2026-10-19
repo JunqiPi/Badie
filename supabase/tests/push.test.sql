@@ -1,7 +1,7 @@
--- 推送通知：登记设备的校验、客户端看不到设备、推送服务取活和回报、推送送达后不再发邮件
+-- 推送通知：登记设备的校验、客户端看不到设备、推送服务取活和回报；约球邮件要自己打开
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(22);
+select plan(23);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000007' || lpad(n::text, 2, '0'))::uuid, 'p' || n || '@test.local' from generate_series(1, 3) n;
@@ -55,39 +55,35 @@ select throws_ok($$ select public.claim_push_batch() $$, '42501', null, '客户�
 select throws_ok($$ select public.push_done('{}', '{}') $$, '42501', null, '客户端不能回报推送结果');
 reset role;
 
--- 取活：只取有设备的人的新通知，每台设备一条；取过的不再取
-select public.notify(pg_temp.u(2), 'matched', 'Game on!', 'x');
-select public.notify(pg_temp.u(3), 'matched', 'Game on!', 'y');
-set local role service_role;
-select is((select jsonb_array_length(public.claim_push_batch())), 1, '只有用户 2 有设备，一台');
-select is((select jsonb_array_length(public.claim_push_batch())), 0, '取过的不再取');
+-- 约球邮件默认关，本人可以在设置里打开
+select is((select count(*)::int from public.profiles where id in (pg_temp.u(1), pg_temp.u(2), pg_temp.u(3)) and email_alerts),
+          0, '约球邮件默认关');
+select pg_temp.login(2);
+select lives_ok($$ update public.profiles set email_alerts = true where id = pg_temp.u(2) $$, '本人可以打开约球邮件');
 reset role;
 
--- 邮件兜底：Vault 里有 Resend 的 key 时才发
+-- 邮件：只发给打开了的人，开着推送也照发（Vault 里有 Resend 的 key 时才发）
 select vault.create_secret('re_test', 'resend_api_key');
 create function pg_temp.emailed(n int) returns boolean language sql security definer as $$
   select emailed_at is not null from public.notifications where user_id = pg_temp.u(n) order by id desc limit 1
 $$;
+select public.notify(pg_temp.u(2), 'matched', 'Game on!', 'x');
+select public.notify(pg_temp.u(3), 'matched', 'Game on!', 'y');
 select public.send_notification_emails();
-select ok(pg_temp.emailed(3), '没开推送的人马上收邮件');
-select ok(not pg_temp.emailed(2), '开了推送的人先等推送');
+select ok(pg_temp.emailed(2), '打开了邮件的人收邮件');
+select ok(not pg_temp.emailed(3), '没打开的人不发邮件');
 
--- 推送送达：不再发邮件；失效设备被删掉
+-- 推送：只取有设备的人的新通知，每台设备一条（发过邮件也照推）；取过的不再取
 set local role service_role;
+select is((select jsonb_array_length(public.claim_push_batch())), 1, '只有用户 2 有设备，一台');
+select is((select jsonb_array_length(public.claim_push_batch())), 0, '取过的不再取');
+
+-- 回报：送达的记下来，失效的设备删掉
 select public.push_done(array(select id from public.notifications where user_id = pg_temp.u(2)),
                         array['https://fcm.googleapis.com/fcm/send/abc123']);
 reset role;
-update public.notifications set created_at = now() - interval '3 minutes' where user_id = pg_temp.u(2);
-select public.send_notification_emails();
-select ok(not pg_temp.emailed(2), '推送送达了就不发邮件');
+select ok((select pushed_at is not null from public.notifications where user_id = pg_temp.u(2) order by id desc limit 1), '记下已送达');
 select is(pg_temp.devices(2), 0, '失效的设备删掉了');
-
--- 推送没送达：2 分钟后照常发邮件
-select public.notify(pg_temp.u(1), 'offer', 'Match found, please confirm', 'z');
-update public.notifications set created_at = now() - interval '3 minutes', push_tried_at = now() - interval '3 minutes'
-  where user_id = pg_temp.u(1);
-select public.send_notification_emails();
-select ok(pg_temp.emailed(1), '推送没送达，2 分钟后发邮件');
 
 select * from finish();
 rollback;

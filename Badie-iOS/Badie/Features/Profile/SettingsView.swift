@@ -57,6 +57,24 @@ struct SettingsView: View {
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
                     }
 
+                    // 主要靠推送；邮件是给想要的人自己打开的（演示模式没有邮件）
+                    if appState.isRemote {
+                        section(String(localized: "邮件")) {
+                            Toggle(isOn: privacyBinding(\.emailAlerts)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("约球消息也发邮件")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("匹配、确认和取消的消息也会发到你的登录邮箱")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
+                            .tint(AppTheme.Colors.success)
+                            .card(AppTheme.Colors.surface, shadow: .zero)
+                        }
+                    }
+
                     section(String(localized: "约球偏好")) {
                         VStack(spacing: 0) {
                             MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.peach, title: String(localized: "常用时间"),

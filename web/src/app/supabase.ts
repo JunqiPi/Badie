@@ -34,6 +34,8 @@ export interface Profile {
   show_as_regular: boolean;
   /** 同球群的人可以给我发消息请求 */
   allow_message_requests: boolean;
+  /** 约球消息也发邮件（默认关，主要靠推送） */
+  email_alerts: boolean;
   /** 照片头像在 avatars 桶里的位置（App 里上传） */
   avatar_path: string | null;
   /** 高水平认证（管理员审核通过后才有） */

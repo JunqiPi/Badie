@@ -338,7 +338,7 @@ final class MockBackend {
         emit(.userUpdated(user))
         pushRemote(["show_on_boards": privacy.showsOnLeaderboards, "challenge_policy": privacy.challengePolicy.serverValue,
                     "discoverable": privacy.findableByNickname, "show_as_regular": privacy.showsAsRegular,
-                    "allow_message_requests": privacy.allowsMessageRequests])
+                    "allow_message_requests": privacy.allowsMessageRequests, "email_alerts": privacy.emailAlerts])
     }
 
     func updateProfile(_ updated: User) async throws -> User {

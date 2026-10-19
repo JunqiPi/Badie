@@ -1,4 +1,4 @@
-// 网页应用端到端测试：邮箱验证码登录 → 建资料（跳过定级）→ 附近球馆 → 收藏 → 重新打开仍保持登录 → 换语言 → 注销账号
+// 网页应用端到端测试：邮箱验证码登录 → 建资料（跳过定级）→ 附近球馆 → 收藏 → 重新打开仍保持登录 → 换语言 → 手机宽度不左右滑动 → 注销账号
 // 需要本地 Supabase（supabase start）和已启动的网站（BASE_URL）
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
@@ -63,6 +63,23 @@ await page.getByRole('option', { name: '简体中文', selected: true }).waitFor
 await page.keyboard.press('ArrowUp');
 await page.keyboard.press('Enter');
 await page.getByRole('link', { name: 'Courts' }).first().waitFor();
+
+// 最窄的手机（320 宽）上每个页面都不能左右滑动（长球馆名、不换行的标签、并排的控件都可能把页面撑宽）
+await page.setViewportSize({ width: 320, height: 720 });
+for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', '/settings/', '/rankings/', '/challenges/', '/notifications/', '/groups/new/', '/rooms/new/', '/levels/']) {
+  await page.goto(`${base}${path}`);
+  await page.getByRole('main').waitFor();
+  await page.waitForTimeout(300);
+  const { scroll, width, culprit } = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    // 最外层超出屏幕、又没被滚动容器裁掉的元素
+    const clipped = (el) => { for (let a = el.parentElement; a; a = a.parentElement) if (getComputedStyle(a).overflowX !== 'visible') return true; return false; };
+    const wide = [...document.querySelectorAll('main *')].find((el) => el.getBoundingClientRect().right > width + 1 && !clipped(el));
+    return { scroll: document.documentElement.scrollWidth, width, culprit: wide && `${wide.tagName.toLowerCase()}.${wide.className} “${wide.textContent.slice(0, 40)}”` };
+  });
+  assert.ok(scroll <= width, `${path} is ${scroll}px wide on a ${width}px screen: ${culprit}`);
+}
+await page.setViewportSize({ width: 1280, height: 900 });
 
 // 注销：要点两次；之后变回没登录，刷新也不会再登录
 await page.goto(`${base}/settings/`);
