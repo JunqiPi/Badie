@@ -1029,6 +1029,7 @@
  "You missed a confirmation, so we stopped sending you matches for this time.": "คุณพลาดการยืนยัน เราจึงหยุดส่งการจับคู่ให้สำหรับช่วงเวลานี้",
  "You need a free account for this page.": "ต้องมีบัญชี (ฟรี) จึงจะใช้หน้านี้ได้",
  "You never need to pay, send a deposit or share a verification code before playing. Split court fees at the court.": "คุณไม่จำเป็นต้องจ่ายเงิน ส่งเงินมัดจำ หรือแชร์รหัสยืนยันก่อนเล่นเลย หารค่าคอร์ทกันที่สนาม",
+ "You signed in with Apple. To also stop using Apple for Badie, go to your Apple Account settings → Sign in with Apple.": "คุณเข้าสู่ระบบด้วย Apple หากต้องการเลิกใช้ Apple กับ Badie ด้วย ให้ไปที่การตั้งค่าบัญชี Apple → ลงชื่อเข้าด้วย Apple",
  "You won’t be matched with {name} again, and you’ll stop being friends. They won’t be told.": "คุณจะไม่ถูกจับคู่กับ {name} อีก และจะไม่เป็นเพื่อนกันแล้ว อีกฝ่ายจะไม่ได้รับแจ้ง",
  "You, {names} and {n} more": "คุณ, {names} และอีก {n} คน",
  "You: {message}": "คุณ: {message}",

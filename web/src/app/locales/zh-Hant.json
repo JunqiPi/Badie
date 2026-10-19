@@ -1029,6 +1029,7 @@
  "You missed a confirmation, so we stopped sending you matches for this time.": "你錯過了一次確認，這個時段我們已停止幫你配對。",
  "You need a free account for this page.": "這個頁面需要免費帳號。",
  "You never need to pay, send a deposit or share a verification code before playing. Split court fees at the court.": "打球前，你絕對不需要付款、交訂金或提供驗證碼。場地費到現場再分攤。",
+ "You signed in with Apple. To also stop using Apple for Badie, go to your Apple Account settings → Sign in with Apple.": "你用 Apple 登入過。如果也想停止用 Apple 登入 Badie，請到 Apple 帳號設定 →「使用 Apple 登入」裡移除。",
  "You won’t be matched with {name} again, and you’ll stop being friends. They won’t be told.": "你不會再和 {name} 配對，你們也不再是球友。對方不會收到通知。",
  "You, {names} and {n} more": "你、{names} 和另外 {n} 人",
  "You: {message}": "你：{message}",

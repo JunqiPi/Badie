@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type SubmitEvent } from 'react';
+import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
@@ -293,6 +293,11 @@ function Level({ profile }: { profile: Profile }) {
 function DeleteAccount({ avatar }: { avatar: string | null }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
+  // 用 Apple 登录过：网页拿不到 Apple 的授权码去撤销，告诉用户可以在 Apple 账户里自己停用（Apple 的建议）
+  const [apple, setApple] = useState(false);
+  useEffect(() => {
+    if (confirming) supabase!.auth.getSession().then(({ data }) => setApple(Boolean(data.session?.user.app_metadata.providers?.includes('apple'))));
+  }, [confirming]);
 
   async function remove() {
     setBusy(true);
@@ -314,6 +319,7 @@ function DeleteAccount({ avatar }: { avatar: string | null }) {
       <p className="text-footnote text-ink-secondary">
         {t('This deletes your profile, friends, messages, reviews and game history, and can’t be undone. Upcoming games are cancelled and the other players are told. Groups you run go to the next organizer.')}
       </p>
+      {apple && <p className="text-footnote text-ink-secondary">{t('You signed in with Apple. To also stop using Apple for Badie, go to your Apple Account settings → Sign in with Apple.')}</p>}
       <div className="flex flex-wrap gap-2">
         <Button variant="danger" busy={busy} onClick={remove}>{t('Yes, delete my account')}</Button>
         <Button variant="quiet" disabled={busy} onClick={() => setConfirming(false)}>{t('Cancel')}</Button>

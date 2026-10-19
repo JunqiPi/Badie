@@ -161,7 +161,7 @@ site_url = "http://127.0.0.1:4321"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://127.0.0.1:4321", "http://localhost:4321"]
+additional_redirect_urls = ["http://127.0.0.1:4321", "http://localhost:4321", "http://127.0.0.1:4321/signin/**", "badie://auth-callback"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.
@@ -326,6 +326,14 @@ max_frequency = "5s"
 # enroll_enabled = true
 # verify_enabled = true
 
+# Google / Apple 登录：生产环境在 Supabase 后台配置（见 Badie-iOS/docs/DEPLOY.md），本地默认关闭。
+# 网页和 App 只在后台开了的时候才显示对应按钮
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+skip_nonce_check = false
+
 # Use an external OAuth provider. The full list of providers are: `apple`, `azure`, `bitbucket`,
 # `discord`, `facebook`, `github`, `gitlab`, `google`, `keycloak`, `linkedin_oidc`, `notion`, `twitch`,
 # `twitter`, `x`, `slack`, `spotify`, `workos`, `zoom`.
@@ -422,3 +430,7 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# 注销时撤销 Apple 登录授权：函数里自己核对调用者（见 functions/apple-revoke）
+[functions.apple-revoke]
+verify_jwt = false

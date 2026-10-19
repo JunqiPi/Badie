@@ -49,6 +49,8 @@ final class AppleSignIn: NSObject {
         let idToken: String
         let nonce: String
         let givenName: String?
+        /// 一次性授权码（5 分钟内有效）：注销时交给服务器去撤销 Apple 授权
+        let authorizationCode: String?
     }
 
     private var continuation: CheckedContinuation<ASAuthorizationAppleIDCredential, Error>?
@@ -68,7 +70,8 @@ final class AppleSignIn: NSObject {
         guard let token = credential.identityToken.flatMap({ String(data: $0, encoding: .utf8) }) else {
             throw RemoteError.server("apple_no_token")
         }
-        return Credential(idToken: token, nonce: nonce, givenName: credential.fullName?.givenName)
+        return Credential(idToken: token, nonce: nonce, givenName: credential.fullName?.givenName,
+                          authorizationCode: credential.authorizationCode.flatMap { String(data: $0, encoding: .utf8) })
     }
 
     /// 用户自己关掉了弹窗：不算出错，不用提示

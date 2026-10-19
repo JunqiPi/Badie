@@ -107,6 +107,18 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(providers, ["apple", "email"])
     }
 
+    func testReadsSignInMethodsAndCallsFunctions() async throws {
+        server.on("GET /auth/v1/user", #"{"id":"u","app_metadata":{"provider":"email","providers":["email","apple"]}}"#)
+        server.on("POST /functions/v1/apple-revoke", "")
+        let client = client(session: session(expiresIn: 3600))
+        let methods = try await client.signInMethods()
+        try await client.invoke("apple-revoke", ["code": "c-1"])
+
+        XCTAssertEqual(methods, ["email", "apple"])
+        XCTAssertEqual(server.json(1)["code"] as? String, "c-1")
+        XCTAssertEqual(server.requests[1].value(forHTTPHeaderField: "Authorization"), "Bearer old")
+    }
+
     func testSignInSecrets() throws {
         // RFC 7636 附录 B 的例子
         XCTAssertEqual(SocialSignIn.pkceChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")

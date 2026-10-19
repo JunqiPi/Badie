@@ -106,6 +106,12 @@ extension MockBackend {
     /// 注销：服务器删除账号和数据（以后的球局取消、球群交接），成功后清空本机缓存
     func remoteDeleteAccount() async throws {
         let remote = try requireRemote()
+        // 用 Apple 登录过的账号：先请 Apple 撤销授权（Apple 的要求，要用户再确认一次拿授权码）。
+        // 关掉弹窗或没撤销成功也照样注销，用户可以在 Apple 账户设置里自己停用
+        if (try? await remote.signInMethods())?.contains("apple") == true,
+           let code = try? await AppleSignIn().run().authorizationCode {
+            try? await remote.invoke("apple-revoke", ["code": code])
+        }
         // 照片文件先删掉（账号删了以后就没权限删了）
         if let path = remoteAvatarPath { try? await remote.removeFile("avatars", path: path) }
         try await remote.call("delete_account")

@@ -189,6 +189,20 @@ final class SupabaseClient {
         return Set(settings.external.filter { $0.value }.keys)
     }
 
+    /// 这个账号用过哪些方式登录（email / apple / google）
+    func signInMethods() async throws -> [String] {
+        struct User: Decodable {
+            struct Meta: Decodable { let providers: [String]? }
+            let appMetadata: Meta
+        }
+        return try RemoteJSON.decode(User.self, from: try await send("auth/v1/user", method: "GET")).appMetadata.providers ?? []
+    }
+
+    /// 调服务器函数：POST /functions/v1/<name>
+    func invoke(_ function: String, _ body: [String: Any]) async throws {
+        _ = try await send("functions/v1/\(function)", body: body)
+    }
+
     func signOut() async {
         if session != nil { _ = try? await send("auth/v1/logout", body: [:]) }
         session = nil

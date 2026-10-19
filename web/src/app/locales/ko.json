@@ -1029,6 +1029,7 @@
  "You missed a confirmation, so we stopped sending you matches for this time.": "매칭 확정을 놓쳐서 이번 요청은 매칭을 멈췄어요.",
  "You need a free account for this page.": "이 페이지를 보려면 무료 계정이 필요해요.",
  "You never need to pay, send a deposit or share a verification code before playing. Split court fees at the court.": "게임 전에 돈을 내거나, 보증금을 보내거나, 인증 코드를 알려 줄 필요는 절대 없어요. 코트비는 현장에서 나눠 내세요.",
+ "You signed in with Apple. To also stop using Apple for Badie, go to your Apple Account settings → Sign in with Apple.": "Apple로 로그인했어요. Badie에서 Apple 로그인도 중단하려면 Apple 계정 설정 → 'Apple로 로그인'에서 삭제하세요.",
  "You won’t be matched with {name} again, and you’ll stop being friends. They won’t be told.": "{name} 님과 다시 매칭되지 않고, 친구 관계도 끝나요. 상대에게는 알리지 않아요.",
  "You, {names} and {n} more": "나, {names} 외 {n}명",
  "You: {message}": "나: {message}",
