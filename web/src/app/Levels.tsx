@@ -89,25 +89,33 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
 }
 
 /** 关于 Badie：非营利、数据来源、安全 */
+const facts: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
+  { icon: 'heart', tint: 'pink', title: 'Free and nonprofit', text: 'There’s nothing to buy and no ads. Badie exists to get more people playing even games.' },
+  { icon: 'eyeSlash', tint: 'sky', title: 'Private by default', text: 'Your exact location never leaves your device. Players see your nickname and level, not your contact details.' },
+  { icon: 'reliable', tint: 'mint', title: 'Reliability counts', text: 'No-shows and late cancellations are tracked, so the players you meet actually turn up.' },
+  { icon: 'map', tint: 'butter', title: 'Where court data comes from', text: 'Government open data, OpenStreetMap and players themselves. Players confirm courts they’ve played at.' },
+];
+
+/** 关于页和首页共用：免费、隐私、靠谱、数据来源 */
+export function AboutFacts({ className = 'sm:grid-cols-2', heading: Heading = 'h2' }: { className?: string; heading?: 'h2' | 'h3' }) {
+  return (
+    <ul className={`grid gap-3 ${className}`}>
+      {facts.map((f) => (
+        <li key={f.title} className={`sticker grid content-start gap-2 p-5 ${fill[f.tint]}`}>
+          <Icon name={f.icon} className="size-7" />
+          <Heading className="text-title3">{t(f.title)}</Heading>
+          <p className="text-subhead">{t(f.text)}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function About() {
-  const facts: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
-    { icon: 'heart', tint: 'pink', title: 'Free and nonprofit', text: 'There’s nothing to buy and no ads. Badie exists to get more people playing even games.' },
-    { icon: 'eyeSlash', tint: 'sky', title: 'Private by default', text: 'Your exact location never leaves your device. Players see your nickname and level, not your contact details.' },
-    { icon: 'reliable', tint: 'mint', title: 'Reliability counts', text: 'No-shows and late cancellations are tracked, so the players you meet actually turn up.' },
-    { icon: 'map', tint: 'butter', title: 'Where court data comes from', text: 'Government open data, OpenStreetMap and players themselves. Players confirm courts they’ve played at.' },
-  ];
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
       <LargeTitle title={t('About Badie')} subtitle={t('Built by a player, for players')} />
-      <ul className="grid gap-3 sm:grid-cols-2">
-        {facts.map((f) => (
-          <li key={f.title} className={`sticker grid content-start gap-2 p-5 ${fill[f.tint]}`}>
-            <Icon name={f.icon} className="size-7" />
-            <h2 className="text-title3">{t(f.title)}</h2>
-            <p className="text-subhead">{t(f.text)}</p>
-          </li>
-        ))}
-      </ul>
+      <AboutFacts />
       <section className="sticker grid gap-3 bg-[#17140f] p-5 text-[#f5f0e6]">
         <h2 className="text-title3">{t('Play from any browser')}</h2>
         <p className="text-subhead">{t('Badie works on the web on any phone or computer, no download needed. The iPhone app is in testing.')}</p>

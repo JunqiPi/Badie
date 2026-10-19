@@ -5,12 +5,13 @@ import { GameTicket, RequestCard, RoomCard } from './cards';
 import { km } from './Courts';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
-import { ArrowLabel, Avatar, Empty, IconTile, LevelBadge, Notice, SectionTitle, StatTile, fill, type Tint } from './kit';
+import { ArrowLabel, Avatar, CardFan, Empty, IconTile, Notice, SectionTitle, StatTile, fill, type Tint } from './kit';
+import { AboutFacts } from './Levels';
 import type { Centre } from './pickers';
 import { Link } from './router';
 import { signInFirst } from './Shell';
-import { supabase, useLive, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type Regular, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
-import { dateChip, dayName, nextDays, timeOf } from './time';
+import { supabase, useLive, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
+import { dayName, timeOf } from './time';
 import { toast } from './ui';
 
 const live = (g: Game) => g.status === 'scheduled' && new Date(g.ends_at).getTime() > Date.now();
@@ -29,12 +30,12 @@ function greeting() {
 }
 
 /** “Up for *a game* tonight?”：星号里的字用荧光笔标出来 */
-function Headline({ children }: { children?: ReactNode }) {
+function Headline({ children, size = 'text-[2.375rem] sm:text-[2.75rem] lg:text-[3.25rem]' }: { children?: ReactNode; size?: string }) {
   const parts = t('Up for *a game* tonight?').split('*');
   return (
     <div className="min-w-0">
       {children}
-      <h1 className="display mt-1 text-[2.375rem] whitespace-pre-line sm:text-[2.75rem] lg:text-[3.25rem]">
+      <h1 className={`display mt-1 whitespace-pre-line ${size}`}>
         {parts.map((part, i) => (i % 2 ? <mark key={i} className="marker">{part}</mark> : part))}
       </h1>
     </div>
@@ -55,7 +56,7 @@ function Dashboard({ me }: { me: Profile }) {
   const level = tier(me.rating);
 
   return (
-    <div className="grid gap-6 lg:gap-8">
+    <div className="grid gap-8 lg:gap-10">
       <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
         <Headline>
           <p className="text-subhead font-bold text-ink-secondary">{t('{greeting}, {name}', { greeting: greeting(), name: me.nickname })}</p>
@@ -75,8 +76,8 @@ function Dashboard({ me }: { me: Profile }) {
         </Notice>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <div className="grid min-w-0 gap-6">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-10 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="grid min-w-0 gap-8">
           <div className={`grid gap-6 ${next ? 'xl:grid-cols-2' : ''}`}>
             {next && (
               <section aria-labelledby="next" className="grid content-start gap-2">
@@ -101,15 +102,12 @@ function Dashboard({ me }: { me: Profile }) {
             </section>
           )}
 
-          <DateStrip signedIn />
           <PublicGames />
         </div>
 
-        <aside className="grid min-w-0 gap-6" aria-label={t('More')}>
+        <aside className="grid min-w-0 gap-8" aria-label={t('More')}>
           <WeeklyCard />
           <GroupsCard />
-          <Regulars />
-          <NearbyCourts />
         </aside>
       </div>
     </div>
@@ -144,33 +142,6 @@ function QuickMatch({ last, guest = false }: { last?: Ticket; guest?: boolean })
       <Link to={to} className="button button-lg button-inverse mt-1 w-full">
         <ArrowLabel>{t('Start matching')}</ArrowLabel>
       </Link>
-    </section>
-  );
-}
-
-/** 哪天有空：接下来 7 天，点一天去约那天 */
-function DateStrip({ signedIn = false }: { signedIn?: boolean }) {
-  return (
-    <section aria-labelledby="days" className="grid gap-2">
-      <SectionTitle id="days" title={t('Which days work for you?')} detail={t('Pick a day to find players')} />
-      <ul className="rail lg:mx-0 lg:grid lg:grid-cols-7 lg:overflow-visible lg:px-0">
-        {nextDays(7).map((date, i) => {
-          const chip = dateChip(date, i);
-          const to = `/play/?date=${date}`;
-          return (
-            <li key={date}>
-              <Link
-                to={signedIn ? to : signInFirst(to)}
-                aria-label={chip.full}
-                className={`press grid w-[3.5rem] justify-items-center gap-0.5 rounded-[16px] border-2 border-stroke py-2 lg:w-auto ${i === 0 ? 'bg-lime text-on-accent shadow-low' : 'bg-surface hover:bg-surface-muted'}`}
-              >
-                <span className="text-caption">{chip.label}</span>
-                <span className="text-[1.25rem] leading-tight font-black tabular-nums">{chip.day}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
     </section>
   );
 }
@@ -271,34 +242,6 @@ function GroupsCard() {
   );
 }
 
-/** 同馆常客：常去同一家球馆、自己开启了展示的球友 */
-function Regulars() {
-  const { data: regulars } = useLive<Regular[]>('venue_regulars', { every: 300_000 });
-  return (
-    <section aria-labelledby="regulars" className="grid gap-2">
-      <SectionTitle id="regulars" title={t('Venue regulars')} detail={regulars?.length ? t('{n} players', { n: regulars.length }) : undefined} />
-      {regulars?.length ? (
-        <ul className="rail lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-3 lg:overflow-visible lg:px-0">
-          {regulars.slice(0, 12).map((r) => (
-            <li key={r.id}>
-              <Link to={`/players/${r.id}/`} className="press grid w-[4.5rem] justify-items-center gap-1 text-center lg:w-auto">
-                <Avatar id={r.id} name={r.nickname} size={58} />
-                <span className="w-full truncate text-footnote font-bold">{r.nickname}</span>
-                <LevelBadge rating={r.rating} named={false} compact />
-                <span className="w-full truncate text-caption text-ink-secondary">{r.venue.name}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <Notice icon="heart" tint="muted" action={{ label: t('Courts'), to: '/courts/' }}>
-          {t('Once you set your usual venues, players who also go there will show up here (if they’ve turned it on).')}
-        </Notice>
-      )}
-    </section>
-  );
-}
-
 /** 附近球馆：最近的 3 家 + 总数，点进球馆页 */
 function NearbyCourts() {
   const area = useArea();
@@ -364,7 +307,7 @@ export function AreaPrompt({ tint = 'sky' }: { tint?: Tint }) {
   );
 }
 
-// MARK: 没登录时的首页：同样的 App，能看的都能看，要账号的按钮先去登录
+// MARK: 没登录时的首页：先把 Badie 讲清楚，一节只讲一件事、留足空白；能用的功能直接用，要账号的先去登录
 
 const steps: { icon: IconName; tint: Tint; title: string; text: string }[] = [
   { icon: 'level', tint: 'lavender', title: 'Set your level', text: 'A 2-minute quiz places you on a 1–9 scale. Players you meet confirm it after games.' },
@@ -372,77 +315,124 @@ const steps: { icon: IconName; tint: Tint; title: string; text: string }[] = [
   { icon: 'trophy', tint: 'peach', title: 'Play, then confirm', text: 'After the game both sides confirm who won. Only matching results count toward win rate and leaderboards.' },
 ];
 
+const ways: { icon: IconName; tint: Tint; title: string; text: string; to: string }[] = [
+  { icon: 'bolt', tint: 'lime', title: 'Quick Match', text: 'Finds buddies for you by level and time', to: '/play/' },
+  { icon: 'court', tint: 'peach', title: 'Nearby games', text: 'Booked a court but short on players? Start one and nearby players will see it.', to: '/rooms/' },
+  { icon: 'group', tint: 'sky', title: 'Regular games', text: 'Same time and venue every week. Sign up in one tap; join the waitlist automatically when full', to: '/groups/' },
+];
+
+const lead = 'text-[1.0625rem] leading-relaxed text-ink-secondary lg:text-[1.1875rem]';
+
+/** 介绍页每一节的开头：小标题 + 大标题 + 一段说明 */
+function Intro({ id, kicker, title, children }: { id: string; kicker?: string; title: string; children?: ReactNode }) {
+  return (
+    <div className="grid max-w-2xl gap-3">
+      {kicker && <p className="kicker text-ink-secondary">{kicker}</p>}
+      <h2 id={id} className="text-title lg:text-[2.5rem]">{title}</h2>
+      {children && <p className={lead}>{children}</p>}
+    </div>
+  );
+}
+
 function Welcome() {
   return (
-    <div className="grid gap-6 lg:gap-8">
-      <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <Headline>
-          <p className="text-subhead font-bold text-ink-secondary">{greeting()}</p>
-        </Headline>
-        <ul className="flex flex-wrap gap-2 lg:max-w-[26rem] lg:justify-end">
-          {[['heart', 'pink', 'Free and nonprofit'], ['eyeSlash', 'sky', 'No ads, no tracking'], ['level', 'lavender', 'Matched by level'], ['reliable', 'mint', 'Reliability that counts']].map(([icon, tint, text]) => (
-            <li key={text} className={`chip px-3! py-1.5! text-footnote! ${fill[tint as Tint]}`}><Icon name={icon as IconName} className="size-4" />{t(text)}</li>
-          ))}
-        </ul>
+    <div className="grid gap-20 pb-4 lg:gap-28">
+      <header className="grid items-center gap-10 lg:min-h-[28rem] lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
+        <div className="grid justify-items-start gap-6">
+          <ul className="flex flex-wrap gap-2">
+            {[['heart', 'pink', 'Free and nonprofit'], ['eyeSlash', 'sky', 'No ads, no tracking']].map(([icon, tint, text]) => (
+              <li key={text} className={`chip px-3! py-1.5! text-footnote! ${fill[tint as Tint]}`}><Icon name={icon as IconName} className="size-4" />{t(text)}</li>
+            ))}
+          </ul>
+          <Headline size="text-[3rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
+          <p className={`max-w-xl ${lead}`}>{t('A free, nonprofit app for finding badminton partners at your level and courts near you. No ads.')}</p>
+          <div className="flex flex-wrap gap-3">
+            <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
+            <Link to="/courts/" className="button button-lg button-quiet">{t('Courts near you')}</Link>
+          </div>
+        </div>
+        <div className="max-sm:-my-4 lg:px-12"><CardFan className="max-sm:scale-[0.8] lg:scale-125" /></div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <div className="grid min-w-0 gap-6">
-          <div className="grid items-start gap-6 xl:grid-cols-2">
-            <QuickMatch guest />
-            <section aria-labelledby="how" className="grid content-start gap-3">
-              <h2 id="how" className="text-title3">{t('How Badie works')}</h2>
-              <ol className="grid gap-2.5">
-                {steps.map((s, i) => (
-                  <li key={s.title} className={`tile flex gap-3 p-3.5 ${fill[s.tint]}`}>
-                    <span className="relative">
-                      <IconTile icon={s.icon} tint="surface" />
-                      <span className="absolute -top-2 -left-2 grid size-6 place-items-center rounded-full border-2 border-stroke bg-[#17140f] text-caption font-black text-lime">{i + 1}</span>
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-headline">{t(s.title)}</span>
-                      <span className="block text-footnote">{t(s.text)}</span>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          </div>
-          <DateStrip />
-          <Link to="/levels/" className="sticker lift grid gap-3 bg-lavender p-5 text-on-accent sm:grid-cols-[auto_1fr_auto] sm:items-center">
-            <IconTile icon="level" tint="surface" size="lg" />
-            <span>
-              <span className="block text-title3">{t('What level am I?')}</span>
-              <span className="block text-footnote">{t('Levels 1–9 described by what you can actually do on court, from first rallies to national level.')}</span>
-            </span>
-            <span className="button button-sm button-quiet justify-self-start">{t('See the levels')}</span>
-          </Link>
-        </div>
+      <section aria-labelledby="how" className="grid gap-8">
+        <Intro id="how" title={t('How Badie works')} />
+        <ol className="grid gap-4 lg:grid-cols-3">
+          {steps.map((s, i) => (
+            <li key={s.title} className={`sticker grid content-start gap-4 p-6 lg:p-8 ${fill[s.tint]}`}>
+              <span className="flex items-center gap-3">
+                <span className="grid size-10 place-items-center rounded-full bg-[#17140f] text-headline font-black text-lime">{i + 1}</span>
+                <IconTile icon={s.icon} tint="surface" />
+              </span>
+              <h3 className="text-title3">{t(s.title)}</h3>
+              <p className="text-subhead">{t(s.text)}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
 
-        <aside className="grid min-w-0 gap-6" aria-label={t('More')}>
-          <section aria-labelledby="signin" className="sticker grid gap-3 bg-[#17140f] p-5 text-[#f5f0e6]">
-            <h2 id="signin" className="text-title3">{t('Ready to play?')}</h2>
-            <p className="text-footnote">{t('Sign in with your email to get matched, join games and chat with players. No password needed.')}</p>
-            <Link to="/signin/" className="button button-lg">{t('Sign in')}</Link>
-          </section>
-          <NearbyCourts />
-          <Link to="/courts/" className="sticker lift flex items-center gap-3 bg-mint p-4 text-on-accent">
-            <IconTile icon="globe" tint="surface" />
-            <span className="min-w-0 flex-1">
-              <span className="block text-headline">{t('Courts by country')}</span>
-              <span className="block text-footnote">{t('Browse every court we list, with hours, prices and directions.')}</span>
-            </span>
-            <Icon name="chevronRight" className="size-4" />
-          </Link>
-          <Link to="/about/" className="sticker lift flex items-center gap-3 p-4">
-            <IconTile icon="heart" tint="pink" />
-            <span className="min-w-0 flex-1">
-              <span className="block text-headline">{t('About Badie')}</span>
-              <span className="block text-footnote text-ink-secondary">{t('Built by a player, for players. Where our data comes from.')}</span>
-            </span>
-            <Icon name="chevronRight" className="size-4 text-ink-tertiary" />
-          </Link>
-        </aside>
+      <section aria-labelledby="levels" className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="grid justify-items-start gap-5">
+          <Intro id="levels" kicker={t('Matched by level')} title={t('What level am I?')}>
+            {t('Levels 1–9 described by what you can actually do on court, from first rallies to national level.')}
+          </Intro>
+          <Link to="/levels/" className="button button-quiet">{t('See the levels')}</Link>
+        </div>
+        <LevelLadder />
+      </section>
+
+      <section aria-labelledby="ways" className="grid gap-8">
+        <Intro id="ways" title={t('Three ways to get a game')}>{t('Find a buddy with Quick Match, or start a game for nearby players to join.')}</Intro>
+        <ul className="grid gap-4 lg:grid-cols-3">
+          {ways.map((w) => (
+            <li key={w.title}>
+              <Link to={signInFirst(w.to)} className={`sticker lift grid h-full content-start gap-4 p-6 lg:p-8 ${fill[w.tint]}`}>
+                <IconTile icon={w.icon} tint="surface" size="lg" />
+                <span className="text-title3">{t(w.title)}</span>
+                <span className="text-subhead">{t(w.text)}</span>
+                <Icon name="arrowRight" className="size-6" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="values" className="grid gap-8">
+        <Intro id="values" kicker={t('About Badie')} title={t('Built by a player, for players')} />
+        <AboutFacts heading="h3" className="sm:grid-cols-2 lg:grid-cols-4" />
+      </section>
+
+      <section aria-labelledby="find-courts" className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="grid justify-items-start gap-5">
+          <Intro id="find-courts" title={t('Find courts around you')}>{t('Browse every court we list, with hours, prices and directions.')}</Intro>
+          <Link to="/courts/" className="button button-quiet">{t('Browse by country')}</Link>
+        </div>
+        <NearbyCourts />
+      </section>
+
+      <section aria-labelledby="ready" className="sticker grid gap-6 bg-[#17140f] p-8 text-[#f5f0e6] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:p-12">
+        <div className="grid gap-3">
+          <h2 id="ready" className="text-title lg:text-[2.5rem]">{t('Ready to play?')}</h2>
+          <p className="max-w-xl text-[1.0625rem] leading-relaxed">{t('Sign in with your email to get matched, join games and chat with players. No password needed.')}</p>
+        </div>
+        <Link to="/signin/" className="button button-lg justify-self-start">{t('Sign in')}</Link>
+      </section>
+    </div>
+  );
+}
+
+/** 1–9 级的台阶，你上下 1 级的范围亮起来：只和水平相当的人配到一起 */
+function LevelLadder() {
+  const mine = 5;
+  return (
+    <div aria-hidden="true" className="sticker grid gap-5 bg-lavender p-6 text-on-accent lg:p-8">
+      <span className="chip justify-self-start bg-white">{t('Level ±1')}</span>
+      <div className="flex h-56 items-end gap-1.5 sm:gap-2">
+        {Array.from({ length: 9 }, (_, i) => i + 1).map((level) => (
+          <div key={level} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
+            <div style={{ height: `${level * 10}%` }} className={`w-full rounded-t-[10px] border-2 border-stroke ${Math.abs(level - mine) <= 1 ? 'bg-lime' : 'bg-white'}`} />
+            <span className="text-footnote font-black tabular-nums">{level}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
