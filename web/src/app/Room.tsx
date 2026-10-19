@@ -1,13 +1,13 @@
 import { useState, type SubmitEvent } from 'react';
-import { tier } from './assessment';
 import { t } from './i18n';
 import { SlotFields, slotTimes, type Slot } from './NewRoom';
-import { IconTile, ScreenHeader } from './kit';
+import { Icon } from './icons';
+import { Avatar, Divider, Empty, IconButton, IconTile, LevelBadge, Notice, Row, ScreenHeader, Tag } from './kit';
 import { Link, navigate } from './router';
-import { RoomChips, roomWhen } from './Rooms';
+import { roomWhen, tagText } from './Rooms';
 import { problem, supabase, useLive, type Friend, type RoomDetail } from './supabase';
 import { today, wallClock } from './time';
-import { Button, EmptyState, Skeleton, toast } from './ui';
+import { Button, Skeleton, toast } from './ui';
 
 const closedText = (reason: NonNullable<RoomDetail['closed_reason']>) =>
   ({
@@ -35,9 +35,9 @@ export function RoomPage({ id }: { id: string }) {
   if (r === undefined) return <Skeleton className="h-96 max-w-3xl" />;
   if (r === null) {
     return (
-      <EmptyState title={t('Game not found')} action={<Link to="/rooms/" className="button">{t('Open games')}</Link>}>
+      <Empty icon="court" tint="peach" title={t('Game not found')} action={{ label: t('Nearby games'), to: '/rooms/' }}>
         {t('It may be private, or the host closed it.')}
-      </EmptyState>
+      </Empty>
     );
   }
 
@@ -68,86 +68,108 @@ export function RoomPage({ id }: { id: string }) {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <Link to="/rooms/" className="link text-sm">{t('Open games')}</Link>
-        <p className="eyebrow mt-6">{r.venue ? `${r.venue.name}, ${r.venue.city}` : t('Court not set yet')}</p>
-        <h1 className="display mt-2 text-[clamp(2.25rem,6vw,3.5rem)] break-words">{roomWhen(r)}</h1>
-        <div className="mt-4"><RoomChips room={r} /></div>
-        {r.note && <p className="mt-3 max-w-prose text-lg text-ink-secondary">{r.note}</p>}
-        <p className="mt-3 text-sm text-ink-tertiary">
-          {t('Hosted by {name}', { name: r.owner.nickname })} · {t('Level {level}', { level: tier(r.owner.rating).label })}
-        </p>
-      </div>
+      <ScreenHeader title={r.visibility === 'private' ? t('Private room') : t('Public game')} back="/rooms/">
+        {inside && <IconButton icon="share" label={t('Copy invite')} onClick={copyInvite} />}
+      </ScreenHeader>
 
       {r.status === 'started' && (
-        <div className="tile flex flex-wrap items-center justify-between gap-3 bg-mint p-5 text-on-accent">
-          <p className="font-black">{t('Game on! Everyone’s in.')}</p>
-          {inside && r.game_id && <Link to={`/games/${r.game_id}/`} className="button button-quiet">{t('View game')}</Link>}
-        </div>
+        <Notice icon="checkCircle" tint="mint" action={inside && r.game_id ? { label: t('View game'), to: `/games/${r.game_id}/` } : undefined}>
+          {t('Game on! Everyone’s in.')}
+        </Notice>
       )}
       {r.status === 'closed' && r.closed_reason && (
-        <div className="tile bg-surface-muted p-5">
-          <p className="font-black">{t('This game is closed')}</p>
-          <p className="text-ink-secondary">{closedText(r.closed_reason)}</p>
-        </div>
+        <Notice icon="xCircle" tint="muted">{t('This game is closed')} · {closedText(r.closed_reason)}</Notice>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <section aria-labelledby="players" className="tile grid gap-3 bg-surface p-5">
-          <h2 id="players" className="flex items-baseline justify-between gap-2 text-xl font-black">
-            {t('Players')} <span className="text-base font-bold text-ink-tertiary tabular-nums">{t('{n} of {total}', { n: r.going, total: r.capacity })}</span>
-          </h2>
-          {r.members ? (
-            <ul className="grid gap-2">
-              {going.map((m) => (
-                <li key={m.id} className="flex min-h-11 items-center gap-2">
-                  {m.me ? <span className="min-w-0 flex-1 truncate font-black">{t('You')}</span> : (
-                    <Link to={`/players/${m.id}/`} className="min-w-0 flex-1 truncate font-bold hover:underline">{m.nickname}</Link>
-                  )}
-                  <span className="text-sm font-semibold text-ink-tertiary">
-                    {tier(m.rating).label}{m.id === r.owner.id ? ` · ${t('Host')}` : ''}
-                  </span>
-                  {r.my_status === 'owner' && open && m.id !== r.owner.id && (confirm === `remove-${m.id}` ? (
-                    <Button variant="danger" className="min-h-9! px-3! text-sm" busy={busy === `remove-${m.id}`}
-                            onClick={() => act(`remove-${m.id}`, 'remove_room_member', { ...room, p_user: m.id }, t('Removed'))}>{t('Remove')}</Button>
-                  ) : (
-                    <button onClick={() => setConfirm(`remove-${m.id}`)} className="link text-sm">{t('Remove')}</button>
-                  ))}
-                </li>
-              ))}
-              {open && Array.from({ length: Math.max(0, r.capacity - going.length) }, (_, i) => (
-                <li key={`open-${i}`} className="flex min-h-11 items-center rounded-[var(--r-control)] border-2 border-dashed border-stroke/30 px-3 text-sm font-bold text-ink-tertiary">
-                  {t('Open spot')}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-ink-secondary">{t('Join to see who’s playing.')}</p>
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
+        <div className="grid min-w-0 gap-6">
+          {r.code && (
+            <section aria-labelledby="code" className="sticker grid gap-3 bg-lavender p-5 text-on-accent">
+              <div className="flex items-center justify-between">
+                <h2 id="code" className="kicker">{t('Room code')}</h2>
+                <Tag>{r.mode === 'doubles' ? t('Doubles') : t('Singles')} · {r.going}/{r.capacity}</Tag>
+              </div>
+              <p className="grid grid-cols-6 gap-2" aria-label={r.code}>
+                {[...r.code].map((ch, i) => (
+                  <span key={i} aria-hidden="true" className="grid aspect-square place-items-center rounded-[12px] border-2 border-[#17140f] bg-white font-mono text-[1.75rem] font-black text-[#17140f]">{ch}</span>
+                ))}
+              </p>
+              {inside && <Button className="button-inverse" onClick={copyInvite}><Icon name="copy" className="size-4" />{t('Copy invite')}</Button>}
+            </section>
           )}
-          {waiting.length > 0 && (
-            <p className="text-sm text-ink-secondary">
-              <span className="font-extrabold">{t('Waitlist')}:</span> {waiting.map((m) => (m.me ? t('You') : m.nickname)).join(', ')}
-            </p>
-          )}
-          {!r.members && r.waitlist > 0 && <p className="text-sm text-ink-secondary">{t('{n} waiting', { n: r.waitlist })}</p>}
-        </section>
+
+          <section aria-label={t('Details')} className="sticker grid px-4 py-1">
+            <Row icon="clock" tint="peach" title={roomWhen(r)} subtitle={t('Hosted by {name}', { name: r.owner.nickname })} />
+            <Divider />
+            <Row icon="pin" tint="sky" title={r.venue ? r.venue.name : t('Court not set yet')} subtitle={r.venue ? [r.venue.street, r.venue.city].filter(Boolean).join(', ') : undefined} />
+            <Divider />
+            <Row icon="level" tint="lavender" title={t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })} subtitle={r.tags.map(tagText).join(' · ') || undefined} />
+            {r.note && (
+              <>
+                <Divider />
+                <Row icon="chat" tint="mint" title={r.note} />
+              </>
+            )}
+          </section>
+
+          <section aria-labelledby="players" className="sticker grid gap-3 p-5">
+            <h2 id="players" className="flex items-baseline justify-between gap-2 text-headline">
+              {t('Players')} <span className="text-footnote font-bold text-ink-secondary tabular-nums">{t('{n} of {total}', { n: r.going, total: r.capacity })}</span>
+            </h2>
+            {r.members ? (
+              <ul className="grid gap-2">
+                {going.map((m) => (
+                  <li key={m.id} className="flex min-h-12 items-center gap-3">
+                    <Link to={m.me ? '/me/' : `/players/${m.id}/`} className="press flex min-w-0 flex-1 items-center gap-3">
+                      <Avatar id={m.id} name={m.nickname} size={40} />
+                      <span className="grid min-w-0 justify-items-start gap-0.5">
+                        <span className="max-w-full truncate font-bold">{m.me ? t('You') : m.nickname}</span>
+                        <span className="flex gap-1"><LevelBadge rating={m.rating} named={false} compact />{m.id === r.owner.id && <Tag tint="butter">{t('Host')}</Tag>}</span>
+                      </span>
+                    </Link>
+                    {r.my_status === 'owner' && open && m.id !== r.owner.id && (confirm === `remove-${m.id}` ? (
+                      <Button variant="danger" className="button-sm" busy={busy === `remove-${m.id}`}
+                              onClick={() => act(`remove-${m.id}`, 'remove_room_member', { ...room, p_user: m.id }, t('Removed'))}>{t('Remove')}</Button>
+                    ) : (
+                      <button onClick={() => setConfirm(`remove-${m.id}`)} className="link text-footnote">{t('Remove')}</button>
+                    ))}
+                  </li>
+                ))}
+                {open && Array.from({ length: Math.max(0, r.capacity - going.length) }, (_, i) => (
+                  <li key={`open-${i}`} className="flex min-h-12 items-center gap-3 text-footnote font-bold text-ink-secondary">
+                    <span aria-hidden="true" className="size-10 rounded-full border-2 border-dashed border-stroke bg-surface" />
+                    {t('Open spot')}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-footnote text-ink-secondary">{t('Join to see who’s playing.')}</p>
+            )}
+            {waiting.length > 0 && (
+              <p className="text-footnote text-ink-secondary">
+                <span className="font-bold">{t('Waitlist')}:</span> {waiting.map((m) => (m.me ? t('You') : m.nickname)).join(', ')}
+              </p>
+            )}
+            {!r.members && r.waitlist > 0 && <p className="text-footnote text-ink-secondary">{t('{n} waiting', { n: r.waitlist })}</p>}
+          </section>
+        </div>
 
         {open && (
-          <aside className={`grid gap-4 lg:sticky lg:top-6 ${inside ? '' : 'order-first lg:order-none'}`}>
-            <section aria-label={t('Your spot')} className="tile grid gap-3 bg-surface p-5">
+          <aside className={`grid gap-4 lg:sticky lg:top-24 ${inside ? '' : 'order-first lg:order-none'}`} aria-label={t('Your spot')}>
+            <section className={`sticker grid gap-3 p-5 ${r.my_status === 'member' || r.my_status === 'owner' ? 'bg-lime/45' : ''}`}>
               {(r.my_status === null || r.my_status === 'invited') && (
                 <>
                   {r.my_status === 'invited' && <p className="font-bold">{t('{name} invited you to play.', { name: r.owner.nickname })}</p>}
-                  <Button busy={busy === 'join'} onClick={join}>{full ? t('Join waitlist') : t('Join game')}</Button>
-                  {r.my_status === null && <p className="text-sm text-ink-tertiary">{t('For levels {min}–{max}. You can leave any time before it starts.', { min: r.level_min, max: r.level_max })}</p>}
+                  <Button className="button-lg" busy={busy === 'join'} onClick={join}>{full ? t('Join waitlist') : t('Join game')}</Button>
+                  {r.my_status === null && <p className="text-footnote text-ink-secondary">{t('For levels {min}–{max}. You can leave any time before it starts.', { min: r.level_min, max: r.level_max })}</p>}
                 </>
               )}
-              {r.my_status === 'member' && <p className="font-bold">{t('You’re in. The host starts the game when every spot is filled.')}</p>}
+              {r.my_status === 'member' && <p className="flex items-center gap-2 font-bold"><Icon name="checkCircle" className="size-5" />{t('You’re in. The host starts the game when every spot is filled.')}</p>}
               {r.my_status === 'waitlisted' && <p className="font-bold">{t('You’re on the waitlist. We’ll tell you if a spot opens.')}</p>}
 
               {r.my_status === 'owner' && (
                 full && r.starts_at && r.venue ? (
-                  <Button busy={busy === 'start'} onClick={() => act('start', 'start_room', room, t('Game on! Everyone’s been told.'))}>{t('Start game')}</Button>
+                  <Button className="button-lg" busy={busy === 'start'} onClick={() => act('start', 'start_room', room, t('Game on! Everyone’s been told.'))}>{t('Start game')}</Button>
                 ) : (
                   <p className="font-bold">
                     {!r.starts_at || !r.venue ? t('Set the time and court, then start when it’s full.') : t('Start when all {n} spots are filled.', { n: r.capacity })}
@@ -155,21 +177,15 @@ export function RoomPage({ id }: { id: string }) {
                 )
               )}
 
-              {r.code && (
-                <div>
-                  <p className="eyebrow">{t('Room code')}</p>
-                  <p className="mt-1 font-mono text-2xl font-black tracking-[0.3em]">{r.code}</p>
-                </div>
-              )}
-              {inside && <Button variant="quiet" onClick={copyInvite}>{t('Copy invite')}</Button>}
-
               {r.my_status && r.my_status !== 'invited' && (confirm === 'leave' ? (
                 <Button variant="danger" busy={busy === 'leave'}
                         onClick={() => act('leave', 'leave_room', room, r.my_status === 'owner' ? t('Game cancelled. Everyone’s been told.') : t('You left the game'))}>
                   {r.my_status === 'owner' ? t('Yes, cancel for everyone') : t('Yes, leave')}
                 </Button>
               ) : (
-                <Button variant="quiet" onClick={() => setConfirm('leave')}>{r.my_status === 'owner' ? t('Cancel game') : t('Leave game')}</Button>
+                <button type="button" onClick={() => setConfirm('leave')} className="min-h-11 text-footnote font-bold text-danger hover:underline">
+                  {r.my_status === 'owner' ? t('Cancel game') : t('Leave game')}
+                </button>
               ))}
             </section>
 
@@ -207,8 +223,8 @@ function InviteFriends({ room, onSent }: { room: RoomDetail; onSent: () => void 
   }
 
   return (
-    <details onToggle={(e) => load(e.currentTarget.open)} className="tile bg-surface p-5">
-      <summary className="cursor-pointer font-extrabold">{t('Invite friends')}</summary>
+    <details onToggle={(e) => load(e.currentTarget.open)} className="sticker p-5">
+      <summary className="flex cursor-pointer items-center gap-3 font-bold"><IconTile icon="userPlus" tint="mint" size="sm" />{t('Invite friends')}</summary>
       <div className="mt-3 grid gap-2">
         {!friends && <Skeleton className="h-16" />}
         {friends?.length === 0 && <p className="text-sm text-ink-secondary">{t('No friends to invite yet. Players become friends after a game together.')}</p>}
@@ -217,7 +233,7 @@ function InviteFriends({ room, onSent }: { room: RoomDetail; onSent: () => void 
             <input type="checkbox" checked={picked.includes(f.id)} className="size-5 accent-[var(--color-lime)]"
                    onChange={(e) => setPicked(e.target.checked ? [...picked, f.id].slice(0, 10) : picked.filter((p) => p !== f.id))} />
             <span className="min-w-0 flex-1 truncate font-bold">{f.nickname}</span>
-            <span className="text-sm font-semibold text-ink-tertiary">{tier(f.rating).label}</span>
+            <LevelBadge rating={f.rating} named={false} compact />
           </label>
         ))}
         {friends && friends.length > 0 && (
@@ -255,8 +271,8 @@ function EditSlot({ room, onSaved }: { room: RoomDetail; onSaved: () => void }) 
   }
 
   return (
-    <details open={!room.starts_at} className="tile bg-surface p-5">
-      <summary className="cursor-pointer font-extrabold">{room.starts_at ? t('Change time or court') : t('Set the time and court')}</summary>
+    <details open={!room.starts_at} className="sticker p-5">
+      <summary className="flex cursor-pointer items-center gap-3 font-bold"><IconTile icon="pencil" tint="butter" size="sm" />{room.starts_at ? t('Change time or court') : t('Set the time and court')}</summary>
       <div className="mt-4 grid gap-4">
         <SlotFields slot={slot} onChange={setSlot} />
         {error && <p role="alert" className="font-bold text-danger">{error}</p>}

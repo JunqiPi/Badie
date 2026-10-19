@@ -161,6 +161,7 @@ function DateStrip({ signedIn = false }: { signedIn?: boolean }) {
             <li key={date}>
               <Link
                 to={signedIn ? to : signInFirst(to)}
+                aria-label={chip.full}
                 className={`press grid w-[3.5rem] justify-items-center gap-0.5 rounded-[16px] border-2 border-stroke py-2 lg:w-auto ${i === 0 ? 'bg-lime text-on-accent shadow-low' : 'bg-surface hover:bg-surface-muted'}`}
               >
                 <span className="text-caption">{chip.label}</span>
@@ -188,6 +189,9 @@ function ReviewBanner({ game }: { game: Game }) {
   );
 }
 
+/** 手机上横向滑动；桌面在主栏里排三张，更多的去“全部”看 */
+const gamesRail = 'rail lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0';
+
 /** 附近公开的球局（有场地缺人），横向滑动 */
 function PublicGames() {
   const area = useArea();
@@ -203,13 +207,13 @@ function PublicGames() {
       {!area ? (
         <AreaPrompt />
       ) : rooms === undefined ? (
-        <div className="rail">{[0, 1].map((i) => <div key={i} className="skeleton h-44 w-[17rem]" />)}</div>
+        <div className={gamesRail}>{[0, 1, 2].map((i) => <div key={i} className="skeleton h-44 w-[17rem] lg:w-auto" />)}</div>
       ) : rooms.length === 0 ? (
         <Empty icon="court" tint="peach" title={t('No open games nearby right now')} action={{ label: t('Start a game'), to: '/rooms/new/' }}>
           {t('Booked a court but short on players? Start one and nearby players will see it.')}
         </Empty>
       ) : (
-        <ul className="rail">{rooms.map((r) => <li key={r.id}><RoomCard room={r} /></li>)}</ul>
+        <ul className={gamesRail}>{rooms.map((r) => <li key={r.id} className="w-[17rem] lg:w-auto lg:nth-[n+4]:hidden"><RoomCard room={r} wide /></li>)}</ul>
       )}
     </section>
   );

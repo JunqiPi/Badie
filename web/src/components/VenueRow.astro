@@ -1,4 +1,5 @@
 ---
+import { Icon } from '../app/icons';
 import { englishName, formatAddress, formatPrice, type Venue } from '../lib/venues';
 
 interface Props {
@@ -10,22 +11,27 @@ const { venue, distanceKm } = Astro.props;
 const subtitle = englishName(venue);
 ---
 
-<a href={venue.path} data-venue={venue.id} class="sticker lift block min-w-0 p-4">
+<a href={venue.path} data-venue={venue.id} class="sticker lift flex min-w-0 gap-3 p-3.5">
+  <span aria-hidden="true" class="grid size-11 shrink-0 place-items-center rounded-[13px] border-2 border-stroke bg-sky text-on-accent">
+    <Icon name="pin" />
+  </span>
+  <div class="min-w-0 flex-1">
   <div class="flex items-start justify-between gap-3">
     <div class="min-w-0">
-      <p class="font-black leading-snug">{venue.name}</p>
-      {subtitle && <p class="text-sm font-bold text-ink-secondary">{subtitle}</p>}
-      <p class="mt-1 truncate text-sm text-ink-secondary">{formatAddress(venue)}</p>
+      <p class="font-bold leading-snug">{venue.name}</p>
+      {subtitle && <p class="text-footnote font-bold text-ink-secondary">{subtitle}</p>}
+      <p class="truncate text-footnote text-ink-secondary">{formatAddress(venue)}</p>
     </div>
-    {distanceKm !== undefined && <span class="shrink-0 text-sm font-extrabold tabular-nums text-ink-tertiary">{distanceKm.toFixed(1)} km</span>}
+    {distanceKm !== undefined && <span class="shrink-0 text-footnote font-bold tabular-nums text-ink-secondary">{distanceKm.toFixed(1)} km</span>}
   </div>
   {
     (venue.courts || venue.price?.perPerson !== undefined || !venue.confirmed) && (
-      <div class="mt-3 flex flex-wrap gap-2">
-        {venue.courts && <span class="chip bg-sky">{venue.courts} courts</span>}
-        {venue.price?.perPerson !== undefined && <span class="chip bg-butter">Drop-in {formatPrice(venue.price.perPerson, venue.country)}</span>}
-        {!venue.confirmed && <span class="chip bg-surface-muted text-ink">Not yet confirmed</span>}
+      <div class="mt-2 flex flex-wrap gap-1.5">
+        {venue.courts && <span class="chip bg-sky" data-t="{n} court|{n} courts" data-n={venue.courts}>{venue.courts} courts</span>}
+        {venue.price?.perPerson !== undefined && <span class="chip bg-butter" data-t="Drop-in {price}" data-price={formatPrice(venue.price.perPerson, venue.country)}>Drop-in {formatPrice(venue.price.perPerson, venue.country)}</span>}
+        {!venue.confirmed && <span class="chip bg-surface-muted text-ink" data-t="Not yet confirmed">Not yet confirmed</span>}
       </div>
     )
   }
+  </div>
 </a>

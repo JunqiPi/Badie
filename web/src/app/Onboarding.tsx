@@ -1,6 +1,7 @@
 import { useState, type SubmitEvent } from 'react';
 import { currentLocale, t } from './i18n';
 import { supabase, type Profile } from './supabase';
+import { CardFan } from './kit';
 import { Button, Field } from './ui';
 
 const codes = ['US', 'CA', 'GB', 'AU', 'NZ', 'SG', 'MY', 'HK', 'TW', 'JP', 'KR', 'IN', 'ID', 'TH', 'VN', 'PH', 'DE', 'FR', 'DK', 'CN'];
@@ -53,11 +54,12 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   }
 
   return (
-    <div className="grid min-h-dvh place-items-center bg-canvas px-[var(--gutter)] py-10">
-      <form onSubmit={save} noValidate className="sticker animate-enter grid w-full max-w-md gap-5 p-6 sm:p-8">
+    <div className="mx-auto grid max-w-md gap-6 py-4">
+      <CardFan />
+      <form onSubmit={save} noValidate className="sticker animate-enter grid w-full gap-5 p-6 sm:p-8">
         <div>
-          <p className="eyebrow">{t('Welcome')}</p>
-          <h1 className="display mt-2 text-4xl">{t('What should players call you?')}</h1>
+          <p className="text-subhead font-bold text-ink-secondary">{t('Welcome')}</p>
+          <h1 className="mt-1 text-title">{t('What should players call you?')}</h1>
         </div>
         <Field label={t('Nickname')} hint={t('2–12 characters. No phone numbers or links.')} error={(touched && problem) || error}>
           {(props) => (
@@ -69,20 +71,20 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               onBlur={() => setTouched(true)}
-              className="field h-12"
+              className="field"
             />
           )}
         </Field>
         <Field label={t('Where do you play?')} hint={t('You’ll be matched with players in the same country.')}>
           {(props) => (
-            <select {...props} value={country} onChange={(e) => setCountry(e.target.value)} className="field h-12">
+            <select {...props} value={country} onChange={(e) => setCountry(e.target.value)} className="field">
               {countries().map((c) => (
                 <option key={c.code} value={c.code}>{c.name}</option>
               ))}
             </select>
           )}
         </Field>
-        <Button busy={busy}>{t('Continue')}</Button>
+        <Button className="button-lg button-inverse" busy={busy}>{t('Continue')}</Button>
       </form>
     </div>
   );

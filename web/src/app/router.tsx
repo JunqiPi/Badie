@@ -5,8 +5,8 @@ const listeners = new Set<() => void>();
 // 静态页面（球馆目录）上没有 App，链接都是普通的整页跳转；App 加载后才在页面里切换
 let spa = false;
 export const enableSpa = () => void (spa = true);
-/** 球馆目录的国家 / 城市 / 球馆页是静态页面，要整页打开 */
-const isStatic = (to: string) => /^\/courts\/[^?#]/.test(to);
+/** 球馆目录（总页、国家、城市、球馆）是静态页面，要整页打开 */
+const isStatic = (to: string) => /^\/courts\//.test(to);
 
 export function navigate(to: string, replace = false) {
   if (!spa || isStatic(to)) return location[replace ? 'replace' : 'assign'](to);

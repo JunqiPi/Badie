@@ -228,9 +228,11 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
   const [favorites, setFavorites] = useState<Court[]>([]);
   const tz = courts[0]?.time_zone_id ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const days = nextDays(14);
+  // 默认今晚 7–9 点；已经来不及就默认明天
   const [date, setDate] = useState(() => {
     const asked = new URLSearchParams(location.search).get('date');
-    return asked && days.includes(asked) ? asked : days[0];
+    if (asked && days.includes(asked)) return asked;
+    return zoned(days[0], 19 * 60, tz).getTime() - Date.now() < 30 * 60000 ? days[1] : days[0];
   });
   const [from, setFrom] = useState(19 * 60);
   const [to, setTo] = useState(21 * 60);
@@ -287,73 +289,21 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
   }
 
   const suggestions = favorites.filter((f) => !courts.some((c) => c.id === f.id));
-  const step = (value: number, delta: number, min: number, max: number) => Math.min(max, Math.max(min, value + delta));
 
   return (
     <form onSubmit={submit} noValidate aria-labelledby="new-request" className="grid min-w-0 gap-6 lg:order-1">
       <h2 id="new-request" className="sr-only">{t('New request')}</h2>
 
-      <fieldset className="grid gap-2">
-        <legend className="mb-2 text-headline">{t('Format')}</legend>
-        <div className="grid grid-cols-2 gap-3">
-          {(['singles', 'doubles'] as const).map((m) => (
-            <button
-              type="button"
-              key={m}
-              onClick={() => setMode(m)}
-              aria-pressed={mode === m}
-              className="press grid justify-items-start gap-1 rounded-[20px] border-2 border-stroke bg-surface p-4 text-left aria-pressed:bg-lime aria-pressed:text-on-accent aria-pressed:shadow-card"
-            >
-              <Icon name={m === 'doubles' ? 'users' : 'user'} className="size-6" />
-              <span className="text-title3">{m === 'doubles' ? t('Doubles') : t('Singles')}</span>
-              <span className="text-footnote font-bold opacity-70">{m === 'doubles' ? t('2 vs 2') : t('1 vs 1')}</span>
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <FormatPicker value={mode} onChange={setMode} />
 
-      <fieldset className="grid gap-2">
-        <legend className="mb-2 text-headline">{t('Date (next 14 days)')}</legend>
-        <div className="rail" role="radiogroup" aria-label={t('Date (next 14 days)')}>
-          {days.map((d, i) => {
-            const chip = dateChip(d, i);
-            return (
-              <button key={d} type="button" role="radio" aria-checked={date === d} onClick={() => setDate(d)}
-                      className="press grid w-[3.5rem] justify-items-center gap-0.5 rounded-[16px] border-2 border-stroke bg-surface py-2 aria-checked:bg-lime aria-checked:text-on-accent aria-checked:shadow-low">
-                <span className="text-caption">{chip.label}</span>
-                <span className="text-[1.25rem] leading-tight font-black tabular-nums">{chip.day}</span>
-              </button>
-            );
-          })}
-        </div>
-      </fieldset>
+      <DayPicker days={days} value={date} onChange={setDate} />
 
-      <fieldset className="grid gap-3">
-        <legend className="mb-2 text-headline">{t('Time slot (1–8 hours)')}</legend>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-          <Stepper label={t('Start')} value={from} onChange={(delta) => setFrom(step(from, delta, 6 * 60, 23 * 60))} />
-          <Icon name="arrowRight" className="size-4 text-ink-tertiary" />
-          <Stepper label={t('End')} value={to} onChange={(delta) => setTo(step(to, delta, 7 * 60, 24 * 60))} />
-        </div>
-        <p className="text-footnote text-ink-secondary">
-          {hoursLong >= 1 && hoursLong <= 8
-            ? t('{duration} total. Matches need at least 30 minutes of overlap', { duration: t('{n} hours', { n: hoursLong }) })
-            : t('Pick a window between 1 and 8 hours.')}
-        </p>
-        <div className="rail">
-          {presets.map(([label, start, end]) => (
-            <button key={label} type="button" aria-pressed={from === start && to === end} onClick={() => { setFrom(start); setTo(end); }}
-                    className="toggle aria-pressed:bg-peach!">
-              {t(label)}
-            </button>
-          ))}
-        </div>
-        {lastMinute && (
-          <Notice icon="bolt" tint="peach">
-            {t('Last-minute game: we only match players who are looking right now, and everyone has 5–10 minutes to confirm. Turn on automatic accept below so you don’t miss it.')}
-          </Notice>
-        )}
-      </fieldset>
+      <TimeRange from={from} to={to} onChange={(start, end) => { setFrom(start); setTo(end); }} />
+      {lastMinute && (
+        <Notice icon="bolt" tint="peach">
+          {t('Last-minute game: we only match players who are looking right now, and everyone has 5–10 minutes to confirm. Turn on automatic accept below so you don’t miss it.')}
+        </Notice>
+      )}
 
       <fieldset className="grid gap-2">
         <legend className="mb-1 flex w-full justify-between text-headline">
@@ -427,5 +377,79 @@ function Stepper({ label, value, onChange }: { label: string; value: number; onC
         </button>
       </span>
     </div>
+  );
+}
+
+/** 单打 / 双打：两张大卡片，选中的是柠檬绿 */
+export function FormatPicker({ value, onChange }: { value: Mode; onChange: (mode: Mode) => void }) {
+  return (
+    <fieldset className="grid gap-2">
+      <legend className="mb-2 text-headline">{t('Format')}</legend>
+      <div className="grid grid-cols-2 gap-3">
+        {(['singles', 'doubles'] as const).map((m) => (
+          <button
+            type="button"
+            key={m}
+            onClick={() => onChange(m)}
+            aria-pressed={value === m}
+            className="press grid justify-items-start gap-1 rounded-[20px] border-2 border-stroke bg-surface p-4 text-left aria-pressed:bg-lime aria-pressed:text-on-accent aria-pressed:shadow-card"
+          >
+            <Icon name={m === 'doubles' ? 'users' : 'user'} className="size-6" />
+            <span className="text-title3">{m === 'doubles' ? t('Doubles') : t('Singles')}</span>
+            <span className="text-footnote font-bold opacity-70">{m === 'doubles' ? t('2 vs 2') : t('1 vs 1')}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+/** 日期条：接下来两周，选中的是柠檬绿 */
+export function DayPicker({ days, value, onChange }: { days: string[]; value: string; onChange: (date: string) => void }) {
+  return (
+    <fieldset className="grid gap-2">
+      <legend className="mb-2 text-headline">{t('Date (next 14 days)')}</legend>
+      <div className="rail" role="radiogroup" aria-label={t('Date (next 14 days)')}>
+        {days.map((d, i) => {
+          const chip = dateChip(d, i);
+          return (
+            <button key={d} type="button" role="radio" aria-checked={value === d} aria-label={chip.full} onClick={() => onChange(d)}
+                    className="press grid w-[3.5rem] justify-items-center gap-0.5 rounded-[16px] border-2 border-stroke bg-surface py-2 aria-checked:bg-lime aria-checked:text-on-accent aria-checked:shadow-low">
+              <span className="text-caption">{chip.label}</span>
+              <span className="text-[1.25rem] leading-tight font-black tabular-nums">{chip.day}</span>
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
+/** 开始 / 结束时间：加减 30 分钟，加上几个常用时段 */
+export function TimeRange({ from, to, onChange, maxHours = 8 }: { from: number; to: number; onChange: (from: number, to: number) => void; maxHours?: number }) {
+  const step = (value: number, delta: number, min: number, max: number) => Math.min(max, Math.max(min, value + delta));
+  const hoursLong = (to - from) / 60;
+  return (
+    <fieldset className="grid gap-3">
+      <legend className="mb-2 text-headline">{maxHours === 8 ? t('Time slot (1–8 hours)') : t('Time')}</legend>
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <Stepper label={t('Start')} value={from} onChange={(delta) => onChange(step(from, delta, 6 * 60, 23 * 60), to)} />
+        <Icon name="arrowRight" className="size-4 text-ink-tertiary" />
+        <Stepper label={t('End')} value={to} onChange={(delta) => onChange(from, step(to, delta, 7 * 60, 24 * 60))} />
+      </div>
+      <p className="text-footnote text-ink-secondary">
+        {hoursLong >= 1 && hoursLong <= maxHours
+          ? t('{duration} total. Matches need at least 30 minutes of overlap', { duration: t('{n} hours', { n: hoursLong }) })
+          : t('Pick a window between 1 and {n} hours.', { n: maxHours })}
+      </p>
+      <div className="rail">
+        {presets.map(([label, start, end]) => (
+          <button key={label} type="button" aria-pressed={from === start && to === end} onClick={() => onChange(start, end)}
+                  className="toggle aria-pressed:bg-peach!">
+            {t(label)}
+          </button>
+        ))}
+      </div>
+    </fieldset>
   );
 }

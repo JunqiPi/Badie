@@ -4,6 +4,7 @@ import { t } from './i18n';
 import { Link } from './router';
 import { problem, supabase, useLive, type Profile, type VerificationKind } from './supabase';
 import { day } from './time';
+import { Icon } from './icons';
 import { ScreenHeader, Starburst } from './kit';
 import { Button, EmptyState, Field, PageHeader, Skeleton, toast } from './ui';
 
@@ -132,7 +133,7 @@ function RequestForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
           <button key={k.kind} type="button" onClick={() => pick(k.kind)} aria-pressed={kind === k.kind} className="toggle">{t(k.label)}</button>
         ))}
       </div>
-      <p className="text-sm text-ink-secondary">{t(option.hint)}</p>
+      <p className="text-footnote text-ink-secondary">{t(option.hint)}</p>
       <Field label={t('Level')}>
         {(props) => (
           <select {...props} value={level} onChange={(e) => setLevel(Number(e.target.value))} className="field">
@@ -150,7 +151,7 @@ function RequestForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =>
         {(props) => <input {...props} value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} className="field" />}
       </Field>
       {error && <p role="alert" className="font-bold text-danger">{error}</p>}
-      <div className="flex flex-wrap gap-2">
+      <div className="grid gap-2 sm:grid-cols-2">
         <Button busy={busy}>{t('Send for review')}</Button>
         <Button type="button" variant="quiet" onClick={onCancel}>{t('Cancel')}</Button>
       </div>
@@ -163,9 +164,11 @@ export function AdminLink() {
   const { data: admin } = useLive<boolean>('is_admin', { every: 3_600_000 });
   if (!admin) return null;
   return (
-    <div className="mt-6">
-      <Link to="/admin/" className="button button-quiet">{t('Review queue')}</Link>
-    </div>
+    <Link to="/admin/" className="sticker lift flex items-center gap-3 bg-butter p-4 text-on-accent">
+      <span className="grid size-11 shrink-0 place-items-center rounded-[13px] border-2 border-stroke bg-white"><Icon name="shield" className="size-5" /></span>
+      <span className="flex-1 text-headline">{t('Review queue')}</span>
+      <Icon name="chevronRight" className="size-4" />
+    </Link>
   );
 }
 
@@ -216,14 +219,14 @@ function Review({ item, onDone }: { item: QueueItem; onDone: () => void }) {
   }
 
   return (
-    <article className="tile grid gap-3 bg-surface p-5">
-      <p className="font-black">
+    <article className="sticker grid gap-3 p-5">
+      <p className="font-bold">
         <Link to={`/players/${item.user_id}/`} className="link">{item.nickname}</Link>{' '}
         <span className="font-bold text-ink-secondary">
           · {t('now {level}', { level: tier(item.rating).label })} · {t('asks for {level}', { level: tier(item.claimed_rating).label })}
         </span>
       </p>
-      <dl className="grid gap-1 text-sm sm:grid-cols-[10rem_1fr]">
+      <dl className="grid gap-1 text-footnote sm:grid-cols-[10rem_1fr]">
         <dt className="font-bold text-ink-tertiary">{t('Evidence')}</dt>
         <dd className="break-all">
           {kindLabel(item.kind)}:{' '}

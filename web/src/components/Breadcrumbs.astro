@@ -6,13 +6,13 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<nav aria-label="Breadcrumb" class="mb-4 text-sm font-bold text-ink-secondary">
+<nav aria-label="Breadcrumb" class="mb-4 text-footnote font-bold text-ink-secondary">
   <ol class="flex flex-wrap gap-1">
     {
       items.map((item, index) => (
         <li class="flex gap-1">
           {index > 0 && <span aria-hidden="true">/</span>}
-          <a href={item.href} class="py-1 transition-colors hover:text-ink">{item.label}</a>
+          <a href={item.href} class="py-1 transition-colors hover:text-ink" data-t={item.label === 'Courts' ? 'Courts' : undefined}>{item.label}</a>
         </li>
       ))
     }

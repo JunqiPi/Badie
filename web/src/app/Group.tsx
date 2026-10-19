@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { tier } from './assessment';
 import { activityText, scheduleText } from './Groups';
 import { t } from './i18n';
+import { Icon } from './icons';
+import { Avatar, Divider, Empty, IconButton, IconTile, LevelBadge, ScreenHeader, SectionTitle, Tag } from './kit';
 import { Link } from './router';
 import { problem, supabase, useLive, type GroupDetail, type GroupSession } from './supabase';
-import { day, hours } from './time';
-import { Button, EmptyState, Skeleton, toast } from './ui';
+import { dayName, hours } from './time';
+import { Button, Skeleton, toast } from './ui';
 
 export function GroupPage({ id }: { id: string }) {
   const { data: g, refresh } = useLive<GroupDetail | null>('group_page', { args: { p_group: id }, every: 30_000 });
@@ -25,7 +26,7 @@ export function GroupPage({ id }: { id: string }) {
 
   if (g === undefined) return <Skeleton className="h-96 max-w-3xl" />;
   if (g === null) {
-    return <EmptyState title={t('Group not found')} action={<Link to="/groups/" className="button">{t('Groups')}</Link>}>{t('It may have been removed.')}</EmptyState>;
+    return <Empty icon="group" tint="lavender" title={t('Group not found')} action={{ label: t('Groups'), to: '/groups/' }}>{t('It may have been removed.')}</Empty>;
   }
   const member = g.my_role === 'owner' || g.my_role === 'organizer' || g.my_role === 'member';
   const organizer = g.my_role === 'owner' || g.my_role === 'organizer';
@@ -52,91 +53,111 @@ export function GroupPage({ id }: { id: string }) {
 
   return (
     <div className="grid gap-6">
-      <div>
-        <Link to="/groups/" className="link text-sm">{t('Groups')}</Link>
-        <p className="eyebrow mt-6">{g.venue.name}, {g.venue.city}</p>
-        <h1 className="display mt-2 text-[clamp(2.5rem,6vw,3.75rem)] break-words">{g.name}</h1>
-        {g.summary && <p className="mt-3 max-w-prose text-lg text-ink-secondary">{g.summary}</p>}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <span className="chip bg-sky">{t('Level {min}–{max}', { min: g.level_min, max: g.level_max })}</span>
-          {g.join_policy === 'approval' && <span className="chip bg-lavender">{t('Organizer approves')}</span>}
-          {g.schedules.map((s) => <span key={`${s.weekday}-${s.start}`} className="chip bg-butter">{scheduleText(s)}{s.fee ? ` · ${s.fee}` : ''}</span>)}
-        </div>
-        <p className="mt-3 text-sm text-ink-tertiary">{activityText(g.activity)}</p>
-      </div>
+      <ScreenHeader title={g.name} back="/groups/">
+        {member && <IconButton icon="share" label={t('Copy invite')} onClick={copyInvite} />}
+      </ScreenHeader>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
-        <div className="grid gap-6">
-          <section aria-labelledby="sessions" className="grid gap-3">
-            <h2 id="sessions" className="text-xl font-black">{t('Next two weeks')}</h2>
-            {g.sessions.length === 0 && <p className="text-ink-secondary">{t('No sessions scheduled.')}</p>}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
+        <div className="grid min-w-0 gap-6">
+          <section aria-label={g.venue.name} className="sticker grid gap-3 p-5">
+            <div className="flex items-start gap-3">
+              <IconTile icon="pin" tint="sky" size="lg" />
+              <div className="min-w-0">
+                <h2 className="text-headline">{g.venue.name}</h2>
+                <p className="text-footnote text-ink-secondary">{g.venue.city}</p>
+              </div>
+            </div>
+            {g.summary && <p className="text-subhead">{g.summary}</p>}
+            <ul className="flex flex-wrap gap-1.5">
+              <li><Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag></li>
+              <li><Tag icon={g.join_policy === 'approval' ? 'lock' : 'userPlus'}>{g.join_policy === 'approval' ? t('Organizer approves') : t('Join directly')}</Tag></li>
+              {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}`}><Tag icon="calendar" tint="butter">{scheduleText(sc)}{sc.fee ? ` · ${sc.fee}` : ''}</Tag></li>)}
+              {member && g.invite_code && <li><Tag icon="hash">{t('Group ID {code}', { code: g.invite_code })}</Tag></li>}
+            </ul>
+            <p className="flex items-center gap-1.5 text-footnote text-ink-secondary"><Icon name="bolt" className="size-3.5" />{activityText(g.activity)}</p>
+            {member && <Link to={`/messages/group/${g.id}/`} className="button button-quiet w-full"><Icon name="chats" className="size-5" />{t('Group chat')}</Link>}
+          </section>
+
+          <section aria-labelledby="sessions" className="grid gap-2">
+            <SectionTitle id="sessions" title={t('Upcoming sessions')} detail={t('Leaving within 2 hours of start counts as a late cancellation')} />
+            {g.sessions.length === 0 && <p className="text-footnote text-ink-secondary">{t('No sessions scheduled.')}</p>}
             {g.sessions.map((s) => (
               <Session key={s.id} session={s} tz={tz} member={member} organizer={organizer} busy={busy}
                        confirm={confirm} setConfirm={setConfirm} act={act} />
             ))}
           </section>
+
+          {g.members && (
+            <section aria-labelledby="members" className="grid gap-2">
+              <SectionTitle id="members" title={t('Organizers & regulars')} detail={String(g.members.length)} />
+              <ul className="sticker grid p-2">
+                {g.members.map((m, i) => (
+                  <li key={m.id}>
+                    {i > 0 && <div className="mx-2"><Divider /></div>}
+                    <div className="flex items-center gap-3 p-2">
+                      <Link to={`/players/${m.id}/`} className="press flex min-w-0 flex-1 items-center gap-3">
+                        <Avatar id={m.id} name={m.nickname} size={40} />
+                        <span className="grid min-w-0 justify-items-start gap-0.5">
+                          <span className="max-w-full truncate font-bold">{m.nickname}</span>
+                          <span className="flex gap-1"><LevelBadge rating={m.rating} named={false} compact />{m.role !== 'member' && <Tag tint="butter">{t(roles[m.role])}</Tag>}</span>
+                        </span>
+                      </Link>
+                      {organizer && m.role === 'member' && (confirm === `remove-${m.id}` ? (
+                        <Button variant="danger" className="button-sm" busy={busy === `remove-${m.id}`}
+                                onClick={() => act(`remove-${m.id}`, 'remove_member', { p_group: g.id, p_user: m.id }, t('Removed'))}>{t('Remove')}</Button>
+                      ) : (
+                        <button onClick={() => setConfirm(`remove-${m.id}`)} className="link text-footnote">{t('Remove')}</button>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
 
         {/* 还没加入时，“加入”在手机上放到最前面 */}
-        <aside className={`grid gap-4 lg:sticky lg:top-6 ${member ? '' : 'order-first lg:order-none'}`}>
-          <section aria-label={t('Membership')} className="tile grid gap-3 bg-surface p-5">
+        <aside className={`grid gap-4 lg:sticky lg:top-24 ${member ? '' : 'order-first lg:order-none'}`} aria-label={t('Membership')}>
+          <section className={`sticker grid gap-3 p-5 ${member ? '' : 'bg-lavender text-on-accent'}`}>
             {!g.my_role && (
               <>
-                <Button busy={busy === 'join'} onClick={join}>{g.join_policy === 'approval' ? t('Ask to join') : t('Join group')}</Button>
-                <p className="text-sm text-ink-tertiary">{t('For levels {min}–{max}. Members sign up for sessions and share a group chat.', { min: g.level_min, max: g.level_max })}</p>
+                <p className="text-headline">{t('For levels {min}–{max}. Members sign up for sessions and share a group chat.', { min: g.level_min, max: g.level_max })}</p>
+                <Button className="button-lg button-inverse" busy={busy === 'join'} onClick={join}>{g.join_policy === 'approval' ? t('Ask to join') : t('Join group')}</Button>
               </>
             )}
             {g.my_role === 'pending' && <p className="font-bold">{t('Request sent. An organizer will review it.')}</p>}
             {member && (
               <>
-                <Link to={`/messages/group/${g.id}/`} className="button">{t('Group chat')}</Link>
                 <div>
-                  <p className="eyebrow">{t('Group number')}</p>
-                  <p className="mt-1 font-mono text-2xl font-black tracking-[0.3em]">{g.invite_code}</p>
+                  <p className="text-footnote font-bold text-ink-secondary">{t('Group number')}</p>
+                  <p className="mt-1 font-mono text-[1.75rem] font-black tracking-[0.3em]">{g.invite_code}</p>
                 </div>
-                <Button variant="quiet" onClick={copyInvite}>{t('Copy invite')}</Button>
+                <Button onClick={copyInvite}><Icon name="copy" className="size-4" />{t('Copy invite')}</Button>
                 {g.my_role !== 'owner' && (confirm === 'leave' ? (
                   <Button variant="danger" busy={busy === 'leave'} onClick={() => act('leave', 'leave_group', { p_group: g.id }, t('You left the group'))}>
                     {t('Yes, leave group')}
                   </Button>
                 ) : (
-                  <Button variant="quiet" onClick={() => setConfirm('leave')}>{t('Leave group')}</Button>
+                  <button type="button" onClick={() => setConfirm('leave')} className="min-h-11 text-footnote font-bold text-danger hover:underline">{t('Leave group')}</button>
                 ))}
               </>
             )}
           </section>
 
           {organizer && g.pending && g.pending.length > 0 && (
-            <section aria-labelledby="requests" className="tile grid gap-3 bg-surface p-5">
-              <h2 id="requests" className="eyebrow">{t('Join requests')}</h2>
+            <section aria-labelledby="requests" className="sticker grid gap-3 bg-butter p-5 text-on-accent">
+              <h2 id="requests" className="text-headline">{t('Join requests')}</h2>
               {g.pending.map((p) => (
                 <div key={p.id} className="flex flex-wrap items-center gap-2">
-                  <Link to={`/players/${p.id}/`} className="link min-w-0 flex-1 truncate">{p.nickname} · {tier(p.rating).label}</Link>
-                  <Button busy={busy === `ok-${p.id}`} onClick={() => act(`ok-${p.id}`, 'respond_join_request', { p_group: g.id, p_user: p.id, p_accept: true }, t('Approved'))}>{t('Approve')}</Button>
-                  <Button variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${p.id}`, 'respond_join_request', { p_group: g.id, p_user: p.id, p_accept: false })}>{t('Decline')}</Button>
+                  <Link to={`/players/${p.id}/`} className="flex min-w-0 flex-1 items-center gap-2 font-bold hover:underline">
+                    <Avatar id={p.id} name={p.nickname} size={32} />
+                    <span className="truncate">{p.nickname}</span>
+                    <LevelBadge rating={p.rating} named={false} compact />
+                  </Link>
+                  <Button className="button-sm" busy={busy === `ok-${p.id}`} onClick={() => act(`ok-${p.id}`, 'respond_join_request', { p_group: g.id, p_user: p.id, p_accept: true }, t('Approved'))}>{t('Approve')}</Button>
+                  <Button className="button-sm" variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${p.id}`, 'respond_join_request', { p_group: g.id, p_user: p.id, p_accept: false })}>{t('Decline')}</Button>
                 </div>
               ))}
-            </section>
-          )}
-
-          {g.members && (
-            <section aria-labelledby="members" className="tile grid gap-2 bg-surface p-5">
-              <h2 id="members" className="eyebrow">{t('Members')}</h2>
-              <ul className="grid gap-2">
-                {g.members.map((m) => (
-                  <li key={m.id} className="flex items-center gap-2">
-                    <Link to={`/players/${m.id}/`} className="min-w-0 flex-1 truncate font-bold hover:underline">
-                      {m.nickname} <span className="font-semibold text-ink-tertiary">· {tier(m.rating).label}{m.role !== 'member' ? ` · ${t(roles[m.role])}` : ''}</span>
-                    </Link>
-                    {organizer && m.role === 'member' && (confirm === `remove-${m.id}` ? (
-                      <Button variant="danger" className="min-h-9! px-3! text-sm" busy={busy === `remove-${m.id}`}
-                              onClick={() => act(`remove-${m.id}`, 'remove_member', { p_group: g.id, p_user: m.id }, t('Removed'))}>{t('Remove')}</Button>
-                    ) : (
-                      <button onClick={() => setConfirm(`remove-${m.id}`)} className="link text-sm">{t('Remove')}</button>
-                    ))}
-                  </li>
-                ))}
-              </ul>
             </section>
           )}
         </aside>
@@ -171,24 +192,31 @@ function Session({ session: s, tz, member, organizer, busy, confirm, setConfirm,
   }
 
   return (
-    <article className={`tile grid gap-3 p-4 sm:p-5 ${s.cancelled ? 'bg-surface-muted' : 'bg-surface'}`}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h3 className="font-black">{day(s.starts_at, tz)} · {hours(s.starts_at, s.ends_at, tz)}</h3>
-          <p className="text-sm text-ink-secondary tabular-nums">
-            {s.cancelled
-              ? t('Cancelled by the organizer')
-              : [t('{n} of {total} going', { n: s.confirmed, total: s.capacity }), s.waitlist > 0 && t('{n} waiting', { n: s.waitlist })].filter(Boolean).join(' · ')}
-          </p>
+    <article className={`sticker grid gap-3 p-4 ${s.cancelled ? 'bg-surface-muted' : going ? 'bg-lime/45' : waiting ? 'bg-butter/50' : ''}`}>
+      <div className="flex items-start gap-3">
+        <div className="grid min-w-0 flex-1 gap-1">
+          <h3 className="text-headline">{dayName(s.starts_at, tz)} · {hours(s.starts_at, s.ends_at, tz)}</h3>
+          {s.cancelled ? (
+            <p className="text-footnote font-bold text-ink-secondary">{t('Cancelled by the organizer')}</p>
+          ) : (
+            <>
+              <p className="text-footnote font-bold text-ink-secondary tabular-nums">
+                {[t('{n}/{total} signed up', { n: s.confirmed, total: s.capacity }), s.waitlist > 0 && t('{n} waiting', { n: s.waitlist })].filter(Boolean).join(' · ')}
+              </p>
+              <span className="block h-2.5 max-w-60 overflow-hidden rounded-full border-2 border-stroke bg-surface" aria-hidden="true">
+                <span className="block h-full bg-lime" style={{ width: `${Math.min(100, (s.confirmed / s.capacity) * 100)}%` }} />
+              </span>
+            </>
+          )}
         </div>
-        {going && <span className="chip bg-mint">{t('Going')}</span>}
-        {waiting && <span className="chip bg-peach">{t('Waitlist #{n}', { n: s.my_status!.split(':')[1] })}</span>}
+        {going && <Tag icon="check" tint="surface">{t('Signed up')}</Tag>}
+        {waiting && <Tag tint="peach">{t('Waitlist #{n}', { n: s.my_status!.split(':')[1] })}</Tag>}
       </div>
 
       {member && s.players && s.players.length > 0 && (
         <details>
-          <summary className="link cursor-pointer text-sm">{t('Who’s going')}</summary>
-          <p className="mt-2 text-sm">
+          <summary className="cursor-pointer text-footnote font-bold underline underline-offset-4">{t('Who’s going')}</summary>
+          <p className="mt-2 text-footnote">
             {s.players.map((p, i) => (
               <span key={p.id}>{i > 0 && ', '}<Link to={`/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>{p.waitlisted && ` ${t('(waiting)')}`}</span>
             ))}
@@ -204,17 +232,17 @@ function Session({ session: s, tz, member, organizer, busy, confirm, setConfirm,
                 {going && late ? t('Sign out (counts as late)') : t('Yes, sign out')}
               </Button>
             ) : (
-              <Button variant="quiet" onClick={() => setConfirm(`out-${s.id}`)}>{t('Can’t make it')}</Button>
+              <Button className="button-sm" variant="quiet" onClick={() => setConfirm(`out-${s.id}`)}>{t('Can’t make it')}</Button>
             )
           ) : (
-            <Button busy={busy === `sign-${s.id}`} onClick={signUp}>{full ? t('Join waitlist') : t('Sign up')}</Button>
+            <Button className="button-sm" busy={busy === `sign-${s.id}`} onClick={signUp}>{full ? t('Join waitlist') : t('Sign up')}</Button>
           )}
           {organizer && (confirm === `cancel-${s.id}` ? (
             <Button variant="danger" busy={busy === `cancel-${s.id}`} onClick={() => act(`cancel-${s.id}`, 'cancel_session', { p_session: s.id }, t('Session cancelled'))}>
               {t('Yes, cancel for everyone')}
             </Button>
           ) : (
-            <button onClick={() => setConfirm(`cancel-${s.id}`)} className="link self-center text-sm">{t('Cancel session')}</button>
+            <button onClick={() => setConfirm(`cancel-${s.id}`)} className="link self-center text-footnote">{t('Cancel session')}</button>
           ))}
         </div>
       )}

@@ -16,7 +16,7 @@ const blake = await open({ width: 390, height: 844 });
 for (const [page, name] of [[alex, 'Alex'], [blake, 'Blake']]) {
   await signUp(page, `${name.toLowerCase()}${stamp}@test.local`, name);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Find a game' }).waitFor();
+  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
 }
 
 // 两人一小时前打完一场单打
@@ -30,8 +30,7 @@ sql('select public.prompt_reviews()');
 
 // Alex：通知 → 评价 → 群聊
 await alex.reload();
-await alex.getByRole('link', { name: /Messages, \d+ unread/ }).click();
-await alex.getByRole('tab', { name: 'Updates' }).click();
+await alex.getByRole('link', { name: /Notifications, \d+ unread/ }).click();
 await alex.getByText('How was your game?').click();
 await alex.getByRole('heading', { name: 'Rate your partners' }).waitFor();
 const form = alex.getByRole('form', { name: 'Review Blake' });
@@ -47,12 +46,12 @@ await alex.keyboard.press('Enter');
 await alex.getByRole('log').getByText('Good game!').waitFor();
 
 // Blake：看到群聊（含防骗提示）→ 评价 Alex 也选再约 → 成为球友 → 私信
-await blake.goto(`${base}/app/messages/`);
+await blake.goto(`${base}/messages/`);
 await blake.getByRole('link', { name: /21 Badminton Club/ }).click();
 await blake.getByText('You never need to pay').waitFor();
-await blake.getByRole('link', { name: 'Alex' }).click();
+await blake.getByRole('log').getByRole('link', { name: 'Alex' }).first().click();
 await blake.getByText('1 game together').waitFor();
-await blake.goto(`${base}/app/games/${game}/`);
+await blake.goto(`${base}/games/${game}/`);
 const back = blake.getByRole('form', { name: 'Review Alex' });
 await back.getByRole('radio', { name: 'On time' }).click();
 await back.getByRole('radio', { name: 'Higher' }).click();
@@ -60,22 +59,22 @@ await back.getByLabel('I’d play with Alex again').check();
 await back.getByRole('button', { name: 'Send review' }).click();
 await blake.getByText('Thanks! Review for Alex sent.').waitFor();
 
-await blake.goto(`${base}/app/messages/?tab=friends`);
+await blake.goto(`${base}/messages/?tab=friends`);
 await blake.getByRole('link', { name: 'Message', exact: true }).click();
 await blake.getByRole('textbox', { name: 'Message' }).fill('Same time next week?');
 await blake.getByRole('button', { name: 'Send' }).click();
 await blake.getByRole('log').getByText('Same time next week?').waitFor();
 
 // Alex：收到私信；拉黑后私信关闭
-await alex.goto(`${base}/app/messages/`);
+await alex.goto(`${base}/messages/`);
 await alex.getByRole('link', { name: /^Blake/ }).click();
 await alex.getByRole('log').getByText('Same time next week?').waitFor();
-await alex.getByRole('heading', { name: 'Blake' }).getByRole('link').click();
+await alex.getByRole('region', { name: 'Chat' }).getByRole('link', { name: 'Blake', exact: true }).first().click();
 await alex.getByText('Friend', { exact: true }).waitFor();
 await alex.getByRole('button', { name: 'Block' }).click();
 await alex.getByRole('button', { name: 'Block' }).click();
 await alex.getByRole('button', { name: 'Unblock' }).waitFor();
-await alex.goto(`${base}/app/messages/dm/${sql(`select id from auth.users where email = 'blake${stamp}@test.local'`)}/`);
+await alex.goto(`${base}/messages/dm/${sql(`select id from auth.users where email = 'blake${stamp}@test.local'`)}/`);
 await alex.getByText('You can only message friends.').waitFor();
 
 console.log('ok: reviewed, chatted, became friends, messaged and blocked');

@@ -13,21 +13,21 @@ const dana = await open({ width: 390, height: 844 });
 for (const [page, name] of [[casey, 'Casey'], [dana, nickname]]) {
   await signUp(page, `${name.toLowerCase()}${stamp}@search.local`, name);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Find a game' }).waitFor();
+  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
 }
 
-await casey.goto(`${base}/app/messages/?tab=friends`);
+await casey.goto(`${base}/messages/?tab=friends`);
 await casey.getByRole('searchbox', { name: 'Nickname' }).fill(nickname.toLowerCase());
 await casey.getByRole('link', { name: new RegExp(nickname) }).waitFor();
 await casey.getByRole('button', { name: 'Add friend' }).click();
 await casey.getByText('Requested', { exact: true }).waitFor();
 
-await dana.goto(`${base}/app/messages/?tab=friends`);
+await dana.goto(`${base}/messages/?tab=friends`);
 await dana.getByRole('button', { name: 'Accept' }).click();
 await dana.getByText('You’re now friends').waitFor();
 
 // 关掉之后搜不到
-await dana.goto(`${base}/app/me/`);
+await dana.goto(`${base}/settings/`);
 await dana.getByLabel('Let players find me by nickname').uncheck();
 await dana.getByText('Saved').waitFor();
 await casey.reload();

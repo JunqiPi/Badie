@@ -86,12 +86,15 @@ async function audit(page, where) {
 }
 
 const browser = await chromium.launch();
-for (const colorScheme of ['light', 'dark']) {
+// 浅色、深色各开一个窗口同时跑
+async function check(colorScheme) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme, timezoneId: 'America/Los_Angeles' });
   const page = await context.newPage();
 
   // 公开页面：首页 → 国家 → 城市 → 球馆
   await page.goto(`${base}/`);
+  await page.locator('main h1').first().waitFor();
+  await page.waitForLoadState('networkidle');
   await audit(page, `${colorScheme} /`);
   await page.goto(`${base}/courts/us/`);
   await audit(page, `${colorScheme} /courts/us/`);
@@ -107,14 +110,15 @@ for (const colorScheme of ['light', 'dark']) {
   await audit(page, `${colorScheme} 404`);
 
   // 网页应用：登录页；注册后逐个页面看，再建一个球群看球群页和群聊
-  await page.goto(`${base}/app/`);
+  await page.goto(`${base}/signin/`);
   await page.getByLabel('Email').waitFor();
   await audit(page, `${colorScheme} sign in`);
   await signUp(page, `contrast-${colorScheme}${Date.now()}@test.local`, 'Casey');
   await audit(page, `${colorScheme} level quiz`);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Find a game' }).waitFor();
-  for (const path of ['/app/play/', '/app/games/', '/app/rankings/', '/app/messages/', '/app/courts/', '/app/me/', '/app/rooms/', '/app/rooms/new/', '/app/groups/', '/app/groups/new/']) {
+  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+  await audit(page, `${colorScheme} home`);
+  for (const path of ['/play/', '/games/', '/rankings/', '/challenges/', '/messages/', '/notifications/', '/courts/', '/me/', '/settings/', '/levels/', '/about/', '/join/', '/rooms/', '/rooms/new/', '/groups/', '/groups/new/']) {
     await page.goto(`${base}${path}`);
     await page.locator('main h1').first().waitFor();
     await page.waitForLoadState('networkidle');
@@ -122,7 +126,7 @@ for (const colorScheme of ['light', 'dark']) {
   }
   const tomorrow = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'America/Los_Angeles' }).format(Date.now() + 86400000);
   await page.getByLabel('Name', { exact: true }).fill('Contrast club');
-  await page.getByRole('combobox', { name: 'Court' }).fill('Los Angeles Badminton');
+  await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
   await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
   await page.getByLabel('Day of the week').selectOption(tomorrow);
   await page.getByRole('button', { name: 'Create group' }).click();
@@ -133,20 +137,20 @@ for (const colorScheme of ['light', 'dark']) {
   await page.getByRole('button', { name: 'Send' }).click();
   await page.getByRole('log').getByText('See you Thursday').waitFor();
   await audit(page, `${colorScheme} group chat`);
-  await page.goto(`${base}/app/rooms/new/`);
-  await page.getByRole('combobox', { name: 'Court' }).fill('Los Angeles Badminton');
+  await page.goto(`${base}/rooms/new/`);
+  await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
   await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
   await page.getByRole('button', { name: 'Casual' }).click();
   await page.getByRole('button', { name: 'Post game' }).click();
   await page.getByText('Open spot').first().waitFor();
   await audit(page, `${colorScheme} room`);
-  await page.goto(`${base}/app/me/`);
+  await page.goto(`${base}/settings/`);
   await page.getByRole('button', { name: 'Delete account' }).click();
   await audit(page, `${colorScheme} delete account`);
 
   // 手机宽度：底部导航和单栏布局（没有悬停，只看静止状态）
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/', '/courts/us/', '/app/play/', '/app/games/', '/app/me/']) {
+  for (const path of ['/', '/courts/us/', '/play/', '/games/', '/messages/', '/me/']) {
     await page.goto(`${base}${path}`);
     await page.locator('main h1').first().waitFor();
     await page.waitForLoadState('networkidle');
@@ -155,6 +159,7 @@ for (const colorScheme of ['light', 'dark']) {
   }
   await context.close();
 }
+await Promise.all(['light', 'dark'].map(check));
 await browser.close();
 
 for (const p of found) console.log(`${p.where} · ${p.state} · "${p.text}" ${p.ratio}:1 (${p.color} on ${p.background})`);

@@ -1,5 +1,4 @@
 ---
-import DotMap from './DotMap.astro';
 import { cityName, type Country } from '../lib/venues';
 
 interface Props {
@@ -8,29 +7,30 @@ interface Props {
 }
 
 const { country, tint } = Astro.props;
-const points = country.cities.flatMap((city) => city.venues);
+// 国旗：两个“区域指示符”字母拼成的 emoji（不支持的系统上显示成两个字母，也看得懂）
+const flag = String.fromCodePoint(...[...country.code.toUpperCase()].map((letter) => 0x1f1a5 + letter.charCodeAt(0)));
 ---
 
-<article class="sticker lift relative flex flex-col overflow-hidden">
-  <a href={country.path} class:list={['hidden border-b-2 border-stroke p-3 sm:block', tint]} tabindex="-1" aria-hidden="true">
-    <DotMap points={points} label={`Map of badminton courts in ${country.name}`} max={300} onTint />
-  </a>
-  <div class="flex flex-1 flex-col p-5">
-    <div class="flex items-baseline justify-between gap-3">
-      <h3 class="text-lg font-black"><a href={country.path} class="after:absolute after:inset-0 after:content-['']">{country.name}</a></h3>
-      <span class="display text-3xl">{country.venueCount.toLocaleString('en')}</span>
+<article class:list={['sticker lift relative grid gap-3 p-4 text-on-accent', tint]}>
+  <div class="flex items-center gap-3">
+    <span aria-hidden="true" class="grid size-12 shrink-0 place-items-center rounded-[14px] border-2 border-stroke bg-white text-[1.75rem] leading-none">{flag}</span>
+    <div class="min-w-0 flex-1">
+      <h3 class="truncate text-headline"><a href={country.path} class="after:absolute after:inset-0 after:content-['']">{country.name}</a></h3>
+      <p class="text-footnote font-bold" data-t="{n} courts in {areas} areas" data-n={country.venueCount} data-areas={country.cities.length}>
+        {country.venueCount.toLocaleString('en')} courts in {country.cities.length.toLocaleString('en')} areas
+      </p>
     </div>
-    <p class="text-sm font-bold text-ink-secondary">courts in {country.cities.length.toLocaleString('en')} areas</p>
-    <ul class="relative z-10 mt-3 flex flex-wrap gap-2 text-sm font-bold">
-      {
-        country.cities.slice(0, 3).map((city) => (
-          <li>
-            <a href={city.path} class="inline-flex min-h-8 items-center rounded-full bg-surface-muted px-3 transition-colors hover:bg-butter hover:text-on-accent">
-              {cityName(city)}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
+    <span class="text-[1.75rem] leading-none font-black tabular-nums">{country.venueCount.toLocaleString('en')}</span>
   </div>
+  <ul class="relative z-10 flex flex-wrap gap-1.5 text-footnote font-bold">
+    {
+      country.cities.slice(0, 3).map((city) => (
+        <li>
+          <a href={city.path} class="inline-flex min-h-8 items-center rounded-full border-[1.5px] border-stroke bg-white px-3 transition-colors hover:bg-lime">
+            {cityName(city)}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
 </article>

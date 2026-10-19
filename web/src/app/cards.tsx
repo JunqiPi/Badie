@@ -123,6 +123,7 @@ export function RoomCard({ room: r, distance, wide = false }: { room: RoomSummar
       ) : (
         <span className="text-headline">{t('Time not set yet')}</span>
       )}
+      <span className="truncate text-caption text-ink-secondary">{t('Hosted by {name}', { name: r.owner.nickname })}</span>
       <span className="flex min-w-0 items-center gap-1 text-footnote text-ink-secondary">
         <Icon name="pin" className="size-3.5" />
         <span className="truncate">{r.venue?.name ?? t('Court not set yet')}</span>

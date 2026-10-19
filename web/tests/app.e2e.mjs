@@ -29,8 +29,10 @@ const page = await context.newPage();
 
 await signUp(page, email, 'Alex');
 await page.getByRole('button', { name: 'Skip for now' }).click();
-await page.getByRole('heading', { name: 'Find a game' }).waitFor();
+await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+// 顶栏的 tab 都是真正的页面：球馆是静态页面，整页打开
 await page.getByRole('link', { name: 'Courts' }).first().click();
+await page.waitForURL('**/courts/');
 
 await page.getByRole('button', { name: 'Use my location' }).click();
 const courts = page.getByRole('list', { name: 'Courts' }).getByRole('button');
@@ -40,27 +42,29 @@ assert.equal(names[0], 'Los Angeles Badminton Club', 'nearest court first');
 assert.ok(names.includes('San Gabriel Valley Badminton Club'));
 
 await courts.nth(1).click();
-const star = page.getByRole('button', { name: 'Add to my courts' });
-await star.click();
-await page.waitForFunction(() => document.querySelector('[aria-label="Add to my courts"]')?.getAttribute('aria-pressed') === 'true');
+await page.getByRole('button', { name: 'Add to my courts' }).click();
+await page.getByRole('button', { name: 'In my courts' }).waitFor();
 
+// 位置记在这个浏览器里：刷新后直接显示附近的球馆
 await page.reload();
 await page.getByRole('heading', { name: /Courts near/ }).waitFor();
+await courts.first().waitFor();
 
-// 换成中文：界面跟着变，刷新后仍记住；再换回英文
-await page.getByRole('link', { name: 'Me', exact: true }).first().click();
+// 语言切换在顶栏：换成中文，静态页面和顶栏都跟着变，刷新后仍记住；再换回英文
 await page.getByLabel('Language').selectOption('zh-Hans');
 await page.getByRole('link', { name: '球馆' }).first().waitFor();
+await page.getByRole('heading', { name: '按国家浏览' }).waitFor();
 await page.reload();
 await page.getByLabel('语言').selectOption('en');
 await page.getByRole('link', { name: 'Courts' }).first().waitFor();
 
-// 注销：要点两次；之后回到登录页，刷新也不会再登录
+// 注销：要点两次；之后变回没登录，刷新也不会再登录
+await page.goto(`${base}/settings/`);
 await page.getByRole('button', { name: 'Delete account' }).click();
 await page.getByRole('button', { name: 'Yes, delete my account' }).click();
-await page.getByRole('heading', { name: 'Sign in' }).waitFor();
+await page.getByText('Sign in to continue').waitFor();
 await page.reload();
-await page.getByRole('heading', { name: 'Sign in' }).waitFor();
+await page.getByText('Sign in to continue').waitFor();
 
 console.log(`ok: ${email} signed in, saw ${names.length} courts, favourited one, session kept, account deleted`);
 await browser.close();

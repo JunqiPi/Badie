@@ -1,7 +1,7 @@
 ---
 import Base from '../../../layouts/Base.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
-import DotMap from '../../../components/DotMap.astro';
+import { PinsMap } from '../../../app/PinsMap';
 import { cityName, countries, inCountry, type Country } from '../../../lib/venues';
 
 export function getStaticPaths() {
@@ -22,38 +22,38 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
 >
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }]} />
 
-  <section class="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+  <section class="grid gap-6 lg:grid-cols-[1fr_1.2fr] lg:items-center">
     <div>
-      <p class="eyebrow">Court directory</p>
-      <h1 class="display mt-3 text-[clamp(2.75rem,6vw,5rem)]">Badminton courts in {inCountry(country)}</h1>
-      <div class="mt-6 grid max-w-md grid-cols-2 gap-3">
-        <div class="tile bg-sky p-4 text-on-accent">
-          <p class="display text-5xl">{country.venueCount.toLocaleString('en')}</p>
-          <p class="text-sm font-extrabold">courts</p>
+      <p class="text-subhead font-bold text-ink-secondary" data-t="Court directory">Court directory</p>
+      <h1 class="text-display lg:text-[2.75rem]">{country.name}</h1>
+      <div class="mt-5 grid max-w-md grid-cols-2 gap-3">
+        <div class="tile rounded-[14px]! bg-sky p-4 text-on-accent">
+          <p class="text-[2.25rem] leading-none font-black tabular-nums">{country.venueCount.toLocaleString('en')}</p>
+          <p class="text-footnote font-bold" data-t="courts">courts</p>
         </div>
-        <div class="tile bg-peach p-4 text-on-accent">
-          <p class="display text-5xl">{country.cities.length.toLocaleString('en')}</p>
-          <p class="text-sm font-extrabold">areas</p>
+        <div class="tile rounded-[14px]! bg-peach p-4 text-on-accent">
+          <p class="text-[2.25rem] leading-none font-black tabular-nums">{country.cities.length.toLocaleString('en')}</p>
+          <p class="text-footnote font-bold" data-t="areas">areas</p>
         </div>
       </div>
     </div>
-    <div class="tile bg-surface p-4">
-      <DotMap points={venues.map((v) => ({ lat: v.lat, lon: v.lon, label: v.name, href: v.path }))} label={`Map of courts in ${country.name}`} />
+    <div class="sticker h-72 overflow-hidden sm:h-96">
+      <PinsMap client:visible pins={venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }))} label={`Map of courts in ${country.name}`} />
     </div>
   </section>
 
   <section class="mt-14">
-    <h2 class="eyebrow">Areas with the most courts</h2>
+    <h2 class="text-title3" data-t="Areas with the most courts">Areas with the most courts</h2>
     <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {
         topCities.map((city, index) => (
-          <a href={city.path} class="sticker lift flex items-center justify-between gap-4 p-5">
+          <a href={city.path} class="sticker lift flex items-center justify-between gap-4 p-4">
             <div class="min-w-0">
-              <p class="truncate text-lg font-black">{cityName(city)}</p>
-              <p class="truncate text-sm font-bold text-ink-secondary">{city.venues.slice(0, 2).map((v) => v.name).join(' · ')}</p>
+              <p class="truncate text-headline">{cityName(city)}</p>
+              <p class="truncate text-footnote text-ink-secondary">{city.venues.slice(0, 2).map((v) => v.name).join(' · ')}</p>
             </div>
-            <span class:list={['tile grid min-w-16 shrink-0 place-items-center px-3 py-2 text-on-accent', tints[index % tints.length]]}>
-              <span class="display text-3xl">{city.venues.length}</span>
+            <span class:list={['grid size-12 shrink-0 place-items-center rounded-[14px] border-2 border-stroke text-title3 text-on-accent tabular-nums', tints[index % tints.length]]}>
+              {city.venues.length}
             </span>
           </a>
         ))
@@ -65,18 +65,18 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
     country.cities.length > topCities.length && (
       <section class="mt-14">
         <div class="flex flex-wrap items-center justify-between gap-4">
-          <h2 class="eyebrow">All {country.cities.length.toLocaleString('en')} areas A–Z</h2>
+          <h2 class="text-title3" data-t="All {n} areas A–Z" data-n={country.cities.length}>All {country.cities.length.toLocaleString('en')} areas A–Z</h2>
           <label class="w-full sm:w-56">
-            <span class="sr-only">Filter areas</span>
-            <input data-area-filter type="search" placeholder="Filter areas" class="field" />
+            <span class="sr-only" data-t="Filter areas">Filter areas</span>
+            <input data-area-filter type="search" placeholder="Filter areas" data-t-placeholder="Filter areas" class="field" />
           </label>
         </div>
         <details data-area-list open={country.cities.length <= 60} class="mt-5">
-          <summary class="link inline-block cursor-pointer py-1">Show all areas</summary>
+          <summary class="link inline-block cursor-pointer py-1" data-t="Show all areas">Show all areas</summary>
           <ul class="mt-4 columns-1 gap-8 sm:columns-2 lg:columns-3">
             {alphabetical.map((city) => (
               <li data-area={cityName(city).toLowerCase()} class="break-inside-avoid">
-                <a href={city.path} class="flex justify-between gap-3 rounded-lg px-2 py-1.5 font-bold transition-colors hover:bg-surface">
+                <a href={city.path} class="flex justify-between gap-3 rounded-[10px] px-2 py-1.5 font-bold transition-colors hover:bg-surface">
                   <span class="truncate">{cityName(city)}</span>
                   <span class="text-ink-tertiary">{city.venues.length}</span>
                 </a>

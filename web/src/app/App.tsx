@@ -33,7 +33,9 @@ const modern = (path: string) => (path.startsWith('/app/') ? path.slice(4) : pat
 export default function App() {
   const path = usePath();
   const [session, setSession] = useState<Session | null>();
-  const [profile, setProfile] = useState<Profile | null>();
+  const [loaded, setProfile] = useState<Profile | null>();
+  // 退出或注销的那一刻就不再用旧资料（加载新资料要等下一次渲染）
+  const profile = session === null ? null : loaded;
   // 先加载界面语言再显示，避免先闪一下英文
   const [ready, setReady] = useState(false);
   const locale = useLocale();
@@ -54,7 +56,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!session) return setProfile(session === null ? null : undefined);
+    if (!session) return setProfile(undefined);
     supabase!.from('profiles').select().eq('id', session.user.id).maybeSingle().then(({ data }) => setProfile(data as Profile | null));
   }, [session?.user.id]);
 

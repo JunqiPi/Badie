@@ -19,34 +19,38 @@ const blake = await open({ width: 390, height: 844 });
 // Alex 做完问卷（每题选第 2 项 → 3−），Blake 跳过（按 3 级）
 await signUp(alex, `alex${stamp}@test.local`, 'Alex');
 for (let i = 1; i <= 14; i++) {
-  await alex.getByText(`${i} of 14`).waitFor();
+  await alex.getByText(`Question ${i} of 14`).waitFor();
   await alex.locator('section ul button').nth(1).click();
 }
 await alex.getByRole('heading', { name: '3−' }).waitFor();
 await alex.getByRole('button', { name: 'Save my level' }).click();
-await alex.getByRole('heading', { name: 'Find a game' }).waitFor();
+await alex.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
 
 await signUp(blake, `blake${stamp}@test.local`, 'Blake');
 await blake.getByRole('button', { name: 'Skip for now' }).click();
 await blake.getByText('You’re starting at level 3').waitFor();
 
+// 快速匹配：首页的“开始匹配”进设置页
 async function request(page) {
+  await page.getByRole('link', { name: 'Start matching' }).click();
   await page.getByRole('button', { name: 'Singles' }).click();
-  await page.getByRole('combobox', { name: 'Search courts' }).fill('Los Angeles Badminton');
+  // 选明天：今晚的局离现在不到 2 小时就算临时局，测试结果不能看运行的时间
+  await page.getByRole('radiogroup', { name: 'Date (next 14 days)' }).getByRole('radio').nth(1).click();
+  await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
   await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
-  await page.getByRole('button', { name: 'Find players' }).click();
+  await page.getByRole('button', { name: 'Start matching' }).click();
 }
 
 await request(alex);
-await alex.getByText('Looking for players', { exact: true }).waitFor();
-await alex.getByText('Nearby that day: 0 looking, 0 a good fit.').waitFor();
+await alex.getByText('Matching in background', { exact: true }).waitFor();
+await alex.getByText('Free that day nearby').waitFor();
 await request(blake);
-await blake.getByText('Singles match found').waitFor();
-await blake.getByRole('button', { name: 'I’m in' }).click();
-await blake.getByText('You’re in. Waiting for the others').waitFor();
+await blake.getByText('Found your buddies!').waitFor();
+await blake.getByRole('button', { name: 'Confirm game' }).click();
+await blake.getByText('You’re in. We’ll email you when everyone has confirmed.').waitFor();
 
 await alex.reload();
-await alex.getByRole('button', { name: 'I’m in' }).click();
+await alex.getByRole('button', { name: 'Confirm game' }).click();
 await alex.getByText('Game on', { exact: true }).waitFor();
 await alex.getByRole('link', { name: 'View game' }).click();
 await alex.getByRole('link', { name: 'Blake' }).waitFor();
@@ -60,19 +64,21 @@ await alex.getByText('You’re checked in.').waitFor();
 await alex.getByLabel('Score (optional)').fill('21:15 21:18');
 await alex.getByRole('button', { name: 'We won' }).click();
 await alex.getByText('Waiting for the other side to report.').waitFor();
-await alex.getByText('Score: 21:15 21:18').waitFor();
+await alex.getByText('21:15 21:18', { exact: true }).waitFor();
 // 场地费：标自己已付，不能替对方标（匹配的局没有发起人）
 await alex.getByRole('checkbox', { name: /You/ }).check();
 await alex.getByText('1 of 2 paid').waitFor();
 if (await alex.getByRole('checkbox', { name: /Blake/ }).isEnabled()) throw new Error('should not mark someone else as paid');
 
+// 旧地址（邮件里的 /app/…）会跳到新地址
 await blake.goto(`${base}/app/games/`);
-await blake.getByRole('link', { name: /Singles at Los Angeles Badminton Club/ }).click();
+await blake.waitForURL(`${base}/games/`);
+await blake.getByRole('link', { name: /Singles · .*Los Angeles Badminton Club/ }).click();
 await blake.getByRole('button', { name: 'We lost' }).click();
 await blake.getByText('Confirmed: you lost.').waitFor();
-await blake.getByText('Score: 21:15 21:18').waitFor();
+await blake.getByText('21:15 21:18', { exact: true }).waitFor();
 
-await alex.goto(`${base}/app/games/`);
+await alex.goto(`${base}/games/`);
 await alex.getByText('100%').waitFor();
 
 console.log('ok: two players matched, confirmed, checked in, agreed on the result and score, and marked the court fee');

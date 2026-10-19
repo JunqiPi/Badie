@@ -100,6 +100,9 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
 /** 静态页面（球馆目录）用的同一套外壳：自己查登录状态，链接是普通的整页跳转 */
 export function SiteShell({ path, children }: { path: string; children?: ReactNode }) {
   const [me, setMe] = useState<Profile | null>();
+  const locale = useLocale();
+  // 静态页面的文字也跟着界面语言变（页面是英文生成的，搜索引擎看英文）
+  useEffect(translateStatic, [locale]);
   useEffect(() => {
     startLocale();
     supabase?.auth.getSession().then(async ({ data }) => {
@@ -109,6 +112,22 @@ export function SiteShell({ path, children }: { path: string; children?: ReactNo
     });
   }, []);
   return <Shell path={path} me={me ?? null} guest={me === null}>{children}</Shell>;
+}
+
+/**
+ * 静态页面里要翻译的文字：<span data-t="{n} courts" data-n="12">12 courts</span>；
+ * data-t-placeholder / data-t-label 翻译输入框提示和读屏名字。数字按界面语言加千位分隔
+ */
+function translateStatic() {
+  for (const element of document.querySelectorAll<HTMLElement>('[data-t]')) {
+    const { t: key, ...rest } = element.dataset;
+    const params = Object.fromEntries(
+      Object.entries(rest).filter(([name]) => !name.startsWith('t')).map(([name, value = '']) => [name, /^\d+$/.test(value) ? Number(value).toLocaleString(currentLocale()) : value]),
+    );
+    element.textContent = t(key!, params);
+  }
+  for (const element of document.querySelectorAll<HTMLElement>('[data-t-placeholder]')) element.setAttribute('placeholder', t(element.dataset.tPlaceholder!));
+  for (const element of document.querySelectorAll<HTMLElement>('[data-t-label]')) element.setAttribute('aria-label', t(element.dataset.tLabel!));
 }
 
 /** 页脚：真正的页面链接（不是本页的锚点） */

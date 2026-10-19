@@ -355,7 +355,11 @@ function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
         {thread.messages.length === 0 && <p className="py-10 text-center text-ink-secondary">{t('No messages yet. Say hi!')}</p>}
         {thread.messages.map((m) => (
           <div key={m.id} className={`flex max-w-[85%] items-end gap-2 ${m.mine ? 'justify-self-end' : 'justify-self-start'}`}>
-            {!m.mine && <Avatar id={m.sender} name={names[m.sender] ?? '?'} size={28} />}
+            {!m.mine && (
+              <Link to={`/players/${m.sender}/`} aria-label={names[m.sender] ?? t('Player')} className="press shrink-0 rounded-full">
+                <Avatar id={m.sender} name={names[m.sender] ?? '?'} size={28} />
+              </Link>
+            )}
             <div className={`grid gap-0.5 ${m.mine ? 'justify-items-end' : ''}`}>
               {!m.mine && kind !== 'dm' && <span className="px-1 text-caption text-ink-secondary">{names[m.sender] ?? t('Player')}</span>}
               <p className={`rounded-[18px] border-2 border-stroke px-3.5 py-2 break-words whitespace-pre-wrap ${m.mine ? 'rounded-br-[6px] bg-lime text-on-accent' : 'rounded-bl-[6px] bg-surface'}`}>

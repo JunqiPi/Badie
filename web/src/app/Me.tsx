@@ -53,10 +53,10 @@ export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => vo
             <Link to="/settings/" className="button bg-white! text-[#17140f]!">{t('Edit Profile')}</Link>
           </section>
 
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-            <StatTile icon="games" tint="peach" value={record?.games_played ?? '–'} label={t('Games')} />
-            <StatTile icon="reliable" tint="mint" value={record ? `${reliability}%` : '–'} label={t('Reliability')} />
-            <StatTile icon="users" tint="sky" value={friends?.friends.length ?? '–'} label={t('Friends')} />
+          <div className="grid grid-cols-3 gap-2.5">
+            <StatTile stacked icon="games" tint="peach" value={record?.games_played ?? '–'} label={t('Games')} />
+            <StatTile stacked icon="reliable" tint="mint" value={record ? `${reliability}%` : '–'} label={t('Reliability')} />
+            <StatTile stacked icon="users" tint="sky" value={friends?.friends.length ?? '–'} label={t('Friends')} />
           </div>
 
           {record && <WinRate record={record} />}

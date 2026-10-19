@@ -2,9 +2,12 @@ import { useState, type SubmitEvent } from 'react';
 import { tier } from './assessment';
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
-import { Link, navigate } from './router';
+import { Icon } from './icons';
+import { IconTile } from './kit';
+import { DayPicker, FormatPicker, TimeRange } from './Play';
+import { navigate } from './router';
 import { problem, supabase, type Mode, type Profile, type RoomTag } from './supabase';
-import { halfHours, today, zoned } from './time';
+import { nextDays, today, zoned } from './time';
 import { tagText } from './Rooms';
 import { Button, Field, PageHeader } from './ui';
 
@@ -30,40 +33,29 @@ export function slotTimes(slot: Slot) {
 
 /** 球馆 + 日期 + 时间段 */
 export function SlotFields({ slot, onChange }: { slot: Slot; onChange: (slot: Slot) => void }) {
-  const tz = zone(slot.court);
-  const times = halfHours();
+  const days = nextDays(14);
   return (
     <>
-      <div className="grid gap-2">
-        <p className="font-extrabold">{t('Court')}</p>
+      <fieldset className="grid gap-2">
+        <legend className="mb-2 text-headline">{t('Court')}</legend>
         {slot.court ? (
-          <button type="button" onClick={() => onChange({ ...slot, court: undefined })} aria-pressed="true"
-                  aria-label={t('Change court: {name}', { name: slot.court.name })} className="toggle justify-self-start">
-            {slot.court.name} <span aria-hidden="true">×</span>
-          </button>
+          <div className="sticker flex items-center gap-3 p-3">
+            <IconTile icon="pin" tint="sky" size="sm" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-bold">{slot.court.name}</span>
+              <span className="block truncate text-footnote text-ink-secondary">{slot.court.city}</span>
+            </span>
+            <button type="button" onClick={() => onChange({ ...slot, court: undefined })} aria-label={t('Change court: {name}', { name: slot.court.name })}
+                    className="press grid size-11 place-items-center rounded-full text-ink-tertiary hover:bg-surface-muted hover:text-ink">
+              <Icon name="xCircle" className="size-5" />
+            </button>
+          </div>
         ) : (
-          <CourtSearch onPick={(court) => onChange({ ...slot, court })} label={t('Court')} />
+          <CourtSearch onPick={(court) => onChange({ ...slot, court })} label={t('Choose venue')} />
         )}
-      </div>
-      <Field label={t('Day')}>
-        {(props) => <input {...props} type="date" value={slot.date} min={today(tz)} max={today(tz, 13)} onChange={(e) => onChange({ ...slot, date: e.target.value })} className="field" />}
-      </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label={t('From')}>
-          {(props) => (
-            <select {...props} value={slot.from} onChange={(e) => onChange({ ...slot, from: Number(e.target.value) })} className="field">
-              {times.slice(0, -2).map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
-            </select>
-          )}
-        </Field>
-        <Field label={t('Until')}>
-          {(props) => (
-            <select {...props} value={slot.to} onChange={(e) => onChange({ ...slot, to: Number(e.target.value) })} className="field">
-              {times.slice(2).map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
-            </select>
-          )}
-        </Field>
-      </div>
+      </fieldset>
+      <DayPicker days={days} value={days.includes(slot.date) ? slot.date : days[0]} onChange={(date) => onChange({ ...slot, date })} />
+      <TimeRange from={slot.from} to={slot.to} onChange={(from, to) => onChange({ ...slot, from, to })} />
     </>
   );
 }
@@ -102,28 +94,18 @@ export function NewRoom({ profile }: { profile: Profile }) {
 
   const levels = Array.from({ length: 9 }, (_, i) => i + 1);
   return (
-    <div className="max-w-2xl">
-      <p className="mb-6"><Link to="/rooms/" className="link text-sm">{t('Open games')}</Link></p>
+    <div className="mx-auto max-w-2xl">
       <PageHeader back="/games/" title={t('Start a game')}>
         {t('You have the court; we’ll help fill it. You’re counted as one of the players.')}
       </PageHeader>
 
-      <form onSubmit={submit} noValidate className="sticker grid gap-6 p-5 sm:p-8">
-        <fieldset className="grid gap-2">
-          <legend className="mb-2 font-extrabold">{t('Game')}</legend>
-          <div className="flex gap-2">
-            {(['doubles', 'singles'] as const).map((m) => (
-              <button type="button" key={m} onClick={() => setMode(m)} aria-pressed={mode === m} className="toggle flex-1">
-                {m === 'doubles' ? t('Doubles · 4 players') : t('Singles · 2 players')}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+      <form onSubmit={submit} noValidate className="grid gap-6">
+        <FormatPicker value={mode} onChange={setMode} />
 
         <SlotFields slot={slot} onChange={setSlot} />
 
         <fieldset className="grid gap-2">
-          <legend className="mb-2 font-extrabold">{t('Levels')}</legend>
+          <legend className="mb-2 text-headline">{t('Levels')}</legend>
           <div className="flex items-center gap-3">
             <select aria-label={t('Lowest level')} value={min} onChange={(e) => setMin(Number(e.target.value))} className="field w-24">
               {levels.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -133,22 +115,22 @@ export function NewRoom({ profile }: { profile: Profile }) {
               {levels.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
           </div>
-          <p className="text-sm text-ink-tertiary">{t('Your own level ({level}) is always included. Friends you invite can join whatever their level.', { level })}</p>
+          <p className="text-footnote text-ink-secondary">{t('Your own level ({level}) is always included. Friends you invite can join whatever their level.', { level })}</p>
         </fieldset>
 
         <fieldset className="grid gap-2">
-          <legend className="mb-2 font-extrabold">{t('Who can find it')}</legend>
+          <legend className="mb-2 text-headline">{t('Who can find it')}</legend>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => setPublic(true)} aria-pressed={isPublic} className="toggle">{t('Players nearby')}</button>
             <button type="button" onClick={() => setPublic(false)} aria-pressed={!isPublic} className="toggle">{t('Only people with the code')}</button>
           </div>
-          <p className="text-sm text-ink-tertiary">
+          <p className="text-footnote text-ink-secondary">
             {isPublic ? t('When it’s full, up to 4 people can wait in line and move up if someone drops out.') : t('Share the room code or invite friends. It won’t show up nearby.')}
           </p>
         </fieldset>
 
         <fieldset className="grid gap-2">
-          <legend className="mb-2 font-extrabold">{t('Vibe')} <span className="font-semibold text-ink-tertiary">{t('(optional)')}</span></legend>
+          <legend className="mb-2 text-headline">{t('Vibe')} <span className="text-footnote font-bold text-ink-secondary">{t('(optional)')}</span></legend>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag) => (
               <button type="button" key={tag} aria-pressed={picked.includes(tag)} className="toggle"
@@ -164,7 +146,7 @@ export function NewRoom({ profile }: { profile: Profile }) {
         </Field>
 
         {error && <p role="alert" className="font-bold text-danger">{error}</p>}
-        <Button busy={busy} className="justify-self-start">{t('Post game')}</Button>
+        <Button busy={busy} className="button-lg w-full"><Icon name="court" className="size-5" />{t('Post game')}</Button>
       </form>
     </div>
   );

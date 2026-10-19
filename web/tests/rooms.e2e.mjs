@@ -1,6 +1,6 @@
 // 球局端到端：发起公开单打 → 附近的人看到并加入 → 人齐开局；私密局凭房间码加入 → 房主取消
 import { chromium } from 'playwright';
-import { signUp } from './helpers.mjs';
+import { base, signUp } from './helpers.mjs';
 
 const stamp = Date.now();
 const browser = await chromium.launch();
@@ -13,31 +13,31 @@ const blake = await open({ width: 390, height: 844 });
 for (const [page, name] of [[alex, 'Alex'], [blake, 'Blake']]) {
   await signUp(page, `${name.toLowerCase()}${stamp}@rooms.local`, name);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('link', { name: 'Open games' }).click();
-  await page.getByRole('heading', { name: 'Open games', level: 1 }).waitFor();
+  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+  await page.goto(`${base}/rooms/`);
+  await page.getByRole('heading', { name: 'Nearby games', level: 1 }).waitFor();
 }
 
 async function post(page, { mode, isPublic, daysAhead }) {
-  await page.getByRole('link', { name: 'Post a game' }).click();
+  await page.getByRole('link', { name: 'Start a game' }).first().click();
   await page.getByRole('button', { name: mode }).click();
-  await page.getByRole('combobox', { name: 'Court' }).fill('Los Angeles Badminton');
+  await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
   await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
-  const date = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(Date.now() + daysAhead * 86400000);
-  await page.getByLabel('Day').fill(date);
+  await page.getByRole('radiogroup', { name: 'Date (next 14 days)' }).getByRole('radio').nth(daysAhead).click();
   if (!isPublic) await page.getByRole('button', { name: 'Only people with the code' }).click();
   await page.getByRole('button', { name: 'Casual' }).click();
   await page.getByLabel('Note (optional)').fill('Court 3, bring a shuttle');
   await page.getByRole('button', { name: 'Post game' }).click();
   await page.getByText('Court 3, bring a shuttle').waitFor();
-  return (await page.locator('p.font-mono').innerText()).trim();
+  return page.locator('p.grid-cols-6').getAttribute('aria-label');
 }
 
 // Alex 发起明天的公开单打；Blake 在附近看到并加入
-await post(alex, { mode: 'Singles · 2 players', isPublic: true, daysAhead: 1 });
+await post(alex, { mode: 'Singles', isPublic: true, daysAhead: 1 });
 await alex.getByText('Start when all 2 spots are filled.').waitFor();
 
 await blake.getByRole('button', { name: 'Use my location' }).click();
-await blake.getByRole('link', { name: /hosted by Alex/ }).click();
+await blake.getByRole('link', { name: /Hosted by Alex/ }).first().click();
 await blake.getByText('Join to see who’s playing.').waitFor();
 await blake.getByRole('button', { name: 'Join game' }).click();
 await blake.getByText('You’re in! The host starts the game when every spot is filled.').waitFor();
@@ -54,10 +54,10 @@ await blake.reload();
 await blake.getByText('Game on! Everyone’s in.').waitFor();
 
 // Blake 发起后天的私密双打，Alex 凭房间码加入
-await blake.goto(new URL('/app/rooms/', blake.url()).href);
-const code = await post(blake, { mode: 'Doubles · 4 players', isPublic: false, daysAhead: 2 });
-await alex.goto(new URL('/app/rooms/', alex.url()).href);
-await alex.getByLabel('Have a code?').fill(code);
+await blake.goto(`${base}/app/rooms/`);
+const code = await post(blake, { mode: 'Doubles', isPublic: false, daysAhead: 2 });
+await alex.goto(`${base}/join/`);
+await alex.getByLabel('Code').fill(code);
 await alex.getByRole('button', { name: 'Join', exact: true }).click();
 await alex.getByText('You’re in. The host starts the game when every spot is filled.').waitFor();
 await alex.getByText('2 of 4').waitFor();
@@ -67,8 +67,7 @@ await blake.reload();
 await blake.getByRole('button', { name: 'Cancel game' }).click();
 await blake.getByRole('button', { name: 'Yes, cancel for everyone' }).click();
 await blake.getByText('The host cancelled this game.').waitFor();
-await alex.goto(new URL('/app/messages/', alex.url()).href);
-await alex.getByRole('tab', { name: 'Updates' }).click();
+await alex.goto(`${base}/notifications/`);
 await alex.getByText('Game cancelled').first().waitFor();
 
 console.log(`ok: posted, found nearby, joined, started; joined private room ${code} by code and saw it cancelled`);

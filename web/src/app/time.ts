@@ -85,5 +85,7 @@ export function dateChip(date: string, index: number) {
   const noon = new Date(`${date}T12:00:00Z`);
   const weekdayName = new Intl.DateTimeFormat(currentLocale(), { weekday: 'short', timeZone: 'UTC' }).format(noon);
   const label = index === 0 ? capitalize(new Intl.RelativeTimeFormat(currentLocale(), { numeric: 'auto' }).format(0, 'day')) : weekdayName;
-  return { label, day: noon.getUTCDate() };
+  // 读屏念完整日期，不念“周一 19”
+  const full = new Intl.DateTimeFormat(currentLocale(), { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(noon);
+  return { label, day: noon.getUTCDate(), full };
 }

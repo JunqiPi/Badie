@@ -1,7 +1,7 @@
 ---
 import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
-import DotMap from '../../../../components/DotMap.astro';
+import { PinsMap } from '../../../../app/PinsMap';
 import VenueRow from '../../../../components/VenueRow.astro';
 import { cityName, citySummary, countries, formatPrice, nearbyCities, type City, type Country } from '../../../../lib/venues';
 
@@ -17,7 +17,7 @@ const count = city.venues.length;
 const summary = citySummary(city);
 const neighbours = nearbyCities(city);
 const attributions = [...new Set(city.venues.map((v) => v.attribution).filter(Boolean))];
-const points = city.venues.map((v) => ({ id: v.id, lat: v.lat, lon: v.lon, label: v.name, href: v.path }));
+const pins = city.venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }));
 
 const facts = [
   `${count} badminton ${count === 1 ? 'court is' : 'courts are'} listed in ${name}.`,
@@ -37,36 +37,31 @@ const facts = [
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }, { label: country.name, href: country.path }]} />
 
   <header class="max-w-3xl">
-    <p class="eyebrow">{country.name}</p>
-    <h1 class="display mt-3 text-[clamp(2.5rem,6vw,4.5rem)]">Badminton courts in {name}</h1>
-    <p class="mt-4 text-lg text-ink-secondary">{facts.join(' ')}</p>
+    <p class="text-subhead font-bold text-ink-secondary">{country.name}</p>
+    <h1 class="text-display lg:text-[2.75rem]">{name}</h1>
+    <p class="mt-3 text-subhead text-ink-secondary">{facts.join(' ')}</p>
   </header>
 
-  <details class="tile mt-8 bg-surface lg:hidden">
-    <summary class="cursor-pointer px-4 py-3 font-extrabold">Show map</summary>
-    <div class="border-t-2 border-stroke p-3"><DotMap points={points} label={`Map of courts in ${name}`} /></div>
-  </details>
-
-  <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_400px]">
+  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_26rem]">
     <div class="grid grid-cols-1 content-start gap-3" data-venue-list>
       {city.venues.map((venue) => <VenueRow venue={venue} />)}
     </div>
 
-    <aside class="hidden lg:block">
-      <div class="sticky top-6 space-y-4">
-        <div class="tile bg-surface p-3">
-          <DotMap points={points} label={`Map of courts in ${name}`} />
+    <aside class="order-first lg:order-none">
+      <div class="grid gap-3 lg:sticky lg:top-24">
+        <div class="sticker h-64 overflow-hidden lg:h-80">
+          <PinsMap client:visible pins={pins} label={`Map of courts in ${name}`} />
         </div>
         {
           summary.totalCourts > 0 && (
             <div class="grid grid-cols-2 gap-3">
-              <div class="tile bg-sky p-4 text-on-accent">
-                <p class="display text-4xl">{count}</p>
-                <p class="text-sm font-extrabold">{count === 1 ? 'venue' : 'venues'}</p>
+              <div class="tile rounded-[14px]! bg-sky p-4 text-on-accent">
+                <p class="text-[2rem] leading-none font-black tabular-nums">{count}</p>
+                <p class="text-footnote font-bold" data-t="venues">venues</p>
               </div>
-              <div class="tile bg-mint p-4 text-on-accent">
-                <p class="display text-4xl">{summary.totalCourts}</p>
-                <p class="text-sm font-extrabold">courts in total</p>
+              <div class="tile rounded-[14px]! bg-mint p-4 text-on-accent">
+                <p class="text-[2rem] leading-none font-black tabular-nums">{summary.totalCourts}</p>
+                <p class="text-footnote font-bold" data-t="courts in total">courts in total</p>
               </div>
             </div>
           )
@@ -78,11 +73,11 @@ const facts = [
   {
     neighbours.length > 0 && (
       <section class="mt-14">
-        <h2 class="eyebrow">Nearby areas</h2>
+        <h2 class="text-title3" data-t="Nearby areas">Nearby areas</h2>
         <ul class="mt-4 flex flex-wrap gap-2">
           {neighbours.map((other) => (
             <li>
-              <a href={other.path} class="sticker lift inline-flex items-center gap-2 rounded-full! px-4 py-2 font-extrabold">
+              <a href={other.path} class="sticker lift inline-flex items-center gap-2 rounded-full! px-4 py-2 font-bold">
                 {cityName(other)}
                 <span class="text-ink-tertiary">{other.venues.length}</span>
               </a>
@@ -95,11 +90,3 @@ const facts = [
 
   <Fragment slot="attribution">{attributions.length > 0 && <p>{attributions.join(' · ')}</p>}</Fragment>
 </Base>
-
-<script>
-  for (const row of document.querySelectorAll<HTMLElement>('[data-venue-list] [data-venue]')) {
-    const dots = document.querySelectorAll(`circle[data-venue="${row.dataset.venue}"]`);
-    row.addEventListener('mouseenter', () => dots.forEach((dot) => dot.classList.add('active')));
-    row.addEventListener('mouseleave', () => dots.forEach((dot) => dot.classList.remove('active')));
-  }
-</script>

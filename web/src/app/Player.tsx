@@ -1,11 +1,13 @@
 import { useState, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
 import { t } from './i18n';
-import { CourtSearch, type Court } from './pickers';
+import { Icon } from './icons';
+import { Avatar, Empty, IconTile, LevelBadge, Notice, ScreenHeader, Starburst, StatTile, Tag, fill, paletteTint } from './kit';
+import { SlotFields, type Slot } from './NewRoom';
 import { Link } from './router';
-import { avatarUrl, problem, supabase, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
-import { day, halfHours, today, zoned } from './time';
-import { Button, EmptyState, Field, Skeleton, toast } from './ui';
+import { problem, supabase, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
+import { day, nextDays, zoned } from './time';
+import { Button, Field, Skeleton, toast } from './ui';
 import { kindLabel } from './Verification';
 
 export const tagLabels: Record<string, string> = {
@@ -23,77 +25,90 @@ export function PlayerPage({ id }: { id: string }) {
   if (card === undefined) return <Skeleton className="h-96 max-w-2xl" />;
   if (card === null) {
     return (
-      <EmptyState title={t('Player not found')} action={<Link to="/games/" className="button">{t('My games')}</Link>}>
+      <Empty icon="user" tint="sky" title={t('Player not found')} action={{ label: t('Games'), to: '/games/' }}>
         {t('You can see players you’ve been matched or played with, and your friends.')}
-      </EmptyState>
+      </Empty>
     );
   }
   const level = tier(card.rating);
   const rate = card.win_rate;
+  const tint = paletteTint(card.id);
 
   return (
-    <div className="grid max-w-2xl gap-6">
-      <button onClick={() => history.back()} className="link justify-self-start text-sm">{t('Back')}</button>
+    <div className="mx-auto grid max-w-4xl gap-6">
+      <ScreenHeader title={card.relationship === 'friend' ? t('Friend') : t('Player')} back="/messages/?tab=friends" />
 
-      <section aria-labelledby="player" className="sticker grid gap-4 p-6 sm:p-8">
-        <div className="flex items-start gap-5">
-          {card.avatar && (
-            <img src={avatarUrl(card.avatar)} alt="" width={88} height={88} className="size-22 shrink-0 rounded-full border-2 border-stroke object-cover" />
-          )}
-          <div className="min-w-0">
-            <p className="eyebrow">{card.relationship === 'friend' ? t('Friend') : t('Player')}</p>
-            <h1 id="player" className="display mt-2 text-[clamp(2.5rem,7vw,4rem)] break-words">{card.nickname}</h1>
-            <p className="mt-2 text-lg font-black">
-              {t('Level {level}', { level: level.label })} · {level.name}
-              {!card.assessed && <span className="font-semibold text-ink-tertiary"> {t('(not assessed yet)')}</span>}
-            </p>
-          </div>
-        </div>
-        {card.avatar && <RemovePhoto userId={card.id} onDone={refresh} />}
-        <ul className="flex flex-wrap gap-2" aria-label={t('Highlights')}>
-          {card.verified && <li className="chip bg-mint" title={kindLabel(card.verified)}>{t('Verified level')}</li>}
-          {card.new_player ? <li className="chip bg-sky">{t('New player')}</li> : card.reliable && <li className="chip bg-mint">{t('Reliable')}</li>}
-          <li className="chip bg-surface-muted text-ink">{t(card.games_band)}</li>
-          {card.tags.map((tag) => <li key={tag} className="chip bg-lavender">{t(tagLabels[tag] ?? tag)}</li>)}
-        </ul>
-        {card.relationship !== 'self' && <Actions card={card} onChange={refresh} />}
-        {card.relationship !== 'self' && card.relationship !== 'friend' && <MessageOption card={card} />}
-      </section>
-
-      {rate && (
-        <section aria-labelledby="winrate" className="tile grid gap-2 bg-surface p-6">
-          <h2 id="winrate" className="eyebrow">{t('This month')}</h2>
-          <p className="text-lg font-black">
-            {rate.games ? t('{n}% wins', { n: Math.round((rate.wins / rate.games) * 100) }) : t('No confirmed games yet')}
-            <span className="font-semibold text-ink-secondary"> · {rate.wins}–{rate.games - rate.wins}</span>
-          </p>
-          {rate.games > 0 && (
-            <p className="text-ink-secondary">
-              {t('{n} game|{n} games', { n: rate.games })} · {t('{n} opponent|{n} opponents', { n: rate.opponents })} · {gapText(rate.gap)}
-            </p>
-          )}
-          {card.relationship === 'self' && !rate.public && <p className="text-sm text-ink-tertiary">{t('Others see this from 5 confirmed games.')}</p>}
-        </section>
-      )}
-
-      {card.challenge !== 'hidden' && <Challenge card={card} onChange={refresh} />}
-
-      {card.relationship !== 'self' && (
-        <section aria-labelledby="together" className="tile grid gap-2 bg-surface p-6">
-          <h2 id="together" className="eyebrow">{t('You and {name}', { name: card.nickname })}</h2>
-          <p className="font-bold">
-            {card.games_together === 0 ? t('No games together yet') : t('{n} game together|{n} games together', { n: card.games_together })}
-            {card.last_game && (
-              <span className="font-semibold text-ink-secondary">
-                {' · '}{t('last on {date} at {venue}', { date: day(card.last_game.starts_at, card.last_game.tz), venue: card.last_game.venue })}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+        <div className="grid min-w-0 gap-6">
+          <section aria-labelledby="player" className={`sticker grid gap-4 p-5 sm:p-6 ${fill[tint]}`}>
+            <div className="flex items-center gap-4">
+              <span className="relative shrink-0">
+                <span aria-hidden="true" className="absolute inset-0 translate-x-[3px] translate-y-1 rounded-full bg-[#17140f]" />
+                <Avatar id={card.id} name={card.nickname} photo={card.avatar} size={88} className="relative" />
               </span>
+              <div className="grid min-w-0 gap-1.5">
+                <h1 id="player" className="truncate text-title">{card.nickname}</h1>
+                <ul className="flex flex-wrap gap-1.5" aria-label={t('Highlights')}>
+                  <li><LevelBadge rating={card.rating} /></li>
+                  {card.verified && <li><Tag icon="verified" tint="lime">{kindLabel(card.verified)}</Tag></li>}
+                  {card.new_player ? <li><Tag icon="sparkle" tint="butter">{t('New player · calibrating')}</Tag></li> : card.reliable && <li><Tag icon="reliable" tint="mint">{t('Reliable')}</Tag></li>}
+                </ul>
+                {!card.assessed && <p className="text-footnote font-bold">{t('(not assessed yet)')}</p>}
+              </div>
+            </div>
+            <p className="text-subhead">{level.summary}</p>
+            {card.tags.length > 0 && (
+              <ul className="flex flex-wrap gap-1.5" aria-label={t('Player impressions')}>
+                {card.tags.map((tag) => <li key={tag}><Tag icon="handshake" tint="lime">{t(tagLabels[tag] ?? tag)}</Tag></li>)}
+              </ul>
             )}
-          </p>
-          {card.mutual_friends > 0 && <p className="text-ink-secondary">{t('{n} friend in common|{n} friends in common', { n: card.mutual_friends })}</p>}
-        </section>
-      )}
+            {card.avatar && <RemovePhoto userId={card.id} onDone={refresh} />}
+          </section>
 
-      {card.relationship !== 'self' && <Safety card={card} onChange={refresh} />}
+          <div className="grid grid-cols-2 gap-2.5">
+            <StatTile icon="games" tint="peach" value={t(card.games_band)} label={t('Played')} />
+            <StatTile icon="trophy" tint="lime" value={rate?.games ? `${Math.round((rate.wins / rate.games) * 100)}%` : '–'} label={t('Win rate this month')} />
+          </div>
+
+          {rate && rate.games > 0 && (
+            <p className="flex items-center gap-2 text-footnote font-bold text-ink-secondary">
+              <Icon name="level" className="size-4" />
+              {t('{n} game|{n} games', { n: rate.games })} · {rate.wins}–{rate.games - rate.wins} · {t('{n} opponent|{n} opponents', { n: rate.opponents })} · {gapText(rate.gap)}
+            </p>
+          )}
+          {card.relationship === 'self' && rate && !rate.public && <p className="text-footnote text-ink-secondary">{t('Others see this from 5 confirmed games.')}</p>}
+
+          {card.relationship !== 'self' && (
+            <section aria-labelledby="together" className="sticker grid gap-2 p-5">
+              <h2 id="together" className="text-headline">{t('What you have in common')}</h2>
+              <ul className="grid gap-1">
+                <li className="flex items-center gap-3"><IconTile icon="games" tint="peach" size="sm" />
+                  <span className="text-subhead font-bold">
+                    {card.games_together === 0 ? t('No games together yet') : t('{n} game together|{n} games together', { n: card.games_together })}
+                    {card.last_game && <span className="font-medium text-ink-secondary"> · {t('last on {date} at {venue}', { date: day(card.last_game.starts_at, card.last_game.tz), venue: card.last_game.venue })}</span>}
+                  </span>
+                </li>
+                {card.mutual_friends > 0 && (
+                  <li className="flex items-center gap-3"><IconTile icon="users" tint="sky" size="sm" />
+                    <span className="text-subhead font-bold">{t('{n} friend in common|{n} friends in common', { n: card.mutual_friends })}</span>
+                  </li>
+                )}
+              </ul>
+            </section>
+          )}
+        </div>
+
+        <aside className="grid min-w-0 gap-4" aria-label={t('More')}>
+          {card.relationship !== 'self' && (
+            <section className="sticker grid gap-3 p-5">
+              <Actions card={card} onChange={refresh} />
+              {card.relationship !== 'friend' && <MessageOption card={card} />}
+            </section>
+          )}
+          {card.challenge !== 'hidden' && <Challenge card={card} onChange={refresh} />}
+          {card.relationship !== 'self' && <Safety card={card} onChange={refresh} />}
+        </aside>
+      </div>
     </div>
   );
 }
@@ -131,14 +146,14 @@ function RemovePhoto({ userId, onDone }: { userId: string; onDone: () => void })
 /** 不是球友时的私信入口：同球群可以发一条消息请求 */
 function MessageOption({ card }: { card: PlayerCard }) {
   const { status, group } = card.message;
-  if (status === 'open') return <Link to={`/messages/dm/${card.id}/`} className="button button-quiet justify-self-start">{t('Message')}</Link>;
-  if (status === 'requested') return <p className="text-sm font-bold text-ink-secondary">{t('Message request sent')}</p>;
-  if (status === 'new_account') return <p className="text-sm text-ink-tertiary">{t('After 3 games you can send message requests to people in your groups.')}</p>;
+  if (status === 'open') return <Link to={`/messages/dm/${card.id}/`} className="button button-quiet"><Icon name="chat" className="size-4" />{t('Message')}</Link>;
+  if (status === 'requested') return <p className="text-footnote font-bold text-ink-secondary">{t('Message request sent')}</p>;
+  if (status === 'new_account') return <p className="text-footnote text-ink-secondary">{t('After 3 games you can send message requests to people in your groups.')}</p>;
   if (status !== 'request') return null;
   return (
-    <div className="grid justify-items-start gap-1">
-      <Link to={`/messages/dm/${card.id}/`} className="button button-quiet">{t('Send a message request')}</Link>
-      <p className="text-sm text-ink-tertiary">{t('You’re both in {group}.', { group: group ?? '' })}</p>
+    <div className="grid gap-1">
+      <Link to={`/messages/dm/${card.id}/`} className="button button-quiet"><Icon name="chat" className="size-4" />{t('Send a message request')}</Link>
+      <p className="text-footnote text-ink-secondary">{t('You’re both in {group}.', { group: group ?? '' })}</p>
     </div>
   );
 }
@@ -151,14 +166,14 @@ function Actions({ card, onChange }: { card: PlayerCard; onChange: () => void })
   switch (card.relationship) {
     case 'friend':
       return (
-        <div className="flex flex-wrap gap-3">
-          <Link to={`/messages/dm/${card.id}/`} className="button">{t('Message')}</Link>
+        <div className="grid gap-2">
+          <Link to={`/messages/dm/${card.id}/`} className="button button-lg"><Icon name="chat" className="size-5" />{t('Message')}</Link>
           {confirmRemove ? (
             <Button variant="quiet" busy={busy === 'remove'} onClick={() => run('remove', 'remove_friend', user, t('Removed from friends'))}>
               {t('Yes, remove friend')}
             </Button>
           ) : (
-            <Button variant="quiet" onClick={() => setConfirmRemove(true)}>{t('Remove friend')}</Button>
+            <button type="button" onClick={() => setConfirmRemove(true)} className="min-h-11 text-footnote font-bold text-ink-secondary hover:underline">{t('Remove friend')}</button>
           )}
         </div>
       );
@@ -176,9 +191,9 @@ function Actions({ card, onChange }: { card: PlayerCard; onChange: () => void })
       return <Button variant="quiet" busy={busy === 'unblock'} onClick={() => run('unblock', 'unblock_user', user, t('Unblocked'))}>{t('Unblock')}</Button>;
     default:
       return (
-        <div>
-          <Button busy={busy === 'add'} onClick={() => run('add', 'send_friend_request', user, t('Friend request sent'))}>{t('Add friend')}</Button>
-          <p className="mt-2 text-sm text-ink-tertiary">{t('Friends can message each other. Players who both pick “play again” after a game become friends automatically.')}</p>
+        <div className="grid gap-2">
+          <Button className="button-lg" busy={busy === 'add'} onClick={() => run('add', 'send_friend_request', user, t('Friend request sent'))}><Icon name="userPlus" className="size-5" />{t('Add friend')}</Button>
+          <p className="text-footnote text-ink-secondary">{t('Friends can message each other. Players who both pick “play again” after a game become friends automatically.')}</p>
         </div>
       );
   }
@@ -199,8 +214,8 @@ function Safety({ card, onChange }: { card: PlayerCard; onChange: () => void }) 
   const [details, setDetails] = useState('');
 
   return (
-    <section aria-labelledby="safety" className="tile grid gap-3 bg-surface p-6">
-      <h2 id="safety" className="eyebrow">{t('Safety')}</h2>
+    <section aria-labelledby="safety" className="sticker grid gap-3 p-5">
+      <h2 id="safety" className="flex items-center gap-2 text-headline"><Icon name="shield" className="size-5" />{t('Safety')}</h2>
       {step === 'block' ? (
         <>
           <p className="font-bold" role="alert">
@@ -279,23 +294,26 @@ function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void 
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>('singles');
   const [partner, setPartner] = useState('');
-  const [court, setCourt] = useState<Court>();
+  const [slot, setSlot] = useState<Slot>(() => ({ date: nextDays(2)[1], from: 19 * 60, to: 21 * 60 }));
+  const { court, date, from, to } = slot;
   const tz = court?.time_zone_id ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const [date, setDate] = useState(() => today(tz, 1));
-  const [from, setFrom] = useState(19 * 60);
-  const [to, setTo] = useState(21 * 60);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
 
   if (card.challenge !== 'available') {
-    return <p className="tile bg-surface p-5 text-ink-secondary">{t(challengeReasons[card.challenge] ?? 'You can’t challenge this player right now.')}</p>;
+    return <Notice icon="challenge" tint="muted">{t(challengeReasons[card.challenge] ?? 'You can’t challenge this player right now.')}</Notice>;
   }
   if (!open) {
     return (
-      <div>
-        <Button variant="quiet" onClick={() => setOpen(true)}>{t('Challenge')}</Button>
-      </div>
+      <button type="button" onClick={() => setOpen(true)} className="sticker lift flex items-center gap-3 bg-peach p-4 text-left text-on-accent">
+        <span aria-hidden="true"><Starburst size={48}>VS</Starburst></span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-headline">{t('Challenge')}</span>
+          <span className="block text-footnote">{t('Propose a time and court. They have 48 hours to answer.')}</span>
+        </span>
+        <Icon name="chevronRight" className="size-4" />
+      </button>
     );
   }
 
@@ -320,10 +338,9 @@ function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void 
     onChange();
   }
 
-  const times = halfHours();
   return (
-    <form onSubmit={send} noValidate aria-labelledby="challenge" className="sticker grid gap-4 p-6">
-      <h2 id="challenge" className="text-lg font-black">
+    <form onSubmit={send} noValidate aria-labelledby="challenge" className="sticker grid gap-4 bg-peach/40 p-5">
+      <h2 id="challenge" className="text-headline">
         {mode === 'doubles' ? t('Challenge {name} to doubles', { name: card.nickname }) : t('Challenge {name} to singles', { name: card.nickname })}
       </h2>
       <div role="group" aria-label={t('Game type')} className="flex gap-2">
@@ -339,42 +356,14 @@ function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void 
           <p className="text-sm text-ink-tertiary">{t('{name} picks a partner when they accept.', { name: card.nickname })}</p>
         </>
       )}
-      <div className="grid gap-2">
-        <p className="font-extrabold">{t('Court')}</p>
-        {court ? (
-          <button type="button" onClick={() => setCourt(undefined)} aria-pressed="true" aria-label={t('Change court: {name}', { name: court.name })} className="toggle justify-self-start">
-            {court.name} <span aria-hidden="true">×</span>
-          </button>
-        ) : (
-          <CourtSearch onPick={setCourt} label={t('Court')} />
-        )}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Field label={t('Day')}>
-          {(props) => <input {...props} type="date" value={date} min={today(tz)} max={today(tz, 13)} onChange={(e) => setDate(e.target.value)} className="field" />}
-        </Field>
-        <Field label={t('From')}>
-          {(props) => (
-            <select {...props} value={from} onChange={(e) => setFrom(Number(e.target.value))} className="field">
-              {times.map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
-            </select>
-          )}
-        </Field>
-        <Field label={t('Until')}>
-          {(props) => (
-            <select {...props} value={to} onChange={(e) => setTo(Number(e.target.value))} className="field">
-              {times.map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
-            </select>
-          )}
-        </Field>
-      </div>
+      <SlotFields slot={slot} onChange={setSlot} />
       <Field label={t('Message (optional)')} hint={t('Up to 60 characters. No phone numbers or links.')}>
         {(props) => <input {...props} value={message} maxLength={60} onChange={(e) => setMessage(e.target.value)} className="field" />}
       </Field>
-      <p className="text-sm text-ink-tertiary">{t('They have 48 hours to answer. If they say no or don’t answer, you’ll just see it didn’t happen.')}</p>
+      <p className="text-footnote text-ink-secondary">{t('They have 48 hours to answer. If they say no or don’t answer, you’ll just see it didn’t happen.')}</p>
       {error && <p role="alert" className="font-bold text-danger">{error}</p>}
-      <div className="flex flex-wrap gap-2">
-        <Button busy={busy}>{t('Send challenge')}</Button>
+      <div className="grid gap-2">
+        <Button className="button-lg" busy={busy}>{t('Send challenge')}</Button>
         <Button type="button" variant="quiet" onClick={() => setOpen(false)}>{t('Cancel')}</Button>
       </div>
     </form>

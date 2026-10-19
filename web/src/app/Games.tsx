@@ -216,7 +216,7 @@ export function Lineup({ players, mode }: { players: Game['players']; mode: Game
         <ul key={i} className={`grid gap-3 ${i === 1 ? 'order-3' : ''}`} aria-label={mode === 'doubles' ? t('Team {n}', { n: i + 1 }) : undefined}>
           {team.map((p) => (
             <li key={p.id} className={`flex min-w-0 items-center gap-2.5 ${i === 1 ? 'flex-row-reverse text-right' : ''}`}>
-              <Link to={p.me ? '/me/' : `/players/${p.id}/`} className="press shrink-0 rounded-full">
+              <Link to={p.me ? '/me/' : `/players/${p.id}/`} aria-label={p.me ? t('You') : p.nickname} className="press shrink-0 rounded-full">
                 <Avatar id={p.id} name={p.nickname} size={48} />
               </Link>
               <span className={`grid min-w-0 gap-0.5 ${i === 1 ? 'justify-items-end' : 'justify-items-start'}`}>
