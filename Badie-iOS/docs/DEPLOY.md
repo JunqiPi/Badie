@@ -35,6 +35,8 @@
 3. 数据库密码点 Generate，存进密码管理器，再存为 Secret `SUPABASE_DB_PASSWORD`。
 4. 建项目页面里 Data API 保持开启；“Automatically expose new tables” 不勾也可以（迁移里已经显式授权）。
 5. 账号头像 → Access Tokens → Generate new token，存为 Secret `SUPABASE_ACCESS_TOKEN`。
+   - 如果生成时要选权限（scoped token），只选 badie 这个项目，并给：Project Settings、API Keys、API Key Secrets 读，**Edge Functions 读写**（部署服务器函数要用）。
+   - 部署时报 `Missing required permission(s): edge_functions_write`，说明这把 token 没有 Edge Functions 读写：按上面重新生成一把，替换 GitHub 里的 Secret，再到 Actions → Supabase deploy → Run workflow。
 6. Variables 里加 `SUPABASE_PROJECT_REF`、`SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`。
 
 ## 3. 登录方式和验证码邮件（必须做，否则注册收不到确认码）
@@ -43,7 +45,7 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
 
 登录方式：邮箱 + 密码（主要），Google / Apple（见 4.5），邮件验证码作为备用（没设过密码、或不想用密码的人）。
 
-1. 注册 Resend，先用免费版（每月 3,000 封、**每天 100 封，注册确认码、重设密码、验证码登录和约球邮件共用**）。用密码、Google、Apple 登录都不发邮件；只有注册时发一封确认码、忘记密码时发一封重设码、有人选验证码登录时发一封；约球提醒主要靠推送，约球邮件要用户自己在设置里打开（默认关）。所以免费版应该能撑很久（每天新注册 100 人以内）。在 Resend 后台看每天发了多少，接近每天 70 封时再升级 Pro（$20/月，每月 5 万封）。
+1. 注册 Resend，先用免费版（每月 3,000 封、**每天 100 封，注册确认码、重设密码、验证码登录和约球邮件共用**）。用密码、Google、Apple 登录都不发邮件；只有注册时发一封确认码、忘记密码时发一封重设码、有人选验证码登录时发一封；约球提醒主要靠推送，约球邮件要用户自己在设置里打开（默认关）。所以免费版应该能撑很久（每天新注册 100 人以内）。超了会自动换 Mailjet 发（见 3.1，再多 200 封）。在 Resend 后台看每天发了多少，两家经常都用满时再升级 Pro（$20/月，每月 5 万封）。
    - 为什么选 Resend（2026-10 调研）：两条发信路径（验证码 SMTP、通知的批量 API）都已经在用；不用审核、当天能发；5 万～10 万封每月的价格在免审核的服务里最低。风险是违规（退信超过 4%、投诉超过 0.08%）会被直接停号，所以注册时邮箱填错的要少。
    - 备用：Postmark（独立送达测试排第二、用户口碑最好，但 5 万封以上贵约 3 倍）。建议先注册好放着（人工审核，一般 24 小时内），出问题时 Supabase 的 SMTP 改成 `smtp.postmarkapp.com`、端口 587，几分钟就能切。
    - 以后每月超过 10 万封再考虑 Amazon SES（每 10 万封约 $10，但要申请生产权限，常被拒）。Cloudflare 的发信服务还在测试版、没有批量接口，暂不考虑。
@@ -63,6 +65,27 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
    - Secure password change 保持关闭（已登录的人在设置里直接改密码；忘记密码走邮件里的码）。
 7. Authentication → Rate Limits：发信上限先设每小时 30 封左右（开了自定义 SMTP 后的默认值），用户多了再调高。
 8. 上线前用 Gmail、Outlook、iCloud、QQ 邮箱、163 各收一次验证码，看是否进垃圾箱（QQ 邮箱按发信 IP 限流，量大时可能延迟）。
+
+## 3.1 发信备份：Resend 额度用完自动换 Mailjet（免费）
+
+登录验证码和约球邮件都由服务器函数 `send-email` 发：先用 Resend（每天 100 封）；被拒（额度用完、出错、超时）就换 Mailjet（每天 200 封、每月 6,000 封）。合起来每天约 300 封，两家经常都用满了再升级 Resend Pro。
+
+- Mailjet 超过每天 200 封不会报错，而是排到第二天发（验证码就没用了），所以它只能放在后面当备份。
+- Mailjet 免费版的邮件底部可能带 Mailjet 标识；有用户反映新账号被突然暂停审核（多见于退信多的账号），所以只当备份，不当主力。
+
+1. Mailjet → Account settings → **Senders & Domains → Add domain** → 填 `badie.rsvp`。按提示到 Cloudflare DNS 加一条验证用的 TXT 记录，回 Mailjet 点 Check now。
+2. 同一页点 **Authenticate this domain (SPF/DKIM)**，把它给的记录加到 Cloudflare（全部 DNS only）：
+   - DKIM：照抄它给的主机名和值。
+   - SPF：根域只能有一条 SPF。**不要新建**，编辑 6.5 里 Email Routing 加的那条，改成 `v=spf1 include:_spf.mx.cloudflare.net include:spf.mailjet.com ~all`。
+   - 等 SPF 和 DKIM 都变绿。
+3. Mailjet → Account settings → **API Key Management**：复制 API Key 和 Secret Key（直接粘到第 5 步，不要发到聊天里）。
+4. Resend → API Keys → Create：名字 `badie-functions`，权限 Sending access，域名 `badie.rsvp`。
+5. Supabase → Edge Functions → Secrets，加三条：`RESEND_API_KEY`、`MAILJET_API_KEY`、`MAILJET_SECRET_KEY`。
+6. 确认 “Supabase deploy” 已经部署了 `send-email`（Edge Functions 列表里能看到它）。
+7. Supabase → Authentication → **Hooks** → Add hook → **Send Email hook**：类型选 HTTPS，URL 填 `https://yeffnjdpjejlplqryjfx.supabase.co/functions/v1/send-email`，点 **Generate secret**，复制这串 `v1,whsec_…`，点 Create；马上到 Edge Functions → Secrets 加 `SEND_EMAIL_HOOK_SECRET` 填这串。
+8. 用一个没注册过的邮箱注册一次，能收到验证码就好。哪家发不出去会记在 Edge Functions → send-email → Logs 里。
+
+开了 Hook 后，第 3 节的 SMTP 就不用了，但别删：Hook 出问题时在 Authentication → Hooks 里把它关掉，就自动回到 SMTP（只用 Resend）。
 
 ## 3.5 防机器人与滥用
 
@@ -166,11 +189,12 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 
 ## 8. 约球邮件（用户自己打开，默认关）
 
-约球提醒主要靠推送（见 8.5）。在「设置」里打开了「约球消息也发邮件」的人，匹配到人、约成、取消、错过确认时还会收到邮件，开着推送也照发。数据库每分钟检查一次，Vault 里有 Resend 的 key 才发：
+约球提醒主要靠推送（见 8.5）。在「设置」里打开了「约球消息也发邮件」的人，匹配到人、约成、取消、错过确认时还会收到邮件，开着推送也照发。数据库每分钟检查一次，交给 `send-email` 函数发（和登录验证码一样，Resend 不行就换 Mailjet）。要配齐两样才发：
 
-1. Resend → API Keys → Create，名字 `badie-notifications`，权限 Sending access，域名选 `badie.rsvp`。
-2. Supabase → Integrations → Vault → Add new secret：Name 填 `resend_api_key`，Secret 粘 key。**不要在 SQL Editor 里写 key**（会留在查询历史里）。
-3. 发件人是 `games@badie.rsvp`，Resend 验证过根域名就能用。免费额度每天 100 封；超了 Resend 会拒发，匹配本身不受影响。
+1. 3.1 里的发信服务密钥（`RESEND_API_KEY`，有 Mailjet 的话再加两条）。
+2. 8.5 第 1 步的暗号和地址（Vault 里的 `push_secret`、`project_url`，Edge Functions 的 `PUSH_SECRET`），和推送共用。
+
+发件人是 `games@badie.rsvp`，两家验证过根域名就能用。两家都发不出去时这一批邮件就不发了，匹配本身不受影响。Vault 里以前的 `resend_api_key` 已经不用，可以删掉。**任何 key 都不要在 SQL Editor 里写**（会留在查询历史里）。
 
 通知和邮件用收件人的界面语言（资料里的 `locale`，网页/App 换语言时自动更新），时间按球馆当地时间。新增通知文字时，在迁移里给 `notification_texts` 补上 9 种语言的译文（测试会检查每种语言齐全、占位符一致）。
 
@@ -189,7 +213,7 @@ select id, 'owner' from auth.users where email = '你的邮箱';
    - 公钥 `VAPID_PUBLIC_KEY`：填到 GitHub → Variables（网站构建用），也填到 Edge Functions → Secrets。
    - 私钥 `VAPID_PRIVATE_KEY`：只填到 Edge Functions → Secrets。
    - 推一次 main 后，网页的「设置」里会出现「这台设备的通知」开关，发出约球请求后也会提示打开。iPhone 上的浏览器要先把 Badie 添加到主屏幕才能收推送（苹果的限制）。
-4. 推送服务 `send-push` 由 “Supabase deploy” 自动部署。
+4. 推送服务 `send-push`（和发信的 `send-email`）由 “Supabase deploy” 自动部署。
 
 ## 9. 上线检查
 

@@ -442,3 +442,7 @@ verify_jwt = false
 # 推送：只接受数据库发来的、带暗号的请求（见 functions/send-push）
 [functions.send-push]
 verify_jwt = false
+
+# 发邮件：只接受 Auth Hook 签过名的、或数据库带暗号的请求（见 functions/send-email）
+[functions.send-email]
+verify_jwt = false

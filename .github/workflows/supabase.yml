@@ -29,6 +29,10 @@ jobs:
         with:
           version: 2.121.0
 
+      # 服务器函数的单元测试（不连网，发信服务是假的）
+      - name: Function tests
+        run: npx --yes deno@2.9.6 test --allow-env --allow-read supabase/functions/
+
       - name: Seed matches the venue catalogs
         run: |
           python3 supabase/scripts/build_venue_seed.py

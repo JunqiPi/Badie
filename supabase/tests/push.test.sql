@@ -1,7 +1,7 @@
 -- 推送通知：登记设备的校验、客户端看不到设备、推送服务取活和回报；约球邮件要自己打开
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(23);
+select plan(25);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000007' || lpad(n::text, 2, '0'))::uuid, 'p' || n || '@test.local' from generate_series(1, 3) n;
@@ -62,8 +62,9 @@ select pg_temp.login(2);
 select lives_ok($$ update public.profiles set email_alerts = true where id = pg_temp.u(2) $$, '本人可以打开约球邮件');
 reset role;
 
--- 邮件：只发给打开了的人，开着推送也照发（Vault 里有 Resend 的 key 时才发）
-select vault.create_secret('re_test', 'resend_api_key');
+-- 邮件：只发给打开了的人，开着推送也照发（交给 send-email 函数，Vault 里配了地址和暗号才发）
+select vault.create_secret('http://functions.test', 'project_url');
+select vault.create_secret('s3cret', 'push_secret');
 create function pg_temp.emailed(n int) returns boolean language sql security definer as $$
   select emailed_at is not null from public.notifications where user_id = pg_temp.u(n) order by id desc limit 1
 $$;
@@ -72,6 +73,11 @@ select public.notify(pg_temp.u(3), 'matched', 'Game on!', 'y');
 select public.send_notification_emails();
 select ok(pg_temp.emailed(2), '打开了邮件的人收邮件');
 select ok(not pg_temp.emailed(3), '没打开的人不发邮件');
+select is((select count(*)::int from net.http_request_queue
+           where url = 'http://functions.test/functions/v1/send-email' and headers ->> 'x-push-secret' = 's3cret'),
+          1, '一批邮件交给 send-email 函数，带暗号');
+select ok((select convert_from(body, 'utf8')::jsonb -> 0 ->> 'to' from net.http_request_queue
+           where url like '%/send-email' order by id desc limit 1) = 'p2@test.local', '收件人是打开了邮件的人');
 
 -- 推送：只取有设备的人的新通知，每台设备一条（发过邮件也照推）；取过的不再取
 set local role service_role;
