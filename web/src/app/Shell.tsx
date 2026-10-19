@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { currentLocale, languages, setLocale, startLocale, t, useLocale, type Locale } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, CountBadge, IconTile, Wordmark, type Tint } from './kit';
@@ -267,21 +267,78 @@ function CreateMenu({ dialog, signedIn }: { dialog: React.RefObject<HTMLDialogEl
 /** 语言切换：在最外层的顶栏里。第一次打开按浏览器语言，选过就记住 */
 export function LanguageSwitch() {
   const locale = useLocale();
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
   const name = languages.find(([code]) => code === locale)?.[1];
+
+  // 打开时焦点落在当前语言上；点菜单外面就关
+  useEffect(() => {
+    if (!open) return;
+    box.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus();
+    const close = (event: PointerEvent) => box.current?.contains(event.target as Node) || setOpen(false);
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [open]);
+
+  function pick(code: Locale) {
+    setLocale(code, true);
+    setOpen(false);
+    button.current?.focus();
+  }
+
+  // 上下键、Home / End 移动，Esc 关掉回到按钮
+  function onKeyDown(event: KeyboardEvent<HTMLUListElement>) {
+    const options = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="option"]')];
+    const index = options.indexOf(document.activeElement as HTMLElement);
+    const next = ({ ArrowDown: index + 1, ArrowUp: index - 1, Home: 0, End: options.length - 1 } as Record<string, number>)[event.key];
+    if (next !== undefined) {
+      event.preventDefault();
+      options[(next + options.length) % options.length].focus();
+    } else if (event.key === 'Escape') {
+      setOpen(false);
+      button.current?.focus();
+    } else if (event.key === 'Tab') {
+      setOpen(false);
+    }
+  }
+
   return (
-    <label className="relative flex h-10 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-footnote font-bold text-on-bar hover:bg-on-bar/10 has-focus-visible:outline-3 has-focus-visible:outline-focus sm:px-3">
-      <Icon name="globe" className="size-5" />
-      <span className="hidden sm:inline">{name}</span>
-      <Icon name="chevronDown" className="hidden size-3 sm:block" />
-      <select
-        aria-label={t('Language')}
-        value={currentLocale()}
-        onChange={(event) => setLocale(event.target.value as Locale, true)}
-        className="absolute inset-0 cursor-pointer appearance-none opacity-0"
+    <div ref={box} className="relative">
+      <button
+        ref={button}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`${t('Language')}: ${name}`}
+        onClick={() => setOpen(!open)}
+        onKeyDown={(event) => ['ArrowDown', 'ArrowUp'].includes(event.key) && (event.preventDefault(), setOpen(true))}
+        className="flex h-10 items-center gap-1.5 rounded-full px-2.5 text-footnote font-bold text-on-bar transition-colors hover:bg-on-bar/10 aria-expanded:bg-on-bar/15 sm:px-3"
       >
-        {languages.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
-      </select>
-    </label>
+        <Icon name="globe" className="size-5" />
+        <span className="hidden sm:inline">{name}</span>
+        <Icon name="chevronDown" className={`hidden size-3 transition-transform sm:block ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <ul role="listbox" aria-label={t('Language')} onKeyDown={onKeyDown} className="sticker absolute top-full right-0 z-50 mt-2 grid w-56 origin-top-right animate-pop gap-0.5 p-1.5 text-ink">
+          {languages.map(([code, label]) => (
+            <li
+              key={code}
+              role="option"
+              aria-selected={code === locale}
+              tabIndex={-1}
+              lang={code}
+              onClick={() => pick(code)}
+              onKeyDown={(event) => ['Enter', ' '].includes(event.key) && (event.preventDefault(), pick(code))}
+              className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-[12px] px-3 font-bold outline-none hover:bg-surface-muted focus-visible:bg-surface-muted focus-visible:ring-3 focus-visible:ring-focus aria-selected:bg-lime aria-selected:text-on-accent"
+            >
+              {label}
+              {code === locale && <Icon name="check" className="size-4" />}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 

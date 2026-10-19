@@ -51,11 +51,17 @@ await page.getByRole('heading', { name: /Courts near/ }).waitFor();
 await courts.first().waitFor();
 
 // 语言切换在顶栏：换成中文，静态页面和顶栏都跟着变，刷新后仍记住；再换回英文
-await page.getByLabel('Language').selectOption('zh-Hans');
+await page.getByRole('button', { name: /^Language/ }).click();
+await page.getByRole('option', { name: '简体中文' }).click();
 await page.getByRole('link', { name: '球馆' }).first().waitFor();
 await page.getByRole('heading', { name: '按国家浏览' }).waitFor();
 await page.reload();
-await page.getByLabel('语言').selectOption('en');
+// 键盘也能换：打开后焦点在当前语言上，上移一格回到英文，回车选中
+await page.getByRole('button', { name: /^语言/ }).focus();
+await page.keyboard.press('ArrowDown');
+await page.getByRole('option', { name: '简体中文', selected: true }).waitFor();
+await page.keyboard.press('ArrowUp');
+await page.keyboard.press('Enter');
 await page.getByRole('link', { name: 'Courts' }).first().waitFor();
 
 // 注销：要点两次；之后变回没登录，刷新也不会再登录
