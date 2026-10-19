@@ -434,3 +434,7 @@ enabled = true
 # 注销时撤销 Apple 登录授权：函数里自己核对调用者（见 functions/apple-revoke）
 [functions.apple-revoke]
 verify_jwt = false
+
+# 推送：只接受数据库发来的、带暗号的请求（见 functions/send-push）
+[functions.send-push]
+verify_jwt = false

@@ -4,6 +4,7 @@ import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Divider, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile, Tag } from './kit';
 import { nicknameProblem } from './Onboarding';
+import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
 import { problem, supabase, useLive, type Friend, type PlayerCard, type PlayRecord, type Profile } from './supabase';
 import { Button, Field, toast } from './ui';
@@ -172,6 +173,8 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       <ScreenHeader title={t('Settings')} back="/me/" />
       <Nickname profile={profile} email={email} onChange={onChange} />
 
+      <PushSettings />
+
       <Group title={t('Who can find me')}>
         <Switch checked={profile.discoverable} onChange={(v) => save({ discoverable: v })} title={t('Let players find me by nickname')}
                 text={t('They see your nickname and level, and can send a friend request.')} />
@@ -202,7 +205,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       </Group>
 
       <Group title={t('Account')}>
-        <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => supabase!.auth.signOut()} />
+        <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => disablePush().catch(() => {}).finally(() => supabase!.auth.signOut())} />
         <Divider />
         <DeleteAccount avatar={profile.avatar_path} />
       </Group>
@@ -219,16 +222,47 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** 开关（role=switch）：柠檬绿是开 */
-function Switch({ checked, onChange, title, text }: { checked: boolean; onChange: (value: boolean) => void; title: string; text: string }) {
+/** 这台设备的推送：浏览器不支持就不显示；iPhone 要先添加到主屏幕；被拒过就告诉在哪里改 */
+function PushSettings() {
+  const [state, setState] = useState<PushState>();
+  const [busy, setBusy] = useState(false);
+  useEffect(() => void pushState().then(setState), []);
+
+  async function toggle(on: boolean) {
+    setBusy(true);
+    try {
+      if (on) setState(await enablePush());
+      else await disablePush().then(() => setState('off'));
+    } catch {
+      toast(t('Couldn’t change notifications. Try again.'), 'error');
+    }
+    setBusy(false);
+  }
+
+  if (!state || state === 'unsupported') return null;
   return (
-    <label className="flex cursor-pointer items-start gap-3 py-3.5">
+    <Group title={t('Notifications')}>
+      {state === 'install' ? (
+        <p className="py-3.5 text-footnote text-ink-secondary">{t('On iPhone, add Badie to your Home Screen first (Share → Add to Home Screen), then turn on notifications there.')}</p>
+      ) : (
+        <Switch checked={state === 'on'} disabled={busy || state === 'blocked'} onChange={toggle} title={t('Notifications on this device')}
+                text={state === 'blocked' ? t('Notifications are blocked for this site. Allow them in your browser’s site settings.')
+                  : t('Get a notification when you’re matched or a game changes. Emails only go out if a notification doesn’t reach you.')} />
+      )}
+    </Group>
+  );
+}
+
+/** 开关（role=switch）：柠檬绿是开 */
+function Switch({ checked, onChange, title, text, disabled }: { checked: boolean; onChange: (value: boolean) => void; title: string; text: string; disabled?: boolean }) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3 py-3.5 has-disabled:cursor-not-allowed">
       <span className="min-w-0 flex-1">
         <span className="block font-bold">{title}</span>
         <span className="block text-footnote text-ink-secondary">{text}</span>
       </span>
-      <input type="checkbox" role="switch" checked={checked} onChange={(e) => onChange(e.target.checked)}
-             className="relative mt-0.5 h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
+      <input type="checkbox" role="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)}
+             className="relative mt-0.5 disabled:opacity-50 h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
     </label>
   );
 }

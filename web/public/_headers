@@ -7,6 +7,10 @@
   Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
+# 推送的 service worker 每次都检查有没有新版本
+/sw.js
+  Cache-Control: no-cache
+
 # 个人页面不进搜索引擎
 /signin/*
   X-Robots-Tag: noindex

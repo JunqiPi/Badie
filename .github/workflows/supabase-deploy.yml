@@ -50,7 +50,7 @@ jobs:
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: psql "$(cat supabase/.temp/pooler-url)" -v ON_ERROR_STOP=1 --single-transaction -q -f supabase/seed.sql
 
-      # 服务器函数（注销时撤销 Apple 登录授权）。Apple 的密钥在 Supabase 的 Edge Function Secrets 里，不经过这里
+      # 服务器函数（注销时撤销 Apple 登录授权、发推送）。密钥都在 Supabase 的 Edge Function Secrets 里，不经过这里
       - name: Deploy functions
         if: env.SUPABASE_ACCESS_TOKEN != '' && env.PROJECT_REF != ''
-        run: supabase functions deploy apple-revoke --project-ref "$PROJECT_REF"
+        run: supabase functions deploy apple-revoke send-push --project-ref "$PROJECT_REF"

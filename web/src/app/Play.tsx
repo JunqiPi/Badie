@@ -3,6 +3,7 @@ import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, Empty, IconTile, LevelBadge, Notice, Starburst, StatTile, Tag, type Tint } from './kit';
 import { CourtSearch, type Court } from './pickers';
+import { enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
 import { problem, supabase, useLive, type Mode, type Player, type Profile, type Ticket } from './supabase';
 import { clock, dateChip, dayName, moment, nextDays, relative, timeOf, zoned } from './time';
@@ -36,6 +37,7 @@ export function Play({ profile }: { profile: Profile }) {
           {tickets && open.length === 0 && (
             <Empty icon="bolt" tint="lime" title={t('No open requests')}>{t('Create one and we’ll look for players while you get on with your day.')}</Empty>
           )}
+          {open.length > 0 && <PushPrompt />}
           {open.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onChange={refresh} />)}
           {recent.length > 0 && (
             <>
@@ -54,6 +56,18 @@ export function Play({ profile }: { profile: Profile }) {
 const toleranceText = (tolerance: Ticket['skill_tolerance']) =>
   tolerance === 8 ? t('Any level') : t('Level ±{n}', { n: tolerance });
 
+
+/** 有约球请求在找人时，提示打开这台设备的推送（配上了第一时间知道）；开着或不支持时不显示 */
+function PushPrompt() {
+  const [state, setState] = useState<PushState>();
+  useEffect(() => void pushState().then(setState), []);
+  if (state !== 'off') return null;
+  return (
+    <Notice icon="bell" tint="sky" action={{ label: t('Turn on'), onClick: () => enablePush().then(setState, () => toast(t('Couldn’t change notifications. Try again.'), 'error')) }}>
+      {t('Get a notification the moment we find you a match.')}
+    </Notice>
+  );
+}
 /** 只有人数：同一天附近在找同类球局的人，和其中条件都合适的人 */
 function Pool({ ticket }: { ticket: Ticket }) {
   const { data } = useLive<{ available: number; compatible: number }>('ticket_pool', { args: { p_ticket: ticket.id }, every: 60_000 });

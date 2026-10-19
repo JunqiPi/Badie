@@ -17,6 +17,7 @@ import { Messages, Notifications } from './Messages';
 import { Onboarding } from './Onboarding';
 import { Play } from './Play';
 import { PlayerPage } from './Player';
+import { syncPush } from './push';
 import { Rankings } from './Rankings';
 import { JoinRoom, RoomPage } from './Room';
 import { Rooms } from './Rooms';
@@ -148,6 +149,8 @@ function SignedInFrame({ path, me, children }: { path: string; me: Profile; chil
   const { data: counts, refresh } = useLive<InboxCounts>('inbox_counts');
   // 换页时（比如刚看完消息）马上更新未读数
   useEffect(() => void refresh(), [path, refresh]);
+  // 这台设备开过推送的，再报一次给服务器（换了账号登录时转给当前账号）
+  useEffect(() => void syncPush(), [me.id]);
   return <Shell path={path} me={me} guest={false} counts={counts}>{children}</Shell>;
 }
 

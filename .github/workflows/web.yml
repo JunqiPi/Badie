@@ -45,6 +45,7 @@ jobs:
           PUBLIC_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
           PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
           PUBLIC_TURNSTILE_SITE_KEY: ${{ vars.TURNSTILE_SITE_KEY }}
+          PUBLIC_VAPID_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
 
       # 只有 main 部署；没配 Cloudflare 时跳过
       - name: Deploy to Cloudflare Pages
@@ -83,6 +84,8 @@ jobs:
           npx playwright install --with-deps chromium
           export PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
           export PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(supabase status -o env | grep '^PUBLISHABLE_KEY=' | cut -d= -f2- | tr -d '"')
+          # 测试用的推送公钥（公开的，只用来让推送开关出现）
+          export PUBLIC_VAPID_KEY=BIFxl9ZRcDpibxWeWst3467mT2VdDX1LLykAwAG4VZbwkP05i4RTVshVASDCz-fFeUzhOyQy3w1lDTA0-54cXL4
           npm run build
           # 和线上一样用 Cloudflare Pages 的本地服务器，_redirects 和 _headers 都生效
           WRANGLER_SEND_METRICS=false npx --yes wrangler@4.151.1 pages dev dist --ip 127.0.0.1 --port 4321 &
