@@ -53,8 +53,28 @@ extension MockBackend {
 
     /// 登录成功（验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料
     private func outcome(after session: RemoteSession) async throws -> AuthOutcome {
+        await remoteRegisterPush()
         if let user = try await refreshRemoteProfile() { return .signedIn(user) }
         return .needsProfile(phone: session.email ?? "")
+    }
+
+    // MARK: 推送
+
+    /// 登录状态下把这台设备的推送令牌报给服务器（开发版走 Apple 的 sandbox 环境）
+    func remoteRegisterPush() async {
+        guard let remote, remote.session != nil, let token = PushRegistry.shared.token else { return }
+        #if DEBUG
+        let kind = "apns_sandbox"
+        #else
+        let kind = "apns"
+        #endif
+        try? await remote.call("register_push", ["p_kind": kind, "p_token": token])
+    }
+
+    /// 退出登录前：这台设备不再收这个账号的推送
+    func remoteUnregisterPush() async {
+        guard let remote, remote.session != nil, let token = PushRegistry.shared.token else { return }
+        try? await remote.call("unregister_push", ["p_token": token])
     }
 
     /// 第一次登录：建资料，做过问卷就保存定级。头像、性别、常用时间目前只存在本机
@@ -84,7 +104,8 @@ extension MockBackend {
         guard let remote else { return }
         guard remote.session != nil else { return signOutLocally() }
         do {
-            if try await refreshRemoteProfile() == nil { signOutLocally() }
+            if try await refreshRemoteProfile() == nil { return signOutLocally() }
+            await remoteRegisterPush()
         } catch RemoteError.notSignedIn {
             signOutLocally()
         } catch {

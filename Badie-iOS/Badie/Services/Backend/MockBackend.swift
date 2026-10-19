@@ -254,7 +254,12 @@ final class MockBackend {
     }
 
     func signOut() {
-        if let remote { Task { await remote.signOut() } }
+        if let remote {
+            Task {
+                await remoteUnregisterPush()
+                await remote.signOut()
+            }
+        }
         remoteIsAdmin = false
         db.currentUserId = nil
         saveNow()

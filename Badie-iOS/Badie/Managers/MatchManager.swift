@@ -269,6 +269,8 @@ final class MatchManager: ObservableObject {
                     self.reloadMatchmaking(announce: false)
                     self.phase = .idle
                     if ticket.offerId != nil { Haptics.impact() }
+                    // 配上了要第一时间知道：这时候问通知权限，用户最能理解为什么
+                    Task { await PushRegistry.shared.askAfterRequest() }
                 case .failure(let error):
                     self.phase = .failed((error as? LocalizedError)?.errorDescription ?? String(localized: "没能发起请求，请重试"))
                 }

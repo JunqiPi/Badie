@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 struct BadieApp: App {
     @StateObject private var host = AppHost()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     init() {
         NotificationRouter.shared.install()

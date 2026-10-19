@@ -46,6 +46,9 @@ struct AppEnvironment {
         backend.latencyEnabled = false
         backend.remote = SupabaseClient()
         backend.remote?.onSessionExpired = { [weak backend] in backend?.signOutLocally() }
+        // 推送：拿到设备令牌就报给服务器（没登录时先记着，登录后再报）
+        PushRegistry.shared.onToken = { [weak backend] _ in Task { await backend?.remoteRegisterPush() } }
+        Task { await PushRegistry.shared.refresh() }
         return AppEnvironment(backend: backend)
     }
 

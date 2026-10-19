@@ -119,6 +119,18 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(server.requests[1].value(forHTTPHeaderField: "Authorization"), "Bearer old")
     }
 
+    func testRegistersAndRemovesThisDeviceForPush() async throws {
+        server.on("POST /rest/v1/rpc/register_push", "")
+        server.on("POST /rest/v1/rpc/unregister_push", "")
+        let client = client(session: session(expiresIn: 3600))
+        try await client.call("register_push", ["p_kind": "apns", "p_token": String(repeating: "ab", count: 32)])
+        try await client.call("unregister_push", ["p_token": String(repeating: "ab", count: 32)])
+
+        XCTAssertEqual(server.json(0)["p_kind"] as? String, "apns")
+        XCTAssertEqual(server.json(0)["p_token"] as? String, String(repeating: "ab", count: 32))
+        XCTAssertEqual(server.requests[1].url?.path, "/rest/v1/rpc/unregister_push")
+    }
+
     func testSignInSecrets() throws {
         // RFC 7636 附录 B 的例子
         XCTAssertEqual(SocialSignIn.pkceChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")

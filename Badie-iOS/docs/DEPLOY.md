@@ -16,6 +16,7 @@
 | `SUPABASE_PUBLISHABLE_KEY` | Variables | Project Settings → API Keys → Publishable key（`sb_publishable_…`，可以公开） |
 | `SITE_URL` | Variables | `https://badie.rsvp` |
 | `TURNSTILE_SITE_KEY` | Variables | Cloudflare → Turnstile 的 Site Key（可以公开） |
+| `VAPID_PUBLIC_KEY` | Variables | `node supabase/scripts/vapid_keys.mjs` 生成的浏览器推送公钥（可以公开，见 8.5） |
 
 **Secret key（`sb_secret_…`）不需要放进 GitHub，也绝不能进前端。**
 
@@ -129,7 +130,7 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 
 ## 8. 约球通知邮件
 
-匹配到人、约成、取消、错过确认时会发邮件（网页没有推送，用户不在线时靠邮件）。数据库每分钟检查一次，Vault 里有 Resend 的 key 才发：
+匹配到人、约成、取消、错过确认时，没开推送（或推送没送到）的人会收到邮件（推送见 8.5）。数据库每分钟检查一次，Vault 里有 Resend 的 key 才发：
 
 1. Resend → API Keys → Create，名字 `badie-notifications`，权限 Sending access，域名选 `badie.rsvp`。
 2. Supabase → Integrations → Vault → Add new secret：Name 填 `resend_api_key`，Secret 粘 key。**不要在 SQL Editor 里写 key**（会留在查询历史里）。
@@ -137,10 +138,28 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 
 通知和邮件用收件人的界面语言（资料里的 `locale`，网页/App 换语言时自动更新），时间按球馆当地时间。新增通知文字时，在迁移里给 `notification_texts` 补上 9 种语言的译文（测试会检查每种语言齐全、占位符一致）。
 
+## 8.5 推送通知（免费，替掉大部分邮件）
+
+新通知先推送到 App 和浏览器；推送送达了就不发邮件。没开推送的人照旧马上收邮件，开了推送但 2 分钟内没推到的也发邮件兜底。下面没配齐之前，一切照旧走邮件，不会出错。
+
+1. **暗号和地址**（让数据库叫推送服务）：在自己电脑上运行 `openssl rand -hex 32` 生成一串随机字符。
+   - Supabase → Integrations → Vault → Add new secret：`push_secret` 填这串字符；再加一条 `project_url` 填 `https://yeffnjdpjejlplqryjfx.supabase.co`。
+   - Supabase → Edge Functions → Secrets：`PUSH_SECRET` 填同一串字符。
+2. **iPhone App（Apple 推送）**：
+   - Apple Developer → Identifiers → `com.badie.app`：勾上 **Push Notifications**（代码里已经带了这个 entitlement）。
+   - 推送要用 Apple 的密钥：4.5 里建的那把 Key 如果也勾了 Apple Push Notifications service (APNs)，就不用再填；否则新建一把只勾 APNs 的 Key，把 Key ID 和 `.p8` 内容填到 Edge Functions → Secrets 的 `APNS_KEY_ID`、`APNS_PRIVATE_KEY`（`APPLE_TEAM_ID` 共用）。
+   - 用户第一次发出约球请求时，App 会问能不能发通知。
+3. **浏览器（Web Push）**：在自己电脑上运行 `node supabase/scripts/vapid_keys.mjs`：
+   - 公钥 `VAPID_PUBLIC_KEY`：填到 GitHub → Variables（网站构建用），也填到 Edge Functions → Secrets。
+   - 私钥 `VAPID_PRIVATE_KEY`：只填到 Edge Functions → Secrets。
+   - 推一次 main 后，网页的「设置」里会出现「这台设备的通知」开关，发出约球请求后也会提示打开。iPhone 上的浏览器要先把 Badie 添加到主屏幕才能收推送（苹果的限制）。
+4. 推送服务 `send-push` 由 “Supabase deploy” 自动部署。
+
 ## 9. 上线检查
 
 - 用一个**从没用过的邮箱**走一遍：收验证码 → 登录 → 填昵称 → 定级问卷 → 附近球馆 → 收藏。
 - 开了 Google / Apple 后各登录一次（网页和 iOS 都试），再用 Apple 登录的测试账号在 App 里注销一次，确认能正常走完。
+- 配好推送后：电脑浏览器和 TestFlight 版 App 各打开一次通知，用另一个账号约同一时段同一球馆，两边应该马上收到推送，而且**不再收到邮件**。
 - 用两个邮箱各发一个同时段、同球馆的约球请求：应该马上配上、两边都收到邮件，都确认后出现在 My games。
 - 网站各页面打开正常，刷新 `/courts/`、`/games/` 不报 404，旧地址 `/app/games/` 会跳到 `/games/`。
 - “Supabase keep-alive” 每天自动运行，防止免费项目因 7 天无活动被暂停。

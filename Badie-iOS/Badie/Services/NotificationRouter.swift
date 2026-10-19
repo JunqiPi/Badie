@@ -1,7 +1,7 @@
 import Foundation
 import UserNotifications
 
-/// 处理本地通知：前台也展示提醒；点按提醒打开对应球局
+/// 处理通知（本地提醒和服务器推送）：前台也展示；点了打开对应页面
 final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationRouter()
 
@@ -22,9 +22,18 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        guard let gameId = response.notification.request.content.userInfo["gameId"] as? String else { return }
+        let info = response.notification.request.content.userInfo
+        // 本地提醒带 gameId；服务器推送带 link（和网页同一个地址）
+        let target: (route: Route, tab: MainTab)
+        if let gameId = info["gameId"] as? String {
+            target = (.game(id: gameId), .games)
+        } else if let link = info["link"] as? String {
+            target = PushRegistry.route(for: link)
+        } else {
+            return
+        }
         await MainActor.run {
-            self.router?.show(.game(id: gameId), in: .games)
+            self.router?.show(target.route, in: target.tab)
         }
     }
 }
