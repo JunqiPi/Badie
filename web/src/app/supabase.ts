@@ -6,7 +6,15 @@ const url = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
 // 只用 publishable key（sb_publishable_…）；secret key 绝不进前端
 const key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
-export const supabase = url && key ? createClient(url, key) : undefined;
+// PKCE：Google / Apple 登录跳回来时只带一次性的 code，令牌不出现在网址里
+export const supabase = url && key ? createClient(url, key, { auth: { flowType: 'pkce' } }) : undefined;
+
+/** 后台开了哪些第三方登录（公开接口）；没开的不显示按钮 */
+export async function enabledProviders(): Promise<string[]> {
+  const response = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key! } });
+  const settings = (await response.json()) as { external?: Record<string, boolean> };
+  return Object.entries(settings.external ?? {}).filter(([, on]) => on).map(([name]) => name);
+}
 
 /** 照片头像的地址（公开桶，文件名随机） */
 export const avatarUrl = (path: string) => supabase!.storage.from('avatars').getPublicUrl(path).data.publicUrl;
