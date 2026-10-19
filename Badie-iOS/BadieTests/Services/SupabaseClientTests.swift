@@ -920,10 +920,12 @@ final class SupabaseClientTests: XCTestCase {
 
     func testDeletingTheAccountClearsTheCache() async throws {
         let backend = try await signedInBackend()
+        server.on("GET /auth/v1/user", #"{"id":"u","app_metadata":{"provider":"email","providers":["email"]}}"#)
         server.on("POST /rest/v1/rpc/delete_account", "")
         server.on("POST /auth/v1/logout", status: 204, "")
         try await backend.remoteDeleteAccount()
-        XCTAssertEqual(server.requests.first?.url?.path, "/rest/v1/rpc/delete_account")
+        // 先看是不是用 Apple 登录过（邮箱账号不用找 Apple 撤销），再注销
+        XCTAssertEqual(server.requests.map { $0.url?.path }, ["/auth/v1/user", "/rest/v1/rpc/delete_account", "/auth/v1/logout"])
         XCTAssertNil(backend.currentUser)
         XCTAssertNil(backend.remote?.session, "本机的登录也清掉")
         XCTAssertTrue(backend.db.users.isEmpty, "缓存里不留这个账号的数据")
