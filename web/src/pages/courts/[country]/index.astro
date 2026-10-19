@@ -25,7 +25,7 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
   <section class="grid gap-6 lg:grid-cols-[1fr_1.2fr] lg:items-center">
     <div>
       <p class="text-subhead font-bold text-ink-secondary" data-t="Court directory">Court directory</p>
-      <h1 class="text-display lg:text-[2.75rem]">{country.name}</h1>
+      <h1 class="text-display lg:text-[2.75rem]" data-region={country.code}>{country.name}</h1>
       <div class="mt-5 grid max-w-md grid-cols-2 gap-3">
         <div class="tile rounded-[14px]! bg-sky p-4 text-on-accent">
           <p class="text-[2.25rem] leading-none font-black tabular-nums">{country.venueCount.toLocaleString('en')}</p>

@@ -116,7 +116,8 @@ export function SiteShell({ path, children }: { path: string; children?: ReactNo
 
 /**
  * 静态页面里要翻译的文字：<span data-t="{n} courts" data-n="12">12 courts</span>；
- * data-t-placeholder / data-t-label 翻译输入框提示和读屏名字。数字按界面语言加千位分隔
+ * data-t-placeholder / data-t-label 翻译输入框提示和读屏名字。数字按界面语言加千位分隔。
+ * data-region="us" 的国家名用浏览器自带的译名（英文保持原样）
  */
 function translateStatic() {
   for (const element of document.querySelectorAll<HTMLElement>('[data-t]')) {
@@ -128,6 +129,15 @@ function translateStatic() {
   }
   for (const element of document.querySelectorAll<HTMLElement>('[data-t-placeholder]')) element.setAttribute('placeholder', t(element.dataset.tPlaceholder!));
   for (const element of document.querySelectorAll<HTMLElement>('[data-t-label]')) element.setAttribute('aria-label', t(element.dataset.tLabel!));
+  const short = new Intl.DisplayNames([currentLocale()], { type: 'region', style: 'short' });
+  const full = new Intl.DisplayNames([currentLocale()], { type: 'region' });
+  for (const element of document.querySelectorAll<HTMLElement>('[data-region]')) {
+    element.dataset.english ??= element.textContent ?? '';
+    const code = element.dataset.region!.toUpperCase();
+    // 短名最自然（香港、美国），但有的语言短名是缩写（AS、UK），那就用全名
+    const name = short.of(code) ?? '';
+    element.textContent = currentLocale() === 'en' ? element.dataset.english : /[.॰]|^[A-Z]+$/.test(name) ? (full.of(code) ?? name) : name;
+  }
 }
 
 /** 页脚：真正的页面链接（不是本页的锚点） */

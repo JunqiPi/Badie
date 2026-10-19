@@ -1,6 +1,7 @@
 ---
 interface Props {
-  items: { label: string; href: string }[];
+  /** region：国家的两字母代码，国家名在浏览器里换成当前语言 */
+  items: { label: string; href: string; region?: string }[];
 }
 
 const { items } = Astro.props;
@@ -12,7 +13,7 @@ const { items } = Astro.props;
       items.map((item, index) => (
         <li class="flex gap-1">
           {index > 0 && <span aria-hidden="true">/</span>}
-          <a href={item.href} class="py-1 transition-colors hover:text-ink" data-t={item.label === 'Courts' ? 'Courts' : undefined}>{item.label}</a>
+          <a href={item.href} class="py-1 transition-colors hover:text-ink" data-t={item.label === 'Courts' ? 'Courts' : undefined} data-region={item.region}>{item.label}</a>
         </li>
       ))
     }

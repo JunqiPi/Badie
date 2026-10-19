@@ -26,17 +26,12 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
 
   <section class="mt-12 grid gap-6" aria-labelledby="countries">
     <h2 id="countries" class="text-title2" data-t="Browse by country">Browse by country</h2>
-    {
-      byContinent().map((group) => (
-        <div class="grid gap-3">
-          <h3 class="text-footnote font-bold text-ink-secondary">{group.continent}</h3>
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {group.countries.map((country) => (
-              <CountryCard country={country} tint={tints[countries.indexOf(country) % tints.length]} />
-            ))}
-          </div>
-        </div>
-      ))
-    }
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        byContinent().flatMap((group) => group.countries).map((country) => (
+          <CountryCard country={country} tint={tints[countries.indexOf(country) % tints.length]} />
+        ))
+      }
+    </div>
   </section>
 </Base>

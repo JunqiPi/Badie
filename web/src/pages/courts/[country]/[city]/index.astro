@@ -34,10 +34,10 @@ const facts = [
   description={facts.join(' ')}
   noindex={!city.indexable}
 >
-  <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }, { label: country.name, href: country.path }]} />
+  <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }, { label: country.name, href: country.path, region: country.code }]} />
 
   <header class="max-w-3xl">
-    <p class="text-subhead font-bold text-ink-secondary">{country.name}</p>
+    <p class="text-subhead font-bold text-ink-secondary" data-region={country.code}>{country.name}</p>
     <h1 class="text-display lg:text-[2.75rem]">{name}</h1>
     <p class="mt-3 text-subhead text-ink-secondary">{facts.join(' ')}</p>
   </header>
