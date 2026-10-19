@@ -340,12 +340,12 @@ function Welcome() {
       <header className="grid items-center gap-10 lg:min-h-[28rem] lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
         <div className="grid justify-items-start gap-6">
           <ul className="flex flex-wrap gap-2">
-            {[['heart', 'pink', 'Free and nonprofit'], ['eyeSlash', 'sky', 'No ads, no tracking']].map(([icon, tint, text]) => (
+            {[['heart', 'pink', 'Free to use'], ['level', 'lavender', 'Matched by level']].map(([icon, tint, text]) => (
               <li key={text} className={`chip px-3! py-1.5! text-footnote! ${fill[tint as Tint]}`}><Icon name={icon as IconName} className="size-4" />{t(text)}</li>
             ))}
           </ul>
           <Headline size="text-[3rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
-          <p className={`max-w-xl ${lead}`}>{t('A free, nonprofit app for finding badminton partners at your level and courts near you. No ads.')}</p>
+          <p className={`max-w-xl ${lead}`}>{t('A free app for finding badminton partners at your level and courts near you.')}</p>
           <div className="flex flex-wrap gap-3">
             <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
             <Link to="/courts/" className="button button-lg button-quiet">{t('Courts near you')}</Link>

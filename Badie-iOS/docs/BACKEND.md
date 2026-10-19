@@ -1,6 +1,6 @@
 # Badie 正式后端规划
 
-> 状态：规划稿（2026-10）。前提：个人开发、纯非营利、预算尽量低；**先做美国，再到全世界（中国大陆也能用）；iOS + 同功能同风格的网页端**。
+> 状态：规划稿（2026-10）。前提：个人开发、免费使用（以后可能接受捐款或合适的广告）、预算尽量低；**先做美国，再到全世界（中国大陆也能用）；iOS + 同功能同风格的网页端**。
 > 现在的 App 用本机模拟后端 `MockBackend`，所有数据只在自己手机上；本文规划换成真正的共享后端。
 > 价格与线路数据多来自厂商和社区帖子，下单前需晚高峰实测；合规部分不是法律意见。
 
@@ -106,12 +106,12 @@ iOS App（SwiftUI）──┐
 - **基础项**：JSON-LD（场馆 `SportsActivityLocation`、球群 `SportsClub`、约球 `Event`）、按语言拆分的 sitemap + hreflang、每页的分享卡片图（构建时生成）、网站顶部的 App 下载横幅、iOS 通用链接。
 - **robots.txt**：允许 Googlebot、Bingbot、OAI-SearchBot、PerplexityBot、Claude 的搜索爬虫、Applebot。
 
-### 站外（非营利、不刷量）
+### 站外（不刷量）
 
 1. 在 r/badminton 和各城市版块以开发者身份如实回答“哪里能打球”，表明身份。
 2. 拍几段短视频放 YouTube：App 演示、城市球馆指南。
 3. 联系各地羽毛球协会、俱乐部，请他们链接对应的场馆页和球群页。
-4. 登录 Product Hunt、AlternativeTo、非营利和开源目录。
+4. 登录 Product Hunt、AlternativeTo 等产品目录。
 5. 有了第三方媒体报道后，再考虑建 Wikidata 条目；不自己写 Wikipedia 词条。
 
 ### App Store（ASO）

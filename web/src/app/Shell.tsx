@@ -152,7 +152,7 @@ function Footer() {
       <div className="page grid grid-cols-[2fr_1fr_1fr_1fr] gap-8 py-10 text-footnote">
         <div className="grid content-start gap-2">
           <Wordmark className="text-[1.5rem]" />
-          <p className="max-w-xs text-ink-secondary">{t('A free, nonprofit app for finding badminton partners at your level and courts near you. No ads.')}</p>
+          <p className="max-w-xs text-ink-secondary">{t('A free app for finding badminton partners at your level and courts near you.')}</p>
         </div>
         {columns.map(([title, links]) => (
           <nav key={title} aria-label={t(title)} className="grid content-start gap-1.5">

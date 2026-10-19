@@ -88,9 +88,9 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
   );
 }
 
-/** 关于 Badie：非营利、数据来源、安全 */
+/** 关于 Badie：免费、隐私、靠谱、数据来源 */
 const facts: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
-  { icon: 'heart', tint: 'pink', title: 'Free and nonprofit', text: 'There’s nothing to buy and no ads. Badie exists to get more people playing even games.' },
+  { icon: 'heart', tint: 'pink', title: 'Free to use', text: 'Every feature is free. Badie exists to get more people playing even games.' },
   { icon: 'eyeSlash', tint: 'sky', title: 'Private by default', text: 'Your exact location never leaves your device. Players see your nickname and level, not your contact details.' },
   { icon: 'reliable', tint: 'mint', title: 'Reliability counts', text: 'No-shows and late cancellations are tracked, so the players you meet actually turn up.' },
   { icon: 'map', tint: 'butter', title: 'Where court data comes from', text: 'Government open data, OpenStreetMap and players themselves. Players confirm courts they’ve played at.' },
