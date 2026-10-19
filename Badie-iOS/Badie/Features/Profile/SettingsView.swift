@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var showRadius = false
+    @State private var showPassword = false
     @State private var showSignOut = false
     @State private var showDelete = false
     @State private var showReset = false
@@ -189,6 +190,10 @@ struct SettingsView: View {
 
                     section(String(localized: "账号")) {
                         VStack(spacing: AppTheme.Spacing.sm) {
+                            if appState.isRemote {
+                                Button("设置或修改密码") { showPassword = true }
+                                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+                            }
                             Button("退出登录") { showSignOut = true }
                                 .buttonStyle(BrutalButtonStyle(kind: .accent(AppTheme.Colors.butter), size: .medium))
                             Button("注销账号并删除数据") { showDelete = true }
@@ -206,6 +211,11 @@ struct SettingsView: View {
             }
         }
         .task { await refreshNotificationStatus() }
+        .sheet(isPresented: $showPassword) {
+            PasswordSheet()
+                .presentationDetents([.height(340)])
+                .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $showRadius) {
             TravelRadiusSheet()
                 .presentationDetents([.height(320)])

@@ -136,8 +136,29 @@ final class AppState: ObservableObject {
         try await backend.remoteSendCode(email: email, captchaToken: captchaToken)
     }
 
-    func verify(email: String, code: String) async throws -> AuthOutcome {
-        try await backend.remoteVerify(email: email, code: code)
+    func verify(email: String, code: String, type: String = "email") async throws -> AuthOutcome {
+        try await backend.remoteVerify(email: email, code: code, type: type)
+    }
+
+    /// 邮箱 + 密码注册；返回 nil 表示确认码已发到邮箱
+    func signUp(email: String, password: String, captchaToken: String?) async throws -> AuthOutcome? {
+        try await backend.remoteSignUp(email: email, password: password, captchaToken: captchaToken)
+    }
+
+    func signIn(email: String, password: String, captchaToken: String?) async throws -> AuthOutcome {
+        try await backend.remoteSignIn(email: email, password: password, captchaToken: captchaToken)
+    }
+
+    func sendPasswordReset(email: String, captchaToken: String?) async throws {
+        try await backend.remoteSendPasswordReset(email: email, captchaToken: captchaToken)
+    }
+
+    func resendSignupCode(email: String, captchaToken: String?) async throws {
+        try await backend.remoteResendSignupCode(email: email, captchaToken: captchaToken)
+    }
+
+    func updatePassword(_ password: String) async throws {
+        try await backend.remoteUpdatePassword(password)
     }
 
     func signInWithApple(idToken: String, nonce: String) async throws -> AuthOutcome {

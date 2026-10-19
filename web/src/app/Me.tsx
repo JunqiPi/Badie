@@ -4,10 +4,11 @@ import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Divider, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile, Tag } from './kit';
 import { nicknameProblem } from './Onboarding';
+import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
 import { problem, supabase, useLive, type Friend, type PlayerCard, type PlayRecord, type Profile } from './supabase';
-import { Button, Field, toast } from './ui';
+import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
 
 const verifiedText = { tournament: 'Tournament verified', national: 'Ranking verified', bwf: 'BWF verified' } as const;
@@ -209,6 +210,8 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Row icon="verified" tint="mint" title={t('Verify a high level')} subtitle={t('Tournament results, a national ranking or a BWF profile.')} to="/verification/" />
       </Group>
 
+      <PasswordSettings email={email} />
+
       <Group title={t('Account')}>
         <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => disablePush().catch(() => {}).finally(() => supabase!.auth.signOut())} />
         <Divider />
@@ -224,6 +227,39 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="px-1 text-footnote font-bold text-ink-secondary">{title}</h2>
       <div className="sticker grid px-4">{children}</div>
     </section>
+  );
+}
+
+/** 设置或修改密码：用验证码、Google、Apple 登录过的人也可以加一个，之后用邮箱 + 密码登录 */
+function PasswordSettings({ email }: { email?: string }) {
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string>();
+  const [busy, setBusy] = useState(false);
+
+  async function save(event: SubmitEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError(undefined);
+    const problem = await passwordProblem(password);
+    const { error } = problem ? { error: undefined } : await supabase!.auth.updateUser({ password });
+    setBusy(false);
+    if (problem) return setError(problem);
+    if (error) return setError(error.code === 'same_password' ? t('That’s already your password. Choose a new one.') : t('Couldn’t save. Try again.'));
+    setPassword('');
+    toast(t('Password saved'));
+  }
+
+  return (
+    <Group title={t('Password')}>
+      <form onSubmit={save} className="grid gap-3 py-3.5">
+        {/* 让钥匙串 / 密码管理器把新密码存到这个邮箱名下 */}
+        {email && <input type="email" autoComplete="username" value={email} readOnly hidden />}
+        <Field label={t('New password')} hint={t('Sign in with your email and this password. At least 8 characters.')} error={error}>
+          {(props) => <PasswordInput {...props} autoComplete="new-password" value={password} onChange={setPassword} />}
+        </Field>
+        <Button busy={busy} className="justify-self-start">{t('Save password')}</Button>
+      </form>
+    </Group>
   );
 }
 

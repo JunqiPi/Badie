@@ -131,6 +131,58 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(server.requests[1].url?.path, "/rest/v1/rpc/unregister_push")
     }
 
+    // MARK: 邮箱 + 密码
+
+    func testPasswordSignUpWaitsForTheEmailCode() async throws {
+        server.on("POST /auth/v1/signup", #"{"id":"u","email":"a@b.co","identities":[{"identity_id":"i","provider":"email","identity_data":{"email_verified":false}}]}"#)
+        server.on("POST /auth/v1/verify", token("confirmed"))
+        let client = client()
+        let session = try await client.signUp(email: "a@b.co", password: "shuttle rally", captchaToken: "cap")
+        XCTAssertNil(session, "还要输入邮件里的确认码")
+        XCTAssertEqual(server.json(0)["password"] as? String, "shuttle rally")
+        XCTAssertEqual((server.json(0)["gotrue_meta_security"] as? [String: String])?["captcha_token"], "cap")
+
+        _ = try await client.verify(email: "a@b.co", code: "123456", type: "signup")
+        XCTAssertEqual(server.json(1)["type"] as? String, "signup")
+        XCTAssertEqual(client.session?.accessToken, "confirmed")
+    }
+
+    func testSigningUpAnExistingEmailSaysSo() async {
+        // 防探测时服务器返回一个没有登录方式的账号，而不是报错
+        server.on("POST /auth/v1/signup", #"{"id":"u","email":"a@b.co","identities":[]}"#)
+        do {
+            _ = try await client().signUp(email: "a@b.co", password: "shuttle rally")
+            XCTFail("已注册的邮箱应该报错")
+        } catch {
+            XCTAssertEqual(error as? RemoteError, .server("user_already_exists"))
+        }
+    }
+
+    func testPasswordSignInResetAndChange() async throws {
+        server.on("POST /auth/v1/token", status: 400, #"{"error_code":"invalid_credentials","msg":"Invalid login credentials"}"#)
+        server.on("POST /auth/v1/token", token("pw"))
+        server.on("POST /auth/v1/recover", "{}")
+        server.on("PUT /auth/v1/user", #"{"id":"u"}"#)
+        let client = client()
+        do {
+            _ = try await client.signIn(email: "a@b.co", password: "wrong one")
+            XCTFail("密码错了应该报错")
+        } catch {
+            XCTAssertEqual(error as? RemoteError, .server("invalid_credentials"))
+        }
+        _ = try await client.signIn(email: "a@b.co", password: "shuttle rally")
+        XCTAssertEqual(server.requests[1].url?.query, "grant_type=password")
+        XCTAssertEqual(server.json(1)["email"] as? String, "a@b.co")
+        XCTAssertEqual(client.session?.accessToken, "pw")
+
+        try await client.sendPasswordReset(email: "a@b.co")
+        try await client.updatePassword("drop shot at dawn")
+        XCTAssertEqual(server.requests[2].url?.path, "/auth/v1/recover")
+        XCTAssertEqual(server.requests[3].httpMethod, "PUT")
+        XCTAssertEqual(server.json(3)["password"] as? String, "drop shot at dawn")
+        XCTAssertEqual(server.requests[3].value(forHTTPHeaderField: "Authorization"), "Bearer pw")
+    }
+
     func testSignInSecrets() throws {
         // RFC 7636 附录 B 的例子
         XCTAssertEqual(SocialSignIn.pkceChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")

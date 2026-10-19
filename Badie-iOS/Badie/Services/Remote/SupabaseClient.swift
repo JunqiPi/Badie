@@ -42,6 +42,11 @@ enum RemoteError: LocalizedError, Equatable {
         case "over_email_send_rate_limit", "over_request_rate_limit": return String(localized: "尝试次数过多，请等一分钟再试。")
         case "email_address_invalid", "validation_failed": return String(localized: "邮箱地址好像不对。")
         case "captcha_failed": return String(localized: "人机验证没有通过，请再试一次。")
+        case "invalid_credentials": return String(localized: "邮箱或密码不对。以前用验证码登录的，点“忘记密码？”设置一个密码。")
+        case "user_already_exists", "email_exists": return String(localized: "这个邮箱已经注册过了，请登录，或找回密码。")
+        case "email_not_confirmed": return String(localized: "请先确认邮箱：输入注册时邮件里的验证码，或重新发送。")
+        case "weak_password": return String(localized: "密码至少要 8 位。")
+        case "same_password": return String(localized: "和现在的密码一样，请换一个新的。")
         case "venue_name_invalid": return BackendError.venueNameInvalid.localizedDescription
         case "venue_address_incomplete": return BackendError.venueAddressIncomplete.localizedDescription
         case "venue_rate_limited": return BackendError.venueRateLimited.localizedDescription
@@ -141,16 +146,60 @@ final class SupabaseClient {
     /// 发 6 位验证码到邮箱（没注册过的邮箱会自动建账号）
     /// 发验证码邮件；开启了人机验证时要带上 Turnstile 令牌
     func sendCode(email: String, captchaToken: String? = nil) async throws {
-        var body: [String: Any] = ["email": email, "create_user": true]
-        if let captchaToken, !captchaToken.isEmpty { body["gotrue_meta_security"] = ["captcha_token": captchaToken] }
-        _ = try await send("auth/v1/otp", body: body, authorized: false)
+        _ = try await send("auth/v1/otp", body: withCaptcha(["email": email, "create_user": true], captchaToken), authorized: false)
     }
 
-    func verify(email: String, code: String) async throws -> RemoteSession {
-        let data = try await send("auth/v1/verify", body: ["type": "email", "email": email, "token": code], authorized: false)
+    /// 输入邮件里的 6 位码：type 是 email（验证码登录）、signup（确认注册的邮箱）或 recovery（重设密码）
+    func verify(email: String, code: String, type: String = "email") async throws -> RemoteSession {
+        let data = try await send("auth/v1/verify", body: ["type": type, "email": email, "token": code], authorized: false)
         let next = try RemoteJSON.session(from: data)
         session = next
         return next
+    }
+
+    /// 邮箱 + 密码注册：服务器把 6 位确认码发到邮箱，确认后才能登录（返回 nil）。
+    /// 邮箱已注册时，服务器要么报 user_already_exists，要么（防止探测邮箱）返回没有登录方式的账号，两种都当作已注册
+    func signUp(email: String, password: String, captchaToken: String? = nil) async throws -> RemoteSession? {
+        let data = try await send("auth/v1/signup", body: withCaptcha(["email": email, "password": password], captchaToken), authorized: false)
+        if let next = try? RemoteJSON.session(from: data) {
+            session = next
+            return next
+        }
+        struct Account: Decodable {
+            struct Identity: Decodable {}
+            let identities: [Identity]?
+        }
+        if (try? RemoteJSON.decode(Account.self, from: data))?.identities?.isEmpty == true { throw RemoteError.server("user_already_exists") }
+        return nil
+    }
+
+    func signIn(email: String, password: String, captchaToken: String? = nil) async throws -> RemoteSession {
+        let data = try await send("auth/v1/token?grant_type=password",
+                                  body: withCaptcha(["email": email, "password": password], captchaToken), authorized: false)
+        let next = try RemoteJSON.session(from: data)
+        session = next
+        return next
+    }
+
+    /// 忘记密码：发 6 位重设码（邮箱没注册也一样返回成功，不让人探测）
+    func sendPasswordReset(email: String, captchaToken: String? = nil) async throws {
+        _ = try await send("auth/v1/recover", body: withCaptcha(["email": email], captchaToken), authorized: false)
+    }
+
+    /// 注册确认码没收到：重发
+    func resendSignupCode(email: String, captchaToken: String? = nil) async throws {
+        _ = try await send("auth/v1/resend", body: withCaptcha(["type": "signup", "email": email], captchaToken), authorized: false)
+    }
+
+    /// 设置或修改密码（已登录）
+    func updatePassword(_ password: String) async throws {
+        _ = try await send("auth/v1/user", method: "PUT", body: ["password": password])
+    }
+
+    /// 开启了人机验证时，登录服务的请求都要带上 Turnstile 令牌
+    private func withCaptcha(_ body: [String: Any], _ captchaToken: String?) -> [String: Any] {
+        guard let captchaToken, !captchaToken.isEmpty else { return body }
+        return body.merging(["gotrue_meta_security": ["captcha_token": captchaToken]]) { current, _ in current }
     }
 
     /// Sign in with Apple（原生）：把 Apple 给的身份令牌和原始 nonce 交给 Supabase 换登录状态

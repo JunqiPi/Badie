@@ -12,6 +12,8 @@ const supabase = process.env.PUBLIC_SUPABASE_URL ? new URL(process.env.PUBLIC_SU
 const turnstile = 'https://challenges.cloudflare.com';
 // 球馆地图的矢量瓦片、字体和图标（OpenFreeMap，免费、不用密钥）
 const maps = 'https://tiles.openfreemap.org';
+// 设密码时查是否泄露过（只发 SHA-1 前 5 位，见 src/app/password.ts）
+const pwned = 'https://api.pwnedpasswords.com';
 
 export default defineConfig({
   site: process.env.SITE_URL || 'http://localhost:4321',
@@ -26,7 +28,7 @@ export default defineConfig({
         "default-src 'self'",
         `img-src 'self' data: blob: ${supabase?.origin ?? ''} ${maps}`,
         "font-src 'self'",
-        `connect-src 'self' ${supabase ? `${supabase.origin} ${supabase.origin.replace(/^http/, 'ws')}` : ''} ${turnstile} ${maps}`,
+        `connect-src 'self' ${supabase ? `${supabase.origin} ${supabase.origin.replace(/^http/, 'ws')}` : ''} ${turnstile} ${maps} ${pwned}`,
         "worker-src 'self' blob:",
         `frame-src ${turnstile}`,
         "object-src 'none'",

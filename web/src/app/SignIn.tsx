@@ -1,14 +1,18 @@
+import type { AuthError } from '@supabase/supabase-js';
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { useCaptcha } from './captcha';
 import { t } from './i18n';
 import { enabledProviders, supabase } from './supabase';
 import { CardFan, Tag } from './kit';
-import { Button, Field } from './ui';
+import { MIN_PASSWORD, passwordProblem } from './password';
+import { Button, Field, PasswordInput, toast } from './ui';
 
 const RESEND_SECONDS = 60;
 
 // Supabase 的报错是给开发者看的，这里换成用户能照着做的话
-function friendly(message: string) {
+function friendly(message: string, code?: string) {
+  if (code === 'invalid_credentials') return t('Wrong email or password. If you used to sign in with an email code, tap “Forgot password?” to set one.');
+  if (code === 'weak_password') return t('Use at least {n} characters.', { n: MIN_PASSWORD });
   if (/after \d+ seconds|rate limit|too many/i.test(message)) return t('Too many tries. Wait a minute, then try again.');
   if (/captcha/i.test(message)) return t('We couldn’t check that you’re human. Refresh the page and try again.');
   if (/invalid.*email|email.*invalid/i.test(message)) return t('That email address doesn’t look right.');
@@ -74,16 +78,24 @@ function ProviderButtons({ onError }: { onError: (message: string) => void }) {
   );
 }
 
+type Mode = 'signin' | 'signup';
+/** 邮件里的 6 位码用来做什么：确认注册的邮箱、免密码登录、重设密码 */
+type CodeFor = 'signup' | 'email' | 'recovery';
+const looksLikeEmail = (text: string) => /^\S+@\S+\.\S+$/.test(text);
+
 export function SignIn() {
+  const [mode, setMode] = useState<Mode>(() => (new URLSearchParams(location.search).has('new') ? 'signup' : 'signin'));
+  const [codeFor, setCodeFor] = useState<CodeFor>();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
-  const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   // 从 Google / Apple 跳回来时没成功（比如点了取消）
   const [error, setError] = useState<string | undefined>(() =>
     new URLSearchParams(location.search).has('error') ? t('Sign-in didn’t finish. Try again, or use your email.') : undefined);
   const [wait, setWait] = useState(0);
   const captcha = useCaptcha();
+  const address = email.trim();
 
   useEffect(() => {
     if (wait <= 0) return;
@@ -91,29 +103,95 @@ export function SignIn() {
     return () => clearTimeout(timer);
   }, [wait]);
 
-  async function send(event?: SubmitEvent) {
-    event?.preventDefault();
+  /** 要过人机验证的请求（登录、注册、发邮件）：带上令牌，用完换一个 */
+  async function guarded<T>(call: (captchaToken?: string) => Promise<T>) {
     setBusy(true);
     setError(undefined);
-    const { error } = await supabase!.auth.signInWithOtp({
-      email: email.trim(),
-      options: { captchaToken: captcha.token },
-    });
+    const result = await call(captcha.token);
     captcha.reset();
     setBusy(false);
-    if (error) return setError(friendly(error.message));
-    setSent(true);
+    return result;
+  }
+
+  function codeSent(purpose: CodeFor) {
+    setCodeFor(purpose);
+    setCode('');
     setWait(RESEND_SECONDS);
+  }
+
+  async function submit(event: SubmitEvent) {
+    event.preventDefault();
+    if (mode === 'signup') {
+      setBusy(true);
+      const problem = await passwordProblem(password);
+      setBusy(false);
+      if (problem) return setError(problem);
+      const { data, error } = await guarded((captchaToken) => supabase!.auth.signUp({ email: address, password, options: { captchaToken } }));
+      // 邮箱已注册：服务器要么直接报错，要么（防止探测邮箱）返回一个没有登录方式的空账号
+      if (error?.code === 'user_already_exists' || (!error && data.user?.identities?.length === 0)) {
+        setMode('signin');
+        return setError(t('This email already has an account. Sign in, or reset your password.'));
+      }
+      if (error) return setError(friendly(error.message, error.code));
+      if (!data.session) codeSent('signup');
+      return;
+    }
+    const { error } = await guarded((captchaToken) => supabase!.auth.signInWithPassword({ email: address, password, options: { captchaToken } }));
+    if (error?.code === 'email_not_confirmed') {
+      setCodeFor('signup');
+      return setError(t('Confirm your email first: enter the code we sent when you signed up, or send a new one.'));
+    }
+    if (error) setError(friendly(error.message, error.code));
+  }
+
+  /** 忘记密码 / 改用验证码登录：都是往邮箱发 6 位码 */
+  async function emailCode(purpose: 'email' | 'recovery') {
+    if (!looksLikeEmail(address)) return setError(t('Enter your email first.'));
+    const { error } = await guarded<{ error: AuthError | null }>((captchaToken) => purpose === 'recovery'
+      ? supabase!.auth.resetPasswordForEmail(address, { captchaToken })
+      : supabase!.auth.signInWithOtp({ email: address, options: { captchaToken } }));
+    if (error) return setError(friendly(error.message, error.code));
+    codeSent(purpose);
+  }
+
+  async function resend() {
+    if (codeFor !== 'signup') return emailCode(codeFor!);
+    const { error } = await guarded((captchaToken) => supabase!.auth.resend({ type: 'signup', email: address, options: { captchaToken } }));
+    if (error) return setError(friendly(error.message, error.code));
+    codeSent('signup');
   }
 
   async function verify(event: SubmitEvent) {
     event.preventDefault();
     setBusy(true);
     setError(undefined);
-    const { error } = await supabase!.auth.verifyOtp({ email: email.trim(), token: code, type: 'email' });
-    setBusy(false);
-    if (error) setError(t('That code didn’t work. Check the latest email, or send a new one.'));
+    const problem = codeFor === 'recovery' ? await passwordProblem(password) : undefined;
+    if (problem) {
+      setBusy(false);
+      return setError(problem);
+    }
+    const { error } = await supabase!.auth.verifyOtp({ email: address, token: code, type: codeFor! });
+    if (error) {
+      setBusy(false);
+      return setError(t('That code didn’t work. Check the latest email, or send a new one.'));
+    }
+    // 重设密码：码对了就已经登录（页面随即跳走），接着把新密码存上
+    if (codeFor === 'recovery') {
+      const { error: saveError } = await supabase!.auth.updateUser({ password });
+      toast(saveError ? t('You’re signed in, but the new password wasn’t saved. Set it in Settings.') : t('Password saved'), saveError ? 'error' : undefined);
+    }
   }
+
+  function backToPassword() {
+    setCodeFor(undefined);
+    setCode('');
+    setError(undefined);
+  }
+
+  const switchTo = (next: Mode) => {
+    setMode(next);
+    setError(undefined);
+  };
 
   const headline = t('Find a *buddy*\nfor a game\ntonight.').split('*');
   return (
@@ -132,70 +210,89 @@ export function SignIn() {
           <li><Tag icon="verified" tint="mint">{t('Check in')}</Tag></li>
         </ul>
       </div>
-      <div className="grid gap-4">
+      {/* 手机上表单放最前面：来这页就是要登录 */}
+      <div className="grid gap-4 max-lg:order-first">
         <div className="sticker p-6 sm:p-8">
-          <h2 className="text-title">{sent ? t('Check your email') : t('Sign in or sign up')}</h2>
-          {sent && <p className="mt-2 text-subhead text-ink-secondary wrap-anywhere">{t('We sent a 6-digit code to {email}.', { email: email.trim() })}</p>}
-
-          {!sent && <div className="mt-6 grid gap-5"><ProviderButtons onError={setError} /></div>}
-
-          <form onSubmit={sent ? verify : send} className="mt-6 grid gap-4">
-            {sent ? (
-              <Field label={t('Sign-in code')} error={error}>
-                {(props) => (
-                  <input
-                    {...props}
-                    autoFocus
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    pattern="\d{6,10}"
-                    maxLength={10}
-                    required
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                    className="field h-16 text-center font-mono text-[1.75rem] font-black tracking-[0.4em]"
-                  />
+          {codeFor ? (
+            <>
+              <h2 className="text-title">{t('Check your email')}</h2>
+              <p className="mt-2 text-subhead text-ink-secondary wrap-anywhere">{t('We sent a 6-digit code to {email}.', { email: address })}</p>
+              <form onSubmit={verify} className="mt-6 grid gap-4">
+                <Field label={t('6-digit code')} error={codeFor === 'recovery' ? undefined : error}>
+                  {(props) => (
+                    <input
+                      {...props}
+                      autoFocus
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="\d{6,10}"
+                      maxLength={10}
+                      required
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                      className="field h-16 text-center font-mono text-[1.75rem] font-black tracking-[0.4em]"
+                    />
+                  )}
+                </Field>
+                {codeFor === 'recovery' && (
+                  <Field label={t('New password')} hint={t('At least 8 characters. A short sentence is easy to remember.')} error={error}>
+                    {(props) => <PasswordInput {...props} autoComplete="new-password" value={password} onChange={setPassword} />}
+                  </Field>
                 )}
-              </Field>
-            ) : (
-              <Field label={t('Email')} error={error}>
-                {(props) => (
-                  <input
-                    {...props}
-                    type="email"
-                    autoComplete="email"
-                    required
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="field"
-                  />
+                {/* 自动填入的账号：让钥匙串 / 密码管理器把新密码存到这个邮箱名下 */}
+                {codeFor === 'recovery' && <input type="email" autoComplete="username" value={address} readOnly hidden />}
+                <Button busy={busy} className="button-lg button-inverse">
+                  {codeFor === 'recovery' ? t('Save password and sign in') : codeFor === 'signup' ? t('Create account') : t('Sign in')}
+                </Button>
+                <div className="flex flex-wrap justify-between gap-3 text-sm">
+                  <button type="button" disabled={wait > 0 || busy || !captcha.ready} onClick={resend} className="link disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60">
+                    {wait > 0 ? t('Send a new code in {n}s', { n: wait }) : t('Send a new code')}
+                  </button>
+                  <button type="button" onClick={backToPassword} className="link">{t('Back')}</button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <>
+              <h2 className="text-title">{mode === 'signin' ? t('Sign in') : t('Create your account')}</h2>
+              <p className="mt-2 text-subhead text-ink-secondary">
+                {mode === 'signin' ? t('New to Badie?') : t('Already have an account?')}{' '}
+                <button type="button" onClick={() => switchTo(mode === 'signin' ? 'signup' : 'signin')} className="link">
+                  {mode === 'signin' ? t('Create an account') : t('Sign in instead')}
+                </button>
+              </p>
+
+              <div className="mt-6 grid gap-5 empty:hidden"><ProviderButtons onError={setError} /></div>
+
+              <form onSubmit={submit} className="mt-6 grid gap-4">
+                <Field label={t('Email')}>
+                  {(props) => (
+                    <input {...props} type="email" autoComplete="username" required placeholder="you@example.com"
+                           value={email} onChange={(e) => setEmail(e.target.value)} className="field" />
+                  )}
+                </Field>
+                <Field label={t('Password')} hint={mode === 'signup' ? t('At least 8 characters. A short sentence is easy to remember.') : undefined} error={error}>
+                  {(props) => <PasswordInput {...props} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={setPassword} />}
+                </Field>
+                <Button busy={busy} disabled={!captcha.ready} className="button-lg button-inverse">{mode === 'signin' ? t('Sign in') : t('Create account')}</Button>
+                {mode === 'signin' && (
+                  <div className="flex flex-wrap justify-between gap-3 text-sm">
+                    <button type="button" disabled={busy || !captcha.ready} onClick={() => emailCode('recovery')} className="link disabled:opacity-60">{t('Forgot password?')}</button>
+                    <button type="button" disabled={busy || !captcha.ready} onClick={() => emailCode('email')} className="link disabled:opacity-60">{t('Email me a code instead')}</button>
+                  </div>
                 )}
-              </Field>
-            )}
-            {!sent && <p className="-mt-2 text-footnote text-ink-secondary">{t('We’ll email you a sign-in code. No password needed.')}</p>}
-
-            {/* 只有 Cloudflare 觉得可疑时才会显示验证框 */}
-            <div ref={captcha.container} className="empty:hidden" />
-            {captcha.failed && <p className="text-sm font-bold text-danger">{t('The security check didn’t load. Turn off content blockers for this page and refresh.')}</p>}
-
-            <Button busy={busy} disabled={!sent && !captcha.ready} className="button-lg button-inverse">{sent ? t('Sign in') : t('Email me a code')}</Button>
-
-            {sent && (
-              <div className="flex flex-wrap justify-between gap-3 text-sm">
-                <button type="button" disabled={wait > 0 || busy || !captcha.ready} onClick={() => send()} className="link disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60">
-                  {wait > 0 ? t('Send a new code in {n}s', { n: wait }) : t('Send a new code')}
-                </button>
-                <button type="button" onClick={() => { setSent(false); setCode(''); setError(undefined); }} className="link">
-                  {t('Use a different email')}
-                </button>
-              </div>
-            )}
-          </form>
+              </form>
+            </>
+          )}
+          {/* 人机验证框只挂一次（两种界面共用），只有 Cloudflare 觉得可疑时才显示 */}
+          <div ref={captcha.container} className="mt-4 empty:hidden" />
+          {captcha.failed && <p className="mt-4 text-sm font-bold text-danger">{t('The security check didn’t load. Turn off content blockers for this page and refresh.')}</p>}
         </div>
-        <p className="text-center text-footnote text-ink-secondary">
-          {t('Can’t find it? Check spam, or search your inbox for “Badie”.')}
-        </p>
+        {codeFor && (
+          <p className="text-center text-footnote text-ink-secondary">
+            {t('Can’t find it? Check spam, or search your inbox for “Badie”.')}
+          </p>
+        )}
       </div>
     </div>
   );

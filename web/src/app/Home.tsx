@@ -412,9 +412,9 @@ function Welcome() {
       <section aria-labelledby="ready" className="sticker grid gap-6 bg-[#17140f] p-8 text-[#f5f0e6] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:p-12">
         <div className="grid gap-3">
           <h2 id="ready" className="text-title lg:text-[2.5rem]">{t('Ready to play?')}</h2>
-          <p className="max-w-xl text-[1.0625rem] leading-relaxed">{t('Sign in with your email to get matched, join games and chat with players. No password needed.')}</p>
+          <p className="max-w-xl text-[1.0625rem] leading-relaxed">{t('Create a free account to get matched, join games and chat with players. It takes a minute.')}</p>
         </div>
-        <Link to="/signin/" className="button button-lg justify-self-start">{t('Sign in')}</Link>
+        <Link to="/signin/?new" className="button button-lg justify-self-start">{t('Create account')}</Link>
       </section>
     </div>
   );

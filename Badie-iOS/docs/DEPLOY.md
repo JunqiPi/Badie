@@ -37,11 +37,13 @@
 5. 账号头像 → Access Tokens → Generate new token，存为 Secret `SUPABASE_ACCESS_TOKEN`。
 6. Variables 里加 `SUPABASE_PROJECT_REF`、`SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`。
 
-## 3. 发验证码的邮件（必须做，否则用户收不到验证码）
+## 3. 登录方式和验证码邮件（必须做，否则注册收不到确认码）
 
 Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06 之后的免费新项目不能改模板（默认模板里没有验证码）。所以要配自己的发信服务：
 
-1. 注册 Resend，先用免费版（每月 3,000 封、**每天 100 封，登录验证码和约球邮件共用**）。大多数人用 Google / Apple 登录、不发邮件；邮箱验证码只在新设备第一次登录时发（之后一直保持登录）；约球提醒主要靠推送，约球邮件要用户自己在设置里打开（默认关）。所以免费版应该能撑很久。在 Resend 后台看每天发了多少，接近每天 70 封时再升级 Pro（$20/月，每月 5 万封）。
+登录方式：邮箱 + 密码（主要），Google / Apple（见 4.5），邮件验证码作为备用（没设过密码、或不想用密码的人）。
+
+1. 注册 Resend，先用免费版（每月 3,000 封、**每天 100 封，注册确认码、重设密码、验证码登录和约球邮件共用**）。用密码、Google、Apple 登录都不发邮件；只有注册时发一封确认码、忘记密码时发一封重设码、有人选验证码登录时发一封；约球提醒主要靠推送，约球邮件要用户自己在设置里打开（默认关）。所以免费版应该能撑很久（每天新注册 100 人以内）。在 Resend 后台看每天发了多少，接近每天 70 封时再升级 Pro（$20/月，每月 5 万封）。
    - 为什么选 Resend（2026-10 调研）：两条发信路径（验证码 SMTP、通知的批量 API）都已经在用；不用审核、当天能发；5 万～10 万封每月的价格在免审核的服务里最低。风险是违规（退信超过 4%、投诉超过 0.08%）会被直接停号，所以注册时邮箱填错的要少。
    - 备用：Postmark（独立送达测试排第二、用户口碑最好，但 5 万封以上贵约 3 倍）。建议先注册好放着（人工审核，一般 24 小时内），出问题时 Supabase 的 SMTP 改成 `smtp.postmarkapp.com`、端口 587，几分钟就能切。
    - 以后每月超过 10 万封再考虑 Amazon SES（每 10 万封约 $10，但要申请生产权限，常被拒）。Cloudflare 的发信服务还在测试版、没有批量接口，暂不考虑。
@@ -51,8 +53,14 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
    - 等 Resend 显示 Verified。
 3. API Keys → Create（Sending access），**直接粘到下一步，不用存进 GitHub**。
 4. Supabase → Authentication → Emails → SMTP Settings：开启；Host `smtp.resend.com`，Port `465`，Username `resend`，Password 填 Resend API key；发件人 `noreply@badie.rsvp`，名称 `Badie`。
-5. Authentication → Emails → Templates：**Magic Link 和 Confirm signup 两个模板**都换成 `supabase/templates/otp.html` 的内容，主题 `Your Badie sign-in code`。
-6. Authentication → Sign In / Providers → Email：Email OTP length 设 6，过期时间 3600 秒。
+5. Authentication → Emails → Templates：
+   - **Magic Link 和 Confirm signup** 换成 `supabase/templates/otp.html` 的内容，主题 `Your Badie sign-in code`。
+   - **Reset Password** 换成 `supabase/templates/recovery.html` 的内容，主题 `Reset your Badie password`（邮件里是 6 位码，在网页 / App 里输入，不用点链接）。
+6. Authentication → Sign In / Providers → Email：
+   - **Confirm email 保持打开**（默认）：注册要输入邮件里的确认码，别人不能拿你的邮箱注册。
+   - Minimum password length 设 **8**；Password requirements 选 **No required characters**（不强制大小写、符号，按 NIST 的建议；网页和 App 会另外查这个密码是否在泄露的密码库里，免费版没有 Supabase 自带的那项检查）。
+   - Email OTP length 设 6，过期时间 3600 秒。
+   - Secure password change 保持关闭（已登录的人在设置里直接改密码；忘记密码走邮件里的码）。
 7. Authentication → Rate Limits：发信上限先设每小时 30 封左右（开了自定义 SMTP 后的默认值），用户多了再调高。
 8. 上线前用 Gmail、Outlook、iCloud、QQ 邮箱、163 各收一次验证码，看是否进垃圾箱（QQ 邮箱按发信 IP 限流，量大时可能延迟）。
 
@@ -62,7 +70,7 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
    - Site Key 存为 Variable `TURNSTILE_SITE_KEY`，推一次 main 让网站带上验证框。
    - **网站部署后**再到 Supabase → Authentication → Attack Protection → Enable CAPTCHA protection，选 Turnstile，填 Secret Key。顺序反过来会让所有人登录失败。
    - iOS App 不用另外配置：登录时用看不见的网页视图打开 `https://badie.rsvp/captcha/`，用的是同一个 Site Key。打开 CAPTCHA 之前装的旧版 App 会发不出验证码，要更新。
-2. Supabase → Authentication → Rate Limits：发验证码邮件每小时 30 封左右；每个 IP 每 5 分钟登录 / 注册请求 30 次、验证码校验 30 次（默认值即可）。
+2. Supabase → Authentication → Rate Limits：发验证码邮件每小时 30 封左右；每个 IP 每 5 分钟登录 / 注册请求 30 次（也挡住撞库、猜密码）、验证码校验 30 次（默认值即可）。密码登录、注册、重设密码同样要过 Turnstile。
 3. Cloudflare → badie.rsvp → Security → Bots：打开 **Bot Fight Mode**；AI Crawl Control 里拦截 AI 训练爬虫，放行搜索引擎和 AI 搜索（与 robots.txt 一致）。
 4. 网站已经带上：内容安全策略（只允许自身脚本和 Turnstile）、禁止被嵌入 iframe、`/app/` 不进搜索引擎；数据库里所有写操作走带检查的函数，每人每天最多加 3 家球馆。
 
@@ -157,7 +165,8 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 
 ## 9. 上线检查
 
-- 用一个**从没用过的邮箱**走一遍：收验证码 → 登录 → 填昵称 → 定级问卷 → 附近球馆 → 收藏。
+- 用一个**从没用过的邮箱**走一遍：邮箱 + 密码注册 → 收确认码 → 填昵称 → 定级问卷 → 附近球馆 → 收藏。退出后用密码登录（不应再收到邮件），再试一次“忘记密码？”。
+- iPhone 上注册时，键盘上方应该出现“使用强密码”；之后登录时钥匙串用面容 ID 自动填入密码。
 - 开了 Google / Apple 后各登录一次（网页和 iOS 都试），再用 Apple 登录的测试账号在 App 里注销一次，确认能正常走完。
 - 配好推送后：电脑浏览器和 TestFlight 版 App 各打开一次通知，用另一个账号约同一时段同一球馆，两边应该马上收到推送；没打开约球邮件的账号**收不到邮件**。
 - 其中一个账号在设置里打开「约球消息也发邮件」，再约一次：这个账号除了推送还会收到邮件，都确认后出现在 My games。

@@ -16,8 +16,11 @@ struct OnboardingForm {
     var phoneCountry: CountryInfo = .deviceCountry
     var phoneNumber: PhoneNumber { PhoneNumber(country: phoneCountry, national: phone) }
     var agreed = false
-    /// 正式后端用邮箱登录
+    /// 正式后端用邮箱 + 密码登录；newAccount 为 true 是注册
     var email = ""
+    var password = ""
+    var newAccount = false
+    var codePurpose: CodePurpose = .email
     var code = ""
     var codeSent = false
     var issuedCode: String?
@@ -35,6 +38,11 @@ struct OnboardingForm {
     var timePresets: Set<TimePreset> = []
     /// 常去球馆（注册后设为收藏，快速匹配默认选中）
     var favoriteVenueIds: [String] = []
+}
+
+/// 邮件里的 6 位码用来做什么：确认注册的邮箱、验证码登录、重设密码（就是 Supabase 校验时的 type）
+enum CodePurpose: String {
+    case signup, email, recovery
 }
 
 /// 常用时间快捷选项（注册时生成“常用时间”）
@@ -272,44 +280,76 @@ struct OnboardingFlow: View {
 
     private var emailStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle(String(localized: "用邮箱\n登录或注册"), subtitle: String(localized: "我们会把登录验证码发到你的邮箱，无需密码。"))
-            TextField(String(localized: "邮箱"), text: $form.email)
-                .font(.system(.title3, design: .rounded, weight: .bold))
-                .keyboardType(.emailAddress)
-                .textContentType(.emailAddress)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-                .submitLabel(.continue)
-                .onSubmit { if canContinue { primaryAction() } }
-                .focused($phoneFocused)
-                .padding(.horizontal, AppTheme.Spacing.lg)
-                .frame(minHeight: 52)
-                .sticker(AppTheme.Colors.surface, radius: 14, shadow: phoneFocused ? AppTheme.Elevation.low : .zero,
-                         stroke: errorText == nil ? AppTheme.Colors.stroke : AppTheme.Colors.danger)
-                .onChange(of: form.email) { _, _ in errorText = nil }
-                .accessibilityLabel("邮箱")
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                stepTitle(form.newAccount ? String(localized: "注册 Badie") : String(localized: "用邮箱登录"),
+                          subtitle: form.newAccount ? String(localized: "用邮箱和密码注册，我们会发一个验证码确认邮箱。")
+                                                    : String(localized: "用注册时的邮箱和密码登录。"))
+                Button(form.newAccount ? String(localized: "已有账号？去登录") : String(localized: "还没有账号？注册一个")) {
+                    form.newAccount.toggle()
+                    errorText = nil
+                }
+                .buttonStyle(TextActionStyle(color: AppTheme.Colors.ink))
+            }
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                TextField(String(localized: "邮箱"), text: $form.email)
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .keyboardType(.emailAddress)
+                    // .username：钥匙串把密码存到这个邮箱名下，下次自动填
+                    .textContentType(.username)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .submitLabel(.next)
+                    .focused($phoneFocused)
+                    .padding(.horizontal, AppTheme.Spacing.lg)
+                    .frame(minHeight: 52)
+                    .sticker(AppTheme.Colors.surface, radius: 14, shadow: phoneFocused ? AppTheme.Elevation.low : .zero,
+                             stroke: errorText == nil ? AppTheme.Colors.stroke : AppTheme.Colors.danger)
+                    .onChange(of: form.email) { _, _ in errorText = nil }
+                    .accessibilityLabel("邮箱")
+                PasswordField(text: $form.password, isNew: form.newAccount, invalid: errorText != nil) {
+                    if canContinue { primaryAction() }
+                }
+                .onChange(of: form.password) { _, _ in errorText = nil }
+                if form.newAccount {
+                    Text("至少 8 位，用一句好记的话最方便。")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                }
+            }
             if let errorText {
                 Text(errorText)
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.danger)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Button {
-                Haptics.selection()
-                form.agreed.toggle()
-            } label: {
-                HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
-                    Image(systemName: form.agreed ? "checkmark.square.fill" : "square")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(form.agreed ? AppTheme.Colors.ink : AppTheme.Colors.inkTertiary)
-                    Text("我已阅读并同意《用户协议》和《隐私政策》，了解邮箱仅用于登录与安全验证，不会展示给其他球友。")
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
+            if form.newAccount {
+                Button {
+                    Haptics.selection()
+                    form.agreed.toggle()
+                } label: {
+                    HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
+                        Image(systemName: form.agreed ? "checkmark.square.fill" : "square")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(form.agreed ? AppTheme.Colors.ink : AppTheme.Colors.inkTertiary)
+                        Text("我已阅读并同意《用户协议》和《隐私政策》，了解邮箱仅用于登录与安全验证，不会展示给其他球友。")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(form.agreed ? [.isSelected, .isButton] : .isButton)
+            } else {
+                // 忘了密码，或者以前用验证码登录、还没设过密码
+                HStack {
+                    Button("忘记密码？") { Task { await sendEmailCode(.recovery) } }
+                    Spacer()
+                    Button("改用邮箱验证码登录") { Task { await sendEmailCode(.email) } }
+                }
+                .buttonStyle(TextActionStyle())
+                .disabled(isWorking || !captcha.isReady)
             }
-            .buttonStyle(.plain)
-            .accessibilityAddTraits(form.agreed ? [.isSelected, .isButton] : .isButton)
         }
         .onAppear { phoneFocused = true }
     }
@@ -318,7 +358,8 @@ struct OnboardingFlow: View {
 
     private var codeStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle(String(localized: "输入验证码"), subtitle: String(localized: "已发送至 \(appState.isRemote ? form.email : form.phoneNumber.masked)"))
+            stepTitle(appState.isRemote && form.codePurpose == .recovery ? String(localized: "重设密码") : String(localized: "输入验证码"),
+                      subtitle: String(localized: "已发送至 \(appState.isRemote ? form.email : form.phoneNumber.masked)"))
             ZStack {
                 TextField("", text: $form.code)
                     .keyboardType(.numberPad)
@@ -329,7 +370,7 @@ struct OnboardingFlow: View {
                         let digits = String(value.filter { $0.isASCII && $0.isNumber }.prefix(6))
                         if digits != value { form.code = digits }
                         errorText = nil
-                        if digits.count == 6 { submitCode() }
+                        if digits.count == 6 && !(appState.isRemote && form.codePurpose == .recovery) { submitCode() }
                     }
                     .accessibilityLabel("验证码")
                 HStack(spacing: AppTheme.Spacing.sm) {
@@ -350,6 +391,18 @@ struct OnboardingFlow: View {
             .contentShape(Rectangle())
             .onTapGesture { codeFocused = true }
 
+            if appState.isRemote && form.codePurpose == .recovery {
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    PasswordField(text: $form.password, placeholder: String(localized: "新密码"), isNew: true, invalid: errorText != nil) {
+                        if canContinue { primaryAction() }
+                    }
+                    .onChange(of: form.password) { _, _ in errorText = nil }
+                    Text("至少 8 位，用一句好记的话最方便。")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                }
+            }
+
             if let errorText {
                 Text(errorText)
                     .font(AppTheme.Typography.footnoteBold)
@@ -364,7 +417,9 @@ struct OnboardingFlow: View {
             }
 
             Button(resendRemaining > 0 ? String(localized: "\(resendRemaining) 秒后可重新发送") : String(localized: "重新发送验证码")) {
-                Task { await sendCode() }
+                Task {
+                    if appState.isRemote { await sendEmailCode(form.codePurpose) } else { await sendCode() }
+                }
             }
             .buttonStyle(TextActionStyle())
             .disabled(resendRemaining > 0 || isWorking || (appState.isRemote && !captcha.isReady))
@@ -633,8 +688,11 @@ struct OnboardingFlow: View {
     private var primaryTitle: String {
         switch step {
         case .welcome: return appState.isRemote ? String(localized: "邮箱登录 / 注册") : String(localized: "手机号登录 / 注册")
-        case .phone: return String(localized: "获取验证码")
-        case .code: return String(localized: "验证")
+        case .phone:
+            guard appState.isRemote else { return String(localized: "获取验证码") }
+            return form.newAccount ? String(localized: "注册") : String(localized: "登录")
+        case .code:
+            return appState.isRemote && form.codePurpose == .recovery ? String(localized: "保存新密码并登录") : String(localized: "验证")
         case .profile, .level: return String(localized: "下一步")
         case .preferences: return String(localized: "完成，开始约球")
         }
@@ -644,9 +702,9 @@ struct OnboardingFlow: View {
         switch step {
         case .welcome: return true
         case .phone:
-            if appState.isRemote { return !form.email.isEmpty && form.agreed && captcha.isReady }
+            if appState.isRemote { return !form.email.isEmpty && !form.password.isEmpty && captcha.isReady && (form.agreed || !form.newAccount) }
             return form.phoneNumber.national.count >= form.phoneCountry.phone.lengths.lowerBound && form.agreed
-        case .code: return form.code.count == 6
+        case .code: return form.code.count == 6 && (form.codePurpose != .recovery || !form.password.isEmpty)
         case .profile: return MockBackend.isValidNickname(form.nickname)
         case .level: return form.level != nil
         case .preferences: return true
@@ -666,6 +724,8 @@ struct OnboardingFlow: View {
                     errorText = String(localized: "邮箱地址好像不对。")
                     return
                 }
+                Task { await submitPassword() }
+                return
             } else {
                 guard form.phoneNumber.isValid else {
                     errorText = BackendError.invalidPhone.errorDescription
@@ -710,15 +770,91 @@ struct OnboardingFlow: View {
         }
     }
 
+    /// 正式后端：邮箱 + 密码登录或注册。注册后要输入邮件里的码确认邮箱
+    private func submitPassword() async {
+        isWorking = true
+        defer { isWorking = false }
+        if form.newAccount, let problem = await PasswordRules.problem(form.password) {
+            errorText = problem
+            return
+        }
+        // 令牌只能用一次：不管成没成功都换一个新的
+        defer { captcha.reset() }
+        do {
+            if !form.newAccount {
+                signedIn(try await appState.signIn(email: form.email, password: form.password, captchaToken: captcha.token))
+            } else if let outcome = try await appState.signUp(email: form.email, password: form.password, captchaToken: captcha.token) {
+                signedIn(outcome)
+            } else {
+                codeSent(.signup)
+            }
+        } catch let RemoteError.server(code) where code == "user_already_exists" {
+            form.newAccount = false
+            errorText = RemoteError.server("user_already_exists").errorDescription
+        } catch let RemoteError.server(code) where code == "email_not_confirmed" {
+            form.codePurpose = .signup
+            advance(to: .code)
+            errorText = RemoteError.server("email_not_confirmed").errorDescription
+        } catch {
+            errorText = (error as? LocalizedError)?.errorDescription
+            Haptics.error()
+        }
+    }
+
+    /// 忘记密码、改用验证码登录、重发注册确认码：都是往邮箱发 6 位码
+    private func sendEmailCode(_ purpose: CodePurpose) async {
+        errorText = nil
+        guard MockBackend.isValidEmail(form.email) else {
+            errorText = String(localized: "请先填写邮箱。")
+            return
+        }
+        isWorking = true
+        defer { isWorking = false }
+        defer { captcha.reset() }
+        do {
+            switch purpose {
+            case .recovery: try await appState.sendPasswordReset(email: form.email, captchaToken: captcha.token)
+            case .signup: try await appState.resendSignupCode(email: form.email, captchaToken: captcha.token)
+            case .email: try await appState.requestCode(email: form.email, captchaToken: captcha.token)
+            }
+            // 重设密码：清掉刚才填错的旧密码，让人填新的
+            if purpose == .recovery && form.codePurpose != .recovery { form.password = "" }
+            codeSent(purpose)
+        } catch {
+            errorText = (error as? LocalizedError)?.errorDescription
+        }
+    }
+
+    private func codeSent(_ purpose: CodePurpose) {
+        form.codePurpose = purpose
+        form.codeSent = true
+        form.code = ""
+        resendRemaining = 60
+        if step != .code { advance(to: .code) }
+    }
+
     private func submitCode() {
         guard form.code.count == 6, !isWorking else { return }
         Task {
             isWorking = true
             defer { isWorking = false }
+            let resetting = appState.isRemote && form.codePurpose == .recovery
+            if resetting, let problem = await PasswordRules.problem(form.password) {
+                errorText = problem
+                return
+            }
             do {
                 let outcome = appState.isRemote
-                    ? try await appState.verify(email: form.email, code: form.code)
+                    ? try await appState.verify(email: form.email, code: form.code, type: form.codePurpose.rawValue)
                     : try await appState.verify(phone: form.phoneNumber.e164, code: form.code)
+                if resetting {
+                    do {
+                        try await appState.updatePassword(form.password)
+                        appState.showToast(String(localized: "密码已保存"), style: .success)
+                    } catch {
+                        appState.showToast(String(localized: "已登录，但新密码没保存，可以在设置里重新设置。"), style: .error)
+                    }
+                }
                 signedIn(outcome)
             } catch {
                 errorText = (error as? LocalizedError)?.errorDescription

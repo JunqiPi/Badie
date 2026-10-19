@@ -40,8 +40,32 @@ extension MockBackend {
         try await requireRemote().sendCode(email: Self.normalizedEmail(email), captchaToken: captchaToken)
     }
 
-    func remoteVerify(email: String, code: String) async throws -> AuthOutcome {
-        try await outcome(after: requireRemote().verify(email: Self.normalizedEmail(email), code: code))
+    /// 输入邮件里的 6 位码：type 是 email（验证码登录）、signup（确认注册的邮箱）或 recovery（重设密码）
+    func remoteVerify(email: String, code: String, type: String = "email") async throws -> AuthOutcome {
+        try await outcome(after: requireRemote().verify(email: Self.normalizedEmail(email), code: code, type: type))
+    }
+
+    /// 邮箱 + 密码注册：要先确认邮箱时返回 nil（确认码已发出）
+    func remoteSignUp(email: String, password: String, captchaToken: String?) async throws -> AuthOutcome? {
+        guard let session = try await requireRemote().signUp(email: Self.normalizedEmail(email), password: password, captchaToken: captchaToken)
+        else { return nil }
+        return try await outcome(after: session)
+    }
+
+    func remoteSignIn(email: String, password: String, captchaToken: String?) async throws -> AuthOutcome {
+        try await outcome(after: requireRemote().signIn(email: Self.normalizedEmail(email), password: password, captchaToken: captchaToken))
+    }
+
+    func remoteSendPasswordReset(email: String, captchaToken: String?) async throws {
+        try await requireRemote().sendPasswordReset(email: Self.normalizedEmail(email), captchaToken: captchaToken)
+    }
+
+    func remoteResendSignupCode(email: String, captchaToken: String?) async throws {
+        try await requireRemote().resendSignupCode(email: Self.normalizedEmail(email), captchaToken: captchaToken)
+    }
+
+    func remoteUpdatePassword(_ password: String) async throws {
+        try await requireRemote().updatePassword(password)
     }
 
     func remoteSignInWithApple(idToken: String, nonce: String) async throws -> AuthOutcome {
@@ -52,7 +76,7 @@ extension MockBackend {
         try await outcome(after: requireRemote().exchange(code: code, verifier: verifier))
     }
 
-    /// 登录成功（验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料
+    /// 登录成功（密码、验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料
     private func outcome(after session: RemoteSession) async throws -> AuthOutcome {
         await remoteRegisterPush()
         if let user = try await refreshRemoteProfile() { return .signedIn(user) }
