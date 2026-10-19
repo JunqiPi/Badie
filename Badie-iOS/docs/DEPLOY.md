@@ -48,7 +48,7 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
    - 备用：Postmark（独立送达测试排第二、用户口碑最好，但 5 万封以上贵约 3 倍）。建议先注册好放着（人工审核，一般 24 小时内），出问题时 Supabase 的 SMTP 改成 `smtp.postmarkapp.com`、端口 587，几分钟就能切。
    - 以后每月超过 10 万封再考虑 Amazon SES（每 10 万封约 $10，但要申请生产权限，常被拒）。Cloudflare 的发信服务还在测试版、没有批量接口，暂不考虑。
 2. Domains → Add Domain，填 `badie.rsvp`（Resend 的 SPF/MX 放在 `send.badie.rsvp` 子域，不影响根域收信）；选 Cloudflare 自动配置，或按提示手动加记录（SPF、DKIM、MX，全部设成 DNS only），再加：
-   - DMARC：`_dmarc.badie.rsvp` TXT `v=DMARC1; p=none; rua=mailto:support@badie.rsvp`；2～4 周报告干净后改成 `p=quarantine`。
+   - DMARC：`_dmarc.badie.rsvp` 只能有一条 TXT（有两条等于没有）。用 Cloudflare 的 DMARC Management（免费）加的那条：`v=DMARC1; p=none; rua=mailto:…@dmarc-reports.cloudflare.net`，报告在 Cloudflare 面板里看，不会往邮箱里塞 XML。想同时发到邮箱，就在同一条的 rua 后面加 `,mailto:support@badie.rsvp`，别新建第二条。2～4 周报告干净后改成 `p=quarantine`。
    - SPF：Resend 的 SPF 在 `send.badie.rsvp` 上（加域名时自动配好，不用动根域）。根域 `badie.rsvp` 的 SPF 用第 6.5 节 Cloudflare Email Routing 自动加的那条即可。
    - 等 Resend 显示 Verified。
 3. API Keys → Create（Sending access），**直接粘到下一步，不用存进 GitHub**。
@@ -150,9 +150,9 @@ Workers & Pages → badie → Custom domains → Set up a domain：先加 `badie
 
 隐私政策和用户协议里写的联系邮箱是 `support@badie.rsvp`，用 Cloudflare 免费转发到你自己的邮箱（你的邮箱不会出现在网站上）：
 
-1. Cloudflare → badie.rsvp → Email → Email Routing → Enable（会自动加 MX 和 SPF 记录）。
-2. Destination addresses 加你的邮箱，去邮箱里点确认。
-3. Routing rules → Create address：`support` → Send to 你的邮箱。
+1. Cloudflare 账户首页（不是 badie.rsvp 的域名页）左边栏 → Compute → Email Service → Email Routing → **Onboard Domain** → 选 `badie.rsvp` → Done（会自动加 MX 和 SPF 记录）。没做这一步之前看不到 Routing Rules。
+2. Destination Addresses 加你的邮箱，去邮箱里点 Verify email address。
+3. 选 `badie.rsvp` → **Routing Rules** → Create routing rule：Email pattern `support`，Action 选 Send to an email → 你的邮箱 → Save。用别的邮箱给 support@ 发一封试试（同一个邮箱自己发给自己可能看不到）。
 4. Cloudflare 会自动给根域加一条 SPF（`v=spf1 include:_spf.mx.cloudflare.net ~all`），照它的提示添加即可；Resend 的 SPF 在 `send.badie.rsvp` 上，互不影响。根域只能有一条 SPF，以后别再手动加第二条。
 
 ## 7. 把自己设为管理员
