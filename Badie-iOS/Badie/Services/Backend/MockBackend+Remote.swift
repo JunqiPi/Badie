@@ -39,11 +39,22 @@ extension MockBackend {
         try await requireRemote().sendCode(email: Self.normalizedEmail(email), captchaToken: captchaToken)
     }
 
-    /// 验证码对了：有资料就直接登录，没有就去填资料
     func remoteVerify(email: String, code: String) async throws -> AuthOutcome {
-        let session = try await requireRemote().verify(email: Self.normalizedEmail(email), code: code)
+        try await outcome(after: requireRemote().verify(email: Self.normalizedEmail(email), code: code))
+    }
+
+    func remoteSignInWithApple(idToken: String, nonce: String) async throws -> AuthOutcome {
+        try await outcome(after: requireRemote().signIn(provider: "apple", idToken: idToken, nonce: nonce))
+    }
+
+    func remoteSignInWithGoogle(code: String, verifier: String) async throws -> AuthOutcome {
+        try await outcome(after: requireRemote().exchange(code: code, verifier: verifier))
+    }
+
+    /// 登录成功（验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料
+    private func outcome(after session: RemoteSession) async throws -> AuthOutcome {
         if let user = try await refreshRemoteProfile() { return .signedIn(user) }
-        return .needsProfile(phone: session.email ?? email)
+        return .needsProfile(phone: session.email ?? "")
     }
 
     /// 第一次登录：建资料，做过问卷就保存定级。头像、性别、常用时间目前只存在本机

@@ -1,3 +1,4 @@
+import AuthenticationServices
 import SwiftUI
 
 enum OnboardingStep: Int, CaseIterable {
@@ -93,6 +94,9 @@ struct OnboardingFlow: View {
     @State private var showVenuePicker = false
     @FocusState private var codeFocused: Bool
     @FocusState private var phoneFocused: Bool
+    /// 后台开了的第三方登录（apple / google），没开的不显示按钮
+    @State private var providers: Set<String> = []
+    @Environment(\.webAuthenticationSession) private var webAuthenticationSession
 
     var body: some View {
         VStack(spacing: 0) {
@@ -116,6 +120,9 @@ struct OnboardingFlow: View {
         .onAppear {
             step = appState.onboardingInitialStep
             if !appState.onboardingDemoAnswers.isEmpty { form.assessmentAnswers = appState.onboardingDemoAnswers }
+        }
+        .task {
+            if appState.isRemote { providers = await appState.socialProviders() }
         }
         .task(id: resendRemaining) {
             guard resendRemaining > 0 else { return }
@@ -536,6 +543,9 @@ struct OnboardingFlow: View {
             if appState.isRemote && (step == .phone || step == .code) {
                 captchaArea
             }
+            if step == .welcome && !providers.isEmpty {
+                socialButtons
+            }
             Button {
                 primaryAction()
             } label: {
@@ -544,7 +554,7 @@ struct OnboardingFlow: View {
                     Text(primaryTitle)
                 }
             }
-            .buttonStyle(.brutal(step == .welcome ? .inverse : .primary))
+            .buttonStyle(.brutal(step == .welcome ? (providers.isEmpty ? .inverse : .secondary) : .primary))
             .disabled(!canContinue || isWorking)
             if step == .welcome && !appState.isRemote {
                 Text("登录即可体验，附近球友为演示数据")
@@ -560,6 +570,44 @@ struct OnboardingFlow: View {
         .padding(.top, AppTheme.Spacing.sm)
         .padding(.bottom, AppTheme.Spacing.md)
         .background(AppTheme.Colors.canvas.ignoresSafeArea(edges: .bottom))
+    }
+
+    /// 通过 Apple / Google 继续（Apple 放第一个：按 Apple 的规定不能比别的第三方登录不显眼）
+    @ViewBuilder
+    private var socialButtons: some View {
+        if let errorText {
+            Text(errorText)
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.danger)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        if providers.contains("apple") {
+            Button {
+                attemptSignIn {
+                    let credential = try await AppleSignIn().run()
+                    // Apple 只在第一次授权时给名字：先记下来当昵称的默认值
+                    if form.nickname.isEmpty, let name = credential.givenName { form.nickname = name }
+                    return try await appState.signInWithApple(idToken: credential.idToken, nonce: credential.nonce)
+                }
+            } label: {
+                Label("通过 Apple 继续", systemImage: "apple.logo")
+            }
+            .buttonStyle(.brutal(.inverse))
+        }
+        if providers.contains("google") {
+            Button {
+                attemptSignIn { try await appState.signInWithGoogle(webAuthenticationSession) }
+            } label: {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Image("GoogleLogo").resizable().frame(width: 20, height: 20).accessibilityHidden(true)
+                    Text("使用 Google 账号继续")
+                }
+            }
+            .buttonStyle(.brutal(.secondary))
+        }
+        Text("继续即表示你同意《用户协议》和《隐私政策》。")
+            .font(AppTheme.Typography.caption)
+            .foregroundStyle(AppTheme.Colors.inkTertiary)
     }
 
     /// 平时看不见；Cloudflare 要人点一下时才展开验证框
@@ -671,15 +719,38 @@ struct OnboardingFlow: View {
                 let outcome = appState.isRemote
                     ? try await appState.verify(email: form.email, code: form.code)
                     : try await appState.verify(phone: form.phoneNumber.e164, code: form.code)
-                switch outcome {
-                case .signedIn(let user):
-                    appState.showToast(String(localized: "欢迎回来，\(user.nickname)"), style: .success)
-                case .needsProfile:
-                    advance(to: .profile)
-                }
+                signedIn(outcome)
             } catch {
                 errorText = (error as? LocalizedError)?.errorDescription
                 form.code = ""
+                Haptics.error()
+            }
+        }
+    }
+
+    /// 登录成功：老用户直接进 App，新用户去填资料
+    private func signedIn(_ outcome: AuthOutcome) {
+        switch outcome {
+        case .signedIn(let user):
+            appState.showToast(String(localized: "欢迎回来，\(user.nickname)"), style: .success)
+        case .needsProfile:
+            advance(to: .profile)
+        }
+    }
+
+    /// Apple / Google 登录：自己关掉弹窗不提示；返回 nil 表示在对方页面取消了
+    private func attemptSignIn(_ attempt: @escaping () async throws -> AuthOutcome?) {
+        guard !isWorking else { return }
+        errorText = nil
+        Task {
+            isWorking = true
+            defer { isWorking = false }
+            do {
+                if let outcome = try await attempt() { signedIn(outcome) }
+            } catch where AppleSignIn.isCancel(error) {
+                return
+            } catch {
+                errorText = String(localized: "登录没有完成，请再试一次，或改用邮箱。")
                 Haptics.error()
             }
         }

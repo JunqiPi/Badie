@@ -1,5 +1,6 @@
-import SwiftUI
+import AuthenticationServices
 import Combine
+import SwiftUI
 
 // MARK: - 外观设置
 
@@ -137,6 +138,28 @@ final class AppState: ObservableObject {
 
     func verify(email: String, code: String) async throws -> AuthOutcome {
         try await backend.remoteVerify(email: email, code: code)
+    }
+
+    func signInWithApple(idToken: String, nonce: String) async throws -> AuthOutcome {
+        try await backend.remoteSignInWithApple(idToken: idToken, nonce: nonce)
+    }
+
+    /// Google：在系统浏览器里登录（和 Safari 共用登录状态），带着一次性的 code 跳回来再换登录状态。
+    /// 在对方页面取消了返回 nil
+    func signInWithGoogle(_ browser: WebAuthenticationSession) async throws -> AuthOutcome? {
+        let verifier = SocialSignIn.randomString()
+        guard let url = try backend.requireRemote().authorizeURL(provider: "google", redirect: SocialSignIn.redirect,
+                                                                 challenge: SocialSignIn.pkceChallenge(verifier)) else { return nil }
+        let callback = try await browser.authenticate(using: url, callbackURLScheme: SocialSignIn.callbackScheme,
+                                                      preferredBrowserSession: .shared)
+        guard let code = SocialSignIn.code(from: callback) else { return nil }
+        return try await backend.remoteSignInWithGoogle(code: code, verifier: verifier)
+    }
+
+    /// 后台开了的第三方登录（apple / google）；离线或演示模式下是空的
+    func socialProviders() async -> Set<String> {
+        guard backend.isRemote, let remote = try? backend.requireRemote() else { return [] }
+        return await remote.enabledProviders()
     }
 
     func registerRemote(nickname: String, gender: Gender, avatar: Avatar, assessment: SkillAssessmentSummary?,

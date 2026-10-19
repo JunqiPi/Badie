@@ -21452,6 +21452,64 @@
         }
       }
     },
+    "使用 Google 账号继续" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue with Google"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google के साथ जारी रखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lanjutkan dengan Google"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google で続ける"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google 계정으로 계속하기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teruskan dengan Google"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดำเนินการต่อด้วย Google"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiếp tục với Google"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Google 帳戶繼續"
+          }
+        }
+      }
+    },
     "使用期间" : {
       "localizations" : {
         "en" : {
@@ -78983,6 +79041,64 @@
         }
       }
     },
+    "登录没有完成，请再试一次，或改用邮箱。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sign-in didn’t finish. Try again, or use your email."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "साइन इन पूरा नहीं हुआ। फिर से कोशिश करें या ईमेल से साइन इन करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masuk belum selesai. Coba lagi, atau pakai email."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ログインが完了しませんでした。もう一度試すか、メールでログインしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로그인이 완료되지 않았어요. 다시 시도하거나 이메일로 로그인하세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Log masuk tidak selesai. Cuba lagi, atau guna e-mel."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การเข้าสู่ระบบยังไม่เสร็จ ลองอีกครั้ง หรือใช้อีเมล"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đăng nhập chưa hoàn tất. Hãy thử lại hoặc dùng email."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登入沒有完成，請再試一次，或改用電子郵件。"
+          }
+        }
+      }
+    },
     "百度地图" : {
       "localizations" : {
         "en" : {
@@ -84061,6 +84177,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "給球友的話"
+          }
+        }
+      }
+    },
+    "继续即表示你同意《用户协议》和《隐私政策》。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By continuing, you agree to the Terms of Use and Privacy Policy."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जारी रखकर, आप उपयोग की शर्तों और गोपनीयता नीति से सहमत होते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dengan melanjutkan, kamu menyetujui Ketentuan Penggunaan dan Kebijakan Privasi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続行すると、利用規約とプライバシーポリシーに同意したことになります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계속하면 이용약관 및 개인정보 처리방침에 동의하는 것으로 간주됩니다."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dengan meneruskan, anda bersetuju dengan Terma Penggunaan dan Dasar Privasi."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การดำเนินการต่อถือว่าคุณยอมรับข้อกำหนดการใช้งานและนโยบายความเป็นส่วนตัว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi tiếp tục, bạn đồng ý với Điều khoản sử dụng và Chính sách quyền riêng tư."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繼續即表示你同意《使用者協議》和《隱私權政策》。"
           }
         }
       }
@@ -99269,6 +99443,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通過"
+          }
+        }
+      }
+    },
+    "通过 Apple 继续" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue with Apple"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple के साथ जारी रखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lanjutkan dengan Apple"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appleで続ける"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple로 계속하기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teruskan dengan Apple"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดำเนินการต่อด้วย Apple"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiếp tục với Apple"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過 Apple 繼續"
           }
         }
       }

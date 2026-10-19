@@ -71,6 +71,51 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertNil(RemoteJSON.parseDate("tomorrow"))
     }
 
+    // MARK: Apple / Google
+
+    func testAppleSendsIdTokenAndRawNonce() async throws {
+        server.on("POST /auth/v1/token", token("apple"))
+        let client = client()
+        _ = try await client.signIn(provider: "apple", idToken: "id-token", nonce: "raw-nonce")
+
+        XCTAssertEqual(server.requests[0].url?.query, "grant_type=id_token")
+        XCTAssertEqual(server.json(0)["provider"] as? String, "apple")
+        XCTAssertEqual(server.json(0)["id_token"] as? String, "id-token")
+        XCTAssertEqual(server.json(0)["nonce"] as? String, "raw-nonce")
+        XCTAssertEqual(client.session?.accessToken, "apple")
+    }
+
+    func testGoogleOpensAuthorizeAndExchangesCodeWithVerifier() async throws {
+        server.on("POST /auth/v1/token", token("google"))
+        let client = client()
+        let url = try XCTUnwrap(client.authorizeURL(provider: "google", redirect: SocialSignIn.redirect, challenge: "abc"))
+        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        let query = Dictionary(uniqueKeysWithValues: items.map { ($0.name, $0.value ?? "") })
+        XCTAssertEqual(url.path, "/auth/v1/authorize")
+        XCTAssertEqual(query, ["provider": "google", "redirect_to": "badie://auth-callback", "code_challenge": "abc", "code_challenge_method": "s256"])
+
+        _ = try await client.exchange(code: "one-time", verifier: "secret")
+        XCTAssertEqual(server.requests[0].url?.query, "grant_type=pkce")
+        XCTAssertEqual(server.json(0)["auth_code"] as? String, "one-time")
+        XCTAssertEqual(server.json(0)["code_verifier"] as? String, "secret")
+        XCTAssertEqual(client.session?.accessToken, "google")
+    }
+
+    func testOnlyShowsProvidersSwitchedOnInSupabase() async {
+        server.on("GET /auth/v1/settings", #"{"external":{"apple":true,"google":false,"email":true},"disable_signup":false}"#)
+        let providers = await client().enabledProviders()
+        XCTAssertEqual(providers, ["apple", "email"])
+    }
+
+    func testSignInSecrets() throws {
+        // RFC 7636 附录 B 的例子
+        XCTAssertEqual(SocialSignIn.pkceChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
+        XCTAssertEqual(SocialSignIn.sha256Hex("abc"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
+        XCTAssertNotEqual(SocialSignIn.randomString(), SocialSignIn.randomString())
+        XCTAssertEqual(SocialSignIn.code(from: try XCTUnwrap(URL(string: "badie://auth-callback?code=xyz"))), "xyz")
+        XCTAssertNil(SocialSignIn.code(from: try XCTUnwrap(URL(string: "badie://auth-callback?error=access_denied"))))
+    }
+
     func testVerifySendsCodeAndKeepsSession() async throws {
         server.on("POST /auth/v1/verify", token("fresh"))
         let client = client()
