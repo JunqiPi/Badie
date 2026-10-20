@@ -42,6 +42,13 @@ capture() {
   done
 }
 
+# App Store 用：只截英文的几张宣传页（Pro Max 的 6.9 英寸），转成不带透明通道的 JPEG
+if [ -n "${STORE:-}" ]; then
+  capture store light en en_US "${STORE_SCREENS:-home matchSetup matchFound room groupDetail playerProfile levelResult leaderboard}"
+  for f in "$OUT"/store-*.png; do sips -s format jpeg -s formatOptions 95 "$f" --out "${f%.png}.jpg" >/dev/null && rm "$f"; done
+  exit 0
+fi
+
 capture light light zh-Hans zh_CN "$SCREENS"
 capture dark dark zh-Hans zh_CN "$DARK_SCREENS"
 capture en light en en_US "$EN_SCREENS"

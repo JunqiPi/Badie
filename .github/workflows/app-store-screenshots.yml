@@ -1,0 +1,42 @@
+name: App Store screenshots
+
+# 手动运行：在最新的 iPhone Pro Max（6.9 英寸，1320 × 2868）和 Pro（6.3 英寸，1206 × 2622，Apple 要求至少一张）模拟器上
+# 截英文宣传页，下载后上传到 App Store Connect
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    name: 6.9- and 6.3-inch screenshots
+    runs-on: macos-15
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: Badie-iOS
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick iPhone Pro Max and Pro simulators
+        id: sim
+        run: |
+          echo "max=$(python3 scripts/pick_simulator.py --max)" >> "$GITHUB_OUTPUT"
+          echo "pro=$(python3 scripts/pick_simulator.py)" >> "$GITHUB_OUTPUT"
+
+      - name: Build app
+        timeout-minutes: 25
+        run: |
+          xcodebuild build -project Badie.xcodeproj -scheme Badie -destination "id=${{ steps.sim.outputs.max }}" \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO > build.log 2>&1 || { grep -E "error:" build.log | sort -u | head -50; exit 1; }
+
+      - name: Capture screenshots
+        timeout-minutes: 30
+        run: |
+          STORE=1 bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.max }}" build/Build/Products/Debug-iphonesimulator/Badie.app store-screenshots/6.9-inch
+          STORE=1 bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.pro }}" build/Build/Products/Debug-iphonesimulator/Badie.app store-screenshots/6.3-inch
+
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-screenshots
+          path: Badie-iOS/store-screenshots
+          retention-days: 30

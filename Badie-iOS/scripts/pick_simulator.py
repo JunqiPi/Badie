@@ -1,4 +1,4 @@
-"""Print the UDID of the newest available iPhone simulator (prefers a non-Max Pro model)."""
+"""Print the UDID of the newest available iPhone simulator (prefers a non-Max Pro model; --max prefers a Pro Max, the 6.9-inch size App Store screenshots need)."""
 import json
 import re
 import subprocess
@@ -15,7 +15,7 @@ for runtime, entries in devices.items():
         name = device["name"]
         if not name.startswith("iPhone"):
             continue
-        preferred = 1 if re.fullmatch(r"iPhone \d+ Pro", name) else 0
+        preferred = 1 if re.fullmatch(r"iPhone \d+ Pro Max" if "--max" in sys.argv else r"iPhone \d+ Pro", name) else 0
         score = (version, preferred)
         if best is None or score > best[0]:
             best = (score, device["udid"], name, runtime)

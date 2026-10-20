@@ -20,10 +20,28 @@
    - 举报原因有“不当内容（昵称、头像、消息）”，头像这类图片靠举报 + 人工处理。
    - **24 小时内处理举报要说到做到**：有人举报时管理员会收到通知，在网站的 `/admin/` 页处理（改掉昵称、撤下照片、封号或驳回），
      能看到被举报人最近 30 天发给举报人的消息。你的账号要在 `admin_users` 表里（Supabase → Table Editor 加一行）。
-4. **想好商店信息**
-   - App 名称（30 字以内，全 App Store 唯一；`Badie` 被占用就用 `Badie: Badminton Partners`）。
-   - 副标题（30 字以内）、描述、关键词（100 个字符以内，逗号分隔）。
-   - 截图：CI 每次会生成模拟器截图，可以在此基础上做。
+4. **商店信息**（草稿，口径和 `STORY.md` 一致，按需改）
+   - 名称（30 字以内，全 App Store 唯一）：`Badie: Badminton Partners`（被占用就换 `Badie - Find Badminton Players`）。
+   - 副标题（30 字以内）：`Find players at your level`
+   - 推广文本（170 字以内，随时能改、不用重新审核）：`No need to ask strangers at the gym. Tell Badie when you’re free and it finds badminton players at your level, plus courts, weekly groups and mixed doubles.`
+   - 关键词（100 个字符以内，逗号后不加空格；名称里已有的 badminton、partners 不用重复）：
+     `doubles,singles,mixed,court,club,shuttlecock,racket,sports,match,players,game,league,group,level`
+   - 描述：
+
+     > Too shy to ask strangers for a game? Badie does the asking for you.
+     >
+     > Tell Badie when you're free and which courts you can get to, and it finds players at your level. Your usual partner can't make it tonight? Find someone for the same time, or join a last-minute game with players who are free right now. New in town? See the courts nearby and join a weekly group.
+     >
+     > • Matched by level: a 2-minute quiz places you on a 1–9 scale, and players you meet help keep it accurate.
+     > • Pick your event: singles, doubles, men's, women's or mixed doubles. Men's and women's levels are rated separately.
+     > • Nearby games: booked a court but short on players? Post it and nearby players can join.
+     > • Weekly groups: same time and court every week, with sign-ups and a waitlist.
+     > • Reliable players: no-shows and late cancellations are tracked, and both sides confirm results.
+     > • Weekly and court leaderboards, challenges and win rate, if you like a bit of competition.
+     > • Private by default: your exact location never leaves your phone, and players see your nickname and level, not your contact details.
+     >
+     > Badie is free and built by a player who wanted more people on court.
+   - 截图：在 GitHub → Actions → **App Store screenshots** → Run workflow，跑完下载 `app-store-screenshots`：最新 iPhone Pro Max（6.9 英寸，1320 × 2868）和 Pro（6.3 英寸，1206 × 2622）上各 8 张英文页面，已转成不带透明通道的 JPEG，直接上传。
 
 ## 1. 注册 Apple Developer Program
 
@@ -81,7 +99,7 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 **Pricing and Availability**：Free；国家和地区先选美国（以后再加）。
 
 **版本页（1.0）**
-- 截图：iPhone 6.9 英寸（1320 × 2868）和 6.3 英寸（1206 × 2622）各一组最稳，每组 1～10 张，PNG 不能带透明通道。只上 iPhone，不用 iPad 截图。
+- 截图：6.9 英寸（1320 × 2868）和 6.3 英寸（1206 × 2622）各一组（2026-10 核对：Apple 要求 6.3 英寸至少一张，其余尺寸自动缩放）；每组 1～10 张，不能带透明通道。用第 0 步的截图工作流生成。只上 iPhone，不用 iPad 截图。
 - Description、Keywords、Support URL `https://badie.rsvp/contact/`、Marketing URL `https://badie.rsvp`、Privacy Policy URL `https://badie.rsvp/privacy/`、Copyright `2026 你的名字`。
 - Build：选第 3 步上传的 Build。
 - **App Review Information**：
