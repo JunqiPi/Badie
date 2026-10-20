@@ -36,6 +36,25 @@ extension MockBackend {
         ("铁柱", 4, .weekdayEvenings, .male, "从不迟到")
     ]
 
+    /// 英文界面的演示名单（和上面一一对应：等级、性别、空闲模式不变），App Store 的英文截图用
+    private static let englishRoster: [(String, String)] = [
+        ("Kevin", "Still working on my backhand, go easy"), ("Priya", "Ex-varsity, looking for a regular doubles partner"),
+        ("Danny", "Three months in, happy to learn"), ("Marcus", "Need to sweat after work"), ("Mei", "Mixed doubles fan 🏸"),
+        ("Frank", "Early bird, 7 a.m. regular"), ("Jason", "Smash enthusiast"), ("Sophie", "Fun games first, food after"),
+        ("Ethan", "Runs our office badminton club"), ("Ryan", "Can play after 10 p.m."), ("Chloe", "Free on weekend afternoons"),
+        ("Nathan", "Plays local tournaments a lot"), ("Lily", "New player, beginner games please"), ("Grace", "Practising doubles rotation"),
+        ("Tyler", "Mostly singles"), ("Hannah", "Good rallies, good chats"), ("Ben", "Not the fittest, always on time"),
+        ("Sam", "Night owl"), ("Coach Wang", "Ex-provincial team, coaches on weekends"), ("Leo", "Also happy to play in Mandarin"),
+        ("Coco", "Just moved here, looking for regulars"), ("Jamie", "Fun first, winning second"), ("Victor", "Loves long rallies"),
+        ("Ivy", "Morning games keep me going"), ("Bella", "Has a court booked, often short of players"), ("Owen", "Net play specialist"),
+        ("May", "Looking for a women's doubles partner"), ("Tom", "Never late")
+    ]
+
+    /// 演示数据跟着界面语言：英文界面用英文名字和内容（App Store 的英文截图），其他语言用中文
+    nonisolated static var demoInEnglish: Bool { Locale.preferredLanguages.first?.hasPrefix("en") ?? false }
+    nonisolated static func demoText(_ chinese: String, _ english: String) -> String { demoInEnglish ? english : chinese }
+    nonisolated static var demoNickname: String { demoText("阿杰", "Jay") }
+
     /// 首次启动时生成机器人球友
     func ensureWorld() {
         guard db.bots.isEmpty else { return }
@@ -64,10 +83,10 @@ extension MockBackend {
             let noShows = index % 9 == 4 ? 1 : 0
             let user = User(
                 id: id,
-                nickname: entry.0,
+                nickname: Self.demoInEnglish ? Self.englishRoster[index].0 : entry.0,
                 phone: "+1626555" + String(format: "%04d", Int.random(in: 0...9999, using: &rng)),
                 gender: entry.3,
-                bio: entry.4,
+                bio: Self.demoInEnglish ? Self.englishRoster[index].1 : entry.4,
                 avatar: Avatar(symbol: "", paletteIndex: index % 6),
                 selfReportedLevel: min(level, SkillLevel.maxSelfSelectable),
                 totalGames: games,
@@ -311,7 +330,7 @@ extension MockBackend {
         // 待处理的好友申请
         db.friendRequests.append(FriendRequest(
             id: UUID().uuidString, fromUserId: "bot-4", toUserId: userId,
-            note: "上周在朝阳馆一起打过双打～", sentAt: now.addingTimeInterval(-3 * 3600), status: .pending
+            note: Self.demoText("上周在朝阳馆一起打过双打～", "We played doubles together last week!"), sentAt: now.addingTimeInterval(-3 * 3600), status: .pending
         ))
 
         // 加入附近的一个球群，并报名下一场
@@ -333,14 +352,14 @@ extension MockBackend {
 
         // 私信
         let threadA = MessageThread.id(for: userId, "bot-0")
-        appendSeedMessage(threadA, participants: [userId, "bot-0"], from: userId, text: "上次打得太爽了，下周再约？", at: now.addingTimeInterval(-26 * 3600), read: true)
-        appendSeedMessage(threadA, participants: [userId, "bot-0"], from: "bot-0", text: "必须的！我最近在练反手，周末有空吗？", at: now.addingTimeInterval(-2 * 3600), read: false)
+        appendSeedMessage(threadA, participants: [userId, "bot-0"], from: userId, text: Self.demoText("上次打得太爽了，下周再约？", "That was fun! Again next week?"), at: now.addingTimeInterval(-26 * 3600), read: true)
+        appendSeedMessage(threadA, participants: [userId, "bot-0"], from: "bot-0", text: Self.demoText("必须的！我最近在练反手，周末有空吗？", "Definitely! I've been working on my backhand. Free this weekend?"), at: now.addingTimeInterval(-2 * 3600), read: false)
 
         refreshPublicRooms(force: false)
         if let hostedByHong = db.rooms.values.first(where: { $0.ownerId == "bot-1" && $0.status.isOpen }) {
             let threadB = MessageThread.id(for: userId, "bot-1")
             appendSeedMessage(threadB, participants: [userId, "bot-1"], from: "bot-1",
-                              text: "来打双打吗？还差人～", at: now.addingTimeInterval(-50 * 60),
+                              text: Self.demoText("来打双打吗？还差人～", "Up for doubles? We're one short"), at: now.addingTimeInterval(-50 * 60),
                               read: false, kind: .roomInvite(code: hostedByHong.code))
         }
 
@@ -435,7 +454,7 @@ extension MockBackend {
                            createdAt: now.addingTimeInterval(-60)), to: userId)
         let requesterName = "琳琳"
         addInbox(InboxItem(kind: .friendRequest, title: String(localized: "\(requesterName) 想加你为球友"),
-                           body: "上周在朝阳馆一起打过双打～", createdAt: now.addingTimeInterval(-3 * 3600),
+                           body: Self.demoText("上周在朝阳馆一起打过双打～", "We played doubles together last week!"), createdAt: now.addingTimeInterval(-3 * 3600),
                            relatedId: "bot-4"), to: userId)
         if let survey = db.pendingSurveys.first(where: { $0.evaluatorId == userId }) {
             addInbox(InboxItem(kind: .surveyDue, title: String(localized: "给 \(survey.opponentNickname) 的球局打个分"),

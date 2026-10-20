@@ -11,6 +11,10 @@ enum ReminderService {
     ]
 
     static func requestAuthorization() async -> Bool {
+        #if DEBUG
+        // 截图、设计走查（-BBDemoScreen 启动）不弹通知权限框，免得挡住画面
+        if UserDefaults.standard.string(forKey: "BBDemoScreen") != nil { return false }
+        #endif
         let center = UNUserNotificationCenter.current()
         let settings = await center.notificationSettings()
         switch settings.authorizationStatus {

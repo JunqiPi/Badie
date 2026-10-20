@@ -29,7 +29,7 @@ enum DemoLauncher {
 
         backend.createAccount(
             phone: "+16265550123",
-            nickname: "阿杰",
+            nickname: MockBackend.demoNickname,
             avatar: Avatar(symbol: "", paletteIndex: 4),
             level: 4,
             preferredMode: .doubles,
@@ -91,7 +91,8 @@ enum DemoLauncher {
             environment.appState.verificationDemo = (
                 kind: .bwf, tier: SkillTier(level: 9, modifier: .minus),
                 link: "bwfbadminton.com/player/00000/demo-player", name: "Jie Wang",
-                note: "2025 Pan Am 青年锦标赛男双八强，2026 年打过两站 Future Series"
+                note: MockBackend.demoText("2025 Pan Am 青年锦标赛男双八强，2026 年打过两站 Future Series",
+                                           "Men's doubles quarterfinal at the 2025 Pan Am Junior Championships; two Future Series events in 2026")
             )
             router.show(.verification, in: .profile)
         case "groups":
@@ -264,7 +265,8 @@ enum DemoLauncher {
         backend.db.games[game.id] = game
         // 球局群聊：成局后所有人在这里沟通
         let thread = backend.ensureGameThread(for: game)
-        backend.appendMessage(Message(threadId: thread.id, senderId: "bot-0", content: "我今晚 7 点就到，先去占场～",
+        backend.appendMessage(Message(threadId: thread.id, senderId: "bot-0",
+                                      content: MockBackend.demoText("我今晚 7 点就到，先去占场～", "I'll be there at 7 to grab a court"),
                                       sentAt: Date().addingTimeInterval(-40 * 60), deliveredAt: Date().addingTimeInterval(-40 * 60)),
                               participants: thread.participantIds, countsAsUnread: true)
         return game
@@ -279,7 +281,7 @@ enum DemoLauncher {
             participants: [RoomParticipant(user: me)] + ["bot-0", "bot-1"].compactMap { backend.user(id: $0) }.map { RoomParticipant(user: $0) },
             invitedUserIds: ["bot-3"], waitlist: [],
             court: backend.venue(id: DemoVenue.eliteRally), slot: slot, levelRange: 3...7, tags: [.casual],
-            note: "老地方，打完一起吃饭", createdAt: Date(), lastActivityAt: Date(), status: .open
+            note: MockBackend.demoText("老地方，打完一起吃饭", "Usual spot, food after"), createdAt: Date(), lastActivityAt: Date(), status: .open
         )
         backend.db.rooms[room.id] = room
         return room

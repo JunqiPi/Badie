@@ -328,13 +328,19 @@ extension MockBackend {
         guard !hasNearby else { return }
         let templates: [(name: String, owner: String, members: [String], venue: BadmintonCourt, range: ClosedRange<Int>,
                          policy: PlayGroup.JoinPolicy, summary: String, schedules: [GroupSchedule])] = [
-            ("周四晚双打群", "bot-1", ["bot-1", "bot-2", "bot-5", "bot-6", "bot-7", "bot-9", "bot-11", "bot-12", "bot-14", "bot-16"],
-             venues[0], 3...6, .open, "下班后来打双打，轮换上场，新手友好。球馆按人头收费，自己在前台付。",
-             [GroupSchedule(id: "thu", weekday: 5, startMinutes: 19 * 60 + 30, endMinutes: 22 * 60, capacity: 12, feeNote: "场地按人头收费"),
-              GroupSchedule(id: "sun", weekday: 1, startMinutes: 14 * 60, endMinutes: 17 * 60, capacity: 16, feeNote: "场地按人头收费")]),
-            ("周末早场·中高级", "bot-5", ["bot-5", "bot-3", "bot-8", "bot-10", "bot-13", "bot-15", "bot-17"],
-             venues[1], 5...8, .approval, "节奏偏快，适合 Lv.5 以上。第一次来请先在群里打个招呼。",
-             [GroupSchedule(id: "sat", weekday: 7, startMinutes: 9 * 60, endMinutes: 12 * 60, capacity: 12, feeNote: "AA 场地费")])
+            (Self.demoText("周四晚双打群", "Thursday Night Doubles"), "bot-1", ["bot-1", "bot-2", "bot-5", "bot-6", "bot-7", "bot-9", "bot-11", "bot-12", "bot-14", "bot-16"],
+             venues[0], 3...6, .open,
+             Self.demoText("下班后来打双打，轮换上场，新手友好。球馆按人头收费，自己在前台付。",
+                           "Doubles after work, rotating courts, beginner-friendly. The gym charges per person at the front desk."),
+             [GroupSchedule(id: "thu", weekday: 5, startMinutes: 19 * 60 + 30, endMinutes: 22 * 60, capacity: 12,
+                            feeNote: Self.demoText("场地按人头收费", "Pay per person")),
+              GroupSchedule(id: "sun", weekday: 1, startMinutes: 14 * 60, endMinutes: 17 * 60, capacity: 16,
+                            feeNote: Self.demoText("场地按人头收费", "Pay per person"))]),
+            (Self.demoText("周末早场·中高级", "Weekend Mornings · Intermediate+"), "bot-5", ["bot-5", "bot-3", "bot-8", "bot-10", "bot-13", "bot-15", "bot-17"],
+             venues[1], 5...8, .approval,
+             Self.demoText("节奏偏快，适合 Lv.5 以上。第一次来请先在群里打个招呼。", "Fast-paced, best for Lv.5 and up. Say hi in the group chat before your first visit."),
+             [GroupSchedule(id: "sat", weekday: 7, startMinutes: 9 * 60, endMinutes: 12 * 60, capacity: 12,
+                            feeNote: Self.demoText("AA 场地费", "Split the court fee"))])
         ]
         for (index, template) in templates.enumerated() {
             let members = template.members.filter { db.bots[$0] != nil }
