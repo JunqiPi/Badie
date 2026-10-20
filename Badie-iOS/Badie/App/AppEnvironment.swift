@@ -56,7 +56,7 @@ struct AppEnvironment {
     static func makeDemo() -> AppEnvironment {
         let backend = MockBackend.shared
         if backend.currentUser == nil && backend.db.accounts.isEmpty {
-            backend.createAccount(phone: "+16265550123", nickname: MockBackend.demoNickname, avatar: Avatar(symbol: "", paletteIndex: 4), level: 4,
+            backend.createAccount(phone: "+16265550123", nickname: MockBackend.demoNickname, gender: .male, avatar: Avatar(symbol: "", paletteIndex: 4), level: 4,
                                   preferredMode: .doubles, location: Coordinate.fallbackCenter)
         }
         return AppEnvironment(backend: backend)

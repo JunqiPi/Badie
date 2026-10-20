@@ -30,6 +30,7 @@ enum DemoLauncher {
         backend.createAccount(
             phone: "+16265550123",
             nickname: MockBackend.demoNickname,
+            gender: .male,
             avatar: Avatar(symbol: "", paletteIndex: 4),
             level: 4,
             preferredMode: .doubles,
