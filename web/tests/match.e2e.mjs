@@ -16,13 +16,13 @@ const open = async (viewport) => (await browser.newContext({ viewport, timezoneI
 const alex = await open({ width: 1280, height: 900 });
 const blake = await open({ width: 390, height: 844 });
 
-// Alex 做完问卷（每题选第 2 项 → 3−），Blake 跳过（按 3 级）
+// Alex 做完问卷（每题选第 2 项 → 2+），Blake 跳过（按 3 级）
 await signUp(alex, `alex${stamp}@test.local`, 'Alex');
 for (let i = 1; i <= 14; i++) {
   await alex.getByText(`Question ${i} of 14`).waitFor();
   await alex.locator('section ul button').nth(1).click();
 }
-await alex.getByRole('heading', { name: '3−' }).waitFor();
+await alex.getByRole('heading', { name: '2+' }).waitFor();
 await alex.getByRole('button', { name: 'Save my level' }).click();
 await alex.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
 
