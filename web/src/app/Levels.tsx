@@ -1,7 +1,7 @@
 import { tier } from './assessment';
 import { t } from './i18n';
 import { Icon } from './icons';
-import { LargeTitle, Notice, Tag, fill, type Tint } from './kit';
+import { IconTile, LargeTitle, Notice, Tag, fill, type Tint } from './kit';
 import { levels } from './levels';
 import { Link } from './router';
 import { signInFirst } from './Shell';
@@ -96,6 +96,30 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
   );
 }
 
+/** 为什么做 Badie：不敢开口找人、固定球友有事、刚到新地方（首页和关于页共用）。白底，和下面彩色的步骤分开 */
+const reasons: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
+  { icon: 'hand', tint: 'lavender', title: 'Too shy to ask around',
+    text: 'Walking up to strangers at the gym or asking online takes nerve, and you never know their level until you’re on court. Badie does the asking and matches you by level.' },
+  { icon: 'swap', tint: 'peach', title: 'Your usual partner can’t make it',
+    text: 'Don’t sit the night out. Quick Match looks for someone at your level for the same time, or try a last-minute game with players who are free right now.' },
+  { icon: 'compass', tint: 'mint', title: 'New in town',
+    text: 'Moved for school or work? See the courts nearby, join a weekly group and meet players at your level in your first week.' },
+];
+
+export function Reasons({ heading: Heading = 'h2' }: { heading?: 'h2' | 'h3' }) {
+  return (
+    <ul className="grid gap-4 lg:grid-cols-3">
+      {reasons.map((r) => (
+        <li key={r.title} className={`sticker grid content-start gap-3 p-6 ${fill.surface}`}>
+          <IconTile icon={r.icon} tint={r.tint} size="lg" />
+          <Heading className="text-title3">{t(r.title)}</Heading>
+          <p className="text-subhead">{t(r.text)}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** 关于 Badie：免费、隐私、靠谱、数据来源 */
 const facts: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
   { icon: 'heart', tint: 'pink', title: 'Free to use', text: 'Every feature is free. Badie exists to get more people playing even games.' },
@@ -123,7 +147,21 @@ export function About() {
   return (
     <div className="mx-auto grid max-w-3xl gap-6">
       <LargeTitle title={t('About Badie')} subtitle={t('Built by a player, for players')} />
-      <AboutFacts />
+      <section aria-labelledby="story" className="grid gap-3">
+        <h2 id="story" className="text-title2">{t('Why we built Badie')}</h2>
+        <p className="max-w-prose text-[1.0625rem] leading-relaxed">{t('Badie began with its founder, who was too shy to walk up to strangers at the gym or ask for a game online. Even when a game came together, there was no telling whether the other side would be far better or just starting out.')}</p>
+        <p className="max-w-prose text-[1.0625rem] leading-relaxed">{t('Plenty of players feel the same, so they play less than they’d like. Others lose their game when a regular partner can’t make it, or move somewhere new and don’t know anyone. In the US and Europe, where badminton communities are still small, that keeps courts quieter than they should be.')}</p>
+        <p className="max-w-prose text-[1.0625rem] leading-relaxed">{t('So Badie does the finding for you. Tell it when you’re free and which courts you can reach, and it matches you with players at your level.')}</p>
+      </section>
+      <p className={`sticker p-5 text-title3 ${fill.lime}`}>{t('Our goal: more people playing badminton in the US and Europe, more often.')}</p>
+      <section aria-labelledby="moments" className="grid gap-3">
+        <h2 id="moments" className="text-title2">{t('Made for moments like these')}</h2>
+        <Reasons heading="h3" />
+      </section>
+      <section aria-labelledby="promises" className="grid gap-3">
+        <h2 id="promises" className="text-title2">{t('What you can count on')}</h2>
+        <AboutFacts heading="h3" />
+      </section>
       <section className="sticker grid gap-3 bg-[#17140f] p-5 text-[#f5f0e6]">
         <h2 className="text-title3">{t('Play from any browser')}</h2>
         <p className="text-subhead">{t('Badie works on the web on any phone or computer, no download needed. The iPhone app is in testing.')}</p>

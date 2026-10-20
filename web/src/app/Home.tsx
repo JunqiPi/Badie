@@ -6,7 +6,7 @@ import { km } from './Courts';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { ArrowLabel, Avatar, CardFan, Empty, IconTile, Notice, SectionTitle, StatTile, fill, type Tint } from './kit';
-import { AboutFacts } from './Levels';
+import { AboutFacts, Reasons } from './Levels';
 import type { Centre } from './pickers';
 import { Link } from './router';
 import { signInFirst } from './Shell';
@@ -345,7 +345,7 @@ function Welcome() {
             ))}
           </ul>
           <Headline size="text-[3rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
-          <p className={`max-w-xl ${lead}`}>{t('A free app for finding badminton partners at your level and courts near you.')}</p>
+          <p className={`max-w-xl ${lead}`}>{t('No need to ask around at the gym or in group chats. Badie finds players at your level for you, at times and courts that work. Free to use.')}</p>
           <div className="flex flex-wrap gap-3">
             <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
             <Link to="/courts/" className="button button-lg button-quiet">{t('Courts near you')}</Link>
@@ -353,6 +353,13 @@ function Welcome() {
         </div>
         <div className="max-sm:-my-4 lg:px-12"><CardFan className="max-sm:scale-[0.8] lg:scale-125" /></div>
       </header>
+
+      <section aria-labelledby="why" className="grid gap-8">
+        <Intro id="why" kicker={t('Why Badie')} title={t('Finding a game shouldn’t be the hard part')}>
+          {t('Badie started with a player who was too shy to ask strangers for a game and never knew how good the other side would be. Now Badie does that part for you.')}
+        </Intro>
+        <Reasons heading="h3" />
+      </section>
 
       <section aria-labelledby="how" className="grid gap-8">
         <Intro id="how" title={t('How Badie works')} />
@@ -397,7 +404,9 @@ function Welcome() {
       </section>
 
       <section aria-labelledby="values" className="grid gap-8">
-        <Intro id="values" kicker={t('About Badie')} title={t('Built by a player, for players')} />
+        <Intro id="values" kicker={t('About Badie')} title={t('Built by a player, for players')}>
+          {t('Our goal: more people playing badminton in the US and Europe, more often. Lots of people would play more if finding a game weren’t so awkward.')}
+        </Intro>
         <AboutFacts heading="h3" className="sm:grid-cols-2 lg:grid-cols-4" />
       </section>
 

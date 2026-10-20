@@ -7,12 +7,17 @@ const courtCount = allVenues.length.toLocaleString('en');
 
 <App
   title="Badie — find badminton partners and courts"
-  description={`Find badminton partners at your level and browse ${courtCount} badminton courts. Free to use.`}
+  description={`No need to ask strangers for a game: Badie finds badminton partners at your level for you. Browse ${courtCount} badminton courts. Free to use.`}
 >
   <h1 class="display text-5xl">Up for a game tonight?</h1>
   <p class="max-w-prose text-lg">
-    Badie matches you with badminton players at your level who are free when you are, at courts you can actually get to. Free to use.
+    No need to ask around at the gym or in group chats. Badie finds players at your level for you, at times and courts that work. Free to use.
   </p>
+  <ul class="grid max-w-prose gap-2">
+    <li><strong>Too shy to ask around?</strong> Badie does the asking and matches you by level.</li>
+    <li><strong>Your usual partner can’t make it?</strong> Find someone at your level for the same time.</li>
+    <li><strong>New in town?</strong> See the courts nearby and join a weekly group.</li>
+  </ul>
   <ol class="grid max-w-prose gap-2">
     <li><strong>Set your level.</strong> A 2-minute quiz places you on a 1–9 scale.</li>
     <li><strong>Get matched.</strong> Pick your courts and when you’re free.</li>

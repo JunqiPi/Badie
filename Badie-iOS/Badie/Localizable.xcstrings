@@ -13474,6 +13474,64 @@
         }
       }
     },
+    "不用自己开口找人：告诉我们你什么时候有空，我们按水平帮你找附近的球友。固定球友有事、刚到新城市，也能约到球。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No need to ask around yourself. Tell us when you’re free and we’ll find players nearby at your level, even when your usual partner can’t make it or you’re new in town."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खुद साथी ढूँढने की ज़रूरत नहीं। बताइए कि आप कब फ़्री हैं, हम आस-पास आपके लेवल के खिलाड़ी ढूँढ देंगे, चाहे आपका रोज़ का पार्टनर न आ पाए या आप शहर में नए हों।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nggak perlu cari teman main sendiri. Beri tahu kapan kamu luang, dan kami carikan pemain selevel di dekatmu, bahkan saat partner biasamu berhalangan atau kamu baru pindah."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自分から声をかけなくて大丈夫。空いている時間を教えてくれれば、近くでレベルの合う相手を探します。いつもの相手が来られないときも、引っ越してきたばかりでも打てます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직접 사람을 찾지 않아도 돼요. 언제 시간이 되는지 알려 주면 근처에서 실력 맞는 사람을 찾아 드려요. 늘 치던 파트너가 못 오거나 새 동네에 막 왔어도 칠 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tak perlu cari kawan bermain sendiri. Beritahu bila anda lapang, dan kami carikan pemain setahap berdekatan, walaupun rakan biasa anda tak dapat datang atau anda baru berpindah."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ต้องเดินหาคนตีเอง แค่บอกว่าว่างเมื่อไหร่ เราจะหาคนฝีมือใกล้กันแถวนี้ให้ แม้คู่ตีประจำติดธุระหรือเพิ่งย้ายมาใหม่ก็ได้ตี"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không cần tự đi tìm người chơi. Cho chúng tôi biết khi nào bạn rảnh, chúng tôi sẽ tìm người cùng trình độ gần bạn, kể cả khi bạn chơi quen bận hay bạn mới chuyển đến."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不用自己開口找人：告訴我們你什麼時候有空，我們依水平幫你找附近的球友。固定球友有事、剛到新城市，也能約到球。"
+          }
+        }
+      }
+    },
     "不确定" : {
       "localizations" : {
         "en" : {
@@ -59110,64 +59168,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "按水平 · 按時間 · 按距離"
-          }
-        }
-      }
-    },
-    "按水平、时间、距离帮你匹配附近球友；费用 AA 透明，到场签到，靠谱的人更容易约到球。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Get matched with nearby players by level, time and distance. Costs split evenly and transparently, check in on arrival, and reliable players get games more easily."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "लेवल, समय और दूरी के हिसाब से आसपास के खिलाड़ियों से मैच हों। खर्च बराबर और पारदर्शी बँटता है, पहुँचने पर चेक-इन करें, और भरोसेमंद खिलाड़ियों को गेम आसानी से मिलते हैं।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dicocokkan dengan pemain terdekat berdasarkan level, waktu, dan jarak. Biaya dibagi rata secara transparan, check-in saat datang, dan pemain yang bisa diandalkan lebih mudah dapat game."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "レベル、時間、距離で近くのプレイヤーとマッチング。費用は割り勘で明確、到着時にチェックイン。信頼できる人ほどゲームが組みやすくなります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "레벨, 시간, 거리로 주변 플레이어와 매칭해 드려요. 비용은 투명하게 더치페이, 도착하면 체크인, 믿을 만한 사람일수록 게임 잡기가 쉬워요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dapatkan padanan dengan pemain berdekatan mengikut tahap, masa dan jarak. Kos dibahagi sama rata dengan telus, daftar masuk apabila tiba, dan pemain yang boleh dipercayai lebih mudah dapat permainan."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "จับคู่ผู้เล่นใกล้คุณตามระดับ เวลา และระยะทาง ค่าใช้จ่ายหารเท่ากันโปร่งใส เช็กอินเมื่อมาถึง คนที่ไว้ใจได้นัดเล่นได้ง่ายกว่า"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ghép với người chơi gần bạn theo trình độ, giờ và khoảng cách. Chi phí chia đều minh bạch, điểm danh khi đến, người đáng tin dễ có trận hơn."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "依水平、時間、距離幫你配對附近球友；費用 AA 透明，到場簽到，靠譜的人更容易約到球。"
           }
         }
       }
