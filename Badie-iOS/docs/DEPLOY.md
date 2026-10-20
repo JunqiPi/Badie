@@ -107,6 +107,8 @@ Authentication → URL Configuration：
   - `badie://auth-callback`（iOS App）
   - `http://localhost:4321/**`（本地开发）
 
+不改的话，Google 登录完会跳到 `http://localhost:3000/?code=…`（Supabase 默认的 Site URL）。
+
 ## 4.5 Google / Apple 登录
 
 网页和 App 只在 Supabase 里开了对应登录方式后才显示按钮，所以可以一个一个来，没配好之前不会出错。**密钥都直接填进 Google / Apple / Supabase 的后台，不要发到聊天里，也不要提交到仓库。**
