@@ -474,7 +474,7 @@ final class SupabaseClientTests: XCTestCase {
         refresh()
         do {
             _ = try await backend.submitTicket(mode: .doubles, slot: slot, courtIds: ["v-a", "v-b"], skillTolerance: 2, radiusKm: 10,
-                                               origin: Coordinate.fallbackCenter, autoAccept: true)
+                                               origin: Coordinate.fallbackCenter, autoAccept: true, event: .mixed)
         } catch {
             // 刷新后列表是空的：找不到新请求属正常（这里只看请求格式）
         }
@@ -483,6 +483,8 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(submit["p_venue_ids"] as? [String], ["v-a", "v-b"])
         XCTAssertEqual(submit["p_skill_tolerance"] as? Int, 2)
         XCTAssertEqual(submit["p_auto_accept"] as? Bool, true)
+        XCTAssertEqual(submit["p_mixed"] as? Bool, true, "混双")
+        XCTAssertTrue(submit["p_play_with"] is NSNull, "混双不限性别")
         XCTAssertNotNil(RemoteJSON.parseDate(submit["p_starts_at"] as? String ?? ""))
 
         server.requests = []
@@ -766,6 +768,8 @@ final class SupabaseClientTests: XCTestCase {
         draft.tags = [.casual, .coaching]
         draft.levelRange = 2...6
         draft.note = "  Court 3 "
+        draft.mode = .doubles
+        draft.event = .women
         server.on("POST /rest/v1/rpc/create_room", #""\#(roomId)""#)
         server.on("POST /rest/v1/rpc/room_page", roomJSON())
         let created = try await backend.remoteCreateRoom(draft)
@@ -775,6 +779,8 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(body["p_tags"] as? [String], ["casual", "coaching"])
         XCTAssertEqual(body["p_level_min"] as? Int, 2)
         XCTAssertEqual(body["p_note"] as? String, "Court 3")
+        XCTAssertEqual(body["p_gender"] as? String, "female", "女双")
+        XCTAssertEqual(body["p_mixed"] as? Bool, false)
         XCTAssertTrue(body["p_venue"] is NSNull, "私密局可以先不定球馆")
         XCTAssertTrue(body["p_starts_at"] is NSNull)
 

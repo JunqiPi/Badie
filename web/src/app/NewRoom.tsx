@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
-import { audienceLabel, WOMEN_OFFSET, type Gender } from './gender';
+import { audienceLabel, EventField, eventOptions, WOMEN_OFFSET, type Gender, type PlayEvent } from './gender';
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Icon } from './icons';
@@ -66,7 +66,11 @@ const tags: RoomTag[] = ['beginner_friendly', 'casual', 'competitive', 'women_fr
 export const audienceLevel = (profile: Profile, audience: Gender | null) =>
   Math.min(9, Math.max(1, Math.round(profile.gender === 'female' && audience !== 'female' ? profile.rating - WOMEN_OFFSET : profile.rating)));
 
-/** 谁能来：不限，或只限和自己同性别的人 */
+/** 球局按项目算：混双、女单女双按自己的等级（混双里男生和男生比、女生和女生比），其余同上 */
+const eventLevel = (profile: Profile, event: PlayEvent) =>
+  event === 'mixed' ? Math.min(9, Math.max(1, Math.round(profile.rating))) : audienceLevel(profile, event === 'any' ? null : event);
+
+/** 球群：谁能来，不限或只限和自己同性别的人 */
 export function AudienceField({ profile, value, onChange }: { profile: Profile; value: Gender | null; onChange: (value: Gender | null) => void }) {
   return (
     <fieldset className="grid gap-2">
@@ -87,9 +91,11 @@ export function AudienceField({ profile, value, onChange }: { profile: Profile; 
 }
 
 export function NewRoom({ profile }: { profile: Profile }) {
-  const [audience, setAudience] = useState<Gender | null>(null);
-  const level = audienceLevel(profile, audience);
   const [mode, setMode] = useState<Mode>('doubles');
+  const [chosen, setChosen] = useState<PlayEvent>('any');
+  // 换成单打时混双不能选，按不限
+  const playEvent = eventOptions(mode, profile.gender).includes(chosen) ? chosen : 'any';
+  const level = eventLevel(profile, playEvent);
   const [isPublic, setPublic] = useState(true);
   const [slot, setSlot] = useState<Slot>(() => ({ date: today(zone(), 1), from: 19 * 60, to: 21 * 60 }));
   const [min, setMin] = useState(Math.max(1, level - 1));
@@ -110,7 +116,8 @@ export function NewRoom({ profile }: { profile: Profile }) {
     const { data, error } = await supabase!.rpc('create_room', {
       p_mode: mode, p_visibility: isPublic ? 'public' : 'private', p_venue: slot.court!.id,
       p_starts_at: startsAt.toISOString(), p_ends_at: endsAt.toISOString(),
-      p_level_min: min, p_level_max: max, p_tags: picked, p_note: note.trim(), p_gender: audience,
+      p_level_min: min, p_level_max: max, p_tags: picked, p_note: note.trim(),
+      p_gender: playEvent === 'male' || playEvent === 'female' ? playEvent : null, p_mixed: playEvent === 'mixed',
     });
     setBusy(false);
     if (error) return setError(problem(error));
@@ -129,10 +136,10 @@ export function NewRoom({ profile }: { profile: Profile }) {
 
         <SlotFields slot={slot} onChange={setSlot} />
 
-        <AudienceField profile={profile} value={audience} onChange={(value) => {
-          // 换了谁能来，自己的等级可能跟着换算：范围重新围着自己
-          const own = audienceLevel(profile, value);
-          setAudience(value);
+        <EventField mode={mode} gender={profile.gender} value={playEvent} onChange={(value) => {
+          // 换了项目，自己的等级可能跟着换算：范围重新围着自己
+          const own = eventLevel(profile, value);
+          setChosen(value);
           setMin(Math.max(1, own - 1));
           setMax(Math.min(9, own + 1));
         }} />

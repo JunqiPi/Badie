@@ -41,6 +41,34 @@ struct AudiencePicker: View {
     }
 }
 
+/// 项目（约球、开局）：不限、男单 / 女单 / 男双 / 女双、混双；换成单打时混双自动改回不限。标题由各页面按自己的样式写
+struct EventPicker: View {
+    let mode: GameMode
+    let gender: Gender
+    @Binding var selection: PlayEvent?
+
+    private var choices: [PlayEvent?] { PlayEvent.choices(mode: mode, gender: gender) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            FlowLayout(spacing: AppTheme.Spacing.sm) {
+                ForEach(choices, id: \.self) { event in
+                    ChoiceChip(title: event?.title(mode: mode) ?? String(localized: "不限"), isSelected: selection == event) {
+                        selection = event
+                    }
+                }
+            }
+            Text(PlayEvent.caption(selection))
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .onChange(of: mode) { _, _ in
+            if !choices.contains(selection) { selection = nil }
+        }
+    }
+}
+
 /// 以前注册、还没选性别的人：打开 App 先补上（男女的等级分开算）
 struct GenderPromptView: View {
     @EnvironmentObject private var appState: AppState
@@ -83,5 +111,10 @@ extension User {
     func level(for audience: Gender?) -> Int {
         let offset = gender == .female && audience != .female ? Gender.womenOffset : 0
         return min(9, max(1, Int((displayTier.rating - offset).rounded())))
+    }
+
+    /// 按项目算：混双男生和男生比、女生和女生比，用自己的等级；其余同上
+    func level(in event: PlayEvent?) -> Int {
+        event == .mixed ? min(9, max(1, Int(displayTier.rating.rounded()))) : level(for: event?.gender)
     }
 }

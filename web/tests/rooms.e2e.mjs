@@ -1,4 +1,4 @@
-// 球局端到端：发起公开单打 → 附近的人看到并加入 → 人齐开局；私密局凭房间码加入 → 房主取消；女生局男生看不到
+// 球局端到端：发起公开单打 → 附近的人看到并加入 → 人齐开局；私密局凭房间码加入 → 房主取消；女单男生看不到；混双男女各两个位子
 import { chromium } from 'playwright';
 import { base, signUp } from './helpers.mjs';
 
@@ -19,14 +19,14 @@ for (const [page, name, gender] of [[alex, 'Alex', 'Male'], [blake, 'Blake', 'Fe
   await page.getByRole('heading', { name: 'Nearby games', level: 1 }).waitFor();
 }
 
-async function post(page, { mode, isPublic, daysAhead, womenOnly = false }) {
+async function post(page, { mode, isPublic, daysAhead, event }) {
   await page.getByRole('link', { name: 'Start a game' }).first().click();
-  await page.getByRole('button', { name: mode }).click();
+  await page.getByRole('button', { name: new RegExp(`^${mode} `) }).click();
   await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
   await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
   await page.getByRole('radiogroup', { name: 'Date (next 14 days)' }).getByRole('radio').nth(daysAhead).click();
   if (!isPublic) await page.getByRole('button', { name: 'Only people with the code' }).click();
-  if (womenOnly) await page.getByRole('button', { name: 'Women only' }).click();
+  if (event) await page.getByRole('button', { name: event }).click();
   await page.getByRole('button', { name: 'Casual' }).click();
   await page.getByLabel('Note (optional)').fill('Court 3, bring a shuttle');
   await page.getByRole('button', { name: 'Post game' }).click();
@@ -72,15 +72,24 @@ await blake.getByText('The host cancelled this game.').waitFor();
 await alex.goto(`${base}/notifications/`);
 await alex.getByText('Game cancelled').first().waitFor();
 
-// Blake 发起女生局：自己看得到标签，Alex（男生）在附近找不到
+// Blake 发起女单：自己看得到标签，Alex（男生）在附近找不到
 await blake.goto(`${base}/rooms/`);
-await post(blake, { mode: 'Singles', isPublic: true, daysAhead: 3, womenOnly: true });
-await blake.getByText(/Women only/).first().waitFor();
+await post(blake, { mode: 'Singles', isPublic: true, daysAhead: 3, event: 'Women’s singles' });
+await blake.getByText(/Women’s singles/).first().waitFor();
 await alex.goto(`${base}/rooms/`);
 await alex.getByRole('button', { name: 'Use my location' }).click();
 await alex.getByRole('heading', { name: 'Nearby games', level: 1 }).waitFor();
 await alex.waitForTimeout(1500);
-if (await alex.getByRole('link', { name: /Hosted by Blake/ }).count()) throw new Error('a man can see a women-only game');
+if (await alex.getByRole('link', { name: /Women’s singles.*Hosted by Blake/ }).count()) throw new Error('a man can see a women’s singles game');
 
-console.log(`ok: posted, found nearby, joined, started; joined private room ${code} by code and saw it cancelled; women-only game hidden from men`);
+// Blake 发起混双：女 3 级在混双里按自己的等级算；Alex 加入后男女各一人
+await blake.goto(`${base}/rooms/`);
+await post(blake, { mode: 'Doubles', isPublic: true, daysAhead: 4, event: 'Mixed doubles' });
+await blake.getByText('Men 0/2 · Women 1/2').waitFor();
+await alex.goto(blake.url());
+await alex.getByText('Mixed doubles').first().waitFor();
+await alex.getByRole('button', { name: 'Join game' }).click();
+await alex.getByText('Men 1/2 · Women 1/2').waitFor();
+
+console.log(`ok: posted, found nearby, joined, started; joined private room ${code} by code and saw it cancelled; women's singles hidden from men; joined a mixed doubles game`);
 await browser.close();

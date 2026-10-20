@@ -56,6 +56,7 @@ extension MockBackend {
         let lockAt: Date
         let lastMinute: Bool?
         let playWith: String?
+        let mixed: Bool?
         let gameId: String?
         let venues: [RemotePlace]?
         let offer: RemoteOffer?
@@ -141,7 +142,7 @@ extension MockBackend {
     // MARK: 操作
 
     func remoteSubmitTicket(mode: GameMode, slot: TimeSlot, courtIds: [String], skillTolerance: Int, autoAccept: Bool,
-                            playWith: Gender?) async throws -> MatchTicket {
+                            event: PlayEvent?) async throws -> MatchTicket {
         let remote = try requireRemote()
         let id: String = try await remote.rpc("submit_ticket", [
             "p_mode": mode.serverValue,
@@ -150,7 +151,8 @@ extension MockBackend {
             "p_venue_ids": courtIds,
             "p_skill_tolerance": skillTolerance,
             "p_auto_accept": autoAccept,
-            "p_play_with": playWith?.serverJSON ?? NSNull(),
+            "p_play_with": event?.gender?.serverJSON ?? NSNull(),
+            "p_mixed": event == .mixed,
         ])
         await refreshRemoteActivity()
         guard let ticket = db.tickets[id] else { throw RemoteError.server("bad_response") }
@@ -268,7 +270,7 @@ extension MockBackend {
             courtIds: (remote.venues ?? []).map(\.id), skillTolerance: remote.skillTolerance, radiusKm: 0,
             origin: me.location ?? db.worldCenter, autoAccept: remote.autoAccept, isLastMinute: remote.lastMinute ?? false, status: status,
             createdAt: db.tickets[remote.id]?.createdAt ?? Date(), deadline: remote.lockAt, hasPriority: false, excludedUserIds: [],
-            playWith: remote.playWith.flatMap(Gender.init(rawValue:))
+            event: PlayEvent(gender: remote.playWith.flatMap(Gender.init(rawValue:)), mixed: remote.mixed ?? false)
         )
     }
 

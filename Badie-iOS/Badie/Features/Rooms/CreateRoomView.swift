@@ -21,7 +21,7 @@ struct CreateRoomView: View {
     @State private var lowerLevel = 1
     @State private var upperLevel = 9
     @State private var tags: Set<RoomTag> = []
-    @State private var audience: Gender?
+    @State private var event: PlayEvent?
     @State private var note = ""
     @State private var showCourtPicker = false
     @State private var isWorking = false
@@ -61,6 +61,7 @@ struct CreateRoomView: View {
                             }
                         }
                     }
+                    eventGroup
                     group(String(localized: "招募方式")) {
                         SegmentedSticker(options: [RoomVisibility.privateRoom, .publicListing], selection: $visibility) {
                             $0 == .privateRoom ? String(localized: "仅邀请（私密）") : String(localized: "公开到附近")
@@ -75,7 +76,6 @@ struct CreateRoomView: View {
                     scheduleGroup
                     courtGroup
                     if visibility == .publicListing {
-                        audienceGroup
                         levelGroup
                         tagsGroup
                     }
@@ -177,7 +177,7 @@ struct CreateRoomView: View {
                 LevelStepper(title: String(localized: "最低"), level: $lowerLevel, range: 1...upperLevel)
                 LevelStepper(title: String(localized: "最高"), level: $upperLevel, range: lowerLevel...9)
             }
-            let myLevel = appState.currentUser?.level(for: audience) ?? 4
+            let myLevel = appState.currentUser?.level(in: event) ?? 4
             HStack(spacing: AppTheme.Spacing.sm) {
                 ChoiceChip(title: String(localized: "不限"), isSelected: lowerLevel == 1 && upperLevel == 9) {
                     lowerLevel = 1; upperLevel = 9
@@ -192,11 +192,15 @@ struct CreateRoomView: View {
         }
     }
 
-    /// 谁能来：不限，或只限和自己同性别的人（男女都能来时，等级按男子等级、女生换算后比）
-    private var audienceGroup: some View {
-        group(String(localized: "谁能来")) {
-            AudiencePicker(options: appState.currentUser.map { $0.gender == .unspecified ? [] : [$0.gender] } ?? [],
-                           selection: $audience)
+    /// 项目：不限、男单 / 女单 / 男双 / 女双（只能是自己的性别）、混双。换了项目，自己的等级可能跟着换算，范围重新围着自己
+    private var eventGroup: some View {
+        group(String(localized: "项目")) {
+            EventPicker(mode: mode, gender: appState.currentUser?.gender ?? .unspecified, selection: $event)
+        }
+        .onChange(of: event) { _, event in
+            let level = appState.currentUser?.level(in: event) ?? 4
+            lowerLevel = max(1, level - 2)
+            upperLevel = min(9, level + 2)
         }
     }
 
@@ -264,7 +268,7 @@ struct CreateRoomView: View {
         startMinutes = calendar.component(.hour, from: suggested.startTime) * 60 + calendar.component(.minute, from: suggested.startTime)
         endMinutes = min(24 * 60, startMinutes + 120)
         courtId = locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil } ?? locationManager.nearbyCourts.first?.id
-        if let level = appState.currentUser?.displayLevel {
+        if let level = appState.currentUser?.level(in: event) {
             lowerLevel = max(1, level - 2)
             upperLevel = min(9, level + 2)
         }
@@ -281,7 +285,7 @@ struct CreateRoomView: View {
             levelRange: lowerLevel...upperLevel,
             tags: RoomTag.allCases.filter { tags.contains($0) },
             note: note,
-            audience: visibility == .publicListing ? audience : nil
+            event: event
         )
         do {
             let room = try await roomManager.create(draft)

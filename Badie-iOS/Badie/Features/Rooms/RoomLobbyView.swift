@@ -173,7 +173,7 @@ struct RoomLobbyView: View {
             InfoRow(icon: "chart.bar.fill", tint: AppTheme.Colors.lavender,
                     title: room.levelRangeText,
                     subtitle: { () -> String? in
-                        let parts = [room.audience?.onlyLabel].compactMap { $0 } + room.tags.map(\.title)
+                        let parts = [room.event?.title(mode: room.mode)].compactMap { $0 } + room.tags.map(\.title)
                         return parts.isEmpty ? nil : parts.joined(separator: " · ")
                     }())
             if let cost = room.costEstimate {
@@ -199,7 +199,8 @@ struct RoomLobbyView: View {
 
     private func seatsSection(_ room: Room) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            SectionTitle(title: String(localized: "座位"), detail: room.isReady ? String(localized: "已满员") : String(localized: "还差 \(room.openSeats) 人"))
+            SectionTitle(title: String(localized: "座位"), detail: room.mixedGoing.map { String(localized: "男 \($0.male)/2 · 女 \($0.female)/2") }
+                ?? (room.isReady ? String(localized: "已满员") : String(localized: "还差 \(room.openSeats) 人")))
             LazyVGrid(columns: [GridItem(.flexible(), spacing: AppTheme.Spacing.md), GridItem(.flexible(), spacing: AppTheme.Spacing.md)],
                       spacing: AppTheme.Spacing.md) {
                 ForEach(room.participants) { participant in
@@ -352,12 +353,15 @@ struct RoomLobbyView: View {
 
     @ViewBuilder
     private func joinButton(_ room: Room) -> some View {
-        // 等级按参加的人算：只限女生按女子等级，男女都能来时女子等级换算后比
-        let level = appState.currentUser?.level(for: room.audience) ?? 0
-        let genderBlocked = room.audience.map { $0 != appState.currentUser?.gender } ?? false
+        // 等级按项目算：女单女双、混双按自己的等级，男女都能来时女子等级换算后比
+        let gender = appState.currentUser?.gender ?? .unspecified
+        let level = appState.currentUser?.level(in: room.event) ?? 0
+        let genderBlocked = room.event.map { $0 == .mixed ? gender == .unspecified : $0.gender != gender } ?? false
         let levelBlocked = room.visibility == .publicListing && !room.accepts(level: level) && !room.invitedUserIds.contains(me ?? "")
-        if genderBlocked, let audience = room.audience {
-            Text(audience.onlyLabel)
+        // 混双男女各两个位子：自己这边满了只能候补
+        let sideFull = room.mixedGoing.map { gender != .unspecified && $0.count(gender) >= 2 } ?? false
+        if genderBlocked, let event = room.event {
+            Text(event.title(mode: room.mode))
                 .font(AppTheme.Typography.footnoteBold)
                 .foregroundStyle(AppTheme.Colors.danger)
         } else if levelBlocked {
@@ -370,7 +374,7 @@ struct RoomLobbyView: View {
         } label: {
             HStack(spacing: AppTheme.Spacing.sm) {
                 if isWorking { LoadingDots() }
-                Text(room.isFull ? String(localized: "加入候补") : String(localized: "加入球局") + (room.costEstimate.flatMap { $0.perPerson == nil ? nil : " · \($0.perPersonText)" } ?? ""))
+                Text(room.isFull || sideFull ? String(localized: "加入候补") : String(localized: "加入球局") + (room.costEstimate.flatMap { $0.perPerson == nil ? nil : " · \($0.perPersonText)" } ?? ""))
             }
         }
         .buttonStyle(.brutalPrimary)

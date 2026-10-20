@@ -1,5 +1,6 @@
 // 多个页面共用的卡片：球局票据、约球请求、公开球局（对应 iOS 的 GameTicketCard / TicketStatusCard / PublicRoomCard）
 import { km } from './Courts';
+import { eventLabel, eventOf } from './gender';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { AvatarStack, Dashed, IconTile, Tag, type Tint } from './kit';
@@ -89,7 +90,7 @@ export function RequestCard({ request: r }: { request: Ticket }) {
     <Link to="/play/" className={`sticker lift flex items-center gap-3 p-4 ${state.action ? 'bg-lime text-on-accent' : ''}`}>
       <IconTile icon={state.icon} tint={state.action ? 'surface' : state.tint} />
       <span className="min-w-0 flex-1">
-        <span className={`kicker block ${state.action ? '' : 'text-ink-secondary'}`}>{t('Game request')} · {modeName(r.mode)}</span>
+        <span className={`kicker block ${state.action ? '' : 'text-ink-secondary'}`}>{t('Game request')} · {eventLabel(r.mode, eventOf(r.play_with, r.mixed)) ?? modeName(r.mode)}</span>
         <span className="block text-headline">{dayName(r.starts_at, tz)} · {timeOf(r.starts_at, tz)}–{timeOf(r.ends_at, tz)}</span>
         <span className={`block text-footnote font-bold ${state.action ? '' : 'text-ink-secondary'}`}>{state.title}</span>
       </span>
@@ -98,14 +99,14 @@ export function RequestCard({ request: r }: { request: Ticket }) {
   );
 }
 
-/** 公开球局：模式、水平、缺几个人、时间、球馆、空位 */
+/** 公开球局：项目（男单、混双……；不限就写单打 / 双打）、水平、缺几个人、时间、球馆、空位 */
 export function RoomCard({ room: r, distance, wide = false }: { room: RoomSummary; distance?: number; wide?: boolean }) {
   const open = Math.max(0, r.capacity - r.going);
   const tz = r.venue?.tz;
   return (
     <Link to={`/rooms/${r.id}/`} className={`sticker lift grid content-start gap-2 p-4 ${wide ? 'w-full' : 'w-[17rem]'}`}>
       <span className="flex items-center gap-1.5">
-        <Tag icon={r.mode === 'doubles' ? 'users' : 'user'} tint="lavender">{modeName(r.mode)}</Tag>
+        <Tag icon={r.mode === 'doubles' ? 'users' : 'user'} tint="lavender">{eventLabel(r.mode, eventOf(r.gender, r.mixed)) ?? modeName(r.mode)}</Tag>
         <Tag>{t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })}</Tag>
         <span className="ml-auto">
           {r.my_status === 'owner' ? <Tag tint="butter">{t('Hosting')}</Tag>

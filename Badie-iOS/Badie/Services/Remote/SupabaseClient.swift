@@ -83,6 +83,8 @@ enum RemoteError: LocalizedError, Equatable {
         case "group_not_found": return String(localized: "没有找到这个球群。")
         case "level_out_of_range": return String(localized: "你的水平不在 TA 接受的范围内。")
         case "gender_restricted": return String(localized: "这个只限男生或只限女生。")
+        case "invalid_event": return String(localized: "混双只有双打，而且要先在设置里填好性别。")
+        case "mixed_side_full": return String(localized: "这个混双局里和你同性别的位子已经满了。")
         case "owner_cannot_leave": return String(localized: "群主不能退出自己的球群。")
         case "not_organizer": return String(localized: "只有组织者才能这样操作。")
         case "not_member": return String(localized: "请先加入球群。")

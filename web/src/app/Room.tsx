@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
-import { audienceLabel } from './gender';
+import { eventLabel, eventOf, type Gender } from './gender';
 import { t } from './i18n';
 import { SlotFields, slotTimes, type Slot } from './NewRoom';
 import { Icon } from './icons';
@@ -17,7 +17,8 @@ const closedText = (reason: NonNullable<RoomDetail['closed_reason']>) =>
     expired: t('It closed after 30 minutes without activity.'),
   })[reason];
 
-export function RoomPage({ id }: { id: string }) {
+/** gender：看的人自己的性别，混双局用来判断自己这边满没满 */
+export function RoomPage({ id, gender }: { id: string; gender: Gender | null }) {
   const { data: r, refresh } = useLive<RoomDetail | null>('room_page', { args: { p_room: id }, every: 15_000 });
   const [busy, setBusy] = useState<string>();
   const [confirm, setConfirm] = useState<string>();
@@ -46,7 +47,8 @@ export function RoomPage({ id }: { id: string }) {
   const open = r.status === 'open';
   const going = r.members?.filter((m) => !m.waitlisted) ?? [];
   const waiting = r.members?.filter((m) => m.waitlisted) ?? [];
-  const full = r.going >= r.capacity;
+  // 混双男女各两个位子：自己这边满了也只能候补
+  const full = r.going >= r.capacity || (r.mixed && !!gender && (r.mixed_going?.[gender] ?? 0) >= 2);
   const room = { p_room: r.id };
 
   async function join() {
@@ -105,7 +107,7 @@ export function RoomPage({ id }: { id: string }) {
             <Row icon="pin" tint="sky" title={r.venue ? r.venue.name : t('Court not set yet')} subtitle={r.venue ? [r.venue.street, r.venue.city].filter(Boolean).join(', ') : undefined} />
             <Divider />
             <Row icon="level" tint="lavender" title={t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })}
-                 subtitle={[audienceLabel(r.gender), ...r.tags.map(tagText)].filter(Boolean).join(' · ') || undefined} />
+                 subtitle={[eventLabel(r.mode, eventOf(r.gender, r.mixed)), ...r.tags.map(tagText)].filter(Boolean).join(' · ') || undefined} />
             {r.note && (
               <>
                 <Divider />
@@ -116,7 +118,9 @@ export function RoomPage({ id }: { id: string }) {
 
           <section aria-labelledby="players" className="sticker grid gap-3 p-5">
             <h2 id="players" className="flex items-baseline justify-between gap-2 text-headline">
-              {t('Players')} <span className="text-footnote font-bold text-ink-secondary tabular-nums">{t('{n} of {total}', { n: r.going, total: r.capacity })}</span>
+              {t('Players')} <span className="text-footnote font-bold text-ink-secondary tabular-nums">
+                {r.mixed_going ? t('Men {men}/2 · Women {women}/2', { men: r.mixed_going.male, women: r.mixed_going.female }) : t('{n} of {total}', { n: r.going, total: r.capacity })}
+              </span>
             </h2>
             {r.members ? (
               <ul className="grid gap-2">

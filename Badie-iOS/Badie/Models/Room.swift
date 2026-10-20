@@ -109,8 +109,17 @@ struct Room: Identifiable, Codable, Hashable {
     let createdAt: Date
     var lastActivityAt: Date
     var status: RoomStatus
-    /// 只限女生 / 男生；nil = 不限
-    var audience: Gender? = nil
+    /// 项目：男单女单男双女双、混双；nil = 不限
+    var event: PlayEvent? = nil
+    /// 混双局男女各有几个人（不算候补）
+    var mixedGoing: MixedGoing? = nil
+
+    struct MixedGoing: Codable, Hashable {
+        let male: Int
+        let female: Int
+
+        func count(_ gender: Gender) -> Int { gender == .female ? female : male }
+    }
 
     static let expirationDuration: TimeInterval = 30 * 60
     static let codeLength = 6

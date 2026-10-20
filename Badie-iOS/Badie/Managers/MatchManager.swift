@@ -15,8 +15,8 @@ struct MatchDraft: Equatable {
     var skillTolerance: Int = 1
     /// 符合条件的提议直接替我接受（默认关闭）
     var autoAccept = false
-    /// 只和男生 / 女生打；nil = 不限
-    var playWith: Gender?
+    /// 项目：男单女单男双女双、混双；nil = 不限
+    var event: PlayEvent?
 
     static let maxCourts = 3
 
@@ -252,7 +252,7 @@ final class MatchManager: ObservableObject {
             do {
                 outcome = .success(try await self.backend.submitTicket(
                     mode: snapshot.mode, slot: slot, courtIds: courtIds, skillTolerance: snapshot.skillTolerance,
-                    radiusKm: radiusKm, origin: location, autoAccept: snapshot.autoAccept, playWith: snapshot.playWith))
+                    radiusKm: radiusKm, origin: location, autoAccept: snapshot.autoAccept, event: snapshot.event))
             } catch {
                 outcome = .failure(error)
             }
@@ -353,7 +353,7 @@ final class MatchManager: ObservableObject {
             do {
                 let next = try await self.backend.submitTicket(
                     mode: ticket.mode, slot: ticket.slot, courtIds: ticket.courtIds, skillTolerance: ticket.skillTolerance,
-                    radiusKm: ticket.radiusKm, origin: ticket.origin, autoAccept: true, playWith: ticket.playWith)
+                    radiusKm: ticket.radiusKm, origin: ticket.origin, autoAccept: true, event: ticket.event)
                 self.flowTicketId = next.id
                 self.reloadMatchmaking(announce: false)
                 withAnimation(AppTheme.Motion.standard) { self.phase = .idle }

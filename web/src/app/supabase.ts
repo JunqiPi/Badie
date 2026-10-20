@@ -97,8 +97,10 @@ export interface Ticket {
   auto_accept: boolean;
   /** 开赛前 2.5 小时内发起：只配此刻也在找的人，确认期限短 */
   last_minute: boolean;
-  /** 只和男生 / 女生打；null = 不限 */
+  /** 只和男生 / 女生打（只能是自己的性别）；null = 不限 */
   play_with: Gender | null;
+  /** 混双：两男两女，每边一男一女 */
+  mixed: boolean;
   game_id: string | null;
   venues: Place[];
   offer: null | {
@@ -318,8 +320,12 @@ export interface RoomSummary {
   note: string;
   /** 只限男生 / 女生；null = 不限 */
   gender: Gender | null;
+  /** 混双：男女各两个位子 */
+  mixed: boolean;
   capacity: number;
   going: number;
+  /** 混双局男女各有几个人（不算候补） */
+  mixed_going: { male: number; female: number } | null;
   waitlist: number;
   owner: { id: string; nickname: string; rating: number };
   venue: { id: string; name: string; city: string; street: string; tz: string | null } | null;
@@ -410,6 +416,8 @@ const problems: Record<string, string> = {
   group_not_found: 'Group not found.',
   level_out_of_range: 'Your level is outside the range they accept.',
   gender_restricted: 'This one is only for men or only for women.',
+  invalid_event: 'Mixed doubles is for doubles, and needs your gender set in Settings.',
+  mixed_side_full: 'This mixed doubles game already has two players of your gender.',
   owner_cannot_leave: 'The owner can’t leave their own group.',
   not_organizer: 'Only organizers can do this.',
   not_member: 'Join the group first.',

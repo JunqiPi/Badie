@@ -1,4 +1,4 @@
-// 界面翻译：代码里每个 t('…')、定级题和静态页面的 data-t 在所有语言里都有译文，占位符一致；单复数按语言规则选
+// 界面翻译：代码里每个 t('…')、定级题、服务器错误提示和静态页面的 data-t 在所有语言里都有译文，占位符一致；单复数按语言规则选
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -15,6 +15,9 @@ const keys = new Set([
   ...sources(app, /\.tsx?$/).flatMap((code) => [...code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)].map((m) => unescape(m[1]))),
   // 定级题的题目和选项写在数组里，翻译时才传给 t()，上面扫不到
   ...questions.flatMap((q) => [q.title, q.hint, ...q.options.map((o) => o.text)]),
+  // 服务器错误的提示也一样（supabase.ts 里的 problems）
+  ...[...readFileSync(new URL('supabase.ts', app), 'utf8').match(/const problems[^]*?\n\};/)![0].matchAll(/: '((?:[^'\\\n]|\\.)*)',?$/gm)]
+    .map((m) => unescape(m[1])),
   // 静态页面（球馆目录）在浏览器里按 data-t 翻译
   ...pages.flatMap((code) => [...code.matchAll(/\bdata-t(?:-placeholder|-label)?="([^"]+)"/g)].map((m) => m[1])),
 ]);

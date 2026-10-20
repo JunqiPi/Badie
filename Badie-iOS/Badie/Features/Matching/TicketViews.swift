@@ -73,7 +73,7 @@ struct TicketStatusCard: View {
             HStack(spacing: AppTheme.Spacing.md) {
                 IconTile(systemName: status.icon, fill: status.tint, size: 44)
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("约球请求 · \(ticket.mode.title)")
+                    Text("约球请求 · \(ticket.event.title(mode: ticket.mode))")
                         .font(AppTheme.Typography.overline)
                         .tracking(0.6)
                         .foregroundStyle(secondary)
@@ -107,7 +107,7 @@ struct TicketSummaryCard: View {
     var body: some View {
         VStack(spacing: 0) {
             InfoRow(icon: ticket.mode.icon, tint: AppTheme.Colors.lavender,
-                    title: "\(ticket.mode.title) · \(ticket.slot.formattedFull)",
+                    title: "\(ticket.event.title(mode: ticket.mode)) · \(ticket.slot.formattedFull)",
                     subtitle: ticket.skillTolerance >= MatchRequest.anySkill ? String(localized: "不限水平") : String(localized: "水平相差 ±\(ticket.skillTolerance) 级以内"))
             InsetDivider()
             InfoRow(icon: "mappin.and.ellipse", tint: AppTheme.Colors.sky,

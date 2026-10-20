@@ -40,6 +40,8 @@ struct MatchSetupView: View {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
                         modeSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
+                        eventSection
+                            .padding(.horizontal, AppTheme.Spacing.screen)
                         dateSection
                         timeSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
@@ -47,8 +49,6 @@ struct MatchSetupView: View {
                             .padding(.horizontal, AppTheme.Spacing.screen)
                             .id(Self.venuesAnchor)
                         skillSection
-                            .padding(.horizontal, AppTheme.Spacing.screen)
-                        playWithSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
                         confirmSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
@@ -261,12 +261,13 @@ struct MatchSetupView: View {
         }
     }
 
-    // MARK: 和谁打（男女等级分开算，男女同场时换算）
+    // MARK: 项目（男单女单男双女双只能选自己的性别；混双两男两女）
 
-    private var playWithSection: some View {
+    private var eventSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label(String(localized: "和谁打"))
-            AudiencePicker(options: [.female, .male], selection: $matchManager.draft.playWith)
+            label(String(localized: "项目"))
+            EventPicker(mode: matchManager.draft.mode, gender: appState.currentUser?.gender ?? .unspecified,
+                        selection: $matchManager.draft.event)
         }
     }
 

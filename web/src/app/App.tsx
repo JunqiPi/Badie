@@ -122,7 +122,7 @@ export default function App() {
     player ? <PlayerPage key={player} id={player} />
     : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />
     : group ? <GroupPage key={group} id={group} />
-    : room ? <RoomPage key={room} id={room} />
+    : room ? <RoomPage key={room} id={room} gender={profile?.gender ?? null} />
     : game ? <GameDetail id={game} />
     : path.startsWith('/rooms/new/') ? <NewRoom profile={profile} />
     : path.startsWith('/rooms/') ? <Rooms />

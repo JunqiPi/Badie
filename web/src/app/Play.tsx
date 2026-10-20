@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
-import { audienceLabel, type Gender } from './gender';
+import { EventField, eventLabel, eventOf, eventOptions, type PlayEvent } from './gender';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, Empty, IconTile, LevelBadge, Notice, Starburst, StatTile, Tag, type Tint } from './kit';
@@ -48,7 +48,7 @@ export function Play({ profile }: { profile: Profile }) {
           )}
         </section>
 
-        <NewRequest onCreated={refresh} />
+        <NewRequest profile={profile} onCreated={refresh} />
       </div>
     </div>
   );
@@ -157,12 +157,13 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
   const tz = ticket.venues[0]?.tz;
   // 普通请求到点没约成、离开赛还有 30 分钟以上：可以用同样的条件转成临时局
   const canGoLastMinute = ticket.status === 'expired' && !ticket.last_minute && new Date(ticket.starts_at).getTime() - Date.now() >= 30 * 60000;
+  const event = eventLabel(ticket.mode, eventOf(ticket.play_with, ticket.mixed));
   return (
     <article className="sticker animate-enter grid gap-3 p-4">
       <div className="flex items-center gap-2">
         <Tag icon={s.icon} tint={s.tint}>{t(s.label)}</Tag>
         {ticket.last_minute && <Tag tint="peach">{t('Last-minute')}</Tag>}
-        {ticket.play_with && <Tag tint="lavender">{audienceLabel(ticket.play_with)}</Tag>}
+        {event && <Tag tint="lavender">{event}</Tag>}
       </div>
       <ul className="grid gap-2">
         <Summary icon={ticket.mode === 'doubles' ? 'users' : 'user'} tint="lavender"
@@ -182,7 +183,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
           <Button className="button-sm" busy={busy === 'retry'} disabled={Boolean(busy)}
                   onClick={() => act('retry', 'submit_ticket', {
                     p_mode: ticket.mode, p_starts_at: ticket.starts_at, p_ends_at: ticket.ends_at, p_venue_ids: ticket.venues.map((v) => v.id),
-                    p_skill_tolerance: ticket.skill_tolerance, p_auto_accept: true, p_play_with: ticket.play_with,
+                    p_skill_tolerance: ticket.skill_tolerance, p_auto_accept: true, p_play_with: ticket.play_with, p_mixed: ticket.mixed,
                   }, t('Looking for players who are free right now.'))}>
             {t('Try last-minute')}
           </Button>
@@ -246,7 +247,7 @@ const presets: [string, number, number][] = [
 ];
 
 /** 新的约球请求：模式、日期、时间段、球馆、对手水平 */
-function NewRequest({ onCreated }: { onCreated: () => void }) {
+function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () => void }) {
   const [mode, setMode] = useState<Mode>('doubles');
   const [courts, setCourts] = useState<Court[]>([]);
   const [favorites, setFavorites] = useState<Court[]>([]);
@@ -262,19 +263,19 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
   const [to, setTo] = useState(21 * 60);
   const [tolerance, setTolerance] = useState<1 | 2 | 8>(1);
   const [autoAccept, setAutoAccept] = useState(false);
-  // 和谁打：记住上次的选择（只存在这个浏览器里）
-  const [playWith, setPlayWith] = useState<Gender | null>(() => {
+  // 项目：记住上次的选择（只存在这个浏览器里）；换成单打时混双不能选，按不限
+  const [chosen, setChosen] = useState<PlayEvent>(() => {
     try {
-      const saved = localStorage.getItem('badie.playWith');
-      return saved === 'male' || saved === 'female' ? saved : null;
+      return (localStorage.getItem('badie.event') as PlayEvent | null) ?? 'any';
     } catch {
-      return null;
+      return 'any';
     }
   });
-  const choosePlayWith = (value: Gender | null) => {
-    setPlayWith(value);
+  const playEvent = eventOptions(mode, profile.gender).includes(chosen) ? chosen : 'any';
+  const chooseEvent = (value: PlayEvent) => {
+    setChosen(value);
     try {
-      localStorage.setItem('badie.playWith', value ?? '');
+      localStorage.setItem('badie.event', value);
     } catch {
       // 隐私模式下存不了，不影响这次
     }
@@ -322,7 +323,8 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
       p_venue_ids: courts.map((c) => c.id),
       p_skill_tolerance: tolerance,
       p_auto_accept: autoAccept,
-      p_play_with: playWith,
+      p_play_with: playEvent === 'male' || playEvent === 'female' ? playEvent : null,
+      p_mixed: playEvent === 'mixed',
     });
     setBusy(false);
     if (error) return setError(problem(error));
@@ -337,6 +339,8 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
       <h2 id="new-request" className="sr-only">{t('New request')}</h2>
 
       <FormatPicker value={mode} onChange={setMode} />
+
+      <EventField mode={mode} gender={profile.gender} value={playEvent} onChange={chooseEvent} />
 
       <DayPicker days={days} value={date} onChange={setDate} />
 
@@ -389,16 +393,6 @@ function NewRequest({ onCreated }: { onCreated: () => void }) {
             <button type="button" key={value} onClick={() => setTolerance(value)} aria-pressed={tolerance === value} className="toggle">{t(label)}</button>
           ))}
         </div>
-      </fieldset>
-
-      <fieldset className="grid gap-2">
-        <legend className="mb-2 text-headline">{t('Play with')}</legend>
-        <div className="flex flex-wrap gap-2">
-          {([[null, 'Anyone'], ['female', 'Women only'], ['male', 'Men only']] as const).map(([value, label]) => (
-            <button type="button" key={label} onClick={() => choosePlayWith(value)} aria-pressed={playWith === value} className="toggle">{t(label)}</button>
-          ))}
-        </div>
-        <p className="text-footnote text-ink-secondary">{t('When men and women play together, a women’s level counts about 1.5 levels lower, so the game stays even.')}</p>
       </fieldset>
 
       <label className="sticker flex cursor-pointer items-start gap-3 p-4">
