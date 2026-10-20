@@ -50,6 +50,8 @@ enum ReportReason: String, CaseIterable, Identifiable, Codable, Hashable {
     case unsafe = "球场上危险或不文明行为"
     /// 防止冒充进女生局
     case wrongGender = "资料里的性别不实"
+    /// 昵称、头像、消息不当（审核规则 1.2）
+    case inappropriate = "不当内容（昵称、头像、消息）"
     case other = "其他"
 
     var id: String { rawValue }
@@ -63,6 +65,7 @@ enum ReportReason: String, CaseIterable, Identifiable, Codable, Hashable {
         case .scam: return String(localized: "推销、诈骗或引流")
         case .unsafe: return String(localized: "球场上危险或不文明行为")
         case .wrongGender: return String(localized: "资料里的性别不实")
+        case .inappropriate: return String(localized: "不当内容（昵称、头像、消息）")
         case .other: return String(localized: "其他")
         }
     }

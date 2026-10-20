@@ -418,6 +418,7 @@ const problems: Record<string, string> = {
   gender_restricted: 'This one is only for men or only for women.',
   invalid_event: 'Mixed doubles is for doubles, and needs your gender set in Settings.',
   mixed_side_full: 'This mixed doubles game already has two players of your gender.',
+  objectionable_content: 'Offensive words aren’t allowed here. Please use different words.',
   owner_cannot_leave: 'The owner can’t leave their own group.',
   not_organizer: 'Only organizers can do this.',
   not_member: 'Join the group first.',

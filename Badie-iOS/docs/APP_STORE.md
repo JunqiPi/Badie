@@ -14,10 +14,12 @@
    - Cloudflare Email Routing 加一个地址 `review@badie.rsvp` 转到你的邮箱。
    - 在 badie.rsvp 用它和一个密码注册，填好昵称、定级，加一两家球馆到“我的球馆”，最好和你的主账号互加好友、约过一场，让审核员能看到真实内容。
    - 邮箱和密码填在第 4 步的 App Review Information 里。
-3. **上架前要补的代码：内容过滤**（审核规则 1.2：有用户发的内容，就要有过滤、举报、屏蔽和联系方式）
-   - 举报、屏蔽、联系我们（`/contact/`）、用户协议里的“零容忍、24 小时内处理举报”都已经有了。
-   - **还缺：昵称、消息、球群名、评价的不当词过滤。** 上架前要做。
-   - 用户协议写了“24 小时内处理举报”，你要说到做到：有人举报时管理员会收到通知，记得及时看。
+3. **审核规则 1.2（用户内容）已经齐了**：过滤、举报、屏蔽、联系方式、用户协议里的“零容忍、24 小时内处理举报”。
+   - 过滤在服务器上做，网页和 App 都生效：昵称、球群名、球馆名有不当词存不了；消息、简介、备注、约战留言里的不当词换成 `***`。
+     英文词表来自 LDNOOBW（CC BY 4.0），去掉了容易误伤的词；中文等是自己整理的。漏掉的词在 `blocked_terms` 表里加一行就生效。
+   - 举报原因有“不当内容（昵称、头像、消息）”，头像这类图片靠举报 + 人工处理。
+   - **24 小时内处理举报要说到做到**：有人举报时管理员会收到通知，在网站的 `/admin/` 页处理（改掉昵称、撤下照片、封号或驳回），
+     能看到被举报人最近 30 天发给举报人的消息。你的账号要在 `admin_users` 表里（Supabase → Table Editor 加一行）。
 4. **想好商店信息**
    - App 名称（30 字以内，全 App Store 唯一；`Badie` 被占用就用 `Badie: Badminton Partners`）。
    - 副标题（30 字以内）、描述、关键词（100 个字符以内，逗号分隔）。
@@ -86,14 +88,15 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
   - 演示账号的邮箱和密码（第 0 步建的），勾 Sign-in required。
   - 联系人：你的名字、电话、邮箱（只给审核员看）。
   - Notes（英文写给审核员）示例：
-    > Badie helps badminton players find partners at their level and courts nearby. Sign in with the demo account (email + password). To test matching, open Play, pick a time and courts; a match needs a second player, so the demo account already has a past game and a friend. Report and block: open any player profile → Report / Block. Account deletion: Settings → Delete account (Sign in with Apple accounts are revoked through Apple’s REST API). Location is only used to show courts nearby and is not stored.
+    > Badie helps badminton players find partners at their level and courts nearby. Sign in with the demo account (email + password). To test matching, open Play, pick a time and courts; a match needs a second player, so the demo account already has a past game and a friend. Report and block: open any player profile → Report / Block. Offensive words are filtered on the server (names containing them can't be saved; they're masked in messages), and reports are reviewed within 24 hours on our admin page. Account deletion: Settings → Delete account (Sign in with Apple accounts are revoked through Apple’s REST API). Location is only used to show courts nearby and is not stored.
 
 ## 5. 提交审核和上架
 
 1. 版本页右上角 **Add for Review → Submit**。Apple 说 90% 在 48 小时内审完；2026 年的实际记录多数在一天内（年初有过一两周的积压）。第一次提交通常比更新慢，每次被拒都重新排队。
 2. 发布方式建议选 **Manually release**：审核通过后你自己点发布，可以先在 TestFlight 再确认一遍。
 3. 被拒了：在 App Store Connect 的 Resolution Center 回复或改了重新提交。常见原因和对应情况：
-   - 1.2 用户内容：要有过滤、举报、屏蔽、联系方式，协议里写明零容忍（**过滤还没做，见第 0 步**）。
+   - 1.2 用户内容：要有过滤、举报、屏蔽、联系方式，协议里写明零容忍（都已经做了，见第 0 步）。开发者论坛里有人因为审核员的截图里看不到协议被拒：
+     我们注册时要勾选同意，下面就是用户协议的链接。
    - 2.1 审核员登录不了或后台没开：演示账号要能用；Supabase 免费项目 7 天没活动会暂停，已有每天的保活任务。
    - 4.8 登录：有 Google 就要有 Apple 登录（已经是原生的 Apple 登录）。
    - 5.1.1(v) 注销账号：App 里能直接注销并删除数据，Apple 登录的会撤销授权（已做）。

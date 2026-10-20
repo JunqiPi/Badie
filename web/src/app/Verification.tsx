@@ -1,4 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
+import { ReportQueue } from './AdminReports';
 import { tier } from './assessment';
 import { t } from './i18n';
 import { Link } from './router';
@@ -186,18 +187,22 @@ interface QueueItem {
   previous: number;
 }
 
-/** 管理员审核认证申请：核对证据上的姓名和档位，可以批得比申请的低 */
+/** 管理员审核页：先处理举报（24 小时内），再审核认证申请（核对证据上的姓名和档位，可以批得比申请的低） */
 export function Admin() {
   const { data: queue, failed, refresh } = useLive<QueueItem[]>('admin_verification_queue', { every: 60_000 });
   if (failed && !queue) return <EmptyState title={t('Admins only')}>{t('This page is for reviewers.')}</EmptyState>;
   return (
-    <div className="max-w-3xl">
-      <PageHeader back="/me/" eyebrow={t('Admin')} title={t('Level verification')} />
-      {!queue ? <Skeleton className="h-40" /> : queue.length === 0 ? (
-        <EmptyState title={t('Nothing to review')} />
-      ) : (
-        <div className="grid gap-4">{queue.map((item) => <Review key={item.id} item={item} onDone={refresh} />)}</div>
-      )}
+    <div className="grid max-w-3xl gap-8">
+      <PageHeader back="/me/" eyebrow={t('Admin')} title={t('Review queue')} />
+      <ReportQueue />
+      <section aria-labelledby="verification" className="grid gap-4">
+        <h2 id="verification" className="text-title2">{t('Level verification')}</h2>
+        {!queue ? <Skeleton className="h-40" /> : queue.length === 0 ? (
+          <EmptyState title={t('Nothing to review')} />
+        ) : (
+          queue.map((item) => <Review key={item.id} item={item} onDone={refresh} />)
+        )}
+      </section>
     </div>
   );
 }

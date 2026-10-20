@@ -13126,6 +13126,64 @@
         }
       }
     },
+    "不当内容（昵称、头像、消息）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inappropriate name, photo or messages"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अनुचित नाम, फ़ोटो या मैसेज"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nama, foto, atau pesan tidak pantas"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不適切な名前・写真・メッセージ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "부적절한 이름, 사진 또는 메시지"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nama, foto atau mesej tidak sesuai"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชื่อ รูป หรือข้อความไม่เหมาะสม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tên, ảnh hoặc tin nhắn không phù hợp"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不當內容（暱稱、頭像、訊息）"
+          }
+        }
+      }
+    },
     "不扣分，会继续帮你找其他人" : {
       "localizations" : {
         "en" : {
@@ -100825,6 +100883,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這類證據不能認證這個等級。"
+          }
+        }
+      }
+    },
+    "这里不能用不当用语，请换个说法。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offensive words aren’t allowed here. Please use different words."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यहाँ अपमानजनक शब्दों की अनुमति नहीं है। कृपया दूसरे शब्द इस्तेमाल करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kata-kata kasar tidak diperbolehkan di sini. Gunakan kata lain."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不適切な言葉は使えません。別の言葉にしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "부적절한 단어는 사용할 수 없어요. 다른 표현을 써 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perkataan kesat tidak dibenarkan di sini. Sila guna perkataan lain."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้คำไม่สุภาพที่นี่ไม่ได้ กรุณาใช้คำอื่น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không được dùng từ ngữ xúc phạm ở đây. Hãy dùng từ khác."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這裡不能使用不當用語，請換個說法。"
           }
         }
       }

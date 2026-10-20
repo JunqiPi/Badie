@@ -298,6 +298,7 @@ extension MockBackend {
         case .unsafe: serverReason = "unsafe"
         case .fakeLevel: serverReason = "fake"
         case .wrongGender: serverReason = "wrong_gender"
+        case .inappropriate: serverReason = "inappropriate"
         case .noShow, .other: serverReason = "other"
         }
         // 爽约没有对应的分类：写进说明里

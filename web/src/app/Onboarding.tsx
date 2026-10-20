@@ -1,7 +1,7 @@
 import { useState, type SubmitEvent } from 'react';
 import { GenderField, type Gender } from './gender';
 import { currentLocale, t } from './i18n';
-import { supabase, type Profile } from './supabase';
+import { problem as explain, supabase, type Profile } from './supabase';
 import { CardFan } from './kit';
 import { Button, Field } from './ui';
 
@@ -54,7 +54,8 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
       .select()
       .single();
     setBusy(false);
-    if (error) setError(t('Couldn’t save. Try a different nickname.'));
+    // 昵称有不当用语时说清楚原因，其他情况多半是重名之类，换一个就好
+    if (error) setError(error.message === 'objectionable_content' ? explain(error) : t('Couldn’t save. Try a different nickname.'));
     else onDone(data as Profile);
   }
 

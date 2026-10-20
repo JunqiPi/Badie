@@ -206,6 +206,7 @@ const reasons = [
   ['unsafe', 'Unsafe or aggressive play'],
   ['fake', 'Fake profile or level'],
   ['wrong_gender', 'Wrong gender on their profile'],
+  ['inappropriate', 'Inappropriate name, photo or messages'],
   ['other', 'Something else'],
 ] as const;
 

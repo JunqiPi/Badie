@@ -339,7 +339,7 @@ function Nickname({ profile, email, onChange }: { profile: Profile; email?: stri
     setBusy(true);
     const { data, error } = await supabase!.from('profiles').update({ nickname: nickname.trim() }).eq('id', profile.id).select().single();
     setBusy(false);
-    if (error) return toast(t('Couldn’t save your nickname. Try again.'), 'error');
+    if (error) return toast(error.message === 'objectionable_content' ? problem(error) : t('Couldn’t save your nickname. Try again.'), 'error');
     onChange(data as Profile);
     toast(t('Saved'));
   }
