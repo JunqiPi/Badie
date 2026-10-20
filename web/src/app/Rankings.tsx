@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { tier } from './assessment';
+import type { Gender } from './gender';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Empty, Notice, ScreenHeader, Segmented } from './kit';
@@ -16,11 +17,15 @@ export function Rankings() {
   const [scope, setScope] = useState<(typeof scopes)[number][0]>('global');
   // 0 = 本周，1 = 上周
   const [week, setWeek] = useState(0);
-  const { data: board } = useLive<WeeklyBoard>('weekly_board', { args: { p_scope: scope, p_offset: week }, every: 120_000 });
+  // 男女分榜：默认看自己性别的榜
+  const [gender, setGender] = useState<Gender>();
+  const { data: board } = useLive<WeeklyBoard>('weekly_board', { args: { p_scope: scope, p_offset: week, p_gender: gender ?? null }, every: 120_000 });
 
   return (
     <div className="grid gap-6">
       <ScreenHeader title={t('Leaderboard')} back="/games/" />
+      <Segmented label={t('Board')} value={gender ?? board?.gender ?? 'male'} onChange={setGender}
+                 options={[{ value: 'male', label: t('Men’s board') }, { value: 'female', label: t('Women’s board') }]} />
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start">
         <section aria-labelledby="weekly" className="grid grid-cols-1 gap-3">
           <h2 id="weekly" className="sr-only">{t(weeks[week])}</h2>
@@ -37,7 +42,7 @@ export function Rankings() {
           )}
         </section>
 
-        <CourtBoards />
+        <CourtBoards gender={gender} />
       </div>
     </div>
   );
@@ -95,11 +100,11 @@ function Board({ entries, unit }: { entries: BoardEntry[]; unit: 'pts' | 'games'
 type Court = { id: string; name: string };
 
 /** 场馆月榜：我收藏的球馆 */
-function CourtBoards() {
+function CourtBoards({ gender }: { gender?: Gender }) {
   const [courts, setCourts] = useState<Court[]>();
   const [court, setCourt] = useState<string>();
   const [month, setMonth] = useState(0);
-  const { data: board } = useLive<VenueBoard>('venue_board', { args: { p_venue: court ?? '', p_offset: month }, every: 300_000 });
+  const { data: board } = useLive<VenueBoard>('venue_board', { args: { p_venue: court ?? '', p_offset: month, p_gender: gender ?? null }, every: 300_000 });
 
   useEffect(() => {
     supabase!.from('favorite_venues').select('venues(id, name)').then(({ data }) => {

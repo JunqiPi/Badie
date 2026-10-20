@@ -3,6 +3,7 @@ import { useArea } from './area';
 import { RoomCard } from './cards';
 import { km } from './Courts';
 import { AreaPrompt } from './Home';
+import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { Empty, IconButton, IconTile, ScreenHeader, SectionTitle, Tag } from './kit';
@@ -29,6 +30,7 @@ export function RoomChips({ room: r }: { room: RoomSummary }) {
     <span className="flex flex-wrap gap-1.5">
       <Tag icon={r.mode === 'doubles' ? 'users' : 'user'} tint="lavender">{r.mode === 'doubles' ? t('Doubles') : t('Singles')}</Tag>
       <Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })}</Tag>
+      {r.gender && <Tag icon="users" tint="lavender">{audienceLabel(r.gender)}</Tag>}
       {r.visibility === 'private' && <Tag icon="lock" tint="butter">{t('Private room')}</Tag>}
       {r.tags.map((tag) => <Tag key={tag} tint="mint">{tagText(tag)}</Tag>)}
     </span>

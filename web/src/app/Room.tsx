@@ -1,4 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
+import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { SlotFields, slotTimes, type Slot } from './NewRoom';
 import { Icon } from './icons';
@@ -103,7 +104,8 @@ export function RoomPage({ id }: { id: string }) {
             <Divider />
             <Row icon="pin" tint="sky" title={r.venue ? r.venue.name : t('Court not set yet')} subtitle={r.venue ? [r.venue.street, r.venue.city].filter(Boolean).join(', ') : undefined} />
             <Divider />
-            <Row icon="level" tint="lavender" title={t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })} subtitle={r.tags.map(tagText).join(' · ') || undefined} />
+            <Row icon="level" tint="lavender" title={t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })}
+                 subtitle={[audienceLabel(r.gender), ...r.tags.map(tagText)].filter(Boolean).join(' · ') || undefined} />
             {r.note && (
               <>
                 <Divider />

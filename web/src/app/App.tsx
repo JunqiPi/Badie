@@ -15,7 +15,7 @@ import { Me, Settings } from './Me';
 import { NewGroup } from './NewGroup';
 import { NewRoom } from './NewRoom';
 import { Messages, Notifications } from './Messages';
-import { Onboarding } from './Onboarding';
+import { GenderPrompt, Onboarding } from './Onboarding';
 import { Play } from './Play';
 import { PlayerPage } from './Player';
 import { syncPush } from './push';
@@ -91,6 +91,7 @@ export default function App() {
       />,
     );
   }
+  if (profile && !profile.gender) return shell(<GenderPrompt profile={profile} onDone={setProfile} />);
   if (path.startsWith('/level-quiz/') && profile) {
     return shell(
       <LevelQuiz

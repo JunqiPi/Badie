@@ -50,6 +50,7 @@ export function PlayerPage({ id }: { id: string }) {
                 <h1 id="player" className="truncate text-title">{card.nickname}</h1>
                 <ul className="flex flex-wrap gap-1.5" aria-label={t('Highlights')}>
                   <li><LevelBadge rating={card.rating} /></li>
+                  {card.gender && <li><Tag tint="surface">{card.gender === 'female' ? t('Women’s level') : t('Men’s level')}</Tag></li>}
                   {card.verified && <li><Tag icon="verified" tint="lime">{kindLabel(card.verified)}</Tag></li>}
                   {card.new_player ? <li><Tag icon="sparkle" tint="butter">{t('New player · calibrating')}</Tag></li> : card.reliable && <li><Tag icon="reliable" tint="mint">{t('Reliable')}</Tag></li>}
                 </ul>
@@ -204,6 +205,7 @@ const reasons = [
   ['scam', 'Asked for money or personal details'],
   ['unsafe', 'Unsafe or aggressive play'],
   ['fake', 'Fake profile or level'],
+  ['wrong_gender', 'Wrong gender on their profile'],
   ['other', 'Something else'],
 ] as const;
 

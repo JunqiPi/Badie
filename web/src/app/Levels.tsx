@@ -37,6 +37,13 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
         <p className="mt-1 text-caption text-ink-secondary">{t('From level 7 up, the gaps are big, so each tier has its own name and is set by evidence.')}</p>
       </dl>
 
+      <section className="sticker grid gap-2 p-5">
+        <h2 className="text-title3">{t('Men’s and women’s levels')}</h2>
+        <p className="text-subhead text-ink-secondary">
+          {t('Men and women are rated on separate ladders, the way clubs and tournaments do it: a women’s 4 is a strong player among women. When men and women play together, Badie counts a women’s level about 1.5 levels lower (a men’s 3 usually beats a women’s 4 in singles), so mixed games stay even. You can also choose to play only with women or only with men.')}
+        </p>
+      </section>
+
       <ol className="grid gap-3">
         {levels.map((l) => (
           <li key={l.level} id={`level-${l.level}`} className={`sticker grid gap-3 p-4 ${l.level === mine ? 'bg-lime/35' : ''}`}>

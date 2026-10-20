@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
 import { SUPPORT_EMAIL } from './Contact';
+import { GenderField } from './gender';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Divider, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile, Tag } from './kit';
@@ -156,7 +157,7 @@ const policies = [
   ['nobody', 'No one'],
 ] as const;
 
-type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts'>;
+type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts' | 'gender'>;
 
 /** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
 export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
@@ -175,6 +176,12 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
     <div className="mx-auto grid max-w-2xl gap-6">
       <ScreenHeader title={t('Settings')} back="/me/" />
       <Nickname profile={profile} email={email} onChange={onChange} />
+
+      <Group title={t('Levels')}>
+        <div className="py-3">
+          <GenderField value={profile.gender} onChange={(gender) => gender !== profile.gender && save({ gender })} />
+        </div>
+      </Group>
 
       <Group title={t('Notifications')}>
         <PushSettings />

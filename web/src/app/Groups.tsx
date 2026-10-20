@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useArea } from './area';
 import { km } from './Courts';
 import { AreaPrompt } from './Home';
+import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { Empty, IconButton, IconTile, Notice, ScreenHeader, SectionTitle, Tag } from './kit';
@@ -32,6 +33,7 @@ export function GroupCard({ group: g }: { group: GroupSummary }) {
       <span className="flex flex-wrap gap-1.5">
         {g.schedules.map((sc, i) => <Tag key={i} icon="calendar">{scheduleText(sc)}</Tag>)}
         <Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag>
+        {g.gender && <Tag icon="users" tint="lavender">{audienceLabel(g.gender)}</Tag>}
         {g.join_policy === 'approval' && <Tag icon="lock" tint="lavender">{t('Organizer approves')}</Tag>}
       </span>
       <span className="flex items-center gap-1.5 text-footnote text-ink-secondary"><Icon name="bolt" className="size-3.5" />{activityText(g.activity)}</span>

@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
-import { tier } from './assessment';
+import { audienceLabel, WOMEN_OFFSET, type Gender } from './gender';
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Icon } from './icons';
@@ -62,8 +62,33 @@ export function SlotFields({ slot, onChange }: { slot: Slot; onChange: (slot: Sl
 
 const tags: RoomTag[] = ['beginner_friendly', 'casual', 'competitive', 'women_friendly', 'coaching'];
 
+/** 球局、球群的等级按参加的人算：只限女生用女子等级，男女都能来时女子等级按低 1.5 级换算 */
+export const audienceLevel = (profile: Profile, audience: Gender | null) =>
+  Math.min(9, Math.max(1, Math.round(profile.gender === 'female' && audience !== 'female' ? profile.rating - WOMEN_OFFSET : profile.rating)));
+
+/** 谁能来：不限，或只限和自己同性别的人 */
+export function AudienceField({ profile, value, onChange }: { profile: Profile; value: Gender | null; onChange: (value: Gender | null) => void }) {
+  return (
+    <fieldset className="grid gap-2">
+      <legend className="mb-2 text-headline">{t('Who can join')}</legend>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => onChange(null)} aria-pressed={value === null} className="toggle">{t('Anyone')}</button>
+        {profile.gender && (
+          <button type="button" onClick={() => onChange(profile.gender)} aria-pressed={value === profile.gender} className="toggle">
+            {audienceLabel(profile.gender)}
+          </button>
+        )}
+      </div>
+      <p className="text-footnote text-ink-secondary">
+        {value ? t('Only they can see and join it.') : t('When men and women play together, a women’s level counts about 1.5 levels lower, so the game stays even.')}
+      </p>
+    </fieldset>
+  );
+}
+
 export function NewRoom({ profile }: { profile: Profile }) {
-  const level = tier(profile.rating).level;
+  const [audience, setAudience] = useState<Gender | null>(null);
+  const level = audienceLevel(profile, audience);
   const [mode, setMode] = useState<Mode>('doubles');
   const [isPublic, setPublic] = useState(true);
   const [slot, setSlot] = useState<Slot>(() => ({ date: today(zone(), 1), from: 19 * 60, to: 21 * 60 }));
@@ -85,7 +110,7 @@ export function NewRoom({ profile }: { profile: Profile }) {
     const { data, error } = await supabase!.rpc('create_room', {
       p_mode: mode, p_visibility: isPublic ? 'public' : 'private', p_venue: slot.court!.id,
       p_starts_at: startsAt.toISOString(), p_ends_at: endsAt.toISOString(),
-      p_level_min: min, p_level_max: max, p_tags: picked, p_note: note.trim(),
+      p_level_min: min, p_level_max: max, p_tags: picked, p_note: note.trim(), p_gender: audience,
     });
     setBusy(false);
     if (error) return setError(problem(error));
@@ -103,6 +128,14 @@ export function NewRoom({ profile }: { profile: Profile }) {
         <FormatPicker value={mode} onChange={setMode} />
 
         <SlotFields slot={slot} onChange={setSlot} />
+
+        <AudienceField profile={profile} value={audience} onChange={(value) => {
+          // 换了谁能来，自己的等级可能跟着换算：范围重新围着自己
+          const own = audienceLevel(profile, value);
+          setAudience(value);
+          setMin(Math.max(1, own - 1));
+          setMax(Math.min(9, own + 1));
+        }} />
 
         <fieldset className="grid gap-2">
           <legend className="mb-2 text-headline">{t('Levels')}</legend>

@@ -1,4 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
+import { GenderField, type Gender } from './gender';
 import { currentLocale, t } from './i18n';
 import { supabase, type Profile } from './supabase';
 import { CardFan } from './kit';
@@ -34,6 +35,9 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   const [nickname, setNickname] = useState('');
   const [touched, setTouched] = useState(false);
   const [country, setCountry] = useState(guessCountry);
+  const [gender, setGender] = useState<Gender | null>(null);
+  // 点了“继续”才提示没选性别（离开昵称框就提示会让页面跳动，点不准）
+  const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const problem = nicknameProblem(nickname);
@@ -41,11 +45,12 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   async function save(event: SubmitEvent) {
     event.preventDefault();
     setTouched(true);
-    if (problem) return;
+    setTried(true);
+    if (problem || !gender) return;
     setBusy(true);
     const { data, error } = await supabase!
       .from('profiles')
-      .insert({ id: userId, nickname: nickname.trim(), country_code: country })
+      .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender })
       .select()
       .single();
     setBusy(false);
@@ -84,6 +89,37 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
             </select>
           )}
         </Field>
+        <GenderField value={gender} onChange={setGender} error={tried && !gender ? t('Choose one to continue.') : undefined} />
+        <Button className="button-lg button-inverse" busy={busy}>{t('Continue')}</Button>
+      </form>
+    </div>
+  );
+}
+
+/** 以前注册、还没填性别的人：打开 App 先补上（男女的等级分开算） */
+export function GenderPrompt({ profile, onDone }: { profile: Profile; onDone: (profile: Profile) => void }) {
+  const [gender, setGender] = useState<Gender | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+
+  async function save(event: SubmitEvent) {
+    event.preventDefault();
+    if (!gender) return setError(t('Choose one to continue.'));
+    setBusy(true);
+    const { data, error } = await supabase!.from('profiles').update({ gender }).eq('id', profile.id).select().single();
+    setBusy(false);
+    if (error) setError(t('Couldn’t save. Try again.'));
+    else onDone(data as Profile);
+  }
+
+  return (
+    <div className="mx-auto grid max-w-md gap-6 py-4">
+      <form onSubmit={save} noValidate className="sticker animate-enter grid w-full gap-5 p-6 sm:p-8">
+        <div>
+          <p className="text-subhead font-bold text-ink-secondary">{t('One more thing')}</p>
+          <h1 className="mt-1 text-title">{t('Men’s or women’s levels?')}</h1>
+        </div>
+        <GenderField value={gender} onChange={(g) => { setGender(g); setError(undefined); }} error={error} />
         <Button className="button-lg button-inverse" busy={busy}>{t('Continue')}</Button>
       </form>
     </div>

@@ -37,7 +37,7 @@ export async function pwnedPasswords(page, leaked = []) {
 }
 
 /** 用邮箱 + 密码注册（输入邮件里的确认码）并建好资料，停在定级问卷 */
-export async function signUp(page, email, nickname) {
+export async function signUp(page, email, nickname, gender = 'Male') {
   page.on('pageerror', (error) => {
     throw error;
   });
@@ -49,6 +49,7 @@ export async function signUp(page, email, nickname) {
   await page.getByLabel('6-digit code').fill(await emailedCode(email));
   await page.getByRole('button', { name: 'Create account' }).click();
   await page.getByLabel('Nickname').fill(nickname);
+  await page.getByRole('radio', { name: gender, exact: true }).click();
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByText('Level quiz').waitFor();
 }

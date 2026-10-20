@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { activityText, scheduleText } from './Groups';
+import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Divider, Empty, IconButton, IconTile, LevelBadge, ScreenHeader, SectionTitle, Tag } from './kit';
@@ -70,6 +71,7 @@ export function GroupPage({ id }: { id: string }) {
             {g.summary && <p className="text-subhead">{g.summary}</p>}
             <ul className="flex flex-wrap gap-1.5">
               <li><Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag></li>
+              {g.gender && <li><Tag icon="users" tint="lavender">{audienceLabel(g.gender)}</Tag></li>}
               <li><Tag icon={g.join_policy === 'approval' ? 'lock' : 'userPlus'}>{g.join_policy === 'approval' ? t('Organizer approves') : t('Join directly')}</Tag></li>
               {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}`}><Tag icon="calendar" tint="butter">{scheduleText(sc)}{sc.fee ? ` · ${sc.fee}` : ''}</Tag></li>)}
               {member && g.invite_code && <li><Tag icon="hash">{t('Group ID {code}', { code: g.invite_code })}</Tag></li>}

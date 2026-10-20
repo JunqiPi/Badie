@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { t, type Locale } from './i18n';
+import type { Gender } from './gender';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
 // 只用 publishable key（sb_publishable_…）；secret key 绝不进前端
@@ -43,6 +44,8 @@ export interface Profile {
   verified_rating: number | null;
   /** 通知和邮件用的语言 */
   locale: Locale;
+  /** 只用来定级和匹配（男女等级分开算）；老用户没填时打开 App 会先问 */
+  gender: Gender | null;
 }
 
 /** 认证用的证据：赛事成绩、全国排名 / 运动员等级证书、BWF 世界排名 */
@@ -94,6 +97,8 @@ export interface Ticket {
   auto_accept: boolean;
   /** 开赛前 2.5 小时内发起：只配此刻也在找的人，确认期限短 */
   last_minute: boolean;
+  /** 只和男生 / 女生打；null = 不限 */
+  play_with: Gender | null;
   game_id: string | null;
   venues: Place[];
   offer: null | {
@@ -169,6 +174,7 @@ export interface PlayerCard {
   verified: VerificationKind | null;
   /** 照片头像在 avatars 桶里的位置 */
   avatar: string | null;
+  gender: Gender | null;
 }
 
 /** 收藏了同一家球馆、愿意被看到的常客 */
@@ -184,6 +190,8 @@ export interface Regular {
 export type BoardEntry = { id: string; nickname: string; rating: number; rank: number; points?: number; games: number; wins: number; me: boolean };
 
 export interface WeeklyBoard {
+  /** 男子榜或女子榜 */
+  gender: Gender;
   week_starts: string;
   entries: BoardEntry[];
   me: { rank: number; points: number } | null;
@@ -192,6 +200,8 @@ export interface WeeklyBoard {
 }
 
 export interface VenueBoard {
+  /** 男子榜或女子榜 */
+  gender: Gender;
   venue: { id: string; name: string; city: string };
   bands: { band: number; entries: BoardEntry[] }[];
 }
@@ -255,6 +265,8 @@ export interface GroupSummary {
   level_min: number;
   level_max: number;
   join_policy: 'open' | 'approval';
+  /** 只限男生 / 女生；null = 不限 */
+  gender: Gender | null;
   venue: { id: string; name: string; city: string; tz: string | null };
   schedules: Schedule[];
   activity: { sessions: number; average: number };
@@ -304,6 +316,8 @@ export interface RoomSummary {
   level_max: number;
   tags: RoomTag[];
   note: string;
+  /** 只限男生 / 女生；null = 不限 */
+  gender: Gender | null;
   capacity: number;
   going: number;
   waitlist: number;
@@ -395,6 +409,7 @@ const problems: Record<string, string> = {
   too_many_groups: 'You’ve reached the limit for groups.',
   group_not_found: 'Group not found.',
   level_out_of_range: 'Your level is outside the range they accept.',
+  gender_restricted: 'This one is only for men or only for women.',
   owner_cannot_leave: 'The owner can’t leave their own group.',
   not_organizer: 'Only organizers can do this.',
   not_member: 'Join the group first.',

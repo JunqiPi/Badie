@@ -81,8 +81,11 @@ for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', 
 }
 await page.setViewportSize({ width: 1280, height: 900 });
 
-// 联系我们：设置里能找到，页面上能直接写邮件给客服
+// 设置：注册时选的性别（只用来定级和匹配）
 await page.goto(`${base}/settings/`);
+await page.getByRole('radio', { name: 'Male', exact: true, checked: true }).waitFor();
+
+// 联系我们：设置里能找到，页面上能直接写邮件给客服
 await page.getByRole('main').getByRole('link', { name: /Contact us/ }).click();
 await page.getByRole('heading', { name: 'Contact us' }).waitFor();
 assert.match(await page.getByRole('link', { name: 'Write an email' }).getAttribute('href') ?? '', /^mailto:support@badie\.rsvp/);

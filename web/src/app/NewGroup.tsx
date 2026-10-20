@@ -1,9 +1,10 @@
 import { useState, type SubmitEvent } from 'react';
-import { tier } from './assessment';
+import type { Gender } from './gender';
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Icon } from './icons';
 import { IconTile } from './kit';
+import { AudienceField, audienceLevel } from './NewRoom';
 import { navigate } from './router';
 import { problem, supabase, type Profile, type Schedule } from './supabase';
 import { halfHours, weekday } from './time';
@@ -12,7 +13,8 @@ import { Button, Field, PageHeader } from './ui';
 const blank = (): Schedule => ({ weekday: 4, start: 19 * 60 + 30, end: 22 * 60, capacity: 12, fee: '' });
 
 export function NewGroup({ profile }: { profile: Profile }) {
-  const level = tier(profile.rating).level;
+  const [audience, setAudience] = useState<Gender | null>(null);
+  const level = audienceLevel(profile, audience);
   const [name, setName] = useState('');
   const [court, setCourt] = useState<Court>();
   const [summary, setSummary] = useState('');
@@ -38,7 +40,7 @@ export function NewGroup({ profile }: { profile: Profile }) {
     setBusy(true);
     const { data, error } = await supabase!.rpc('create_group', {
       p_name: name.trim(), p_venue: court!.id, p_summary: summary.trim(), p_level_min: min, p_level_max: max,
-      p_policy: approval ? 'approval' : 'open', p_schedules: schedules,
+      p_policy: approval ? 'approval' : 'open', p_schedules: schedules, p_gender: audience,
     });
     setBusy(false);
     if (error) return setError(problem(error));
@@ -80,6 +82,13 @@ export function NewGroup({ profile }: { profile: Profile }) {
         <Field label={t('About (optional)')} hint={t('Pace, who it suits, how fees work. No phone numbers or links.')}>
           {(props) => <textarea {...props} rows={2} maxLength={120} value={summary} onChange={(e) => setSummary(e.target.value)} className="field" />}
         </Field>
+
+        <AudienceField profile={profile} value={audience} onChange={(value) => {
+          const own = audienceLevel(profile, value);
+          setAudience(value);
+          setMin(Math.max(1, own - 1));
+          setMax(Math.min(9, own + 1));
+        }} />
 
         <fieldset className="grid gap-2">
           <legend className="mb-2 text-headline">{t('Levels')}</legend>
