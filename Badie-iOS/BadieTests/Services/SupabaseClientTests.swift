@@ -809,6 +809,7 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(entry.userId, blake)
         XCTAssertEqual(entry.score, 45)
         XCTAssertEqual(server.json(0)["p_scope"] as? String, "global")
+        XCTAssertEqual(server.json(0)["p_gender"] as? String, "male", "没填性别的看男子榜")
         let score = backend.weeklyScore(for: userId, week: week)
         XCTAssertEqual(score.points, 10)
         XCTAssertEqual(score.games, 1)

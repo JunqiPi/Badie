@@ -22,6 +22,7 @@ extension MockBackend {
         let verifiedRating: Double?
         let avatarPath: String?
         let locale: String
+        let gender: String?
         let createdAt: Date?
     }
 
@@ -102,7 +103,7 @@ extension MockBackend {
         try? await remote.call("unregister_push", ["p_token": token])
     }
 
-    /// 第一次登录：建资料，做过问卷就保存定级。头像、性别、常用时间目前只存在本机
+    /// 第一次登录：建资料（含定级用的性别），做过问卷就保存定级。头像、常用时间目前只存在本机
     func remoteRegister(nickname: String, gender: Gender, avatar: Avatar, assessment: SkillAssessmentSummary?,
                         answers: [String: Int]) async throws -> User {
         let client = try requireRemote()
@@ -111,12 +112,12 @@ extension MockBackend {
             "id": userId,
             "nickname": nickname.trimmingCharacters(in: .whitespacesAndNewlines),
             "country_code": CountryInfo.deviceCountry.code,
+            "gender": gender.serverJSON,
         ])
         if let assessment {
             try await client.call("save_assessment", ["p_rating": assessment.tier.rating, "p_answers": answers])
         }
         guard var user = try await refreshRemoteProfile() else { throw RemoteError.server("no_profile") }
-        user.gender = gender
         user.avatar = avatar
         db.users[user.id] = user
         scheduleSave()
@@ -214,6 +215,7 @@ extension MockBackend {
         user.privacy.showsAsRegular = profile.showAsRegular ?? false
         user.privacy.allowsMessageRequests = profile.allowMessageRequests ?? true
         user.privacy.emailAlerts = profile.emailAlerts ?? false
+        user.gender = Gender(server: profile.gender)
         if let kind = profile.verifiedKind.flatMap(VerificationStatus.init(server:)), let rating = profile.verifiedRating {
             user.applyVerification(kind, tier: SkillTier(rating: rating))
         } else {

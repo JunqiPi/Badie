@@ -109,6 +109,8 @@ struct Room: Identifiable, Codable, Hashable {
     let createdAt: Date
     var lastActivityAt: Date
     var status: RoomStatus
+    /// 只限女生 / 男生；nil = 不限
+    var audience: Gender? = nil
 
     static let expirationDuration: TimeInterval = 30 * 60
     static let codeLength = 6

@@ -55,6 +55,10 @@ struct MainTabView: View {
         .fullScreenCover(isPresented: $matchManager.isFlowPresented) {
             MatchFlowView()
         }
+        // 以前注册、还没选定级用的性别：先补上（男女等级分开算，匹配要用）
+        .fullScreenCover(isPresented: .constant(appState.isRemote && appState.currentUser?.gender == .unspecified)) {
+            GenderPromptView()
+        }
         .sheet(item: $appState.presentedPlayer) { item in
             PlayerProfileSheet(userId: item.id)
                 .presentationDetents([.medium, .large])

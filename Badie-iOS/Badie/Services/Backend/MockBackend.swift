@@ -346,13 +346,14 @@ final class MockBackend {
         guard Self.isValidNickname(updated.nickname) else { throw BackendError.invalidNickname }
         guard !Self.advertises(updated.nickname), !Self.advertises(updated.bio) else { throw BackendError.profileContainsContact }
         await networkDelay()
-        if let remote, updated.nickname != user.nickname {
+        if let remote, updated.nickname != user.nickname || (updated.gender != user.gender && updated.gender != .unspecified) {
             try await remote.update("profiles", query: "id=eq.\(user.id)",
-                                    ["nickname": updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines)])
+                                    ["nickname": updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines),
+                                     "gender": (updated.gender == .unspecified ? user.gender : updated.gender).serverJSON])
         }
         user.nickname = updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines)
         user.bio = String(updated.bio.prefix(60))
-        user.gender = updated.gender
+        if updated.gender != .unspecified { user.gender = updated.gender }
         user.avatar.symbol = updated.avatar.symbol
         user.avatar.paletteIndex = updated.avatar.paletteIndex
         user.preferredMode = updated.preferredMode

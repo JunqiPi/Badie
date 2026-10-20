@@ -240,10 +240,47 @@ enum VerificationStatus: String, Codable, Hashable, CaseIterable, Identifiable {
     }
 }
 
+/// 定级用的性别：羽毛球男女的等级分开算（女子 4 级是女生里的强手），男女同场时女子等级按低 1.5 级换算。
+/// 只用来定级和匹配，不代表性别认同。以前的本地数据可能是 unspecified（没选）
 enum Gender: String, Codable, CaseIterable, Identifiable, Hashable {
     case unspecified, male, female
 
     var id: String { rawValue }
+
+    /// 注册、设置里能选的
+    static let choices: [Gender] = [.male, .female]
+    /// 男女同场时，女子等级换算到男子等级要减的级数
+    static let womenOffset = 1.5
+
+    init(server: String?) {
+        self = server.flatMap(Gender.init(rawValue:)) ?? .unspecified
+    }
+
+    /// 发给服务器的值（没选 = null）
+    var serverJSON: Any { self == .unspecified ? NSNull() : rawValue }
+
+    /// “只限女生 / 只限男生”
+    var onlyLabel: String {
+        switch self {
+        case .female: return String(localized: "只限女生")
+        case .male: return String(localized: "只限男生")
+        case .unspecified: return String(localized: "不限")
+        }
+    }
+
+    /// 排行榜分男女；没填的算男子榜（和服务器一致）
+    var board: Gender { self == .female ? .female : .male }
+
+    var boardLabel: String { self == .female ? String(localized: "女子榜") : String(localized: "男子榜") }
+
+    /// 资料页：这个等级是男子还是女子的
+    var ladderLabel: String? {
+        switch self {
+        case .female: return String(localized: "女子等级")
+        case .male: return String(localized: "男子等级")
+        case .unspecified: return nil
+        }
+    }
 
     var label: String {
         switch self {

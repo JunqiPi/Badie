@@ -172,7 +172,10 @@ struct RoomLobbyView: View {
             InsetDivider()
             InfoRow(icon: "chart.bar.fill", tint: AppTheme.Colors.lavender,
                     title: room.levelRangeText,
-                    subtitle: room.tags.isEmpty ? nil : room.tags.map(\.title).joined(separator: " · "))
+                    subtitle: { () -> String? in
+                        let parts = [room.audience?.onlyLabel].compactMap { $0 } + room.tags.map(\.title)
+                        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+                    }())
             if let cost = room.costEstimate {
                 InsetDivider()
                 InfoRow(icon: Money.icon(for: cost.currencyCode), tint: AppTheme.Colors.butter,
@@ -349,9 +352,15 @@ struct RoomLobbyView: View {
 
     @ViewBuilder
     private func joinButton(_ room: Room) -> some View {
-        let level = appState.currentUser?.displayLevel ?? 0
+        // 等级按参加的人算：只限女生按女子等级，男女都能来时女子等级换算后比
+        let level = appState.currentUser?.level(for: room.audience) ?? 0
+        let genderBlocked = room.audience.map { $0 != appState.currentUser?.gender } ?? false
         let levelBlocked = room.visibility == .publicListing && !room.accepts(level: level) && !room.invitedUserIds.contains(me ?? "")
-        if levelBlocked {
+        if genderBlocked, let audience = room.audience {
+            Text(audience.onlyLabel)
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.danger)
+        } else if levelBlocked {
             Text("这个局要求 \(room.levelRangeText)，你的等级是 \(appState.currentUser?.displayTier.text ?? "Lv.\(level)")")
                 .font(AppTheme.Typography.footnoteBold)
                 .foregroundStyle(AppTheme.Colors.danger)
@@ -365,7 +374,7 @@ struct RoomLobbyView: View {
             }
         }
         .buttonStyle(.brutalPrimary)
-        .disabled(isWorking || levelBlocked)
+        .disabled(isWorking || levelBlocked || genderBlocked)
     }
 
     private func startTitle(_ room: Room) -> String {

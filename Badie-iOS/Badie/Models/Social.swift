@@ -48,6 +48,8 @@ enum ReportReason: String, CaseIterable, Identifiable, Codable, Hashable {
     case fakeLevel = "严重虚报水平"
     case scam = "推销、诈骗或引流"
     case unsafe = "球场上危险或不文明行为"
+    /// 防止冒充进女生局
+    case wrongGender = "资料里的性别不实"
     case other = "其他"
 
     var id: String { rawValue }
@@ -60,6 +62,7 @@ enum ReportReason: String, CaseIterable, Identifiable, Codable, Hashable {
         case .fakeLevel: return String(localized: "严重虚报水平")
         case .scam: return String(localized: "推销、诈骗或引流")
         case .unsafe: return String(localized: "球场上危险或不文明行为")
+        case .wrongGender: return String(localized: "资料里的性别不实")
         case .other: return String(localized: "其他")
         }
     }

@@ -77,6 +77,8 @@ extension MockBackend {
         let message: RemoteMessageOption?
         /// 认证类型（tournament / national / bwf），没认证是 null
         let verified: String?
+        /// 男女等级分开算，资料页要标出是哪个等级
+        let gender: String?
     }
 
     // MARK: 刷新
@@ -295,6 +297,7 @@ extension MockBackend {
         case .scam: serverReason = "scam"
         case .unsafe: serverReason = "unsafe"
         case .fakeLevel: serverReason = "fake"
+        case .wrongGender: serverReason = "wrong_gender"
         case .noShow, .other: serverReason = "other"
         }
         // 爽约没有对应的分类：写进说明里
@@ -321,6 +324,7 @@ extension MockBackend {
             user.applyVerification(card.verified.flatMap(VerificationStatus.init(server:)) ?? .unverified, tier: SkillTier(rating: card.rating))
             user.reputation.publicTags = card.tags.compactMap { SurveyTag(server: $0) }
             user.reputation.publishedAt = card.tags.isEmpty ? nil : Date()
+            user.gender = Gender(server: card.gender)
             db.users[card.id] = user
             emit(.userUpdated(user))
         }

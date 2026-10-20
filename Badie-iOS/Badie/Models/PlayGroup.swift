@@ -38,6 +38,8 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     /// 6 位群号（可以发到微信，别人在“输入房间码 / 群号”里加入）
     var inviteCode: String
     var createdAt: Date
+    /// 只限女生 / 男生；nil = 不限
+    var audience: Gender? = nil
 
     static let maxSchedules = 3
     static let nameLimit = 2...20

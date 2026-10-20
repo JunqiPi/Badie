@@ -115,6 +115,8 @@ struct MatchTicket: Identifiable, Codable, Hashable {
     var hasPriority: Bool
     /// 不再推荐的人（我拒绝过的、没确认的）
     var excludedUserIds: [String]
+    /// 只和男生 / 女生打；nil = 不限
+    var playWith: Gender? = nil
 
     var isActive: Bool {
         switch status {

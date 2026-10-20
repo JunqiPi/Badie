@@ -94,23 +94,27 @@ extension MockBackend {
         return period.end == current.start ? 1 : nil
     }
 
-    func remoteWeeklyBoard(countryCode: String?, week: DateInterval) -> RemoteWeeklyBoard? {
+    func remoteWeeklyBoard(countryCode: String?, week: DateInterval, gender: Gender) -> RemoteWeeklyBoard? {
         guard let offset = Self.remoteOffset(of: week, current: Rankings.week(containing: Date())) else { return nil }
         let scope = countryCode == nil ? "global" : "country"
-        let key = "\(scope)-\(offset)"
+        let key = "\(scope)-\(offset)-\(gender.rawValue)"
         refreshRemoteBoard("weekly-\(key)") {
-            let board: RemoteWeeklyBoard = try await self.requireRemote().rpc("weekly_board", ["p_scope": scope, "p_offset": offset])
+            let board: RemoteWeeklyBoard = try await self.requireRemote().rpc("weekly_board", [
+                "p_scope": scope, "p_offset": offset, "p_gender": gender.rawValue,
+            ])
             board.entries.forEach { self.cacheRemoteUser(id: $0.id, nickname: $0.nickname, rating: $0.rating) }
             self.remoteWeeklyBoards[key] = board
         }
         return remoteWeeklyBoards[key]
     }
 
-    func remoteVenueBoard(venueId: String, month: DateInterval) -> [(bracket: LevelBracket, entries: [Rankings.Entry])] {
+    func remoteVenueBoard(venueId: String, month: DateInterval, gender: Gender) -> [(bracket: LevelBracket, entries: [Rankings.Entry])] {
         guard let offset = Self.remoteOffset(of: month, current: Rankings.month(containing: Date())) else { return [] }
-        let key = "\(venueId)-\(offset)"
+        let key = "\(venueId)-\(offset)-\(gender.rawValue)"
         refreshRemoteBoard("venue-\(key)") {
-            let board: RemoteVenueBoard = try await self.requireRemote().rpc("venue_board", ["p_venue": venueId, "p_offset": offset])
+            let board: RemoteVenueBoard = try await self.requireRemote().rpc("venue_board", [
+                "p_venue": venueId, "p_offset": offset, "p_gender": gender.rawValue,
+            ])
             board.bands.flatMap(\.entries).forEach { self.cacheRemoteUser(id: $0.id, nickname: $0.nickname, rating: $0.rating) }
             self.remoteVenueBoards[key] = board
         }
@@ -125,7 +129,7 @@ extension MockBackend {
 
     /// 我在这周榜上的分数和场次（不在榜上时用进度）
     func remoteWeeklyScore(countryCode: String?, week: DateInterval) -> (points: Int, games: Int, wins: Int, opponents: Int) {
-        guard let board = remoteWeeklyBoard(countryCode: countryCode, week: week) else { return (0, 0, 0, 0) }
+        guard let board = remoteWeeklyBoard(countryCode: countryCode, week: week, gender: myBoard) else { return (0, 0, 0, 0) }
         if let mine = board.entries.first(where: { $0.id == currentUserId }) {
             return (mine.points ?? 0, mine.games, mine.wins, Rankings.weeklyMinimumOpponents)
         }

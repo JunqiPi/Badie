@@ -182,26 +182,33 @@ extension MockBackend {
         return nil
     }
 
-    /// 场馆月榜：按水平段分开，只返回有人上榜的段
-    func venueLeaderboard(venueId: String, month: DateInterval, now: Date = Date()) -> [(bracket: LevelBracket, entries: [Rankings.Entry])] {
-        if isRemote { return remoteVenueBoard(venueId: venueId, month: month) }
+    /// 我默认看的榜（男子 / 女子）
+    var myBoard: Gender { (currentUser?.gender ?? .unspecified).board }
+
+    /// 场馆月榜：按水平段分开，只返回有人上榜的段。男女分榜，不传就看自己的
+    func venueLeaderboard(venueId: String, month: DateInterval, gender: Gender? = nil,
+                          now: Date = Date()) -> [(bracket: LevelBracket, entries: [Rankings.Entry])] {
+        let board = gender?.board ?? myBoard
+        if isRemote { return remoteVenueBoard(venueId: venueId, month: month, gender: board) }
         let records = matchRecords(in: month, now: now)
         return LevelBracket.allCases.compactMap { bracket in
             let entries = Rankings.venueBoard(venueId: venueId, records: records, month: month) { userId in
-                guard let user = self.db.users[userId] else { return false }
+                guard let user = self.db.users[userId], user.gender.board == board else { return false }
                 return LevelBracket(rating: user.displayTier.rating) == bracket && self.isListedOnBoards(userId, now: now)
             }
             return entries.isEmpty ? nil : (bracket, entries)
         }
     }
 
-    /// 全球周榜；传国家代码则只看该国家/地区的对局
-    func weeklyLeaderboard(week: DateInterval, countryCode: String? = nil, now: Date = Date()) -> [Rankings.Entry] {
+    /// 全球周榜；传国家代码则只看该国家/地区的对局。男女分榜，不传就看自己的
+    func weeklyLeaderboard(week: DateInterval, countryCode: String? = nil, gender: Gender? = nil, now: Date = Date()) -> [Rankings.Entry] {
+        let board = gender?.board ?? myBoard
         if isRemote {
-            return (remoteWeeklyBoard(countryCode: countryCode, week: week)?.entries ?? []).map { Self.entry($0, score: $0.points ?? 0) }
+            return (remoteWeeklyBoard(countryCode: countryCode, week: week, gender: board)?.entries ?? [])
+                .map { Self.entry($0, score: $0.points ?? 0) }
         }
         return Array(Rankings.weeklyBoard(records: matchRecords(in: week, now: now), week: week, countryCode: countryCode) {
-            self.isListedOnBoards($0, now: now)
+            self.db.users[$0]?.gender.board == board && self.isListedOnBoards($0, now: now)
         }.prefix(Rankings.boardSize))
     }
 

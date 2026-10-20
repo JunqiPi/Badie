@@ -63,8 +63,9 @@ struct PlayerProfileSheet: View {
                     if user.isReliable { ReliableBadge() }
                     if user.isNewPlayer { NewPlayerBadge() }
                     VerifiedBadge(status: user.verificationStatus)
-                    if user.gender != .unspecified {
-                        TagPill(text: user.gender.label, fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
+                    // 男女等级分开算：标出这个等级是男子还是女子的
+                    if let ladder = user.gender.ladderLabel {
+                        TagPill(text: ladder, fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
                     }
                 }
                 if let distance = friendManager.distance(to: user.id) {

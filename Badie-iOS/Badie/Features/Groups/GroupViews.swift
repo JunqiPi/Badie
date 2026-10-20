@@ -34,6 +34,9 @@ struct GroupCard: View {
                             foreground: AppTheme.Colors.ink)
                 }
                 TagPill(text: group.levelText, icon: "chart.bar.fill", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.ink)
+                if let audience = group.audience {
+                    TagPill(text: audience.onlyLabel, fill: AppTheme.Colors.peach)
+                }
             }
             Label(activity.text, systemImage: "waveform.path.ecg")
                 .font(AppTheme.Typography.caption)
@@ -221,6 +224,9 @@ struct GroupDetailView: View {
             }
             FlowLayout(spacing: 6) {
                 TagPill(text: group.levelText, icon: "chart.bar.fill", fill: AppTheme.Colors.lime)
+                if let audience = group.audience {
+                    TagPill(text: audience.onlyLabel, fill: AppTheme.Colors.peach)
+                }
                 TagPill(text: group.joinPolicy.title, icon: "person.badge.plus", fill: AppTheme.Colors.surfaceMuted,
                         foreground: AppTheme.Colors.ink)
                 TagPill(text: String(localized: "群号 \(group.inviteCode)"), icon: "number", fill: AppTheme.Colors.surfaceMuted,
@@ -539,6 +545,7 @@ struct CreateGroupView: View {
     @State private var lowerLevel = 1
     @State private var upperLevel = 9
     @State private var joinPolicy: PlayGroup.JoinPolicy = .open
+    @State private var audience: Gender?
     @State private var showVenuePicker = false
     @State private var didSetup = false
 
@@ -614,6 +621,10 @@ struct CreateGroupView: View {
                                 .foregroundStyle(AppTheme.Colors.ink)
                         }
                     }
+                    section(String(localized: "谁能来")) {
+                        AudiencePicker(options: appState.currentUser.map { $0.gender == .unspecified ? [] : [$0.gender] } ?? [],
+                                       selection: $audience)
+                    }
                     section(String(localized: "接受的水平")) {
                         HStack(spacing: AppTheme.Spacing.md) {
                             LevelStepper(title: String(localized: "最低"), level: $lowerLevel, range: 1...upperLevel)
@@ -653,7 +664,13 @@ struct CreateGroupView: View {
             guard !didSetup else { return }
             didSetup = true
             venueId = initialVenueId ?? locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil }
-            let level = appState.currentUser?.displayLevel ?? 4
+            let level = appState.currentUser?.level(for: audience) ?? 4
+            lowerLevel = max(1, level - 2)
+            upperLevel = min(9, level + 2)
+        }
+        // 换了谁能来，自己的等级可能跟着换算：范围重新围着自己
+        .onChange(of: audience) { _, audience in
+            let level = appState.currentUser?.level(for: audience) ?? 4
             lowerLevel = max(1, level - 2)
             upperLevel = min(9, level + 2)
         }
@@ -676,7 +693,8 @@ struct CreateGroupView: View {
         Task {
             do {
                 let group = try await groupManager.create(name: name, venueId: venueId, schedules: [schedule],
-                                                          levelRange: lowerLevel...upperLevel, joinPolicy: joinPolicy, summary: summary)
+                                                          levelRange: lowerLevel...upperLevel, joinPolicy: joinPolicy, summary: summary,
+                                                          audience: audience)
                 Haptics.success()
                 appState.showToast(String(localized: "已建群，群号 \(group.inviteCode)，可以分享到微信"), style: .success)
                 router.pop()

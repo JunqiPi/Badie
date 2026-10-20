@@ -447,13 +447,7 @@ struct OnboardingFlow: View {
             BrutalTextField(label: String(localized: "昵称"), placeholder: String(localized: "2-12 个字"), text: $form.nickname,
                             contentType: .nickname, errorText: errorText, characterLimit: 12)
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Text("性别（可选）")
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                SegmentedSticker(options: Gender.allCases, selection: $form.gender, title: { $0.label })
-                Text("仅用于“女生友好”等球局筛选，可随时修改")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                GenderPicker(selection: $form.gender)
             }
         }
     }
@@ -710,7 +704,7 @@ struct OnboardingFlow: View {
             if appState.isRemote { return !form.email.isEmpty && !form.password.isEmpty && captcha.isReady && (form.agreed || !form.newAccount) }
             return form.phoneNumber.national.count >= form.phoneCountry.phone.lengths.lowerBound && form.agreed
         case .code: return form.code.count == 6 && (form.codePurpose != .recovery || !form.password.isEmpty)
-        case .profile: return MockBackend.isValidNickname(form.nickname)
+        case .profile: return MockBackend.isValidNickname(form.nickname) && form.gender != .unspecified
         case .level: return form.level != nil
         case .preferences: return true
         }

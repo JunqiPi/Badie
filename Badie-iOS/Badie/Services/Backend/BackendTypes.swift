@@ -166,6 +166,8 @@ struct RoomDraft: Hashable {
     var levelRange: ClosedRange<Int> = 1...9
     var tags: [RoomTag] = []
     var note: String = ""
+    /// 只限女生 / 男生（只能是自己的性别）；nil = 不限
+    var audience: Gender?
 }
 
 // MARK: - 模拟球友（机器人）画像

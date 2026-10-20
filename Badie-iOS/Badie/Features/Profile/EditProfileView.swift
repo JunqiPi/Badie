@@ -30,10 +30,7 @@ struct EditProfileView: View {
                                     characterLimit: 12)
                     BrutalTextField(label: String(localized: "一句话介绍"), placeholder: String(localized: "例：双打找固定搭档，周末有空"), text: $bio,
                                     characterLimit: 60, axis: .vertical)
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        fieldLabel(String(localized: "性别（仅用于球局筛选）"))
-                        SegmentedSticker(options: Gender.allCases, selection: $gender, title: { $0.label })
-                    }
+                    GenderPicker(selection: $gender)
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                         fieldLabel(String(localized: "常打"))
                         HStack(spacing: AppTheme.Spacing.sm) {

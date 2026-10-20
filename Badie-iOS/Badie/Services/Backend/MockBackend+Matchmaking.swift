@@ -55,9 +55,10 @@ extension MockBackend {
     /// 发起约球请求。会立刻尝试匹配一次；找不到就挂着，有人了再通知。
     @discardableResult
     func submitTicket(mode: GameMode, slot: TimeSlot, courtIds: [String], skillTolerance: Int, radiusKm: Double,
-                      origin: Coordinate, autoAccept: Bool, now: Date = Date()) async throws -> MatchTicket {
+                      origin: Coordinate, autoAccept: Bool, playWith: Gender? = nil, now: Date = Date()) async throws -> MatchTicket {
         if isRemote {
-            return try await remoteSubmitTicket(mode: mode, slot: slot, courtIds: courtIds, skillTolerance: skillTolerance, autoAccept: autoAccept)
+            return try await remoteSubmitTicket(mode: mode, slot: slot, courtIds: courtIds, skillTolerance: skillTolerance,
+                                                autoAccept: autoAccept, playWith: playWith)
         }
         let me = try requireUser()
         guard me.attendance.standing != .suspended else { throw BackendError.matchingSuspended }

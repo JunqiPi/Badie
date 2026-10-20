@@ -21,6 +21,7 @@ struct CreateRoomView: View {
     @State private var lowerLevel = 1
     @State private var upperLevel = 9
     @State private var tags: Set<RoomTag> = []
+    @State private var audience: Gender?
     @State private var note = ""
     @State private var showCourtPicker = false
     @State private var isWorking = false
@@ -74,6 +75,7 @@ struct CreateRoomView: View {
                     scheduleGroup
                     courtGroup
                     if visibility == .publicListing {
+                        audienceGroup
                         levelGroup
                         tagsGroup
                     }
@@ -175,7 +177,7 @@ struct CreateRoomView: View {
                 LevelStepper(title: String(localized: "最低"), level: $lowerLevel, range: 1...upperLevel)
                 LevelStepper(title: String(localized: "最高"), level: $upperLevel, range: lowerLevel...9)
             }
-            let myLevel = appState.currentUser?.displayLevel ?? 4
+            let myLevel = appState.currentUser?.level(for: audience) ?? 4
             HStack(spacing: AppTheme.Spacing.sm) {
                 ChoiceChip(title: String(localized: "不限"), isSelected: lowerLevel == 1 && upperLevel == 9) {
                     lowerLevel = 1; upperLevel = 9
@@ -187,6 +189,14 @@ struct CreateRoomView: View {
                     lowerLevel = 1; upperLevel = 3
                 }
             }
+        }
+    }
+
+    /// 谁能来：不限，或只限和自己同性别的人（男女都能来时，等级按男子等级、女生换算后比）
+    private var audienceGroup: some View {
+        group(String(localized: "谁能来")) {
+            AudiencePicker(options: appState.currentUser.map { $0.gender == .unspecified ? [] : [$0.gender] } ?? [],
+                           selection: $audience)
         }
     }
 
@@ -270,7 +280,8 @@ struct CreateRoomView: View {
             slot: slot,
             levelRange: lowerLevel...upperLevel,
             tags: RoomTag.allCases.filter { tags.contains($0) },
-            note: note
+            note: note,
+            audience: visibility == .publicListing ? audience : nil
         )
         do {
             let room = try await roomManager.create(draft)

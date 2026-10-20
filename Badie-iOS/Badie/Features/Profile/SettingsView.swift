@@ -58,6 +58,12 @@ struct SettingsView: View {
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
                     }
 
+                    // 定级用的性别（男女等级分开算）
+                    section(String(localized: "等级")) {
+                        GenderPicker(selection: genderBinding)
+                            .card(AppTheme.Colors.surface, shadow: .zero)
+                    }
+
                     // 主要靠推送；邮件是给想要的人自己打开的（演示模式没有邮件）
                     if appState.isRemote {
                         section(String(localized: "邮件")) {
@@ -303,6 +309,14 @@ struct SettingsView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+    }
+
+    private var genderBinding: Binding<Gender> {
+        Binding(get: { appState.currentUser?.gender ?? .unspecified }, set: { gender in
+            guard var user = appState.currentUser, gender != user.gender else { return }
+            user.gender = gender
+            Task { _ = await appState.updateProfile(user) }
+        })
     }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {

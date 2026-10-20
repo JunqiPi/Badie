@@ -48,6 +48,8 @@ struct MatchSetupView: View {
                             .id(Self.venuesAnchor)
                         skillSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
+                        playWithSection
+                            .padding(.horizontal, AppTheme.Spacing.screen)
                         confirmSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
                     }
@@ -256,6 +258,15 @@ struct MatchSetupView: View {
             Text(toleranceExplanation)
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
+        }
+    }
+
+    // MARK: 和谁打（男女等级分开算，男女同场时换算）
+
+    private var playWithSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            label(String(localized: "和谁打"))
+            AudiencePicker(options: [.female, .male], selection: $matchManager.draft.playWith)
         }
     }
 

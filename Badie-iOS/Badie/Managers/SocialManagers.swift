@@ -436,10 +436,10 @@ final class GroupManager: ObservableObject {
 
     @discardableResult
     func create(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                joinPolicy: PlayGroup.JoinPolicy, summary: String) async throws -> PlayGroup {
+                joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil) async throws -> PlayGroup {
         let group = backend.isRemote
             ? try await backend.remoteCreateGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
-                                                  joinPolicy: joinPolicy, summary: summary)
+                                                  joinPolicy: joinPolicy, summary: summary, audience: audience)
             : try backend.createGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
                                       joinPolicy: joinPolicy, summary: summary)
         reload()

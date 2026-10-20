@@ -13,6 +13,9 @@ struct PublicRoomCard: View {
             HStack(spacing: 6) {
                 TagPill(text: room.mode.title, icon: room.mode.icon, fill: AppTheme.Colors.lavender)
                 TagPill(text: room.levelRangeText, fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
+                if let audience = room.audience {
+                    TagPill(text: audience.onlyLabel, fill: AppTheme.Colors.peach)
+                }
                 Spacer(minLength: 0)
                 seatsBadge
             }
@@ -99,6 +102,7 @@ struct PublicRoomCard: View {
 
     private var accessibilityText: String {
         var parts = [String(localized: "\(room.mode.title)球局"), room.levelRangeText]
+        if let audience = room.audience { parts.append(audience.onlyLabel) }
         if let slot = room.slot { parts.append(slot.formattedFull) }
         if let court = room.court { parts.append(court.name) }
         parts.append(room.isFull ? String(localized: "已满员") : String(localized: "还缺 \(room.openSeats) 人"))

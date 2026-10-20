@@ -49,6 +49,8 @@ struct WeeklyLeaderboardView: View {
 
     @State private var scope: Scope = .global
     @State private var weekChoice: WeekChoice = .this
+    /// 男子榜 / 女子榜；没选过就看自己的
+    @State private var boardChoice: Gender?
     @State private var onlyMyBracket = false
     @State private var entries: [Rankings.Entry] = []
     @State private var standing: WeeklyStanding?
@@ -64,7 +66,14 @@ struct WeeklyLeaderboardView: View {
         return weekChoice == .this ? current : Rankings.week(containing: current.start.addingTimeInterval(-1))
     }
 
-    private var myBracket: LevelBracket? { me.map { LevelBracket(rating: $0.displayTier.rating) } }
+    private var boardGender: Gender { boardChoice ?? backend.myBoard }
+    private var onMyBoard: Bool { boardGender == backend.myBoard }
+
+    /// 我的水平段；看另一个榜时不按我的段筛
+    private var myBracket: LevelBracket? {
+        guard onMyBoard else { return nil }
+        return me.map { LevelBracket(rating: $0.displayTier.rating) }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -90,6 +99,7 @@ struct WeeklyLeaderboardView: View {
         .onAppear(perform: reload)
         .onChange(of: scope) { _, _ in reload() }
         .onChange(of: weekChoice) { _, _ in reload() }
+        .onChange(of: boardChoice) { _, _ in reload() }
         .onChange(of: onlyMyBracket) { _, _ in reload() }
         .onChange(of: matchManager.games) { _, _ in reload() }
         .onChange(of: matchManager.rankingsRevision) { _, _ in reload() }
@@ -119,6 +129,7 @@ struct WeeklyLeaderboardView: View {
             SegmentedSticker(options: [WeekChoice.this, .last], selection: $weekChoice) { option in
                 option == .this ? String(localized: "本周") : String(localized: "上周")
             }
+            BoardPicker(selection: $boardChoice, mine: backend.myBoard)
             if let myBracket {
                 Toggle(isOn: $onlyMyBracket) {
                     VStack(alignment: .leading, spacing: 2) {
@@ -197,15 +208,17 @@ struct WeeklyLeaderboardView: View {
     // MARK: 数据
 
     private func reload() {
-        var list = backend.weeklyLeaderboard(week: week, countryCode: scope == .country ? backend.currentCountryCode : nil)
+        var list = backend.weeklyLeaderboard(week: week, countryCode: scope == .country ? backend.currentCountryCode : nil,
+                                             gender: boardGender)
         if onlyMyBracket, let myBracket {
             list = Self.reranked(list.filter { entry in
                 backend.user(id: entry.userId).map { LevelBracket(rating: $0.displayTier.rating) == myBracket } ?? false
             })
         }
         entries = list
-        standing = me.map { WeeklyStanding(backend: backend, userId: $0.id, week: week,
-                                                     countryCode: scope == .country ? backend.currentCountryCode : nil, entries: list) }
+        // 看另一个榜时不显示“我的位置”（我不在那个榜上）
+        standing = onMyBoard ? me.map { WeeklyStanding(backend: backend, userId: $0.id, week: week,
+                                                       countryCode: scope == .country ? backend.currentCountryCode : nil, entries: list) } : nil
     }
 
     /// 筛选后重新编号（同分同胜场同名次）
@@ -284,6 +297,7 @@ struct VenueLeaderboardView: View {
     private static let visibleCount = 10
 
     @State private var monthChoice: MonthChoice = .this
+    @State private var boardChoice: Gender?
     @State private var sections: [BracketBoard] = []
 
     private struct BracketBoard: Identifiable {
@@ -318,6 +332,7 @@ struct VenueLeaderboardView: View {
                     SegmentedSticker(options: [MonthChoice.this, .last], selection: $monthChoice) { option in
                         option == .this ? String(localized: "本月") : String(localized: "上月")
                     }
+                    BoardPicker(selection: $boardChoice, mine: backend.myBoard)
                     if sections.isEmpty {
                         EmptyStateView(icon: "trophy", title: String(localized: "这个月还没有人上榜，去约一场吧"),
                                        tint: AppTheme.Colors.butter)
@@ -335,6 +350,7 @@ struct VenueLeaderboardView: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .onAppear(perform: reload)
         .onChange(of: monthChoice) { _, _ in reload() }
+        .onChange(of: boardChoice) { _, _ in reload() }
         .onChange(of: matchManager.games) { _, _ in reload() }
         .onChange(of: matchManager.rankingsRevision) { _, _ in reload() }
     }
@@ -356,9 +372,24 @@ struct VenueLeaderboardView: View {
     }
 
     private func reload() {
-        sections = backend.venueLeaderboard(venueId: venueId, month: month).map {
+        sections = backend.venueLeaderboard(venueId: venueId, month: month, gender: boardChoice).map {
             BracketBoard(bracket: $0.bracket, entries: $0.entries)
         }
+    }
+}
+
+// MARK: - 男子榜 / 女子榜
+
+/// 男女等级分开算，榜也分开；默认看自己的
+private struct BoardPicker: View {
+    @Binding var selection: Gender?
+    let mine: Gender
+
+    var body: some View {
+        SegmentedSticker(options: Gender.choices, selection: Binding(
+            get: { selection ?? mine },
+            set: { selection = $0 }
+        )) { $0.boardLabel }
     }
 }
 

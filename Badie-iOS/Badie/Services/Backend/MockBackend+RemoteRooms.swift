@@ -25,6 +25,7 @@ extension MockBackend {
         let levelMax: Int
         let tags: [String]
         let note: String
+        let gender: String?
         let going: Int
         let waitlist: Int
         let lastActivityAt: Date?
@@ -107,6 +108,7 @@ extension MockBackend {
             "p_level_max": draft.levelRange.upperBound,
             "p_tags": draft.tags.map(\.serverValue),
             "p_note": draft.note.trimmingCharacters(in: .whitespacesAndNewlines),
+            "p_gender": draft.audience?.serverJSON ?? NSNull(),
         ]
         // 私密局可以先不定时间和球馆（传 null）
         args["p_venue"] = draft.court?.id ?? NSNull()
@@ -205,7 +207,8 @@ extension MockBackend {
             participants: participants, invitedUserIds: info.myStatus == "invited" ? [me] : [], waitlist: waitlist,
             court: info.venue.map(court(for:)), slot: slot, levelRange: info.levelMin...max(info.levelMin, info.levelMax),
             tags: info.tags.compactMap(RoomTag.init(server:)), note: info.note,
-            createdAt: existing?.createdAt ?? lastActivity, lastActivityAt: lastActivity, status: status
+            createdAt: existing?.createdAt ?? lastActivity, lastActivityAt: lastActivity, status: status,
+            audience: info.gender.flatMap(Gender.init(rawValue:))
         )
     }
 }

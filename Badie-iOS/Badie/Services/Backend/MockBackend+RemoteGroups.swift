@@ -32,6 +32,7 @@ extension MockBackend {
         let levelMin: Int
         let levelMax: Int
         let joinPolicy: String
+        let gender: String?
         let venue: Venue
         let schedules: [RemoteSchedule]?
         let activity: Activity
@@ -70,6 +71,7 @@ extension MockBackend {
         let levelMin: Int
         let levelMax: Int
         let joinPolicy: String
+        let gender: String?
         let venue: RemoteGroupSummary.Venue
         let schedules: [RemoteSchedule]?
         let activity: RemoteGroupSummary.Activity
@@ -143,7 +145,7 @@ extension MockBackend {
     // MARK: 操作
 
     func remoteCreateGroup(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                           joinPolicy: PlayGroup.JoinPolicy, summary: String) async throws -> PlayGroup {
+                           joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil) async throws -> PlayGroup {
         let remote = try requireRemote()
         let id: String = try await remote.rpc("create_group", [
             "p_name": name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -152,6 +154,7 @@ extension MockBackend {
             "p_level_min": levelRange.lowerBound,
             "p_level_max": levelRange.upperBound,
             "p_policy": joinPolicy.rawValue,
+            "p_gender": audience?.serverJSON ?? NSNull(),
             "p_schedules": schedules.map { schedule -> [String: Any] in
                 ["weekday": schedule.weekday - 1, "start": schedule.startMinutes, "end": schedule.endMinutes,
                  "capacity": schedule.capacity, "fee": schedule.feeNote ?? ""]
@@ -213,13 +216,13 @@ extension MockBackend {
 
     private func cacheGroup(_ summary: RemoteGroupSummary, me: String) {
         cacheGroup(id: summary.id, name: summary.name, summary: summary.summary, levels: summary.levelMin...max(summary.levelMin, summary.levelMax),
-                   joinPolicy: summary.joinPolicy, venue: summary.venue, schedules: summary.schedules ?? [], activity: summary.activity,
+                   joinPolicy: summary.joinPolicy, audience: summary.gender, venue: summary.venue, schedules: summary.schedules ?? [], activity: summary.activity,
                    myRole: summary.myRole, inviteCode: nil, members: nil, pending: nil, me: me)
     }
 
     private func cacheGroup(_ detail: RemoteGroupDetail, me: String) {
         cacheGroup(id: detail.id, name: detail.name, summary: detail.summary, levels: detail.levelMin...max(detail.levelMin, detail.levelMax),
-                   joinPolicy: detail.joinPolicy, venue: detail.venue, schedules: detail.schedules ?? [], activity: detail.activity,
+                   joinPolicy: detail.joinPolicy, audience: detail.gender, venue: detail.venue, schedules: detail.schedules ?? [], activity: detail.activity,
                    myRole: detail.myRole, inviteCode: detail.inviteCode, members: detail.members, pending: detail.pending, me: me)
         guard let group = db.groups[detail.id] else { return }
         let calendar = venue(id: group.venueId)?.calendar ?? .current
@@ -251,7 +254,7 @@ extension MockBackend {
         }
     }
 
-    private func cacheGroup(id: String, name: String, summary: String?, levels: ClosedRange<Int>, joinPolicy: String,
+    private func cacheGroup(id: String, name: String, summary: String?, levels: ClosedRange<Int>, joinPolicy: String, audience: String?,
                             venue place: RemoteGroupSummary.Venue, schedules: [RemoteSchedule], activity: RemoteGroupSummary.Activity,
                             myRole: String?, inviteCode: String?, members: [RemoteGroupDetail.Member]?,
                             pending: [RemoteGroupDetail.Member]?, me: String) {
@@ -284,7 +287,8 @@ extension MockBackend {
                               capacity: schedule.capacity, feeNote: schedule.fee?.isEmpty == false ? schedule.fee : nil)
             },
             joinPolicy: joinPolicy == "approval" ? .approval : .open,
-            inviteCode: inviteCode ?? existing?.inviteCode ?? "", createdAt: existing?.createdAt ?? Date()
+            inviteCode: inviteCode ?? existing?.inviteCode ?? "", createdAt: existing?.createdAt ?? Date(),
+            audience: audience.flatMap(Gender.init(rawValue:))
         )
         remoteGroupActivity[id] = GroupActivity(sessionsLast30Days: activity.sessions, averageTurnout: activity.average)
     }

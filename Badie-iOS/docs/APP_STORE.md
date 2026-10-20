@@ -71,6 +71,7 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 | User Content | Emails or Text Messages | 聊天消息 |
 | User Content | Other User Content | 昵称、等级问卷、评价、球局、加的球馆 |
 | Identifiers | User ID | 账号 ID |
+| Other Data | Other Data Types | 性别（男女等级分开算，只用于定级和匹配） |
 
 - 位置**不用勾**：只在搜附近球馆时发一次，不保存（Apple 的定义里不算“收集”）。
 - 没有统计、崩溃收集、广告 SDK，所以 Usage Data、Diagnostics 都不勾。
