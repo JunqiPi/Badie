@@ -1,12 +1,13 @@
 // 定级问卷：与 iOS SkillAssessment.swift 同一套题和算法（见 Badie-iOS/docs/DESIGN.md §13.3）。
-// 技术题定出 4+ 以内的档位，再按台阶往上推：5 看被动球和战术，6 看俱乐部里的位置；经历给保底。最高 6+
+// 每个选项对应一个等级（可以是 2.5 这样的半级）。技术、比赛能力各取平均，但不能比自己最弱的一项高出 1 级以上；
+// 两者以弱的为准，强的那边最多再加 2/3 级。5+ 往上看在俱乐部里的位置，6+ 还要有比赛或青训经历。经历给保底。最高 6+
 
 // 带 .ts 后缀：这个文件也直接给 Node 跑单元测试
 import { currentLocale, t } from './i18n.ts';
 
 const third = 1 / 3;
 
-type Kind = 'technique' | 'ladder' | 'experience' | 'recency';
+type Kind = 'technique' | 'game' | 'standing' | 'experience' | 'recency';
 export type Question = { id: string; kind: Kind; title: string; hint: string; options: { text: string; value?: number }[] };
 
 const q = (id: string, kind: Kind, title: string, hint: string, options: (string | [string, number])[]): Question => ({
@@ -21,84 +22,86 @@ export const questions: Question[] = [
   q('clear', 'technique', 'Forehand clear', 'Hitting clears from the back court:', [
     ['Doesn’t reach midcourt', 1],
     ['Mostly lands midcourt', 2],
-    ['Reaches the back court but not the baseline; slow', 3],
-    ['Consistently hits baseline to baseline in play', 4],
-    ['Can hit both attacking and high clears, controlling height and placement', 5],
+    ['Reaches the back court but not the baseline; slow', 2.5],
+    ['Consistently hits baseline to baseline in play', 3],
+    ['Knows attacking clears from high clears and when to use each; controls height and placement', 4],
     ['Same motion as your drops and smashes, so opponents can’t read you', 6],
   ]),
   q('smash', 'technique', 'Forehand smash', 'Smashing from the back court when you get the chance:', [
-    ['Can’t smash, or smashes go into the net or out', 2],
-    ['Can hit down, but without much power', 3],
-    ['Smashes go down with angle, but aren’t hard to return', 4],
-    ['Threatening smashes straight and cross-court, follows up at the net', 5],
-    ['Has hard, sliced and stick smashes, picks based on opponent position', 6],
+    ['Can’t smash, or smashes go into the net or out; often mishits the frame', 1],
+    ['Knows how to hit down, but can’t put power through the shuttle', 1.5],
+    ['Smashes go down with some pace, but aren’t hard to return', 2.5],
+    ['With a good chance, sometimes hits through with power and angle; starting to threaten', 3],
+    ['Starting to mix hard, half and stick smashes well, and follows up at the net', 4],
+    ['Hard, sliced and stick smashes come naturally; picks one based on where the opponent stands', 6],
   ]),
   q('drop', 'technique', 'Forehand drop shot', 'Can you hit drop shots? Sliced drops or reverse slices?', [
-    ['Can’t hit drops yet', 2],
-    ['Drops clear the net but are often high or long', 3],
-    ['Straight and cross-court drops land near the short service line', 4],
-    ['Can hit either a sliced drop or a reverse slice', 5],
-    ['Comfortable with sliced drops and reverse slices, disguised like clears and smashes', 6],
+    ['Can’t hit drops yet', 0],
+    ['Drops clear the net but are often high or long', 1],
+    ['Straight and cross-court drops land near the short service line', 2],
+    ['Has a sliced drop or a reverse slice, but not consistent: angle is off and it often floats above the tape, so it gets punished', 3],
+    ['Has both sliced drops and reverse slices, but not consistent or fast enough, and sometimes ends up under pressure', 4],
+    ['Sliced drops and reverse slices are fluent, disguised like clears and smashes, and fast, dropping right after the net', 6],
   ]),
   q('backhand', 'technique', 'Backhand back court', 'When the shuttle goes to your backhand back court:', [
-    ['Can only hit it round-the-head, or gives up on it', 2],
-    ['Can hit backhand, but only to midcourt', 3],
-    ['Can return it to mid or back court when not under pressure', 4],
-    ['Hits backhand drops straight and cross-court; back-court to back-court comes fairly easily', 5],
-    ['Backhand clears baseline to baseline, comfortable with backhand sliced drops', 6],
+    ['Can only hit it round-the-head, or gives up on it', 1],
+    ['Can hit backhand, but only to mid or front court; once opponents target your backhand you’re under pressure', 2],
+    ['When not under pressure, returns from your mid–back court to their back court', 3],
+    ['Backhand drops straight and cross-court with enough pace not to get punished; back-court to back-court clears are easy', 5],
+    ['Backhand clears baseline to baseline; still very comfortable getting out of trouble with the backhand under pressure', 6],
   ]),
   q('net', 'technique', 'Net play', 'Net drops, net spins, cross-court net shots:', [
-    ['Soft touch; sometimes high or long, often doesn’t clear the net', 2],
-    ['Net drops stay tight; just starting net spins and cross-court net shots', 3],
-    ['Net spins on both sides, uses cross-court net shots often but not tight enough', 4],
-    ['Skilled net spins, can open-spin and push to the back', 5],
+    ['Soft touch; sometimes high or long, often doesn’t clear the net', 1],
+    ['Net drops stay tight; just starting net spins and cross-court net shots', 2],
+    ['Net spins on both sides, uses cross-court net shots often but not tight enough', 3],
+    ['Skilled net spins, can open-spin and push to the back', 4],
     ['Fluent net spins, cross-court net shots, pushes and net kills with consistent motion', 6],
   ]),
   q('drive', 'technique', 'Drives', 'A fast flat shot comes at you in midcourt:', [
-    ['Can rarely return it', 2],
-    ['Can block it back, but without pace', 3],
-    ['Can trade a few drives', 4],
-    ['Good at drives and can speed up the exchange', 5],
+    ['Can rarely return it', 1],
+    ['Can block it back, but without pace', 2],
+    ['Can trade a few drives', 2.5],
+    ['Good at drives and can speed up the exchange', 4],
     ['Holds up in fast drive exchanges; can drive to the baseline even from low, defensive positions', 6],
   ]),
   q('footwork', 'technique', 'Footwork', 'How you move on court:', [
     ['Walks to reach the shuttle', 1],
-    ['Runs for the shuttle, but without set footwork', 2],
-    ['Knows chassé and lunge steps; reaches all six corners, but not smoothly', 3],
-    ['Correct footwork all over the court, but not fast enough off the mark or around the court', 4],
-    ['Easy footwork all over the court; above-average first step and speed', 5],
+    ['Runs for the shuttle, but without set footwork', 1.5],
+    ['Knows chassé and lunge steps; reaches all six corners, but not smoothly', 2.5],
+    ['Correct footwork all over the court, but not fast enough off the mark or around the court', 3],
+    ['Easy footwork all over the court; above-average first step and speed', 4],
     ['Footwork is instinctive, with no blind spots on court', 6],
   ]),
-  q('passive', 'ladder', 'Smash defense & balls under pressure', 'When returning hard smashes, or pushed to the baseline or into corners:', [
-    'Rarely gets it back, or makes an error',
-    'Can only block straight to the net or lift, can’t change direction; easy points for the opponent',
-    'Sometimes recovers: returns to the opponent’s back court or net to get back in position',
-    'Solid defense, returns mostly on target, escapes most pressure',
-    'Defends smashes that aren’t clear winners with controlled placement, and counter-drives average smashes',
+  q('passive', 'game', 'Smash defense & balls under pressure', 'When returning hard smashes, or pushed to the baseline or into corners:', [
+    ['Rarely gets it back, or makes an error', 2],
+    ['Can only block straight to the net or lift, can’t change direction; easy points for the opponent', 3],
+    ['Sometimes recovers: returns to the opponent’s back court or net to get back in position', 4],
+    ['Solid defense, returns mostly on target, escapes most pressure', 5],
+    ['Defends smashes that aren’t clear winners with controlled placement, and counter-drives average smashes', 6],
   ]),
-  q('doubles', 'ladder', 'Doubles', 'In doubles, how well do you handle positioning and teamwork?', [
-    'Not sure where to stand',
-    'Knows front-back in attack, side-by-side in defense',
-    'Basic awareness of serve and return, covering, and net coverage',
-    'Takes the net aggressively and keeps attacking from the back',
-    'Finds opponents’ gaps and coordination blind spots',
+  q('doubles', 'game', 'Doubles', 'In doubles, how well do you handle positioning and teamwork?', [
+    ['Not sure where to stand', 1.5],
+    ['Knows front-back in attack, side-by-side in defense', 2.5],
+    ['Basic awareness of serve and return, covering, and net coverage', 3.5],
+    ['Takes the net aggressively and keeps attacking from the back', 4.5],
+    ['Finds opponents’ gaps and coordination blind spots', 6],
   ]),
-  q('stability', 'ladder', 'Consistency', 'How often do you make errors in rallies and games?', [
-    'Rallies break down before 5 shots',
-    'Can keep a slow rally going for 5–10 shots',
-    'Can rally 10+ shots, but errors pile up when play speeds up',
-    'Fewer errors in games than before, but still tight on big points',
-    'Steady in long rallies, rarely makes unforced errors',
-    'Still solid in a high-intensity third game',
+  q('stability', 'game', 'Consistency', 'How often do you make errors in rallies and games?', [
+    ['Rallies break down before 5 shots', 1],
+    ['Can keep a slow rally going for 5–10 shots', 2],
+    ['Can rally 10+ shots, but errors pile up when play speeds up', 3],
+    ['Fewer errors in games than before, but still tight on big points', 4],
+    ['Steady in long rallies, rarely makes unforced errors', 5],
+    ['Still solid in a high-intensity third game', 6],
   ]),
-  q('tactics', 'ladder', 'Tactics', 'How do you mainly win points in games?', [
-    'Mostly just getting it over and waiting for errors',
-    'Targets the opponent’s weak spots (like the backhand)',
-    'Moves opponents around with placement and pace: pushing deep, dropping short',
-    'Combines tactics and skill: builds sustained attacks with deception and direction changes, adapts to opponents',
-    'Plans a game plan for each opponent and executes it on court',
+  q('tactics', 'game', 'Tactics', 'How do you mainly win points in games?', [
+    ['Mostly just getting it over and waiting for errors', 2],
+    ['Targets the opponent’s weak spots (like the backhand)', 3],
+    ['Moves opponents around with placement and pace: pushing deep, dropping short', 4],
+    ['Combines tactics and skill: builds sustained attacks with deception and direction changes, adapts to opponents', 5],
+    ['Plans a game plan for each opponent and executes it on court', 6],
   ]),
-  q('standing', 'ladder', 'Standing in your club', 'Compared with the club or regular games you usually play in, where do you stand?', [
+  q('standing', 'standing', 'Standing in your club', 'Compared with the club or regular games you usually play in, where do you stand?', [
     'Mostly mid-to-lower finishes',
     'Middle of the pack, trades points with most people',
     'Upper half, beats most people',
@@ -119,10 +122,14 @@ export const questions: Question[] = [
   ]),
 ];
 
-const techniqueIds = questions.filter((x) => x.kind === 'technique').map((x) => x.id);
 // 技术名翻译后用当前语言的“和”连起来；英文在句中用小写
 const list = (names: string[]) =>
   new Intl.ListFormat(currentLocale()).format(names.map((n) => (currentLocale() === 'en' ? n.toLowerCase() : t(n))));
+
+const toThirds = (rating: number) => Math.round(rating * 3) / 3;
+const mean = (values: number[]) => values.reduce((sum, v) => sum + v, 0) / values.length;
+/** 一组题的水平：取平均，但不能比最弱的一项高出 1 级以上（短板限制等级） */
+const pillar = (values: number[]) => Math.min(mean(values), Math.min(...values) + 1);
 
 export type Assessment = { rating: number; needsCalibration: boolean; isReturning: boolean; limitingGate?: string };
 
@@ -138,60 +145,39 @@ export function evaluate(answers: Record<string, number>): Assessment | undefine
     return { rating: option('net') === 0 && option('doubles') === 0 ? 1 - third : 1, needsCalibration: false, isReturning };
   }
 
-  // 1. 技术题：“全部”看最弱的，“多数”看第 3 弱的，“一两项”看第 2 强的
-  const dimensions = techniqueIds.map((id) => ({ name: questions.find((x) => x.id === id)!.title, level: value(id)! }));
-  const levels = dimensions.map((d) => d.level).sort((a, b) => a - b);
-  const [all, , most] = levels;
-  const topTwo = levels[levels.length - 2];
-  const below = (level: number) => list(dimensions.filter((d) => d.level < level).map((d) => d.name));
+  // 1. 技术和比赛能力：各自取平均、受最弱一项限制；两者以弱的为准，强的那边最多加 2/3 级
+  const scored = (kind: Kind) => questions.filter((x) => x.kind === kind).map((x) => ({ name: x.title, level: value(x.id)! }));
+  const technique = scored('technique');
+  const game = scored('game');
+  const [low, high] = [pillar(technique.map((d) => d.level)), pillar(game.map((d) => d.level))].sort((a, b) => a - b);
+  let rating = toThirds(low + Math.min(2 * third, (high - low) / 2));
 
-  let rating: number;
-  let gate: string | undefined;
-  if (all >= 4) {
-    rating = topTwo >= 5 && option('stability') >= 3 ? 4 + third : 4;
-  } else if (all === 3) {
-    rating = most >= 4 ? 4 - third : topTwo >= 4 ? 3 + third : 3;
-    gate = t('To reach level 4, work on: {skills}', { skills: below(4) });
-  } else {
-    rating = most >= 3 ? 3 - third : most >= 2 ? (topTwo >= 3 ? 2 + third : 2) : topTwo >= 2 ? 2 - third : 1 + third;
-    gate = t('To reach level 3, work on: {skills}', { skills: below(3) });
-  }
-  // 4 级还要有双打的基本意识
-  if (rating >= 4 - 0.01 && option('doubles') < 2) {
-    rating = 4 - third;
-    gate = t('To reach level 4: build basic doubles awareness of serve and return, covering, and net coverage');
-  }
+  // 2. 下一档要补什么：最弱的几项（最多 3 项）
+  // 3− 的下一档是 3，3 和 3+ 的下一档是 4
+  const target = rating - Math.floor(rating) > 0.5 ? Math.ceil(rating) : Math.floor(rating) + 1;
+  const weakest = [...technique, ...game].filter((d) => d.level < target).sort((a, b) => a.level - b.level).slice(0, 3);
+  let gate = weakest.length ? t('To reach level {level}, work on: {skills}', { level: target, skills: list(weakest.map((d) => d.name)) }) : undefined;
 
-  // 2. 被动球：4+ 之后，有时能过渡出来 → 5−；多数能摆脱、并会用落点和节奏 → 5
-  if (rating >= 4 + third - 0.01 && option('passive') >= 2) {
-    rating = option('passive') >= 3 && option('tactics') >= 2 ? 5 : 5 - third;
-  }
-  // 3. 战术和技巧明显结合 → 5+
-  if (rating >= 5 - 0.01 && option('tactics') >= 3) rating = 5 + third;
-
-  // 4. 6 级：俱乐部位置 + 技术（多数分项到 5 级、多拍很稳；6 要有一两项到 6 级；6+ 要有比赛经历）
-  const standing = value('standing');
-  if (rating >= 5 + third - 0.01 && standing !== undefined) {
-    if (most >= 5 && option('stability') >= 4) {
-      let reached = Math.min(standing, 6 - third);
-      if (standing >= 6 - 0.01) {
-        if (topTwo >= 6) reached = 6;
-        else gate = t('To reach level 6: get one or two skills to level 6 (signature shots)');
-      }
-      if (standing >= 6 + third - 0.01 && reached >= 6 - 0.01) {
-        if (option('experience') >= 3) reached = 6 + third;
-        else gate = t('To reach 6+: you need tournament or junior training experience');
-      }
-      rating = reached;
+  // 3. 6 级看俱乐部里的位置：没到“崭露头角”最高 5+；6+ 还要有比赛或青训经历
+  if (rating >= 6 - third - 0.01) {
+    const standing = value('standing');
+    if (standing === undefined) {
+      rating = 5 + third;
+      gate = t('To reach 6−: be among the strongest players in your club');
     } else {
-      gate = t('To reach 6−: most skills at level 5 and steady in long rallies');
+      rating = Math.min(standing, rating + third);
+      gate = undefined;
+      if (rating >= 6 + third - 0.01 && option('experience') < 3) {
+        rating = 6;
+        gate = t('To reach 6+: you need tournament or junior training experience');
+      }
     }
   }
 
-  // 5. 经历保底（回归球友减 1 级）
+  // 4. 经历保底（回归球友减 1 级）
   const floor = (value('experience') ?? 1) - (isReturning ? 1 : 0);
   return {
-    rating: Math.min(Math.max(rating, floor, 1 - third), 6 + third),
+    rating: toThirds(Math.min(Math.max(rating, floor, 1 - third), 6 + third)),
     needsCalibration: floor - rating >= 2 - 0.01,
     isReturning,
     limitingGate: floor > rating ? undefined : gate,

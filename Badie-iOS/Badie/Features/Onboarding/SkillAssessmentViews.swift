@@ -182,7 +182,7 @@ struct AssessmentResultCard: View {
     /// 技术分项：每项几级，最强的标出来（技术特点）
     private var dimensionProfile: some View {
         let strengths = Set(result.strengths.map(\.id))
-        let lowest = result.dimensions.map(\.level).min()
+        let lowest = result.dimensions.map(\.rating).min()
         return VStack(alignment: .leading, spacing: 6) {
             Text("技术分项")
                 .font(AppTheme.Typography.footnoteBold)
@@ -190,22 +190,22 @@ struct AssessmentResultCard: View {
             FlowLayout(spacing: 6) {
                 ForEach(result.dimensions) { dimension in
                     let isStrength = strengths.contains(dimension.id)
-                    let isWeak = !strengths.isEmpty && dimension.level == lowest
+                    let isWeak = !strengths.isEmpty && dimension.rating == lowest
                     HStack(spacing: 4) {
                         if isStrength {
                             Image(systemName: "star.fill")
                                 .font(.system(size: 9, weight: .bold))
                         }
-                        Text("\(dimension.name) \(dimension.level)")
+                        Text("\(dimension.name) \(dimension.code)")
                     }
                     .font(AppTheme.Typography.caption.weight(.bold))
                     .foregroundStyle(AppTheme.Colors.onAccent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Capsule().fill(isWeak ? AppTheme.Colors.peach : Color.white.opacity(isStrength ? 0.9 : 0.55)))
-                    .accessibilityLabel(isStrength ? String(localized: "\(dimension.name) \(dimension.level) 级，技术特点")
-                        : isWeak ? String(localized: "\(dimension.name) \(dimension.level) 级，短板")
-                        : String(localized: "\(dimension.name) \(dimension.level) 级"))
+                    .accessibilityLabel(isStrength ? String(localized: "\(dimension.name) \(dimension.code) 级，技术特点")
+                        : isWeak ? String(localized: "\(dimension.name) \(dimension.code) 级，短板")
+                        : String(localized: "\(dimension.name) \(dimension.code) 级"))
                 }
             }
         }

@@ -1,80 +1,71 @@
 // 定级问卷：与 iOS SkillAssessmentTests.swift 同样的用例，保证两边算出同样的等级
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { evaluate, questions, tier } from '../src/app/assessment.ts';
+import { evaluate, tier } from '../src/app/assessment.ts';
 
-const techniques = questions.filter((q) => q.kind === 'technique').map((q) => q.id);
-
-/** 所有技术分项都在 level 级，overrides 单独调整某几项；其余是台阶题的选项序号 */
-function profile(level: number, { overrides = {} as Record<string, number>, passive = 1, doubles = 2, stability = 2, tactics = 0, standing = 0, experience = 0, returning = false } = {}) {
-  const answers: Record<string, number> = { passive, doubles, stability, tactics, standing, experience, recency: returning ? 1 : 0 };
-  for (const id of techniques) answers[id] = Math.max(0, (overrides[id] ?? level) - (id === 'clear' || id === 'footwork' ? 1 : 2));
-  return answers;
+/** 选项序号（A = 0）。技术：高远、杀球、吊球、反手、网前、平抽、步法；比赛：被动球、双打、稳定性、战术 */
+function answers(technique: number[], game: number[], { standing = 0, experience = 0, returning = false } = {}) {
+  const [clear, smash, drop, backhand, net, drive, footwork] = technique;
+  const [passive, doubles, stability, tactics] = game;
+  return { clear, smash, drop, backhand, net, drive, footwork, passive, doubles, stability, tactics, standing, experience, recency: returning ? 1 : 0 };
 }
-const code = (answers: Record<string, number>) => tier(evaluate(answers)!.rating).label;
+const code = (a: Record<string, number>) => tier(evaluate(a)!.rating).label;
+
+// 典型的几类球友
+const beginner = answers([1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 0]);
+const middle = answers([3, 3, 3, 2, 2, 2, 3], [2, 2, 3, 2]);
+const strong = answers([4, 4, 4, 3, 3, 3, 4], [3, 3, 4, 3]);
+const top = answers([5, 5, 5, 4, 4, 4, 5], [4, 4, 5, 4]);
 
 test('没答完不出结果', () => {
-  const partial = profile(3);
+  const partial: Record<string, number> = { ...middle };
   delete partial.standing;
   assert.equal(evaluate(partial), undefined);
 });
 
 test('完全的新手', () => {
-  assert.equal(code({ ...profile(1, { doubles: 0, stability: 0 }), net: 0 }), '1−');
+  assert.equal(code(answers([0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0])), '1−');
+  assert.equal(code(answers([0, 0, 0, 0, 1, 0, 0], [0, 1, 0, 0])), '1');
 });
 
-test('技术题定出 4+ 以内的档位', () => {
-  assert.equal(code(profile(3)), '3');
-  assert.equal(code(profile(3, { overrides: { clear: 4, net: 4 } })), '3+');
-  assert.equal(code(profile(4, { overrides: { backhand: 3, drop: 3 } })), '4−');
-  assert.equal(code(profile(3, { overrides: { backhand: 2 } })), '3−');
-  const weak = evaluate(profile(5, { overrides: { backhand: 3 } }))!;
-  assert.equal(tier(weak.rating).label, '4−');
-  assert.match(weak.limitingGate!, /backhand back court/);
-  assert.equal(code(profile(4, { overrides: { smash: 5, net: 5 }, stability: 3 })), '4+');
-  assert.equal(code(profile(4, { overrides: { smash: 5, net: 5 }, stability: 2 })), '4');
+test('中间的选项不会一下子到 5', () => {
+  assert.equal(code(beginner), '2');
+  assert.equal(code(middle), '3+');
+  assert.equal(code(strong), '5−');
 });
 
-test('4 级要有双打意识', () => {
-  const result = evaluate(profile(4, { doubles: 1 }))!;
+test('短板限制等级，结果里点名', () => {
+  const noBackhand = evaluate(answers([3, 3, 3, 0, 2, 2, 3], [2, 2, 3, 2]))!;
+  assert.equal(tier(noBackhand.rating).label, '3−');
+  assert.match(noBackhand.limitingGate!, /^To reach level 3, work on: backhand back court/);
+});
+
+test('技术好但比赛能力弱：以弱的为准', () => {
+  const result = evaluate(answers([4, 4, 4, 3, 3, 3, 4], [1, 2, 3, 1]))!;
   assert.equal(tier(result.rating).label, '4−');
-  assert.match(result.limitingGate!, /doubles/);
+  assert.match(result.limitingGate!, /^To reach level 4, work on: smash defense/);
 });
 
-test('被动球和战术推到 5', () => {
-  const overrides = { smash: 5, net: 5 };
-  assert.equal(code(profile(4, { overrides, passive: 1, stability: 3, tactics: 2 })), '4+');
-  assert.equal(code(profile(4, { overrides, passive: 2, stability: 3, tactics: 2 })), '5−');
-  assert.equal(code(profile(4, { overrides, passive: 3, stability: 3, tactics: 2 })), '5');
-  assert.equal(code(profile(4, { overrides, passive: 3, stability: 3, tactics: 3 })), '5+');
-  assert.equal(code(profile(4, { passive: 3, stability: 3, tactics: 3 })), '4');
-});
-
-test('俱乐部位置推到 6', () => {
-  const overrides = { smash: 6, net: 6 };
-  assert.equal(code(profile(5, { overrides, passive: 3, stability: 4, tactics: 3, standing: 4 })), '6');
-  assert.equal(code(profile(5, { overrides, passive: 3, stability: 4, tactics: 3, standing: 3 })), '6−');
-  const noSpecialty = evaluate(profile(5, { passive: 3, stability: 4, tactics: 3, standing: 4 }))!;
-  assert.equal(tier(noSpecialty.rating).label, '6−');
-  assert.match(noSpecialty.limitingGate!, /signature/);
-  assert.equal(code(profile(4, { standing: 5 })), '4');
-  const notYet = evaluate(profile(4, { overrides: { smash: 5, net: 5 }, passive: 3, stability: 4, tactics: 3, standing: 4 }))!;
-  assert.equal(tier(notYet.rating).label, '5+');
-  assert.match(notYet.limitingGate!, /most skills at level 5/);
-});
-
-test('问卷最高 6+', () => {
-  assert.equal(code(profile(6, { passive: 4, doubles: 4, stability: 5, tactics: 4, standing: 5, experience: 4 })), '6+');
-  const capped = evaluate(profile(6, { passive: 4, doubles: 4, stability: 5, tactics: 4, standing: 5 }))!;
-  assert.equal(tier(capped.rating).label, '6');
-  assert.match(capped.limitingGate!, /tournament or junior training/);
+test('5+ 往上看俱乐部里的位置', () => {
+  const unknown = evaluate(top)!;
+  assert.equal(tier(unknown.rating).label, '5+');
+  assert.match(unknown.limitingGate!, /strongest players in your club/);
+  assert.equal(code({ ...top, standing: 3 }), '6−');
+  assert.equal(code({ ...top, standing: 4 }), '6');
+  // 俱乐部霸主还要有比赛或青训经历
+  const ace = evaluate({ ...top, standing: 5 })!;
+  assert.equal(tier(ace.rating).label, '6');
+  assert.match(ace.limitingGate!, /tournament or junior training/);
+  assert.equal(code({ ...top, standing: 5, experience: 3 }), '6+');
+  // 位置再高，技术没到也不是 6
+  assert.equal(code({ ...strong, standing: 5 }), '5−');
 });
 
 test('经历保底，回归球友减 1 级', () => {
-  const active = evaluate(profile(2, { experience: 3 }))!;
+  const active = evaluate({ ...beginner, experience: 3 })!;
   assert.equal(tier(active.rating).label, '5−');
   assert.equal(active.needsCalibration, true);
-  const returning = evaluate(profile(2, { experience: 3, returning: true }))!;
+  const returning = evaluate({ ...beginner, experience: 3, recency: 1 })!;
   assert.equal(tier(returning.rating).level, tier(active.rating).level - 1);
   assert.equal(returning.isReturning, true);
 });

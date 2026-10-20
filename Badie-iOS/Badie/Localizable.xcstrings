@@ -240,7 +240,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ %2$@"
+            "value" : "%1$@ %2$lld"
           }
         }
       }
@@ -383,64 +383,54 @@
         }
       }
     },
-    "%@ %lld" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ %2$lld"
-          }
-        }
-      }
-    },
-    "%@ %lld 级" : {
+    "%@ %@ 级" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Lv.%lld"
+            "value" : "%@ Lv.%@"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Lv.%lld"
+            "value" : "%@ Lv.%@"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Lv.%lld"
+            "value" : "%@ Lv.%@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %lld級"
+            "value" : "%@ %@級"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Lv.%lld"
+            "value" : "%@ Lv.%@"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Lv.%lld"
+            "value" : "%@ Lv.%@"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Lv.%lld"
+            "value" : "%@ Lv.%@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ Lv.%lld"
+            "value" : "%@ Lv.%@"
           }
         },
         "zh-Hans" : {
@@ -452,59 +442,59 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %lld 級"
+            "value" : "%@ %@ 級"
           }
         }
       }
     },
-    "%@ %lld 级，技术特点" : {
+    "%@ %@ 级，技术特点" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ level %lld, strength"
+            "value" : "%@ level %@, strength"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ लेवल %lld, खूबी"
+            "value" : "%@ लेवल %@, खूबी"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ level %lld, kekuatan"
+            "value" : "%@ level %@, kekuatan"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ レベル %lld、得意な技術"
+            "value" : "%@ レベル %@、得意な技術"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %lld레벨, 강점"
+            "value" : "%@ %@레벨, 강점"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ tahap %lld, kekuatan"
+            "value" : "%@ tahap %@, kekuatan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ ระดับ %lld จุดเด่น"
+            "value" : "%@ ระดับ %@ จุดเด่น"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ cấp %lld, điểm mạnh"
+            "value" : "%@ cấp %@, điểm mạnh"
           }
         },
         "zh-Hans" : {
@@ -516,59 +506,59 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %lld 級，技術特點"
+            "value" : "%@ %@ 級，技術特點"
           }
         }
       }
     },
-    "%@ %lld 级，短板" : {
+    "%@ %@ 级，短板" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ level %lld, weak spot"
+            "value" : "%@ level %@, weak spot"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ लेवल %lld, कमज़ोरी"
+            "value" : "%@ लेवल %@, कमज़ोरी"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ level %lld, kelemahan"
+            "value" : "%@ level %@, kelemahan"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ レベル %lld、弱点"
+            "value" : "%@ レベル %@、弱点"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %lld레벨, 약점"
+            "value" : "%@ %@레벨, 약점"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ tahap %lld, kelemahan"
+            "value" : "%@ tahap %@, kelemahan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ ระดับ %lld จุดอ่อน"
+            "value" : "%@ ระดับ %@ จุดอ่อน"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ cấp %lld, điểm yếu"
+            "value" : "%@ cấp %@, điểm yếu"
           }
         },
         "zh-Hans" : {
@@ -580,7 +570,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ %lld 級，弱項"
+            "value" : "%@ %@ 級，弱項"
           }
         }
       }
@@ -13020,60 +13010,60 @@
         }
       }
     },
-    "不会杀，或者一杀就下网、出界" : {
+    "不会杀，或者一杀就下网、出界，经常打杆" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Can't smash, or smashes go into the net or out"
+            "value" : "Can’t smash, or smashes go into the net or out; often mishits the frame"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "स्मैश नहीं कर पाते, या स्मैश नेट में या बाहर जाता है"
+            "value" : "स्मैश नहीं कर पाते, या स्मैश नेट में या बाहर जाता है; अक्सर फ़्रेम पर लगता है"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nggak bisa smash, atau smash-nya nyangkut di net atau keluar"
+            "value" : "Nggak bisa smash, atau smash-nya nyangkut di net atau keluar; sering kena frame"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "スマッシュが打てない、または打つとネットやアウトになる"
+            "value" : "スマッシュが打てない、または打つとネットやアウトになり、フレームに当たることも多い"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "스매시를 못 하거나, 하면 네트에 걸리거나 아웃돼요"
+            "value" : "스매시를 못 하거나, 하면 네트에 걸리거나 아웃되고, 프레임에 맞는 일이 잦아요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tak boleh smash, atau smash kena net atau keluar"
+            "value" : "Tak boleh smash, atau smash kena net atau keluar; selalu terkena bingkai raket"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตบไม่เป็น หรือตบแล้วติดเน็ต ออกนอกคอร์ท"
+            "value" : "ตบไม่เป็น หรือตบแล้วติดเน็ต ออกนอกคอร์ท ตีโดนเฟรมบ่อย"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chưa biết đập cầu, hoặc đập là vào lưới hay ra ngoài"
+            "value" : "Chưa biết đập cầu, hoặc đập là vào lưới hay ra ngoài; hay đánh trúng khung vợt"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "不會殺球，或一殺就掛網、出界"
+            "value" : "不會殺球，或一殺就掛網、出界，常打到拍框"
           }
         }
       }
@@ -13658,60 +13648,60 @@
         }
       }
     },
-    "不被动时能回到对方中后场" : {
+    "不被动时，能从己方中后场回到对方后场" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Can return it to mid or back court when not under pressure"
+            "value" : "When not under pressure, returns from your mid–back court to their back court"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "दबाव न हो तो मिड या बैक कोर्ट तक लौटा देते हैं"
+            "value" : "दबाव न हो तो अपने मिड–बैक कोर्ट से विरोधी के बैक कोर्ट तक लौटा देते हैं"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bisa mengembalikan ke tengah atau belakang lapangan saat nggak tertekan"
+            "value" : "Saat nggak tertekan, bisa mengembalikan dari tengah–belakang lapanganmu ke belakang lapangan lawan"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "余裕があれば相手のコート中盤〜後方へ返せる"
+            "value" : "余裕があれば、自陣の中盤〜後方から相手コートの奥まで返せる"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "압박받지 않을 때는 상대 중후위로 보낼 수 있음"
+            "value" : "압박받지 않을 때는 우리 중후위에서 상대 후위까지 보낼 수 있음"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Boleh pulangkan ke gelanggang tengah atau belakang lawan apabila tidak tertekan"
+            "value" : "Apabila tidak tertekan, boleh pulangkan dari tengah–belakang gelanggang sendiri ke belakang gelanggang lawan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตอนไม่ถูกกดดัน ตีกลับไปกลางคอร์ทหรือท้ายคอร์ทฝั่งตรงข้ามได้"
+            "value" : "ตอนไม่ถูกกดดัน ตีจากกลาง–ท้ายคอร์ทฝั่งเราไปถึงท้ายคอร์ทฝั่งตรงข้ามได้"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đánh về được giữa hoặc cuối sân đối phương khi không bị ép"
+            "value" : "Khi không bị ép, đánh từ giữa–cuối sân mình về được cuối sân đối phương"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "不被動時能回到對方中後場"
+            "value" : "不被動時，能從己方中後場回到對方後場"
           }
         }
       }
@@ -17952,118 +17942,118 @@
         }
       }
     },
-    "会劈吊或滑板其中一种" : {
+    "会劈吊或滑板其中一种，但不稳定，角度掌握不好，常高于网带，会被抓" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Can hit either a sliced drop or a reverse slice"
+            "value" : "Has a sliced drop or a reverse slice, but not consistent: angle is off and it often floats above the tape, so it gets punished"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "स्लाइस्ड ड्रॉप या रिवर्स स्लाइस में से एक खेल पाते हैं"
+            "value" : "स्लाइस्ड ड्रॉप या रिवर्स स्लाइस में से एक आता है, पर स्थिर नहीं: एंगल गड़बड़ और शटल अक्सर नेट से ऊपर तैरती है, इसलिए पकड़ी जाती है"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bisa sliced drop atau reverse slice"
+            "value" : "Bisa sliced drop atau reverse slice, tapi belum stabil: sudutnya meleset dan sering melayang di atas net, jadi mudah diserang"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カットかリバースカットのどちらかが打てる"
+            "value" : "カットかリバースカットのどちらかは打てるが不安定で、角度が甘く白帯より浮きがちで狙われる"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "커트나 리버스 커트 중 하나는 칠 수 있음"
+            "value" : "커트나 리버스 커트 중 하나는 치지만 불안정하고 각도가 안 맞아 네트보다 자주 떠서 공격당해요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Boleh buat sama ada sliced drop atau reverse slice"
+            "value" : "Boleh buat sliced drop atau reverse slice, tetapi belum stabil: sudut tidak tepat dan selalu melayang di atas jaring, jadi mudah diserang"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตัดหยอดหรือหยอดสไลซ์กลับได้อย่างใดอย่างหนึ่ง"
+            "value" : "ตัดหยอดหรือหยอดสไลซ์กลับได้อย่างใดอย่างหนึ่ง แต่ยังไม่นิ่ง คุมมุมไม่ได้ ลูกมักลอยสูงกว่าเน็ตจนโดนตบ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đánh được cắt cầu hoặc cắt ngược"
+            "value" : "Đánh được cắt cầu hoặc cắt ngược nhưng chưa ổn định: góc chưa chuẩn, cầu hay bay cao hơn mép lưới nên bị bắt bài"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "會劈吊或滑板其中一種"
+            "value" : "會劈吊或滑板其中一種，但不穩定，角度掌握不好，常高於網帶，會被抓"
           }
         }
       }
     },
-    "会反手吊直线、斜线，后场回后场比较轻松" : {
+    "会反手吊直线、斜线，有一定球速不会被抓；后场回后场的高远球很轻松" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hits backhand drops straight and cross-court; back-court to back-court comes fairly easily"
+            "value" : "Backhand drops straight and cross-court with enough pace not to get punished; back-court to back-court clears are easy"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "बैकहैंड से सीधा और क्रॉस-कोर्ट ड्रॉप खेलते हैं; बैक कोर्ट से बैक कोर्ट तक आसानी से पहुँचा देते हैं"
+            "value" : "बैकहैंड से सीधा और क्रॉस ड्रॉप इतनी रफ़्तार से खेलते हैं कि पकड़ा न जाए; बैक कोर्ट से बैक कोर्ट क्लियर आसान है"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bisa dropshot backhand lurus dan silang; dari belakang ke belakang cukup mudah"
+            "value" : "Dropshot backhand lurus dan silang cukup cepat sehingga tidak mudah diserang; clear dari belakang ke belakang terasa mudah"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バックハンドでストレート・クロスのドロップが打て、奥から奥への返球も比較的楽にできる"
+            "value" : "バックハンドでストレート・クロスのドロップがある程度の速さで打て、狙われない。奥から奥へのクリアも楽"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "백핸드 드롭을 직선·대각선으로 칠 수 있고, 후위에서 후위로 보내기가 비교적 수월함"
+            "value" : "백핸드 드롭을 직선·대각선으로 적당한 속도로 쳐서 공격당하지 않고, 후위에서 후위로 보내는 클리어도 수월함"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Boleh dropshot backhand lurus dan silang; belakang ke belakang agak mudah"
+            "value" : "Dropshot backhand lurus dan silang cukup laju supaya tidak mudah diserang; clear belakang ke belakang terasa mudah"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "หยอดแบ็คแฮนด์ได้ทั้งตรงและทแยง ตีจากท้ายคอร์ทไปท้ายคอร์ทได้ค่อนข้างสบาย"
+            "value" : "หยอดแบ็คแฮนด์ได้ทั้งตรงและทแยงด้วยความเร็วพอที่จะไม่โดนตบ ตีโด่งจากท้ายคอร์ทไปท้ายคอร์ทได้สบาย"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bỏ nhỏ trái tay được cả thẳng lẫn chéo; đánh từ cuối sân về cuối sân khá dễ dàng"
+            "value" : "Bỏ nhỏ trái tay cả thẳng lẫn chéo với tốc độ đủ để không bị bắt; phông cầu từ cuối sân về cuối sân rất nhẹ nhàng"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "會反手吊直線、斜線，後場回後場比較輕鬆"
+            "value" : "會反手吊直線、斜線，有一定球速不會被抓；後場回後場的高遠球很輕鬆"
           }
         }
       }
@@ -27933,60 +27923,118 @@
         }
       }
     },
-    "劈吊、滑板都熟练，和高远、杀球动作一致" : {
+    "劈吊、滑板都会，但稳定性不足，球速也不够，偶尔反而陷入被动" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comfortable with sliced drops and reverse slices, disguised like clears and smashes"
+            "value" : "Has both sliced drops and reverse slices, but not consistent or fast enough, and sometimes ends up under pressure"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "स्लाइस्ड ड्रॉप और रिवर्स स्लाइस में सहज, क्लियर और स्मैश जैसे एक्शन में छिपे हुए"
+            "value" : "स्लाइस्ड ड्रॉप और रिवर्स स्लाइस दोनों आते हैं, पर स्थिरता और रफ़्तार कम है; कभी-कभी उल्टा दबाव में आ जाते हैं"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Lancar sliced drop dan reverse slice, gerakannya mirip clear dan smash"
+            "value" : "Bisa sliced drop dan reverse slice, tapi belum stabil dan kurang cepat; kadang malah jadi tertekan"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "カットもリバースカットも得意で、クリアやスマッシュと同じフォームで打てる"
+            "value" : "カットもリバースカットも打てるが、安定性もスピードも足りず、かえって不利になることもある"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "커트와 리버스 커트 모두 능숙하고, 클리어·스매시와 동작이 같음"
+            "value" : "커트와 리버스 커트 모두 치지만 안정성과 속도가 부족해 가끔 오히려 수세에 몰려요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mahir sliced drop dan reverse slice, gaya pukulan sama seperti clear dan smash"
+            "value" : "Boleh buat sliced drop dan reverse slice, tetapi kurang stabil dan kurang laju; kadangkala jadi tertekan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตัดหยอดและหยอดสไลซ์กลับได้คล่อง ท่าเหมือนลูกโด่งและลูกตบ"
+            "value" : "ตัดหยอดและหยอดสไลซ์กลับได้ทั้งสองแบบ แต่ยังไม่นิ่งและลูกยังไม่เร็วพอ บางทีกลับเสียเปรียบ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Thành thạo cắt cầu và cắt ngược, động tác giống hệt phông cầu và đập cầu"
+            "value" : "Đánh được cả cắt cầu và cắt ngược nhưng chưa ổn định, tốc độ chưa đủ, đôi khi còn bị rơi vào thế bị động"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "劈吊、滑板都熟練，和高遠球、殺球動作一致"
+            "value" : "劈吊、滑板都會，但穩定性不足，球速也不夠，偶爾反而陷入被動"
+          }
+        }
+      }
+    },
+    "劈吊、滑板都熟练，和高远、杀球动作一致，球速快、过网就落" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sliced drops and reverse slices are fluent, disguised like clears and smashes, and fast, dropping right after the net"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्लाइस्ड ड्रॉप और रिवर्स स्लाइस में सहज, क्लियर और स्मैश जैसा एक्शन; तेज़, नेट पार करते ही गिरती है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancar sliced drop dan reverse slice, gerakannya mirip clear dan smash, cepat dan langsung jatuh setelah net"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カットもリバースカットも得意で、クリアやスマッシュと同じフォーム。速く、ネットを越えてすぐ落ちる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "커트와 리버스 커트 모두 능숙하고 클리어·스매시와 동작이 같으며, 빠르고 네트를 넘자마자 떨어짐"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mahir sliced drop dan reverse slice, gaya sama seperti clear dan smash, laju dan terus jatuh selepas jaring"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัดหยอดและหยอดสไลซ์กลับได้คล่อง ท่าเหมือนลูกโด่งและลูกตบ ลูกเร็ว ข้ามเน็ตแล้วตกทันที"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thành thạo cắt cầu và cắt ngược, động tác giống hệt phông cầu và đập cầu, cầu nhanh và rơi ngay sau lưới"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "劈吊、滑板都熟練，和高遠球、殺球動作一致，球速快、過網就落"
           }
         }
       }
@@ -31239,60 +31287,60 @@
         }
       }
     },
-    "反手高远底线到底线，反手劈吊熟练" : {
+    "反手高远底线到底线；被动时反手过渡依然非常熟练" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Backhand clears baseline to baseline, comfortable with backhand sliced drops"
+            "value" : "Backhand clears baseline to baseline; still very comfortable getting out of trouble with the backhand under pressure"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "बैकहैंड क्लियर बेसलाइन से बेसलाइन तक, बैकहैंड स्लाइस्ड ड्रॉप में सहज"
+            "value" : "बैकहैंड क्लियर बेसलाइन से बेसलाइन तक; दबाव में भी बैकहैंड से बहुत आसानी से निकल जाते हैं"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear backhand dari baseline ke baseline, lancar sliced drop backhand"
+            "value" : "Clear backhand dari baseline ke baseline; tetap sangat lancar keluar dari tekanan dengan backhand"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バックハンドでベースラインからベースラインまでクリアが打て、バックハンドのカットも得意"
+            "value" : "バックハンドでベースラインからベースラインまでクリアが打て、追い込まれてもバックハンドでのつなぎが非常にうまい"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "백핸드 클리어를 베이스라인에서 베이스라인까지 보내고, 백핸드 커트가 능숙함"
+            "value" : "백핸드 클리어를 베이스라인에서 베이스라인까지 보내고, 수세에서도 백핸드로 위기를 넘기는 데 매우 능숙함"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clear backhand dari garisan belakang ke garisan belakang, mahir sliced drop backhand"
+            "value" : "Clear backhand dari garisan belakang ke garisan belakang; masih sangat mahir keluar dari tekanan dengan backhand"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ลูกโด่งแบ็คแฮนด์จากเส้นหลังถึงเส้นหลัง ตัดหยอดแบ็คแฮนด์ได้คล่อง"
+            "value" : "ลูกโด่งแบ็คแฮนด์จากเส้นหลังถึงเส้นหลัง แม้ถูกกดดันก็ยังใช้แบ็คแฮนด์แก้ลูกได้คล่องมาก"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Phông cầu trái tay từ cuối sân đến cuối sân, thành thạo cắt cầu trái tay"
+            "value" : "Phông cầu trái tay từ cuối sân đến cuối sân; ngay cả khi bị ép vẫn gỡ cầu trái tay rất thành thạo"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "反手高遠球底線到底線，反手劈吊熟練"
+            "value" : "反手高遠球底線到底線；被動時反手過渡依然非常熟練"
           }
         }
       }
@@ -49158,64 +49206,6 @@
         }
       }
     },
-    "平高球、高远球都会，能控制弧度和落点" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Can hit both attacking and high clears, controlling height and placement"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "अटैकिंग क्लियर और हाई क्लियर दोनों आते हैं, ऊँचाई और प्लेसमेंट पर कंट्रोल"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bisa clear menyerang dan clear tinggi, mengontrol tinggi dan penempatan"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ドリブンクリアもハイクリアも打て、高さとコースをコントロールできる"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "드리븐 클리어와 하이 클리어 모두 가능하고 높이와 코스를 조절할 수 있음"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Boleh buat clear menyerang dan clear tinggi, mengawal ketinggian dan penempatan"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ตีได้ทั้งลูกโด่งบุกและลูกโด่ง คุมความสูงและตำแหน่งลูกได้"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đánh được cả phông cầu tấn công lẫn phông cầu cao sâu, kiểm soát được độ cao và điểm rơi"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "平高球、高遠球都會，能控制弧度和落點"
-          }
-        }
-      }
-    },
     "广告 / 引流" : {
       "localizations" : {
         "en" : {
@@ -50024,6 +50014,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始定級"
+          }
+        }
+      }
+    },
+    "开始懂得重杀、轻杀、点杀的妙用，杀完能跟上网前" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starting to mix hard, half and stick smashes well, and follows up at the net"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हार्ड, हाफ़ और स्टिक स्मैश को मिलाकर खेलना समझने लगे हैं, फिर नेट पर फ़ॉलो-अप"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mulai paham memadukan smash keras, setengah, dan stick smash; lalu menyusul ke depan net"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "強打、軽打、ショートスマッシュの使い分けがわかってきて、打った後ネット前に詰められる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "강스매시, 약스매시, 스틱 스매시를 섞어 쓰는 법을 알아가고, 스매시 후 네트 앞까지 따라 들어가요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mula faham menggabungkan smash keras, separa dan stick smash; diikuti ke depan jaring"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เริ่มเข้าใจการสลับตบหนัก ตบเบา ตบจิ้ม และตบแล้วตามขึ้นหน้าเน็ตได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bắt đầu hiểu cách phối hợp đập mạnh, đập nhẹ và đập dí; đập xong theo lên lưới được"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始懂得重殺、輕殺、點殺的妙用，殺完能跟上網前"
           }
         }
       }
@@ -51838,234 +51886,60 @@
         }
       }
     },
-    "想到 3 级先补短板：%@" : {
+    "想到 %lld 级先补短板：%@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To reach level 3, work on: %@"
+            "value" : "To reach level %lld, work on: %@"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "लेवल 3 तक पहुँचने के लिए इस पर काम करें: %@"
+            "value" : "लेवल %lld तक पहुँचने के लिए इस पर काम करें: %@"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Untuk mencapai level 3, latih: %@"
+            "value" : "Untuk mencapai level %lld, latih: %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "レベル 3 を目指すなら、まず弱点を克服：%@"
+            "value" : "レベル %lld を目指すなら、まず弱点を克服：%@"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "3레벨이 되려면 먼저 약점 보완: %@"
+            "value" : "%lld레벨이 되려면 먼저 약점 보완: %@"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Untuk mencapai tahap 3, perbaiki: %@"
+            "value" : "Untuk mencapai tahap %lld, perbaiki: %@"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "เพื่อไปถึงระดับ 3 ให้ฝึก: %@"
+            "value" : "เพื่อไปถึงระดับ %lld ให้ฝึก: %@"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Để lên cấp 3, hãy cải thiện: %@"
+            "value" : "Để lên cấp %lld, hãy cải thiện: %@"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "想到 3 級先補弱項：%@"
-          }
-        }
-      }
-    },
-    "想到 4 级先补短板：%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To reach level 4, work on: %@"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "लेवल 4 तक पहुँचने के लिए इस पर काम करें: %@"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Untuk mencapai level 4, latih: %@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "レベル 4 を目指すなら、まず弱点を克服：%@"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "4레벨이 되려면 먼저 약점 보완: %@"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Untuk mencapai tahap 4, perbaiki: %@"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เพื่อไปถึงระดับ 4 ให้ฝึก: %@"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Để lên cấp 4, hãy cải thiện: %@"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "想到 4 級先補弱項：%@"
-          }
-        }
-      }
-    },
-    "想到 4 级：双打要有发接发、移动补位、封网的基本意识" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To reach level 4: build basic doubles awareness of serve and return, covering, and net coverage"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "लेवल 4 तक पहुँचने के लिए: डबल्स में सर्व और रिटर्न, कवर करने और नेट कवरेज की बुनियादी समझ बनाएँ"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Untuk mencapai level 4: bangun pemahaman dasar ganda soal servis dan pengembalian, menutup posisi, dan menjaga net"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "レベル 4 を目指すには：ダブルスでサービスとレシーブ、カバーの動き、ネットカバーの基本的な意識を身につける"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "4레벨이 되려면: 복식에서 서브·리시브, 커버 이동, 네트 커버의 기본 개념을 갖추세요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Untuk mencapai tahap 4: bina kesedaran asas beregu tentang servis dan terima servis, mengisi ruang dan mengawal net"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เพื่อไปถึงระดับ 4: ประเภทคู่ต้องมีความเข้าใจพื้นฐานเรื่องเสิร์ฟและรับเสิร์ฟ การขยับเติมตำแหน่ง และการคุมหน้าเน็ต"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Để lên cấp 4: xây dựng ý thức đánh đôi cơ bản về giao và đỡ giao cầu, bọc lót và chặn lưới"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "想到 4 級：雙打要有發接發、移動補位、封網的基本意識"
-          }
-        }
-      }
-    },
-    "想到 6 级：要有一两项技术到 6 级（绝活）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To reach level 6: get one or two skills to level 6 (signature shots)"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "लेवल 6 तक पहुँचने के लिए: एक-दो स्किल लेवल 6 तक ले जाएँ (खास शॉट)"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Untuk mencapai level 6: tingkatkan satu-dua skill ke level 6 (pukulan andalan)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "レベル 6 を目指すには：1〜2 項目の技術をレベル 6（得意技）まで高める"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6레벨이 되려면: 한두 가지 기술을 6레벨(필살기)까지 끌어올리세요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Untuk mencapai tahap 6: bawa satu atau dua kemahiran ke tahap 6 (pukulan istimewa)"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เพื่อไปถึงระดับ 6: ต้องมีทักษะหนึ่งหรือสองอย่างถึงระดับ 6 (ท่าไม้ตาย)"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Để lên cấp 6: đưa một hai kỹ năng lên cấp 6 (cú đánh tủ)"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "想到 6 級：要有一兩項技術到 6 級（絕活）"
+            "value" : "想到 %lld 級先補弱項：%@"
           }
         }
       }
@@ -52128,60 +52002,60 @@
         }
       }
     },
-    "想到 6−：多数技术分项到 5 级，多拍很稳" : {
+    "想到 6−：要在你常打的俱乐部里排进最强的那几个" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To reach 6−: most skills at level 5 and steady in long rallies"
+            "value" : "To reach 6−: be among the strongest players in your club"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6− तक पहुँचने के लिए: ज़्यादातर स्किल लेवल 5 पर और लंबी रैली में स्थिर"
+            "value" : "6− तक पहुँचने के लिए: अपने क्लब के सबसे मज़बूत खिलाड़ियों में होना चाहिए"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Untuk mencapai 6−: sebagian besar skill di level 5 dan stabil di reli panjang"
+            "value" : "Untuk mencapai 6−: jadilah salah satu pemain terkuat di klubmu"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6− を目指すには：多くの技術項目をレベル 5 にし、長いラリーでも安定させる"
+            "value" : "6− を目指すには：普段のクラブでトップクラスに入ること"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6−가 되려면: 대부분 기술 항목이 5레벨이고 긴 랠리에서 안정적이어야 해요"
+            "value" : "6−가 되려면: 자주 치는 클럽에서 가장 잘하는 몇 명 안에 들어야 해요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Untuk mencapai 6−: kebanyakan kemahiran di tahap 5 dan stabil dalam rali panjang"
+            "value" : "Untuk mencapai 6−: jadi antara pemain terkuat di kelab anda"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "เพื่อไปถึง 6−: ทักษะส่วนใหญ่ถึงระดับ 5 และตีโต้ยาวได้นิ่ง"
+            "value" : "เพื่อไปถึง 6−: ต้องเป็นหนึ่งในผู้เล่นที่เก่งที่สุดในคลับของคุณ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Để lên 6−: phần lớn kỹ năng đạt cấp 5 và chắc chắn ở các pha cầu dài"
+            "value" : "Để lên 6−: cần nằm trong nhóm mạnh nhất ở câu lạc bộ bạn hay chơi"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "想到 6−：多數技術分項到 5 級，多拍很穩"
+            "value" : "想到 6−：要在你常打的俱樂部裡排進最強的那幾個"
           }
         }
       }
@@ -68285,6 +68159,64 @@
         }
       }
     },
+    "机会好的时候偶尔能把力量打透，开始有角度、有威胁" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With a good chance, sometimes hits through with power and angle; starting to threaten"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अच्छा मौक़ा मिलने पर कभी-कभी पूरी ताक़त और एंगल से स्मैश; खतरा बनने लगे हैं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saat dapat peluang bagus, kadang bisa smash bertenaga dan bersudut; mulai mengancam"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "チャンスボールなら時々しっかり力を乗せられ、角度もついて威力が出てきた"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "좋은 기회에서는 가끔 힘을 제대로 실어 각도 있게 쳐서 위협이 되기 시작해요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apabila peluang baik, kadangkala boleh smash berkuasa dan bersudut; mula berbahaya"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ถ้าได้จังหวะดี บางครั้งตบได้หนักและมีมุม เริ่มอันตราย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi có cơ hội tốt, thỉnh thoảng đập được mạnh và có góc; bắt đầu có uy hiếp"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "機會好的時候偶爾能把力量打透，開始有角度、有威脅"
+          }
+        }
+      }
+    },
     "杀、吊、网前、防守没有明显短板" : {
       "localizations" : {
         "en" : {
@@ -80781,64 +80713,6 @@
         }
       }
     },
-    "直线、斜线都能杀，有威胁，杀完能跟上网前" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Threatening smashes straight and cross-court, follows up at the net"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "स्ट्रेट और क्रॉस-कोर्ट दोनों तरफ़ खतरनाक स्मैश, फिर नेट पर फ़ॉलो-अप"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smash lurus dan silang yang mengancam, lalu menyusul ke depan net"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ストレート・クロスともスマッシュに威力があり、打った後ネット前に詰められる"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "스트레이트·크로스 스매시 모두 위협적이고, 스매시 후 네트 앞까지 따라 들어가요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Smash lurus dan silang yang berbahaya, diikuti dengan serangan di jaring"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ตบได้ทั้งตรงและทแยงอย่างอันตราย ตบแล้วตามขึ้นหน้าเน็ตได้"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đập thẳng và chéo đều uy hiếp, đập xong theo lên lưới được"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "直線、斜線都能殺，有威脅，殺完能跟上網前"
-          }
-        }
-      }
-    },
     "相距 %@" : {
       "localizations" : {
         "en" : {
@@ -81009,6 +80883,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "看對手強弱"
+          }
+        }
+      }
+    },
+    "知道平高球和高远球的区别，知道什么时候打哪种，能控制弧度和落点" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knows attacking clears from high clears and when to use each; controls height and placement"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अटैकिंग क्लियर और हाई क्लियर का फ़र्क और कब कौन-सा खेलना है, जानते हैं; ऊँचाई और प्लेसमेंट पर कंट्रोल"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paham beda clear menyerang dan clear tinggi serta kapan memakainya; mengontrol tinggi dan penempatan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドリブンクリアとハイクリアの違いと使いどころがわかり、高さとコースをコントロールできる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "드리븐 클리어와 하이 클리어의 차이와 쓸 때를 알고, 높이와 코스를 조절할 수 있음"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faham beza clear menyerang dan clear tinggi serta bila menggunakannya; mengawal ketinggian dan penempatan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รู้ความต่างของลูกโด่งบุกกับลูกโด่ง และรู้ว่าเมื่อไหร่ควรตีแบบไหน คุมความสูงและตำแหน่งลูกได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phân biệt phông cầu tấn công với phông cầu cao sâu và biết khi nào dùng loại nào; kiểm soát được độ cao và điểm rơi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "知道平高球和高遠球的區別，知道什麼時候打哪種，能控制弧度和落點"
+          }
+        }
+      }
+    },
+    "知道怎么往下压，但力量打不透" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Knows how to hit down, but can’t put power through the shuttle"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "नीचे मारना जानते हैं, पर ताक़त शटल तक नहीं पहुँचा पाते"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tahu cara memukul ke bawah, tapi tenaganya belum tersalur ke kok"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上から打ち込むやり方はわかるが、力がシャトルに伝わらない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아래로 치는 법은 알지만 힘을 셔틀콕에 제대로 싣지 못해요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tahu cara pukul ke bawah, tetapi kuasa belum sampai ke bulu tangkis"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รู้วิธีกดลูกลง แต่ส่งแรงไปถึงลูกไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biết cách đánh cầu xuống nhưng chưa truyền được lực vào cầu"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "知道怎麼往下壓，但力量打不透"
           }
         }
       }
@@ -87453,64 +87443,6 @@
         }
       }
     },
-    "能往下压，但没什么力量" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Can hit down, but without much power"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "नीचे मार सकते हैं, पर ज़्यादा ताक़त के बिना"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bisa memukul ke bawah, tapi tanpa banyak tenaga"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "上から打ち込めるが、あまり力がない"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "아래로 칠 수는 있지만 힘이 별로 없어요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Boleh pukul ke bawah, tetapi kurang kuasa"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "กดลูกลงได้ แต่ไม่ค่อยมีแรง"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đánh cầu xuống được nhưng chưa có lực"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "能往下壓，但沒什麼力量"
-          }
-        }
-      }
-    },
     "能找对手的空档和配合盲区" : {
       "localizations" : {
         "en" : {
@@ -87627,60 +87559,60 @@
         }
       }
     },
-    "能杀下去、有角度，但对方不难接" : {
+    "能杀下去、有一定球速，但对方不难接" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Smashes go down with angle, but aren't hard to return"
+            "value" : "Smashes go down with some pace, but aren’t hard to return"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "स्मैश एंगल के साथ नीचे जाते हैं, पर लौटाना मुश्किल नहीं"
+            "value" : "स्मैश कुछ रफ़्तार से नीचे जाते हैं, पर लौटाना मुश्किल नहीं"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Smash menukik dan bersudut, tapi tidak sulit dikembalikan"
+            "value" : "Smash menukik dengan cukup kecepatan, tapi tidak sulit dikembalikan"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "角度をつけて打ち込めるが、相手には返しやすい"
+            "value" : "打ち込めてある程度スピードもあるが、相手には返しやすい"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "스매시를 각도 있게 내리꽂지만 상대가 받기 어렵지 않아요"
+            "value" : "내리꽂을 수 있고 어느 정도 속도도 있지만 상대가 받기 어렵지 않아요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Smash menjunam dengan sudut, tetapi tidak sukar dibalas"
+            "value" : "Smash menjunam dengan sedikit kelajuan, tetapi tidak sukar dibalas"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตบลงได้และมีมุม แต่คู่แข่งรับได้ไม่ยาก"
+            "value" : "ตบลงได้และมีความเร็วระดับหนึ่ง แต่คู่แข่งรับได้ไม่ยาก"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đập xuống có góc nhưng đối thủ không khó đỡ"
+            "value" : "Đập xuống được, có tốc độ nhất định nhưng đối thủ không khó đỡ"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "能殺下去、有角度，但對方不難接"
+            "value" : "能殺下去、有一定球速，但對方不難接"
           }
         }
       }
@@ -87801,60 +87733,60 @@
         }
       }
     },
-    "能用反手打，但只到中场" : {
+    "能用反手打，但只能到中场或中前场；对手一打你的反手你就被动" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Can hit backhand, but only to midcourt"
+            "value" : "Can hit backhand, but only to mid or front court; once opponents target your backhand you’re under pressure"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "बैकहैंड मार सकते हैं, पर सिर्फ़ मिडकोर्ट तक"
+            "value" : "बैकहैंड मार सकते हैं, पर सिर्फ़ मिड या फ़्रंट कोर्ट तक; विरोधी बैकहैंड पर खेले तो दबाव में आ जाते हैं"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bisa pukul backhand, tapi hanya sampai tengah lapangan"
+            "value" : "Bisa pukul backhand, tapi hanya sampai tengah atau depan lapangan; begitu lawan menyerang backhand-mu, kamu tertekan"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バックハンドで打てるが、ミドルまでしか届かない"
+            "value" : "バックハンドで打てるが、ミドルか前寄りまでしか届かず、バックを狙われると苦しくなる"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "백핸드로 칠 수 있지만 중앙까지만 가요"
+            "value" : "백핸드로 칠 수 있지만 중앙이나 중전위까지만 가고, 상대가 백핸드를 노리면 수세에 몰려요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Boleh pukul backhand, tetapi hanya ke tengah gelanggang"
+            "value" : "Boleh pukul backhand, tetapi hanya ke tengah atau depan gelanggang; apabila lawan menyerang backhand anda, anda tertekan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตีแบ็คแฮนด์ได้ แต่ไปถึงแค่กลางคอร์ท"
+            "value" : "ตีแบ็คแฮนด์ได้ แต่ไปถึงแค่กลางหรือหน้าคอร์ท พอคู่แข่งตีใส่แบ็คแฮนด์ก็เสียเปรียบทันที"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đánh trái tay được nhưng chỉ tới giữa sân"
+            "value" : "Đánh trái tay được nhưng chỉ tới giữa hoặc gần lưới; đối thủ cứ đánh vào trái tay là bạn bị động"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "能用反手打，但只到中場"
+            "value" : "能用反手打，但只能到中場或中前場；對手一打你的反手你就被動"
           }
         }
       }
@@ -102881,60 +102813,60 @@
         }
       }
     },
-    "重杀、劈杀、点杀都会，按对方站位选用" : {
+    "重杀、劈杀、点杀用得轻车熟路，按对方站位选用" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Has hard, sliced and stick smashes, picks based on opponent position"
+            "value" : "Hard, sliced and stick smashes come naturally; picks one based on where the opponent stands"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "हार्ड, स्लाइस और स्टिक स्मैश आते हैं, विरोधी की पोज़िशन देखकर चुनते हैं"
+            "value" : "हार्ड, स्लाइस और स्टिक स्मैश सहज हैं; विरोधी की पोज़िशन देखकर चुनते हैं"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bisa smash keras, smash potong, dan stick smash, dipilih sesuai posisi lawan"
+            "value" : "Smash keras, smash potong, dan stick smash sudah lancar; dipilih sesuai posisi lawan"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "強打、カット、ショートスマッシュを打ち分け、相手の位置で使い分ける"
+            "value" : "強打、カット、ショートスマッシュを自在に打ち分け、相手の位置で使い分ける"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "강스매시, 커트 스매시, 스틱 스매시를 모두 하며 상대 위치에 따라 골라 써요"
+            "value" : "강스매시, 커트 스매시, 스틱 스매시를 자연스럽게 쓰고 상대 위치에 따라 골라 써요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ada smash keras, smash potong dan stick smash, pilih ikut kedudukan lawan"
+            "value" : "Smash keras, smash potong dan stick smash sudah mahir; pilih ikut kedudukan lawan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตบหนัก ตบตัด ตบจิ้ม ทำได้หมด เลือกใช้ตามตำแหน่งคู่แข่ง"
+            "value" : "ตบหนัก ตบตัด ตบจิ้ม ใช้ได้คล่องมือ เลือกตามตำแหน่งคู่แข่ง"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Biết đập mạnh, đập cắt và đập dí, chọn tùy vị trí đối thủ"
+            "value" : "Đập mạnh, đập cắt, đập dí đều thuần thục; chọn tùy vị trí đối thủ"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "重殺、劈殺、點殺都會，依對方站位選用"
+            "value" : "重殺、劈殺、點殺用得駕輕就熟，依對方站位選用"
           }
         }
       }
