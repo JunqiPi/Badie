@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Admin, VerificationPage } from './Verification';
+import { Contact } from './Contact';
 import { Challenges, GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
 import { startLocale, t, useLocale } from './i18n';
@@ -106,6 +107,7 @@ export default function App() {
   if (path === '/') return shell(<Home profile={profile ?? null} />);
   if (path.startsWith('/levels/')) return shell(<LevelGuide profile={profile ?? null} />);
   if (path.startsWith('/about/')) return shell(<About />);
+  if (path.startsWith('/contact/')) return shell(<Contact />);
 
   if (!profile) return shell(<SignInPage path={path} />);
 

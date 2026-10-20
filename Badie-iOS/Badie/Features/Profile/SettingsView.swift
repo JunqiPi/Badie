@@ -190,6 +190,10 @@ struct SettingsView: View {
                         }
                     }
 
+                    section(String(localized: "帮助")) {
+                        ContactCard()
+                    }
+
                     section(String(localized: "账号")) {
                         VStack(spacing: AppTheme.Spacing.sm) {
                             if appState.isRemote {
@@ -203,7 +207,7 @@ struct SettingsView: View {
                         }
                     }
 
-                    Text("Badie v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.0")")
+                    Text("Badie v\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")")
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkTertiary)
                         .frame(maxWidth: .infinity)

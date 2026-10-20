@@ -125,6 +125,7 @@ export function About() {
       <p className="flex gap-4 text-footnote font-bold">
         <Link to="/privacy/" className="link">{t('Privacy Policy')}</Link>
         <Link to="/terms/" className="link">{t('Terms of Service')}</Link>
+        <Link to="/contact/" className="link">{t('Contact us')}</Link>
       </p>
     </div>
   );

@@ -227,6 +227,8 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 - 网站各页面打开正常，刷新 `/courts/`、`/games/` 不报 404，旧地址 `/app/games/` 会跳到 `/games/`。
 - “Supabase keep-alive” 每天自动运行，防止免费项目因 7 天无活动被暂停。
 
+iPhone App 上架（开发者账号、TestFlight、App Store Connect 资料、审核）见 [APP_STORE.md](APP_STORE.md)。
+
 ## 以后要补的
 
 - **备份**：免费版没有自动备份。要做每日 `pg_dump` 到私有存储（如 Cloudflare R2），不能传成公开仓库的 Actions 产物。

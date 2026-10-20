@@ -5,6 +5,7 @@ import { t } from './i18n';
 import { enabledProviders, supabase } from './supabase';
 import { CardFan, Tag } from './kit';
 import { MIN_PASSWORD, passwordProblem } from './password';
+import { Link } from './router';
 import { Button, Field, PasswordInput, toast } from './ui';
 
 const RESEND_SECONDS = 60;
@@ -306,6 +307,9 @@ export function SignIn() {
             {t('Can’t find it? Check spam, or search your inbox for “Badie”.')}
           </p>
         ) : <Agreement />}
+        <p className="text-center text-footnote text-ink-secondary">
+          {t('Trouble signing in?')} <Link to="/contact/" className="link">{t('Contact us')}</Link>
+        </p>
       </div>
     </div>
   );

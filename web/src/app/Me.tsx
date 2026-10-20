@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
+import { SUPPORT_EMAIL } from './Contact';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Divider, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile, Tag } from './kit';
@@ -211,6 +212,10 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       </Group>
 
       <PasswordSettings email={email} />
+
+      <Group title={t('Help')}>
+        <Row icon="mail" tint="sky" title={t('Contact us')} subtitle={SUPPORT_EMAIL} to="/contact/" />
+      </Group>
 
       <Group title={t('Account')}>
         <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => disablePush().catch(() => {}).finally(() => supabase!.auth.signOut())} />

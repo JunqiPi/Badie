@@ -66,7 +66,7 @@ await page.getByRole('link', { name: 'Courts' }).first().waitFor();
 
 // 最窄的手机（320 宽）上每个页面都不能左右滑动（长球馆名、不换行的标签、并排的控件都可能把页面撑宽）
 await page.setViewportSize({ width: 320, height: 720 });
-for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', '/settings/', '/rankings/', '/challenges/', '/notifications/', '/groups/new/', '/rooms/new/', '/levels/', '/privacy/', '/terms/']) {
+for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', '/settings/', '/rankings/', '/challenges/', '/notifications/', '/groups/new/', '/rooms/new/', '/levels/', '/privacy/', '/terms/', '/contact/']) {
   await page.goto(`${base}${path}`);
   await page.getByRole('main').waitFor();
   await page.waitForTimeout(300);
@@ -80,6 +80,12 @@ for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', 
   assert.ok(scroll <= width, `${path} is ${scroll}px wide on a ${width}px screen: ${culprit}`);
 }
 await page.setViewportSize({ width: 1280, height: 900 });
+
+// 联系我们：设置里能找到，页面上能直接写邮件给客服
+await page.goto(`${base}/settings/`);
+await page.getByRole('main').getByRole('link', { name: /Contact us/ }).click();
+await page.getByRole('heading', { name: 'Contact us' }).waitFor();
+assert.match(await page.getByRole('link', { name: 'Write an email' }).getAttribute('href') ?? '', /^mailto:support@badie\.rsvp/);
 
 // 注销：要点两次；之后变回没登录，刷新也不会再登录
 await page.goto(`${base}/settings/`);
