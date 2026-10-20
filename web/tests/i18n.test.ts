@@ -1,7 +1,8 @@
-// 界面翻译：代码里每个 t('…') 和静态页面的 data-t 在所有语言里都有译文，占位符一致；单复数按语言规则选
+// 界面翻译：代码里每个 t('…')、定级题和静态页面的 data-t 在所有语言里都有译文，占位符一致；单复数按语言规则选
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import { questions } from '../src/app/assessment.ts';
 import { languages, t } from '../src/app/i18n.ts';
 
 const app = new URL('../src/app/', import.meta.url);
@@ -12,6 +13,8 @@ const unescape = (text: string) => text.replace(/\\(.)/g, (_, c) => (c === 'n' ?
 const pages = ['pages', 'components', 'layouts'].flatMap((dir) => sources(new URL(`../src/${dir}/`, import.meta.url), /\.astro$/));
 const keys = new Set([
   ...sources(app, /\.tsx?$/).flatMap((code) => [...code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)].map((m) => unescape(m[1]))),
+  // 定级题的题目和选项写在数组里，翻译时才传给 t()，上面扫不到
+  ...questions.flatMap((q) => [q.title, q.hint, ...q.options.map((o) => o.text)]),
   // 静态页面（球馆目录）在浏览器里按 data-t 翻译
   ...pages.flatMap((code) => [...code.matchAll(/\bdata-t(?:-placeholder|-label)?="([^"]+)"/g)].map((m) => m[1])),
 ]);
