@@ -147,7 +147,7 @@ Authentication → URL Configuration：
 需要 Apple Developer Program（每年 $99；把 App 上架 App Store、用 TestFlight 本来就要这个账号，Apple 登录本身不另收费）。上架前再配就行。
 
 1. Apple Developer → Certificates, Identifiers & Profiles → Identifiers：
-   - App ID `com.badie.app`：勾上 **Sign in with Apple**（代码里已经带了这个 entitlement，Xcode 自动签名时会同步）。
+   - App ID `com.badie.app`：勾上 **Push Notifications** 和 **Sign in with Apple**（还没建的话按 `APP_STORE.md` 第 2 节第 1 步建）。
    - 新建 Services ID `com.badie.web`（网页登录用）：勾上 Sign in with Apple → Configure：Primary App ID 选 `com.badie.app`，Domains 填 `yeffnjdpjejlplqryjfx.supabase.co`，Return URLs 填 `https://yeffnjdpjejlplqryjfx.supabase.co/auth/v1/callback`。
 2. Keys → 新建 Key，勾 Sign in with Apple（关联 `com.badie.app`），下载 `.p8`（**只能下载一次**，存进密码管理器），记下 Key ID 和右上角的 Team ID。
 3. Supabase → Authentication → Sign In / Providers → Apple：打开 Enable；

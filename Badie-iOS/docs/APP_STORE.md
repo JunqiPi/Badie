@@ -49,28 +49,52 @@
 2. 选 Individual（个人），按提示拍身份证件照片，**用你本人名下的信用卡**付 $99（用别人的卡会被要求补材料，拖很久）。
 3. 等确认邮件。超过 1～3 天没消息，在 developer.apple.com/contact 联系客服。
 
-## 2. 账号批下来后（约 1 小时）
+## 2. 账号批下来后（约 1 小时，网页上就能做，不需要 Mac）
 
-1. **Xcode 签名**：Mac 上装 **Xcode 26 或更新版本**（2026-04-28 起，上传的 App 必须用 Xcode 26 / iOS 26 SDK 构建）。
-   - Xcode → Settings → Accounts → 加上你的 Apple ID。
-   - 打开 `Badie-iOS/Badie.xcodeproj` → 选 Badie target → Signing & Capabilities → Team 选你的账号（保持 Automatically manage signing）。Sign in with Apple 和 Push Notifications 已经在 entitlements 里，Xcode 会自动同步到 App ID。
-   - 记下 Team ID（Membership 页面，10 位字母数字）。
-2. **Apple 登录**：按 `DEPLOY.md` 第 4.5 节 “Apple” 的 1～5 步做。做完 App 和网站会自动出现 Apple 按钮，App 里的 Google 按钮也会同时出现（App 从服务器读取开了哪些登录方式，不用发新版）。
+1. **注册 App ID**：developer.apple.com → Account → Certificates, Identifiers & Profiles → Identifiers → **+** → App IDs → App：
+   - Description `Badie`，Bundle ID 选 Explicit，填 `com.badie.app`。
+   - Capabilities 勾 **Push Notifications** 和 **Sign In with Apple**（Enable as a primary App ID）→ Continue → Register。
+   - 记下 Team ID（Account → Membership details，10 位字母数字；Apple 登录和推送的配置都要用）。
+2. **Apple 登录**：按 `DEPLOY.md` 第 4.5 节 “Apple” 的 1～5 步做（App ID 上一步已经建好）。做完 App 和网站会自动出现 Apple 按钮，App 里的 Google 按钮也会同时出现（App 从服务器读取开了哪些登录方式，不用发新版）。
 3. **iPhone 推送**：Keys → 新建一把只勾 **Apple Push Notifications service (APNs)** 的 Key（和 Apple 登录的 Key 分开，换起来互不影响），Environment 选 **Sandbox & Production**，Key type 选 **Team Scoped**。下载 `.p8`（只能下载一次）。
    - Supabase → Edge Functions → Secrets：`APNS_KEY_ID`、`APNS_PRIVATE_KEY`（粘 `.p8` 全部内容），`APPLE_TEAM_ID` 和 Apple 登录共用。
-   - 自己用 Xcode 装到手机上的是开发版，走 Apple 的测试推送环境；TestFlight 和 App Store 版走正式环境。代码已经自动区分。
+   - 用 Xcode 直接装到手机上的是开发版，走 Apple 的测试推送环境；TestFlight 和 App Store 版走正式环境。代码已经自动区分。
 4. **Apple 隐藏邮箱能收到我们的邮件**：`DEPLOY.md` 第 4.5 节 Apple 第 5 步（注册 `badie.rsvp`、`send.badie.rsvp`）。我们的邮件都有 DKIM 签名，满足 Apple 的要求。
 5. （可选）**网站和 App 共用保存的密码**：需要 Team ID，要做时告诉我，我加好配置后填一个 Team ID 就生效。
 
 ## 3. 构建和 TestFlight
 
-1. Xcode 顶部设备选 **Any iOS Device (arm64)** → Product → **Archive** → 弹出的 Organizer 里 Distribute App → **App Store Connect** → Upload。
-   - 版本号 1.0；每上传一次，Build 号（`CURRENT_PROJECT_VERSION`）要加 1。
-   - 已经设置了“只用系统自带的 HTTPS 加密”（`ITSAppUsesNonExemptEncryption = NO`），上传后不会再问出口合规。
-   - 隐私清单（`PrivacyInfo.xcprivacy`）已经带上：不追踪用户，只用到 UserDefaults 存本 App 的设置。
-2. 上传后 10～30 分钟出现在 App Store Connect → TestFlight。
-3. **内部测试**（你自己和最多 100 个 App Store Connect 成员，不用审核）：手机装 TestFlight App 安装，按第 6 节逐项试。
-4. **外部测试**（可选，最多 1 万人，用邮箱或公开链接邀请）：每个版本的第一个 Build 要过 Beta 审核（一般几小时到一两天），要填测试说明和反馈邮箱（`support@badie.rsvp`）。Build 90 天后过期。
+两种方式选一种。上传的 App 必须用 **Xcode 26 或更新版本**构建（2026-04-28 起的要求），两种方式都满足。
+
+**方式一：GitHub 云端构建（不需要 Mac）**
+
+1. **先建 App 记录**：App Store Connect → My Apps → **+** → New App（填法见第 4 节开头）。没有这条记录传不上去。
+2. **建 API 密钥**：App Store Connect → Users and Access → **Integrations** → App Store Connect API → **Team Keys**。
+   - 第一次用要先点 Request Access 同意条款（账号持有人才能点）。
+   - Generate API Key：名字 `GitHub Actions`，Access 选 **Admin**（要用它建证书；建好后改不了权限，选错只能删了重建）。
+   - 记下页面上的 **Issuer ID** 和这把密钥的 **Key ID**，下载 `.p8`（**只能下载一次**）。
+3. **存进 GitHub**：仓库 → Settings → Secrets and variables → Actions → New repository secret，加三条（直接粘进去，**不要发到聊天里**）：
+   - `ASC_KEY_ID`：Key ID
+   - `ASC_ISSUER_ID`：Issuer ID
+   - `ASC_PRIVATE_KEY`：用记事本打开 `.p8`，全选复制，包括 `-----BEGIN PRIVATE KEY-----` 和 `-----END PRIVATE KEY-----` 两行
+   - 存好后把下载的 `.p8` 放进密码管理器，或者删掉（丢了可以吊销再建一把）。
+4. GitHub → Actions → **TestFlight** → Run workflow（分支选 main）。约 20 分钟，跑完页面上会显示版本和 Build 号。
+   - 每次运行会用这把密钥建一张名为 “Badie GitHub Actions” 的发布证书和描述文件，下一次运行开始时吊销上一张，所以 Certificates 页面上会一直留着一张，不用管。已经传上去的 Build 不受吊销影响。
+   - Build 号是上传时的 UTC 时间（如 `20261021.1530`），每次自动变大，不用手动改。
+   - 上传前会检查推送和 Apple 登录的权限都在。报错 “Bundle ID 还没注册” 就是第 2 节第 1 步没做；报证书数量到上限就到 Certificates 页面吊销用不到的发布证书。
+
+**方式二：用自己的 Mac**
+
+1. 装 Xcode 26 或更新版本 → Settings → Accounts → 加上你的 Apple ID。
+2. 打开 `Badie-iOS/Badie.xcodeproj` → 选 Badie target → Signing & Capabilities → Team 选你的账号（保持 Automatically manage signing）。
+3. 顶部设备选 **Any iOS Device (arm64)** → Product → **Archive** → Organizer 里 Distribute App → **App Store Connect** → Upload（Build 号让 Xcode 自动管理）。
+
+**两种方式都一样的**
+- 版本号 1.0。已经设置了“只用系统自带的 HTTPS 加密”（`ITSAppUsesNonExemptEncryption = NO`），上传后不会再问出口合规。
+- 隐私清单（`PrivacyInfo.xcprivacy`）已经带上：不追踪用户，只用到 UserDefaults 存本 App 的设置。
+- 上传后 10～30 分钟出现在 App Store Connect → TestFlight，处理完会收到邮件。
+- **内部测试**（你自己和最多 100 个 App Store Connect 成员，不用审核）：手机装 TestFlight App 安装，按第 6 节逐项试。
+- **外部测试**（可选，最多 1 万人，用邮箱或公开链接邀请）：每个版本的第一个 Build 要过 Beta 审核（一般几小时到一两天），要填测试说明和反馈邮箱（`support@badie.rsvp`）。Build 90 天后过期。
 
 ## 4. App Store Connect 填资料
 
@@ -134,6 +158,8 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 
 - 注册：https://developer.apple.com/programs/enroll/ ，D-U-N-S：https://developer.apple.com/help/account/membership/D-U-N-S/
 - 构建要求：https://developer.apple.com/news/upcoming-requirements/
+- App Store Connect API 密钥：https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api
+- 云端 Mac 上装证书（GitHub 文档）：https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development
 - 审核规则：https://developer.apple.com/app-store/review/guidelines/
 - 隐私标签：https://developer.apple.com/app-store/app-privacy-details/
 - 年龄分级：https://developer.apple.com/help/app-store-connect/reference/age-ratings-values-and-definitions/
