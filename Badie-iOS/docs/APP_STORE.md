@@ -55,6 +55,7 @@
    - Description `Badie`，Bundle ID 选 Explicit，填 `com.badie.app`。
    - Capabilities 勾 **Push Notifications**、**Sign In with Apple**（Enable as a primary App ID）、**Associated Domains**、**Communication Notifications** → Continue → Register。
      少勾了云端构建会报描述文件缺权限，回来 Edit 补上再跑一次就行。
+     通知扩展的 App ID（`com.badie.app.NotificationService`）不用自己建，云端构建第一次运行时会自动注册。
    - 记下 Team ID（Account → Membership details，10 位字母数字；Apple 登录和推送的配置都要用）。
 2. **Apple 登录**：按 `DEPLOY.md` 第 4.5 节 “Apple” 的 1～5 步做（App ID 上一步已经建好）。做完 App 和网站会自动出现 Apple 按钮，App 里的 Google 按钮也会同时出现（App 从服务器读取开了哪些登录方式，不用发新版）。
 3. **iPhone 推送**：Keys → 新建一把只勾 **Apple Push Notifications service (APNs)** 的 Key（和 Apple 登录的 Key 分开，换起来互不影响），Environment 选 **Sandbox & Production**，Key type 选 **Team Scoped**。下载 `.p8`（只能下载一次）。
@@ -156,6 +157,8 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 - 新邮箱 + 密码注册 → 收到确认码 → 填昵称 → 定级；退出后用密码和 Face ID 自动填充登录；“忘记密码？”能收到重置码。
 - Apple 登录（选“隐藏邮箱”试一次，确认能收到验证码类邮件）、Google 登录。
 - 允许通知后，用另一个账号给自己发好友申请，锁屏也能收到推送。
+- 另一个账号（有头像）给自己发私信：锁屏通知左边是对方的头像；点开直接进这个私信；正开着这个私信时不弹通知。
+- 在备忘录里写 `https://badie.rsvp/join/?code=房间码`，点它直接打开 App 的加入页（通用链接）。
 - 附近球馆（允许 / 拒绝定位两种情况）、约球、聊天、举报、屏蔽。
 - 设置 → 联系我们能打开邮件；设置 → 注销账号能走完，Apple 登录的账号注销后在 iPhone 设置 → Apple ID → 使用 Apple 登录 里消失。
 
