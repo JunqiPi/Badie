@@ -37,6 +37,15 @@ final class PushRegistry {
         let components = URLComponents(string: link)
         let parts = (components?.path ?? link).split(separator: "/").map(String.init).filter { $0 != "app" }
         let id = parts.count > 1 ? parts[1] : nil
+        // 聊天：/messages/dm/<对方>/、/messages/game/<球局>/、/messages/group/<球群>/
+        if parts.first == "messages", parts.count > 2 {
+            switch parts[1] {
+            case "dm": return (.chat(userId: parts[2]), .messages)
+            case "game": return (.groupChat(threadId: MessageThread.gameThreadId(parts[2])), .messages)
+            case "group": return (.groupChat(threadId: MessageThread.groupThreadId(parts[2])), .messages)
+            default: break
+            }
+        }
         switch (parts.first, id) {
         case ("games", let id?): return (.game(id: id), .games)
         case ("rooms", let id?): return (.room(id: id), .games)

@@ -149,6 +149,11 @@ final class Router: ObservableObject {
         isMatchSetupPresented = false
     }
 
+    /// 当前看的就是这个页面（正在看的会话来了新消息，不用再弹通知）
+    func isShowing(_ route: Route) -> Bool {
+        paths[selectedTab]?.last == route
+    }
+
     func pop() {
         var path = paths[selectedTab] ?? []
         guard !path.isEmpty else { return }

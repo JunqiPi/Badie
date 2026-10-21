@@ -1,12 +1,18 @@
 // 推送通知：收到就显示，点了打开对应页面（已经开着 Badie 就切过去）。不缓存任何东西，只管推送
+// 同一个地址（同一场球局、同一个会话）只留最新一条，新的照样提醒；正开着这个会话看就不弹
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
+  const link = (data.link || '/').replace(/^\/app\//, '/');
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Badie', {
-      body: data.body,
-      icon: '/icon-192.png',
-      tag: data.link,
-      data: { link: (data.link || '/').replace(/^\/app\//, '/') },
+    self.clients.matchAll({ type: 'window' }).then((windows) => {
+      if (link.startsWith('/messages/') && windows.some((w) => w.focused && new URL(w.url).pathname === link)) return;
+      return self.registration.showNotification(data.title || 'Badie', {
+        body: data.body,
+        icon: '/icon-192.png',
+        tag: data.link,
+        renotify: Boolean(data.link),
+        data: { link },
+      });
     }),
   );
 });

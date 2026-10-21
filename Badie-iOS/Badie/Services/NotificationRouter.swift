@@ -15,7 +15,12 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        [.banner, .sound, .list]
+        // 正开着这个会话：新消息已经在屏幕上了，不再弹
+        if let link = notification.request.content.userInfo["link"] as? String, link.contains("/messages/") {
+            let route = PushRegistry.route(for: link).route
+            if await MainActor.run(body: { router?.isShowing(route) ?? false }) { return [] }
+        }
+        return [.banner, .sound, .list]
     }
 
     func userNotificationCenter(

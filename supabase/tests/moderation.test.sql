@@ -61,7 +61,7 @@ select lives_ok($$ insert into public.venues (name, location, street, city, coun
 -- 举报“不当内容”
 insert into public.user_reports (reporter_id, reported_id, reason, details) values (pg_temp.u(1), pg_temp.u(2), 'inappropriate', 'rude messages');
 insert into public.user_reports (reporter_id, reported_id, reason) values (pg_temp.u(9), pg_temp.u(2), 'harassment');
-select is((select count(*)::int from public.user_reports where reason = 'inappropriate'), 1, '可以举报不当内容');
+select is((select count(*)::int from public.user_reports where reason = 'inappropriate' and reported_id = pg_temp.u(2)), 1, '可以举报不当内容');
 
 -- 举报队列只有管理员能看，带上被举报人在举报人看得到的会话里发的消息
 select pg_temp.login(1);

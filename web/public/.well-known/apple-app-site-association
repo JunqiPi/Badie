@@ -8,7 +8,8 @@
           { "/": "/rooms/*" },
           { "/": "/groups/*" },
           { "/": "/join/*" },
-          { "/": "/challenges/*" }
+          { "/": "/challenges/*" },
+          { "/": "/messages/*" }
         ]
       }
     ]

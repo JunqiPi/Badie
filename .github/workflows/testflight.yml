@@ -23,7 +23,8 @@ jobs:
       run:
         working-directory: Badie-iOS
     env:
-      BUNDLE_ID: com.badie.app
+      # App 和它的通知扩展（第一个要先在网页上注册，扩展由脚本自动注册）
+      BUNDLE_IDS: com.badie.app com.badie.app.NotificationService
       PROFILE_NAME: Badie GitHub Actions
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
@@ -77,7 +78,7 @@ jobs:
           # Xcode 16 起描述文件放在 UserData 下，旧位置也放一份
           for dir in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles"; do
             mkdir -p "$dir"
-            cp profile.mobileprovision "$dir/${{ steps.signing.outputs.profile_uuid }}.mobileprovision"
+            cp profiles/*.mobileprovision "$dir/"
           done
 
       # Build 号用 UTC 时间（如 20261021.1530），只增不减，和在 Mac 上传的也不会撞
@@ -100,21 +101,25 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="${{ steps.signing.outputs.team_id }}" \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME \$(PRODUCT_BUNDLE_IDENTIFIER)" \
             CURRENT_PROJECT_VERSION="$BUILD" > archive.log 2>&1
           STATUS=$?
           grep -E "error:" archive.log | sort -u | head -100
           tail -5 archive.log
           exit $STATUS
 
-      # 推送和 Apple 登录要靠这两项权限，少了不会报错、只会在用户手上失效，所以上传前查一遍
+      # 推送、Apple 登录、通用链接、带头像的聊天通知都靠这些权限，少了不会报错、只会在用户手上失效，所以上传前查一遍
       - name: Check entitlements
         run: |
-          codesign -d --entitlements - --xml "$ARCHIVE/Products/Applications/Badie.app" | python3 -I -c '
+          APP="$ARCHIVE/Products/Applications/Badie.app"
+          test -d "$APP/PlugIns/BadieNotificationService.appex" || { echo "::error::通知扩展没打进包里"; exit 1; }
+          codesign -d --entitlements - --xml "$APP" | python3 -I -c '
           import plistlib, sys
           e = plistlib.load(sys.stdin.buffer)
           assert e.get("aps-environment") == "production", e
           assert e.get("com.apple.developer.applesignin") == ["Default"], e
+          assert "applinks:badie.rsvp" in e.get("com.apple.developer.associated-domains", []), e
+          assert e.get("com.apple.developer.usernotifications.communication") is True, e
           assert not e.get("get-task-allow"), e
           print("entitlements ok:", ", ".join(sorted(e)))'
 
@@ -132,7 +137,7 @@ jobs:
             <key>signingStyle</key><string>manual</string>
             <key>signingCertificate</key><string>Apple Distribution</string>
             <key>provisioningProfiles</key>
-            <dict><key>$BUNDLE_ID</key><string>$PROFILE_NAME</string></dict>
+            <dict>$(for id in $BUNDLE_IDS; do printf '<key>%s</key><string>%s %s</string>' "$id" "$PROFILE_NAME" "$id"; done)</dict>
             <key>manageAppVersionAndBuildNumber</key><false/>
             <key>uploadSymbols</key><true/>
           </dict>

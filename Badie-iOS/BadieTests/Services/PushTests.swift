@@ -21,4 +21,13 @@ final class PushTests: XCTestCase {
         XCTAssertEqual(PushRegistry.route(for: "https://badie.rsvp/games/g-1/?from=email").tab, .games)
         XCTAssertTrue(Room.joinLink("AB12CD").hasSuffix("/join/?code=AB12CD"))
     }
+
+    /// 聊天推送和链接打开对应的会话
+    func testChatLinks() {
+        XCTAssertEqual(PushRegistry.route(for: "/messages/dm/u-2/").route, .chat(userId: "u-2"))
+        XCTAssertEqual(PushRegistry.route(for: "/app/messages/dm/u-2/").tab, .messages)
+        XCTAssertEqual(PushRegistry.route(for: "/messages/game/g-1/").route, .groupChat(threadId: MessageThread.gameThreadId("g-1")))
+        XCTAssertEqual(PushRegistry.route(for: "https://badie.rsvp/messages/group/p-1/").route, .groupChat(threadId: MessageThread.groupThreadId("p-1")))
+        XCTAssertEqual(PushRegistry.route(for: "/messages/").route, .notifications, "没有具体会话就打开通知列表")
+    }
 }

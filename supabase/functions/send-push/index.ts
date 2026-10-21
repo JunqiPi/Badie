@@ -6,7 +6,8 @@
 // iOS：APPLE_TEAM_ID + APNS_KEY_ID / APNS_PRIVATE_KEY（没有就用 Apple 登录那把 APPLE_KEY_ID / APPLE_PRIVATE_KEY）；
 // 浏览器：VAPID_PUBLIC_KEY、VAPID_PRIVATE_KEY（supabase/scripts/vapid_keys.mjs 生成）
 
-type Item = { id: number; kind: 'apns' | 'apns_sandbox' | 'web'; token: string; keys?: { p256dh: string; auth: string }; title: string; body: string; link?: string };
+import { apnsPayload, collapseId, type Item } from './payload.ts';
+
 type Result = 'ok' | 'dead' | 'failed';
 
 const env = (name: string) => Deno.env.get(name) ?? '';
@@ -65,8 +66,9 @@ async function sendApns(item: Item): Promise<Result> {
       'apns-push-type': 'alert',
       'apns-priority': '10',
       'apns-expiration': String(Math.floor(Date.now() / 1000) + 3600),
+      ...(collapseId(item) ? { 'apns-collapse-id': collapseId(item)! } : {}),
     },
-    body: JSON.stringify({ aps: { alert: { title: item.title, body: item.body }, sound: 'default' }, link: item.link }),
+    body: JSON.stringify(apnsPayload(item, env('SUPABASE_URL'))),
   });
   if (response.ok) return 'ok';
   const { reason } = await response.json().catch(() => ({ reason: '' }));
@@ -134,7 +136,7 @@ Deno.serve(async (request) => {
   const dead: string[] = [];
   await Promise.all(items.map(async (item) => {
     const result = await (item.kind === 'web' ? sendWeb(item) : sendApns(item)).catch((): Result => 'failed');
-    if (result === 'ok') delivered.add(item.id);
+    if (result === 'ok' && item.id !== null) delivered.add(item.id);
     if (result === 'dead') dead.push(item.token);
   }));
   await rpc('push_done', { p_delivered: [...delivered], p_dead: dead });

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B0D1E0000000000000000631 /* BadieNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B0D1E0000000000000000012 /* BadieNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B0D1E0000000000000000301 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,22 +18,72 @@
 			remoteGlobalIDString = B0D1E0000000000000000100;
 			remoteInfo = Badie;
 		};
+		B0D1E0000000000000000302 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B0D1E0000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B0D1E0000000000000000600;
+			remoteInfo = BadieNotificationService;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		B0D1E0000000000000000630 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				B0D1E0000000000000000631 /* BadieNotificationService.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		B0D1E0000000000000000010 /* Badie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Badie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B0D1E0000000000000000011 /* BadieTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BadieTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0D1E0000000000000000012 /* BadieNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BadieNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B0D1E0000000000000000620 /* Exceptions for "Badie" folder in "Badie" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B0D1E0000000000000000100 /* Badie */;
+		};
+		B0D1E0000000000000000621 /* Exceptions for "BadieNotificationService" folder in "BadieNotificationService" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B0D1E0000000000000000600 /* BadieNotificationService */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B0D1E0000000000000000020 /* Badie */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B0D1E0000000000000000620 /* Exceptions for "Badie" folder in "Badie" target */,
+			);
 			path = Badie;
 			sourceTree = "<group>";
 		};
 		B0D1E0000000000000000021 /* BadieTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = BadieTests;
+			sourceTree = "<group>";
+		};
+		B0D1E0000000000000000022 /* BadieNotificationService */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B0D1E0000000000000000621 /* Exceptions for "BadieNotificationService" folder in "BadieNotificationService" target */,
+			);
+			path = BadieNotificationService;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -49,6 +103,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B0D1E0000000000000000610 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -57,6 +118,7 @@
 			children = (
 				B0D1E0000000000000000020 /* Badie */,
 				B0D1E0000000000000000021 /* BadieTests */,
+				B0D1E0000000000000000022 /* BadieNotificationService */,
 				B0D1E0000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -66,6 +128,7 @@
 			children = (
 				B0D1E0000000000000000010 /* Badie.app */,
 				B0D1E0000000000000000011 /* BadieTests.xctest */,
+				B0D1E0000000000000000012 /* BadieNotificationService.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -80,10 +143,12 @@
 				B0D1E0000000000000000111 /* Sources */,
 				B0D1E0000000000000000110 /* Frameworks */,
 				B0D1E0000000000000000112 /* Resources */,
+				B0D1E0000000000000000630 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				B0D1E0000000000000000303 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				B0D1E0000000000000000020 /* Badie */,
@@ -118,6 +183,28 @@
 			productReference = B0D1E0000000000000000011 /* BadieTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		B0D1E0000000000000000600 /* BadieNotificationService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B0D1E0000000000000000403 /* Build configuration list for PBXNativeTarget "BadieNotificationService" */;
+			buildPhases = (
+				B0D1E0000000000000000611 /* Sources */,
+				B0D1E0000000000000000610 /* Frameworks */,
+				B0D1E0000000000000000612 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				B0D1E0000000000000000022 /* BadieNotificationService */,
+			);
+			name = BadieNotificationService;
+			packageProductDependencies = (
+			);
+			productName = BadieNotificationService;
+			productReference = B0D1E0000000000000000012 /* BadieNotificationService.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -134,6 +221,9 @@
 					B0D1E0000000000000000200 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = B0D1E0000000000000000100;
+					};
+					B0D1E0000000000000000600 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -162,6 +252,7 @@
 			targets = (
 				B0D1E0000000000000000100 /* Badie */,
 				B0D1E0000000000000000200 /* BadieTests */,
+				B0D1E0000000000000000600 /* BadieNotificationService */,
 			);
 		};
 /* End PBXProject section */
@@ -175,6 +266,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		B0D1E0000000000000000212 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B0D1E0000000000000000612 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -198,6 +296,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B0D1E0000000000000000611 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -205,6 +310,11 @@
 			isa = PBXTargetDependency;
 			target = B0D1E0000000000000000100 /* Badie */;
 			targetProxy = B0D1E0000000000000000301 /* PBXContainerItemProxy */;
+		};
+		B0D1E0000000000000000303 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B0D1E0000000000000000600 /* BadieNotificationService */;
+			targetProxy = B0D1E0000000000000000302 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -307,6 +417,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Badie/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Badie;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
@@ -339,6 +450,7 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Badie/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Badie;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
@@ -398,6 +510,56 @@
 			};
 			name = Release;
 		};
+		B0D1E0000000000000000530 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BadieNotificationService/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BadieNotificationService;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.badie.app.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B0D1E0000000000000000531 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BadieNotificationService/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BadieNotificationService;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.badie.app.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -415,6 +577,15 @@
 			buildConfigurations = (
 				B0D1E0000000000000000520 /* Debug */,
 				B0D1E0000000000000000521 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B0D1E0000000000000000403 /* Build configuration list for PBXNativeTarget "BadieNotificationService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B0D1E0000000000000000530 /* Debug */,
+				B0D1E0000000000000000531 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
