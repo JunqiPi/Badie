@@ -1,0 +1,157 @@
+name: TestFlight
+
+# 手动运行：Actions → TestFlight → Run workflow。在云端的 Mac（Xcode 26）上构建、签名并上传到 App Store Connect，不需要自己的 Mac。
+# 需要 3 个 Secrets（Settings → Secrets and variables → Actions，直接粘进去，不要发到聊天里）：
+#   ASC_KEY_ID、ASC_ISSUER_ID、ASC_PRIVATE_KEY（.p8 文件的全部内容）—— App Store Connect 的 Team API 密钥，权限 Admin
+# 准备步骤见 Badie-iOS/docs/APP_STORE.md 第 3 节
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testflight
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    name: Build and upload to TestFlight
+    runs-on: macos-26
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: Badie-iOS
+    env:
+      BUNDLE_ID: com.badie.app
+      PROFILE_NAME: Badie GitHub Actions
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Write API key
+        env:
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          if [ -z "$ASC_KEY_ID" ] || [ -z "$ASC_ISSUER_ID" ] || [ -z "$ASC_PRIVATE_KEY" ]; then
+            echo "::error::还没设置 ASC_KEY_ID、ASC_ISSUER_ID、ASC_PRIVATE_KEY，见 Badie-iOS/docs/APP_STORE.md 第 3 节"; exit 1
+          fi
+          case "$ASC_PRIVATE_KEY" in
+            *"BEGIN PRIVATE KEY"*) ;;
+            *) echo "::error::ASC_PRIVATE_KEY 要粘 .p8 文件的全部内容（包括 BEGIN 和 END 两行）"; exit 1 ;;
+          esac
+          (umask 077; printf '%s\n' "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/AuthKey.p8")
+          echo "ASC_KEY_PATH=$RUNNER_TEMP/AuthKey.p8" >> "$GITHUB_ENV"
+          echo "KEYCHAIN=$RUNNER_TEMP/signing.keychain-db" >> "$GITHUB_ENV"
+          echo "ARCHIVE=$RUNNER_TEMP/Badie.xcarchive" >> "$GITHUB_ENV"
+
+      # 每次建一张新的发布证书和描述文件，顺便吊销上一次的（详见脚本开头的说明）
+      - name: Create certificate and profile
+        id: signing
+        run: python3 -I scripts/asc_signing.py "$RUNNER_TEMP/signing" >> "$GITHUB_OUTPUT"
+
+      # GitHub 文档里的做法：临时钥匙串，用完删掉
+      - name: Install certificate and profile
+        run: |
+          cd "$RUNNER_TEMP/signing"
+          /usr/bin/openssl x509 -inform der -in cert.cer -out cert.pem
+          P12_PASSWORD=$(/usr/bin/openssl rand -hex 16)
+          /usr/bin/openssl pkcs12 -export -inkey key.pem -in cert.pem -out cert.p12 -passout "pass:$P12_PASSWORD"
+          curl -fsSL -o wwdr.cer https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer
+
+          KEYCHAIN_PASSWORD=$(/usr/bin/openssl rand -hex 16)
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import cert.p12 -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security import wwdr.cer -k "$KEYCHAIN" || true
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v -p codesigning "$KEYCHAIN"
+
+          # Xcode 16 起描述文件放在 UserData 下，旧位置也放一份
+          for dir in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles"; do
+            mkdir -p "$dir"
+            cp profile.mobileprovision "$dir/${{ steps.signing.outputs.profile_uuid }}.mobileprovision"
+          done
+
+      # Build 号用 UTC 时间（如 20261021.1530），只增不减，和在 Mac 上传的也不会撞
+      - name: Archive
+        id: archive
+        timeout-minutes: 25
+        run: |
+          BUILD=$(date -u +%Y%m%d.%H%M)
+          echo "build=$BUILD" >> "$GITHUB_OUTPUT"
+          echo "version=$(sed -n 's/.*MARKETING_VERSION = \(.*\);/\1/p' Badie.xcodeproj/project.pbxproj | head -1)" >> "$GITHUB_OUTPUT"
+          # 正式版的推送环境；本地开发和 Xcode 自动签名不用改
+          plutil -replace aps-environment -string production Badie.entitlements
+          set +e
+          xcodebuild archive \
+            -project Badie.xcodeproj \
+            -scheme Badie \
+            -configuration Release \
+            -destination "generic/platform=iOS" \
+            -archivePath "$ARCHIVE" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="${{ steps.signing.outputs.team_id }}" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            CURRENT_PROJECT_VERSION="$BUILD" > archive.log 2>&1
+          STATUS=$?
+          grep -E "error:" archive.log | sort -u | head -100
+          tail -5 archive.log
+          exit $STATUS
+
+      # 推送和 Apple 登录要靠这两项权限，少了不会报错、只会在用户手上失效，所以上传前查一遍
+      - name: Check entitlements
+        run: |
+          codesign -d --entitlements - --xml "$ARCHIVE/Products/Applications/Badie.app" | python3 -I -c '
+          import plistlib, sys
+          e = plistlib.load(sys.stdin.buffer)
+          assert e.get("aps-environment") == "production", e
+          assert e.get("com.apple.developer.applesignin") == ["Default"], e
+          assert not e.get("get-task-allow"), e
+          print("entitlements ok:", ", ".join(sorted(e)))'
+
+      - name: Upload to App Store Connect
+        timeout-minutes: 15
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>${{ steps.signing.outputs.team_id }}</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>signingCertificate</key><string>Apple Distribution</string>
+            <key>provisioningProfiles</key>
+            <dict><key>$BUNDLE_ID</key><string>$PROFILE_NAME</string></dict>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+            <key>uploadSymbols</key><true/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          {
+            echo "### 已上传 ${{ steps.archive.outputs.version }} (${{ steps.archive.outputs.build }})"
+            echo "App Store Connect 处理 10～30 分钟后出现在 TestFlight，处理完会收到邮件。"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Clean up
+        if: always()
+        run: |
+          security delete-keychain "$KEYCHAIN" 2>/dev/null || true
+          rm -rf "$RUNNER_TEMP/signing" "$RUNNER_TEMP/AuthKey.p8"

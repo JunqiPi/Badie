@@ -18,7 +18,8 @@ concurrency:
 jobs:
   build-test:
     name: Build, test & screenshots
-    runs-on: macos-15
+    # 和上传 TestFlight 用同一个 Xcode（26），iOS 26 的外观和编译问题在这里就能看到
+    runs-on: macos-26
     timeout-minutes: 60
     defaults:
       run:
