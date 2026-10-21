@@ -12,4 +12,13 @@ final class PushTests: XCTestCase {
         XCTAssertEqual(PushRegistry.route(for: "/app/games/").route, .notifications, "没有具体球局就打开通知列表")
         XCTAssertEqual(PushRegistry.route(for: "").route, .notifications)
     }
+
+    /// 点开 badie.rsvp 的链接：邀请链接带着码打开加入页，球群链接打开球群
+    func testUniversalLinks() {
+        XCTAssertEqual(PushRegistry.route(for: "https://badie.rsvp/join/?code=AB12CD").route, .joinRoom(code: "AB12CD"))
+        XCTAssertEqual(PushRegistry.route(for: "https://badie.rsvp/join/").route, .joinRoom(code: nil))
+        XCTAssertEqual(PushRegistry.route(for: "https://badie.rsvp/groups/p-1/").route, .group(id: "p-1"))
+        XCTAssertEqual(PushRegistry.route(for: "https://badie.rsvp/games/g-1/?from=email").tab, .games)
+        XCTAssertTrue(Room.joinLink("AB12CD").hasSuffix("/join/?code=AB12CD"))
+    }
 }

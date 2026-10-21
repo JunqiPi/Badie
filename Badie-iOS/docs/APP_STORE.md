@@ -53,14 +53,19 @@
 
 1. **注册 App ID**：developer.apple.com → Account → Certificates, Identifiers & Profiles → Identifiers → **+** → App IDs → App：
    - Description `Badie`，Bundle ID 选 Explicit，填 `com.badie.app`。
-   - Capabilities 勾 **Push Notifications** 和 **Sign In with Apple**（Enable as a primary App ID）→ Continue → Register。
+   - Capabilities 勾 **Push Notifications**、**Sign In with Apple**（Enable as a primary App ID）、**Associated Domains**、**Communication Notifications** → Continue → Register。
+     少勾了云端构建会报描述文件缺权限，回来 Edit 补上再跑一次就行。
    - 记下 Team ID（Account → Membership details，10 位字母数字；Apple 登录和推送的配置都要用）。
 2. **Apple 登录**：按 `DEPLOY.md` 第 4.5 节 “Apple” 的 1～5 步做（App ID 上一步已经建好）。做完 App 和网站会自动出现 Apple 按钮，App 里的 Google 按钮也会同时出现（App 从服务器读取开了哪些登录方式，不用发新版）。
 3. **iPhone 推送**：Keys → 新建一把只勾 **Apple Push Notifications service (APNs)** 的 Key（和 Apple 登录的 Key 分开，换起来互不影响），Environment 选 **Sandbox & Production**，Key type 选 **Team Scoped**。下载 `.p8`（只能下载一次）。
    - Supabase → Edge Functions → Secrets：`APNS_KEY_ID`、`APNS_PRIVATE_KEY`（粘 `.p8` 全部内容），`APPLE_TEAM_ID` 和 Apple 登录共用。
    - 用 Xcode 直接装到手机上的是开发版，走 Apple 的测试推送环境；TestFlight 和 App Store 版走正式环境。代码已经自动区分。
 4. **Apple 隐藏邮箱能收到我们的邮件**：`DEPLOY.md` 第 4.5 节 Apple 第 5 步（注册 `badie.rsvp`、`send.badie.rsvp`）。我们的邮件都有 DKIM 签名，满足 Apple 的要求。
-5. （可选）**网站和 App 共用保存的密码**：需要 Team ID，要做时告诉我，我加好配置后填一个 Team ID 就生效。
+5. **通用链接和共用密码**已经配好（Team ID `PU482V2DWN` 写在网站的 `.well-known/apple-app-site-association` 里）：
+   - 邀请链接 `badie.rsvp/join/?code=…`、邮件里的球局和球群链接，装了 App 的点开直接进 App，没装的在网页上打开。
+     从 Instagram、Telegram 的内置浏览器点开不会跳 App（它们的限制），网页上照样能用。
+   - 在 Safari 里给 badie.rsvp 存的密码，App 登录时会自动出现在键盘上方。
+   - Apple 经自己的 CDN 缓存这个文件，改了以后不会马上生效；App 是安装或更新时才去取的。
 
 ## 3. 构建和 TestFlight
 

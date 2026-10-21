@@ -42,7 +42,7 @@ export function GroupPage({ id }: { id: string }) {
   async function copyInvite() {
     const text = t('Join “{name}” on Badie: {times} at {court}. Level {min}–{max}. Open {link} and enter group number {code}.', {
       name: g!.name, times: g!.schedules.map(scheduleText).join(', '), court: g!.venue.name, min: g!.level_min, max: g!.level_max,
-      link: `${location.origin}/join/`, code: g!.invite_code ?? '',
+      link: `${location.origin}/join/?code=${g!.invite_code ?? ''}`, code: g!.invite_code ?? '',
     });
     try {
       await navigator.clipboard.writeText(text);

@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["PU482V2DWN.com.badie.app"],
+        "components": [
+          { "/": "/games/*" },
+          { "/": "/rooms/*" },
+          { "/": "/groups/*" },
+          { "/": "/join/*" },
+          { "/": "/challenges/*" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["PU482V2DWN.com.badie.app"]
+  }
+}

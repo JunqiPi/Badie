@@ -56,6 +56,7 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     func inviteText(venueName: String) -> String {
         let times = schedules.map { "\($0.weekdayTitle) \($0.timeText)" }.formatted(.list(type: .and))
         return String(localized: "来「\(name)」一起打羽毛球！\(venueName) · \(times) · \(levelText)。在 Badie App 输入群号 \(inviteCode) 加入，报名、候补都在 App 里。")
+            + "\n" + Room.joinLink(inviteCode)
     }
 }
 

@@ -59,7 +59,7 @@ export function RoomPage({ id, gender }: { id: string; gender: Gender | null }) 
 
   async function copyInvite() {
     const text = t('Join my badminton game on Badie: {when} at {court}. Open {link} and enter code {code}.', {
-      when: roomWhen(r!), court: r!.venue?.name ?? '', link: `${location.origin}/join/`, code: r!.code ?? '',
+      when: roomWhen(r!), court: r!.venue?.name ?? '', link: `${location.origin}/join/?code=${r!.code ?? ''}`, code: r!.code ?? '',
     });
     try {
       await navigator.clipboard.writeText(text);

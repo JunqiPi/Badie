@@ -31,14 +31,17 @@ final class PushRegistry {
         onToken?(hex)
     }
 
-    /// 推送里带的网址（/app/games/<id>/ 这种，网页和 App 共用）对应 App 里的页面
+    /// 推送里带的网址（/app/games/<id>/ 这种）和点开的 badie.rsvp 链接（https://badie.rsvp/join/?code=… 这种），
+    /// 网页和 App 共用一套地址，对应 App 里的页面
     nonisolated static func route(for link: String) -> (route: Route, tab: MainTab) {
-        let parts = link.split(separator: "/").map(String.init).filter { $0 != "app" }
+        let components = URLComponents(string: link)
+        let parts = (components?.path ?? link).split(separator: "/").map(String.init).filter { $0 != "app" }
         let id = parts.count > 1 ? parts[1] : nil
         switch (parts.first, id) {
         case ("games", let id?): return (.game(id: id), .games)
         case ("rooms", let id?): return (.room(id: id), .games)
         case ("groups", let id?): return (.group(id: id), .games)
+        case ("join", _): return (.joinRoom(code: components?.queryItems?.first { $0.name == "code" }?.value), .games)
         case ("challenges", _): return (.challenges, .games)
         default: return (.notifications, .home)
         }

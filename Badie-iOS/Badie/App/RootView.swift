@@ -50,6 +50,12 @@ struct RootView: View {
         .onAppear {
             NotificationRouter.shared.router = router
         }
+        // 点开 badie.rsvp 的链接（邀请、邮件里的球局）直接进 App 里对应的页面；哪些地址进 App 见网站的 apple-app-site-association
+        .onOpenURL { url in
+            guard url.host() == "badie.rsvp" else { return }
+            let target = PushRegistry.route(for: url.absoluteString)
+            router.show(target.route, in: target.tab)
+        }
     }
 }
 

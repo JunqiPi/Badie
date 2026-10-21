@@ -184,6 +184,9 @@ struct Room: Identifiable, Codable, Hashable {
         var text = String(localized: "来 Badie 一起打\(mode.title)！房间码：\(code)")
         if let slot { text += "\n🕖 \(slot.formattedFull)" }
         if let court { text += "\n📍 \(court.name)" }
-        return text
+        return text + "\n" + Room.joinLink(code)
     }
+
+    /// 邀请链接：装了 App 的直接打开加入页，没装的在网页上加入（房间码和群号都行）
+    static func joinLink(_ code: String) -> String { "https://badie.rsvp/join/?code=\(code)" }
 }

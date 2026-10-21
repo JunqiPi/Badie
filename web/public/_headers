@@ -11,6 +11,10 @@
 /sw.js
   Cache-Control: no-cache
 
+# iPhone App 的通用链接和共用密码：Apple 按 JSON 读取这个没有扩展名的文件
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+
 # 个人页面不进搜索引擎
 /signin/*
   X-Robots-Tag: noindex

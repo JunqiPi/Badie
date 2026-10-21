@@ -169,7 +169,7 @@ function SignInPage({ path }: { path: string }) {
   return (
     <div className="mx-auto grid max-w-2xl gap-6">
       {page && <LargeTitle title={t(page.title)} />}
-      <Empty icon={page?.icon ?? 'lock'} tint={page?.tint ?? 'lime'} title={t('Sign in to continue')} action={{ label: t('Sign in'), to: signInFirst(path) }}>
+      <Empty icon={page?.icon ?? 'lock'} tint={page?.tint ?? 'lime'} title={t('Sign in to continue')} action={{ label: t('Sign in'), to: signInFirst(path + location.search) }}>
         {page ? t(page.text) : t('You need a free account for this page.')} {t('It’s free and takes a minute.')}
       </Empty>
     </div>
