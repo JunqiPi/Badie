@@ -71,7 +71,8 @@ jobs:
           security import wwdr.cer -k "$KEYCHAIN" || true
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" > /dev/null
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
-          security find-identity -v -p codesigning "$KEYCHAIN"
+          # 只打印数量：证书名里有开发者的真名，仓库是公开的
+          security find-identity -v -p codesigning "$KEYCHAIN" | tail -1
 
           # Xcode 16 起描述文件放在 UserData 下，旧位置也放一份
           for dir in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles"; do
