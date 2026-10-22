@@ -37,7 +37,12 @@ capture() {
     SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" "$BUNDLE" \
       -BBDemoScreen "$screen" -AppleLanguages "($language)" -AppleLocale "$locale" >/dev/null
     sleep 5
-    xcrun simctl io "$UDID" screenshot "$OUT/${prefix}-${screen}.png" >/dev/null 2>&1
+    # 慢的模拟器偶尔还没画出页面：只有状态栏的截图很小（不到 150 KB），等一会儿再截，最多再试 3 次
+    for _ in 1 2 3 4; do
+      xcrun simctl io "$UDID" screenshot "$OUT/${prefix}-${screen}.png" >/dev/null 2>&1
+      [ "$(stat -f%z "$OUT/${prefix}-${screen}.png")" -gt 150000 ] && break
+      sleep 4
+    done
     echo "captured ${prefix}-${screen}"
   done
 }
