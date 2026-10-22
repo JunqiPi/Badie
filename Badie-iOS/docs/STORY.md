@@ -29,6 +29,7 @@
 
 ## 说话的分寸
 
+- **App 里少写解释**：一屏一句话就够，App 的欢迎页只有“羽毛球搭子？就在今日！”。为什么做、怎么用这类说明放在网站的关于页和商店页。
 - **只说做到了的事**：免费、按水平匹配、双方确认赛果、爽约会被记录、精确位置不离开设备。
 - **不说没有的东西**：不报用户数，不说“最大”“第一”“最火”。
 - **覆盖范围照实说**：球馆目录目前覆盖 7 个国家和地区，欧洲只有英国。所以对外说“**目标**是让美国和欧洲打球的人更多”，不说“已经覆盖欧洲”。
@@ -69,4 +70,4 @@
 
 - 网站首页“为什么是 Badie”、关于页的故事和目标：`web/src/app/Home.tsx`、`web/src/app/Levels.tsx`（三种情况的卡片是同一份，首页和关于页共用）。
 - 给搜索引擎看的静态版：`web/src/pages/index.astro`、`web/src/pages/about/index.astro`。
-- App 欢迎页的说明：`Badie/Features/Onboarding/OnboardingFlow.swift`。
+- App 欢迎页的一句话：`Badie/Features/Onboarding/OnboardingFlow.swift`。

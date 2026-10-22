@@ -8189,64 +8189,6 @@
         }
       }
     },
-    "AA 透明" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fair cost split"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "साफ़ खर्च बँटवारा"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Patungan adil"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "明朗な割り勘"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "투명한 비용 분담"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kongsi kos yang adil"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "หารค่าใช้จ่ายโปร่งใส"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chia tiền minh bạch"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "費用透明"
-          }
-        }
-      }
-    },
     "App 语言" : {
       "localizations" : {
         "en" : {
@@ -13532,64 +13474,6 @@
         }
       }
     },
-    "不用自己开口找人：告诉我们你什么时候有空，我们按水平帮你找附近的球友。固定球友有事、刚到新城市，也能约到球。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No need to ask around yourself. Tell us when you’re free and we’ll find players nearby at your level, even when your usual partner can’t make it or you’re new in town."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "खुद साथी ढूँढने की ज़रूरत नहीं। बताइए कि आप कब फ़्री हैं, हम आस-पास आपके लेवल के खिलाड़ी ढूँढ देंगे, चाहे आपका रोज़ का पार्टनर न आ पाए या आप शहर में नए हों।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nggak perlu cari teman main sendiri. Beri tahu kapan kamu luang, dan kami carikan pemain selevel di dekatmu, bahkan saat partner biasamu berhalangan atau kamu baru pindah."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自分から声をかけなくて大丈夫。空いている時間を教えてくれれば、近くでレベルの合う相手を探します。いつもの相手が来られないときも、引っ越してきたばかりでも打てます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "직접 사람을 찾지 않아도 돼요. 언제 시간이 되는지 알려 주면 근처에서 실력 맞는 사람을 찾아 드려요. 늘 치던 파트너가 못 오거나 새 동네에 막 왔어도 칠 수 있어요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tak perlu cari kawan bermain sendiri. Beritahu bila anda lapang, dan kami carikan pemain setahap berdekatan, walaupun rakan biasa anda tak dapat datang atau anda baru berpindah."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ไม่ต้องเดินหาคนตีเอง แค่บอกว่าว่างเมื่อไหร่ เราจะหาคนฝีมือใกล้กันแถวนี้ให้ แม้คู่ตีประจำติดธุระหรือเพิ่งย้ายมาใหม่ก็ได้ตี"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không cần tự đi tìm người chơi. Cho chúng tôi biết khi nào bạn rảnh, chúng tôi sẽ tìm người cùng trình độ gần bạn, kể cả khi bạn chơi quen bận hay bạn mới chuyển đến."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "不用自己開口找人：告訴我們你什麼時候有空，我們依水平幫你找附近的球友。固定球友有事、剛到新城市，也能約到球。"
-          }
-        }
-      }
-    },
     "不确定" : {
       "localizations" : {
         "en" : {
@@ -17184,64 +17068,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今晚，\n打*一場*？"
-          }
-        }
-      }
-    },
-    "今晚，\n找个*搭子*\n打一场。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find a *buddy*\nfor a game\ntonight."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "आज रात\nगेम के लिए\n*पार्टनर* खोजें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cari *buddy*\nuntuk main\nmalam ini."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今夜、\n*仲間*と\n一戦しよう。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "오늘 밤,\n*버디*랑\n한 게임 어때요?"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Malam ini,\ncari *rakan main*\nuntuk satu permainan."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "คืนนี้\nหา*บัดดี้*\nตีแบดกัน"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tối nay,\ntìm *bạn đánh*\nchơi một trận."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今晚，\n找個*搭子*\n打一場。"
           }
         }
       }
@@ -58354,64 +58180,6 @@
         }
       }
     },
-    "找到你的羽毛球搭子" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Find your badminton buddy"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "अपना बैडमिंटन पार्टनर खोजें"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Temukan buddy badmintonmu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "バドミントン仲間を見つけよう"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "배드민턴 버디를 찾아보세요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cari rakan main badminton anda"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "หาบัดดี้ตีแบดของคุณ"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tìm bạn đánh cầu lông của bạn"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "找到你的羽毛球搭子"
-          }
-        }
-      }
-    },
     "找到合适的人会马上通知你，不用一直开着 App。所有人都确认后才算约成。" : {
       "localizations" : {
         "en" : {
@@ -59342,64 +59110,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "依本月在這家球館打的已確認場數排名（同一對手最多計 %lld 場、每天最多 %lld 場）；每個水平段分開排名"
-          }
-        }
-      }
-    },
-    "按水平 · 按时间 · 按距离" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "By level · By time · By distance"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "लेवल से · समय से · दूरी से"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Berdasarkan level · waktu · jarak"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "レベル順 · 時間順 · 距離順"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "레벨별 · 시간별 · 거리별"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ikut tahap · Ikut masa · Ikut jarak"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ตามระดับ · ตามเวลา · ตามระยะทาง"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Theo trình độ · Theo giờ · Theo khoảng cách"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按水平 · 按時間 · 按距離"
           }
         }
       }
@@ -72965,64 +72675,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "水平 ±%lld 級"
-          }
-        }
-      }
-    },
-    "水平匹配" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Level match"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "लेवल मैच"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kecocokan level"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "レベルマッチ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "레벨 매칭"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Padanan tahap"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "จับคู่ตามระดับ"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hợp trình độ"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "水平配對"
           }
         }
       }
@@ -86781,60 +86433,60 @@
         }
       }
     },
-    "继续即表示你同意《用户协议》和《隐私政策》。" : {
+    "继续即表示你同意%@和%@。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "By continuing, you agree to the Terms of Use and Privacy Policy."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "जारी रखकर, आप उपयोग की शर्तों और गोपनीयता नीति से सहमत होते हैं।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dengan melanjutkan, kamu menyetujui Ketentuan Penggunaan dan Kebijakan Privasi."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "続行すると、利用規約とプライバシーポリシーに同意したことになります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "계속하면 이용약관 및 개인정보 처리방침에 동의하는 것으로 간주됩니다."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dengan meneruskan, anda bersetuju dengan Terma Penggunaan dan Dasar Privasi."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "การดำเนินการต่อถือว่าคุณยอมรับข้อกำหนดการใช้งานและนโยบายความเป็นส่วนตัว"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khi tiếp tục, bạn đồng ý với Điều khoản sử dụng và Chính sách quyền riêng tư."
+            "value" : "By continuing, you agree to the %1$@ and %2$@."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "繼續即表示你同意《使用者協議》和《隱私權政策》。"
+            "value" : "繼續即表示你同意%1$@和%2$@。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "続行すると、%1$@と%2$@に同意したことになります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계속하면 %1$@ 및 %2$@에 동의하는 것으로 간주됩니다."
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dengan melanjutkan, kamu menyetujui %1$@ dan %2$@."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dengan meneruskan, anda bersetuju dengan %1$@ dan %2$@."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การดำเนินการต่อถือว่าคุณยอมรับ%1$@และ%2$@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi tiếp tục, bạn đồng ý với %1$@ và %2$@."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जारी रखकर, आप %1$@ और %2$@ से सहमत होते हैं।"
           }
         }
       }
@@ -87729,6 +87381,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "羽球開放時段"
+          }
+        }
+      }
+    },
+    "羽毛球搭子？\n就在*今日*！" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badminton buddy?\nFind one *today*!"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "羽毛球搭子？\n就在*今日*！"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バドミントン仲間？\n*今日*見つかる！"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "배드민턴 버디?\n*오늘* 바로 찾아요!"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buddy badminton?\nKetemu *hari ini*!"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rakan badminton?\nJumpa *hari ini*!"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หาบัดดี้ตีแบด?\nเจอ*วันนี้*เลย!"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đánh cầu lông?\nCó ngay *hôm nay*!"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बैडमिंटन पार्टनर?\n*आज* ही मिलेगा!"
           }
         }
       }

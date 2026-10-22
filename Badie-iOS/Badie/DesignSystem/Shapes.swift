@@ -108,48 +108,23 @@ struct StarburstBadge: View {
     }
 }
 
-// MARK: - 品牌标识：羽毛球（球托 + 羽毛裙）
+// MARK: - 品牌标识：和 App 图标同一张图（Assets 里的 Logo）
 
-struct ShuttlecockMark: View {
-    var size: CGFloat = 64
-    var fill: Color = AppTheme.Colors.lime
-
+/// 圆角方块，描边和硬投影跟贴纸卡片一致；随给的尺寸缩放
+struct AppLogo: View {
     var body: some View {
-        Canvas { context, canvasSize in
-            let w = canvasSize.width
-            let h = canvasSize.height
-            let line = max(2, w * 0.045)
-            let ink = GraphicsContext.Shading.color(Color(hex: 0x17140F))
-
-            // 羽毛裙（梯形）
-            var skirt = Path()
-            skirt.move(to: CGPoint(x: w * 0.18, y: h * 0.08))
-            skirt.addLine(to: CGPoint(x: w * 0.82, y: h * 0.08))
-            skirt.addLine(to: CGPoint(x: w * 0.64, y: h * 0.62))
-            skirt.addLine(to: CGPoint(x: w * 0.36, y: h * 0.62))
-            skirt.closeSubpath()
-            context.fill(skirt, with: .color(.white))
-            context.stroke(skirt, with: ink, lineWidth: line)
-
-            // 羽毛分隔线
-            for fraction in [0.35, 0.5, 0.65] {
-                var rib = Path()
-                rib.move(to: CGPoint(x: w * (0.18 + (0.82 - 0.18) * fraction), y: h * 0.08))
-                rib.addLine(to: CGPoint(x: w * (0.36 + (0.64 - 0.36) * fraction), y: h * 0.62))
-                context.stroke(rib, with: ink, lineWidth: line * 0.7)
-            }
-            // 绑线
-            var band = Path()
-            band.move(to: CGPoint(x: w * 0.27, y: h * 0.36))
-            band.addLine(to: CGPoint(x: w * 0.73, y: h * 0.36))
-            context.stroke(band, with: ink, lineWidth: line * 0.7)
-
-            // 球托（半圆 + 底部）
-            let cork = Path(ellipseIn: CGRect(x: w * 0.32, y: h * 0.56, width: w * 0.36, height: h * 0.36))
-            context.fill(cork, with: .color(fill))
-            context.stroke(cork, with: ink, lineWidth: line)
+        GeometryReader { proxy in
+            let side = min(proxy.size.width, proxy.size.height)
+            let shape = RoundedRectangle(cornerRadius: side * 0.225, style: .continuous)
+            Image("Logo")
+                .resizable()
+                .clipShape(shape)
+                .overlay(shape.strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
+                .background(shape.fill(AppTheme.Colors.shadow).offset(AppTheme.Elevation.card))
+                .frame(width: side, height: side)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: size, height: size)
+        .aspectRatio(1, contentMode: .fit)
         .accessibilityHidden(true)
     }
 }

@@ -111,20 +111,22 @@ struct OnboardingFlow: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if step != .welcome {
+            if step == .welcome {
+                welcome
+            } else {
                 header
-            }
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    content
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+                        content
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                    .padding(.top, AppTheme.Spacing.sm)
+                    .padding(.bottom, AppTheme.Spacing.xxl)
+                    .frame(maxWidth: 560)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(.horizontal, AppTheme.Spacing.screen)
-                .padding(.top, step == .welcome ? AppTheme.Spacing.xxl : AppTheme.Spacing.sm)
-                .padding(.bottom, AppTheme.Spacing.xxl)
-                .frame(maxWidth: 560)
-                .frame(maxWidth: .infinity)
+                .scrollDismissesKeyboard(.interactively)
             }
-            .scrollDismissesKeyboard(.interactively)
             footer
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
@@ -134,6 +136,10 @@ struct OnboardingFlow: View {
         }
         .task {
             if appState.isRemote { providers = await appState.socialProviders() }
+            #if DEBUG
+            // 截图时把 Apple、Google 按钮也显示出来，看欢迎页一屏放不放得下
+            if UserDefaults.standard.string(forKey: "BBDemoScreen") == "welcome" { providers = ["apple", "google"] }
+            #endif
         }
         .task(id: resendRemaining) {
             guard resendRemaining > 0 else { return }
@@ -173,7 +179,7 @@ struct OnboardingFlow: View {
     @ViewBuilder
     private var content: some View {
         switch step {
-        case .welcome: welcome
+        case .welcome: EmptyView()
         case .phone: if appState.isRemote { emailStep } else { phoneStep }
         case .code: codeStep
         case .profile: profileStep
@@ -184,29 +190,23 @@ struct OnboardingFlow: View {
 
     // MARK: Welcome
 
+    /// 只有 logo 和一句话，登录按钮在下面：一屏放得下，不用滚动（屏幕矮时 logo 自动缩小）
     private var welcome: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
-            Wordmark(size: 30)
-            WelcomeCardFan()
-                .frame(height: 230)
-                .frame(maxWidth: .infinity)
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                Text(marking: String(localized: "今晚，\n找个*搭子*\n打一场。"))
-                    .font(AppTheme.Typography.display)
-                    .foregroundStyle(AppTheme.Colors.ink)
-                    .lineSpacing(4)
-                    .accessibilityLabel("今晚，找个搭子打一场。")
-                Text("不用自己开口找人：告诉我们你什么时候有空，我们按水平帮你找附近的球友。固定球友有事、刚到新城市，也能约到球。")
-                    .font(AppTheme.Typography.body)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            HStack(spacing: AppTheme.Spacing.sm) {
-                TagPill(text: String(localized: "水平匹配"), icon: "chart.bar.fill", fill: AppTheme.Colors.lavender)
-                TagPill(text: String(localized: "AA 透明"), icon: Money.icon(for: CountryInfo.deviceCountry.currencyCode), fill: AppTheme.Colors.peach)
-                TagPill(text: String(localized: "到场签到"), icon: "checkmark.seal.fill", fill: AppTheme.Colors.mint)
-            }
+        VStack(spacing: AppTheme.Spacing.lg) {
+            Spacer(minLength: AppTheme.Spacing.md)
+            AppLogo()
+                .frame(minWidth: 88, maxWidth: 168, minHeight: 88, maxHeight: 168)
+            Wordmark(size: 34)
+            Text(marking: String(localized: "羽毛球搭子？\n就在*今日*！"))
+                .font(AppTheme.Typography.display)
+                .foregroundStyle(AppTheme.Colors.ink)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .minimumScaleFactor(0.7)
+            Spacer(minLength: AppTheme.Spacing.md)
         }
+        .padding(.horizontal, AppTheme.Spacing.screen)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: Phone
@@ -609,6 +609,9 @@ struct OnboardingFlow: View {
             }
             .buttonStyle(.brutal(step == .welcome ? (socialProviders.isEmpty ? .inverse : .secondary) : .primary))
             .disabled(!canContinue || isWorking)
+            if step == .welcome && !socialProviders.isEmpty {
+                termsNote
+            }
             if step == .welcome && !appState.isRemote {
                 Text("登录即可体验，附近球友为演示数据")
                     .font(AppTheme.Typography.caption)
@@ -658,10 +661,22 @@ struct OnboardingFlow: View {
             }
             .buttonStyle(.brutal(.secondary))
         }
-        Text("继续即表示你同意《用户协议》和《隐私政策》。")
+    }
+
+    /// 第三方登录不打勾，所以用一行字说明：继续就算同意；协议和隐私政策可以点开
+    private var termsNote: some View {
+        Text("继续即表示你同意\(legalLink(String(localized: "用户协议"), LegalLinks.terms))和\(legalLink(String(localized: "隐私政策"), LegalLinks.privacy))。")
             .font(AppTheme.Typography.caption)
             .foregroundStyle(AppTheme.Colors.inkTertiary)
-        LegalLinks()
+            .tint(AppTheme.Colors.inkSecondary)
+            .multilineTextAlignment(.center)
+    }
+
+    private func legalLink(_ title: String, _ url: URL) -> AttributedString {
+        var text = AttributedString(title)
+        text.link = url
+        text.underlineStyle = .single
+        return text
     }
 
     /// 平时看不见；Cloudflare 要人点一下时才展开验证框
@@ -966,47 +981,6 @@ struct OnboardingFlow: View {
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
-    }
-}
-
-// MARK: - 欢迎页插画：扇形展开的球友卡片
-
-private struct WelcomeCardFan: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var spread = false
-
-    private let cards: [(String, SkillTier, Color, Double)] = [
-        (String(localized: "小红"), SkillTier(level: 7, modifier: .minus), AppTheme.Colors.lavender, -14),
-        (String(localized: "阿杰"), SkillTier(level: 4, modifier: .plus), AppTheme.Colors.peach, 0),
-        (String(localized: "小明"), SkillTier(level: 6), AppTheme.Colors.sky, 14)
-    ]
-
-    var body: some View {
-        ZStack {
-            ForEach(Array(cards.enumerated()), id: \.offset) { index, card in
-                VStack(spacing: AppTheme.Spacing.sm) {
-                    AvatarView(text: String(card.0.prefix(1)), paletteIndex: index + 3, size: 54)
-                    Text(card.0)
-                        .font(AppTheme.Typography.headline)
-                        .foregroundStyle(AppTheme.Colors.onAccent)
-                    LevelBadge(tier: card.1)
-                }
-                .frame(width: 128, height: 168)
-                .sticker(card.2, radius: 22)
-                .rotationEffect(.degrees(spread || reduceMotion ? card.3 : 0), anchor: .bottom)
-                .offset(x: (spread || reduceMotion) ? CGFloat(index - 1) * 78 : 0, y: index == 1 ? -10 : 6)
-                .zIndex(index == 1 ? 1 : 0)
-            }
-            ShuttlecockMark(size: 64)
-                .rotationEffect(.degrees(-24))
-                .offset(x: 118, y: -96)
-            StarburstBadge(text: "GO", fill: AppTheme.Colors.lime, size: 64)
-                .offset(x: -126, y: 78)
-        }
-        .onAppear {
-            withAnimation(AppTheme.Motion.bouncy.delay(0.15)) { spread = true }
-        }
-        .accessibilityHidden(true)
     }
 }
 

@@ -8,24 +8,13 @@ struct SplashView: View {
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.xl) {
-            Spacer()
-            ShuttlecockMark(size: 104)
-                .rotationEffect(.degrees(bounce ? -10 : 6))
-                .offset(y: bounce ? -18 : 0)
-                .shadow(color: AppTheme.Colors.shadow.opacity(0.15), radius: 0, x: 0, y: bounce ? 26 : 8)
-            VStack(spacing: AppTheme.Spacing.sm) {
-                Wordmark(size: 46)
-                Text("找到你的羽毛球搭子")
-                    .font(AppTheme.Typography.headline)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-            }
-            .opacity(appeared ? 1 : 0)
-            .offset(y: appeared ? 0 : 12)
-            Spacer()
-            Text("按水平 · 按时间 · 按距离")
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                .padding(.bottom, AppTheme.Spacing.xxxl)
+            AppLogo()
+                .frame(width: 120, height: 120)
+                .rotationEffect(.degrees(bounce ? -6 : 4))
+                .offset(y: bounce ? -14 : 0)
+            Wordmark(size: 46)
+                .opacity(appeared ? 1 : 0)
+                .offset(y: appeared ? 0 : 12)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
