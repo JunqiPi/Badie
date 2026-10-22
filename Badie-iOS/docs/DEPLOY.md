@@ -129,6 +129,8 @@ Authentication → URL Configuration：
    - Authorized domains：加 `badie.rsvp` 和 `yeffnjdpjejlplqryjfx.supabase.co`
    - App name 填 `Badie`（要和首页标题开头的名字一致，自动审核会比对），Logo 传 120×120 的 PNG（`web/public/icon-512.png` 缩小即可），
      然后提交品牌审核（Verify branding，几个工作日）。通过前 Google 的登录页写的是“继续前往 yeffnjdpjejlplqryjfx.supabase.co”，通过后写“Badie”。
+     - 先在 Google Search Console 用同一个 Google 账号验证 `badie.rsvp`（“网域”类型，在 Cloudflare DNS 加一条 TXT 记录），否则会报首页网址不是你的；验证后等 24 小时再提交。
+     - 审核通过后**要在 7 天内点 Publish branding**，不然结果作废，用户也看不到新名字。
 4. Data Access → Add or remove scopes：只勾 `openid`、`.../auth/userinfo.email`、`.../auth/userinfo.profile` → Update → Save。只要这三个基本权限就不需要 Google 审核。
 5. Audience → Publishing status 点 **Publish app** → Confirm（还在 Testing 时只有测试名单里的人能登录）。
 6. Clients → Create client：
