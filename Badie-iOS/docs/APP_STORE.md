@@ -21,11 +21,11 @@
    - **24 小时内处理举报要说到做到**：有人举报时管理员会收到通知，在网站的 `/admin/` 页处理（改掉昵称、撤下照片、封号或驳回），
      能看到被举报人最近 30 天发给举报人的消息。你的账号要在 `admin_users` 表里（Supabase → Table Editor 加一行）。
 4. **商店信息**（草稿，口径和 `STORY.md` 一致，按需改）
-   - 名称（30 字以内，全 App Store 唯一）：`Badie: Badminton Partners`（被占用就换 `Badie - Find Badminton Players`）。
+   - 名称（30 字以内，全 App Store 唯一）：`Badie: Badminton Buddy`（App Store Connect 里已经用这个名字建好了，提交审核前都能改）。
    - 副标题（30 字以内）：`Find players at your level`
    - 推广文本（170 字以内，随时能改、不用重新审核）：`No need to ask strangers at the gym. Tell Badie when you’re free and it finds badminton players at your level, plus courts, weekly groups and mixed doubles.`
-   - 关键词（100 个字符以内，逗号后不加空格；名称里已有的 badminton、partners 不用重复）：
-     `doubles,singles,mixed,court,club,shuttlecock,racket,sports,match,players,game,league,group,level`
+   - 关键词（100 个字符以内，逗号后不加空格；名称里已有的 badminton、buddy 不用重复）：
+     `partner,doubles,singles,mixed,court,club,shuttlecock,racket,sports,match,players,game,group,level`
    - 描述：
 
      > Too shy to ask strangers for a game? Badie does the asking for you.
