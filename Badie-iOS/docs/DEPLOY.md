@@ -35,8 +35,9 @@
 3. 数据库密码点 Generate，存进密码管理器，再存为 Secret `SUPABASE_DB_PASSWORD`。
 4. 建项目页面里 Data API 保持开启；“Automatically expose new tables” 不勾也可以（迁移里已经显式授权）。
 5. 账号头像 → Access Tokens → Generate new token，存为 Secret `SUPABASE_ACCESS_TOKEN`。
-   - 如果生成时要选权限（scoped token），只选 badie 这个项目，并给：Project Settings、API Keys、API Key Secrets 读，**Edge Functions 读写**（部署服务器函数要用）。
-   - 部署时报 `Missing required permission(s): edge_functions_write`，说明这把 token 没有 Edge Functions 读写：按上面重新生成一把，替换 GitHub 里的 Secret，再到 Actions → Supabase deploy → Run workflow。
+   - 范围只选 badie 这个项目；**项目里的权限全部给读写**（部署、Apple 登录工作流都用这一把，以后加自动化也不用再补权限）。
+   - **不要给的**：组织级的权限（成员、账单、组织设置）和“所有项目 / 新建、删除项目”这类跨项目的权限。CI 用不到，令牌万一泄露，别人能借它加成员、改账单、删项目。
+   - 有效期选最长；过期后部署会报 401，重新生成一把替换 GitHub 里的 Secret 就行。
 6. Variables 里加 `SUPABASE_PROJECT_REF`、`SUPABASE_URL`、`SUPABASE_PUBLISHABLE_KEY`。
 
 ## 3. 登录方式和验证码邮件（必须做，否则注册收不到确认码）
@@ -155,12 +156,8 @@ Authentication → URL Configuration：
 2. Keys → **+** → 名字 `Badie`，勾 **Sign in with Apple**（Configure 里选 `com.badie.app`），**同时勾 Apple Push Notifications service (APNs)**
    （Environment 选 Sandbox & Production）→ Register → 下载 `.p8`（**只能下载一次**，存进密码管理器），记下 Key ID。
    一把私钥管三件事：Apple 登录、注销时撤销 Apple 授权、iPhone 推送（服务器没有单独的 `APNS_*` 时用它）。
-3. GitHub 仓库 → Settings → Secrets and variables → Actions，加三条（直接粘进去，不要发到聊天里）：
-   - `APPLE_KEY_ID`，`APPLE_PRIVATE_KEY`（`.p8` 的全部内容）。
-   - `SUPABASE_CONFIG_TOKEN`：Supabase → 右上角头像 → Account preferences → **Access Tokens** → 新建一个令牌，名字 `GitHub Apple sign-in`，
-     （https://supabase.com/dashboard/account/tokens）只选 Badie 这个项目，权限只给 **Auth Config** 和 **Edge Function Secrets** 两项的读写（Read-write），有效期选最长。
-     部署用的 `SUPABASE_ACCESS_TOKEN` 没有改登录设置的权限，也不要给它加，两个令牌各管各的。
-     令牌过期后每月的自动换新会失败（GitHub 会发邮件），到时重新建一个替换掉。
+3. GitHub 仓库 → Settings → Secrets and variables → Actions，加两条（直接粘进去，不要发到聊天里）：`APPLE_KEY_ID`，`APPLE_PRIVATE_KEY`（`.p8` 的全部内容）。
+   Supabase 令牌和部署共用 `SUPABASE_ACCESS_TOKEN`（建法见第 2 节第 5 步）。
 4. GitHub → Actions → **Apple sign-in** → Run workflow（分支 main）。它会：
    - 在 Supabase 打开 Apple 登录：Client IDs 是 `com.badie.web`（网页，放第一个）和 `com.badie.app`（App 原生登录）；
    - 用这把私钥生成网页登录要的 Secret Key 填进去。**这个密钥最长 6 个月就过期，Supabase 不会自动换**，所以这个工作流每月 1 日自动重新生成一次；

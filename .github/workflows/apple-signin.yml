@@ -3,8 +3,7 @@ name: Apple sign-in
 # 开启 Apple 登录，并每月换一次网页登录用的密钥（Apple 规定最长 6 个月，Supabase 不会自动换）。
 # 用 Apple 的私钥生成密钥，通过 Supabase 管理接口写进 Apple 登录的设置；同一把私钥也写进服务器函数的 Secrets：
 # 注销时撤销 Apple 授权要用；没有单独的 APNs 私钥时，iPhone 推送也用它。密钥和私钥都不打印。
-# 需要的 Secrets：APPLE_KEY_ID、APPLE_PRIVATE_KEY（.p8 的全部内容）、SUPABASE_CONFIG_TOKEN（只给 Auth Config 和 Edge Function Secrets
-# 读写权限的 Supabase 令牌，和部署用的分开）；变量 SUPABASE_PROJECT_REF 已有。
+# 需要的 Secrets：APPLE_KEY_ID、APPLE_PRIVATE_KEY（.p8 的全部内容）；Supabase 令牌和部署共用 SUPABASE_ACCESS_TOKEN。
 # 步骤见 Badie-iOS/docs/DEPLOY.md 第 4.5 节
 on:
   schedule:
@@ -24,7 +23,7 @@ jobs:
       SERVICES_ID: com.badie.web
       BUNDLE_ID: com.badie.app
       APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_CONFIG_TOKEN }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +34,7 @@ jobs:
         run: |
           if [ -z "$APPLE_KEY_ID" ] || [ -z "$APPLE_PRIVATE_KEY" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$PROJECT_REF" ]; then
             if [ "$GITHUB_EVENT_NAME" = schedule ]; then echo "还没配置 Apple 登录，跳过"; exit 0; fi
-            echo "::error::还没设置 APPLE_KEY_ID、APPLE_PRIVATE_KEY 或 SUPABASE_CONFIG_TOKEN，见 Badie-iOS/docs/DEPLOY.md 第 4.5 节"; exit 1
+            echo "::error::还没设置 APPLE_KEY_ID、APPLE_PRIVATE_KEY，见 Badie-iOS/docs/DEPLOY.md 第 4.5 节"; exit 1
           fi
           KEY_FILE="$RUNNER_TEMP/apple.p8"
           (umask 077; printf '%s\n' "$APPLE_PRIVATE_KEY" > "$KEY_FILE")
@@ -47,7 +46,7 @@ jobs:
             code=$(curl -sS -X "$1" "https://api.supabase.com/v1/projects/$PROJECT_REF$2" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
                      -H "Content-Type: application/json" --data @- -o "$RUNNER_TEMP/response.json" -w '%{http_code}')
             if [ "${code:0:1}" != 2 ]; then
-              echo "::error::Supabase $1 $2 → HTTP $code：$(jq -r '.message // .error // empty' "$RUNNER_TEMP/response.json" 2>/dev/null | head -c 300)（401/403 多半是 SUPABASE_CONFIG_TOKEN 过期或少了权限）"
+              echo "::error::Supabase $1 $2 → HTTP $code：$(jq -r '.message // .error // empty' "$RUNNER_TEMP/response.json" 2>/dev/null | head -c 300)（401/403 多半是 SUPABASE_ACCESS_TOKEN 过期或少了权限）"
               exit 1
             fi
           }
