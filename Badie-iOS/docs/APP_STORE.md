@@ -58,8 +58,8 @@
      通知扩展的 App ID（`com.badie.app.NotificationService`）不用自己建，云端构建第一次运行时会自动注册。
    - 记下 Team ID（Account → Membership details，10 位字母数字；Apple 登录和推送的配置都要用）。
 2. **Apple 登录**：按 `DEPLOY.md` 第 4.5 节 “Apple” 的 1～5 步做（App ID 上一步已经建好）。做完 App 和网站会自动出现 Apple 按钮，App 里的 Google 按钮也会同时出现（App 从服务器读取开了哪些登录方式，不用发新版）。
-3. **iPhone 推送**：Keys → 新建一把只勾 **Apple Push Notifications service (APNs)** 的 Key（和 Apple 登录的 Key 分开，换起来互不影响），Environment 选 **Sandbox & Production**，Key type 选 **Team Scoped**。下载 `.p8`（只能下载一次）。
-   - Supabase → Edge Functions → Secrets：`APNS_KEY_ID`、`APNS_PRIVATE_KEY`（粘 `.p8` 全部内容），`APPLE_TEAM_ID` 和 Apple 登录共用。
+3. **iPhone 推送**：和 Apple 登录共用一把私钥，第 2 步做完就有了（`DEPLOY.md` 第 4.5 节第 2 步建 Key 时同时勾 APNs）。
+   - 已经单独建过 APNs 的 Key、在 Supabase 里加了 `APNS_KEY_ID`、`APNS_PRIVATE_KEY` 的，也没关系，会优先用它。
    - 用 Xcode 直接装到手机上的是开发版，走 Apple 的测试推送环境；TestFlight 和 App Store 版走正式环境。代码已经自动区分。
 4. **Apple 隐藏邮箱能收到我们的邮件**：`DEPLOY.md` 第 4.5 节 Apple 第 5 步（注册 `badie.rsvp`、`send.badie.rsvp`）。我们的邮件都有 DKIM 签名，满足 Apple 的要求。
 5. **通用链接和共用密码**已经配好（Team ID `PU482V2DWN` 写在网站的 `.well-known/apple-app-site-association` 里）：

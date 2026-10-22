@@ -148,14 +148,21 @@ Authentication → URL Configuration：
 
 1. Apple Developer → Certificates, Identifiers & Profiles → Identifiers：
    - App ID `com.badie.app`：勾上 **Push Notifications** 和 **Sign in with Apple**（还没建的话按 `APP_STORE.md` 第 2 节第 1 步建）。
-   - 新建 Services ID `com.badie.web`（网页登录用）：勾上 Sign in with Apple → Configure：Primary App ID 选 `com.badie.app`，Domains 填 `yeffnjdpjejlplqryjfx.supabase.co`，Return URLs 填 `https://yeffnjdpjejlplqryjfx.supabase.co/auth/v1/callback`。
-2. Keys → 新建 Key，勾 Sign in with Apple（关联 `com.badie.app`），下载 `.p8`（**只能下载一次**，存进密码管理器），记下 Key ID 和右上角的 Team ID。
-3. Supabase → Authentication → Sign In / Providers → Apple：打开 Enable；
-   - Client IDs：`com.badie.web,com.badie.app`（网页的 Services ID 放第一个）。
-   - Secret Key：在自己电脑上运行 `node supabase/scripts/apple_client_secret.mjs <Team ID> <Key ID> com.badie.web <.p8 路径>`（私钥不离开本机），把输出粘进去。**这个密钥最长 6 个月就过期，Supabase 不会自动换**：脚本会打印到期日，在日历里设个提前一个月的提醒，到时重新运行填回去，否则网页的 Apple 登录会失效（iOS 原生登录不受影响）。
-4. 注销时撤销 Apple 授权（Apple 要求，Supabase 不会代办）：Supabase → Edge Functions → Secrets 加三项：
-   - `APPLE_TEAM_ID`、`APPLE_KEY_ID`，以及 `APPLE_PRIVATE_KEY`（粘 `.p8` 文件的全部内容）。
-   - 函数 `apple-revoke` 由 “Supabase deploy” 自动部署。用户在 App 里注销时会再用 Apple 确认一次，用拿到的授权码撤销；在网页上注销的会提示他们去 Apple 账户设置里自己停用。
+   - **+** → Services IDs → Description `Badie Web`，Identifier `com.badie.web`（网页登录用）→ Register。再点开它，勾上 Sign in with Apple → Configure：
+     Primary App ID 选 `com.badie.app`，Domains 填 `yeffnjdpjejlplqryjfx.supabase.co`，Return URLs 填 `https://yeffnjdpjejlplqryjfx.supabase.co/auth/v1/callback` → Save。
+2. Keys → **+** → 名字 `Badie`，勾 **Sign in with Apple**（Configure 里选 `com.badie.app`），**同时勾 Apple Push Notifications service (APNs)**
+   （Environment 选 Sandbox & Production）→ Register → 下载 `.p8`（**只能下载一次**，存进密码管理器），记下 Key ID。
+   一把私钥管三件事：Apple 登录、注销时撤销 Apple 授权、iPhone 推送（服务器没有单独的 `APNS_*` 时用它）。
+3. GitHub 仓库 → Settings → Secrets and variables → Actions，加两条（直接粘进去，不要发到聊天里）：`APPLE_KEY_ID`，`APPLE_PRIVATE_KEY`（`.p8` 的全部内容）。
+4. GitHub → Actions → **Apple sign-in** → Run workflow（分支 main）。它会：
+   - 在 Supabase 打开 Apple 登录：Client IDs 是 `com.badie.web`（网页，放第一个）和 `com.badie.app`（App 原生登录）；
+   - 用这把私钥生成网页登录要的 Secret Key 填进去。**这个密钥最长 6 个月就过期，Supabase 不会自动换**，所以这个工作流每月 1 日自动重新生成一次；
+   - 把 `APPLE_TEAM_ID`、`APPLE_KEY_ID`、`APPLE_PRIVATE_KEY` 写进 Supabase → Edge Functions → Secrets：
+     函数 `apple-revoke` 在用户从 App 里注销时用它撤销 Apple 授权（Apple 要求，Supabase 不会代办；在网页上注销的会提示他们去 Apple 账户设置里自己停用），
+     `send-push` 发 iPhone 推送也用它。
+   - 跑完后重新打开 App 和网站的登录页，就有 Apple 和 Google 按钮了。
+   - 不想用 GitHub 的话，也可以在自己电脑上运行 `node supabase/scripts/apple_client_secret.mjs <Team ID> <Key ID> com.badie.web <.p8 路径>`，
+     把输出粘到 Supabase → Authentication → Sign In / Providers → Apple 的 Secret Key，然后手动加上面三个 Secrets；这样每 6 个月要手动重来一次。
 5. Apple 隐藏邮箱（用户选了“隐藏我的邮箱”时，地址是 `…@privaterelay.appleid.com`）：Certificates, Identifiers & Profiles → Services → **Sign in with Apple for Email Communication** → 注册 `badie.rsvp` 和 `send.badie.rsvp`（或者具体地址 `noreply@badie.rsvp`、`games@badie.rsvp`），并打开投递失败通知。不注册的话，发给这些用户的验证码和约球通知会被 Apple 退回。每个转发地址每天最多收 100 封。
 
 账号合并：同一个邮箱先用验证码注册、后来用 Google 登录，会自动合成一个账号（Google 的邮箱是验证过的）。Apple 选了隐藏邮箱的是另一个账号，这是 Apple 的设计。
