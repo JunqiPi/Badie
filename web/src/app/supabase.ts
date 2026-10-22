@@ -10,11 +10,29 @@ const key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefine
 // PKCE：Google / Apple 登录跳回来时只带一次性的 code，令牌不出现在网址里
 export const supabase = url && key ? createClient(url, key, { auth: { flowType: 'pkce' } }) : undefined;
 
-/** 后台开了哪些第三方登录（公开接口）；没开的不显示按钮 */
+/** 开了哪些第三方登录：用本机记下的上一次结果，按钮不用等网络就能显示（第一次默认 Google 和 Apple 都开着） */
+export function knownProviders(): string[] {
+  try {
+    const saved: unknown = JSON.parse(localStorage.getItem('badie.providers') ?? 'null');
+    if (Array.isArray(saved)) return saved;
+  } catch {}
+  return ['google', 'apple'];
+}
+
+/** 问服务器开了哪些，并记下来；网络不通就还用上一次的结果 */
 export async function enabledProviders(): Promise<string[]> {
-  const response = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key! } });
-  const settings = (await response.json()) as { external?: Record<string, boolean> };
-  return Object.entries(settings.external ?? {}).filter(([, on]) => on).map(([name]) => name);
+  try {
+    const response = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key! } });
+    if (!response.ok) return knownProviders();
+    const settings = (await response.json()) as { external?: Record<string, boolean> };
+    const names = Object.entries(settings.external ?? {}).filter(([, on]) => on).map(([name]) => name);
+    try {
+      localStorage.setItem('badie.providers', JSON.stringify(names));
+    } catch {}
+    return names;
+  } catch {
+    return knownProviders();
+  }
 }
 
 /** 照片头像的地址（公开桶，文件名随机） */

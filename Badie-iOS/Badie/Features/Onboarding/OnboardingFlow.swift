@@ -102,8 +102,9 @@ struct OnboardingFlow: View {
     @State private var showVenuePicker = false
     @FocusState private var codeFocused: Bool
     @FocusState private var phoneFocused: Bool
-    /// 后台开了的第三方登录（apple / google），没开的不显示按钮
-    @State private var providers: Set<String> = []
+    /// 后台开了的第三方登录（apple / google），没开的不显示按钮。先用记下的结果马上显示，后台问到新的再换
+    @State private var refreshedProviders: Set<String>?
+    private var providers: Set<String> { refreshedProviders ?? appState.socialProviders }
     /// App Store 审核规则 4.8：有 Google 这类第三方登录，就必须同时提供能隐藏邮箱的登录（Apple）。
     /// 所以 Apple 没开时，App 里也不显示 Google（网页不受影响）
     private var socialProviders: Set<String> { providers.contains("apple") ? providers.intersection(["apple", "google"]) : [] }
@@ -135,10 +136,10 @@ struct OnboardingFlow: View {
             if !appState.onboardingDemoAnswers.isEmpty { form.assessmentAnswers = appState.onboardingDemoAnswers }
         }
         .task {
-            if appState.isRemote { providers = await appState.socialProviders() }
+            if appState.isRemote { refreshedProviders = await appState.refreshSocialProviders() }
             #if DEBUG
             // 截图时把 Apple、Google 按钮也显示出来，看欢迎页一屏放不放得下
-            if UserDefaults.standard.string(forKey: "BBDemoScreen") == "welcome" { providers = ["apple", "google"] }
+            if UserDefaults.standard.string(forKey: "BBDemoScreen") == "welcome" { refreshedProviders = ["apple", "google"] }
             #endif
         }
         .task(id: resendRemaining) {

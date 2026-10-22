@@ -234,11 +234,11 @@ final class SupabaseClient {
         return next
     }
 
-    /// 后台开了哪些第三方登录（公开接口）；没开的不显示按钮
-    func enabledProviders() async -> Set<String> {
+    /// 后台开了哪些登录方式（公开接口）；网络不通时为 nil，不当成“都没开”
+    func enabledProviders() async -> Set<String>? {
         struct Settings: Decodable { let external: [String: Bool] }
         guard let data = try? await send("auth/v1/settings", method: "GET", authorized: false),
-              let settings = try? JSONDecoder().decode(Settings.self, from: data) else { return [] }
+              let settings = try? JSONDecoder().decode(Settings.self, from: data) else { return nil }
         return Set(settings.external.filter { $0.value }.keys)
     }
 

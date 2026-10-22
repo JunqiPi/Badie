@@ -177,11 +177,22 @@ final class AppState: ObservableObject {
         return try await backend.remoteSignInWithGoogle(code: code, verifier: verifier)
     }
 
-    /// 后台开了的第三方登录（apple / google）；离线或演示模式下是空的
-    func socialProviders() async -> Set<String> {
-        guard backend.isRemote, let remote = try? backend.requireRemote() else { return [] }
-        return await remote.enabledProviders()
+    /// 开了哪些第三方登录（apple / google）：用本机记下的上一次结果，按钮不用等网络就能显示
+    /// （第一次默认 Apple 和 Google 都开着）；演示模式下是空的
+    var socialProviders: Set<String> {
+        guard backend.isRemote else { return [] }
+        return Set(UserDefaults.standard.stringArray(forKey: Self.socialProvidersKey) ?? ["apple", "google"])
     }
+
+    /// 问服务器开了哪些，并记下来；网络不通就还用上一次的结果
+    func refreshSocialProviders() async -> Set<String> {
+        guard backend.isRemote, let remote = try? backend.requireRemote(),
+              let providers = await remote.enabledProviders() else { return socialProviders }
+        UserDefaults.standard.set(providers.sorted(), forKey: Self.socialProvidersKey)
+        return providers
+    }
+
+    private static let socialProvidersKey = "socialProviders"
 
     func registerRemote(nickname: String, gender: Gender, avatar: Avatar, assessment: SkillAssessmentSummary?,
                         answers: [String: Int]) async throws {

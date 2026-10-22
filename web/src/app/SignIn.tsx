@@ -2,7 +2,7 @@ import type { AuthError } from '@supabase/supabase-js';
 import { Fragment, useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { useCaptcha } from './captcha';
 import { t } from './i18n';
-import { enabledProviders, supabase } from './supabase';
+import { enabledProviders, knownProviders, supabase } from './supabase';
 import { CardFan, Tag } from './kit';
 import { MIN_PASSWORD, passwordProblem } from './password';
 import { Link } from './router';
@@ -39,12 +39,15 @@ const logos: Record<Provider, ReactNode> = {
   ),
 };
 
+const pick = (names: string[]) => (['google', 'apple'] as const).filter((p) => names.includes(p));
+
 /** “通过 Google / Apple 继续”：跳到对方的登录页，回来时 Supabase 用一次性的 code 换登录状态 */
 function ProviderButtons({ onError }: { onError: (message: string) => void }) {
-  const [providers, setProviders] = useState<Provider[]>([]);
+  // 先按上次的结果马上显示，再在后台问服务器
+  const [providers, setProviders] = useState<Provider[]>(() => pick(knownProviders()));
   const [busy, setBusy] = useState<Provider>();
   useEffect(() => {
-    enabledProviders().then((names) => setProviders((['google', 'apple'] as const).filter((p) => names.includes(p))), () => {});
+    enabledProviders().then((names) => setProviders(pick(names)));
   }, []);
 
   async function go(provider: Provider) {
