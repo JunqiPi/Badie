@@ -126,7 +126,8 @@ Authentication → URL Configuration：
    - App home page `https://badie.rsvp`
    - Privacy policy `https://badie.rsvp/privacy/`、Terms of service `https://badie.rsvp/terms/`（这两页随代码一起上线）
    - Authorized domains：加 `badie.rsvp` 和 `yeffnjdpjejlplqryjfx.supabase.co`
-   - Logo 先不传：传了 Google 要做品牌审核（几个工作日），不传也能用。
+   - App name 填 `Badie`（要和首页标题开头的名字一致，自动审核会比对），Logo 传 120×120 的 PNG（`web/public/icon-512.png` 缩小即可），
+     然后提交品牌审核（Verify branding，几个工作日）。通过前 Google 的登录页写的是“继续前往 yeffnjdpjejlplqryjfx.supabase.co”，通过后写“Badie”。
 4. Data Access → Add or remove scopes：只勾 `openid`、`.../auth/userinfo.email`、`.../auth/userinfo.profile` → Update → Save。只要这三个基本权限就不需要 Google 审核。
 5. Audience → Publishing status 点 **Publish app** → Confirm（还在 Testing 时只有测试名单里的人能登录）。
 6. Clients → Create client：
@@ -140,7 +141,8 @@ Authentication → URL Configuration：
 说明：
 - iOS 不用另建客户端：App 在系统浏览器里走同一个网页登录（和 Safari 共用 Google 登录状态），不装 Google 的 SDK。
 - App 里只有 Apple 也开了才显示 Google（App Store 审核规则 4.8：有第三方登录就必须同时提供能隐藏邮箱的登录）。只开 Google 时，网页有 Google 按钮，App 里没有。
-- 没有自定义域名时，Google 的确认页上显示的是 `yeffnjdpjejlplqryjfx.supabase.co`；以后想显示 badie.rsvp，需要 Supabase 的自定义域名（付费功能）。
+- 品牌审核通过前，Google 的登录页显示的是 `yeffnjdpjejlplqryjfx.supabase.co`。想让所有地址都变成 badie.rsvp 的子域名（比如 `auth.badie.rsvp`），
+  要 Supabase 的自定义域名：Pro 版每月 $25 加上自定义域名每月 $10（2026-10 的价格）。换了以后 Google、Apple 后台里填的回调地址也要一起改。
 
 **Apple（iOS 原生 + 网页）**
 
@@ -153,7 +155,12 @@ Authentication → URL Configuration：
 2. Keys → **+** → 名字 `Badie`，勾 **Sign in with Apple**（Configure 里选 `com.badie.app`），**同时勾 Apple Push Notifications service (APNs)**
    （Environment 选 Sandbox & Production）→ Register → 下载 `.p8`（**只能下载一次**，存进密码管理器），记下 Key ID。
    一把私钥管三件事：Apple 登录、注销时撤销 Apple 授权、iPhone 推送（服务器没有单独的 `APNS_*` 时用它）。
-3. GitHub 仓库 → Settings → Secrets and variables → Actions，加两条（直接粘进去，不要发到聊天里）：`APPLE_KEY_ID`，`APPLE_PRIVATE_KEY`（`.p8` 的全部内容）。
+3. GitHub 仓库 → Settings → Secrets and variables → Actions，加三条（直接粘进去，不要发到聊天里）：
+   - `APPLE_KEY_ID`，`APPLE_PRIVATE_KEY`（`.p8` 的全部内容）。
+   - `SUPABASE_CONFIG_TOKEN`：Supabase → 右上角头像 → Account preferences → **Access Tokens** → 新建一个令牌，名字 `GitHub Apple sign-in`，
+     （https://supabase.com/dashboard/account/tokens）只选 Badie 这个项目，权限只给 **Auth Config** 和 **Edge Function Secrets** 两项的读写（Read-write），有效期选最长。
+     部署用的 `SUPABASE_ACCESS_TOKEN` 没有改登录设置的权限，也不要给它加，两个令牌各管各的。
+     令牌过期后每月的自动换新会失败（GitHub 会发邮件），到时重新建一个替换掉。
 4. GitHub → Actions → **Apple sign-in** → Run workflow（分支 main）。它会：
    - 在 Supabase 打开 Apple 登录：Client IDs 是 `com.badie.web`（网页，放第一个）和 `com.badie.app`（App 原生登录）；
    - 用这把私钥生成网页登录要的 Secret Key 填进去。**这个密钥最长 6 个月就过期，Supabase 不会自动换**，所以这个工作流每月 1 日自动重新生成一次；
