@@ -41,14 +41,19 @@ jobs:
           export SECRET=$(node supabase/scripts/apple_client_secret.mjs "$APPLE_TEAM_ID" "$APPLE_KEY_ID" "$SERVICES_ID" "$KEY_FILE" 2> "$RUNNER_TEMP/expiry.txt")
           rm -f "$KEY_FILE"
           echo "::add-mask::$SECRET"
-          api="https://api.supabase.com/v1/projects/$PROJECT_REF"
+          # 调 Supabase 管理接口（请求体从标准输入读）。成功的回应里有密钥，不打印；出错只打印服务器给的说明
+          call() {
+            code=$(curl -sS -X "$1" "https://api.supabase.com/v1/projects/$PROJECT_REF$2" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+                     -H "Content-Type: application/json" --data @- -o "$RUNNER_TEMP/response.json" -w '%{http_code}')
+            if [ "${code:0:1}" != 2 ]; then
+              echo "::error::Supabase $1 $2 → HTTP $code：$(jq -r '.message // .error // empty' "$RUNNER_TEMP/response.json" 2>/dev/null | head -c 300)"
+              exit 1
+            fi
+          }
           # Client IDs：网页的 Services ID 在前，App 的 Bundle ID 在后（顺序反了，网页登录会被 Apple 拒绝）
           jq -n '{external_apple_enabled: true, external_apple_client_id: env.SERVICES_ID,
-                  external_apple_additional_client_ids: env.BUNDLE_ID, external_apple_secret: env.SECRET}' |
-            curl -fsS -X PATCH "$api/config/auth" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
-              -H "Content-Type: application/json" --data @- -o /dev/null
+                  external_apple_additional_client_ids: env.BUNDLE_ID, external_apple_secret: env.SECRET}' | call PATCH /config/auth
           jq -n '[{name: "APPLE_TEAM_ID", value: env.APPLE_TEAM_ID}, {name: "APPLE_KEY_ID", value: env.APPLE_KEY_ID},
-                  {name: "APPLE_PRIVATE_KEY", value: env.APPLE_PRIVATE_KEY}]' |
-            curl -fsS -X POST "$api/secrets" -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
-              -H "Content-Type: application/json" --data @- -o /dev/null
+                  {name: "APPLE_PRIVATE_KEY", value: env.APPLE_PRIVATE_KEY}]' | call POST /secrets
+          rm -f "$RUNNER_TEMP/response.json"
           echo "### Apple 登录已开启：网页用的密钥有效到 $(grep -o '[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}' "$RUNNER_TEMP/expiry.txt")，每月 1 日自动换新" >> "$GITHUB_STEP_SUMMARY"
