@@ -6,7 +6,6 @@ import { km } from './Courts';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { ArrowLabel, Avatar, CardFan, Empty, IconTile, Notice, SectionTitle, StatTile, fill, type Tint } from './kit';
-import { AboutFacts, Reasons } from './Levels';
 import type { Centre } from './pickers';
 import { Link } from './router';
 import { signInFirst } from './Shell';
@@ -29,9 +28,9 @@ function greeting() {
   return hour >= 5 && hour < 11 ? t('Good morning') : hour >= 11 && hour < 13 ? t('Good afternoon') : hour >= 13 && hour < 18 ? t('Good afternoon') : t('Good evening');
 }
 
-/** “Up for *a game* tonight?”：星号里的字用荧光笔标出来 */
-function Headline({ children, size = 'text-[2.375rem] sm:text-[2.75rem] lg:text-[3.25rem]' }: { children?: ReactNode; size?: string }) {
-  const parts = t('Up for *a game* tonight?').split('*');
+/** 大标题：星号里的字用荧光笔标出来 */
+function Headline({ text, children, size = 'text-[2.375rem] sm:text-[2.75rem] lg:text-[3.25rem]' }: { text: string; children?: ReactNode; size?: string }) {
+  const parts = text.split('*');
   return (
     <div className="min-w-0">
       {children}
@@ -58,7 +57,7 @@ function Dashboard({ me }: { me: Profile }) {
   return (
     <div className="grid gap-8 lg:gap-10">
       <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <Headline>
+        <Headline text={t('Up for *a game* tonight?')}>
           <p className="text-subhead font-bold text-ink-secondary">{t('{greeting}, {name}', { greeting: greeting(), name: me.nickname })}</p>
         </Headline>
         <div className="grid grid-cols-3 gap-2.5 lg:w-[30rem]">
@@ -242,37 +241,31 @@ function GroupsCard() {
   );
 }
 
-/** 附近球馆：最近的 3 家 + 总数，点进球馆页 */
+/** 附近球馆：最近的 3 家，点进球馆页 */
 function NearbyCourts() {
   const area = useArea();
   const [courts, setCourts] = useState<NearbyVenue[]>();
   useEffect(() => {
     if (!area) return;
-    supabase!.rpc('venues_near', { lat: area.lat, lng: area.lon, radius_km: 15, max_results: 50 }).then(({ data }) => setCourts((data ?? []) as NearbyVenue[]));
+    supabase!.rpc('venues_near', { lat: area.lat, lng: area.lon, radius_km: 15, max_results: 3 }).then(({ data }) => setCourts((data ?? []) as NearbyVenue[]));
   }, [area?.lat, area?.lon]);
 
+  if (!area) return <AreaPrompt />;
   return (
-    <section aria-labelledby="courts" className="grid gap-2">
-      <SectionTitle id="courts" title={t('Nearby venues')} detail={courts ? t('{n} within {distance}', { n: courts.length, distance: km(15_000) }) : undefined} action={{ label: t('Map'), to: '/courts/' }} />
-      {!area ? (
-        <AreaPrompt />
-      ) : (
-        <div className="sticker grid p-2">
-          {courts === undefined && [0, 1, 2].map((i) => <div key={i} className="skeleton m-2 h-12" />)}
-          {courts?.length === 0 && <p className="p-3 text-footnote text-ink-secondary">{t('No courts within {distance} yet', { distance: km(15_000) })}</p>}
-          {courts?.slice(0, 3).map(({ venue, distance_m }) => (
-            <Link key={venue.id} to={`/courts/?venue=${venue.id}`} className="press flex items-center gap-3 rounded-[14px] p-2 hover:bg-surface-muted/70">
-              <IconTile icon="pin" tint="sky" size="sm" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-bold">{venue.name}</span>
-                <span className="block truncate text-footnote text-ink-secondary">{venue.city}</span>
-              </span>
-              <span className="shrink-0 text-footnote font-bold text-ink-secondary tabular-nums">{km(distance_m)}</span>
-            </Link>
-          ))}
-        </div>
-      )}
-    </section>
+    <div className="sticker grid p-2">
+      {courts === undefined && [0, 1, 2].map((i) => <div key={i} className="skeleton m-2 h-12" />)}
+      {courts?.length === 0 && <p className="p-3 text-footnote text-ink-secondary">{t('No courts within {distance} yet', { distance: km(15_000) })}</p>}
+      {courts?.slice(0, 3).map(({ venue, distance_m }) => (
+        <Link key={venue.id} to={`/courts/?venue=${venue.id}`} className="press flex items-center gap-3 rounded-[14px] p-2 hover:bg-surface-muted/70">
+          <IconTile icon="pin" tint="sky" size="sm" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-bold">{venue.name}</span>
+            <span className="block truncate text-footnote text-ink-secondary">{venue.city}</span>
+          </span>
+          <span className="shrink-0 text-footnote font-bold text-ink-secondary tabular-nums">{km(distance_m)}</span>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -309,140 +302,51 @@ export function AreaPrompt({ tint = 'sky' }: { tint?: Tint }) {
 
 // MARK: 没登录时的首页：先把 Badie 讲清楚，一节只讲一件事、留足空白；能用的功能直接用，要账号的先去登录
 
-const steps: { icon: IconName; tint: Tint; title: string; text: string }[] = [
-  { icon: 'level', tint: 'lavender', title: 'Set your level', text: 'A 2-minute quiz places you on a 1–9 scale. Players you meet confirm it after games.' },
-  { icon: 'bolt', tint: 'lime', title: 'Get matched', text: 'Pick the courts you can reach and when you’re free. Badie finds players at your level with the same window.' },
-  { icon: 'trophy', tint: 'peach', title: 'Play, then confirm', text: 'After the game both sides confirm who won. Only matching results count toward win rate and leaderboards.' },
-];
-
-const ways: { icon: IconName; tint: Tint; title: string; text: string; to: string }[] = [
-  { icon: 'bolt', tint: 'lime', title: 'Quick Match', text: 'Finds buddies for you by level and time', to: '/play/' },
-  { icon: 'court', tint: 'peach', title: 'Nearby games', text: 'Booked a court but short on players? Start one and nearby players will see it.', to: '/rooms/' },
-  { icon: 'group', tint: 'sky', title: 'Regular games', text: 'Same time and venue every week. Sign up in one tap; join the waitlist automatically when full', to: '/groups/' },
+const steps: { tint: Tint; title: string }[] = [
+  { tint: 'lavender', title: 'Set your level' },
+  { tint: 'lime', title: 'Get matched' },
+  { tint: 'peach', title: 'Play, then confirm' },
 ];
 
 const lead = 'text-[1.0625rem] leading-relaxed text-ink-secondary lg:text-[1.1875rem]';
-
-/** 介绍页每一节的开头：小标题 + 大标题 + 一段说明 */
-function Intro({ id, kicker, title, children }: { id: string; kicker?: string; title: string; children?: ReactNode }) {
-  return (
-    <div className="grid max-w-2xl gap-3">
-      {kicker && <p className="kicker text-ink-secondary">{kicker}</p>}
-      <h2 id={id} className="text-title lg:text-[2.5rem]">{title}</h2>
-      {children && <p className={lead}>{children}</p>}
-    </div>
-  );
-}
 
 function Welcome() {
   return (
     <div className="grid gap-20 pb-4 lg:gap-28">
       <header className="grid items-center gap-10 lg:min-h-[28rem] lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
         <div className="grid justify-items-start gap-6">
-          <ul className="flex flex-wrap gap-2">
-            {[['heart', 'pink', 'Free to use'], ['level', 'lavender', 'Matched by level']].map(([icon, tint, text]) => (
-              <li key={text} className={`chip px-3! py-1.5! text-footnote! ${fill[tint as Tint]}`}><Icon name={icon as IconName} className="size-4" />{t(text)}</li>
-            ))}
-          </ul>
-          <Headline size="text-[3rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
-          <p className={`max-w-xl ${lead}`}>{t('No need to ask around at the gym or in group chats. Badie finds players at your level for you, at times and courts that work. Free to use.')}</p>
-          <div className="flex flex-wrap gap-3">
-            <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
-            <Link to="/courts/" className="button button-lg button-quiet">{t('Courts near you')}</Link>
-          </div>
+          <Headline text={t('Badminton buddy?\nFind one *today*!')} size="text-[2.25rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
+          <p className={`max-w-xl ${lead}`}>{t('Badie finds players at your level near you. Free.')}</p>
+          <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
         </div>
         <div className="max-sm:-my-4 lg:px-12"><CardFan className="max-sm:scale-[0.8] lg:scale-125" /></div>
       </header>
 
-      <section aria-labelledby="why" className="grid gap-8">
-        <Intro id="why" kicker={t('Why Badie')} title={t('Finding a game shouldn’t be the hard part')}>
-          {t('Badie started with a player who was too shy to ask strangers for a game and never knew how good the other side would be. Now Badie does that part for you.')}
-        </Intro>
-        <Reasons heading="h3" />
-      </section>
-
       <section aria-labelledby="how" className="grid gap-8">
-        <Intro id="how" title={t('How Badie works')} />
-        <ol className="grid gap-4 lg:grid-cols-3">
+        <h2 id="how" className="text-title lg:text-[2.5rem]">{t('How Badie works')}</h2>
+        <ol className="grid gap-4 sm:grid-cols-3">
           {steps.map((s, i) => (
-            <li key={s.title} className={`sticker grid content-start gap-4 p-6 lg:p-8 ${fill[s.tint]}`}>
-              <span className="flex items-center gap-3">
-                <span className="grid size-10 place-items-center rounded-full bg-[#17140f] text-headline font-black text-lime">{i + 1}</span>
-                <IconTile icon={s.icon} tint="surface" />
-              </span>
+            <li key={s.title} className={`sticker flex items-center gap-4 p-5 lg:p-6 ${fill[s.tint]}`}>
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#17140f] text-headline font-black text-lime">{i + 1}</span>
               <h3 className="text-title3">{t(s.title)}</h3>
-              <p className="text-subhead">{t(s.text)}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section aria-labelledby="levels" className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-        <div className="grid justify-items-start gap-5">
-          <Intro id="levels" kicker={t('Matched by level')} title={t('What level am I?')}>
-            {t('Levels 1–9 described by what you can actually do on court, from first rallies to national level.')}
-          </Intro>
-          <Link to="/levels/" className="button button-quiet">{t('See the levels')}</Link>
-        </div>
-        <LevelLadder />
-      </section>
-
-      <section aria-labelledby="ways" className="grid gap-8">
-        <Intro id="ways" title={t('Three ways to get a game')}>{t('Find a buddy with Quick Match, or start a game for nearby players to join.')}</Intro>
-        <ul className="grid gap-4 lg:grid-cols-3">
-          {ways.map((w) => (
-            <li key={w.title}>
-              <Link to={signInFirst(w.to)} className={`sticker lift grid h-full content-start gap-4 p-6 lg:p-8 ${fill[w.tint]}`}>
-                <IconTile icon={w.icon} tint="surface" size="lg" />
-                <span className="text-title3">{t(w.title)}</span>
-                <span className="text-subhead">{t(w.text)}</span>
-                <Icon name="arrowRight" className="size-6" />
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section aria-labelledby="values" className="grid gap-8">
-        <Intro id="values" kicker={t('About Badie')} title={t('Built by a player, for players')}>
-          {t('Our goal: more people playing badminton in the US and Europe, more often. Lots of people would play more if finding a game weren’t so awkward.')}
-        </Intro>
-        <AboutFacts heading="h3" className="sm:grid-cols-2 lg:grid-cols-4" />
-      </section>
-
-      <section aria-labelledby="find-courts" className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
-        <div className="grid justify-items-start gap-5">
-          <Intro id="find-courts" title={t('Find courts around you')}>{t('Browse every court we list, with hours, prices and directions.')}</Intro>
+      <section aria-labelledby="find-courts" className="grid gap-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 id="find-courts" className="text-title lg:text-[2.5rem]">{t('Find courts around you')}</h2>
           <Link to="/courts/" className="button button-quiet">{t('Browse by country')}</Link>
         </div>
         <NearbyCourts />
       </section>
 
-      <section aria-labelledby="ready" className="sticker grid gap-6 bg-[#17140f] p-8 text-[#f5f0e6] lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center lg:p-12">
-        <div className="grid gap-3">
-          <h2 id="ready" className="text-title lg:text-[2.5rem]">{t('Ready to play?')}</h2>
-          <p className="max-w-xl text-[1.0625rem] leading-relaxed">{t('Create a free account to get matched, join games and chat with players. It takes a minute.')}</p>
-        </div>
+      <section aria-labelledby="ready" className="sticker grid gap-6 bg-[#17140f] p-8 text-[#f5f0e6] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center lg:p-12">
+        <h2 id="ready" className="text-title lg:text-[2.5rem]">{t('Ready to play?')}</h2>
         <Link to="/signin/?new" className="button button-lg justify-self-start">{t('Create account')}</Link>
       </section>
     </div>
   );
 }
 
-/** 1–9 级的台阶，你上下 1 级的范围亮起来：只和水平相当的人配到一起 */
-function LevelLadder() {
-  const mine = 5;
-  return (
-    <div aria-hidden="true" className="sticker grid gap-5 bg-lavender p-6 text-on-accent lg:p-8">
-      <span className="chip justify-self-start bg-white">{t('Level ±1')}</span>
-      <div className="flex h-56 items-end gap-1.5 sm:gap-2">
-        {Array.from({ length: 9 }, (_, i) => i + 1).map((level) => (
-          <div key={level} className="flex h-full flex-1 flex-col items-center justify-end gap-2">
-            <div style={{ height: `${level * 10}%` }} className={`w-full rounded-t-[10px] border-2 border-stroke ${Math.abs(level - mine) <= 1 ? 'bg-lime' : 'bg-white'}`} />
-            <span className="text-footnote font-black tabular-nums">{level}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}

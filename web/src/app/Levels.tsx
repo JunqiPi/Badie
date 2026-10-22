@@ -96,7 +96,7 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
   );
 }
 
-/** 为什么做 Badie：不敢开口找人、固定球友有事、刚到新地方（首页和关于页共用）。白底，和下面彩色的步骤分开 */
+/** 为什么做 Badie：不敢开口找人、固定球友有事、刚到新地方 */
 const reasons: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
   { icon: 'hand', tint: 'lavender', title: 'Too shy to ask around',
     text: 'Walking up to strangers at the gym or asking online takes nerve, and you never know their level until you’re on court. Badie does the asking and matches you by level.' },
@@ -106,13 +106,13 @@ const reasons: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: st
     text: 'Moved for school or work? See the courts nearby, join a weekly group and meet players at your level in your first week.' },
 ];
 
-export function Reasons({ heading: Heading = 'h2' }: { heading?: 'h2' | 'h3' }) {
+function Reasons() {
   return (
     <ul className="grid gap-4 lg:grid-cols-3">
       {reasons.map((r) => (
         <li key={r.title} className={`sticker grid content-start gap-3 p-6 ${fill.surface}`}>
           <IconTile icon={r.icon} tint={r.tint} size="lg" />
-          <Heading className="text-title3">{t(r.title)}</Heading>
+          <h3 className="text-title3">{t(r.title)}</h3>
           <p className="text-subhead">{t(r.text)}</p>
         </li>
       ))}
@@ -128,14 +128,13 @@ const facts: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: stri
   { icon: 'map', tint: 'butter', title: 'Where court data comes from', text: 'Government open data, OpenStreetMap and players themselves. Players confirm courts they’ve played at.' },
 ];
 
-/** 关于页和首页共用：免费、隐私、靠谱、数据来源 */
-export function AboutFacts({ className = 'sm:grid-cols-2', heading: Heading = 'h2' }: { className?: string; heading?: 'h2' | 'h3' }) {
+function AboutFacts() {
   return (
-    <ul className={`grid gap-3 ${className}`}>
+    <ul className="grid gap-3 sm:grid-cols-2">
       {facts.map((f) => (
         <li key={f.title} className={`sticker grid content-start gap-2 p-5 ${fill[f.tint]}`}>
           <Icon name={f.icon} className="size-7" />
-          <Heading className="text-title3">{t(f.title)}</Heading>
+          <h3 className="text-title3">{t(f.title)}</h3>
           <p className="text-subhead">{t(f.text)}</p>
         </li>
       ))}
@@ -156,11 +155,11 @@ export function About() {
       <p className={`sticker p-5 text-title3 ${fill.lime}`}>{t('Our goal: more people playing badminton in the US and Europe, more often.')}</p>
       <section aria-labelledby="moments" className="grid gap-3">
         <h2 id="moments" className="text-title2">{t('Made for moments like these')}</h2>
-        <Reasons heading="h3" />
+        <Reasons />
       </section>
       <section aria-labelledby="promises" className="grid gap-3">
         <h2 id="promises" className="text-title2">{t('What you can count on')}</h2>
-        <AboutFacts heading="h3" />
+        <AboutFacts />
       </section>
       <section className="sticker grid gap-3 bg-[#17140f] p-5 text-[#f5f0e6]">
         <h2 className="text-title3">{t('Play from any browser')}</h2>

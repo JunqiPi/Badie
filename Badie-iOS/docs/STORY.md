@@ -68,6 +68,6 @@
 
 ## 这些话现在出现在哪里
 
-- 网站首页“为什么是 Badie”、关于页的故事和目标：`web/src/app/Home.tsx`、`web/src/app/Levels.tsx`（三种情况的卡片是同一份，首页和关于页共用）。
+- 网站首页只放一句口号（和 App 欢迎页同一句）、一行说明、一个按钮和三步标题；为什么做 Badie、三种情况、承诺都放在关于页：`web/src/app/Home.tsx`、`web/src/app/Levels.tsx`。
 - 给搜索引擎看的静态版：`web/src/pages/index.astro`、`web/src/pages/about/index.astro`。
 - App 欢迎页的一句话：`Badie/Features/Onboarding/OnboardingFlow.swift`。
