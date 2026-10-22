@@ -48,6 +48,12 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         <div class="static-only page grid gap-6 py-10">
           <a href="/" class="text-[1.75rem] font-black">badie.</a>
           <slot />
+          <!-- 不跑脚本的抓取器（比如 Google 的品牌审核）也要能在首页看到隐私政策的链接 -->
+          <nav aria-label="Badie" class="flex flex-wrap gap-x-4 gap-y-1 text-footnote">
+            <a class="link" href="/privacy/">Privacy Policy</a>
+            <a class="link" href="/terms/">Terms of Service</a>
+            <a class="link" href="/contact/">Contact us</a>
+          </nav>
         </div>
       </div>
     </App>
