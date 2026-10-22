@@ -115,7 +115,7 @@ jobs:
           test -d "$APP/PlugIns/BadieNotificationService.appex" || { echo "::error::通知扩展没打进包里"; exit 1; }
           codesign -d --entitlements - --xml "$APP" | python3 -I -c '
           import plistlib, sys
-          e = plistlib.load(sys.stdin.buffer)
+          e = plistlib.loads(sys.stdin.buffer.read())
           assert e.get("aps-environment") == "production", e
           assert e.get("com.apple.developer.applesignin") == ["Default"], e
           assert "applinks:badie.rsvp" in e.get("com.apple.developer.associated-domains", []), e
