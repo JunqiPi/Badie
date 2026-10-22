@@ -2,6 +2,7 @@ import { tier } from './assessment';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { IconTile, LargeTitle, Notice, Tag, fill, type Tint } from './kit';
+import { faq } from './faq';
 import { levels } from './levels';
 import { Link } from './router';
 import { signInFirst } from './Shell';
@@ -123,7 +124,7 @@ function Reasons() {
 /** 关于 Badie：免费、隐私、靠谱、数据来源 */
 const facts: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: string; text: string }[] = [
   { icon: 'heart', tint: 'pink', title: 'Free to use', text: 'Every feature is free. Badie exists to get more people playing even games.' },
-  { icon: 'eyeSlash', tint: 'sky', title: 'Private by default', text: 'Your exact location never leaves your device. Players see your nickname and level, not your contact details.' },
+  { icon: 'eyeSlash', tint: 'sky', title: 'Private by default', text: 'Players see your nickname and level, not your contact details. Your location is only used to find courts near you and is never stored.' },
   { icon: 'reliable', tint: 'mint', title: 'Reliability counts', text: 'No-shows and late cancellations are tracked, so the players you meet actually turn up.' },
   { icon: 'map', tint: 'butter', title: 'Where court data comes from', text: 'Government open data, OpenStreetMap and players themselves. Players confirm courts they’ve played at.' },
 ];
@@ -165,6 +166,20 @@ export function About() {
         <h2 className="text-title3">{t('Play from any browser')}</h2>
         <p className="text-subhead">{t('Badie works on the web on any phone or computer, no download needed. The iPhone app is in testing.')}</p>
         <Link to="/" className="button justify-self-start">{t('Open Badie')}</Link>
+      </section>
+      <section aria-labelledby="questions" className="grid gap-3">
+        <h2 id="questions" className="text-title2">{t('Questions')}</h2>
+        <div className="sticker grid divide-y divide-divider px-5">
+          {faq.map(({ q, a }) => (
+            <details key={q} className="group py-1">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 text-headline [&::-webkit-details-marker]:hidden">
+                <h3 className="flex-1">{t(q)}</h3>
+                <Icon name="chevronDown" className="size-4 shrink-0 transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="pb-4 text-subhead text-ink-secondary">{t(a)}</p>
+            </details>
+          ))}
+        </div>
       </section>
       <p className="flex gap-4 text-footnote font-bold">
         <Link to="/privacy/" className="link">{t('Privacy Policy')}</Link>

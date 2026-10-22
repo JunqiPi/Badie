@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { questions } from '../src/app/assessment.ts';
+import { faq } from '../src/app/faq.ts';
 import { languages, t } from '../src/app/i18n.ts';
 
 const app = new URL('../src/app/', import.meta.url);
@@ -15,6 +16,8 @@ const keys = new Set([
   ...sources(app, /\.tsx?$/).flatMap((code) => [...code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)].map((m) => unescape(m[1]))),
   // 定级题的题目和选项写在数组里，翻译时才传给 t()，上面扫不到
   ...questions.flatMap((q) => [q.title, q.hint, ...q.options.map((o) => o.text)]),
+  // 关于页的常见问题
+  ...faq.flatMap((f) => [f.q, f.a]),
   // 服务器错误的提示也一样（supabase.ts 里的 problems）
   ...[...readFileSync(new URL('supabase.ts', app), 'utf8').match(/const problems[^]*?\n\};/)![0].matchAll(/: '((?:[^'\\\n]|\\.)*)',?$/gm)]
     .map((m) => unescape(m[1])),

@@ -38,7 +38,7 @@
      > • Weekly groups: same time and court every week, with sign-ups and a waitlist.
      > • Reliable players: no-shows and late cancellations are tracked, and both sides confirm results.
      > • Weekly and court leaderboards, challenges and win rate, if you like a bit of competition.
-     > • Private by default: your exact location never leaves your phone, and players see your nickname and level, not your contact details.
+     > • Private by default: players see your nickname and level, not your contact details. Your location is only used to find courts nearby and is never stored.
      >
      > Badie is free and built by a player who wanted more people on court.
    - 截图：在 GitHub → Actions → **App Store screenshots** → Run workflow，跑完下载 `app-store-screenshots`：最新 iPhone Pro Max（6.9 英寸，1320 × 2868）和 Pro（6.3 英寸，1206 × 2622）上各 8 张英文页面，已转成不带透明通道的 JPEG，直接上传。

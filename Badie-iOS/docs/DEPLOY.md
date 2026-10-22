@@ -95,7 +95,7 @@ Supabase 自带的邮件只发给项目成员、每小时 2 封，而且 2026-06
    - **网站部署后**再到 Supabase → Authentication → Attack Protection → Enable CAPTCHA protection，选 Turnstile，填 Secret Key。顺序反过来会让所有人登录失败。
    - iOS App 不用另外配置：登录时用看不见的网页视图打开 `https://badie.rsvp/captcha/`，用的是同一个 Site Key。打开 CAPTCHA 之前装的旧版 App 会发不出验证码，要更新。
 2. Supabase → Authentication → Rate Limits：发验证码邮件每小时 30 封左右；每个 IP 每 5 分钟登录 / 注册请求 30 次（也挡住撞库、猜密码）、验证码校验 30 次（默认值即可）。密码登录、注册、重设密码同样要过 Turnstile。
-3. Cloudflare → badie.rsvp → Security → Bots：打开 **Bot Fight Mode**；AI Crawl Control 里拦截 AI 训练爬虫，放行搜索引擎和 AI 搜索（与 robots.txt 一致）。
+3. Cloudflare → badie.rsvp → Security → Bots：打开 **Bot Fight Mode**（不拦 Google、Bing 这类认证过的爬虫）。**AI Crawl Control 里全部放行**，和 robots.txt 一致（见 9.5）。
 4. 网站已经带上：内容安全策略（只允许自身脚本和 Turnstile）、禁止被嵌入 iframe、`/app/` 不进搜索引擎；数据库里所有写操作走带检查的函数，每人每天最多加 3 家球馆。
 
 ## 4. 登录相关网址
@@ -241,6 +241,22 @@ select id, 'owner' from auth.users where email = '你的邮箱';
 - “Supabase keep-alive” 每天自动运行，防止免费项目因 7 天无活动被暂停。
 
 iPhone App 上架（开发者账号、TestFlight、App Store Connect 资料、审核）见 [APP_STORE.md](APP_STORE.md)。
+
+## 9.5 让搜索引擎和 AI 找到 Badie
+
+网站这边已经做好：站点地图（`/sitemap-index.xml`）、每个球馆页的结构化数据、首页的网站名和 logo、关于页的常见问题、分享卡片图（`/og.png`）。
+robots.txt 放行所有爬虫（包括 ChatGPT、Gemini、Claude 用来学习的），只挡要登录的页面：新品牌要先让 AI 认识它。下面几步要你自己点：
+
+1. **Cloudflare**：badie.rsvp → AI Crawl Control，把 AI 爬虫都设成 Allow（以前设成了拦训练爬虫，robots.txt 已经改了，这里也要改）。
+2. **Google Search Console**（品牌审核时已经验证过 `badie.rsvp`）：
+   - 左边 **Sitemaps** → 填 `sitemap-index.xml` → Submit。
+   - 顶部搜索框依次输入 `https://badie.rsvp/`、`/about/`、`/courts/`、`/courts/us/` → **Request indexing**（每天有名额限制，挑最重要的）。
+   - 几天后看 **Pages** 报告：哪些页面收录了、哪些没收录和原因。
+3. **Bing Webmaster Tools**（bing.com/webmasters，用同一个 Google 账号登录）→ **Import from Google Search Console**，一键把网站和站点地图导进来。DuckDuckGo、Yahoo、Copilot 用的都是 Bing 的索引。
+4. 建好官方社交账号后，把账号网址填进 `web/src/pages/index.astro` 里的 `sameAs`，搜索引擎会把它们和网站认作同一个品牌。
+
+**多久能搜到**：新域名提交后，搜 “Badie badminton” 一般几天到两周能出现；只搜 “Badie” 会和人名等撞车，宣传时统一用 “Badie badminton” / “Badie 羽毛球”。
+“badminton partner app” 这种通用词要靠站外的提及（Reddit、App Store、媒体和博客文章）慢慢积累：Ahrefs 对 7.5 万个品牌的统计里，和 AI 回答里出现品牌关系最大的是品牌在网上被提及的次数，比外链更重要。
 
 ## 以后要补的
 

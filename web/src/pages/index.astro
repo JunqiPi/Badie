@@ -3,9 +3,26 @@ import App from '../layouts/App.astro';
 import { allVenues, countries } from '../lib/venues';
 
 const courtCount = allVenues.length.toLocaleString('en');
+const site = Astro.site ?? new URL('http://localhost');
+// 网站名和机构：搜索结果里显示“Badie”和 logo。sameAs 填官方社交账号（建好了再加）
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'WebSite', name: 'Badie', alternateName: 'Badie Badminton', url: site.href },
+    {
+      '@type': 'Organization',
+      name: 'Badie',
+      url: site.href,
+      logo: new URL('/icon-512.png', site).href,
+      description: 'A free app that finds badminton partners at your level and courts near you.',
+      sameAs: [],
+    },
+  ],
+};
 ---
 
 <App
+  jsonLd={jsonLd}
   title="Badie — find badminton partners and courts"
   description={`No need to ask strangers for a game: Badie finds badminton partners at your level for you. Browse ${courtCount} badminton courts. Free to use.`}
 >

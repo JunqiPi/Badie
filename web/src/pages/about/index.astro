@@ -1,8 +1,16 @@
 ---
 import App from '../../layouts/App.astro';
+import { faq } from '../../app/faq';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map(({ q, a }) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+};
 ---
 
 <App
+  jsonLd={jsonLd}
   title="About Badie"
   description="Badie finds badminton partners at your level for you, so you don’t have to ask strangers. Built by a player to get more people playing in the US and Europe. Free to use."
 >
@@ -25,4 +33,11 @@ import App from '../../layouts/App.astro';
   <p class="max-w-prose">
     Badie is free to use. Court data comes from government open data, OpenStreetMap and players themselves.
   </p>
+  <h2 class="text-2xl font-black">Questions</h2>
+  {faq.map(({ q, a }) => (
+    <section class="grid max-w-prose gap-1">
+      <h3 class="text-lg font-black">{q}</h3>
+      <p>{a}</p>
+    </section>
+  ))}
 </App>
