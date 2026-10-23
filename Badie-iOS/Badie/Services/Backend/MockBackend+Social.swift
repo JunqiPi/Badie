@@ -13,7 +13,14 @@ extension MockBackend {
         let blocked = blockedIds()
         return db.users.values
             .filter { $0.id != me && !blocked.contains($0.id) }
-            .filter { $0.nickname.localizedCaseInsensitiveContains(text) || $0.shortId == text }
+            .filter { user in
+                // “昵称#编号”精确查找
+                if let hash = text.lastIndex(of: "#") {
+                    return user.nickname.caseInsensitiveCompare(text[..<hash].trimmingCharacters(in: .whitespaces)) == .orderedSame
+                        && Int(text[text.index(after: hash)...]) == Int(user.tagText.dropFirst())
+                }
+                return user.nickname.localizedCaseInsensitiveContains(text)
+            }
             .sorted { $0.nickname < $1.nickname }
     }
 

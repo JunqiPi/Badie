@@ -7,6 +7,7 @@
 /rooms/* / 200
 /groups/* / 200
 /join/* / 200
+/add/* / 200
 /challenges/* / 200
 /rankings/* / 200
 /messages/* / 200

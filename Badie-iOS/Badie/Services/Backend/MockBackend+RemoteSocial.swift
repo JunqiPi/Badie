@@ -79,6 +79,7 @@ extension MockBackend {
         let verified: String?
         /// 男女等级分开算，资料页要标出是哪个等级
         let gender: String?
+        let tag: Int?
     }
 
     // MARK: 刷新
@@ -280,8 +281,24 @@ extension MockBackend {
     private struct FoundPlayer: Decodable {
         let id: String
         let nickname: String
+        let tag: Int?
         let rating: Double
         let relationship: String
+    }
+
+    /// 打开别人的加球友链接：返回对方的 ID（之后照常看资料、加球友）；链接失效返回 nil
+    func remoteOpenFriendLink(_ code: String) async throws -> String? {
+        try await requireRemote().rpc("open_friend_link", ["p_code": code], as: String?.self)
+    }
+
+    /// 换一个加球友链接，旧链接失效
+    func remoteResetFriendCode() async throws -> User {
+        guard var me = currentUser else { throw RemoteError.notSignedIn }
+        me.friendCode = try await requireRemote().rpc("reset_friend_code", as: String.self)
+        db.users[me.id] = me
+        scheduleSave()
+        emit(.userUpdated(me))
+        return me
     }
 
     /// 按昵称搜球友：服务器只返回允许被搜到的人（不含屏蔽关系），并限速
@@ -289,7 +306,7 @@ extension MockBackend {
         guard let me = currentUserId else { throw RemoteError.notSignedIn }
         let found: [FoundPlayer] = try await requireRemote().rpc("find_players", ["p_query": query])
         for player in found {
-            cacheRemoteUser(id: player.id, nickname: player.nickname, rating: player.rating)
+            cacheRemoteUser(id: player.id, nickname: player.nickname, rating: player.rating, tag: player.tag)
             // 在别的设备上申请过的，也显示“等待通过”
             if player.relationship == "requested", !db.friendRequests.contains(where: { $0.fromUserId == me && $0.toUserId == player.id }) {
                 db.friendRequests.append(FriendRequest(id: "request-\(me)-\(player.id)", fromUserId: me, toUserId: player.id, note: "",
@@ -323,7 +340,7 @@ extension MockBackend {
         guard let remote else { return db.users[userId] }
         let card = (try? await remote.rpc("player_card", ["p_user": userId], as: RemotePlayerCard?.self)) ?? nil
         guard let card else { return db.users[userId] }
-        cacheRemoteUser(id: card.id, nickname: card.nickname, rating: card.rating)
+        cacheRemoteUser(id: card.id, nickname: card.nickname, rating: card.rating, tag: card.tag)
         remoteChallengeStatus[card.id] = card.challenge
         remoteMessageOptions[card.id] = card.message
         if let rate = card.winRate {
@@ -344,9 +361,11 @@ extension MockBackend {
     }
 
     /// 别的球友：服务器只给昵称和等级，存进缓存让界面能显示
-    func cacheRemoteUser(id: String, nickname: String, rating: Double?) {
+    func cacheRemoteUser(id: String, nickname: String, rating: Double?, tag: Int? = nil) {
         guard id != currentUserId else { return }
         var user = db.users[id] ?? User(id: id, nickname: nickname, phone: "", selfReportedLevel: SkillTier(rating: rating ?? 3).level)
+        // 改了昵称编号可能也变了：没带编号就不沿用旧的
+        if user.nickname != nickname || tag != nil { user.tag = tag }
         user.nickname = nickname
         if let rating { user.selfReportedRating = rating }
         db.users[id] = user

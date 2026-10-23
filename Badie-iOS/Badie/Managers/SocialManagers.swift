@@ -41,6 +41,16 @@ final class FriendManager: ObservableObject {
         backend.isRemote ? try await backend.remoteFindPlayers(query) : backend.searchUsers(query: query)
     }
 
+    /// 打开别人的加球友链接：返回对方的 ID；链接失效返回 nil。演示模式没有链接
+    func openFriendLink(_ code: String) async throws -> String? {
+        backend.isRemote ? try await backend.remoteOpenFriendLink(code) : nil
+    }
+
+    /// 换一个加球友链接，旧链接失效
+    func resetFriendLink() async throws {
+        _ = try await backend.remoteResetFriendCode()
+    }
+
     /// 同馆常客（对方开启了才显示）
     func venueRegulars(limit: Int = 20) -> [VenueRegular] {
         backend.venueRegulars(limit: limit)

@@ -376,6 +376,7 @@ struct AddFriendView: View {
     @State private var searchError: String?
     @State private var coPlayers: [User] = []
     @State private var regulars: [User] = []
+    @State private var showsFriendLink = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -383,11 +384,25 @@ struct AddFriendView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SearchField(text: $query, placeholder: appState.isRemote ? String(localized: "搜索昵称") : String(localized: "搜索昵称或 4 位 ID"))
-                        // 正式后端没有 4 位 ID：只按昵称搜，搜得到的都是允许被搜到的人
-                        Text(appState.isRemote ? String(localized: "只会搜到允许被搜到的球友") : String(localized: "我的 ID：\(appState.currentUser?.shortId ?? "")"))
+                        SearchField(text: $query, placeholder: String(localized: "昵称或 昵称#1234"))
+                        Text("加上 #1234 可以精确找到一个人")
                             .font(AppTheme.Typography.footnoteBold)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    }
+                    if appState.currentUser?.friendLink != nil {
+                        Button {
+                            Haptics.tap()
+                            showsFriendLink = true
+                        } label: {
+                            InfoRow(icon: "qrcode", tint: AppTheme.Colors.lime, title: String(localized: "我的加球友链接"),
+                                    subtitle: String(localized: "当面扫码，或者发给对方")) {
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+                            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+                        }
+                        .buttonStyle(PressableStyle(scale: 0.98))
                     }
                     if let searchError {
                         Label(searchError, systemImage: "exclamationmark.circle.fill")
@@ -402,6 +417,12 @@ struct AddFriendView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+        }
+        .sheet(isPresented: $showsFriendLink) {
+            FriendLinkSheet()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
         }
         .task {
             coPlayers = friendManager.recentCoPlayers()
@@ -451,7 +472,7 @@ struct AddFriendView: View {
     }
 
     private func subtitle(for user: User) -> String {
-        var parts: [String] = []
+        var parts = [user.tagText]
         if let distance = friendManager.distance(to: user.id) { parts.append(DistanceFormatter.approximate(km: distance)) }
         parts.append(user.publicSummary)
         return parts.joined(separator: " · ")

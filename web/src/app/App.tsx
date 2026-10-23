@@ -14,7 +14,7 @@ import { LevelQuiz } from './LevelQuiz';
 import { Me, Settings } from './Me';
 import { NewGroup } from './NewGroup';
 import { NewRoom } from './NewRoom';
-import { Messages, Notifications } from './Messages';
+import { AddByLink, Messages, Notifications } from './Messages';
 import { GenderPrompt, Onboarding } from './Onboarding';
 import { Play } from './Play';
 import { PlayerPage } from './Player';
@@ -129,6 +129,7 @@ export default function App() {
     : path.startsWith('/rooms/new/') ? <NewRoom profile={profile} />
     : path.startsWith('/rooms/') ? <Rooms />
     : path.startsWith('/join/') ? <JoinRoom />
+    : path.startsWith('/add/') ? <AddByLink key={path} code={path.split('/')[2] ?? ''} />
     : path.startsWith('/groups/new/') ? <NewGroup profile={profile} />
     : path.startsWith('/groups/') ? <Groups />
     : path.startsWith('/rankings/') ? <Rankings />
@@ -162,6 +163,7 @@ function SignedInFrame({ path, me, children }: { path: string; me: Profile; chil
 const lockedPages: { match: RegExp; title: string; icon: IconName; tint: Tint; text: string }[] = [
   { match: /^\/games\//, title: 'Games', icon: 'games', tint: 'peach', text: 'Your upcoming games, results and reviews show up here.' },
   { match: /^\/messages\//, title: 'Messages', icon: 'chats', tint: 'sky', text: 'Chat with the players in your games, your groups and your friends.' },
+  { match: /^\/add\//, title: 'Add friend', icon: 'userPlus', tint: 'lime', text: 'A friend shared their link with you. Sign in to add them.' },
   { match: /^\/me\//, title: 'Me', icon: 'me', tint: 'lavender', text: 'Your level, win rate, reliability and settings.' },
 ];
 

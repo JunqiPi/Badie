@@ -369,6 +369,10 @@ struct User: Identifiable, Codable, Hashable {
     var verifiedRating: Double?
     /// 注册时跳过了定级问卷（暂按 Lv.3 匹配，之后在资料页补测）
     var assessmentSkippedAt: Date?
+    /// 昵称后面的编号（昵称#0042）：昵称可以重名，昵称 + 编号不会
+    var tag: Int?
+    /// 我的加球友链接里的码（只有自己的有）
+    var friendCode: String?
 
     /// 跳过了定级、还没补测
     var needsAssessment: Bool { assessment == nil && assessmentSkippedAt != nil }
@@ -504,9 +508,14 @@ struct User: Identifiable, Codable, Hashable {
 
     var avatarText: String { avatar.text(nickname: nickname) }
 
-    /// 短 ID（展示用）
-    var shortId: String {
-        String(abs(id.stableHash) % 9000 + 1000)
+    /// 昵称后面显示的编号：#0042（演示数据没有编号，按 ID 算一个）
+    var tagText: String {
+        String(format: "#%04d", tag ?? abs(id.stableHash) % 9999 + 1)
+    }
+
+    /// 我的加球友链接
+    var friendLink: URL? {
+        friendCode.flatMap { URL(string: "https://badie.rsvp/add/\($0)/") }
     }
 }
 

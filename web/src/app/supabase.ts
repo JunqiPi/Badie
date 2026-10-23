@@ -41,6 +41,10 @@ export const avatarUrl = (path: string) => supabase!.storage.from('avatars').get
 export interface Profile {
   id: string;
   nickname: string;
+  /** 昵称后面的编号（昵称#0042）：昵称可以重名，昵称 + 编号不会 */
+  tag: number;
+  /** 加球友链接里的码（badie.rsvp/add/<码>/），可以重置 */
+  friend_code: string;
   country_code: string | null;
   /** 3.67 = 4−；没做问卷是 3 */
   rating: number;
@@ -176,6 +180,7 @@ export interface PlayRecord extends WinRate {
 export interface PlayerCard {
   id: string;
   nickname: string;
+  tag?: number;
   rating: number;
   assessed: boolean;
   games_band: string;
@@ -358,7 +363,7 @@ export interface RoomDetail extends RoomSummary {
 
 export type Friend = { id: string; nickname: string; rating: number; created_at?: string };
 /** 按昵称搜到的球友 */
-export type FoundPlayer = Friend & { mutual_friends: number; relationship: 'friend' | 'requested' | 'incoming' | 'none' };
+export type FoundPlayer = Friend & { tag: number; mutual_friends: number; relationship: 'friend' | 'requested' | 'incoming' | 'none' };
 export type InboxCounts = { messages: number; updates: number; requests: number };
 
 export interface Update {
@@ -462,4 +467,9 @@ const problems: Record<string, string> = {
   too_many_searches: 'You’re searching too fast. Try again in a few minutes.',
   invalid_score: 'Scores can only have numbers, like 21:18 19:21.',
 };
+/** 昵称后面显示的编号：#0042 */
+export const tagText = (tag: number) => `#${String(tag).padStart(4, '0')}`;
+/** 我的加球友链接 */
+export const friendLink = (code: string) => `${location.origin}/add/${code}/`;
+
 export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');

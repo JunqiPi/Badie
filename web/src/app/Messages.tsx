@@ -3,7 +3,7 @@ import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, CountBadge, Divider, Empty, IconButton, IconTile, LargeTitle, LevelBadge, ScreenHeader, Segmented, type Tint } from './kit';
 import { Link, navigate } from './router';
-import { problem, supabase, useLive, type FoundPlayer, type Friend, type Regular, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
+import { problem, supabase, tagText, useLive, type FoundPlayer, type Friend, type Regular, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
 import { day, hours, relative } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 
@@ -166,6 +166,22 @@ function Friends({ data, refresh }: { data?: { friends: Friend[]; requests: Frie
   );
 }
 
+/** 打开别人的加球友链接：找到人就去他的资料页（在那里加球友） */
+export function AddByLink({ code }: { code: string }) {
+  const [missing, setMissing] = useState(false);
+  useEffect(() => {
+    supabase!.rpc('open_friend_link', { p_code: code }).then(({ data, error }) => {
+      if (error) return toast(problem(error), 'error');
+      if (data) navigate(`/players/${data}/`, true);
+      else setMissing(true);
+    });
+  }, [code]);
+  if (!missing) return <Skeleton className="h-40" />;
+  return <Empty icon="userPlus" title={t('This friend link no longer works')} action={{ label: t('Find players'), to: '/messages/?tab=friends' }}>
+    {t('Ask your friend for a new link.')}
+  </Empty>;
+}
+
 /** 按昵称搜球友：只搜得到允许被搜到的人；停止输入 300 毫秒后再搜（服务器限速） */
 function FindPlayers({ onAdded }: { onAdded: () => void }) {
   const [query, setQuery] = useState('');
@@ -203,19 +219,20 @@ function FindPlayers({ onAdded }: { onAdded: () => void }) {
   return (
     <section aria-labelledby="find" className="grid gap-2">
       <h2 id="find" className="text-title3">{t('Find players')}</h2>
-      <Field label={t('Nickname')} hint={t('Only players who allow it show up.')} error={error}>
+      <Field label={t('Nickname')} hint={t('Add #1234 to find one person. Only players who allow it show up.')} error={error}>
         {(props) => (
-          <input {...props} type="search" value={query} maxLength={12} autoComplete="off" spellCheck={false}
+          <input {...props} type="search" value={query} maxLength={17} autoComplete="off" spellCheck={false}
                  onChange={(e) => setQuery(e.target.value)} className="field" />
         )}
       </Field>
+      <Link to="/me/#friend-link" className="text-footnote font-bold underline underline-offset-2">{t('Share my friend link')}</Link>
       {found?.length === 0 && <p className="text-footnote text-ink-secondary">{t('No one by that name. They may have turned off search.')}</p>}
       {found?.map((p) => (
         <div key={p.id} className="sticker flex items-center gap-3 p-3">
           <Link to={`/players/${p.id}/`} className="press flex min-w-0 flex-1 items-center gap-3">
             <Avatar id={p.id} name={p.nickname} size={40} />
             <span className="min-w-0">
-              <span className="block truncate font-bold">{p.nickname}</span>
+              <span className="block truncate font-bold">{p.nickname}<span className="font-normal text-ink-tertiary">{tagText(p.tag)}</span></span>
               <span className="flex items-center gap-1.5 text-caption text-ink-secondary">
                 <LevelBadge rating={p.rating} named={false} compact />
                 {p.mutual_friends > 0 && t('{n} friend in common|{n} friends in common', { n: p.mutual_friends })}

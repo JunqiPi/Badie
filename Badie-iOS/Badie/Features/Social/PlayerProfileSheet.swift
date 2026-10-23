@@ -55,7 +55,7 @@ struct PlayerProfileSheet: View {
             AvatarView(user: user, size: 76)
                 .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
             VStack(alignment: .leading, spacing: 6) {
-                Text(user.nickname)
+                NicknameText(user: user)
                     .font(AppTheme.Typography.title2)
                     .foregroundStyle(AppTheme.Colors.ink)
                 FlowLayout(spacing: 6) {
@@ -69,7 +69,7 @@ struct PlayerProfileSheet: View {
                     }
                 }
                 if let distance = friendManager.distance(to: user.id) {
-                    Text("离你 \(DistanceFormatter.approximate(km: distance)) · ID \(user.shortId)")
+                    Text("离你 \(DistanceFormatter.approximate(km: distance))")
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }

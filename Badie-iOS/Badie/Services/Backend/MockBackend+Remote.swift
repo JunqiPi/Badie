@@ -24,6 +24,8 @@ extension MockBackend {
         let locale: String
         let gender: String?
         let createdAt: Date?
+        let tag: Int?
+        let friendCode: String?
     }
 
     private struct FavoriteRow: Decodable {
@@ -197,6 +199,8 @@ extension MockBackend {
         let tier = SkillTier(rating: profile.rating)
         var user = db.users[profile.id] ?? User(id: profile.id, nickname: profile.nickname, phone: email ?? "", selfReportedLevel: tier.level)
         user.nickname = profile.nickname
+        user.tag = profile.tag
+        user.friendCode = profile.friendCode
         user.selfReportedLevel = min(tier.level, SkillLevel.maxSelfSelectable)
         user.selfReportedRating = profile.rating
         if let assessedAt = profile.assessedAt {

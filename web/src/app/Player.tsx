@@ -5,7 +5,7 @@ import { Icon } from './icons';
 import { Avatar, Empty, IconTile, LevelBadge, Notice, ScreenHeader, Starburst, StatTile, Tag, fill, paletteTint } from './kit';
 import { SlotFields, type Slot } from './NewRoom';
 import { Link } from './router';
-import { problem, supabase, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
+import { problem, supabase, tagText, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
 import { day, nextDays, zoned } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 import { kindLabel } from './Verification';
@@ -47,7 +47,9 @@ export function PlayerPage({ id }: { id: string }) {
                 <Avatar id={card.id} name={card.nickname} photo={card.avatar} size={88} className="relative" />
               </span>
               <div className="grid min-w-0 gap-1.5">
-                <h1 id="player" className="truncate text-title">{card.nickname}</h1>
+                <h1 id="player" className="truncate text-title">
+                  {card.nickname}{card.tag != null && <span className="text-ink-tertiary">{tagText(card.tag)}</span>}
+                </h1>
                 <ul className="flex flex-wrap gap-1.5" aria-label={t('Highlights')}>
                   <li><LevelBadge rating={card.rating} /></li>
                   {card.gender && <li><Tag tint="surface">{card.gender === 'female' ? t('Women’s level') : t('Men’s level')}</Tag></li>}

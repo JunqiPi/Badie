@@ -9,14 +9,14 @@ import { nicknameProblem } from './Onboarding';
 import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
-import { problem, supabase, useLive, type Friend, type PlayerCard, type PlayRecord, type Profile } from './supabase';
+import { friendLink, problem, supabase, tagText, useLive, type Friend, type PlayerCard, type PlayRecord, type Profile } from './supabase';
 import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
 
 const verifiedText = { tournament: 'Tournament verified', national: 'Ranking verified', bwf: 'BWF verified' } as const;
 
 /** 我的（iOS 的 ProfileView）：身份卡、场次和履约、本月胜率、菜单 */
-export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => void }) {
+export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
   const { data: card } = useLive<PlayerCard | null>('player_card', { args: { p_user: profile.id }, every: 300_000 });
   const { data: record } = useLive<PlayRecord>('my_record', { every: 300_000 });
   const { data: friends } = useLive<{ friends: Friend[]; requests: Friend[] }>('my_friends', { every: 120_000 });
@@ -45,7 +45,7 @@ export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => vo
                 <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={76} className="relative" />
               </span>
               <div className="grid min-w-0 flex-1 basis-40 gap-1.5">
-                <h2 className="truncate text-title2">{profile.nickname}</h2>
+                <h2 className="truncate text-title2">{profile.nickname}<span className="opacity-60">{tagText(profile.tag)}</span></h2>
                 <ul className="flex flex-wrap gap-1.5">
                   <li><LevelBadge rating={profile.rating} /></li>
                   {card?.reliable && <li><Tag icon="reliable" tint="mint">{t('Reliable')}</Tag></li>}
@@ -69,6 +69,7 @@ export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => vo
         </div>
 
         <aside className="grid min-w-0 gap-6" aria-label={t('More')}>
+          <FriendLink profile={profile} onChange={onChange} />
           <nav aria-label={t('Me')} className="sticker grid px-4 py-1">
             <Row icon="users" tint="lavender" title={t('My friends')} value={friends?.friends.length} badge={friends?.requests.length} to="/messages/?tab=friends" />
             <Divider />
@@ -90,6 +91,56 @@ export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => vo
         </aside>
       </div>
     </div>
+  );
+}
+
+/** 加球友链接：发给对方，打开就能加我（关了被搜到也可以）；重置后旧链接失效 */
+function FriendLink({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const link = friendLink(profile.friend_code);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast(t('Link copied'));
+    } catch {
+      toast(link);
+    }
+  }
+
+  async function reset() {
+    setBusy(true);
+    const { data, error } = await supabase!.rpc('reset_friend_code');
+    setBusy(false);
+    setConfirming(false);
+    if (error) return toast(problem(error), 'error');
+    onChange({ ...profile, friend_code: data as string });
+    toast(t('New link ready'));
+  }
+
+  return (
+    <section id="friend-link" aria-labelledby="friend-link-title" className="sticker grid gap-3 p-5">
+      <div>
+        <h2 id="friend-link-title" className="text-headline">{t('My friend link')}</h2>
+        <p className="text-footnote text-ink-secondary">{t('Anyone with this link can add you.')}</p>
+      </div>
+      <p className="truncate rounded-[12px] bg-surface-muted px-3 py-2 font-mono text-footnote">{link}</p>
+      {confirming ? (
+        <div className="grid gap-2">
+          <p className="text-footnote font-bold">{t('The old link stops working.')}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button className="button-sm" variant="danger" busy={busy} onClick={reset}>{t('Reset link')}</Button>
+            <Button className="button-sm" variant="quiet" onClick={() => setConfirming(false)}>{t('Cancel')}</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          <Button className="button-sm" onClick={copy}>{t('Copy link')}</Button>
+          <Button className="button-sm" variant="quiet" onClick={() => setConfirming(true)}>{t('Reset link')}</Button>
+        </div>
+      )}
+    </section>
   );
 }
 

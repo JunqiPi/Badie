@@ -9,6 +9,7 @@ struct ProfileView: View {
     @EnvironmentObject private var locationManager: LocationManager
 
     @State private var showRadius = false
+    @State private var showFriendLink = false
 
     var body: some View {
         ScrollView {
@@ -46,6 +47,12 @@ struct ProfileView: View {
                 .presentationDetents([.height(320)])
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showFriendLink) {
+            FriendLinkSheet()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+        }
     }
 
     // MARK: Identity
@@ -56,9 +63,9 @@ struct ProfileView: View {
                 MyAvatarView(size: 76)
                     .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(user.nickname)
+                    NicknameText(user: user)
                         .font(AppTheme.Typography.title2)
-                    Text("ID \(user.shortId) · 加入 \(daysSince(user.joinDate)) 天")
+                    Text("加入 \(daysSince(user.joinDate)) 天")
                         .font(AppTheme.Typography.footnoteBold)
                         .opacity(0.7)
                     FlowLayout(spacing: 6) {
@@ -230,6 +237,12 @@ struct ProfileView: View {
             MenuRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender, title: String(localized: "我的球友"),
                     value: "\(friendManager.friends.count)", badge: friendManager.incomingRequests.count) {
                 router.open(.friends)
+            }
+            if user.friendLink != nil {
+                InsetDivider()
+                MenuRow(icon: "qrcode", tint: AppTheme.Colors.lime, title: String(localized: "我的加球友链接")) {
+                    showFriendLink = true
+                }
             }
             InsetDivider()
             MenuRow(icon: "list.number", tint: AppTheme.Colors.lime, title: String(localized: "等级对照表"),
