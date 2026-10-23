@@ -47,10 +47,16 @@ capture() {
   done
 }
 
-# App Store 用：只截英文的几张宣传页（Pro Max 的 6.9 英寸），转成不带透明通道的 JPEG
+# App Store 用：每种语言截几张宣传页，再配上大字标题（store_frame.swift），输出 <语言>/<顺序>-<页面>.jpg
 if [ -n "${STORE:-}" ]; then
-  capture store light en en_US "${STORE_SCREENS:-home matchSetup matchFound room groupDetail playerProfile levelResult leaderboard}"
-  for f in "$OUT"/store-*.png; do sips -s format jpeg -s formatOptions 95 "$f" --out "${f%.png}.jpg" >/dev/null && rm "$f"; done
+  STORE_SCREENS="${STORE_SCREENS:-$(python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["order"]))' "$(dirname "$0")/store_captions.json")}"
+  for pair in ${STORE_LANGS:-en:en_US zh-Hans:zh_CN zh-Hant:zh_TW ja:ja_JP ko:ko_KR hi:hi_IN id:id_ID ms:ms_MY th:th_TH vi:vi_VN}; do
+    language="${pair%%:*}"
+    mkdir -p "$OUT/raw/$language"
+    capture "raw/$language/store" light "$language" "${pair##*:}" "$STORE_SCREENS"
+    swift "$(dirname "$0")/store_frame.swift" "$(dirname "$0")/store_captions.json" "$language" "$OUT/raw/$language" "$OUT/$language"
+  done
+  rm -rf "$OUT/raw"
   exit 0
 fi
 

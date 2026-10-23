@@ -1,0 +1,105 @@
+{
+  "order": ["matchFound", "home", "playerProfile", "matchSetup", "room", "groupDetail", "levelResult", "leaderboard"],
+  "captions": {
+    "en": {
+      "matchFound": "Players at *your level*",
+      "home": "Free tonight? *Get a game.*",
+      "playerProfile": "No-shows *get tracked*",
+      "matchSetup": "Singles, doubles *or mixed*",
+      "room": "Short a player? *Post it.*",
+      "groupDetail": "Weekly groups *at your court*",
+      "levelResult": "Know your level *in 2 minutes*",
+      "leaderboard": "Climb the *weekly board*"
+    },
+    "zh-Hans": {
+      "matchFound": "找到*水平相当*的球友",
+      "home": "今晚有空？*约一场*",
+      "playerProfile": "爽约*有记录*",
+      "matchSetup": "单打、双打*或混双*",
+      "room": "缺一个人？*发出来*",
+      "groupDetail": "每周*固定球群*",
+      "levelResult": "*2 分钟*测出你的水平",
+      "leaderboard": "冲上*每周排行*"
+    },
+    "zh-Hant": {
+      "matchFound": "找到*程度相當*的球友",
+      "home": "今晚有空？*約一場*",
+      "playerProfile": "爽約*有紀錄*",
+      "matchSetup": "單打、雙打*或混雙*",
+      "room": "缺一個人？*發出來*",
+      "groupDetail": "每週*固定球群*",
+      "levelResult": "*2 分鐘*測出你的程度",
+      "leaderboard": "衝上*每週排行*"
+    },
+    "ja": {
+      "matchFound": "*同じレベル*の相手が見つかる",
+      "home": "今夜ひま？*一試合しよう*",
+      "playerProfile": "ドタキャンは*記録される*",
+      "matchSetup": "シングルス、ダブルス、*ミックスも*",
+      "room": "あと一人？*募集しよう*",
+      "groupDetail": "毎週の*定期グループ*",
+      "levelResult": "*2分*でレベル判定",
+      "leaderboard": "*週間ランキング*に挑戦"
+    },
+    "ko": {
+      "matchFound": "*비슷한 실력*의 파트너",
+      "home": "오늘 밤 시간 돼요? *한 게임 해요*",
+      "playerProfile": "노쇼는 *기록돼요*",
+      "matchSetup": "단식, 복식, *혼복까지*",
+      "room": "한 명 부족해요? *모집하세요*",
+      "groupDetail": "매주 *정기 모임*",
+      "levelResult": "*2분*이면 실력 확인",
+      "leaderboard": "*주간 랭킹*에 도전"
+    },
+    "hi": {
+      "matchFound": "*आपके लेवल* के खिलाड़ी",
+      "home": "आज रात फ़्री हैं? *एक गेम खेलें*",
+      "playerProfile": "नो-शो *रिकॉर्ड होते हैं*",
+      "matchSetup": "सिंगल्स, डबल्स *या मिक्स्ड*",
+      "room": "एक खिलाड़ी कम? *पोस्ट करें*",
+      "groupDetail": "हर हफ़्ते *तय ग्रुप*",
+      "levelResult": "*2 मिनट* में अपना लेवल जानें",
+      "leaderboard": "*वीकली बोर्ड* पर ऊपर जाएँ"
+    },
+    "id": {
+      "matchFound": "Pemain *selevel denganmu*",
+      "home": "Kosong malam ini? *Cari lawan main*",
+      "playerProfile": "Yang tidak datang *tercatat*",
+      "matchSetup": "Tunggal, ganda *atau campuran*",
+      "room": "Kurang satu pemain? *Umumkan*",
+      "groupDetail": "Grup *mingguan tetap*",
+      "levelResult": "Tahu levelmu *dalam 2 menit*",
+      "leaderboard": "Naik di *papan mingguan*"
+    },
+    "ms": {
+      "matchFound": "Pemain *setahap dengan anda*",
+      "home": "Lapang malam ini? *Cari permainan*",
+      "playerProfile": "Yang tidak hadir *direkodkan*",
+      "matchSetup": "Perseorangan, beregu *atau campuran*",
+      "room": "Kurang seorang? *Siarkan*",
+      "groupDetail": "Kumpulan *mingguan tetap*",
+      "levelResult": "Tahu tahap anda *dalam 2 minit*",
+      "leaderboard": "Naik *papan mingguan*"
+    },
+    "th": {
+      "matchFound": "ผู้เล่น*ระดับเดียวกัน*",
+      "home": "ว่างคืนนี้? *หาเกมเลย*",
+      "playerProfile": "คนเบี้ยวนัด*มีบันทึก*",
+      "matchSetup": "เดี่ยว คู่ *หรือคู่ผสม*",
+      "room": "ขาดหนึ่งคน? *ประกาศหา*",
+      "groupDetail": "ก๊วน*ประจำสัปดาห์*",
+      "levelResult": "รู้ระดับ*ใน 2 นาที*",
+      "leaderboard": "ไต่*อันดับประจำสัปดาห์*"
+    },
+    "vi": {
+      "matchFound": "Người chơi *cùng trình độ*",
+      "home": "Tối nay rảnh? *Kiếm trận ngay*",
+      "playerProfile": "Bùng kèo *bị ghi lại*",
+      "matchSetup": "Đơn, đôi *hoặc đôi nam nữ*",
+      "room": "Thiếu một người? *Đăng lên*",
+      "groupDetail": "Nhóm *cố định hằng tuần*",
+      "levelResult": "Biết trình độ *trong 2 phút*",
+      "leaderboard": "Leo *bảng xếp hạng tuần*"
+    }
+  }
+}
