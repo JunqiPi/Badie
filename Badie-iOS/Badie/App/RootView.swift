@@ -39,13 +39,18 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 surveyManager.refresh()
-                if appState.phase == .main { messageManager.refreshNow() }
+                if appState.phase == .main {
+                    messageManager.refreshNow()
+                    appState.refreshStrikes()
+                }
                 if appState.phase == .main { locationManager.start() }
             }
         }
         .onChange(of: appState.phase) { _, phase in
             switch phase {
-            case .main: locationManager.start()
+            case .main:
+                locationManager.start()
+                appState.refreshStrikes()
             case .onboarding: router.reset()
             case .launching: break
             }

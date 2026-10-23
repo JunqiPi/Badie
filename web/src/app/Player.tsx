@@ -5,7 +5,7 @@ import { Icon } from './icons';
 import { Avatar, Empty, IconTile, LevelBadge, Notice, ScreenHeader, Starburst, StatTile, Tag, fill, paletteTint } from './kit';
 import { SlotFields, type Slot } from './NewRoom';
 import { Link } from './router';
-import { problem, supabase, tagText, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
+import { problem, supabase, suspendedText, tagText, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
 import { day, nextDays, zoned } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 import { kindLabel } from './Verification';
@@ -55,6 +55,8 @@ export function PlayerPage({ id }: { id: string }) {
                   {card.gender && <li><Tag tint="surface">{card.gender === 'female' ? t('Women’s level') : t('Men’s level')}</Tag></li>}
                   {card.verified && <li><Tag icon="verified" tint="lime">{kindLabel(card.verified)}</Tag></li>}
                   {card.new_player ? <li><Tag icon="sparkle" tint="butter">{t('New player · calibrating')}</Tag></li> : card.reliable && <li><Tag icon="reliable" tint="mint">{t('Reliable')}</Tag></li>}
+                  {Boolean(card.recent_no_shows) && <li><Tag tint="pink">{t('{n} missed game in 180 days|{n} missed games in 180 days', { n: card.recent_no_shows! })}</Tag></li>}
+                  {card.suspended_until && <li><Tag tint="muted">{suspendedText(card.suspended_until)}</Tag></li>}
                 </ul>
                 {!card.assessed && <p className="text-footnote font-bold">{t('(not assessed yet)')}</p>}
               </div>

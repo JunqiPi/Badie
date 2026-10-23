@@ -9,7 +9,8 @@ import { nicknameProblem } from './Onboarding';
 import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
-import { friendLink, problem, supabase, tagText, useLive, type Friend, type PlayerCard, type PlayRecord, type Profile } from './supabase';
+import { friendLink, problem, supabase, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
+import { day } from './time';
 import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
 
@@ -34,6 +35,8 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
           {t('You haven’t taken the level quiz yet, so you’re matched as level 3.')}
         </Notice>
       )}
+
+      <MissedGames />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
         <div className="grid min-w-0 gap-6">
@@ -91,6 +94,67 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
         </aside>
       </div>
     </div>
+  );
+}
+
+const strikeStatus: Record<Strike['status'], string> = {
+  active: '', appealed: 'Appeal under review', upheld: 'Appeal declined', overturned: 'Removed after appeal',
+};
+
+/** 爽约记录：180 天内第 1 次警告、第 2 次 7 天不能约球、第 3 次永久；48 小时内可以申诉 */
+function MissedGames() {
+  const { data, refresh } = useLive<MyStrikes>('my_strikes', { every: 300_000 });
+  const unseen = data?.strikes.some((s) => !s.seen);
+  useEffect(() => { if (unseen) void supabase!.rpc('mark_strikes_seen'); }, [unseen]);
+  if (!data || data.strikes.length === 0) return null;
+  return (
+    <section aria-labelledby="missed" className="sticker grid gap-3 bg-pink p-5 text-on-accent">
+      <h2 id="missed" className="text-headline">
+        {data.suspended_until ? suspendedText(data.suspended_until)
+          : t('{n} missed game in 180 days|{n} missed games in 180 days', { n: data.recent })}
+      </h2>
+      <p className="text-footnote">{t('Second missed game in 180 days: no games for 7 days. Third: no more games. The count resets after 180 days without one.')}</p>
+      <ul className="grid gap-2">
+        {data.strikes.map((s) => <StrikeRow key={s.id} strike={s} onDone={refresh} />)}
+      </ul>
+    </section>
+  );
+}
+
+function StrikeRow({ strike, onDone }: { strike: Strike; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  async function appeal(event: SubmitEvent) {
+    event.preventDefault();
+    setBusy(true);
+    const { error } = await supabase!.rpc('appeal_strike', { p_strike: strike.id, p_text: text });
+    setBusy(false);
+    if (error) return toast(problem(error), 'error');
+    toast(t('Appeal sent. We’ll reply within 24 hours.'));
+    onDone();
+  }
+
+  return (
+    <li className="grid gap-2 rounded-[12px] bg-white/70 p-3 text-[#17140f]">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-footnote">
+        <span className="font-bold">{day(strike.starts_at)}{strike.venue && ` · ${strike.venue}`}</span>
+        {strikeStatus[strike.status] && <span>{t(strikeStatus[strike.status])}</span>}
+        {strike.can_appeal && !open && <Button className="button-sm" variant="quiet" onClick={() => setOpen(true)}>{t('Appeal')}</Button>}
+      </div>
+      {open && (
+        <form onSubmit={appeal} noValidate className="grid gap-2">
+          <Field label={t('What happened?')} hint={t('For example: you were there but forgot to check in.')}>
+            {(props) => <textarea {...props} rows={3} maxLength={500} value={text} onChange={(e) => setText(e.target.value)} className="field" />}
+          </Field>
+          <div className="flex gap-2">
+            <Button className="button-sm" busy={busy} disabled={text.trim().length < 5}>{t('Send appeal')}</Button>
+            <Button type="button" className="button-sm" variant="quiet" onClick={() => setOpen(false)}>{t('Cancel')}</Button>
+          </div>
+        </form>
+      )}
+    </li>
   );
 }
 

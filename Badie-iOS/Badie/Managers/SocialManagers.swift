@@ -41,6 +41,11 @@ final class FriendManager: ObservableObject {
         backend.isRemote ? try await backend.remoteFindPlayers(query) : backend.searchUsers(query: query)
     }
 
+    /// 别的球友：近 180 天爽约次数、不能约球到什么时候
+    func noShows(of userId: String) -> (recent: Int, suspendedUntil: Date?) {
+        backend.remoteNoShows[userId] ?? (0, nil)
+    }
+
     /// 打开别人的加球友链接：返回对方的 ID；链接失效返回 nil。演示模式没有链接
     func openFriendLink(_ code: String) async throws -> String? {
         backend.isRemote ? try await backend.remoteOpenFriendLink(code) : nil

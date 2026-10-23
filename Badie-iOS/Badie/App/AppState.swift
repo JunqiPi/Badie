@@ -55,6 +55,9 @@ final class AppState: ObservableObject {
     @Published private(set) var currentUser: User?
     @Published var toast: Toast?
     @Published var presentedPlayer: PlayerSheetItem?
+    /// 我的爽约记录；有没看过的就弹出说明
+    @Published private(set) var strikes: MyStrikes?
+    @Published var showsStrikes = false
     @Published var appearance: AppAppearance {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: Self.appearanceKey) }
     }
@@ -86,6 +89,25 @@ final class AppState: ObservableObject {
         backend.subscribe { [weak self] event in
             self?.handle(event)
         }
+    }
+
+    /// 拉取我的爽约记录（正式后端才有）；有新的就弹出说明
+    func refreshStrikes() {
+        guard backend.isRemote, currentUser != nil else { return }
+        Task {
+            guard let latest = try? await backend.remoteMyStrikes() else { return }
+            strikes = latest
+            if latest.strikes.contains(where: { !$0.seen }) { showsStrikes = true }
+        }
+    }
+
+    func appealStrike(_ id: Int, text: String) async throws {
+        try await backend.remoteAppealStrike(id, text: text)
+        strikes = try? await backend.remoteMyStrikes()
+    }
+
+    func markStrikesSeen() {
+        Task { await backend.remoteMarkStrikesSeen() }
     }
 
     /// 启动动画结束后决定进入哪个流程

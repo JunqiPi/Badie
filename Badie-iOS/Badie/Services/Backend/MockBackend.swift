@@ -38,6 +38,8 @@ final class MockBackend {
     var remoteVenueBoards: [String: RemoteVenueBoard] = [:]
     var remoteWinRates: [String: Rankings.WinRate] = [:]
     var remoteChallengeStatus: [String: String] = [:]
+    /// 别的球友：近 180 天爽约次数、不能约球到什么时候（资料卡上服务器给的）
+    var remoteNoShows: [String: (recent: Int, suspendedUntil: Date?)] = [:]
     /// 同馆常客（上次拉取的时间），以及对每位球友能不能私信（资料页上服务器给的）
     var remoteRegulars: [VenueRegular] = []
     var remoteRegularsLoadedAt: Date?

@@ -51,6 +51,10 @@ enum RemoteError: LocalizedError, Equatable {
         case "venue_address_incomplete": return BackendError.venueAddressIncomplete.localizedDescription
         case "venue_rate_limited": return BackendError.venueRateLimited.localizedDescription
         case "venue_duplicate": return String(localized: "球馆库里已有这家球馆，请直接选择它。")
+        // 爽约处罚
+        case "suspended": return String(localized: "因为爽约，你现在不能约球。详情在「我的」页面。")
+        case "invalid_appeal": return String(localized: "简单写一下发生了什么。")
+        case "appeal_closed": return String(localized: "爽约 48 小时后就不能申诉了。")
         // 约球
         case "too_soon": return String(localized: "开始时间至少要在 30 分钟后。")
         case "too_far": return String(localized: "最多只能提前两周安排。")

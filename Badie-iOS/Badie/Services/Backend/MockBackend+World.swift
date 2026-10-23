@@ -51,7 +51,8 @@ extension MockBackend {
     ]
 
     /// 演示数据跟着界面语言：英文界面用英文名字和内容（App Store 的英文截图），其他语言用中文
-    nonisolated static var demoInEnglish: Bool { Locale.preferredLanguages.first?.hasPrefix("en") ?? false }
+    /// 演示数据（人名、备注）只有中文和英文两套：中文系统用中文，其他语言都用英文
+    nonisolated static var demoInEnglish: Bool { !(Locale.preferredLanguages.first?.hasPrefix("zh") ?? false) }
     nonisolated static func demoText(_ chinese: String, _ english: String) -> String { demoInEnglish ? english : chinese }
     nonisolated static var demoNickname: String { demoText("阿杰", "Jay") }
 

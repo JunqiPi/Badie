@@ -80,6 +80,9 @@ extension MockBackend {
         /// 男女等级分开算，资料页要标出是哪个等级
         let gender: String?
         let tag: Int?
+        let recentNoShows: Int?
+        /// 时间，或永久的 "infinity"
+        let suspendedUntil: String?
     }
 
     // MARK: 刷新
@@ -286,6 +289,53 @@ extension MockBackend {
         let relationship: String
     }
 
+    // MARK: 爽约处罚
+
+    private struct RemoteMyStrikes: Decodable {
+        struct Item: Decodable {
+            let id: Int
+            let level: Int
+            let status: String
+            let createdAt: Date
+            let seen: Bool
+            let canAppeal: Bool
+            let startsAt: Date
+            let venue: String?
+        }
+
+        let suspendedUntil: String?
+        let recent: Int
+        let strikes: [Item]
+    }
+
+    /// 服务器给的暂停时间：永久是 "infinity"
+    static func suspension(_ value: String?) -> Date? {
+        guard let value else { return nil }
+        if value == "infinity" { return .distantFuture }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: value) { return date }
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: value)
+    }
+
+    /// 我的爽约记录（近 180 天）
+    func remoteMyStrikes() async throws -> MyStrikes {
+        let raw: RemoteMyStrikes = try await requireRemote().rpc("my_strikes")
+        return MyStrikes(suspendedUntil: Self.suspension(raw.suspendedUntil), recent: raw.recent, strikes: raw.strikes.map {
+            MyStrikes.Strike(id: $0.id, level: $0.level, status: MyStrikes.Status(rawValue: $0.status) ?? .active, createdAt: $0.createdAt,
+                             seen: $0.seen, canAppeal: $0.canAppeal, startsAt: $0.startsAt, venue: $0.venue)
+        })
+    }
+
+    func remoteMarkStrikesSeen() async {
+        try? await remote?.call("mark_strikes_seen")
+    }
+
+    func remoteAppealStrike(_ id: Int, text: String) async throws {
+        try await requireRemote().call("appeal_strike", ["p_strike": id, "p_text": text])
+    }
+
     /// 打开别人的加球友链接：返回对方的 ID（之后照常看资料、加球友）；链接失效返回 nil
     func remoteOpenFriendLink(_ code: String) async throws -> String? {
         try await requireRemote().rpc("open_friend_link", ["p_code": code], as: String?.self)
@@ -342,6 +392,7 @@ extension MockBackend {
         guard let card else { return db.users[userId] }
         cacheRemoteUser(id: card.id, nickname: card.nickname, rating: card.rating, tag: card.tag)
         remoteChallengeStatus[card.id] = card.challenge
+        remoteNoShows[card.id] = (card.recentNoShows ?? 0, Self.suspension(card.suspendedUntil))
         remoteMessageOptions[card.id] = card.message
         if let rate = card.winRate {
             remoteWinRates[card.id] = Rankings.WinRate(games: rate.games, wins: rate.wins, opponents: rate.opponents, averageGap: rate.gap)

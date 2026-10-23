@@ -67,6 +67,13 @@ struct PlayerProfileSheet: View {
                     if let ladder = user.gender.ladderLabel {
                         TagPill(text: ladder, fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
                     }
+                    let noShows = friendManager.noShows(of: user.id)
+                    if noShows.recent > 0 {
+                        TagPill(text: String(localized: "近 180 天爽约 \(noShows.recent) 次"), fill: AppTheme.Colors.pink)
+                    }
+                    if let until = noShows.suspendedUntil {
+                        TagPill(text: until.suspensionText, fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.ink)
+                    }
                 }
                 if let distance = friendManager.distance(to: user.id) {
                     Text("离你 \(DistanceFormatter.approximate(km: distance))")

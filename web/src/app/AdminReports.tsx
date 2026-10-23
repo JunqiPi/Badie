@@ -112,3 +112,50 @@ function Report({ item, onDone }: { item: ReportItem; onDone: () => void }) {
     </article>
   );
 }
+
+interface AppealItem {
+  id: number;
+  level: number;
+  appeal: string;
+  appealed_at: string;
+  user: { id: string; nickname: string };
+  game: { id: string; starts_at: string; venue: string | null };
+  reporters: string[];
+}
+
+/** 爽约申诉：维持（第 2、3 次从现在开始执行）或撤销（不再计入记录） */
+export function StrikeAppeals() {
+  const { data: queue, refresh } = useLive<AppealItem[]>('admin_strike_appeals', { every: 60_000 });
+  const [busy, setBusy] = useState<string>();
+
+  async function resolve(id: number, overturn: boolean) {
+    setBusy(`${id}-${overturn}`);
+    const { error } = await supabase!.rpc('admin_resolve_strike', { p_strike: id, p_overturn: overturn });
+    setBusy(undefined);
+    if (error) return toast(problem(error), 'error');
+    toast(t('Done'));
+    refresh();
+  }
+
+  return (
+    <section aria-labelledby="appeals" className="grid gap-4">
+      <h2 id="appeals" className="text-title2">{t('Missed game appeals')}</h2>
+      {!queue ? <Skeleton className="h-24" /> : queue.length === 0 ? (
+        <EmptyState title={t('No open appeals')} />
+      ) : queue.map((item) => (
+        <article key={item.id} className="sticker grid gap-3 p-5">
+          <p>
+            <Link to={`/players/${item.user.id}/`} className="link font-bold">{item.user.nickname}</Link>
+            <span className="text-footnote text-ink-secondary"> · {t('Missed game {n} of 3', { n: item.level })} · {day(item.game.starts_at)}{item.game.venue && ` · ${item.game.venue}`}</span>
+          </p>
+          <p className="text-footnote text-ink-secondary">{t('Said they didn’t show up: {names}', { names: item.reporters.join(', ') })}</p>
+          <p className="break-words rounded-[12px] bg-surface-muted p-3 text-footnote">{item.appeal}</p>
+          <div className="flex flex-wrap gap-2">
+            <Button className="button-sm" busy={busy === `${item.id}-true`} disabled={Boolean(busy)} onClick={() => resolve(item.id, true)}>{t('Remove it')}</Button>
+            <Button className="button-sm" variant="quiet" busy={busy === `${item.id}-false`} disabled={Boolean(busy)} onClick={() => resolve(item.id, false)}>{t('Keep it')}</Button>
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}

@@ -1,5 +1,14 @@
 {
-  "order": ["matchFound", "home", "playerProfile", "matchSetup", "room", "groupDetail", "levelResult", "leaderboard"],
+  "order": [
+    "matchFound",
+    "home",
+    "playerProfile",
+    "matchSetup",
+    "room",
+    "groupDetail",
+    "levelResult",
+    "leaderboard"
+  ],
   "captions": {
     "en": {
       "matchFound": "Players at *your level*",
@@ -95,7 +104,7 @@
       "matchFound": "Người chơi *cùng trình độ*",
       "home": "Tối nay rảnh? *Kiếm trận ngay*",
       "playerProfile": "Bùng kèo *bị ghi lại*",
-      "matchSetup": "Đơn, đôi *hoặc đôi nam nữ*",
+      "matchSetup": "Đơn, đôi, *đôi nam nữ*",
       "room": "Thiếu một người? *Đăng lên*",
       "groupDetail": "Nhóm *cố định hằng tuần*",
       "levelResult": "Biết trình độ *trong 2 phút*",

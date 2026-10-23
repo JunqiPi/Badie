@@ -59,6 +59,13 @@ struct MainTabView: View {
         .fullScreenCover(isPresented: .constant(appState.isRemote && appState.currentUser?.gender == .unspecified)) {
             GenderPromptView()
         }
+        // 新记了一次爽约：说明会怎样、可以申诉
+        .sheet(isPresented: $appState.showsStrikes) {
+            StrikesSheet()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+        }
         .sheet(item: $appState.presentedPlayer) { item in
             PlayerProfileSheet(userId: item.id)
                 .presentationDetents([.medium, .large])
@@ -87,6 +94,7 @@ struct MainTabView: View {
             roomManager.reload()
         }
         .onAppear {
+            appState.refreshStrikes()
             roomManager.radiusKm = locationManager.preferences.travelRadiusKm
             roomManager.reload()
         }

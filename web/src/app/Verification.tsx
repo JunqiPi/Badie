@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from 'react';
-import { ReportQueue } from './AdminReports';
+import { ReportQueue, StrikeAppeals } from './AdminReports';
 import { tier } from './assessment';
 import { t } from './i18n';
 import { Link } from './router';
@@ -195,6 +195,7 @@ export function Admin() {
     <div className="grid max-w-3xl gap-8">
       <PageHeader back="/me/" eyebrow={t('Admin')} title={t('Review queue')} />
       <ReportQueue />
+      <StrikeAppeals />
       <section aria-labelledby="verification" className="grid gap-4">
         <h2 id="verification" className="text-title2">{t('Level verification')}</h2>
         {!queue ? <Skeleton className="h-40" /> : queue.length === 0 ? (

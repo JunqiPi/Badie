@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
 import { t, type Locale } from './i18n';
 import type { Gender } from './gender';
+import { day } from './time';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
 // 只用 publishable key（sb_publishable_…）；secret key 绝不进前端
@@ -181,6 +182,10 @@ export interface PlayerCard {
   id: string;
   nickname: string;
   tag?: number;
+  /** 近 180 天爽约次数（多数人说没来、没签到） */
+  recent_no_shows?: number;
+  /** 不能约球到什么时候；永久是 'infinity' */
+  suspended_until?: string | null;
   rating: number;
   assessed: boolean;
   games_band: string;
@@ -402,6 +407,9 @@ export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record
 
 /** 数据库函数报的错 → 给人看的话 */
 const problems: Record<string, string> = {
+  suspended: 'You can’t join games right now because of missed games. Details are on your Me page.',
+  invalid_appeal: 'Say what happened in a few words.',
+  appeal_closed: 'Appeals close 48 hours after a missed game.',
   too_soon: 'Pick a start at least 30 minutes from now.',
   too_far: 'You can plan up to two weeks ahead.',
   invalid_slot: 'Pick a time window between 1 and 8 hours.',
@@ -467,6 +475,23 @@ const problems: Record<string, string> = {
   too_many_searches: 'You’re searching too fast. Try again in a few minutes.',
   invalid_score: 'Scores can only have numbers, like 21:18 19:21.',
 };
+/** 一次爽约：第 1 次警告、第 2 次 7 天不能约球、第 3 次永久；48 小时内可以申诉 */
+export interface Strike {
+  id: number;
+  level: 1 | 2 | 3;
+  status: 'active' | 'appealed' | 'upheld' | 'overturned';
+  created_at: string;
+  seen: boolean;
+  can_appeal: boolean;
+  starts_at: string;
+  venue: string | null;
+}
+export interface MyStrikes { suspended_until: string | null; recent: number; strikes: Strike[] }
+
+/** “不能约球到 11月2日” / 永久 */
+export const suspendedText = (until: string) =>
+  until === 'infinity' ? t('Can’t join games') : t('Can’t join games until {date}', { date: day(until) });
+
 /** 昵称后面显示的编号：#0042 */
 export const tagText = (tag: number) => `#${String(tag).padStart(4, '0')}`;
 /** 我的加球友链接 */

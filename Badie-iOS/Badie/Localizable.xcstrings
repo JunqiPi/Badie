@@ -7632,6 +7632,64 @@
         }
       }
     },
+    "180 天内第二次：7 天不能约球。第三次：以后不能约球。180 天内没再爽约就重新计数。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Second missed game in 180 days: no games for 7 days. Third: no more games. The count resets after 180 days without one."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180 दिनों में दूसरा नो-शो: 7 दिन गेम नहीं। तीसरा: आगे कोई गेम नहीं। 180 दिन बिना नो-शो के गिनती फिर से शुरू होती है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak hadir kedua dalam 180 hari: 7 hari tidak bisa main. Ketiga: tidak bisa main lagi. Hitungan diulang setelah 180 hari tanpa tidak hadir."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180 日以内に 2 回目：7 日間参加できません。3 回目：今後参加できません。180 日間ドタキャンがなければ回数はリセットされます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180일 안에 두 번째: 7일 동안 참여 불가. 세 번째: 앞으로 참여 불가. 180일 동안 노쇼가 없으면 횟수가 초기화돼요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kali kedua dalam 180 hari: 7 hari tidak boleh bermain. Kali ketiga: tidak boleh bermain lagi. Kiraan bermula semula selepas 180 hari tanpa tidak hadir."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ครั้งที่สองใน 180 วัน: เข้าร่วมเกมไม่ได้ 7 วัน ครั้งที่สาม: เข้าร่วมไม่ได้อีก ถ้า 180 วันไม่เบี้ยวนัด จำนวนครั้งจะเริ่มนับใหม่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lần thứ hai trong 180 ngày: 7 ngày không được tham gia. Lần thứ ba: không được tham gia nữa. Sau 180 ngày không bùng kèo, số lần được tính lại."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180 天內第二次：7 天不能約球。第三次：以後不能約球。180 天內沒再爽約就重新計數。"
+          }
+        }
+      }
+    },
     "1–4 场" : {
       "localizations" : {
         "en" : {
@@ -38215,6 +38273,64 @@
         }
       }
     },
+    "因为爽约，你现在不能约球。详情在「我的」页面。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can't join games right now because of missed games. Details are on your Me tab."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मिस किए गेम की वजह से अभी आप गेम में शामिल नहीं हो सकते। जानकारी \"मैं\" टैब पर है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu belum bisa ikut main karena pernah tidak hadir. Detailnya ada di tab Saya."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドタキャンのため、今は試合に参加できません。詳しくはマイページを見てください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노쇼 때문에 지금은 게임에 참여할 수 없어요. 자세한 내용은 내 정보 탭에서 확인하세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda tidak boleh menyertai permainan sekarang kerana tidak hadir. Butirannya di tab Saya."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตอนนี้คุณเข้าร่วมเกมไม่ได้เพราะเบี้ยวนัด ดูรายละเอียดได้ที่แท็บฉัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn tạm thời không thể tham gia trận vì đã bùng kèo. Chi tiết ở tab Tôi."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "因為爽約，你現在不能約球。詳情在「我的」頁面。"
+          }
+        }
+      }
+    },
     "因多次爽约，快速匹配暂停中" : {
       "localizations" : {
         "en" : {
@@ -48391,6 +48507,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已顯示%@徽章。之後的等級會結合球友評價，但不會超過認證檔位。"
+          }
+        }
+      }
+    },
+    "已暂停约球" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can't join games"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गेम में शामिल नहीं हो सकते"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak bisa ikut main"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試合に参加できません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게임 참여 불가"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak boleh menyertai permainan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เข้าร่วมเกมไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tham gia trận"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已暫停約球"
           }
         }
       }
@@ -61679,6 +61853,64 @@
         }
       }
     },
+    "提交申诉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send appeal"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपील भेजें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kirim banding"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申し立てを送信"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이의 신청 보내기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hantar rayuan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ส่งคำอุทธรณ์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gửi khiếu nại"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "送出申訴"
+          }
+        }
+      }
+    },
     "提交评价" : {
       "localizations" : {
         "en" : {
@@ -66554,6 +66786,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暫停配對"
+          }
+        }
+      }
+    },
+    "暂停约球至 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can't join games until %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ तक गेम में शामिल नहीं हो सकते"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak bisa ikut main sampai %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ まで試合に参加できません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@까지 게임 참여 불가"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak boleh menyertai permainan hingga %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เข้าร่วมเกมไม่ได้จนถึง %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thể tham gia trận đến %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暫停約球至 %@"
           }
         }
       }
@@ -73562,6 +73852,64 @@
         }
       }
     },
+    "比如：去了，只是忘了签到。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "For example: you were there but forgot to check in."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जैसे: आप वहाँ थे पर चेक-इन करना भूल गए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misalnya: kamu datang tapi lupa check-in."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例：会場にいたけどチェックインを忘れた。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "예: 갔는데 체크인을 깜빡했어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contohnya: anda hadir tetapi terlupa daftar masuk."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เช่น ไปแล้วแต่ลืมเช็กอิน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ví dụ: bạn đã đến nhưng quên điểm danh."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比如：去了，只是忘了簽到。"
+          }
+        }
+      }
+    },
     "比对你们都有空的时间…" : {
       "localizations" : {
         "en" : {
@@ -78052,6 +78400,64 @@
         }
       }
     },
+    "爽约 48 小时后就不能申诉了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appeals close 48 hours after a missed game."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपील नो-शो के 48 घंटे बाद बंद हो जाती है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banding ditutup 48 jam setelah tidak hadir."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申し立てはドタキャンから 48 時間で締め切られます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이의 신청은 노쇼 후 48시간까지만 할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rayuan ditutup 48 jam selepas tidak hadir."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อุทธรณ์ได้ภายใน 48 ชั่วโมงหลังเบี้ยวนัดเท่านั้น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ có thể khiếu nại trong 48 giờ sau khi bùng kèo."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "爽約 48 小時後就不能申訴了。"
+          }
+        }
+      }
+    },
     "爽约次数较多，之后约球需先付 AA 才能确认。" : {
       "localizations" : {
         "en" : {
@@ -81708,6 +82114,296 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "由球友新增"
+          }
+        }
+      }
+    },
+    "申诉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appeal"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपील करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banding"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申し立て"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이의 신청"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rayuan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อุทธรณ์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khiếu nại"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申訴"
+          }
+        }
+      }
+    },
+    "申诉后已撤销" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Removed after appeal"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपील के बाद हटाया गया"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dihapus setelah banding"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申し立てにより取り消し"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이의 신청으로 삭제됨"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dibuang selepas rayuan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลบออกหลังอุทธรณ์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xóa sau khiếu nại"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申訴後已撤銷"
+          }
+        }
+      }
+    },
+    "申诉审核中" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appeal under review"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपील की जाँच हो रही है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banding sedang ditinjau"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申し立てを確認中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이의 신청 검토 중"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rayuan sedang disemak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังตรวจสอบคำอุทธรณ์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang xem xét khiếu nại"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申訴審核中"
+          }
+        }
+      }
+    },
+    "申诉已提交，我们会在 24 小时内回复。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appeal sent. We'll reply within 24 hours."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपील भेज दी गई। हम 24 घंटे में जवाब देंगे।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banding terkirim. Kami akan membalas dalam 24 jam."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申し立てを送信しました。24 時間以内に返信します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이의 신청을 보냈어요. 24시간 안에 답할게요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rayuan dihantar. Kami akan membalas dalam 24 jam."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ส่งคำอุทธรณ์แล้ว เราจะตอบภายใน 24 ชั่วโมง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã gửi khiếu nại. Chúng tôi sẽ trả lời trong 24 giờ."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申訴已送出，我們會在 24 小時內回覆。"
+          }
+        }
+      }
+    },
+    "申诉未通过" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appeal declined"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अपील नामंज़ूर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Banding ditolak"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申し立ては認められませんでした"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이의 신청 기각"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rayuan ditolak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อุทธรณ์ไม่สำเร็จ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khiếu nại không được chấp nhận"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申訴未通過"
           }
         }
       }
@@ -86146,6 +86842,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "簽到紀錄會計入履約率，爽約和臨時取消會被記錄"
+          }
+        }
+      }
+    },
+    "简单写一下发生了什么。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Say what happened in a few words."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कुछ शब्दों में बताएँ क्या हुआ।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ceritakan singkat apa yang terjadi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何があったか簡単に書いてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무슨 일이 있었는지 짧게 적어 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terangkan secara ringkas apa yang berlaku."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เล่าสั้น ๆ ว่าเกิดอะไรขึ้น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy viết ngắn gọn chuyện gì đã xảy ra."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "簡單寫一下發生了什麼。"
           }
         }
       }
@@ -97550,6 +98304,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入驗證碼"
+          }
+        }
+      }
+    },
+    "近 180 天爽约 %lld 次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missed games in 180 days: %lld"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180 दिनों में नो-शो: %lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak hadir dalam 180 hari: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180 日間のドタキャン：%lld 回"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "180일 동안 노쇼 %lld회"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak hadir dalam 180 hari: %lld"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เบี้ยวนัดใน 180 วัน: %lld ครั้ง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bùng kèo trong 180 ngày: %lld lần"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近 180 天爽約 %lld 次"
           }
         }
       }
