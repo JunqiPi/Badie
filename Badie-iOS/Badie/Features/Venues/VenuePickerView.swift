@@ -72,10 +72,12 @@ struct VenuePickerView: View {
             guard !didAppear else { return }
             didAppear = true
             query = initialQuery
-            runSearch()
             loadSuggestionsIfNeeded()
+            // 在后台先把球馆名字的搜索写法算好，第一次打字就不用等
+            let venues = venueService.searchableVenues
+            Task.detached(priority: .utility) { VenueSearch.prepare(venues) }
         }
-        .onChange(of: query) { _, _ in runSearch() }
+        .task(id: query) { await runSearch() }
         .sheet(item: $pendingCandidate) { pending in
             VenueCandidateSheet(candidate: pending.candidate, duplicates: pending.duplicates,
                                 source: pending.source) { venue in
@@ -320,16 +322,25 @@ struct VenuePickerView: View {
 
     // MARK: Actions
 
-    private func runSearch() {
+    /// 打字时等一下再搜（连续输入只搜最后一次），搜索在后台算，输入框不会卡
+    private func runSearch() async {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else {
             hits = []
             mapSearch.clear()
             return
         }
-        hits = venueService.searchVenues(trimmed, near: locationManager.coordinate, limit: 15)
+        try? await Task.sleep(for: .milliseconds(150))
+        guard !Task.isCancelled else { return }
+        let venues = venueService.searchableVenues
+        let center = locationManager.coordinate
+        let found = await Task.detached(priority: .userInitiated) {
+            VenueSearch.search(venues, query: trimmed, near: center, limit: 15)
+        }.value
+        guard !Task.isCancelled else { return }
+        hits = found
         if locationManager.allowsMapSearch && allowsAdding {
-            mapSearch.update(query: trimmed, near: locationManager.coordinate)
+            mapSearch.update(query: trimmed, near: center)
         }
     }
 

@@ -158,9 +158,7 @@ final class RemoteVenueService: VenueService {
     func venue(id: String) -> BadmintonCourt? { backend.venue(id: id) }
     func venues(near center: Coordinate, radiusKm: Double) -> [BadmintonCourt] { backend.venues(near: center, radiusKm: radiusKm) }
     func nearestVenues(to center: Coordinate, count: Int) -> [BadmintonCourt] { backend.nearestVenues(to: center, count: count) }
-    func searchVenues(_ query: String, near center: Coordinate, limit: Int) -> [VenueSearch.Hit] {
-        backend.searchVenues(query, near: center, limit: limit)
-    }
+    var searchableVenues: [BadmintonCourt] { backend.searchableVenues }
     func duplicates(for candidate: VenueCandidate) -> [VenueSearch.Duplicate] { backend.duplicates(for: candidate) }
     func hasConfirmed(_ id: String) -> Bool { backend.hasConfirmed(id) }
     func regularsCount(for venueId: String) -> Int { backend.regularsCount(for: venueId) }

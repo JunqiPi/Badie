@@ -16,7 +16,8 @@ protocol VenueService: AnyObject {
     /// 半径内的球馆，按距离排序
     func venues(near center: Coordinate, radiusKm: Double) -> [BadmintonCourt]
     func nearestVenues(to center: Coordinate, count: Int) -> [BadmintonCourt]
-    func searchVenues(_ query: String, near center: Coordinate, limit: Int) -> [VenueSearch.Hit]
+    /// 搜索范围：球馆库里没被暂时下架的（被两人以上报告、等待人工核实的不出现，添加者本人仍能看到）
+    var searchableVenues: [BadmintonCourt] { get }
     /// 添加前查重（Place ID 相同 / 200 米内名称相近 / 同一栋楼）
     func duplicates(for candidate: VenueCandidate) -> [VenueSearch.Duplicate]
     func hasConfirmed(_ id: String) -> Bool

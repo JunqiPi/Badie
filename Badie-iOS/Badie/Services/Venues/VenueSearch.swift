@@ -100,31 +100,64 @@ enum VenueSearch {
 
         var best: Double = 0
         for name in [venue.name] + venue.aliases {
-            let n = normalize(name)
-            let compactName = n.replacingOccurrences(of: " ", with: "")
-            let nameTokens = n.split(separator: " ").map(String.init)
-            if compactName == compactQuery { best = max(best, 100) }
-            if acronym(name) == compactQuery { best = max(best, 95) }
-            if compactName.hasPrefix(compactQuery) { best = max(best, 85) }
-            if queryTokens.allSatisfy({ token in nameTokens.contains { $0.hasPrefix(token) } }) { best = max(best, 75) }
-            if compactName.contains(compactQuery) { best = max(best, 65) }
-            let py = pinyin(name)
-            if !py.full.isEmpty {
-                if py.initials.hasPrefix(compactQuery) { best = max(best, 70) }
-                if py.full.hasPrefix(compactQuery) { best = max(best, 70) }
-                if py.full.contains(compactQuery) && compactQuery.count >= 4 { best = max(best, 55) }
+            let key = keys.name(name)
+            if key.compact == compactQuery { best = max(best, 100) }
+            if key.acronym == compactQuery { best = max(best, 95) }
+            if key.compact.hasPrefix(compactQuery) { best = max(best, 85) }
+            if queryTokens.allSatisfy({ token in key.tokens.contains { $0.hasPrefix(token) } }) { best = max(best, 75) }
+            if key.compact.contains(compactQuery) { best = max(best, 65) }
+            if !key.pinyin.isEmpty {
+                if key.pinyinInitials.hasPrefix(compactQuery) { best = max(best, 70) }
+                if key.pinyin.hasPrefix(compactQuery) { best = max(best, 70) }
+                if key.pinyin.contains(compactQuery) && compactQuery.count >= 4 { best = max(best, 55) }
             }
         }
         if best == 0 {
             // 地址：街道、城市、邮编
             let address = venue.postalAddress
-            let haystack = normalize([address.street, address.unit ?? "", address.city, address.region, address.postalCode].joined(separator: " "))
-            let addressTokens = haystack.split(separator: " ").map(String.init)
-            if queryTokens.allSatisfy({ token in addressTokens.contains { $0.hasPrefix(token) } }) { best = 45 }
-            else if haystack.replacingOccurrences(of: " ", with: "").contains(compactQuery) && compactQuery.count >= 3 { best = 35 }
+            let key = keys.address([address.street, address.unit ?? "", address.city, address.region, address.postalCode].joined(separator: " "))
+            if queryTokens.allSatisfy({ token in key.tokens.contains { $0.hasPrefix(token) } }) { best = 45 }
+            else if key.compact.contains(compactQuery) && compactQuery.count >= 3 { best = 35 }
         }
         return best > 0 ? best : nil
     }
+
+    /// 先把这些球馆搜索要用的写法算好（打开搜索页时在后台做，第一次搜索就不用等）
+    static func prepare(_ venues: [BadmintonCourt]) {
+        for venue in venues {
+            for name in [venue.name] + venue.aliases { _ = keys.name(name) }
+        }
+    }
+
+    /// 名称和地址搜索时要用的写法（规范化、分词、缩写、拼音）。球馆有三千多家，拼音转换又慢，
+    /// 每打一个字都重算会卡，所以每个名字只算一次，存起来（名字不会变，存的是文字本身）
+    private final class Keys: @unchecked Sendable {
+        struct Name { let compact: String; let tokens: [String]; let acronym: String; let pinyin: String; let pinyinInitials: String }
+        struct Address { let compact: String; let tokens: [String] }
+        private let lock = NSLock()
+        private var names: [String: Name] = [:]
+        private var addresses: [String: Address] = [:]
+
+        func name(_ text: String) -> Name {
+            if let cached = lock.withLock({ names[text] }) { return cached }
+            let normalized = VenueSearch.normalize(text)
+            let py = VenueSearch.pinyin(text)
+            let key = Name(compact: normalized.replacingOccurrences(of: " ", with: ""), tokens: normalized.split(separator: " ").map(String.init),
+                           acronym: VenueSearch.acronym(text), pinyin: py.full, pinyinInitials: py.initials)
+            lock.withLock { names[text] = key }
+            return key
+        }
+
+        func address(_ text: String) -> Address {
+            if let cached = lock.withLock({ addresses[text] }) { return cached }
+            let normalized = VenueSearch.normalize(text)
+            let key = Address(compact: normalized.replacingOccurrences(of: " ", with: ""), tokens: normalized.split(separator: " ").map(String.init))
+            lock.withLock { addresses[text] = key }
+            return key
+        }
+    }
+
+    private static let keys = Keys()
 
     /// 搜索并排序：匹配分减去距离惩罚（每公里 0.3 分，最多 60 分）
     static func search(_ venues: [BadmintonCourt], query: String, near center: Coordinate, limit: Int = 20) -> [Hit] {

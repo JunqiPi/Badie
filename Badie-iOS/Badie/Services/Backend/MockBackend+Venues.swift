@@ -53,16 +53,17 @@ extension MockBackend {
         venues(near: db.worldCenter, radiusKm: 25).filter { $0.status != .unconfirmed }
     }
 
-    func searchVenues(_ query: String, near center: Coordinate, limit: Int = 20) -> [VenueSearch.Hit] {
-        VenueSearch.search(allVenues.filter { !isHiddenPendingReview($0) }, query: query, near: center, limit: limit)
+    /// 待确认的球馆被 2 位以上不同球友报告问题时，暂时不在搜索中出现，等待人工审核（添加者本人仍能看到）。单个报告不会让球馆下架
+    var searchableVenues: [BadmintonCourt] {
+        // 先数好每家球馆被几个人报告过，不用每家球馆都把报告翻一遍
+        let reporters = Dictionary(grouping: db.venueReports, by: \.venueId).mapValues { Set($0.map(\.reporterId)).count }
+        return allVenues.filter { venue in
+            !(venue.status == .unconfirmed && venue.addedBy != currentUserId && reporters[venue.id, default: 0] >= 2)
+        }
     }
 
-    /// 待确认的球馆被 2 位以上不同球友报告问题时，暂时不在搜索中出现，等待人工审核
-    /// （添加者本人仍能看到）。单个报告不会让球馆下架。
-    func isHiddenPendingReview(_ venue: BadmintonCourt) -> Bool {
-        guard venue.status == .unconfirmed, venue.addedBy != currentUserId else { return false }
-        let reporters = Set(db.venueReports.filter { $0.venueId == venue.id }.map(\.reporterId))
-        return reporters.count >= 2
+    func searchVenues(_ query: String, near center: Coordinate, limit: Int = 20) -> [VenueSearch.Hit] {
+        VenueSearch.search(searchableVenues, query: query, near: center, limit: limit)
     }
 
     func duplicates(for candidate: VenueCandidate) -> [VenueSearch.Duplicate] {
