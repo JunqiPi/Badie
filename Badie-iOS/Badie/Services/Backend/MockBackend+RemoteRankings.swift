@@ -12,7 +12,7 @@ extension MockBackend {
         let gap: Double
     }
 
-    struct RemoteBoardEntry: Decodable {
+    struct RemoteBoardEntry: Decodable, Equatable {
         let id: String
         let nickname: String
         let rating: Double
@@ -22,13 +22,13 @@ extension MockBackend {
         let wins: Int
     }
 
-    struct RemoteWeeklyBoard: Decodable {
-        struct Mine: Decodable {
+    struct RemoteWeeklyBoard: Decodable, Equatable {
+        struct Mine: Decodable, Equatable {
             let rank: Int
             let points: Int
         }
 
-        struct Progress: Decodable {
+        struct Progress: Decodable, Equatable {
             let games: Int
             let opponents: Int
             let points: Int
@@ -40,8 +40,8 @@ extension MockBackend {
         let eligible: Bool
     }
 
-    struct RemoteVenueBoard: Decodable {
-        struct Band: Decodable {
+    struct RemoteVenueBoard: Decodable, Equatable {
+        struct Band: Decodable, Equatable {
             let band: Int
             let entries: [RemoteBoardEntry]
         }
@@ -102,8 +102,10 @@ extension MockBackend {
             let board: RemoteWeeklyBoard = try await self.requireRemote().rpc("weekly_board", [
                 "p_scope": scope, "p_offset": offset, "p_gender": gender.rawValue,
             ])
+            guard board != self.remoteWeeklyBoards[key] else { return false }
             board.entries.forEach { self.cacheRemoteUser(id: $0.id, nickname: $0.nickname, rating: $0.rating) }
             self.remoteWeeklyBoards[key] = board
+            return true
         }
         return remoteWeeklyBoards[key]
     }
@@ -115,8 +117,10 @@ extension MockBackend {
             let board: RemoteVenueBoard = try await self.requireRemote().rpc("venue_board", [
                 "p_venue": venueId, "p_offset": offset, "p_gender": gender.rawValue,
             ])
+            guard board != self.remoteVenueBoards[key] else { return false }
             board.bands.flatMap(\.entries).forEach { self.cacheRemoteUser(id: $0.id, nickname: $0.nickname, rating: $0.rating) }
             self.remoteVenueBoards[key] = board
+            return true
         }
         return (remoteVenueBoards[key]?.bands ?? []).compactMap { band in
             LevelBracket(rawValue: band.band).map { ($0, band.entries.map { Self.entry($0, score: $0.games) }) }
@@ -152,25 +156,51 @@ extension MockBackend {
 
     // MARK: 拉取
 
-    /// 同一个榜 60 秒内只拉一次；拉完通知界面
-    private func refreshRemoteBoard(_ key: String, _ load: @escaping () async throws -> Void) {
+    /// 同一个榜 60 秒内只拉一次；有变化才通知界面（load 返回是否变了）
+    private func refreshRemoteBoard(_ key: String, _ load: @escaping () async throws -> Bool) {
         guard isRemote, Date().timeIntervalSince(remoteBoardLoadedAt[key] ?? .distantPast) > 60 else { return }
         remoteBoardLoadedAt[key] = Date()
         Task {
             do {
-                try await load()
-                emit(.rankingsChanged)
+                if try await load() { emit(.rankingsChanged) }
             } catch {
                 remoteBoardLoadedAt[key] = nil
+                emit(.rankingsChanged)
             }
         }
     }
 
     /// 我本月的胜率（my_record）
-    func loadRemoteRecord() async throws {
-        guard let remote, let me = currentUserId else { return }
+    @discardableResult
+    func loadRemoteRecord() async throws -> Bool {
+        guard let remote, let me = currentUserId else { return false }
         let record: RemoteWinRate = try await remote.rpc("my_record")
-        remoteWinRates[me] = Rankings.WinRate(games: record.games, wins: record.wins, opponents: record.opponents, averageGap: record.gap)
+        let rate = Rankings.WinRate(games: record.games, wins: record.wins, opponents: record.opponents, averageGap: record.gap)
+        guard rate != remoteWinRates[me] else { return false }
+        remoteWinRates[me] = rate
+        return true
+    }
+
+    /// 榜正在拉、还没回来（界面显示占位，不显示“没人上榜”）；拉失败了不算
+    func isWeeklyBoardLoading(countryCode: String?, week: DateInterval, gender: Gender) -> Bool {
+        guard isRemote, let offset = Self.remoteOffset(of: week, current: Rankings.week(containing: Date())) else { return false }
+        let key = "\(countryCode == nil ? "global" : "country")-\(offset)-\(gender.board.rawValue)"
+        return remoteWeeklyBoards[key] == nil && remoteBoardLoadedAt["weekly-\(key)"] != nil
+    }
+
+    func isVenueBoardLoading(venueId: String, month: DateInterval, gender: Gender) -> Bool {
+        guard isRemote, let offset = Self.remoteOffset(of: month, current: Rankings.month(containing: Date())) else { return false }
+        let key = "\(venueId)-\(offset)-\(gender.board.rawValue)"
+        return remoteVenueBoards[key] == nil && remoteBoardLoadedAt["venue-\(key)"] != nil
+    }
+
+    /// 打开排行榜时把常切的几个榜（全球 / 本国 × 本周 / 上周）一起拉，切换时不用等
+    func prefetchWeeklyBoards(countryCode: String) {
+        guard isRemote else { return }
+        let current = Rankings.week(containing: Date())
+        for week in [current, Rankings.week(containing: current.start.addingTimeInterval(-1))] {
+            for scope in [nil, countryCode] { _ = remoteWeeklyBoard(countryCode: scope, week: week, gender: myBoard) }
+        }
     }
 
     /// 和我有关的挑战：收到的（待回复）和发出的（14 天内）

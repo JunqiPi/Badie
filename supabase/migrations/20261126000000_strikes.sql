@@ -1,6 +1,6 @@
 -- 爽约处罚（三档，只数近 180 天内的次数）：第 1 次警告，第 2 次 7 天不能约球，第 3 次永久不能约球。
 -- - 爽约：没签到、没取消，并且同场没取消的人里多数说他没来（单打是对手，双打是另外 3 人里至少 2 人）
--- - 48 小时内可以申诉；申诉期间不执行，管理员核实后维持或撤销（撤销的不再计入，之后的次数重新排档）
+-- - 48 小时内可以申诉；申诉期间不执行，管理员核实后维持或撤销（撤销的不再计入，之后的次数重新排档）；7 天没处理自动维持
 -- - 不能约球：不能匹配、发起或加入球局、报名球群、发起或接受挑战；可以登录、看消息
 -- - 资料页显示近 180 天爽约次数和暂停到什么时候
 
@@ -251,6 +251,21 @@ begin
 end
 $$;
 
+-- 申诉 7 天没人处理：自动维持，从现在开始执行（每小时检查）
+create function public.expire_appeals()
+returns void language plpgsql security definer set search_path = '' as $$
+declare
+  s public.strikes;
+begin
+  for s in update public.strikes set status = 'upheld', resolved_at = now(), starts_at = case when level >= 2 then now() end
+           where status = 'appealed' and appealed_at < now() - interval '7 days' returning * loop
+    if s.level >= 2 then perform public.start_suspension(s.user_id); end if;
+    perform public.notify(s.user_id, 'strike', 'Appeal declined', 'No decision within 7 days, so the missed game stays on your record.', '/me/');
+  end loop;
+end
+$$;
+select cron.schedule('expire-appeals', '17 * * * *', 'select public.expire_appeals()');
+
 -- 资料卡：近 180 天爽约次数、暂停到什么时候
 create or replace function public.player_card(p_user uuid)
 returns jsonb language sql stable security definer set search_path = '' as $$
@@ -279,6 +294,7 @@ from (values
   ('zh-Hans', 'The missed game was removed from your record.', '这次爽约已从你的记录里撤销。'),
   ('zh-Hans', 'Appeal declined', '申诉未通过'),
   ('zh-Hans', 'We checked, and the missed game stays on your record.', '我们核实过，这次爽约仍保留在记录里。'),
+  ('zh-Hans', 'No decision within 7 days, so the missed game stays on your record.', '7 天内没有处理结果，这次爽约保留在记录里。'),
   ('zh-Hant', 'Missed game recorded', '記了一次爽約'),
   ('zh-Hant', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', '球友說你沒來。180 天內再有一次，7 天內不能約球。覺得不對，可以在 48 小時內申訴。'),
   ('zh-Hant', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', '180 天內第二次爽約，7 天內不能約球。覺得不對，可以在 48 小時內申訴。'),
@@ -287,6 +303,7 @@ from (values
   ('zh-Hant', 'The missed game was removed from your record.', '這次爽約已從你的紀錄裡撤銷。'),
   ('zh-Hant', 'Appeal declined', '申訴未通過'),
   ('zh-Hant', 'We checked, and the missed game stays on your record.', '我們核實過，這次爽約仍保留在紀錄裡。'),
+  ('zh-Hant', 'No decision within 7 days, so the missed game stays on your record.', '7 天內沒有處理結果，這次爽約保留在紀錄裡。'),
   ('ja', 'Missed game recorded', 'ドタキャンが記録されました'),
   ('ja', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', '参加しなかったと報告されました。180 日以内にもう一度あると、7 日間試合に参加できません。間違いだと思う場合は 48 時間以内に申し立てできます。'),
   ('ja', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', '180 日以内で 2 回目のドタキャンです。7 日間試合に参加できません。間違いだと思う場合は 48 時間以内に申し立てできます。'),
@@ -295,6 +312,7 @@ from (values
   ('ja', 'The missed game was removed from your record.', 'このドタキャンは記録から取り消されました。'),
   ('ja', 'Appeal declined', '申し立ては認められませんでした'),
   ('ja', 'We checked, and the missed game stays on your record.', '確認の結果、このドタキャンは記録に残ります。'),
+  ('ja', 'No decision within 7 days, so the missed game stays on your record.', '7 日以内に判断が出なかったため、このドタキャンは記録に残ります。'),
   ('ko', 'Missed game recorded', '노쇼가 기록됐어요'),
   ('ko', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', '오지 않았다는 신고가 있었어요. 180일 안에 한 번 더 있으면 7일 동안 게임에 참여할 수 없어요. 잘못됐다면 48시간 안에 이의를 신청하세요.'),
   ('ko', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', '180일 안에 두 번째 노쇼예요. 7일 동안 게임에 참여할 수 없어요. 잘못됐다면 48시간 안에 이의를 신청하세요.'),
@@ -303,6 +321,7 @@ from (values
   ('ko', 'The missed game was removed from your record.', '이번 노쇼는 기록에서 지워졌어요.'),
   ('ko', 'Appeal declined', '이의 신청이 받아들여지지 않았어요'),
   ('ko', 'We checked, and the missed game stays on your record.', '확인 결과 이번 노쇼는 기록에 남아요.'),
+  ('ko', 'No decision within 7 days, so the missed game stays on your record.', '7일 안에 결정이 나지 않아 이번 노쇼는 기록에 남아요.'),
   ('hi', 'Missed game recorded', 'नो-शो दर्ज हुआ'),
   ('hi', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'खिलाड़ियों ने बताया कि आप नहीं आए। 180 दिनों में फिर ऐसा हुआ तो 7 दिन तक आप गेम में शामिल नहीं हो पाएँगे। ग़लत लगे तो 48 घंटे में अपील करें।'),
   ('hi', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', '180 दिनों में दूसरा नो-शो। 7 दिन तक आप गेम में शामिल नहीं हो पाएँगे। ग़लत लगे तो 48 घंटे में अपील करें।'),
@@ -311,6 +330,7 @@ from (values
   ('hi', 'The missed game was removed from your record.', 'यह नो-शो आपके रिकॉर्ड से हटा दिया गया।'),
   ('hi', 'Appeal declined', 'अपील नामंज़ूर हुई'),
   ('hi', 'We checked, and the missed game stays on your record.', 'हमने जाँच की, यह नो-शो आपके रिकॉर्ड में रहेगा।'),
+  ('hi', 'No decision within 7 days, so the missed game stays on your record.', '7 दिनों में फ़ैसला नहीं हुआ, इसलिए यह नो-शो आपके रिकॉर्ड में रहेगा।'),
   ('id', 'Missed game recorded', 'Tidak hadir tercatat'),
   ('id', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'Pemain lain bilang kamu tidak datang. Kalau terulang dalam 180 hari, kamu tidak bisa ikut main selama 7 hari. Merasa keliru? Ajukan banding dalam 48 jam.'),
   ('id', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'Kedua kalinya tidak hadir dalam 180 hari. Kamu tidak bisa ikut main selama 7 hari. Merasa keliru? Ajukan banding dalam 48 jam.'),
@@ -319,6 +339,7 @@ from (values
   ('id', 'The missed game was removed from your record.', 'Ketidakhadiran ini sudah dihapus dari catatanmu.'),
   ('id', 'Appeal declined', 'Banding ditolak'),
   ('id', 'We checked, and the missed game stays on your record.', 'Kami sudah memeriksa, dan ketidakhadiran ini tetap tercatat.'),
+  ('id', 'No decision within 7 days, so the missed game stays on your record.', 'Tidak ada keputusan dalam 7 hari, jadi ketidakhadiran ini tetap tercatat.'),
   ('ms', 'Missed game recorded', 'Tidak hadir direkodkan'),
   ('ms', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'Pemain lain berkata anda tidak hadir. Jika berlaku lagi dalam 180 hari, anda tidak boleh menyertai permainan selama 7 hari. Rasa tidak betul? Buat rayuan dalam 48 jam.'),
   ('ms', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'Kali kedua tidak hadir dalam 180 hari. Anda tidak boleh menyertai permainan selama 7 hari. Rasa tidak betul? Buat rayuan dalam 48 jam.'),
@@ -327,6 +348,7 @@ from (values
   ('ms', 'The missed game was removed from your record.', 'Ketidakhadiran ini telah dibuang daripada rekod anda.'),
   ('ms', 'Appeal declined', 'Rayuan ditolak'),
   ('ms', 'We checked, and the missed game stays on your record.', 'Kami telah menyemak, dan ketidakhadiran ini kekal dalam rekod anda.'),
+  ('ms', 'No decision within 7 days, so the missed game stays on your record.', 'Tiada keputusan dalam 7 hari, jadi ketidakhadiran ini kekal dalam rekod anda.'),
   ('th', 'Missed game recorded', 'บันทึกการเบี้ยวนัดแล้ว'),
   ('th', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'ผู้เล่นแจ้งว่าคุณไม่มา หากเกิดขึ้นอีกภายใน 180 วัน คุณจะเข้าร่วมเกมไม่ได้ 7 วัน หากคิดว่าไม่ถูกต้อง อุทธรณ์ได้ภายใน 48 ชั่วโมง'),
   ('th', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'เบี้ยวนัดครั้งที่สองใน 180 วัน คุณจะเข้าร่วมเกมไม่ได้ 7 วัน หากคิดว่าไม่ถูกต้อง อุทธรณ์ได้ภายใน 48 ชั่วโมง'),
@@ -335,6 +357,7 @@ from (values
   ('th', 'The missed game was removed from your record.', 'ลบการเบี้ยวนัดครั้งนี้ออกจากประวัติของคุณแล้ว'),
   ('th', 'Appeal declined', 'อุทธรณ์ไม่สำเร็จ'),
   ('th', 'We checked, and the missed game stays on your record.', 'เราตรวจสอบแล้ว การเบี้ยวนัดครั้งนี้ยังอยู่ในประวัติของคุณ'),
+  ('th', 'No decision within 7 days, so the missed game stays on your record.', 'ไม่มีผลการพิจารณาภายใน 7 วัน การเบี้ยวนัดครั้งนี้จึงยังอยู่ในประวัติของคุณ'),
   ('vi', 'Missed game recorded', 'Đã ghi nhận bùng kèo'),
   ('vi', 'Players said you didn’t show up. If it happens again within 180 days, you can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'Người chơi báo bạn không đến. Nếu lặp lại trong 180 ngày, bạn sẽ không thể tham gia trận trong 7 ngày. Thấy không đúng? Hãy khiếu nại trong 48 giờ.'),
   ('vi', 'Second missed game in 180 days. You can’t join games for 7 days. Think it’s wrong? Appeal within 48 hours.', 'Lần bùng kèo thứ hai trong 180 ngày. Bạn không thể tham gia trận trong 7 ngày. Thấy không đúng? Hãy khiếu nại trong 48 giờ.'),
@@ -342,13 +365,14 @@ from (values
   ('vi', 'Appeal accepted', 'Khiếu nại được chấp nhận'),
   ('vi', 'The missed game was removed from your record.', 'Lần bùng kèo này đã được xóa khỏi hồ sơ của bạn.'),
   ('vi', 'Appeal declined', 'Khiếu nại không được chấp nhận'),
-  ('vi', 'We checked, and the missed game stays on your record.', 'Chúng tôi đã kiểm tra, lần bùng kèo này vẫn nằm trong hồ sơ của bạn.')
+  ('vi', 'We checked, and the missed game stays on your record.', 'Chúng tôi đã kiểm tra, lần bùng kèo này vẫn nằm trong hồ sơ của bạn.'),
+  ('vi', 'No decision within 7 days, so the missed game stays on your record.', 'Không có quyết định trong 7 ngày nên lần bùng kèo này vẫn nằm trong hồ sơ của bạn.')
 ) as t(locale, english, translated)
 join (select distinct locale from public.notification_texts) l on l.locale = t.locale;
 
 revoke execute on function public.judged_no_show(uuid, uuid), public.suspended_until(uuid), public.recent_no_shows(uuid),
   public.strike_text(int), public.record_strike(), public.block_suspended(), public.block_suspended_challenge(),
-  public.start_suspension(uuid), public.relevel_strikes(uuid, timestamptz)
+  public.start_suspension(uuid), public.relevel_strikes(uuid, timestamptz), public.expire_appeals()
   from public, anon, authenticated;
 revoke execute on function public.my_strikes(), public.mark_strikes_seen(), public.appeal_strike(bigint, text),
   public.admin_strike_appeals(), public.admin_resolve_strike(bigint, boolean, text)

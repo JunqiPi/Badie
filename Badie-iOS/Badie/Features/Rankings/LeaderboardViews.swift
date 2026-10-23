@@ -54,6 +54,7 @@ struct WeeklyLeaderboardView: View {
     @State private var boardChoice: Gender?
     @State private var onlyMyBracket = false
     @State private var entries: [Rankings.Entry] = []
+    @State private var isLoading = false
     @State private var standing: WeeklyStanding?
     @State private var showsRules = false
     @State private var reportTarget: String?
@@ -111,7 +112,10 @@ struct WeeklyLeaderboardView: View {
             }
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
-        .onAppear(perform: reload)
+        .onAppear {
+            backend.prefetchWeeklyBoards(countryCode: backend.currentCountryCode)
+            reload()
+        }
         .onChange(of: scope) { _, _ in reload() }
         .onChange(of: weekChoice) { _, _ in reload() }
         .onChange(of: boardChoice) { _, _ in reload() }
@@ -236,7 +240,9 @@ struct WeeklyLeaderboardView: View {
 
     @ViewBuilder
     private var board: some View {
-        if entries.isEmpty {
+        if isLoading {
+            BoardPlaceholder()
+        } else if entries.isEmpty {
             EmptyStateView(icon: "trophy", title: String(localized: "还没有人上榜"),
                            message: String(localized: "打满 \(Rankings.weeklyMinimumGames) 场双方确认过的比赛就能上榜"),
                            tint: AppTheme.Colors.butter)
@@ -268,6 +274,8 @@ struct WeeklyLeaderboardView: View {
     private func reload() {
         var list = backend.weeklyLeaderboard(week: week, countryCode: scope == .country ? backend.currentCountryCode : nil,
                                              gender: boardGender)
+        // 先读（没有就开始拉），再看是不是还在拉
+        isLoading = backend.isWeeklyBoardLoading(countryCode: scope == .country ? backend.currentCountryCode : nil, week: week, gender: boardGender)
         if onlyMyBracket, let myBracket {
             list = Self.reranked(list.filter { entry in
                 backend.user(id: entry.userId).map { LevelBracket(rating: $0.displayTier.rating) == myBracket } ?? false
@@ -358,6 +366,7 @@ private struct VenueBoard: View {
     @State private var monthChoice: MonthChoice = .this
     @State private var boardChoice: Gender?
     @State private var sections: [BracketBoard] = []
+    @State private var isLoading = false
 
     private struct BracketBoard: Identifiable {
         let bracket: LevelBracket
@@ -383,7 +392,9 @@ private struct VenueBoard: View {
                 option == .this ? String(localized: "本月") : String(localized: "上月")
             }
             BoardPicker(selection: $boardChoice, mine: backend.myBoard)
-            if sections.isEmpty {
+            if isLoading {
+                BoardPlaceholder()
+            } else if sections.isEmpty {
                 EmptyStateView(icon: "trophy", title: String(localized: "这个月还没有人上榜"),
                                tint: AppTheme.Colors.butter)
                     .card()
@@ -420,6 +431,23 @@ private struct VenueBoard: View {
         sections = backend.venueLeaderboard(venueId: venueId, month: month, gender: boardChoice).map {
             BracketBoard(bracket: $0.bracket, entries: $0.entries)
         }
+        isLoading = backend.isVenueBoardLoading(venueId: venueId, month: month, gender: boardChoice ?? backend.myBoard)
+    }
+}
+
+// MARK: - 榜还没拉回来
+
+/// 几行灰条占位：不显示“没人上榜”，免得像是出错了
+private struct BoardPlaceholder: View {
+    var body: some View {
+        VStack(spacing: AppTheme.Spacing.sm) {
+            ForEach(0..<5, id: \.self) { _ in
+                RoundedRectangle(cornerRadius: AppTheme.Radius.lg)
+                    .fill(AppTheme.Colors.surfaceMuted)
+                    .frame(height: 64)
+            }
+        }
+        .accessibilityLabel("正在加载")
     }
 }
 

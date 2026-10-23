@@ -2,7 +2,7 @@
 -- 48 小时内申诉、申诉期间不执行；管理员维持或撤销；资料卡显示近 180 天次数
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(20);
+select plan(21);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000029' || lpad(n::text, 2, '0'))::uuid, 'k' || n || '@test.local' from generate_series(1, 8) n;
@@ -112,6 +112,12 @@ reset role;
 update public.strikes set created_at = now() - interval '3 days' where id = pg_temp.strike(1);
 select pg_temp.login(1);
 select throws_ok(format('select public.appeal_strike(%s, %L)', pg_temp.strike(1), 'I was there.'), '22023', 'appeal_closed', '超过 48 小时不能申诉');
+
+-- 申诉 7 天没人处理：自动维持
+reset role;
+update public.strikes set status = 'appealed', appealed_at = now() - interval '8 days' where id = pg_temp.strike(1);
+select public.expire_appeals();
+select is((select status from public.strikes where id = pg_temp.strike(1)), 'upheld', '7 天没处理的申诉自动维持');
 
 -- 180 天没再爽约：重新从第 1 次算
 reset role;
