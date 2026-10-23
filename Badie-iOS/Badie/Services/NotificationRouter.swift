@@ -6,6 +6,7 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
     static let shared = NotificationRouter()
 
     weak var router: Router?
+    weak var messages: MessageManager?
 
     func install() {
         UNUserNotificationCenter.current().delegate = self
@@ -15,6 +16,8 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
+        // 不等定时刷新：马上拉会话列表和正开着的会话
+        await MainActor.run { messages?.refreshNow() }
         // 正开着这个会话：新消息已经在屏幕上了，不再弹
         if let link = notification.request.content.userInfo["link"] as? String, link.contains("/messages/") {
             let route = PushRegistry.route(for: link).route

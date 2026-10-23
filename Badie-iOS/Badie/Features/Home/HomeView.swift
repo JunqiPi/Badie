@@ -122,6 +122,9 @@ struct HomeView: View {
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .lineLimit(1)
                 Spacer()
+                IconButton(systemName: "trophy.fill", accessibilityLabel: String(localized: "排行榜")) {
+                    router.open(.leaderboard)
+                }
                 IconButton(systemName: "bell.fill", accessibilityLabel: String(localized: "通知"), badge: inboxManager.unreadCount) {
                     router.open(.notifications)
                 }

@@ -7,6 +7,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var surveyManager: SurveyManager
     @EnvironmentObject private var router: Router
+    @EnvironmentObject private var messageManager: MessageManager
 
     var body: some View {
         ZStack {
@@ -37,6 +38,7 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
                 surveyManager.refresh()
+                if appState.phase == .main { messageManager.refreshNow() }
                 if appState.phase == .main { locationManager.start() }
             }
         }
@@ -49,6 +51,7 @@ struct RootView: View {
         }
         .onAppear {
             NotificationRouter.shared.router = router
+            NotificationRouter.shared.messages = messageManager
         }
         // 点开 badie.rsvp 的链接（邀请、邮件里的球局）直接进 App 里对应的页面；哪些地址进 App 见网站的 apple-app-site-association
         .onOpenURL { url in

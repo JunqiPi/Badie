@@ -216,6 +216,17 @@ extension MockBackend {
         return ("dm", other)
     }
 
+    /// 推送到了或回到前台：会话列表（未读数、最后一条）和正开着的会话马上重拉。
+    /// 没开着的会话不拉消息：拉了服务器会记为已读
+    func refreshMessagesNow(activeThreadId: String?) {
+        guard isRemote else { return }
+        if let activeThreadId {
+            remoteThreadLoadedAt[activeThreadId] = Date()
+            Task { try? await loadRemoteThread(activeThreadId) }
+        }
+        Task { try? await refreshRemoteSocial() }
+    }
+
     /// 拉取一个会话的消息（服务器同时记为已读）
     func loadRemoteThread(_ threadId: String) async throws {
         guard let remote, let me = currentUserId, let target = serverThread(threadId) else { return }

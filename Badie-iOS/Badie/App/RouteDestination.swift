@@ -61,7 +61,7 @@ struct RouteDestination: View {
         case .leaderboard:
             WeeklyLeaderboardView()
         case .venueLeaderboard(let venueId):
-            VenueLeaderboardView(venueId: venueId)
+            WeeklyLeaderboardView(venueId: venueId)
         case .challenges:
             ChallengesView()
         }

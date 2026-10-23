@@ -38,11 +38,12 @@ struct WeeklyStanding {
     }
 }
 
-// MARK: - 全球周榜
+// MARK: - 排行榜（全球周榜；选了球馆就看本馆月榜）
 
 struct WeeklyLeaderboardView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var matchManager: MatchManager
+    @EnvironmentObject private var locationManager: LocationManager
 
     private enum Scope: Hashable { case global, country }
     private enum WeekChoice: Hashable { case this, last }
@@ -56,6 +57,12 @@ struct WeeklyLeaderboardView: View {
     @State private var standing: WeeklyStanding?
     @State private var showsRules = false
     @State private var reportTarget: String?
+    /// 选了球馆：看这家球馆的月榜
+    @State private var venueId: String?
+
+    init(venueId: String? = nil) {
+        _venueId = State(initialValue: venueId)
+    }
 
     private var backend: MockBackend { appState.backend }
     private var me: User? { appState.currentUser }
@@ -77,19 +84,27 @@ struct WeeklyLeaderboardView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "本周排行")) {
-                IconButton(systemName: "questionmark", accessibilityLabel: String(localized: "积分怎么算")) {
-                    showsRules = true
+            ScreenHeader(title: String(localized: "排行榜")) {
+                if venueId == nil {
+                    IconButton(systemName: "questionmark", accessibilityLabel: String(localized: "积分怎么算")) {
+                        showsRules = true
+                    }
                 }
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                    filters
-                    if let standing { myStandingCard(standing) }
-                    board
-                    Button("积分怎么算") { showsRules = true }
-                        .buttonStyle(TextActionStyle())
-                        .frame(maxWidth: .infinity)
+                    venueFilter
+                    if let venueId {
+                        VenueBoard(venueId: venueId)
+                            .id(venueId)
+                    } else {
+                        filters
+                        if let standing { myStandingCard(standing) }
+                        board
+                        Button("积分怎么算") { showsRules = true }
+                            .buttonStyle(TextActionStyle())
+                            .frame(maxWidth: .infinity)
+                    }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
@@ -120,6 +135,49 @@ struct WeeklyLeaderboardView: View {
     }
 
     // MARK: 筛选
+
+    /// 可选的球馆：当前选的、常去的、打过的、附近的
+    private var venueChoices: [BadmintonCourt] {
+        var courts = locationManager.favoriteCourts
+        courts += matchManager.games.sorted { $0.slot.startTime > $1.slot.startTime }.map(\.court)
+        courts += locationManager.nearbyCourts.prefix(10)
+        if let venueId, let current = backend.venue(id: venueId) { courts.insert(current, at: 0) }
+        var seen = Set<String>()
+        return Array(courts.filter { seen.insert($0.id).inserted }.prefix(15))
+    }
+
+    private var venueFilter: some View {
+        Menu {
+            Button {
+                venueId = nil
+            } label: {
+                if venueId == nil { Label("全部球馆", systemImage: "checkmark") } else { Text("全部球馆") }
+            }
+            ForEach(venueChoices) { court in
+                Button {
+                    venueId = court.id
+                } label: {
+                    if venueId == court.id { Label(court.name, systemImage: "checkmark") } else { Text(court.name) }
+                }
+            }
+        } label: {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                Image(systemName: "mappin.and.ellipse")
+                Text(venueId.flatMap { backend.venue(id: $0)?.name } ?? String(localized: "全部球馆"))
+                    .lineLimit(1)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 13, weight: .bold))
+            }
+            .font(AppTheme.Typography.subheadlineBold)
+            .foregroundStyle(AppTheme.Colors.ink)
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            .frame(minHeight: 48)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+        }
+        .accessibilityLabel("球馆")
+        .padding(.top, AppTheme.Spacing.xs)
+    }
 
     private var filters: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
@@ -287,7 +345,8 @@ private struct WeeklyRulesSheet: View {
 
 // MARK: - 场馆月榜
 
-struct VenueLeaderboardView: View {
+/// 一家球馆的月榜（排行榜里选了球馆时显示）
+private struct VenueBoard: View {
     let venueId: String
 
     @EnvironmentObject private var appState: AppState
@@ -315,39 +374,25 @@ struct VenueLeaderboardView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "本馆排行"))
-            ScrollView {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text(backend.venue(id: venueId)?.name ?? String(localized: "球馆"))
-                            .font(AppTheme.Typography.title2)
-                            .foregroundStyle(AppTheme.Colors.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                        Text("按本月在这家球馆打的确认过的场数排名（同一对手最多计 \(Rankings.venueSameOpponentCap) 场、每天最多 \(Rankings.venueDailyCap) 场）；每个水平段单独排")
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    SegmentedSticker(options: [MonthChoice.this, .last], selection: $monthChoice) { option in
-                        option == .this ? String(localized: "本月") : String(localized: "上月")
-                    }
-                    BoardPicker(selection: $boardChoice, mine: backend.myBoard)
-                    if sections.isEmpty {
-                        EmptyStateView(icon: "trophy", title: String(localized: "这个月还没有人上榜"),
-                                       tint: AppTheme.Colors.butter)
-                            .card()
-                    } else {
-                        ForEach(sections) { section in
-                            bracketSection(section.bracket, entries: section.entries)
-                        }
-                    }
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+            Text("按本月在这家球馆打的确认过的场数排名（同一对手最多计 \(Rankings.venueSameOpponentCap) 场、每天最多 \(Rankings.venueDailyCap) 场）；每个水平段单独排")
+                .font(AppTheme.Typography.footnote)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            SegmentedSticker(options: [MonthChoice.this, .last], selection: $monthChoice) { option in
+                option == .this ? String(localized: "本月") : String(localized: "上月")
+            }
+            BoardPicker(selection: $boardChoice, mine: backend.myBoard)
+            if sections.isEmpty {
+                EmptyStateView(icon: "trophy", title: String(localized: "这个月还没有人上榜"),
+                               tint: AppTheme.Colors.butter)
+                    .card()
+            } else {
+                ForEach(sections) { section in
+                    bracketSection(section.bracket, entries: section.entries)
                 }
-                .padding(.horizontal, AppTheme.Spacing.screen)
-                .padding(.bottom, AppTheme.Spacing.xxl)
             }
         }
-        .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .onAppear(perform: reload)
         .onChange(of: monthChoice) { _, _ in reload() }
         .onChange(of: boardChoice) { _, _ in reload() }

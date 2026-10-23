@@ -170,6 +170,11 @@ final class MessageManager: ObservableObject {
         reload()
     }
 
+    /// 推送到了或回到前台：马上重拉会话列表；正开着的会话连消息一起拉，不等定时刷新
+    func refreshNow() {
+        backend.refreshMessagesNow(activeThreadId: activeThreadId)
+    }
+
     func close(with userId: String) {
         if activeThreadId == threadId(with: userId) {
             activeThreadId = nil
