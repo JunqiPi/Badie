@@ -136,7 +136,7 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
   - 演示账号的邮箱和密码（第 0 步建的），勾 Sign-in required。
   - 联系人：你的名字、电话、邮箱（只给审核员看）。
   - Notes（英文写给审核员）示例：
-    > Badie helps badminton players find partners at their level and courts nearby. Sign in with the demo account (email + password). To test matching, open Play, pick a time and courts; a match needs a second player, so the demo account already has a past game and a friend. Report and block: open any player profile → Report / Block. Offensive words are filtered on the server (names containing them can't be saved; they're masked in messages), and reports are reviewed within 24 hours on our admin page. Account deletion: Settings → Delete account (Sign in with Apple accounts are revoked through Apple’s REST API). Location is only used to show courts nearby and is not stored.
+    > Badie helps badminton players find partners at their level and courts nearby. Sign in with the demo account (email + password). To test matching, open Play, pick a time and courts; a match needs a second player, so the demo account already has a past game and a friend. Report and block: open any player profile → Report / Block. Offensive words are filtered on the server (names containing them can't be saved; they're masked in messages), and reports are reviewed within 24 hours on our admin page. Account deletion: Me tab → Settings (gear icon) → Delete account and data (Sign in with Apple accounts are revoked through Apple’s REST API). Location is only used to show courts nearby and is not stored.
 
 ## 5. 提交审核和上架
 
