@@ -9,8 +9,8 @@ import UIKit
 /// 别人截到身份令牌也没法重放。Google 的登录页还用 PKCE：发出去的是 verifier 的哈希，换令牌时才交出原文
 enum SocialSignIn {
     /// Google Cloud 里 iOS 类型的 OAuth 客户端 ID（公开的，不是密钥；Supabase 的 Google 设置里也要加上它）。
-    /// 没填时 App 里不显示 Google 按钮
-    static let googleClientID: String? = nil
+    /// 设为 nil 时 App 里不显示 Google 按钮
+    static let googleClientID: String? = "302163183222-jc5v7lhkguqv8b61vu2norc04metldpa.apps.googleusercontent.com"
 
     static func randomString(bytes count: Int = 32) -> String {
         var bytes = [UInt8](repeating: 0, count: count)
