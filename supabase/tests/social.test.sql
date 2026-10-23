@@ -1,7 +1,7 @@
 -- 社交规则测试：评价、等级校准、球友、私信、拉黑、举报（与 iOS 的规则一致）
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(50);
+select plan(51);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000002' || lpad(n::text, 2, '0'))::uuid, 's' || n || '@test.local' from generate_series(1, 12) n;
@@ -73,9 +73,13 @@ select public.review_player((select recent from g), pg_temp.u(1), 'on_time', 'ac
 select is(public.player_card(pg_temp.u(1)) ->> 'relationship', 'friend', '双方都想再约：直接成为球友');
 select is(pg_temp.notes(1, 'friend'), 1, '双方都收到通知');
 
--- 爽约：没签到，并且有人说没来
+-- 爽约：没签到，并且同场多数人说没来（双打 3 人里至少 2 人）
 select pg_temp.login(3);
-select is((public.my_record() ->> 'no_shows')::int, 1, '没签到且被说没来：记一次爽约');
+select is((public.my_record() ->> 'no_shows')::int, 0, '只有一个人说没来：不算爽约');
+select pg_temp.login(2);
+select public.review_player((select recent from g), pg_temp.u(3), 'no_show', 'accurate', '{}', '{}', false);
+select pg_temp.login(3);
+select is((public.my_record() ->> 'no_shows')::int, 1, '没签到且两个人说没来：记一次爽约');
 select pg_temp.login(4);
 select is((public.my_record() ->> 'no_shows')::int, 0, '签到了：不算爽约');
 
