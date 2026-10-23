@@ -202,7 +202,7 @@ struct OnboardingFlow: View {
             AppLogo()
                 .frame(minWidth: 88, maxWidth: 168, minHeight: 88, maxHeight: 168)
             Wordmark(size: 34)
-            Text(marking: String(localized: "羽毛球搭子？\n就在*今日*！"))
+            Text(marking: String(localized: "羽毛球搭子？\n就在*今日*。"))
                 .font(AppTheme.Typography.display)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .multilineTextAlignment(.center)

@@ -315,7 +315,7 @@ function Welcome() {
     <div className="grid gap-20 pb-4 lg:gap-28">
       <header className="grid items-center gap-10 lg:min-h-[28rem] lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16">
         <div className="grid justify-items-start gap-6">
-          <Headline text={t('Badminton buddy?\nFind one *today*!')} size="text-[2.25rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
+          <Headline text={t('Badminton buddy?\nFind one *today*.')} size="text-[2.25rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
           <p className={`max-w-xl ${lead}`}>{t('Badie finds players at your level near you. Free.')}</p>
           <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
         </div>

@@ -28150,6 +28150,64 @@
         }
       }
     },
+    "初学者" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Newbie"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "नौसिखिया"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemula"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初心者"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "입문자"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemula"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มือใหม่หัดเล่น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lính mới"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "初學者"
+          }
+        }
+      }
+    },
     "初级" : {
       "localizations" : {
         "en" : {
@@ -88448,60 +88506,60 @@
         }
       }
     },
-    "羽毛球搭子？\n就在*今日*！" : {
+    "羽毛球搭子？\n就在*今日*。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Badminton buddy?\nFind one *today*!"
+            "value" : "Badminton buddy?\nFind one *today*."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "बैडमिंटन पार्टनर?\n*आज* ही मिलेगा!"
+            "value" : "बैडमिंटन पार्टनर?\n*आज* ही मिलेगा।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buddy badminton?\nKetemu *hari ini*!"
+            "value" : "Buddy badminton?\nKetemu *hari ini*."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バドミントン仲間？\n*今日*見つかる！"
+            "value" : "バドミントン仲間？\n*今日*見つかる。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "배드민턴 버디?\n*오늘* 바로 찾아요!"
+            "value" : "배드민턴 버디?\n*오늘* 바로 찾아요."
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rakan badminton?\nJumpa *hari ini*!"
+            "value" : "Rakan badminton?\nJumpa *hari ini*."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "หาบัดดี้ตีแบด?\nเจอ*วันนี้*เลย!"
+            "value" : "หาบัดดี้ตีแบด?\nเจอ*วันนี้*เลย"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn đánh cầu lông?\nCó ngay *hôm nay*!"
+            "value" : "Bạn đánh cầu lông?\nCó ngay *hôm nay*."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "羽毛球搭子？\n就在*今日*！"
+            "value" : "羽毛球搭子？\n就在*今日*。"
           }
         }
       }
@@ -90538,64 +90596,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "菲律賓"
-          }
-        }
-      }
-    },
-    "萌新" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Newbie"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "नौसिखिया"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemula"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "初心者"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "입문자"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pemula"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "มือใหม่หัดเล่น"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lính mới"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "萌新"
           }
         }
       }

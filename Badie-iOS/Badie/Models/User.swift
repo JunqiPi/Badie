@@ -12,7 +12,7 @@ enum SkillLevel {
 
     static func name(for level: Int) -> String {
         switch level {
-        case 1: return String(localized: "萌新")
+        case 1: return String(localized: "初学者")
         case 2: return String(localized: "入门")
         case 3: return String(localized: "初级")
         case 4: return String(localized: "中级")

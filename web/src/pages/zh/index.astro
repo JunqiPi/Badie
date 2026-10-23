@@ -5,7 +5,7 @@ import { signInFirst } from '../../app/Shell';
 import { translator } from '../../lib/static-i18n';
 
 const t = translator(Astro.url.pathname);
-const slogan = t('Badminton buddy?\nFind one *today*!').split('*');
+const slogan = t('Badminton buddy?\nFind one *today*.').split('*');
 const steps = [['bg-lavender', 'Set your level'], ['bg-lime', 'Get matched'], ['bg-peach', 'Play, then confirm']];
 ---
 

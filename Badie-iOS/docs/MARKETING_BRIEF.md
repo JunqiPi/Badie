@@ -16,7 +16,7 @@
 
 - **一句话**：不用自己开口找人，Badie 按水平帮你找羽毛球球友。免费。
   英文：No need to ask strangers for a game. Badie finds badminton players at your level for you. Free.
-- **口号**（App 欢迎页和网站首页同一句）：羽毛球搭子？就在今日！ / Badminton buddy? Find one today!
+- **口号**（App 欢迎页和网站首页同一句）：羽毛球搭子？就在今日。 / Badminton buddy? Find one today.
 - **怎么用**：告诉它你什么时候有空、能去哪些球馆，它帮你匹配水平相近的人，双方都确认才成局。
 - **功能**：
   - 定级：2 分钟问卷，1–9 级（每级再分 −、标准、+）。打完球双方确认赛果，和你打过的人帮忙校准。7–9 级要交比赛成绩等证明，管理员审核。
