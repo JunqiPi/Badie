@@ -60,8 +60,15 @@ struct ProfileView: View {
     private func identityCard(_ user: User) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
             HStack(spacing: AppTheme.Spacing.lg) {
-                MyAvatarView(size: 76)
-                    .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
+                Button { router.open(.editProfile) } label: {
+                    MyAvatarView(size: 76)
+                        .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
+                        .overlay(alignment: .bottomTrailing) {
+                            if user.avatar.photoVersion == nil { CameraBadge().scaleEffect(0.8) }
+                        }
+                }
+                .buttonStyle(PressableStyle())
+                .accessibilityLabel("更换头像")
                 VStack(alignment: .leading, spacing: 6) {
                     NicknameText(user: user)
                         .font(AppTheme.Typography.title2)

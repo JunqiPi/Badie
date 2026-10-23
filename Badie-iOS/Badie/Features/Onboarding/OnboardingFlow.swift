@@ -1,4 +1,5 @@
 import AuthenticationServices
+import PhotosUI
 import SwiftUI
 
 enum OnboardingStep: Int, CaseIterable {
@@ -27,6 +28,8 @@ struct OnboardingForm {
     var nickname = ""
     var gender: Gender = .unspecified
     var avatar = Avatar(symbol: "", paletteIndex: 0)
+    /// 选好的照片头像（320×320 JPEG），注册完再上传
+    var photo: Data?
     /// 定级问卷答案（题目 ID → 选项）
     var assessmentAnswers: [String: Int] = [:]
     var assessmentResult: SkillAssessmentResult? { SkillAssessment.evaluate(assessmentAnswers) }
@@ -95,6 +98,7 @@ struct OnboardingFlow: View {
 
     @State private var step: OnboardingStep = .welcome
     @State private var form = OnboardingForm()
+    @State private var photoItem: PhotosPickerItem?
     @State private var isWorking = false
     @State private var errorText: String?
     @State private var resendRemaining = 0
@@ -441,14 +445,33 @@ struct OnboardingFlow: View {
     private var profileStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
             stepTitle(String(localized: "怎么称呼你？"), subtitle: String(localized: "昵称和头像会展示给球友，手机号不会"))
-            HStack {
-                Spacer()
+            PhotosPicker(selection: $photoItem, matching: .images) {
                 AvatarView(text: form.avatar.symbol.isEmpty ? (form.nickname.first.map { String($0) } ?? "🏸") : form.avatar.symbol,
-                           paletteIndex: form.avatar.paletteIndex, size: 96)
+                           paletteIndex: form.avatar.paletteIndex, size: 96, image: form.photo.flatMap(UIImage.init(data:)))
                     .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
-                Spacer()
+                    .overlay(alignment: .bottomTrailing) { CameraBadge() }
             }
-            AvatarPaletteEditor(avatar: $form.avatar)
+            .buttonStyle(PressableStyle())
+            .frame(maxWidth: .infinity)
+            .accessibilityLabel("从相册选择头像")
+            .onChange(of: photoItem) { _, item in
+                guard let item else { return }
+                Task {
+                    if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
+                        form.photo = AvatarPhotos.jpegData(from: image)
+                    } else {
+                        appState.showToast(String(localized: "无法读取这张照片"), style: .error)
+                    }
+                    photoItem = nil
+                }
+            }
+            if form.photo != nil {
+                Button("移除照片，使用文字头像") { form.photo = nil }
+                    .buttonStyle(TextActionStyle())
+                    .frame(maxWidth: .infinity)
+            } else {
+                AvatarPaletteEditor(avatar: $form.avatar)
+            }
             BrutalTextField(label: String(localized: "昵称"), placeholder: String(localized: "2-12 个字"), text: $form.nickname,
                             contentType: .nickname, errorText: errorText, characterLimit: 12)
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
@@ -928,6 +951,7 @@ struct OnboardingFlow: View {
                     answers: form.assessmentAnswers
                 )
                 try? appState.backend.saveRecurringSlots(slots)
+                await uploadPhoto()
                 if result == nil { appState.backend.markAssessmentSkipped() }
                 for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
                     locationManager.toggleFavorite(venueId)
@@ -948,12 +972,21 @@ struct OnboardingFlow: View {
                                            isReturning: $0.isReturning, assessedAt: Date(), rating: $0.tier.rating)
                 }
             )
+            await uploadPhoto()
             if result == nil { appState.backend.markAssessmentSkipped() }
             for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
                 locationManager.toggleFavorite(venueId)
             }
         } catch {
             appState.showError(error)
+        }
+    }
+
+    /// 注册时选了照片：账号建好后再传；没传上去不影响注册，之后可以在编辑资料里再传
+    private func uploadPhoto() async {
+        guard let photo = form.photo else { return }
+        if (try? await appState.backend.uploadAvatarPhoto(photo)) == nil {
+            appState.showToast(String(localized: "照片没传上去，可以在编辑资料里再试"), style: .error)
         }
     }
 

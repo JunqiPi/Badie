@@ -76,7 +76,7 @@ struct EditProfileView: View {
 
     private var avatarSection: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
-            ZStack(alignment: .bottomTrailing) {
+            PhotosPicker(selection: $photoItem, matching: .images) {
                 if appState.currentUser != nil {
                     AvatarView(
                         text: avatar.symbol.isEmpty ? (nickname.first.map { String($0) } ?? "🏸") : avatar.symbol,
@@ -91,17 +91,12 @@ struct EditProfileView: View {
                             ProgressView().tint(.white)
                         }
                     }
+                    .overlay(alignment: .bottomTrailing) { CameraBadge() }
                 }
-                PhotosPicker(selection: $photoItem, matching: .images) {
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 15, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.onAccent)
-                        .frame(width: 38, height: 38)
-                        .background(Circle().fill(AppTheme.Colors.lime))
-                        .overlay(Circle().strokeBorder(Color(hex: 0x17140F), lineWidth: 2))
-                }
-                .accessibilityLabel("从相册选择头像")
             }
+            .buttonStyle(PressableStyle())
+            .disabled(isUploadingPhoto)
+            .accessibilityLabel("从相册选择头像")
             .frame(maxWidth: .infinity)
             if photo != nil {
                 Button("移除照片，使用文字头像") {
@@ -241,5 +236,19 @@ struct EditProfileView: View {
         if await appState.updateProfile(user) {
             router.pop()
         }
+    }
+}
+
+/// 头像右下角的相机标：点头像就能换照片
+struct CameraBadge: View {
+    var body: some View {
+        Image(systemName: "camera.fill")
+            .font(.system(size: 15, weight: .bold))
+            .foregroundStyle(AppTheme.Colors.onAccent)
+            .frame(width: 38, height: 38)
+            .background(Circle().fill(AppTheme.Colors.lime))
+            .overlay(Circle().strokeBorder(Color(hex: 0x17140F), lineWidth: 2))
+            .offset(x: 4, y: 4)
+            .accessibilityHidden(true)
     }
 }

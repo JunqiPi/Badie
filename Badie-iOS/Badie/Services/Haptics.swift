@@ -47,10 +47,12 @@ enum AvatarPhotos {
         return image
     }
 
-    /// 居中裁成正方形并压缩
+    /// 居中裁成正方形并压缩。按 1 倍出图：默认按屏幕倍率会变成 960×960，超过服务器 256 KB 的上限
     nonisolated static func jpegData(from image: UIImage, side: CGFloat = 320) -> Data? {
         let size = CGSize(width: side, height: side)
-        let scaled = UIGraphicsImageRenderer(size: size).image { _ in
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let scaled = UIGraphicsImageRenderer(size: size, format: format).image { _ in
             let aspect = max(size.width / image.size.width, size.height / image.size.height)
             let drawSize = CGSize(width: image.size.width * aspect, height: image.size.height * aspect)
             let origin = CGPoint(x: (size.width - drawSize.width) / 2, y: (size.height - drawSize.height) / 2)

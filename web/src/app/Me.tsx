@@ -407,10 +407,65 @@ function Nickname({ profile, email, onChange }: { profile: Profile; email?: stri
       <Field label={t('Nickname')} hint={t('2–12 characters. No phone numbers or links.')} error={changed ? issue : undefined}>
         {(props) => <input {...props} maxLength={12} value={nickname} onChange={(e) => setNickname(e.target.value)} className="field" />}
       </Field>
-      <p className="text-caption text-ink-tertiary">{t('Add or change your photo in the iPhone app.')}</p>
+      <AvatarPhoto profile={profile} onChange={onChange} />
       <Button busy={busy} disabled={!changed || Boolean(issue)} className="justify-self-start">{t('Save')}</Button>
     </form>
   );
+}
+
+/** 照片头像：裁成 320×320 的 JPEG（和 iOS 一样），先传新的、换上，再删旧的 */
+function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    setBusy(true);
+    try {
+      const jpeg = await squareJpeg(file, 320);
+      const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
+      const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
+      if (uploadError) throw uploadError;
+      const { error } = await supabase!.rpc('set_avatar', { p_path: path });
+      if (error) throw error;
+      if (profile.avatar_path) await supabase!.storage.from('avatars').remove([profile.avatar_path]);
+      onChange({ ...profile, avatar_path: path });
+      toast(t('Photo updated'));
+    } catch {
+      toast(t('Couldn’t upload the photo. Try another one.'), 'error');
+    }
+    setBusy(false);
+  }
+
+  async function remove() {
+    setBusy(true);
+    const { error } = await supabase!.rpc('set_avatar', { p_path: null });
+    if (!error && profile.avatar_path) await supabase!.storage.from('avatars').remove([profile.avatar_path]);
+    setBusy(false);
+    if (error) return toast(problem(error), 'error');
+    onChange({ ...profile, avatar_path: null });
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <label className={`button button-sm cursor-pointer ${busy ? 'pointer-events-none opacity-60' : ''}`}>
+        {profile.avatar_path ? t('Change photo') : t('Upload photo')}
+        <input type="file" accept="image/*" className="sr-only" disabled={busy}
+               onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void upload(file); }} />
+      </label>
+      {profile.avatar_path && <Button type="button" className="button-sm" variant="quiet" busy={busy} onClick={remove}>{t('Use text avatar')}</Button>}
+      <p className="basis-full text-caption text-ink-tertiary">{t('Other players see your photo.')}</p>
+    </div>
+  );
+}
+
+/** 从中间裁成正方形、缩到 side×side 的 JPEG */
+async function squareJpeg(file: File, side: number): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const crop = Math.min(bitmap.width, bitmap.height);
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = side;
+  canvas.getContext('2d')!.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, side, side);
+  bitmap.close();
+  return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('encode'))), 'image/jpeg', 0.85));
 }
 
 function Level({ profile }: { profile: Profile }) {
