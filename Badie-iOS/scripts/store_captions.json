@@ -41,10 +41,10 @@
       "leaderboard": "衝上*每週排行*"
     },
     "ja": {
-      "matchFound": "*同じレベル*の相手が見つかる",
+      "matchFound": "*同じレベル*の相手",
       "home": "今夜ひま？*一試合しよう*",
       "playerProfile": "ドタキャンは*記録される*",
-      "matchSetup": "シングルス、ダブルス、*ミックスも*",
+      "matchSetup": "シングルス、ダブルス、\n*ミックスも*",
       "room": "あと一人？*募集しよう*",
       "groupDetail": "毎週の*定期グループ*",
       "levelResult": "*2分*でレベル判定",
