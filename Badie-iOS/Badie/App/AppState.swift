@@ -165,16 +165,15 @@ final class AppState: ObservableObject {
         try await backend.remoteSignInWithApple(idToken: idToken, nonce: nonce)
     }
 
-    /// Google：在系统浏览器里登录（和 Safari 共用登录状态），带着一次性的 code 跳回来再换登录状态。
+    /// Google：在系统浏览器里直接打开 Google 的登录页（和 Safari 共用登录状态），换到身份令牌后像 Apple 一样交给 Supabase。
     /// 在对方页面取消了返回 nil
     func signInWithGoogle(_ browser: WebAuthenticationSession) async throws -> AuthOutcome? {
-        let verifier = SocialSignIn.randomString()
-        guard let url = try backend.requireRemote().authorizeURL(provider: "google", redirect: SocialSignIn.redirect,
-                                                                 challenge: SocialSignIn.pkceChallenge(verifier)) else { return nil }
-        let callback = try await browser.authenticate(using: url, callbackURLScheme: SocialSignIn.callbackScheme,
-                                                      preferredBrowserSession: .shared)
-        guard let code = SocialSignIn.code(from: callback) else { return nil }
-        return try await backend.remoteSignInWithGoogle(code: code, verifier: verifier)
+        guard let clientID = SocialSignIn.googleClientID else { return nil }
+        let google = GoogleSignIn(clientID: clientID)
+        guard let url = google.url else { return nil }
+        let callback = try await browser.authenticate(using: url, callbackURLScheme: google.scheme, preferredBrowserSession: .shared)
+        guard let code = google.code(from: callback) else { return nil }
+        return try await backend.remoteSignInWithGoogle(idToken: google.idToken(code: code), nonce: google.nonce)
     }
 
     /// 开了哪些第三方登录（apple / google）：用本机记下的上一次结果，按钮不用等网络就能显示

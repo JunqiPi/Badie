@@ -206,29 +206,10 @@ final class SupabaseClient {
         return body.merging(["gotrue_meta_security": ["captcha_token": captchaToken]]) { current, _ in current }
     }
 
-    /// Sign in with Apple（原生）：把 Apple 给的身份令牌和原始 nonce 交给 Supabase 换登录状态
+    /// Apple / Google：把对方给的身份令牌和原始 nonce 交给 Supabase 换登录状态
     func signIn(provider: String, idToken: String, nonce: String) async throws -> RemoteSession {
         let data = try await send("auth/v1/token?grant_type=id_token",
                                   body: ["provider": provider, "id_token": idToken, "nonce": nonce], authorized: false)
-        let next = try RemoteJSON.session(from: data)
-        session = next
-        return next
-    }
-
-    /// 网页式登录（Google）：系统浏览器里登录完带回一次性的 code，用 PKCE 的 verifier 换登录状态
-    func authorizeURL(provider: String, redirect: String, challenge: String) -> URL? {
-        var components = URLComponents(string: SupabaseConfig.url + "/auth/v1/authorize")
-        components?.queryItems = [
-            URLQueryItem(name: "provider", value: provider),
-            URLQueryItem(name: "redirect_to", value: redirect),
-            URLQueryItem(name: "code_challenge", value: challenge),
-            URLQueryItem(name: "code_challenge_method", value: "s256"),
-        ]
-        return components?.url
-    }
-
-    func exchange(code: String, verifier: String) async throws -> RemoteSession {
-        let data = try await send("auth/v1/token?grant_type=pkce", body: ["auth_code": code, "code_verifier": verifier], authorized: false)
         let next = try RemoteJSON.session(from: data)
         session = next
         return next

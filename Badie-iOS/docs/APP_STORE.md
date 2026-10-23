@@ -41,6 +41,28 @@
      > • Private by default: players see your nickname and level, not your contact details. Your location is only used to find courts nearby and is never stored.
      >
      > Badie is free and built by a player who wanted more people on court.
+   - **简体中文版**（App Store Connect → 版本页右上角语言菜单 → 添加 Chinese (Simplified)）：手机系统是中文的用户在美区也看到中文。
+     美区搜索只收录英文（和西班牙文）的关键词，中文关键词要等以后上架中国港澳台等地区才起作用。
+     - 名称：`Badie：羽毛球搭子`
+     - 副标题：`按水平找羽毛球球友`
+     - 推广文本：`不用在球馆里硬着头皮问陌生人。告诉 Badie 你什么时候有空，它按水平帮你找羽毛球球友，还能找球馆、每周固定的球群和混双搭子。`
+     - 关键词：`羽毛球,搭子,球友,约球,双打,混双,单打,球馆,球局,俱乐部,水平,定级,badminton`
+     - 描述：
+
+       > 不好意思在球馆里找陌生人打球？Badie 帮你找。
+       >
+       > 告诉 Badie 你什么时候有空、能去哪些球馆，它帮你找水平相当的球友。固定球友今晚来不了？找个同一时间的人，或者加入一场临时局，和现在就有空的人一起打。刚搬到新城市？看看附近的球馆，加入每周固定的球群。
+       >
+       > • 按水平匹配：2 分钟的定级问卷把你放到 1–9 级，和你打过球的人会帮忙校准。
+       > • 选你想打的项目：单打、双打、男双、女双或混双。男女等级分开算。
+       > • 附近球局：订了场地还缺人？发出来，附近的球友就能加入。
+       > • 每周球群：固定时间、固定球馆，报名和候补一目了然。
+       > • 靠谱：爽约和临时取消会被记录，赛果由双方确认。
+       > • 周榜、球馆排行榜、挑战和胜率，喜欢比一比的也有得玩。
+       > • 默认保护隐私：球友只能看到你的昵称和水平，看不到你的联系方式。位置只用来找附近的球馆，不会保存。
+       >
+       > Badie 完全免费，是一位想让更多人上场打球的球友做的。
+     - 截图先用英文那组；要中文截图的话，截图工作流可以加一组中文界面的。
    - 截图：在 GitHub → Actions → **App Store screenshots** → Run workflow，跑完下载 `app-store-screenshots`：最新 iPhone Pro Max（6.9 英寸，1320 × 2868）和 Pro（6.3 英寸，1206 × 2622）上各 8 张英文页面，已转成不带透明通道的 JPEG，直接上传。
 
 ## 1. 注册 Apple Developer Program

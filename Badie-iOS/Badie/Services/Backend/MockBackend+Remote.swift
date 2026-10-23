@@ -73,8 +73,8 @@ extension MockBackend {
         try await outcome(after: requireRemote().signIn(provider: "apple", idToken: idToken, nonce: nonce))
     }
 
-    func remoteSignInWithGoogle(code: String, verifier: String) async throws -> AuthOutcome {
-        try await outcome(after: requireRemote().exchange(code: code, verifier: verifier))
+    func remoteSignInWithGoogle(idToken: String, nonce: String) async throws -> AuthOutcome {
+        try await outcome(after: requireRemote().signIn(provider: "google", idToken: idToken, nonce: nonce))
     }
 
     /// 登录成功（密码、验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料

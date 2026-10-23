@@ -85,19 +85,37 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(client.session?.accessToken, "apple")
     }
 
-    func testGoogleOpensAuthorizeAndExchangesCodeWithVerifier() async throws {
+    func testGoogleOpensGoogleDirectlyAndHandsIdTokenToSupabase() async throws {
+        let google = GoogleSignIn(clientID: "123-abc.apps.googleusercontent.com")
+        XCTAssertEqual(google.scheme, "com.googleusercontent.apps.123-abc")
+        let url = try XCTUnwrap(google.url)
+        let query = Dictionary(uniqueKeysWithValues: (URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []).map { ($0.name, $0.value ?? "") })
+        XCTAssertEqual(url.host, "accounts.google.com")
+        XCTAssertEqual(query["redirect_uri"], "com.googleusercontent.apps.123-abc:/oauthredirect")
+        XCTAssertEqual(query["code_challenge"], SocialSignIn.pkceChallenge(google.verifier))
+        XCTAssertEqual(query["nonce"], SocialSignIn.sha256Hex(google.nonce))
+
+        // 只认这次发起的登录（state 对得上），取消了没有 code
+        let back = "com.googleusercontent.apps.123-abc:/oauthredirect?state=\(google.state)&code=4/0Ab+c"
+        XCTAssertEqual(google.code(from: try XCTUnwrap(URL(string: back.replacingOccurrences(of: "+", with: "%2B")))), "4/0Ab+c")
+        XCTAssertNil(google.code(from: try XCTUnwrap(URL(string: "com.googleusercontent.apps.123-abc:/oauthredirect?state=other&code=x"))))
+        XCTAssertNil(google.code(from: try XCTUnwrap(URL(string: "com.googleusercontent.apps.123-abc:/oauthredirect?state=\(google.state)&error=access_denied"))))
+
+        // 换 Google 的身份令牌：不带密钥，带 verifier；“+” 要转义
+        server.on("POST /token", #"{"id_token":"google-id-token"}"#)
+        let idToken = try await google.idToken(code: "4/0Ab+c") { request in self.server.handle(request) }
+        XCTAssertEqual(idToken, "google-id-token")
+        let form = String(decoding: server.requests[0].httpBody ?? Data(), as: UTF8.self)
+        XCTAssertTrue(form.contains("code=4/0Ab%2Bc"), form)
+        XCTAssertTrue(form.contains("code_verifier=\(google.verifier)"), form)
+        XCTAssertFalse(form.contains("client_secret"), form)
+
+        // 再把身份令牌和 nonce 原文交给 Supabase
         server.on("POST /auth/v1/token", token("google"))
         let client = client()
-        let url = try XCTUnwrap(client.authorizeURL(provider: "google", redirect: SocialSignIn.redirect, challenge: "abc"))
-        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        let query = Dictionary(uniqueKeysWithValues: items.map { ($0.name, $0.value ?? "") })
-        XCTAssertEqual(url.path, "/auth/v1/authorize")
-        XCTAssertEqual(query, ["provider": "google", "redirect_to": "badie://auth-callback", "code_challenge": "abc", "code_challenge_method": "s256"])
-
-        _ = try await client.exchange(code: "one-time", verifier: "secret")
-        XCTAssertEqual(server.requests[0].url?.query, "grant_type=pkce")
-        XCTAssertEqual(server.json(0)["auth_code"] as? String, "one-time")
-        XCTAssertEqual(server.json(0)["code_verifier"] as? String, "secret")
+        _ = try await client.signIn(provider: "google", idToken: idToken, nonce: google.nonce)
+        XCTAssertEqual(server.json(1)["provider"] as? String, "google")
+        XCTAssertEqual(server.json(1)["nonce"] as? String, google.nonce)
         XCTAssertEqual(client.session?.accessToken, "google")
     }
 
@@ -188,8 +206,6 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(SocialSignIn.pkceChallenge("dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"), "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM")
         XCTAssertEqual(SocialSignIn.sha256Hex("abc"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad")
         XCTAssertNotEqual(SocialSignIn.randomString(), SocialSignIn.randomString())
-        XCTAssertEqual(SocialSignIn.code(from: try XCTUnwrap(URL(string: "badie://auth-callback?code=xyz"))), "xyz")
-        XCTAssertNil(SocialSignIn.code(from: try XCTUnwrap(URL(string: "badie://auth-callback?error=access_denied"))))
     }
 
     func testVerifySendsCodeAndKeepsSession() async throws {

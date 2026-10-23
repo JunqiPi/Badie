@@ -5,12 +5,12 @@ import UIKit
 
 // MARK: - Apple / Google 登录用的一次性随机串
 
-/// Sign in with Apple：发给 Apple 的是 nonce 的 SHA-256，交给 Supabase 的是原文，Supabase 核对两者对得上，
-/// 别人截到身份令牌也没法重放。Google 走网页式登录：PKCE，发出去的是 verifier 的哈希，换令牌时才交出原文
+/// Apple 和 Google 都一样：发给对方的是 nonce 的 SHA-256，交给 Supabase 的是原文，Supabase 核对两者对得上，
+/// 别人截到身份令牌也没法重放。Google 的登录页还用 PKCE：发出去的是 verifier 的哈希，换令牌时才交出原文
 enum SocialSignIn {
-    /// 系统浏览器登录完跳回 App 的地址（Supabase 后台的 Redirect URLs 里要有它）
-    static let callbackScheme = "badie"
-    static let redirect = "badie://auth-callback"
+    /// Google Cloud 里 iOS 类型的 OAuth 客户端 ID（公开的，不是密钥；Supabase 的 Google 设置里也要加上它）。
+    /// 没填时 App 里不显示 Google 按钮
+    static let googleClientID: String? = nil
 
     static func randomString(bytes count: Int = 32) -> String {
         var bytes = [UInt8](repeating: 0, count: count)
@@ -28,14 +28,70 @@ enum SocialSignIn {
         base64URL(Data(SHA256.hash(data: Data(verifier.utf8))))
     }
 
-    /// 跳回来的地址里取 code；对方报错（比如点了取消）时没有 code
-    static func code(from callback: URL) -> String? {
-        URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "code" }?.value
-    }
-
     private static func base64URL(_ data: Data) -> String {
         data.base64EncodedString().replacingOccurrences(of: "+", with: "-").replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")
+    }
+}
+
+// MARK: - Google（直接打开 Google 的登录页）
+
+/// 不经过 Supabase 的网址：系统弹窗和 Google 页面上显示的是 google.com 和 Badie。
+/// 登录完 Google 跳回 com.googleusercontent.apps.…（客户端 ID 倒过来写），用 code 换 Google 的身份令牌，再像 Apple 一样交给 Supabase
+struct GoogleSignIn {
+    let clientID: String
+    let verifier = SocialSignIn.randomString()
+    let nonce = SocialSignIn.randomString()
+    let state = SocialSignIn.randomString(bytes: 16)
+
+    /// 跳回 App 用的 scheme：客户端 ID 倒过来写
+    var scheme: String { clientID.split(separator: ".").reversed().joined(separator: ".") }
+    var redirect: String { "\(scheme):/oauthredirect" }
+
+    var url: URL? {
+        var components = URLComponents(string: "https://accounts.google.com/o/oauth2/v2/auth")
+        components?.queryItems = [
+            URLQueryItem(name: "client_id", value: clientID),
+            URLQueryItem(name: "redirect_uri", value: redirect),
+            URLQueryItem(name: "response_type", value: "code"),
+            URLQueryItem(name: "scope", value: "openid email profile"),
+            URLQueryItem(name: "code_challenge", value: SocialSignIn.pkceChallenge(verifier)),
+            URLQueryItem(name: "code_challenge_method", value: "S256"),
+            URLQueryItem(name: "nonce", value: SocialSignIn.sha256Hex(nonce)),
+            URLQueryItem(name: "state", value: state),
+            URLQueryItem(name: "prompt", value: "select_account"),
+        ]
+        return components?.url
+    }
+
+    /// 跳回来的地址里取 code；state 对不上（不是这次发起的）或者对方报错（比如点了取消）时为空
+    func code(from callback: URL) -> String? {
+        let items = URLComponents(url: callback, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        guard items.first(where: { $0.name == "state" })?.value == state else { return nil }
+        return items.first { $0.name == "code" }?.value
+    }
+
+    /// 用 code 和 verifier 换 Google 的身份令牌（iOS 客户端不需要密钥）
+    func idToken(code: String, transport: SupabaseClient.Transport = { try await URLSession.shared.data(for: $0) }) async throws -> String {
+        var request = URLRequest(url: URL(string: "https://oauth2.googleapis.com/token")!)
+        request.httpMethod = "POST"
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        var form = URLComponents()
+        form.queryItems = [
+            URLQueryItem(name: "client_id", value: clientID),
+            URLQueryItem(name: "code", value: code),
+            URLQueryItem(name: "code_verifier", value: verifier),
+            URLQueryItem(name: "grant_type", value: "authorization_code"),
+            URLQueryItem(name: "redirect_uri", value: redirect),
+        ]
+        // “+” 在表单里会被当成空格，要转义
+        request.httpBody = form.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B").data(using: .utf8)
+        let (data, response) = try await transport(request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200,
+              let token = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["id_token"] as? String else {
+            throw RemoteError.server("google_no_token")
+        }
+        return token
     }
 }
 

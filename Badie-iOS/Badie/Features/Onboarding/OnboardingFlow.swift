@@ -107,7 +107,11 @@ struct OnboardingFlow: View {
     private var providers: Set<String> { refreshedProviders ?? appState.socialProviders }
     /// App Store 审核规则 4.8：有 Google 这类第三方登录，就必须同时提供能隐藏邮箱的登录（Apple）。
     /// 所以 Apple 没开时，App 里也不显示 Google（网页不受影响）
-    private var socialProviders: Set<String> { providers.contains("apple") ? providers.intersection(["apple", "google"]) : [] }
+    private var socialProviders: Set<String> {
+        guard providers.contains("apple") else { return [] }
+        // Google 要先配好 iOS 的客户端 ID（见 SocialSignIn.googleClientID）
+        return providers.intersection(SocialSignIn.googleClientID == nil ? ["apple"] : ["apple", "google"])
+    }
     @Environment(\.webAuthenticationSession) private var webAuthenticationSession
 
     var body: some View {

@@ -105,7 +105,6 @@ Authentication → URL Configuration：
 - Site URL：`https://badie.rsvp`
 - Redirect URLs（Google / Apple 登录完跳回来的地址，只放这几个）：
   - `https://badie.rsvp/signin/**`（网页；登录后回到原来想去的页面）
-  - `badie://auth-callback`（iOS App）
   - `http://localhost:4321/**`（本地开发）
 
 不改的话，Google 登录完会跳到 `http://localhost:3000/?code=…`（Supabase 默认的 Site URL）。
@@ -114,7 +113,7 @@ Authentication → URL Configuration：
 
 网页和 App 只在 Supabase 里开了对应登录方式后才显示按钮，所以可以一个一个来，没配好之前不会出错。**密钥都直接填进 Google / Apple / Supabase 的后台，不要发到聊天里，也不要提交到仓库。**
 
-**Google（网页和 iOS 共用一个网页客户端，免费）**
+**Google（网页用网页客户端，iOS 用 iOS 客户端，都免费）**
 
 先把代码推到 main（按钮的代码要在线上），再按顺序做：
 
@@ -138,8 +137,13 @@ Authentication → URL Configuration：
    - Authorized redirect URIs 加 `https://yeffnjdpjejlplqryjfx.supabase.co/auth/v1/callback`
    - Create，弹窗里复制 Client ID 和 Client secret（secret 之后看不到原文，可以重新生成）。
 7. Supabase → Authentication → Sign In / Providers → Google：打开 Enable，粘 Client ID（Client IDs 一栏）和 Client Secret，“Skip nonce check” 保持关闭 → Save。
-8. 确认第 4 节的 Redirect URLs 已经填好（`https://badie.rsvp/signin/**`、`badie://auth-callback`）。
+8. 确认第 4 节的 Redirect URLs 已经填好（`https://badie.rsvp/signin/**`）。
 9. 打开 `https://badie.rsvp/signin/`，应该出现“Continue with Google”，用自己的 Google 账号登录一次试试。
+10. **iOS App**：App 直接打开 Google 的登录页（不经过 Supabase 的网址），要一个 iOS 类型的客户端：
+    - Clients → Create client：Application type **iOS**，名字 `Badie iOS`，Bundle ID `com.badie.app`，Team ID `PU482V2DWN` → Create。
+    - 复制 Client ID（形如 `123-abc.apps.googleusercontent.com`，**公开的，不是密钥**，iOS 客户端没有 secret），填到 `Badie-iOS/Badie/Services/Remote/SocialSignIn.swift` 的 `googleClientID`。
+    - Supabase → Google 的 **Client IDs** 一栏：在网页客户端的 ID 后面加英文逗号和这个 iOS 的 ID → Save（Supabase 要认得这个客户端签发的身份令牌）。
+    - 没填 `googleClientID` 时 App 里不显示 Google 按钮。
 
 说明：
 - iOS 不用另建客户端：App 在系统浏览器里走同一个网页登录（和 Safari 共用 Google 登录状态），不装 Google 的 SDK。
