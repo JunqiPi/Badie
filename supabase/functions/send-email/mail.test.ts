@@ -103,7 +103,7 @@ Deno.test('Auth Hook：两家都发不出去时告诉用户', async () => {
 });
 
 Deno.test('数据库发来的约球邮件要带对暗号', async () => {
-  const body = JSON.stringify([{ from: 'Badie <games@badie.rsvp>', to: 'a@test.local', subject: 'Game on!', text: 'x' }]);
+  const body = JSON.stringify([{ from: 'Badie <games@badie.rsvp>', to: 'a@test.local', subject: 'Game confirmed', text: 'x' }]);
   providers({ [resendOk]: 200 });
   assert.equal((await handle(new Request('http://local', { method: 'POST', body, headers: { 'x-push-secret': 'wrong' } }))).status, 403);
   assert.deepEqual(calls, []);

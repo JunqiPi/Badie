@@ -56,9 +56,9 @@
        > • 按水平匹配：2 分钟的定级问卷把你放到 1–9 级，和你打过球的人会帮忙校准。
        > • 选你想打的项目：单打、双打、男双、女双或混双。男女等级分开算。
        > • 附近球局：订了场地还缺人？发出来，附近的球友就能加入。
-       > • 每周球群：固定时间、固定球馆，报名和候补一目了然。
-       > • 靠谱：爽约和临时取消会被记录，赛果由双方确认。
-       > • 周榜、球馆排行榜、挑战和胜率，喜欢比一比的也有得玩。
+       > • 每周球群：固定时间、固定球馆，可以报名和候补。
+       > • 靠谱的球友：爽约和临时取消会被记录，赛果由双方确认。
+       > • 周榜、球馆排行榜、挑战和胜率，想比一比也可以。
        > • 默认保护隐私：球友只能看到你的昵称和水平，看不到你的联系方式。位置只用来找附近的球馆，不会保存。
        >
        > Badie 完全免费，是一位想让更多人上场打球的球友做的。
@@ -158,7 +158,7 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
   - 演示账号的邮箱和密码（第 0 步建的），勾 Sign-in required。
   - 联系人：你的名字、电话、邮箱（只给审核员看）。
   - Notes（英文写给审核员）示例：
-    > Badie helps badminton players find partners at their level and courts nearby. Sign in with the demo account (email + password). To test matching, open Play, pick a time and courts; a match needs a second player, so the demo account already has a past game and a friend. Report and block: open any player profile → Report / Block. Offensive words are filtered on the server (names containing them can't be saved; they're masked in messages), and reports are reviewed within 24 hours on our admin page. Account deletion: Me tab → Settings (gear icon) → Delete account and data (Sign in with Apple accounts are revoked through Apple’s REST API). Location is only used to show courts nearby and is not stored.
+    > Badie helps badminton players find partners at their level and courts nearby. Sign in with the demo account (email + password). To test matching, open Play and pick a time and courts. A match needs a second player, so the demo account already has a past game and a friend. Report and block: open any player profile → Report / Block. Offensive words are filtered on the server: names containing them can't be saved, and they're masked in messages. Reports are reviewed within 24 hours on our admin page. Account deletion: Me tab → Settings (gear icon) → Delete account and data (Sign in with Apple accounts are revoked through Apple’s REST API). Location is only used to show courts nearby and is not stored.
 
 ## 5. 提交审核和上架
 

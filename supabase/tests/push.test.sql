@@ -68,8 +68,8 @@ select vault.create_secret('s3cret', 'push_secret');
 create function pg_temp.emailed(n int) returns boolean language sql security definer as $$
   select emailed_at is not null from public.notifications where user_id = pg_temp.u(n) order by id desc limit 1
 $$;
-select public.notify(pg_temp.u(2), 'matched', 'Game on!', 'x');
-select public.notify(pg_temp.u(3), 'matched', 'Game on!', 'y');
+select public.notify(pg_temp.u(2), 'matched', 'Game confirmed', 'x');
+select public.notify(pg_temp.u(3), 'matched', 'Game confirmed', 'y');
 select public.send_notification_emails();
 select ok(pg_temp.emailed(2), '打开了邮件的人收邮件');
 select ok(not pg_temp.emailed(3), '没打开的人不发邮件');

@@ -73,7 +73,7 @@ export async function deliver(emails: Email[]) {
 const footer = 'Badie · find people to play badminton with · badie.rsvp';
 const texts = {
   signin: ['Your Badie sign-in code', 'Enter this code to sign in. It expires in 1 hour. If you didn\'t ask for it, you can ignore this email.'],
-  recovery: ['Reset your Badie password', 'Enter this code in Badie with your new password. It expires in 1 hour. If you didn\'t ask for it, you can ignore this email; your password stays the same.'],
+  recovery: ['Reset your Badie password', 'Enter this code in Badie with your new password. It expires in 1 hour. If you didn\'t ask for it, you can ignore this email. Your password won\'t change.'],
   other: ['Your Badie code', 'Enter this code in Badie. It expires in 1 hour. If you didn\'t ask for it, you can ignore this email.'],
 };
 
@@ -141,7 +141,7 @@ export async function handle(request: Request) {
   }
   const emails = authEmails(JSON.parse(body));
   if (emails.length && !(await deliver(emails))) {
-    return json({ error: { http_code: 503, message: 'We couldn’t send the email. Please try again in a few minutes.' } }, 503);
+    return json({ error: { http_code: 503, message: 'We couldn’t send the email. Wait a few minutes and try again.' } }, 503);
   }
   return json({});
 }
