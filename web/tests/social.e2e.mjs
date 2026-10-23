@@ -39,7 +39,7 @@ await form.getByRole('radio', { name: 'About right' }).click();
 await form.getByRole('button', { name: 'Friendly' }).click();
 await form.getByLabel('I’d play with Blake again').check();
 await form.getByRole('button', { name: 'Send review' }).click();
-await alex.getByText('Thanks! Review for Blake sent.').waitFor();
+await alex.getByText('Thanks. Review for Blake sent.').waitFor();
 await alex.getByRole('link', { name: 'Message players' }).click();
 await alex.getByRole('textbox', { name: 'Message' }).fill('Good game! Venmo me $10 for the court?');
 await alex.keyboard.press('Enter');
@@ -57,7 +57,7 @@ await back.getByRole('radio', { name: 'On time' }).click();
 await back.getByRole('radio', { name: 'Higher' }).click();
 await back.getByLabel('I’d play with Alex again').check();
 await back.getByRole('button', { name: 'Send review' }).click();
-await blake.getByText('Thanks! Review for Alex sent.').waitFor();
+await blake.getByText('Thanks. Review for Alex sent.').waitFor();
 
 await blake.goto(`${base}/messages/?tab=friends`);
 await blake.getByRole('link', { name: 'Message', exact: true }).click();

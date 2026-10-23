@@ -37,7 +37,7 @@ await blake.goto(`${base}/join/`);
 await blake.getByLabel('Code').fill(code);
 await blake.getByRole('button', { name: 'Join' }).click();
 await blake.getByRole('button', { name: 'Join group' }).click();
-await blake.getByText(`Welcome to Thu doubles!`).waitFor();
+await blake.getByText(`Welcome to Thu doubles.`).waitFor();
 await blake.getByRole('button', { name: 'Sign up' }).first().click();
 await blake.getByText('Signed up', { exact: true }).first().waitFor();
 await blake.getByText('1/8 signed up').first().waitFor();
