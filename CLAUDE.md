@@ -17,6 +17,7 @@
 
 - **App 里少写解释**：一屏一句话。为什么做、怎么用这类说明放在网站的关于页和商店页。
 - 对外口径以 `Badie-iOS/docs/STORY.md` 为准，只说做到了的事。
+- 文字风格（10 种语言）按 `Badie-iOS/docs/VOICE.md`：平实、克制、具体，不用感叹号和表情。
 - 宣传交接说明在 `Badie-iOS/docs/MARKETING_BRIEF.md`。
 - 部署、密钥和第三方设置见 `Badie-iOS/docs/DEPLOY.md`，上架流程见 `Badie-iOS/docs/APP_STORE.md`。
 
