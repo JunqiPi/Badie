@@ -1,0 +1,37 @@
+---
+// 中文版等级对照表：每级的表现和分项（和网页 App 里的等级表同一份译文）
+import Base from '../../../layouts/Base.astro';
+import { levels } from '../../../app/levels';
+import { translator } from '../../../lib/static-i18n';
+
+const t = translator(Astro.url.pathname);
+---
+
+<Base title={t('Badminton level chart 1–9 — Badie')} description={t('What each badminton level from 1 to 9 looks like on court: rallies, footwork, attack and defense, up to state, national and international level.')}>
+  <div class="mx-auto grid max-w-3xl gap-6">
+    <header>
+      <h1 class="text-display lg:text-[2.75rem]">{t('Level Chart')}</h1>
+      <p class="text-subhead font-bold text-ink-secondary">{t('Badie levels 1–9')}</p>
+    </header>
+    <p class="max-w-prose text-subhead">{t('Levels 1–9, each split into three tiers (−, base, +), for 27 tiers in total. Each level from 3 to 6 adds one more dimension: can you do the shots → how good are your attacking shots → can you get out of trouble on defensive shots, plus tactics → where you stand in your club. Expand any level to see its skill breakdown (footwork, power, front and back court, attack and defense). Judge by what you can do consistently, not shots you pull off once in a while. 7 and up means state, national, and international level, based only on verifiable results, rankings, and certificates.')}</p>
+    <ol class="grid gap-4">
+      {levels.map((l) => (
+        <li class="sticker grid gap-3 p-5">
+          <h2 class="text-title3">Lv.{l.level} {t(l.name)}</h2>
+          <p class="text-caption text-ink-secondary">{[l.usFlight && `≈ ${t(l.usFlight)}`, t(l.experience)].filter(Boolean).join(' · ')}</p>
+          <ul class="list-disc pl-5 text-subhead">{l.anchors.map((a) => <li>{t(a)}</li>)}</ul>
+          {l.notes.length > 0 && (
+            <dl class="grid gap-2 rounded-[12px] bg-surface-muted p-3 text-footnote">
+              {l.notes.map(([name, text]) => (
+                <div class="grid gap-x-3 sm:grid-cols-[7rem_1fr]">
+                  <dt class="font-bold">{t(name)}</dt>
+                  <dd>{t(text)}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </li>
+      ))}
+    </ol>
+  </div>
+</Base>

@@ -1,13 +1,16 @@
 ---
-import Base from '../../../../layouts/Base.astro';
-import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
-import { PinsMap } from '../../../../app/PinsMap';
-import VenueRow from '../../../../components/VenueRow.astro';
-import { cityName, citySummary, countries, formatPrice, nearbyCities, type City, type Country } from '../../../../lib/venues';
+import Base from '../../../../../layouts/Base.astro';
+import Breadcrumbs from '../../../../../components/Breadcrumbs.astro';
+import { PinsMap } from '../../../../../app/PinsMap';
+import VenueRow from '../../../../../components/VenueRow.astro';
+import { cityName, citySummary, countries, formatPrice, nearbyCities, type City, type Country } from '../../../../../lib/venues';
+import { languages, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
-  return countries.flatMap((country) =>
-    country.cities.map((city) => ({ params: { country: country.code, city: city.slug }, props: { country, city } })),
+  return languages.flatMap((lang) =>
+    countries.flatMap((country) =>
+      country.cities.map((city) => ({ params: { lang, country: country.code, city: city.slug }, props: { country, city } })),
+    ),
   );
 }
 
@@ -19,18 +22,19 @@ const neighbours = nearbyCities(city);
 const attributions = [...new Set(city.venues.map((v) => v.attribution).filter(Boolean))];
 const pins = city.venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }));
 
+const t = translator(Astro.url.pathname);
 const facts = [
-  `${count} badminton ${count === 1 ? 'court is' : 'courts are'} listed in ${name}.`,
-  summary.largest?.courts && `The largest is ${summary.largest.name} with ${summary.largest.courts} courts.`,
+  t('{n} badminton court is listed in {place}.|{n} badminton courts are listed in {place}.', { n: count, place: name }),
+  summary.largest?.courts && t('The largest is {name} with {n} courts.', { name: summary.largest.name, n: summary.largest.courts }),
   summary.cheapest &&
     (summary.cheapest.price!.perPerson === 0
-      ? `${summary.priced} list a drop-in price, and some are free.`
-      : `${summary.priced} list a drop-in price, from ${formatPrice(summary.cheapest.price!.perPerson!, summary.cheapest.country)} per person.`),
+      ? t('{n} list a drop-in price, and some are free.', { n: summary.priced })
+      : t('{n} list a drop-in price, from {price} per person.', { n: summary.priced, price: formatPrice(summary.cheapest.price!.perPerson!, summary.cheapest.country) })),
 ].filter(Boolean);
 ---
 
 <Base
-  title={`Badminton courts in ${name} — Badie`}
+  title={t('Badminton courts in {place} — Badie', { place: name })}
   description={facts.join(' ')}
   noindex={!city.indexable}
 >
@@ -50,7 +54,7 @@ const facts = [
     <aside class="order-first lg:order-none">
       <div class="grid gap-3 lg:sticky lg:top-24">
         <div class="sticker h-64 overflow-hidden lg:h-80">
-          <PinsMap client:visible pins={pins} label={`Map of courts in ${name}`} />
+          <PinsMap client:visible pins={pins} label={t('Map of courts in {place}', { place: name })} />
         </div>
         {
           summary.totalCourts > 0 && (

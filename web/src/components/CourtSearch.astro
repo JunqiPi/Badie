@@ -63,7 +63,7 @@ const { class: className } = Astro.props;
     function option(entry: Entry, i: number) {
       const li = document.createElement('li');
       const link = document.createElement('a');
-      link.href = entry.p;
+      link.href = location.pathname.startsWith('/zh/') ? `/zh${entry.p}` : entry.p;
       link.id = `${list.id}-${i}`;
       link.role = 'option';
       link.tabIndex = -1;

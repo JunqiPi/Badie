@@ -59,6 +59,7 @@
   - 等级对照表 https://badie.rsvp/levels/ （“我是几级？”这类话题容易引发讨论）
   - 各城市的球馆列表，比如 https://badie.rsvp/courts/us/ （适合发“XX 市哪里能打羽毛球”）
   - 关于页 https://badie.rsvp/about/
+  - **中文帖子用中文版链接**：https://badie.rsvp/zh/ 、https://badie.rsvp/zh/levels/ 、https://badie.rsvp/zh/courts/us/ （各城市页面把网址里的 `/courts/` 换成 `/zh/courts/`）
 
 ## 5. 平台接入的现实情况（2026-10 查过，用之前再核实一遍）
 

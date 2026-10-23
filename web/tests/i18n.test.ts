@@ -37,6 +37,13 @@ for (const [code] of languages.filter(([code]) => code !== 'en')) {
   });
 }
 
+// 中文版静态页面（/zh/…）在构建时翻译：页面和 src/lib 里 t('…') 用到的文字都要有简体中文
+test('中文版静态页面用到的文字都有简体中文', () => {
+  const catalog: Record<string, string> = JSON.parse(readFileSync(new URL('locales/zh-Hans.json', app), 'utf8'));
+  const code = pages.join('\n');
+  for (const [, key] of code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)) assert.ok(catalog[unescape(key)]?.trim(), `缺少简体中文：${unescape(key)}`);
+});
+
 test('英文按数量选单复数，并填入参数', () => {
   assert.equal(t('{n} game|{n} games', { n: 1 }), '1 game');
   assert.equal(t('{n} game|{n} games', { n: 3 }), '3 games');

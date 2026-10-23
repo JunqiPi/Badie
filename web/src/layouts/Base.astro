@@ -2,6 +2,7 @@
 // 球馆目录（国家 / 城市 / 球馆）这些静态页面：外壳和 App 是同一套（顶栏、标签栏、语言切换），内容是构建时生成的
 import '../styles/global.css';
 import { SiteShell } from '../app/Shell';
+import { alternates, englishPath, pageLocale } from '../lib/static-i18n';
 
 interface Props {
   title: string;
@@ -12,21 +13,26 @@ interface Props {
 
 const { title, description, noindex = false, jsonLd } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+// 中文版页面（/zh/…）固定用中文；有中文版的页面互相标出另一种语言的地址
+const locale = pageLocale(Astro.url.pathname);
+const languages = alternates(Astro.url.pathname, Astro.site ?? new URL('http://localhost'));
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale} data-fixed-locale={locale === 'en' ? undefined : locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {languages.map((link) => <link rel="alternate" hreflang={link.hreflang} href={link.href} />)}
     {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#17140f" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Badie" />
+    <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'zh_CN'} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -41,7 +47,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body class="min-h-dvh antialiased">
-    <SiteShell client:load path={Astro.url.pathname}>
+    <SiteShell client:load path={englishPath(Astro.url.pathname)}>
       <slot />
       <div class="mt-16 text-caption text-ink-tertiary"><slot name="attribution" /></div>
     </SiteShell>

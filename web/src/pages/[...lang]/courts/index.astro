@@ -1,16 +1,21 @@
 ---
-import Base from '../../layouts/Base.astro';
-import CountryCard from '../../components/CountryCard.astro';
-import CourtSearch from '../../components/CourtSearch.astro';
-import { Courts } from '../../app/Courts';
-import { allVenues, byContinent, countries } from '../../lib/venues';
+import Base from '../../../layouts/Base.astro';
+import CountryCard from '../../../components/CountryCard.astro';
+import CourtSearch from '../../../components/CourtSearch.astro';
+import { Courts } from '../../../app/Courts';
+import { allVenues, byContinent, countries } from '../../../lib/venues';
+import { languages, translator } from '../../../lib/static-i18n';
+
+export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
+
+const t = translator(Astro.url.pathname);
 
 const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
 ---
 
 <Base
-  title="Badminton courts by country — Badie"
-  description={`${allVenues.length.toLocaleString('en')} badminton courts in ${countries.length} countries, from government open data, OpenStreetMap and players.`}
+  title={t('Badminton courts by country — Badie')}
+  description={t('{n} badminton courts in {countries} countries, from government open data, OpenStreetMap and players.', { n: allVenues.length.toLocaleString('en'), countries: countries.length })}
 >
   <header class="grid gap-4 lg:grid-cols-[1fr_28rem] lg:items-end">
     <div>

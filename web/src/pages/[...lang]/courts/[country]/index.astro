@@ -1,14 +1,17 @@
 ---
-import Base from '../../../layouts/Base.astro';
-import Breadcrumbs from '../../../components/Breadcrumbs.astro';
-import { PinsMap } from '../../../app/PinsMap';
-import { cityName, countries, inCountry, type Country } from '../../../lib/venues';
+import Base from '../../../../layouts/Base.astro';
+import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
+import { PinsMap } from '../../../../app/PinsMap';
+import { cityName, countries, inCountry, type Country } from '../../../../lib/venues';
+import { languages, pageLocale, regionName, translator } from '../../../../lib/static-i18n';
 
 export function getStaticPaths() {
-  return countries.map((country) => ({ params: { country: country.code }, props: { country } }));
+  return languages.flatMap((lang) => countries.map((country) => ({ params: { lang, country: country.code }, props: { country } })));
 }
 
 const { country } = Astro.props as { country: Country };
+const t = translator(Astro.url.pathname);
+const place = pageLocale(Astro.url.pathname) === 'en' ? inCountry(country) : regionName(country.code, pageLocale(Astro.url.pathname), country.name);
 const venues = country.cities.flatMap((c) => c.venues);
 const topCities = country.cities.slice(0, 9);
 const alphabetical = [...country.cities].sort((a, b) => cityName(a).localeCompare(cityName(b)));
@@ -17,8 +20,8 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
 ---
 
 <Base
-  title={`Badminton courts in ${inCountry(country)} — Badie`}
-  description={`${country.venueCount.toLocaleString('en')} badminton courts across ${country.cities.length} areas in ${inCountry(country)}.`}
+  title={t('Badminton courts in {place} — Badie', { place })}
+  description={t('{n} badminton courts across {areas} areas in {place}.', { n: country.venueCount.toLocaleString('en'), areas: country.cities.length, place })}
 >
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }]} />
 
@@ -38,7 +41,7 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
       </div>
     </div>
     <div class="sticker h-72 overflow-hidden sm:h-96">
-      <PinsMap client:visible pins={venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }))} label={`Map of courts in ${country.name}`} />
+      <PinsMap client:visible pins={venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }))} label={t('Map of courts in {place}', { place })} />
     </div>
   </section>
 

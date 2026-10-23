@@ -28,7 +28,8 @@ const subtitle = englishName(venue);
     (venue.courts || venue.price?.perPerson !== undefined || !venue.confirmed) && (
       <div class="mt-2 flex flex-wrap gap-1.5">
         {venue.courts && <span class="chip bg-sky" data-t="{n} court|{n} courts" data-n={venue.courts}>{venue.courts} courts</span>}
-        {venue.price?.perPerson !== undefined && <span class="chip bg-butter" data-t="Drop-in {price}" data-price={formatPrice(venue.price.perPerson, venue.country)}>Drop-in {formatPrice(venue.price.perPerson, venue.country)}</span>}
+        {venue.price?.perPerson === 0 && <span class="chip bg-butter" data-t="Free to use">Free to use</span>}
+        {!!venue.price?.perPerson && <span class="chip bg-butter" data-t="Drop-in {price}" data-price={formatPrice(venue.price.perPerson, venue.country)}>Drop-in {formatPrice(venue.price.perPerson, venue.country)}</span>}
         {!venue.confirmed && <span class="chip bg-surface-muted text-ink" data-t="Not yet confirmed">Not yet confirmed</span>}
       </div>
     )

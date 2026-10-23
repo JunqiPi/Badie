@@ -19,7 +19,7 @@ export default defineConfig({
   site: process.env.SITE_URL || 'http://localhost:4321',
   trailingSlash: 'always',
   devToolbar: { enabled: false },
-  integrations: [react(), sitemap({ filter: (page) => !hidden.has(decodeURIComponent(new URL(page).pathname)) })],
+  integrations: [react(), sitemap({ filter: (page) => !hidden.has(decodeURIComponent(new URL(page).pathname).replace(/^\/zh(?=\/)/, '')) })],
   vite: { plugins: [tailwindcss()] },
   // 内容安全策略：Astro 给页面里的每段脚本和样式算哈希，其他来源一律不许加载，XSS 注入的脚本跑不起来
   security: {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { currentLocale, languages, setLocale, startLocale, t, useLocale, type Locale } from './i18n';
+import { currentLocale, languages, rememberLocale, setLocale, startLocale, t, useLocale, type Locale } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, CountBadge, IconTile, Wordmark, type Tint } from './kit';
 import { Link, navigate } from './router';
@@ -282,6 +282,12 @@ export function LanguageSwitch() {
   }, [open]);
 
   function pick(code: Locale) {
+    const fixed = document.documentElement.dataset.fixedLocale;
+    if (fixed && code !== fixed) {
+      rememberLocale(code);
+      location.href = location.pathname.replace(/^\/zh(?=\/)/, '') + location.search;
+      return;
+    }
     setLocale(code, true);
     setOpen(false);
     button.current?.focus();

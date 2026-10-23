@@ -1,0 +1,49 @@
+---
+// 中文版关于页：故事、目标和常见问题（和网页 App 里的关于页同一份译文）
+import Base from '../../../layouts/Base.astro';
+import { faq } from '../../../app/faq';
+import { translator } from '../../../lib/static-i18n';
+
+const t = translator(Astro.url.pathname);
+const story = [
+  'Badie began with its founder, who was too shy to walk up to strangers at the gym or ask for a game online. Even when a game came together, there was no telling whether the other side would be far better or just starting out.',
+  'Plenty of players feel the same, so they play less than they’d like. Others lose their game when a regular partner can’t make it, or move somewhere new and don’t know anyone. In the US and Europe, where badminton communities are still small, that keeps courts quieter than they should be.',
+  'So Badie does the finding for you. Tell it when you’re free and which courts you can reach, and it matches you with players at your level.',
+];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  inLanguage: 'zh-Hans',
+  mainEntity: faq.map(({ q, a }) => ({ '@type': 'Question', name: t(q), acceptedAnswer: { '@type': 'Answer', text: t(a) } })),
+};
+---
+
+<Base title={`${t('About Badie')} — Badie`} description={t(faq[0].a)} jsonLd={jsonLd}>
+  <div class="mx-auto grid max-w-3xl gap-6">
+    <header>
+      <h1 class="text-display lg:text-[2.75rem]">{t('About Badie')}</h1>
+      <p class="text-subhead font-bold text-ink-secondary">{t('Built by a player, for players')}</p>
+    </header>
+    <section aria-labelledby="story" class="grid gap-3">
+      <h2 id="story" class="text-title2">{t('Why we built Badie')}</h2>
+      {story.map((text) => <p class="max-w-prose text-[1.0625rem] leading-relaxed">{t(text)}</p>)}
+    </section>
+    <p class="sticker bg-lime p-5 text-title3 text-on-accent">{t('Our goal: more people playing badminton in the US and Europe, more often.')}</p>
+    <section aria-labelledby="questions" class="grid gap-3">
+      <h2 id="questions" class="text-title2">{t('Questions')}</h2>
+      <div class="sticker grid divide-y divide-divider px-5">
+        {faq.map(({ q, a }) => (
+          <section class="grid gap-1 py-4">
+            <h3 class="text-headline">{t(q)}</h3>
+            <p class="text-subhead text-ink-secondary">{t(a)}</p>
+          </section>
+        ))}
+      </div>
+    </section>
+    <p class="flex gap-4 text-footnote font-bold">
+      <a href="/privacy/" class="link">{t('Privacy Policy')}</a>
+      <a href="/terms/" class="link">{t('Terms of Service')}</a>
+      <a href="/contact/" class="link">{t('Contact us')}</a>
+    </p>
+  </div>
+</Base>

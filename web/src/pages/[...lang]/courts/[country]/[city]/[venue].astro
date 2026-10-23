@@ -1,18 +1,21 @@
 ---
-import Base from '../../../../layouts/Base.astro';
-import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
-import { PinsMap } from '../../../../app/PinsMap';
-import { Icon } from '../../../../app/icons';
-import VenueRow from '../../../../components/VenueRow.astro';
-import { cityName, countries, englishName, facilityLabel, formatAddress, formatPrice, nearby, type City, type Country, type Venue } from '../../../../lib/venues';
+import Base from '../../../../../layouts/Base.astro';
+import Breadcrumbs from '../../../../../components/Breadcrumbs.astro';
+import { PinsMap } from '../../../../../app/PinsMap';
+import { Icon } from '../../../../../app/icons';
+import VenueRow from '../../../../../components/VenueRow.astro';
+import { cityName, countries, englishName, facilityLabel, formatAddress, formatPrice, nearby, type City, type Country, type Venue } from '../../../../../lib/venues';
+import { languages, localPath, pageLocale, regionName, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
-  return countries.flatMap((country) =>
-    country.cities.flatMap((city) =>
-      city.venues.map((venue) => ({
-        params: { country: country.code, city: city.slug, venue: venue.slug },
-        props: { country, city, venue },
-      })),
+  return languages.flatMap((lang) =>
+    countries.flatMap((country) =>
+      country.cities.flatMap((city) =>
+        city.venues.map((venue) => ({
+          params: { lang, country: country.code, city: city.slug, venue: venue.slug },
+          props: { country, city, venue },
+        })),
+      ),
     ),
   );
 }
@@ -24,7 +27,7 @@ const place = cityName(city);
 const others = nearby(venue);
 
 const facts = [
-  venue.courts && { label: 'courts', value: String(venue.courts), tint: 'bg-sky' },
+  venue.courts && { label: 'courts in total', value: String(venue.courts), tint: 'bg-sky' },
   venue.price?.perPerson !== undefined && { label: 'drop-in per person', value: formatPrice(venue.price.perPerson, venue.country), tint: 'bg-butter' },
   venue.price?.perCourtHour && { label: 'court rental per hour', value: formatPrice(venue.price.perCourtHour, venue.country), tint: 'bg-peach' },
 ].filter((fact): fact is { label: string; value: string; tint: string } => Boolean(fact));
@@ -35,13 +38,15 @@ const pins = [
 const appleMaps = `https://maps.apple.com/?q=${encodeURIComponent(venue.name)}&ll=${venue.lat},${venue.lon}`;
 const googleMaps = `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lon}`;
 
-const checked = venue.checked && new Date(`${venue.checked}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+const t = translator(Astro.url.pathname);
+const locale = pageLocale(Astro.url.pathname);
+const checked = venue.checked && new Date(`${venue.checked}T12:00:00Z`).toLocaleDateString(locale === 'en' ? 'en-US' : locale, { month: 'long', year: 'numeric' });
 const sourceNote = {
   curated: checked
-    ? `Checked against the venue's official pages by the Badie team in ${checked}.`
-    : 'Address checked against at least two public sources by the Badie team.',
-  openStreetMap: 'From OpenStreetMap. Not yet confirmed by players.',
-  openData: 'From government open data.',
+    ? t('Checked against the venue’s official pages by the Badie team in {date}.', { date: checked })
+    : t('Address checked against at least two public sources by the Badie team.'),
+  openStreetMap: t('From OpenStreetMap. Not yet confirmed by players.'),
+  openData: t('From government open data.'),
 }[venue.source];
 
 const site = Astro.site ?? new URL('http://localhost');
@@ -67,19 +72,19 @@ const jsonLd = {
     {
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { name: 'Courts', path: '/courts/' },
-        { name: country.name, path: country.path },
+        { name: t('Courts'), path: '/courts/' },
+        { name: regionName(country.code, locale, country.name), path: country.path },
         { name: place, path: city.path },
         { name: venue.name, path: venue.path },
-      ].map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: new URL(item.path, site).href })),
+      ].map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: new URL(localPath(Astro.url.pathname, item.path), site).href })),
     },
   ],
 };
 ---
 
 <Base
-  title={`${venue.name}${alias ? ` (${alias})` : ''} — badminton in ${place} — Badie`}
-  description={`${venue.name}: badminton ${venue.courts ? `with ${venue.courts} courts ` : ''}at ${address}.`}
+  title={t('{name} — badminton in {place} — Badie', { name: alias ? `${venue.name} (${alias})` : venue.name, place })}
+  description={venue.courts ? t('{name}: badminton with {n} courts at {address}.', { name: venue.name, n: venue.courts, address }) : t('{name}: badminton at {address}.', { name: venue.name, address })}
   noindex={!venue.indexable}
   jsonLd={jsonLd}
 >
@@ -106,7 +111,7 @@ const jsonLd = {
             {facts.map((fact) => (
               <div class:list={['tile flex flex-col-reverse rounded-[14px]! p-3 text-on-accent sm:p-4', fact.tint]}>
                 <dt class="mt-1 text-caption sm:text-footnote" data-t={fact.label}>{fact.label}</dt>
-                <dd class="text-[1.75rem] leading-none font-black tabular-nums sm:text-[2.5rem]">{fact.value}</dd>
+                <dd class="text-[1.75rem] leading-none font-black tabular-nums sm:text-[2.5rem]" data-t={fact.value === 'Free' ? 'Free' : undefined}>{fact.value}</dd>
               </div>
             ))}
           </dl>
@@ -130,7 +135,7 @@ const jsonLd = {
       <div class="space-y-4 lg:sticky lg:top-24">
         <div class="sticker overflow-hidden">
           <div class="h-60 border-b-2 border-stroke">
-            <PinsMap client:visible pins={pins} selected={venue.id} label={`${venue.name} and ${others.length} nearby courts`} />
+            <PinsMap client:visible pins={pins} selected={venue.id} label={t('{name} and {n} nearby courts', { name: venue.name, n: others.length })} />
           </div>
           <div class="p-5">
             <p class="text-headline" data-t="Get there">Get there</p>

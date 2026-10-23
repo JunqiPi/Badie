@@ -254,6 +254,11 @@ robots.txt 放行所有爬虫（包括 ChatGPT、Gemini、Claude 用来学习的
    - 几天后看 **Pages** 报告：哪些页面收录了、哪些没收录和原因。
 3. **Bing Webmaster Tools**（bing.com/webmasters，用同一个 Google 账号登录）→ **Import from Google Search Console**，一键把网站和站点地图导进来。DuckDuckGo、Yahoo、Copilot 用的都是 Bing 的索引。
 4. 建好官方社交账号后，把账号网址填进 `web/src/pages/index.astro` 里的 `sameAs`，搜索引擎会把它们和网站认作同一个品牌。
+5. **Cloudflare → Caching → Configuration → Crawler Hints** 打开：网站内容变了会自动通知 Bing 等搜索引擎（IndexNow），不用等它们来抓。
+6. 每月看一次效果：Search Console 的 **Performance** 里看搜索词；再用同几个问题问 ChatGPT、Gemini、Perplexity，记下 Badie 有没有出现，比如 “app to find badminton partners in Los Angeles”“洛杉矶怎么找羽毛球搭子”。
+
+**中文版页面**：首页、关于、等级表和球馆目录都有简体中文版（`/zh/`、`/zh/about/`、`/zh/levels/`、`/zh/courts/…`），构建时就写成中文，搜索引擎和 AI 能直接读到；
+和英文版用 hreflang 互相标注。中文版页面固定显示中文，在上面换别的语言会回到英文版页面。
 
 **多久能搜到**：新域名提交后，搜 “Badie badminton” 一般几天到两周能出现；只搜 “Badie” 会和人名等撞车，宣传时统一用 “Badie badminton” / “Badie 羽毛球”。
 “badminton partner app” 这种通用词要靠站外的提及（Reddit、App Store、媒体和博客文章）慢慢积累：Ahrefs 对 7.5 万个品牌的统计里，和 AI 回答里出现品牌关系最大的是品牌在网上被提及的次数，比外链更重要。

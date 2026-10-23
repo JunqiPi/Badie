@@ -1,0 +1,44 @@
+---
+// 中文首页：和英文首页一样只有口号、一行说明、一个按钮和三步。英文首页是网页 App，这一页是静态的，给搜索引擎和 AI 读
+import Base from '../../layouts/Base.astro';
+import { signInFirst } from '../../app/Shell';
+import { translator } from '../../lib/static-i18n';
+
+const t = translator(Astro.url.pathname);
+const slogan = t('Badminton buddy?\nFind one *today*!').split('*');
+const steps = [['bg-lavender', 'Set your level'], ['bg-lime', 'Get matched'], ['bg-peach', 'Play, then confirm']];
+---
+
+<Base title={t('Badie — find badminton partners and courts')} description={t('A free app for finding badminton partners at your level and courts near you.')}>
+  <div class="grid gap-16 pb-4 lg:gap-24">
+    <header class="grid justify-items-start gap-6 lg:py-12">
+      <h1 class="display whitespace-pre-line text-[2.25rem] sm:text-[3.75rem] lg:text-[4.5rem]">
+        {slogan.map((part, i) => (i % 2 ? <mark class="marker">{part}</mark> : part))}
+      </h1>
+      <p class="max-w-xl text-[1.0625rem] leading-relaxed text-ink-secondary lg:text-[1.1875rem]">{t('Badie finds players at your level near you. Free.')}</p>
+      <a href={signInFirst('/play/')} class="button button-lg">{t('Start matching')}</a>
+    </header>
+
+    <section aria-labelledby="how" class="grid gap-8">
+      <h2 id="how" class="text-title lg:text-[2.5rem]">{t('How Badie works')}</h2>
+      <ol class="grid gap-4 sm:grid-cols-3">
+        {steps.map(([tint, title], i) => (
+          <li class:list={['sticker flex items-center gap-4 p-5 lg:p-6', tint]}>
+            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-[#17140f] text-headline font-black text-lime">{i + 1}</span>
+            <h3 class="text-title3 text-on-accent">{t(title)}</h3>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section aria-labelledby="courts" class="flex flex-wrap items-end justify-between gap-4">
+      <h2 id="courts" class="text-title lg:text-[2.5rem]">{t('Find courts around you')}</h2>
+      <a href="/courts/" class="button button-quiet">{t('Browse by country')}</a>
+    </section>
+
+    <section aria-labelledby="ready" class="sticker grid gap-6 bg-[#17140f] p-8 text-[#f5f0e6] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center lg:p-12">
+      <h2 id="ready" class="text-title lg:text-[2.5rem]">{t('Ready to play?')}</h2>
+      <a href="/signin/?new" class="button button-lg justify-self-start">{t('Create account')}</a>
+    </section>
+  </div>
+</Base>
