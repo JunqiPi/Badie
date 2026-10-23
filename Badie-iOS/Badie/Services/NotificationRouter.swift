@@ -16,10 +16,9 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        // 不等定时刷新：马上拉会话列表和正开着的会话
-        await MainActor.run { messages?.refreshNow() }
-        // 正开着这个会话：新消息已经在屏幕上了，不再弹
+        // 新消息：不等定时刷新，马上拉会话列表和正开着的会话；正开着这个会话就不再弹
         if let link = notification.request.content.userInfo["link"] as? String, link.contains("/messages/") {
+            await MainActor.run { messages?.refreshNow() }
             let route = PushRegistry.route(for: link).route
             if await MainActor.run(body: { router?.isShowing(route) ?? false }) { return [] }
         }

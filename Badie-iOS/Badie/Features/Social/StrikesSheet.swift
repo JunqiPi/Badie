@@ -36,7 +36,7 @@ struct StrikesSheet: View {
     private func row(_ strike: MyStrikes.Strike) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             HStack {
-                Text([strike.startsAt.formatted(.dateTime.month().day().weekday()), strike.venue].compactMap { $0 }.joined(separator: " · "))
+                Text([strike.gameStartsAt.formatted(Date.FormatStyle(timeZone: strike.timeZone ?? .current).month().day().weekday()), strike.venue].compactMap { $0 }.joined(separator: " · "))
                     .font(AppTheme.Typography.subheadlineBold)
                     .foregroundStyle(AppTheme.Colors.ink)
                 Spacer(minLength: 0)

@@ -13,8 +13,9 @@ struct MyStrikes: Equatable {
         let createdAt: Date
         let seen: Bool
         let canAppeal: Bool
-        /// 那场球的开始时间和球馆
-        let startsAt: Date
+        /// 那场球的开始时间（按球馆时区显示）和球馆
+        let gameStartsAt: Date
+        let timeZone: TimeZone?
         let venue: String?
     }
 

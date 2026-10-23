@@ -2,7 +2,7 @@
 -- 48 小时内申诉、申诉期间不执行；管理员维持或撤销；资料卡显示近 180 天次数
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(19);
+select plan(20);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000029' || lpad(n::text, 2, '0'))::uuid, 'k' || n || '@test.local' from generate_series(1, 8) n;
@@ -47,8 +47,16 @@ insert into public.game_players (game_id, user_id, team, rating, checked_in_at)
   values ('00000000-0000-0000-0000-00000000290a', pg_temp.u(1), 1, 3, now() - interval '2 hours'), ('00000000-0000-0000-0000-00000000290a', pg_temp.u(7), 2, 3, null);
 select pg_temp.login(7);
 select public.review_player('00000000-0000-0000-0000-00000000290a', pg_temp.u(1), 'no_show', 'accurate', '{}', '{}', false);
+-- 双打：另外 3 人里只有 1 人说没来，不算
+reset role;
+insert into public.games (id, mode, starts_at, ends_at, venue_id, review_prompted)
+  values ('00000000-0000-0000-0000-00000000290b', 'doubles', now() - interval '3 hours', now() - interval '1 hour', 'v-us-ca-21-badminton-club-21bc', true);
+insert into public.game_players (game_id, user_id, team, rating)
+  select '00000000-0000-0000-0000-00000000290b', pg_temp.u(n), case when n in (1, 6) then 1 else 2 end, 3 from unnest(array[1, 6, 7, 5]) n;
+select pg_temp.login(6);
+select public.review_player('00000000-0000-0000-0000-00000000290b', pg_temp.u(1), 'no_show', 'accurate', '{}', '{}', false);
 select pg_temp.login(1);
-select is((public.my_strikes() ->> 'recent')::int, 0, '签到了：不算爽约');
+select is((public.my_strikes() ->> 'recent')::int, 0, '签到了、或双打只有 1 人说没来：都不算爽约');
 
 -- 第 1 次：警告，还能约球
 select pg_temp.missed(2);
@@ -66,6 +74,10 @@ select pg_temp.login(1);
 select ok((public.my_strikes() ->> 'suspended_until')::timestamptz between now() + interval '6 days 23 hours' and now() + interval '7 days 1 minute',
           '第 2 次：7 天不能约球');
 select throws_ok($$ select pg_temp.ticket(4) $$, '42501', 'suspended', '不能约球时不能匹配');
+reset role;
+select is((select status::text from public.match_tickets where user_id = pg_temp.u(1) order by created_at limit 1), 'cancelled',
+          '之前在找的请求一并取消');
+select pg_temp.login(1);
 
 -- 申诉：期间不执行
 select throws_ok($$ select public.appeal_strike(pg_temp.strike(2), 'no') $$, '22023', 'invalid_appeal', '要写明情况');
@@ -93,7 +105,7 @@ select public.appeal_strike(pg_temp.strike(3), 'Game was moved, I told them in c
 select pg_temp.login(8);
 select public.admin_resolve_strike(pg_temp.strike(3), true);
 select pg_temp.login(1);
-select isnt((public.my_strikes() ->> 'suspended_until')::timestamptz, 'infinity'::timestamptz, '撤销后不再是永久');
+select is((public.my_strikes() ->> 'suspended_until')::timestamptz, now() + interval '7 days', '撤销第 3 次：回到第 2 次的 7 天');
 
 -- 超过 48 小时不能申诉
 reset role;

@@ -94,14 +94,14 @@ extension MockBackend {
         let threads: [RemoteThreadSummary] = try await remote.rpc("my_threads")
         let notes: [RemoteNotification] = try await remote.select(
             "notifications", query: "select=id,kind,title,body,link,created_at,read_at&order=id.desc&limit=50")
-        apply(friends: friends, me: me)
-        apply(threads: threads, me: me)
-        apply(notifications: notes, me: me)
+        let changed = [apply(friends: friends, me: me), apply(threads: threads, me: me), apply(notifications: notes, me: me)]
         try? await refreshRemoteRegulars()
-        scheduleSave()
+        // 每 15 秒轮询一次，多数时候什么都没变：变了才写盘
+        if changed.contains(true) { scheduleSave() }
     }
 
-    private func apply(friends: RemoteFriends, me: String) {
+    @discardableResult
+    private func apply(friends: RemoteFriends, me: String) -> Bool {
         for friend in friends.friends + friends.requests {
             cacheRemoteUser(id: friend.id, nickname: friend.nickname, rating: friend.rating)
         }
@@ -114,15 +114,18 @@ extension MockBackend {
         let incoming = friends.requests.map {
             FriendRequest(id: "request-\($0.id)", fromUserId: $0.id, toUserId: me, note: "", sentAt: $0.createdAt ?? Date(), status: .pending)
         }
-        guard Set(friendships.map(\.userIds)) != Set(db.friendships.map(\.userIds)) || incoming + outgoing != db.friendRequests else { return }
+        guard Set(friendships.map(\.userIds)) != Set(db.friendships.map(\.userIds)) || incoming + outgoing != db.friendRequests else { return false }
         db.friendships = friendships
         db.friendRequests = incoming + outgoing
         emit(.friendsChanged)
         emit(.friendRequestsChanged)
+        return true
     }
 
-    private func apply(threads summaries: [RemoteThreadSummary], me: String) {
+    @discardableResult
+    private func apply(threads summaries: [RemoteThreadSummary], me: String) -> Bool {
         var threads: [String: MessageThread] = [:]
+        var changedThreads: [String] = []
         for summary in summaries {
             let id = Self.threadId(kind: summary.kind, id: summary.id, me: me)
             let existing = db.threads[id]
@@ -152,22 +155,27 @@ extension MockBackend {
                 isPendingRequest: summary.request != nil
             )
             if let last, existing?.lastMessage?.sentAt != last.sentAt || existing?.lastMessage?.content != last.content {
-                emit(.messagesChanged(threadId: id))
+                changedThreads.append(id)
             }
         }
-        guard threads != db.threads else { return }
+        guard threads != db.threads else { return false }
+        // 先写进缓存再通知：收到通知的地方读到的是新数据
         db.threads = threads
+        for id in changedThreads { emit(.messagesChanged(threadId: id)) }
         emit(.threadsChanged)
+        return true
     }
 
-    private func apply(notifications: [RemoteNotification], me: String) {
+    @discardableResult
+    private func apply(notifications: [RemoteNotification], me: String) -> Bool {
         let items = notifications.map { note in
             InboxItem(id: "note-\(note.id)", kind: Self.inboxKind(note.kind), title: note.title, body: note.body,
                       createdAt: note.createdAt, isRead: note.readAt != nil, relatedId: relatedId(for: note))
         }
-        guard items != db.inbox[me] ?? [] else { return }
+        guard items != db.inbox[me] ?? [] else { return false }
         db.inbox[me] = items
         emit(.inboxChanged)
+        return true
     }
 
     /// 通知点开去哪：链接里的 ID（球局、球友、球群）；找到球友了就打开有提议的那个请求
@@ -224,11 +232,15 @@ extension MockBackend {
     /// 没开着的会话不拉消息：拉了服务器会记为已读
     func refreshMessagesNow(activeThreadId: String?) {
         guard isRemote else { return }
-        if let activeThreadId {
-            remoteThreadLoadedAt[activeThreadId] = Date()
+        if let activeThreadId, canOpenRemoteThread(activeThreadId) {
             Task { try? await loadRemoteThread(activeThreadId) }
         }
-        Task { try? await refreshRemoteSocial() }
+        // 推送、回到前台连着来时只拉一次
+        guard socialRefresh == nil else { return }
+        socialRefresh = Task {
+            try? await refreshRemoteSocial()
+            socialRefresh = nil
+        }
     }
 
     /// 拉取一个会话的消息（服务器同时记为已读）
@@ -299,7 +311,8 @@ extension MockBackend {
             let createdAt: Date
             let seen: Bool
             let canAppeal: Bool
-            let startsAt: Date
+            let gameStartsAt: Date
+            let tz: String?
             let venue: String?
         }
 
@@ -311,12 +324,7 @@ extension MockBackend {
     /// 服务器给的暂停时间：永久是 "infinity"
     static func suspension(_ value: String?) -> Date? {
         guard let value else { return nil }
-        if value == "infinity" { return .distantFuture }
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = formatter.date(from: value) { return date }
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter.date(from: value)
+        return value == "infinity" ? .distantFuture : RemoteJSON.parseDate(value)
     }
 
     /// 我的爽约记录（近 180 天）
@@ -324,7 +332,8 @@ extension MockBackend {
         let raw: RemoteMyStrikes = try await requireRemote().rpc("my_strikes")
         return MyStrikes(suspendedUntil: Self.suspension(raw.suspendedUntil), recent: raw.recent, strikes: raw.strikes.map {
             MyStrikes.Strike(id: $0.id, level: $0.level, status: MyStrikes.Status(rawValue: $0.status) ?? .active, createdAt: $0.createdAt,
-                             seen: $0.seen, canAppeal: $0.canAppeal, startsAt: $0.startsAt, venue: $0.venue)
+                             seen: $0.seen, canAppeal: $0.canAppeal, gameStartsAt: $0.gameStartsAt,
+                             timeZone: $0.tz.flatMap(TimeZone.init(identifier:)), venue: $0.venue)
         })
     }
 
@@ -343,8 +352,9 @@ extension MockBackend {
 
     /// 换一个加球友链接，旧链接失效
     func remoteResetFriendCode() async throws -> User {
+        let code = try await requireRemote().rpc("reset_friend_code", as: String.self)
         guard var me = currentUser else { throw RemoteError.notSignedIn }
-        me.friendCode = try await requireRemote().rpc("reset_friend_code", as: String.self)
+        me.friendCode = code
         db.users[me.id] = me
         scheduleSave()
         emit(.userUpdated(me))

@@ -1,6 +1,6 @@
--- 爽约处罚（三档）：180 天内第 1 次警告，第 2 次 7 天不能约球，第 3 次永久不能约球；180 天没再爽约就重新计数。
--- - 爽约：没签到、没取消，并且同场多数人在评价里说他没来（单打是对手，双打是另外 3 人里至少 2 人）
--- - 48 小时内可以申诉；申诉期间不执行，管理员核实后维持或撤销（撤销的不再计入履约记录）
+-- 爽约处罚（三档，只数近 180 天内的次数）：第 1 次警告，第 2 次 7 天不能约球，第 3 次永久不能约球。
+-- - 爽约：没签到、没取消，并且同场没取消的人里多数说他没来（单打是对手，双打是另外 3 人里至少 2 人）
+-- - 48 小时内可以申诉；申诉期间不执行，管理员核实后维持或撤销（撤销的不再计入，之后的次数重新排档）
 -- - 不能约球：不能匹配、发起或加入球局、报名球群、发起或接受挑战；可以登录、看消息
 -- - 资料页显示近 180 天爽约次数和暂停到什么时候
 
@@ -30,7 +30,9 @@ create function public.judged_no_show(p_game uuid, p_user uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select coalesce((
     select gp.checked_in_at is null and gp.cancelled_at is null
-       and (select count(*) from public.game_reviews r where r.game_id = p_game and r.reviewee_id = p_user and r.attendance = 'no_show') * 2
+       and (select count(*) from public.game_reviews r
+            join public.game_players rp on rp.game_id = r.game_id and rp.user_id = r.reviewer_id and rp.cancelled_at is null
+            where r.game_id = p_game and r.reviewee_id = p_user and r.attendance = 'no_show') * 2
          > (select count(*) from public.game_players o where o.game_id = p_game and o.user_id <> p_user and o.cancelled_at is null)
     from public.game_players gp where gp.game_id = p_game and gp.user_id = p_user), false)
 $$;
@@ -43,7 +45,7 @@ language sql stable security definer set search_path = '' as $$
     select public.judged_no_show(g.id, p_user)
            and not exists (select 1 from public.strikes s where s.game_id = g.id and s.user_id = p_user and s.status = 'overturned') as no_show
     from public.game_players gp join public.games g on g.id = gp.game_id
-    where gp.user_id = p_user and g.status = 'scheduled' and g.ends_at < now())
+    where gp.user_id = p_user and gp.cancelled_at is null and g.status = 'scheduled' and g.ends_at < now())
   select count(*) filter (where not no_show), count(*) filter (where no_show),
          (select count(*) from public.game_players where user_id = p_user and late_cancel)
            + (select count(*) from public.session_late_cancels where user_id = p_user)
@@ -74,6 +76,12 @@ returns text language sql immutable set search_path = '' as $$
     else 'Third missed game in 180 days. You can no longer join games. Think it’s wrong? Appeal within 48 hours.' end
 $$;
 
+-- 开始不能约球：还在找的约球请求一并取消（不然之后照样会被排进球局）
+create function public.start_suspension(p_user uuid)
+returns void language sql security definer set search_path = '' as $$
+  update public.match_tickets set status = 'cancelled' where user_id = p_user and status in ('searching', 'paused')
+$$;
+
 -- 有人说他没来时检查一次：够了多数就记一次
 create function public.record_strike()
 returns trigger language plpgsql security definer set search_path = '' as $$
@@ -81,6 +89,8 @@ declare
   previous int;
   next_level smallint;
 begin
+  -- 同一局几个人同时评：排队判断，后提交的能看到先提交的评价（不会都只数到 1 票而漏记）
+  perform 1 from public.game_players where game_id = new.game_id and user_id = new.reviewee_id for update;
   if exists (select 1 from public.strikes where user_id = new.reviewee_id and game_id = new.game_id)
      or not public.judged_no_show(new.game_id, new.reviewee_id) then
     return new;
@@ -90,6 +100,7 @@ begin
   next_level := least(previous + 1, 3);
   insert into public.strikes (user_id, game_id, level, starts_at)
     values (new.reviewee_id, new.game_id, next_level, case when next_level >= 2 then now() end);
+  if next_level >= 2 then perform public.start_suspension(new.reviewee_id); end if;
   perform public.notify(new.reviewee_id, 'strike', 'Missed game recorded', public.strike_text(next_level), '/me/');
   return new;
 end
@@ -122,11 +133,31 @@ create trigger session_signups_suspended before insert on public.session_signups
   for each row execute function public.block_suspended('user_id');
 create trigger challenges_suspended before insert on public.challenges
   for each row execute function public.block_suspended('challenger_id');
+-- 接受挑战：双方和搭档都要能约球（发起后才被暂停的也拦下）
+create function public.block_suspended_challenge()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if exists (select 1 from unnest(array[new.challenger_id, new.target_id, new.challenger_partner_id, new.target_partner_id]) u
+             where u is not null and public.suspended_until(u) is not null) then
+    raise exception 'suspended' using errcode = '42501';
+  end if;
+  return new;
+end
+$$;
 create trigger challenges_accept_suspended before update of status on public.challenges
   for each row when (new.status = 'accepted' and old.status is distinct from new.status)
-  execute function public.block_suspended('target_id');
+  execute function public.block_suspended_challenge();
 
--- 我的爽约记录：暂停到什么时候、近 180 天次数、每一次（能不能申诉、看过没有）
+-- 双打挑战选搭档：不能约球的人选不了
+create or replace function public.valid_partner(p_user uuid, p_partner uuid, p_taken uuid[], p_starts_at timestamptz, p_ends_at timestamptz)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select p_partner <> p_user and not p_partner = any (p_taken)
+    and public.are_friends(p_user, p_partner) and not public.blocked_between(p_user, p_partner)
+    and not public.has_game_between(p_partner, p_starts_at, p_ends_at)
+    and public.suspended_until(p_partner) is null
+$$;
+
+-- 我的爽约记录：暂停到什么时候、近 180 天次数、每一次（能不能申诉、看过没有）；永久的那次一直列出来
 create function public.my_strikes()
 returns jsonb language sql stable security definer set search_path = '' as $$
   select jsonb_build_object(
@@ -136,9 +167,10 @@ returns jsonb language sql stable security definer set search_path = '' as $$
       select jsonb_agg(jsonb_build_object(
                'id', s.id, 'level', s.level, 'status', s.status, 'created_at', s.created_at, 'seen', s.seen_at is not null,
                'can_appeal', s.status = 'active' and s.created_at > now() - interval '48 hours',
-               'starts_at', g.starts_at, 'venue', v.name) order by s.created_at desc)
+               'game_starts_at', g.starts_at, 'tz', v.time_zone_id, 'venue', v.name) order by s.created_at desc)
       from public.strikes s join public.games g on g.id = s.game_id left join public.venues v on v.id = g.venue_id
-      where s.user_id = auth.uid() and s.created_at > now() - interval '180 days'), '[]'))
+      where s.user_id = auth.uid()
+        and (s.created_at > now() - interval '180 days' or (s.level = 3 and s.status in ('active', 'upheld')))), '[]'))
 $$;
 
 create function public.mark_strikes_seen()
@@ -179,6 +211,22 @@ begin
 end
 $$;
 
+-- 撤销一次后，之后的每次按新的次数重新排档（降档的沿用原来的开始时间）
+create function public.relevel_strikes(p_user uuid, p_after timestamptz)
+returns void language plpgsql security definer set search_path = '' as $$
+declare
+  r record;
+  next_level smallint;
+begin
+  for r in select id, created_at from public.strikes
+           where user_id = p_user and created_at > p_after and status <> 'overturned' order by created_at loop
+    select least(count(*) + 1, 3) into next_level from public.strikes
+      where user_id = p_user and status <> 'overturned' and created_at < r.created_at and created_at > r.created_at - interval '180 days';
+    update public.strikes set level = next_level, starts_at = case when next_level >= 2 then starts_at end where id = r.id;
+  end loop;
+end
+$$;
+
 -- 管理员处理申诉：撤销（不再计入记录）或维持（第 2、3 次从现在开始执行）
 create function public.admin_resolve_strike(p_strike bigint, p_overturn boolean, p_note text default '')
 returns void language plpgsql security definer set search_path = '' as $$
@@ -192,8 +240,10 @@ begin
     where id = p_strike and status = 'appealed' returning * into s;
   if s.id is null then raise exception 'not_found' using errcode = 'P0002'; end if;
   if p_overturn then
+    perform public.relevel_strikes(s.user_id, s.created_at);
     perform public.notify(s.user_id, 'strike', 'Appeal accepted', 'The missed game was removed from your record.', '/me/');
   else
+    if s.level >= 2 then perform public.start_suspension(s.user_id); end if;
     perform public.notify(s.user_id, 'strike', 'Appeal declined', 'We checked, and the missed game stays on your record.', '/me/');
   end if;
   insert into public.moderation_log (admin_id, target_type, target_id, action, note)
@@ -297,7 +347,8 @@ from (values
 join (select distinct locale from public.notification_texts) l on l.locale = t.locale;
 
 revoke execute on function public.judged_no_show(uuid, uuid), public.suspended_until(uuid), public.recent_no_shows(uuid),
-  public.strike_text(int), public.record_strike(), public.block_suspended()
+  public.strike_text(int), public.record_strike(), public.block_suspended(), public.block_suspended_challenge(),
+  public.start_suspension(uuid), public.relevel_strikes(uuid, timestamptz)
   from public, anon, authenticated;
 revoke execute on function public.my_strikes(), public.mark_strikes_seen(), public.appeal_strike(bigint, text),
   public.admin_strike_appeals(), public.admin_resolve_strike(bigint, boolean, text)

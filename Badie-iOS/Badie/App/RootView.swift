@@ -42,8 +42,8 @@ struct RootView: View {
                 if appState.phase == .main {
                     messageManager.refreshNow()
                     appState.refreshStrikes()
+                    locationManager.start()
                 }
-                if appState.phase == .main { locationManager.start() }
             }
         }
         .onChange(of: appState.phase) { _, phase in
@@ -76,6 +76,9 @@ struct RootView: View {
         Task {
             do {
                 if let userId = try await friendManager.openFriendLink(code) {
+                    if userId == appState.currentUser?.id {
+                        appState.showToast(String(localized: "这是你自己的加球友链接"))
+                    }
                     appState.showPlayer(userId)
                 } else {
                     appState.showToast(String(localized: "这个加球友链接已失效"), style: .error)

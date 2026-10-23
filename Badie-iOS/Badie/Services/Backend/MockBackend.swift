@@ -40,6 +40,8 @@ final class MockBackend {
     var remoteChallengeStatus: [String: String] = [:]
     /// 别的球友：近 180 天爽约次数、不能约球到什么时候（资料卡上服务器给的）
     var remoteNoShows: [String: (recent: Int, suspendedUntil: Date?)] = [:]
+    /// 正在进行的会话列表刷新（推送和回到前台连着来时复用）
+    var socialRefresh: Task<Void, Never>?
     /// 同馆常客（上次拉取的时间），以及对每位球友能不能私信（资料页上服务器给的）
     var remoteRegulars: [VenueRegular] = []
     var remoteRegularsLoadedAt: Date?
@@ -91,6 +93,9 @@ final class MockBackend {
 
     // MARK: Persistence
 
+    /// 编码和写盘放到后台串行队列：本地库里有消息和头像，不小；串行保证旧快照不会晚于新快照写入
+    private static let saveQueue = DispatchQueue(label: "badie.database.save", qos: .utility)
+
     func scheduleSave() {
         saveTask?.cancel()
         let snapshot = db
@@ -98,7 +103,7 @@ final class MockBackend {
         saveTask = Task {
             try? await Task.sleep(nanoseconds: 400_000_000)
             guard !Task.isCancelled else { return }
-            store.save(snapshot)
+            Self.saveQueue.async { store.save(snapshot) }
         }
     }
 
@@ -261,10 +266,11 @@ final class MockBackend {
                 await remoteUnregisterPush()
                 await remote.signOut()
             }
+            clearRemoteCache()
+        } else {
+            db.currentUserId = nil
+            saveNow()
         }
-        remoteIsAdmin = false
-        db.currentUserId = nil
-        saveNow()
         emit(.sessionChanged)
     }
 

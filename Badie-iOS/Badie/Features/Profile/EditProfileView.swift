@@ -208,8 +208,7 @@ struct EditProfileView: View {
 
     private func loadPhoto(_ item: PhotosPickerItem) async {
         guard let data = try? await item.loadTransferable(type: Data.self),
-              let image = UIImage(data: data),
-              let jpeg = AvatarPhotos.jpegData(from: image) else {
+              let jpeg = await AvatarPhotos.jpegData(fromPhoto: data) else {
             appState.showToast(String(localized: "无法读取这张照片"), style: .error)
             return
         }

@@ -26,7 +26,7 @@ struct ProfileView: View {
                                          text: String(localized: "还没定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配"),
                                          actionTitle: String(localized: "去定级")) { router.open(.editProfile) }
                         }
-                        if let strikes = appState.strikes, !strikes.strikes.isEmpty {
+                        if let strikes = appState.strikes, strikes.recent > 0 || strikes.suspendedUntil != nil {
                             NoticeBanner(icon: "exclamationmark.triangle.fill",
                                          text: strikes.suspendedUntil?.suspensionText ?? String(localized: "近 180 天爽约 \(strikes.recent) 次"),
                                          tint: AppTheme.Colors.pink, actionTitle: String(localized: "去看看")) {

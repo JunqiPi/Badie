@@ -130,6 +130,10 @@ final class AppState: ObservableObject {
         switch event {
         case .sessionChanged:
             currentUser = backend.currentUser
+            if currentUser == nil {
+                strikes = nil
+                showsStrikes = false
+            }
             if phase != .launching {
                 withAnimation(AppTheme.Motion.gentle) {
                     phase = currentUser == nil ? .onboarding : .main
@@ -307,11 +311,13 @@ final class AppState: ObservableObject {
             if backend.user(id: userId) != nil { presentedPlayer = PlayerSheetItem(id: userId) }
             return
         }
-        // 正式后端：先用缓存打开，同时拉取最新资料；没见过的人拉到了再打开
-        if backend.user(id: userId) != nil { presentedPlayer = PlayerSheetItem(id: userId) }
+        // 正式后端：先用缓存打开，同时拉取最新资料；没见过的人拉到了再打开（已经打开过的，关了就不再弹）
+        let cached = backend.user(id: userId) != nil
+        if cached { presentedPlayer = PlayerSheetItem(id: userId) }
         Task {
-            if await backend.refreshRemotePlayer(userId) != nil, presentedPlayer == nil {
-                presentedPlayer = PlayerSheetItem(id: userId)
+            let found = await backend.refreshRemotePlayer(userId) != nil
+            if !cached {
+                if found { presentedPlayer = PlayerSheetItem(id: userId) } else { showToast(String(localized: "找不到这位球友"), style: .error) }
             }
         }
     }

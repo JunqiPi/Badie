@@ -140,7 +140,7 @@ function StrikeRow({ strike, onDone }: { strike: Strike; onDone: () => void }) {
   return (
     <li className="grid gap-2 rounded-[12px] bg-white/70 p-3 text-[#17140f]">
       <div className="flex flex-wrap items-center justify-between gap-2 text-footnote">
-        <span className="font-bold">{day(strike.starts_at)}{strike.venue && ` · ${strike.venue}`}</span>
+        <span className="font-bold">{day(strike.game_starts_at, strike.tz)}{strike.venue && ` · ${strike.venue}`}</span>
         {strikeStatus[strike.status] && <span>{t(strikeStatus[strike.status])}</span>}
         {strike.can_appeal && !open && <Button className="button-sm" variant="quiet" onClick={() => setOpen(true)}>{t('Appeal')}</Button>}
       </div>

@@ -487,7 +487,9 @@ export interface Strike {
   created_at: string;
   seen: boolean;
   can_appeal: boolean;
-  starts_at: string;
+  /** 那场球的开始时间和球馆时区 */
+  game_starts_at: string;
+  tz: string | null;
   venue: string | null;
 }
 export interface MyStrikes { suspended_until: string | null; recent: number; strikes: Strike[] }

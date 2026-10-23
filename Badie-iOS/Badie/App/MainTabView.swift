@@ -94,7 +94,6 @@ struct MainTabView: View {
             roomManager.reload()
         }
         .onAppear {
-            appState.refreshStrikes()
             roomManager.radiusKm = locationManager.preferences.travelRadiusKm
             roomManager.reload()
         }

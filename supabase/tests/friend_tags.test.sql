@@ -1,7 +1,7 @@
 -- 昵称#编号和加球友链接：同名不同号、改名沿用编号、精确搜索、链接能加关了搜索的人、重置后旧链接失效
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(17);
+select plan(20);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000019' || lpad(n::text, 2, '0'))::uuid, 't' || n || '@test.local' from generate_series(1, 5) n;
@@ -54,11 +54,21 @@ select is(public.open_friend_link(upper(current_setting('test.code3'))), pg_temp
 select is(public.send_friend_request(pg_temp.u(3)), 'requested', '打开链接后可以加球友');
 select is(public.open_friend_link('zzzzzzzz'), null, '错的码什么都拿不到');
 
--- 重置：旧链接失效
+-- 重置：旧链接失效，只打开过链接的人也看不到资料了
+select pg_temp.login(5);
+select public.open_friend_link(current_setting('test.code3'));
+select ok(public.player_card(pg_temp.u(3)) is not null, '打开链接后能看资料');
 select pg_temp.login(3);
 select isnt(public.reset_friend_code(), current_setting('test.code3'), '重置后是新链接');
 select pg_temp.login(1);
 select is(public.open_friend_link(current_setting('test.code3')), null, '旧链接失效');
+select pg_temp.login(5);
+select ok(public.player_card(pg_temp.u(3)) is null, '重置后只打开过链接的人看不到资料');
+
+-- 昵称里的 # 去掉（不然和编号分不清）
+reset role;
+update public.profiles set nickname = 'Mi#ra' where id = pg_temp.u(4);
+select is((select nickname from public.profiles where id = pg_temp.u(4)), 'Mira', '昵称里的 # 去掉');
 
 select * from finish();
 rollback;

@@ -80,17 +80,25 @@ struct FriendLinkSheet: View {
     }
 }
 
-/// 黑白二维码（放大时不模糊）
+/// 黑白二维码（放大时不模糊）；链接变了才重新生成
 private struct QRCodeView: View {
     let text: String
+    @State private var image: UIImage?
+
+    private static let context = CIContext()
 
     var body: some View {
-        if let image = Self.image(for: text) {
-            Image(uiImage: image)
-                .interpolation(.none)
-                .resizable()
-                .scaledToFit()
+        Group {
+            if let image {
+                Image(uiImage: image)
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Color.clear
+            }
         }
+        .task(id: text) { image = Self.image(for: text) }
     }
 
     private static func image(for text: String) -> UIImage? {
@@ -98,7 +106,7 @@ private struct QRCodeView: View {
         filter.message = Data(text.utf8)
         filter.correctionLevel = "M"
         guard let output = filter.outputImage,
-              let cgImage = CIContext().createCGImage(output, from: output.extent) else { return nil }
+              let cgImage = context.createCGImage(output, from: output.extent) else { return nil }
         return UIImage(cgImage: cgImage)
     }
 }

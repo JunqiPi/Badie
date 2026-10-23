@@ -144,12 +144,22 @@ extension MockBackend {
     /// 只清本地登录状态（服务器那边已经失效或从没登录过）
     func signOutLocally() {
         guard db.currentUserId != nil else { return }
+        clearRemoteCache()
+        emit(.sessionChanged)
+    }
+
+    /// 退出登录：清掉上一个账号的消息、球友和别人的资料，换账号登录时不会看到
+    func clearRemoteCache() {
         remoteIsAdmin = false
         remoteAvatarPath = nil
         remoteAvatarChecked = []
-        db.currentUserId = nil
+        remoteNoShows = [:]
+        remoteMessageOptions = [:]
+        remoteChallengeStatus = [:]
+        remoteWinRates = [:]
+        store.erase()
+        db = Database()
         saveNow()
-        emit(.sessionChanged)
     }
 
     /// 注销：服务器删除账号和数据（以后的球局取消、球群交接），成功后清空本机缓存

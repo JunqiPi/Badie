@@ -457,8 +457,8 @@ struct OnboardingFlow: View {
             .onChange(of: photoItem) { _, item in
                 guard let item else { return }
                 Task {
-                    if let data = try? await item.loadTransferable(type: Data.self), let image = UIImage(data: data) {
-                        form.photo = AvatarPhotos.jpegData(from: image)
+                    if let data = try? await item.loadTransferable(type: Data.self), let jpeg = await AvatarPhotos.jpegData(fromPhoto: data) {
+                        form.photo = jpeg
                     } else {
                         appState.showToast(String(localized: "无法读取这张照片"), style: .error)
                     }

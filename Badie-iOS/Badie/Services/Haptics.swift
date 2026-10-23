@@ -36,15 +36,29 @@ enum Haptics {
 enum AvatarPhotos {
     /// 由后端提供照片数据
     static var source: @MainActor (String) -> Data? = { _ in nil }
-    private static var cache: [String: UIImage] = [:]
+    /// 内存紧张时系统会自动清掉
+    private static let cache = NSCache<NSString, UIImage>()
 
     static func image(userId: String, avatar: Avatar) -> UIImage? {
         guard let version = avatar.photoVersion else { return nil }
-        let key = "\(userId)#\(version)"
-        if let cached = cache[key] { return cached }
+        let key = "\(userId)#\(version)" as NSString
+        if let cached = cache.object(forKey: key) { return cached }
         guard let data = source(userId), let image = UIImage(data: data) else { return nil }
-        cache[key] = image
+        cache.setObject(image, forKey: key)
         return image
+    }
+
+    /// 相册里选的照片：直接解码成小图再裁（4800 万像素的原图全尺寸解码要上百 MB），放在后台做
+    nonisolated static func jpegData(fromPhoto data: Data) async -> Data? {
+        await Task.detached(priority: .userInitiated) {
+            guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+                  let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
+                      kCGImageSourceCreateThumbnailFromImageAlways: true,
+                      kCGImageSourceCreateThumbnailWithTransform: true,
+                      kCGImageSourceThumbnailMaxPixelSize: 960,
+                  ] as CFDictionary) else { return nil }
+            return jpegData(from: UIImage(cgImage: thumbnail))
+        }.value
     }
 
     /// 居中裁成正方形并压缩。按 1 倍出图：默认按屏幕倍率会变成 960×960，超过服务器 256 KB 的上限
