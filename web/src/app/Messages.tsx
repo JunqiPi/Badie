@@ -171,7 +171,7 @@ export function AddByLink({ code }: { code: string }) {
   const [missing, setMissing] = useState(false);
   useEffect(() => {
     supabase!.rpc('open_friend_link', { p_code: code }).then(({ data, error }) => {
-      if (error) return toast(problem(error), 'error');
+      if (error) toast(problem(error), 'error');
       if (data) navigate(`/players/${data}/`, true);
       else setMissing(true);
     });
@@ -212,7 +212,7 @@ function FindPlayers({ onAdded }: { onAdded: () => void }) {
     setBusy(undefined);
     if (error) return toast(problem(error), 'error');
     toast(data === 'friends' ? t('You’re now friends') : t('Friend request sent'));
-    setFound(found?.map((p) => (p.id === id ? { ...p, relationship: data === 'friends' ? 'friend' : 'requested' } : p)));
+    setFound((list) => list?.map((p) => (p.id === id ? { ...p, relationship: data === 'friends' ? 'friend' : 'requested' } : p)));
     onAdded();
   }
 
@@ -293,6 +293,7 @@ function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
   const { data: thread, failed, refresh } = useLive<Thread>('open_thread', { args: { p_kind: kind, p_id: id }, every: 5_000 });
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
+  const [responding, setResponding] = useState(false);
   const log = useRef<HTMLDivElement>(null);
   const count = thread?.messages.length ?? 0;
 
@@ -338,7 +339,10 @@ function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
 
   /** 收到的消息请求：接受后可以继续聊；忽略的话对方不会知道 */
   async function respond(accept: boolean) {
+    if (responding) return;
+    setResponding(true);
     const { error } = await supabase!.rpc('respond_message_request', { p_user: id, p_accept: accept });
+    setResponding(false);
     if (error) return toast(problem(error), 'error');
     if (!accept) return navigate('/messages/');
     refresh();
@@ -393,8 +397,8 @@ function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
           <p className="font-bold">{t('{name} wants to chat', { name: other?.nickname ?? '' })}</p>
           <p className="text-footnote">{t('You’re in the same group. Accept or reply to keep chatting. If you ignore it, they won’t know.')}</p>
           <div className="flex gap-2">
-            <Button className="button-sm" onClick={() => respond(true)}>{t('Accept')}</Button>
-            <Button className="button-sm" variant="quiet" onClick={() => respond(false)}>{t('Ignore')}</Button>
+            <Button className="button-sm" busy={responding} onClick={() => respond(true)}>{t('Accept')}</Button>
+            <Button className="button-sm" variant="quiet" disabled={responding} onClick={() => respond(false)}>{t('Ignore')}</Button>
           </div>
         </div>
       )}

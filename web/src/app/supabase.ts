@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { t, type Locale } from './i18n';
 import type { Gender } from './gender';
 import { day } from './time';
@@ -387,8 +387,12 @@ export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record
   const [result, setResult] = useState<{ key: string; data: T }>();
   const [failed, setFailed] = useState(false);
   const key = JSON.stringify(args ?? {});
+  // 换了参数后，旧参数晚到的结果直接丢掉
+  const latest = useRef(key);
+  latest.current = key;
   const refresh = useCallback(async () => {
     const { data, error } = await supabase!.rpc(fn, JSON.parse(key));
+    if (latest.current !== key) return;
     setFailed(Boolean(error));
     if (!error) setResult({ key, data: data as T });
   }, [fn, key]);

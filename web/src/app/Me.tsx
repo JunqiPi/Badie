@@ -132,6 +132,7 @@ function StrikeRow({ strike, onDone }: { strike: Strike; onDone: () => void }) {
     const { error } = await supabase!.rpc('appeal_strike', { p_strike: strike.id, p_text: text });
     setBusy(false);
     if (error) return toast(problem(error), 'error');
+    setOpen(false);
     toast(t('Appeal sent. We’ll reply within 24 hours.'));
     onDone();
   }
@@ -372,10 +373,10 @@ function PasswordSettings({ email }: { email?: string }) {
     event.preventDefault();
     setBusy(true);
     setError(undefined);
-    const problem = await passwordProblem(password);
-    const { error } = problem ? { error: undefined } : await supabase!.auth.updateUser({ password });
+    const issue = await passwordProblem(password);
+    const { error } = issue ? { error: undefined } : await supabase!.auth.updateUser({ password });
     setBusy(false);
-    if (problem) return setError(problem);
+    if (issue) return setError(issue);
     if (error) return setError(error.code === 'same_password' ? t('That’s already your password. Choose a new one.') : t('Couldn’t save. Try again.'));
     setPassword('');
     toast(t('Password saved'));
@@ -489,7 +490,10 @@ function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Pr
       const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;
       const { error } = await supabase!.rpc('set_avatar', { p_path: path });
-      if (error) throw error;
+      if (error) {
+        await supabase!.storage.from('avatars').remove([path]);
+        throw error;
+      }
       if (profile.avatar_path) await supabase!.storage.from('avatars').remove([profile.avatar_path]);
       onChange({ ...profile, avatar_path: path });
       toast(t('Photo updated'));
@@ -527,7 +531,11 @@ async function squareJpeg(file: File, side: number): Promise<Blob> {
   const crop = Math.min(bitmap.width, bitmap.height);
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = side;
-  canvas.getContext('2d')!.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, side, side);
+  const context = canvas.getContext('2d')!;
+  // JPEG 没有透明：透明的 PNG 先铺白底，不然是黑的
+  context.fillStyle = '#fff';
+  context.fillRect(0, 0, side, side);
+  context.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, side, side);
   bitmap.close();
   return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('encode'))), 'image/jpeg', 0.85));
 }
@@ -565,8 +573,11 @@ function DeleteAccount({ avatar }: { avatar: string | null }) {
 
   async function remove() {
     setBusy(true);
-    // 照片文件先删掉（账号删了以后就没权限删了）
-    if (avatar) await supabase!.storage.from('avatars').remove([avatar]);
+    // 照片文件先删掉（账号删了以后就没权限删了）；先解除引用，注销失败也不会留下坏图
+    if (avatar) {
+      await supabase!.rpc('set_avatar', { p_path: null });
+      await supabase!.storage.from('avatars').remove([avatar]);
+    }
     const { error } = await supabase!.rpc('delete_account');
     if (error) {
       setBusy(false);

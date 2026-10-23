@@ -54,8 +54,10 @@ function Report({ item, onDone }: { item: ReportItem; onDone: () => void }) {
   async function resolve(action: Action) {
     setBusy(action);
     const { error } = await supabase!.rpc('admin_resolve_report', { p_report: item.id, p_action: action });
-    setBusy(undefined);
-    if (error) return toast(problem(error), 'error');
+    if (error) {
+      setBusy(undefined);
+      return toast(problem(error), 'error');
+    }
     toast(t('Done'));
     onDone();
   }
@@ -131,10 +133,10 @@ export function StrikeAppeals() {
   async function resolve(id: number, overturn: boolean) {
     setBusy(`${id}-${overturn}`);
     const { error } = await supabase!.rpc('admin_resolve_strike', { p_strike: id, p_overturn: overturn });
+    if (!error) await refresh();
     setBusy(undefined);
     if (error) return toast(problem(error), 'error');
     toast(t('Done'));
-    refresh();
   }
 
   return (

@@ -28,6 +28,8 @@
   X-Robots-Tag: noindex
 /join/*
   X-Robots-Tag: noindex
+/add/*
+  X-Robots-Tag: noindex
 /challenges/*
   X-Robots-Tag: noindex
 /rankings/*
