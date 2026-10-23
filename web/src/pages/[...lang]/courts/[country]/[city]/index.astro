@@ -4,7 +4,7 @@ import Breadcrumbs from '../../../../../components/Breadcrumbs.astro';
 import { PinsMap } from '../../../../../app/PinsMap';
 import VenueRow from '../../../../../components/VenueRow.astro';
 import { cityName, citySummary, countries, formatPrice, nearbyCities, type City, type Country } from '../../../../../lib/venues';
-import { languages, translator } from '../../../../../lib/static-i18n';
+import { fitTitle, languages, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
   return languages.flatMap((lang) =>
@@ -34,8 +34,8 @@ const facts = [
 ---
 
 <Base
-  title={t('Badminton courts in {place} — Badie', { place: name })}
-  description={facts.join(' ')}
+  title={fitTitle(t('Badminton courts in {place} — Badie', { place: name }), t('Badminton courts in {place}', { place: name }))}
+  description={facts.join(' ').length > 160 ? facts.slice(0, 2).join(' ') : facts.join(' ')}
   noindex={!city.indexable}
 >
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }, { label: country.name, href: country.path, region: country.code }]} />

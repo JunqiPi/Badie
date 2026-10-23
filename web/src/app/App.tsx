@@ -44,6 +44,8 @@ export default function App() {
 
   useEffect(() => {
     startLocale().finally(() => setReady(true));
+    // 给搜索引擎和不开脚本的人看的静态内容：App 接管后删掉，页面里只留一个 h1
+    document.getElementById('static-page')?.remove();
   }, []);
 
   useEffect(() => {

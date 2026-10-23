@@ -176,7 +176,9 @@ export const cityName = (city: City) => (city.region ? `${city.name}, ${city.reg
 export const allVenues = allCities.flatMap((c) => c.venues);
 
 export function noindexPaths(): Set<string> {
-  return new Set([...allCities.filter((c) => !c.indexable), ...allVenues.filter((v) => !v.indexable)].map((p) => p.path));
+  // 只有一个城市的国家（新加坡）：国家页和城市页内容重复，只收录城市页
+  const single = countries.filter((c) => c.cities.length === 1);
+  return new Set([...single, ...allCities.filter((c) => !c.indexable), ...allVenues.filter((v) => !v.indexable)].map((p) => p.path));
 }
 
 function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {

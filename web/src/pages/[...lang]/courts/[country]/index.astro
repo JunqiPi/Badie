@@ -21,6 +21,7 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
 
 <Base
   title={t('Badminton courts in {place} — Badie', { place })}
+  noindex={country.cities.length === 1}
   description={t('{n} badminton courts across {areas} areas in {place}.', { n: country.venueCount.toLocaleString('en'), areas: country.cities.length, place })}
 >
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }]} />

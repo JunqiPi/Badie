@@ -1,6 +1,6 @@
 ---
 // App 的入口页面：首页、等级对照表、关于……都挂同一个 App。
-// 槽里的静态内容给搜索引擎和不开脚本的人看；有脚本时先显示转圈，App 加载后接管
+// 页面里的静态内容给搜索引擎和不开脚本的人看（开了脚本就藏起来）；有脚本时先显示转圈，App 加载后接管
 import '../styles/global.css';
 import App from '../app/App';
 import { alternates, pageLocale } from '../lib/static-i18n';
@@ -57,17 +57,18 @@ const languages = alternates(Astro.url.pathname, Astro.site ?? new URL('http://l
             <span class="sr-only">Loading…</span>
           </p>
         </div>
-        <div class="static-only page grid gap-6 py-10">
-          <a href="/" class="text-[1.75rem] font-black">badie.</a>
-          <slot />
-          <!-- 不跑脚本的抓取器（比如 Google 的品牌审核）也要能在首页看到隐私政策的链接 -->
-          <nav aria-label="Badie" class="flex flex-wrap gap-x-4 gap-y-1 text-footnote">
-            <a class="link" href="/privacy/">Privacy Policy</a>
-            <a class="link" href="/terms/">Terms of Service</a>
-            <a class="link" href="/contact/">Contact us</a>
-          </nav>
-        </div>
       </div>
     </App>
+    <!-- 不跑脚本时显示的静态内容放在 App 外面：放进 fallback 插槽的话，Astro 会在 <template> 里再存一份，源码里就有两个 h1 -->
+    <div id="static-page" class="static-only page grid gap-6 py-10">
+      <a href="/" class="text-[1.75rem] font-black">badie.</a>
+      <slot />
+      <!-- 不跑脚本的抓取器（比如 Google 的品牌审核）也要能在首页看到隐私政策的链接 -->
+      <nav aria-label="Badie" class="flex flex-wrap gap-x-4 gap-y-1 text-footnote">
+        <a class="link" href="/privacy/">Privacy Policy</a>
+        <a class="link" href="/terms/">Terms of Service</a>
+        <a class="link" href="/contact/">Contact us</a>
+      </nav>
+    </div>
   </body>
 </html>

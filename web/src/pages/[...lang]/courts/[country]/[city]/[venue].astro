@@ -5,7 +5,7 @@ import { PinsMap } from '../../../../../app/PinsMap';
 import { Icon } from '../../../../../app/icons';
 import VenueRow from '../../../../../components/VenueRow.astro';
 import { cityName, countries, englishName, facilityLabel, formatAddress, formatPrice, nearby, type City, type Country, type Venue } from '../../../../../lib/venues';
-import { languages, localPath, pageLocale, regionName, translator } from '../../../../../lib/static-i18n';
+import { fitTitle, languages, localPath, pageLocale, regionName, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
   return languages.flatMap((lang) =>
@@ -83,7 +83,13 @@ const jsonLd = {
 ---
 
 <Base
-  title={t('{name} — badminton in {place} — Badie', { name: alias ? `${venue.name} (${alias})` : venue.name, place })}
+  title={fitTitle(
+    t('{name} — badminton in {place} — Badie', { name: alias ? `${venue.name} (${alias})` : venue.name, place }),
+    t('{name} — badminton in {place}', { name: venue.name, place }),
+    // 最短的写法也要带语言（中文版带“羽毛球”），中英文页面的标题才不会一样
+    t('{name} — badminton', { name: venue.name }),
+    ...(locale === 'en' ? [venue.name] : []),
+  )}
   description={venue.courts ? t('{name}: badminton with {n} courts at {address}.', { name: venue.name, n: venue.courts, address }) : t('{name}: badminton at {address}.', { name: venue.name, address })}
   noindex={!venue.indexable}
   jsonLd={jsonLd}

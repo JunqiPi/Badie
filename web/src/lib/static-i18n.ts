@@ -37,6 +37,15 @@ export function translator(pathname: string) {
   return (key: string, params?: Record<string, string | number>) => format(catalog[key] || key, params, locale);
 }
 
+/**
+ * 搜索结果里标题太长会被截断（Bing 超过 70 个字符就报问题）：从长到短给几种写法，用第一个放得下的。
+ * 中日韩文字一个字按两个英文字母宽度算
+ */
+export function fitTitle(...options: string[]) {
+  const width = (text: string) => [...text].reduce((sum, char) => sum + (char.codePointAt(0)! >= 0x2e80 ? 2 : 1), 0);
+  return options.find((title) => width(title) <= 65) ?? options.at(-1)!;
+}
+
 /** 国家或地区名，和浏览器里的规则一样：短名自然就用短名（香港、美国），短名是缩写就用全名 */
 export function regionName(code: string, locale: string, english: string) {
   if (locale === 'en') return english;
