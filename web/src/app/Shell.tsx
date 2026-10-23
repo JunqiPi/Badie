@@ -144,7 +144,7 @@ function translateStatic() {
 function Footer() {
   const columns: [string, [string, string][]][] = [
     ['Play', [['Home', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Regular games', '/groups/']]],
-    ['Courts', [['Nearby venues', '/courts/'], ['Level Chart', '/levels/'], ['Leaderboard', '/rankings/']]],
+    ['Courts', [['Nearby venues', '/courts/'], ['Level chart', '/levels/'], ['Leaderboard', '/rankings/']]],
     ['Badie', [['About Badie', '/about/'], ['Contact us', '/contact/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
   ];
   return (
@@ -215,10 +215,10 @@ function TabBar({ current, badge, name, onCreate }: {
 }
 
 const createOptions: { to: string; icon: IconName; tint: Tint; title: string; subtitle: string }[] = [
-  { to: '/play/', icon: 'bolt', tint: 'lime', title: 'Quick Match', subtitle: 'Auto-find buddies by level, time and distance' },
-  { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Have a court and need players, or playing with friends? Open it to others' },
+  { to: '/play/', icon: 'bolt', tint: 'lime', title: 'Quick Match', subtitle: 'Finds buddies by level, time and distance' },
+  { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Fill a court you’ve booked, or play with friends' },
   { to: '/groups/', icon: 'group', tint: 'sky', title: 'Regular games · Groups', subtitle: 'Same time and venue weekly. One-tap sign-up, auto-waitlist' },
-  { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Enter room code / group ID', subtitle: '6-digit room code or group code from a friend' },
+  { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Enter a room or group code', subtitle: '6-character room or group code from a friend' },
 ];
 
 /** “约一场”菜单：手机上是底部弹出的面板，桌面上是居中的对话框 */

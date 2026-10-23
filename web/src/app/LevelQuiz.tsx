@@ -96,7 +96,7 @@ export function LevelQuiz({ onDone }: { onDone: (profile?: Profile) => void }) {
               </div>
               <ul className="grid gap-2 text-subhead text-ink-secondary">
                 {result.limitingGate && <li>{result.limitingGate}</li>}
-                {result.needsCalibration && <li>{t('Your tournament experience ranks higher than your skill answers, so we’ve set your level by experience.')}</li>}
+                {result.needsCalibration && <li>{t('Your tournament experience ranks higher than your skill answers, so your level is set by experience.')}</li>}
                 {result.isReturning && <li>{t('Coming back? This is your level on current form.')}</li>}
                 <li>{t('Players are matched within the level range they choose. You can retake the quiz after 90 days.')}</li>
               </ul>

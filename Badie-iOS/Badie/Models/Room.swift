@@ -181,9 +181,9 @@ struct Room: Identifiable, Codable, Hashable {
     }
 
     var inviteText: String {
-        var text = String(localized: "来 Badie 一起打\(mode.title)！房间码：\(code)")
-        if let slot { text += "\n🕖 \(slot.formattedFull)" }
-        if let court { text += "\n📍 \(court.name)" }
+        var text = String(localized: "来 Badie 一起打\(mode.title)。房间码：\(code)")
+        if let slot { text += "\n\(slot.formattedFull)" }
+        if let court { text += "\n\(court.name)" }
         return text + "\n" + Room.joinLink(code)
     }
 

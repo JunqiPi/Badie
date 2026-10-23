@@ -191,11 +191,11 @@ final class MatchManager: ObservableObject {
             switch ticket.status {
             case .matched:
                 Haptics.success()
-                if !isShowing { notice = String(localized: "约成了！\(ticket.slot.formattedFull)") }
+                if !isShowing { notice = String(localized: "约成了。\(ticket.slot.formattedFull)") }
             case .offered(let offerId):
                 if map[offerId]?.seat(of: ticket.userId)?.response == .pending {
                     Haptics.impact()
-                    if !isShowing { notice = String(localized: "找到搭子了，去确认吧") }
+                    if !isShowing { notice = String(localized: "找到搭子了，请确认") }
                 }
             default:
                 break

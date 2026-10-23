@@ -15,7 +15,7 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
   const mine = profile ? tier(profile.rating).level : undefined;
   return (
     <div className="mx-auto grid max-w-3xl gap-5">
-      <LargeTitle title={t('Level Chart')} subtitle={t('Badie levels 1–9')} />
+      <LargeTitle title={t('Level chart')} subtitle={t('Badie levels 1–9')} />
       <p className="text-subhead text-ink-secondary">
         {t('Levels 1–9, each split into three tiers (−, base, +), for 27 tiers in total. Each level from 3 to 6 adds one more dimension: can you do the shots → how good are your attacking shots → can you get out of trouble on defensive shots, plus tactics → where you stand in your club. Expand any level to see its skill breakdown (footwork, power, front and back court, attack and defense). Judge by what you can do consistently, not shots you pull off once in a while. 7 and up means state, national, and international level, based only on verifiable results, rankings, and certificates.')}
       </p>
@@ -102,7 +102,7 @@ const reasons: { icon: Parameters<typeof Icon>[0]['name']; tint: Tint; title: st
   { icon: 'hand', tint: 'lavender', title: 'Too shy to ask around',
     text: 'Walking up to strangers at the gym or asking online takes nerve, and you never know their level until you’re on court. Badie does the asking and matches you by level.' },
   { icon: 'swap', tint: 'peach', title: 'Your usual partner can’t make it',
-    text: 'Don’t sit the night out. Quick Match looks for someone at your level for the same time, or try a last-minute game with players who are free right now.' },
+    text: 'Don’t sit the night out. Quick Match looks for someone at your level for the same time. Or try a last-minute game with players who are free right now.' },
   { icon: 'compass', tint: 'mint', title: 'New in town',
     text: 'Moved for school or work? See the courts nearby, join a weekly group and meet players at your level in your first week.' },
 ];

@@ -26,7 +26,7 @@ await alex.getByRole('combobox', { name: 'Level' }).selectOption({ label: '7' })
 await alex.getByLabel('Link or certificate number').fill('example.com/results');
 await alex.getByLabel('Name on the results or certificate').fill(`Alex Chen ${stamp}`);
 await alex.getByRole('button', { name: 'Send for review' }).click();
-await alex.getByText('Check the link. It needs to be the right kind of page for this evidence.').waitFor();
+await alex.getByText('This link isn’t the right kind of page for this evidence. Check it and try again.').waitFor();
 await alex.getByLabel('Link or certificate number').fill('usab.tournamentsoftware.com/sport/draw.aspx?id=1');
 await alex.getByRole('button', { name: 'Send for review' }).click();
 await alex.getByText(/Under review: level 7, Tournament results/).waitFor();

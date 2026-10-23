@@ -134,7 +134,7 @@ extension MockBackend {
         guard !db.friendships.contains(where: { $0.involves(first) && $0.involves(second) }) else { return }
         db.friendships.append(Friendship(between: first, and: second))
         let threadId = MessageThread.id(for: first, second)
-        appendMessage(Message(threadId: threadId, senderId: "system", content: String(localized: "你们已经成为球友，打个招呼约一场吧 🏸"),
+        appendMessage(Message(threadId: threadId, senderId: "system", content: String(localized: "你们已经成为球友，可以打个招呼约一场。"),
                               deliveredAt: Date(), readAt: Date(), kind: .system),
                       participants: [first, second], countsAsUnread: false)
     }

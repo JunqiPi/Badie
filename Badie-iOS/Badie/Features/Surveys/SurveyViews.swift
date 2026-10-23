@@ -15,7 +15,7 @@ struct SurveyListView: View {
                                  text: String(localized: "评价匿名，只展示汇总结果；双方都提交后（或 48 小时后）才会计入，避免“互相客气”和报复性差评。"),
                                  tint: AppTheme.Colors.sky)
                     if surveyManager.pendingSurveys.isEmpty {
-                        EmptyStateView(icon: "checkmark.seal.fill", title: String(localized: "都评价完啦"), message: String(localized: "谢谢你让社区更靠谱。"), tint: AppTheme.Colors.mint)
+                        EmptyStateView(icon: "checkmark.seal.fill", title: String(localized: "都评价完了"), message: String(localized: "谢谢你让社区更靠谱。"), tint: AppTheme.Colors.mint)
                     }
                     ForEach(surveyManager.pendingSurveys) { survey in
                         Button {
@@ -337,7 +337,7 @@ struct SurveyFormView: View {
                 issues: SurveyIssue.allCases.filter { issues.contains($0) },
                 wantsRematch: wantsRematch
             )
-            appState.showToast(String(localized: "评价已提交，谢谢！"), style: .success)
+            appState.showToast(String(localized: "评价已提交，谢谢。"), style: .success)
             router.pop()
             if let next = surveyManager.pending(forGame: survey.matchId).first {
                 router.open(.survey(pendingId: next.id))

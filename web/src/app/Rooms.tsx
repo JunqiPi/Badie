@@ -80,7 +80,7 @@ export function Rooms() {
         {area && !nearby && <Skeleton className="h-44" />}
         {nearby?.length === 0 && (
           <Empty icon="court" tint="peach" title={t('No open games within {distance} right now', { distance: km(30_000) })} action={{ label: t('Start a game'), to: '/rooms/new/' }}>
-            {t('Post one if you have a court, or ask us to find you a match.')}
+            {t('Post one if you have a court, or let Badie find you a match.')}
           </Empty>
         )}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{nearby?.map((r) => <RoomCard key={r.id} room={r} wide />)}</div>

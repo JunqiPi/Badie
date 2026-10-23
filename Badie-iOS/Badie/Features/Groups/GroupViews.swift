@@ -66,7 +66,7 @@ struct GroupsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                     NoticeBanner(icon: "list.bullet.clipboard.fill",
-                                 text: String(localized: "固定时间、固定球馆的局。报名在 App 里点一下，满了自动候补，有人退出自动递补，不用在微信群里接龙。"),
+                                 text: String(localized: "固定时间、固定球馆的局：一键报名，满了自动候补，有人退出自动递补。"),
                                  tint: AppTheme.Colors.sky)
                     if !groupManager.myGroups.isEmpty {
                         section(String(localized: "我加入的"), groups: groupManager.myGroups)

@@ -36,11 +36,11 @@ export function GroupPage({ id }: { id: string }) {
   async function join() {
     const status = await act('join', 'join_group', { p_group: g!.id });
     if (status === 'pending') toast(t('Request sent. An organizer will review it.'));
-    else if (status) toast(t('Welcome to {name}!', { name: g!.name }));
+    else if (status) toast(t('Welcome to {name}.', { name: g!.name }));
   }
 
   async function copyInvite() {
-    const text = t('Join “{name}” on Badie: {times} at {court}. Level {min}–{max}. Open {link} and enter group number {code}.', {
+    const text = t('Join “{name}” on Badie: {times} at {court}. Level {min}–{max}. Open {link} and enter group code {code}.', {
       name: g!.name, times: g!.schedules.map(scheduleText).join(', '), court: g!.venue.name, min: g!.level_min, max: g!.level_max,
       link: `${location.origin}/join/?code=${g!.invite_code ?? ''}`, code: g!.invite_code ?? '',
     });
@@ -48,7 +48,7 @@ export function GroupPage({ id }: { id: string }) {
       await navigator.clipboard.writeText(text);
       toast(t('Invite copied. Paste it into your chat.'));
     } catch {
-      toast(t('Group number: {code}', { code: g!.invite_code ?? '' }));
+      toast(t('Group code: {code}', { code: g!.invite_code ?? '' }));
     }
   }
 
@@ -74,7 +74,7 @@ export function GroupPage({ id }: { id: string }) {
               {g.gender && <li><Tag icon="users" tint="lavender">{audienceLabel(g.gender)}</Tag></li>}
               <li><Tag icon={g.join_policy === 'approval' ? 'lock' : 'userPlus'}>{g.join_policy === 'approval' ? t('Organizer approves') : t('Join directly')}</Tag></li>
               {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}`}><Tag icon="calendar" tint="butter">{scheduleText(sc)}{sc.fee ? ` · ${sc.fee}` : ''}</Tag></li>)}
-              {member && g.invite_code && <li><Tag icon="hash">{t('Group ID {code}', { code: g.invite_code })}</Tag></li>}
+              {member && g.invite_code && <li><Tag icon="hash">{t('Group code {code}', { code: g.invite_code })}</Tag></li>}
             </ul>
             <p className="flex items-center gap-1.5 text-footnote text-ink-secondary"><Icon name="bolt" className="size-3.5" />{activityText(g.activity)}</p>
             {member && <Link to={`/messages/group/${g.id}/`} className="button button-quiet w-full"><Icon name="chats" className="size-5" />{t('Group chat')}</Link>}
@@ -131,7 +131,7 @@ export function GroupPage({ id }: { id: string }) {
             {member && (
               <>
                 <div>
-                  <p className="text-footnote font-bold text-ink-secondary">{t('Group number')}</p>
+                  <p className="text-footnote font-bold text-ink-secondary">{t('Group code')}</p>
                   <p className="mt-1 font-mono text-[1.75rem] font-black tracking-[0.3em]">{g.invite_code}</p>
                 </div>
                 <Button onClick={copyInvite}><Icon name="copy" className="size-4" />{t('Copy invite')}</Button>
@@ -189,8 +189,8 @@ function Session({ session: s, tz, member, organizer, busy, confirm, setConfirm,
 
   async function signUp() {
     const status = await act(`sign-${s.id}`, 'sign_up_session', { p_session: s.id });
-    if (status === 'confirmed') toast(t('You’re going!'));
-    else if (status === 'waitlisted') toast(t('You’re on the waitlist. We’ll tell you if a spot opens.'));
+    if (status === 'confirmed') toast(t('You’re signed up.'));
+    else if (status === 'waitlisted') toast(t('You’re on the waitlist. You’ll get a notification if a spot opens.'));
   }
 
   return (

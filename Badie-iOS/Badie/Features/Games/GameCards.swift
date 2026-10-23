@@ -108,7 +108,7 @@ struct GameTicketCard: View {
             case .disputed:
                 chip(String(localized: "有分歧"), fill: AppTheme.Colors.pink)
             default:
-                chip(game.resultOutcome(for: currentUserId, now: now) == true ? String(localized: "赢了 🎉") : String(localized: "已完成"), fill: AppTheme.Colors.surface)
+                chip(game.resultOutcome(for: currentUserId, now: now) == true ? String(localized: "已获胜") : String(localized: "已完成"), fill: AppTheme.Colors.surface)
             }
         case .cancelled:
             chip(game.cancelledLate ? String(localized: "临时取消") : String(localized: "已取消"), fill: AppTheme.Colors.surface)

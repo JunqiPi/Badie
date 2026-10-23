@@ -54,7 +54,7 @@ await alex.getByRole('listitem').filter({ hasText: 'Alex (you)' }).getByText('38
 // 资料页的胜率（自己看得到，3 场还不公开）
 await alex.getByRole('link', { name: /Alex \(you\)/ }).click();
 await alex.getByText('100%', { exact: true }).waitFor();
-await alex.getByText('Others see this from 5 confirmed games.').waitFor();
+await alex.getByText('Others can see this after 5 confirmed games.').waitFor();
 
 // Alex 向 Blake 发起挑战，Blake 接受
 await alex.goto(`${base}/players/${ids.blake}/`);
@@ -67,14 +67,14 @@ await alex.getByText('Challenge sent. Waiting for their answer.').waitFor();
 
 // Blake 在球局页看到提醒，点进挑战页
 await blake.goto(`${base}/games/`);
-await blake.getByRole('link', { name: 'Take a look' }).click();
+await blake.getByRole('link', { name: 'View challenges' }).click();
 await blake.getByText('challenged you to singles').waitFor();
 await blake.getByText('“Best of three?”').waitFor();
 await blake.getByRole('button', { name: 'Accept' }).click();
-await blake.getByText('Game on!').waitFor();
+await blake.getByText('Challenge accepted.').waitFor();
 
 await alex.goto(`${base}/challenges/`);
-await alex.getByRole('link', { name: 'Game on' }).waitFor();
+await alex.getByRole('link', { name: 'Game confirmed' }).waitFor();
 
 console.log('ok: weekly board, win rate, challenge sent and accepted');
 await browser.close();

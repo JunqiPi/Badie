@@ -55,7 +55,7 @@ function ReviewForm({ game, player, onDone }: { game: Game; player: Player; onDo
     });
     setBusy(false);
     if (error) return setError(problem(error));
-    toast(t('Thanks! Review for {name} sent.', { name: player.nickname }));
+    toast(t('Thanks. Review for {name} sent.', { name: player.nickname }));
     onDone();
   }
 

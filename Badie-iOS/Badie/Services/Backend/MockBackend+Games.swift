@@ -158,7 +158,7 @@ extension MockBackend {
             }
         }
         scheduleBotResultReports(gameId: id)
-        addInbox(InboxItem(kind: .surveyDue, title: String(localized: "球局完成，给球友们评个分吧"),
+        addInbox(InboxItem(kind: .surveyDue, title: String(localized: "球局完成，给球友们评分"),
                            body: String(localized: "48 小时内有效 · 评价匿名汇总，双方都提交后才计入"), relatedId: id), to: me.id)
         scheduleSave()
         emit(.userUpdated(me))

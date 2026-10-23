@@ -56,7 +56,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "too_far": return String(localized: "最多只能提前两周安排。")
         case "invalid_slot": return String(localized: "时间范围请选 1–8 小时。")
         case "invalid_venues": return String(localized: "请选 1–3 个球馆。")
-        case "too_many_requests": return String(localized: "你已有 5 个进行中的约球请求，先取消一个吧。")
+        case "too_many_requests": return String(localized: "你已有 5 个进行中的约球请求，先取消一个。")
         case "overlapping": return String(localized: "这个时间你已经有约球请求或球局了。")
         case "offer_closed": return String(localized: "这次匹配已失效。")
         case "not_active": return String(localized: "这个约球请求已结束。")
@@ -93,7 +93,7 @@ enum RemoteError: LocalizedError, Equatable {
         // 挑战
         case "challenge_closed": return String(localized: "这个挑战已失效。")
         case "friends_only": return String(localized: "TA 只接受球友的挑战。")
-        case "already_pending": return String(localized: "你已经挑战过 TA 了，等 TA 回复吧。")
+        case "already_pending": return String(localized: "你已经挑战过 TA 了，请等 TA 回复。")
         case "cooldown": return String(localized: "距上次挑战满一周后，才能再挑战 TA。")
         case "too_many_outgoing": return String(localized: "同时最多只能有 3 个待回复的挑战。")
         case "invalid_partner": return String(localized: "请选一位那段时间有空的球友当搭档。")
@@ -111,7 +111,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "already_started": return String(localized: "开始时间已经过了，请重新选择。")
         case "missing_details": return String(localized: "公开球局需要设置球馆和时间")
         case "invalid_level_range": return String(localized: "最低水平不能高于最高水平。")
-        case "too_many_rooms": return String(localized: "进行中的房间太多了，先结束或解散一个吧。")
+        case "too_many_rooms": return String(localized: "进行中的房间太多了，先结束或解散一个。")
         case "room_not_found": return BackendError.roomNotFound.localizedDescription
         case "room_closed": return BackendError.roomClosed.localizedDescription
         case "room_full": return BackendError.roomFull.localizedDescription

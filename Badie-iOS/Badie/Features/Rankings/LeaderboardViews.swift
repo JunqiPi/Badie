@@ -334,7 +334,7 @@ struct VenueLeaderboardView: View {
                     }
                     BoardPicker(selection: $boardChoice, mine: backend.myBoard)
                     if sections.isEmpty {
-                        EmptyStateView(icon: "trophy", title: String(localized: "这个月还没有人上榜，去约一场吧"),
+                        EmptyStateView(icon: "trophy", title: String(localized: "这个月还没有人上榜"),
                                        tint: AppTheme.Colors.butter)
                             .card()
                     } else {

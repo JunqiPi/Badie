@@ -585,7 +585,7 @@ extension MockBackend {
             guard let ticketId = seat.ticketId, var ticket = db.tickets[ticketId] else { continue }
             ticket.status = .matched(gameId: game.id)
             db.tickets[ticketId] = ticket
-            addInbox(InboxItem(kind: .gameConfirmed, title: String(localized: "约成了！"),
+            addInbox(InboxItem(kind: .gameConfirmed, title: String(localized: "约成了。"),
                                body: String(localized: "\(offer.slot.formattedFull) · \(offer.court.name)。开赛前 2 小时内取消会计入履约记录。"),
                                relatedId: game.id), to: seat.userId)
         }

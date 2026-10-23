@@ -58,7 +58,7 @@ await page.getByRole('radiogroup', { name: 'Date (next 14 days)' }).getByRole('r
 await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
 await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
 await page.getByRole('button', { name: 'Start matching' }).click();
-const prompt = page.getByText('Get a notification the moment we find you a match.');
+const prompt = page.getByText('Get a notification as soon as you’re matched.');
 await prompt.waitFor();
 await page.getByRole('button', { name: 'Turn on' }).click();
 await prompt.waitFor({ state: 'detached' });

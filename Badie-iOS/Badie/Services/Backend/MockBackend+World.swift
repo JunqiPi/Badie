@@ -449,7 +449,7 @@ extension MockBackend {
         seedIncomingChallenge(for: userId, at: seedVenues.first, now: now)
 
         // 站内通知
-        addInbox(InboxItem(kind: .system, title: String(localized: "欢迎来到 Badie 🏸"),
+        addInbox(InboxItem(kind: .system, title: String(localized: "欢迎来到 Badie"),
                            body: String(localized: "附近的球友、球局都在首页。点中间的「+」可以快速匹配或发起球局。"),
                            createdAt: now.addingTimeInterval(-60)), to: userId)
         let requesterName = "琳琳"

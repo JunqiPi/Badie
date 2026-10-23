@@ -128,7 +128,7 @@ export function NewRoom({ profile }: { profile: Profile }) {
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader back="/games/" title={t('Start a game')}>
-        {t('You have the court; we’ll help fill it. You’re counted as one of the players.')}
+        {t('You have the court; Badie helps fill it. You count as one of the players.')}
       </PageHeader>
 
       <form onSubmit={submit} noValidate className="grid gap-6">

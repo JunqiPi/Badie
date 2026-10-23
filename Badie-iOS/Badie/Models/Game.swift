@@ -213,6 +213,6 @@ struct Game: Identifiable, Codable, Hashable {
     }
 
     var shareText: String {
-        String(localized: "🏸 \(mode.title)球局 · \(slot.formattedFull)\n📍 \(court.name)\n\(court.address)\n💰 AA \(cost.perPersonText) —— 来自 Badie")
+        String(localized: "\(mode.title)球局 · \(slot.formattedFull)\n\(court.name)\n\(court.address)\nAA \(cost.perPersonText) —— 来自 Badie")
     }
 }

@@ -129,7 +129,7 @@ enum BackendError: LocalizedError, Equatable {
         case .tooLateToRequest: return String(localized: "离开赛不到 30 分钟，来不及凑人了，换个时间试试")
         case .offerClosed: return String(localized: "这个匹配已经结束了")
         case .venueDuplicate(let name): return String(localized: "球馆库里已有“\(name)”，请直接选择它")
-        case .venueRateLimited: return String(localized: "今天添加的球馆有点多，明天再来吧")
+        case .venueRateLimited: return String(localized: "今天添加的球馆已达上限，明天再试。")
         case .notFriends: return String(localized: "加为球友后才能私信。可以先发好友申请，或在球局、球群里聊")
         case .newAccountMessageLimit: return String(localized: "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求")
         case .messageRequestPending: return String(localized: "已发出消息请求，对方接受后才能继续聊")

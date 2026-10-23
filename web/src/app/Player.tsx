@@ -77,7 +77,7 @@ export function PlayerPage({ id }: { id: string }) {
               {t('{n} game|{n} games', { n: rate.games })} · {rate.wins}–{rate.games - rate.wins} · {t('{n} opponent|{n} opponents', { n: rate.opponents })} · {gapText(rate.gap)}
             </p>
           )}
-          {card.relationship === 'self' && rate && !rate.public && <p className="text-footnote text-ink-secondary">{t('Others see this from 5 confirmed games.')}</p>}
+          {card.relationship === 'self' && rate && !rate.public && <p className="text-footnote text-ink-secondary">{t('Others can see this after 5 confirmed games.')}</p>}
 
           {card.relationship !== 'self' && (
             <section aria-labelledby="together" className="sticker grid gap-2 p-5">
@@ -194,7 +194,7 @@ function Actions({ card, onChange }: { card: PlayerCard; onChange: () => void })
       return (
         <div className="grid gap-2">
           <Button className="button-lg" busy={busy === 'add'} onClick={() => run('add', 'send_friend_request', user, t('Friend request sent'))}><Icon name="userPlus" className="size-5" />{t('Add friend')}</Button>
-          <p className="text-footnote text-ink-secondary">{t('Friends can message each other. Players who both pick “play again” after a game become friends automatically.')}</p>
+          <p className="text-footnote text-ink-secondary">{t('Friends can message each other. If you both pick “I’d play with them again” after a game, you become friends.')}</p>
         </div>
       );
   }
@@ -363,7 +363,7 @@ function Challenge({ card, onChange }: { card: PlayerCard; onChange: () => void 
       <Field label={t('Message (optional)')} hint={t('Up to 60 characters. No phone numbers or links.')}>
         {(props) => <input {...props} value={message} maxLength={60} onChange={(e) => setMessage(e.target.value)} className="field" />}
       </Field>
-      <p className="text-footnote text-ink-secondary">{t('They have 48 hours to answer. If they say no or don’t answer, you’ll just see it didn’t happen.')}</p>
+      <p className="text-footnote text-ink-secondary">{t('They have 48 hours to answer. If they decline or don’t answer, you’ll only see that it didn’t happen.')}</p>
       {error && <p role="alert" className="font-bold text-danger">{error}</p>}
       <div className="grid gap-2">
         <Button className="button-lg" busy={busy}>{t('Send challenge')}</Button>

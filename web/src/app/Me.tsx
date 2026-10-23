@@ -55,7 +55,7 @@ export function Me({ profile }: { profile: Profile; onChange: (p: Profile) => vo
               </div>
             </div>
             <p className="text-subhead">{profile.assessed_at ? tier(profile.rating).summary : t('Take the 2-minute level quiz so you’re matched with the right players.')}</p>
-            <Link to="/settings/" className="button bg-white! text-[#17140f]!">{t('Edit Profile')}</Link>
+            <Link to="/settings/" className="button bg-white! text-[#17140f]!">{t('Edit profile')}</Link>
           </section>
 
           <div className="grid grid-cols-3 gap-2.5">
@@ -132,7 +132,7 @@ function Attendance({ record }: { record: PlayRecord }) {
         <Icon name={good ? 'reliable' : 'shield'} className="size-5" />
       </span>
       <div className="min-w-0">
-        <h2 className="text-headline">{good ? t('Attendance · Good') : t('Attendance · Needs care')}</h2>
+        <h2 className="text-headline">{good ? t('Attendance · Good') : t('Attendance · Needs attention')}</h2>
         <p className="text-footnote font-bold text-ink-secondary">
           {t('{played} played · {noShows} no-shows · {late} late cancellations', { played: record.games_played, noShows: record.no_shows, late: record.late_cancels })}
         </p>

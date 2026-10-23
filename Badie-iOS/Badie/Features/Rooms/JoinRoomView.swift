@@ -239,7 +239,7 @@ struct FriendPickerSheet: View {
                 VStack(spacing: 0) {
                     if friends.isEmpty {
                         EmptyStateView(icon: "person.2", title: String(localized: "没有可邀请的球友"),
-                                       message: String(localized: "先去“消息 - 球友”添加一些球友吧。"))
+                                       message: String(localized: "先在“消息 - 球友”里添加球友。"))
                     }
                     ForEach(friends) { friend in
                         let selected = selection.contains(friend.id)

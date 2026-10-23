@@ -21,7 +21,7 @@ for (const [page, name] of [[alex, 'Alex'], [blake, 'Blake']]) {
 await blake.goto(`${base}/settings/`);
 await blake.getByLabel('Nickname', { exact: true }).fill('Shit Show');
 await blake.getByRole('button', { name: 'Save', exact: true }).first().click();
-await blake.getByText('Offensive words aren’t allowed here. Please use different words.').waitFor();
+await blake.getByText('Offensive words aren’t allowed. Try different words.').waitFor();
 
 const id = (name) => sql(`select id from auth.users where email = '${name}${stamp}@mod.local'`);
 const [alexId, blakeId] = [id('alex'), id('blake')];

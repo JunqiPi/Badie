@@ -41,7 +41,7 @@ struct ChatView: View {
                     LazyVStack(spacing: AppTheme.Spacing.sm) {
                         let receiptId = lastMineId
                         if messages.isEmpty {
-                            EmptyStateView(icon: "hand.wave.fill", title: String(localized: "打个招呼吧"),
+                            EmptyStateView(icon: "hand.wave.fill", title: String(localized: "还没有消息"),
                                            message: String(localized: "约时间、约球馆、约 AA，都可以在这里说。"), tint: AppTheme.Colors.butter)
                         }
                         ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in

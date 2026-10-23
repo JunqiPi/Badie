@@ -88,7 +88,7 @@ function Dashboard({ me }: { me: Profile }) {
           </div>
 
           {incoming > 0 && (
-            <Notice icon="challenge" tint="peach" action={{ label: t('Take a look'), to: '/challenges/' }}>
+            <Notice icon="challenge" tint="peach" action={{ label: t('View challenges'), to: '/challenges/' }}>
               {t('{n} challenge awaiting reply|{n} challenges awaiting reply', { n: incoming })}
             </Notice>
           )}
@@ -290,7 +290,7 @@ export function AreaPrompt({ tint = 'sky' }: { tint?: Tint }) {
     <div className={`tile grid gap-3 p-4 ${fill[tint]}`}>
       <p className="flex items-center gap-3 text-footnote font-bold">
         <IconTile icon="locate" tint="surface" />
-        {t('Show what’s near you. Your location stays in this browser.')}
+        {t('Show what’s near you. Your location is only used to find courts and games nearby.')}
       </p>
       <span className="flex flex-wrap gap-2">
         <button type="button" onClick={locate} disabled={busy} className="button button-sm button-quiet">{t('Use my location')}</button>

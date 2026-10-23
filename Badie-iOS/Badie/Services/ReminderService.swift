@@ -41,7 +41,7 @@ enum ReminderService {
             let interval = fireDate.timeIntervalSince(now)
             guard interval > 5 else { continue }
             let content = UNMutableNotificationContent()
-            content.title = "🏸 \(offset.title)"
+            content.title = offset.title
             content.body = "\(game.slot.formattedFull) · \(game.court.name)"
             content.sound = .default
             content.userInfo = ["gameId": game.id]

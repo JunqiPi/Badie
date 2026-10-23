@@ -263,7 +263,7 @@ function Regulars() {
 
 function preview(thread: ThreadSummary) {
   if (thread.last) return thread.last.mine ? t('You: {message}', { message: thread.last.body }) : thread.last.body;
-  if (thread.kind === 'game') return t('Game chat · say hi to your partners');
+  if (thread.kind === 'game') return t('Game chat');
   if (thread.kind === 'group') return t('Group chat · {venue}', { venue: thread.venue ?? '' });
   return '';
 }
@@ -352,7 +352,7 @@ function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
             {t('You never need to pay, send a deposit or share a verification code before playing. Split court fees at the court.')}
           </p>
         )}
-        {thread.messages.length === 0 && <p className="py-10 text-center text-ink-secondary">{t('No messages yet. Say hi!')}</p>}
+        {thread.messages.length === 0 && <p className="py-10 text-center text-ink-secondary">{t('No messages yet.')}</p>}
         {thread.messages.map((m) => (
           <div key={m.id} className={`flex max-w-[85%] items-end gap-2 ${m.mine ? 'justify-self-end' : 'justify-self-start'}`}>
             {!m.mine && (

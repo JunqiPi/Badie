@@ -504,7 +504,7 @@ struct GameDetailView: View {
     private func resultHeadline(status: ResultStatus, outcome: Bool?) -> String {
         if status == .friendly { return String(localized: "友谊局") }
         switch outcome {
-        case true?: return String(localized: "🎉 赢下了这场")
+        case true?: return String(localized: "赢下了这场")
         case false?: return String(localized: "惜败，下次再来")
         case nil: return String(localized: "球局已完成")
         }
@@ -610,7 +610,7 @@ struct GameDetailView: View {
         defer { isWorking = false }
         do {
             try await matchManager.checkIn(game)
-            appState.showToast(String(localized: "签到成功，打得开心！"), style: .success)
+            appState.showToast(String(localized: "签到成功，打得开心。"), style: .success)
         } catch {
             appState.showError(error)
         }
@@ -620,7 +620,7 @@ struct GameDetailView: View {
         resultSheet = nil
         do {
             try await matchManager.complete(game, didWin: didWin, score: score)
-            appState.showToast(String(localized: "球局已完成，去给球友评个分吧"), style: .success)
+            appState.showToast(String(localized: "球局已完成，去给球友评分"), style: .success)
             if let first = surveyManager.pending(forGame: game.id).first {
                 router.open(.survey(pendingId: first.id))
             }

@@ -19,7 +19,7 @@ export function Play({ profile }: { profile: Profile }) {
   return (
     <div>
       <PageHeader back="/" title={t('Quick Match')}>
-        {t('Tell us when you’re free and where you can play. We’ll match you with players at your level and let you know when there’s a match.')}
+        {t('Pick when you’re free and where you can play. You’ll get a notification when there’s a match at your level.')}
       </PageHeader>
 
       {!profile.assessed_at && (
@@ -36,7 +36,7 @@ export function Play({ profile }: { profile: Profile }) {
           {tickets === undefined && !failed && [0, 1].map((i) => <Skeleton key={i} className="h-36" />)}
           {failed && tickets === undefined && <Empty icon="warning" tint="peach" title={t('Couldn’t load your requests')}>{t('Check your connection and try again.')}</Empty>}
           {tickets && open.length === 0 && (
-            <Empty icon="bolt" tint="lime" title={t('No open requests')}>{t('Create one and we’ll look for players while you get on with your day.')}</Empty>
+            <Empty icon="bolt" tint="lime" title={t('No open requests')}>{t('Create one and Badie will look for players while you get on with your day.')}</Empty>
           )}
           {open.length > 0 && <PushPrompt emailOn={profile.email_alerts} />}
           {open.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onChange={refresh} />)}
@@ -66,7 +66,7 @@ function PushPrompt({ emailOn }: { emailOn: boolean }) {
   if (state === 'off') {
     return (
       <Notice icon="bell" tint="sky" action={{ label: t('Turn on'), onClick: () => enablePush().then(setState, () => toast(t('Couldn’t change notifications. Try again.'), 'error')) }}>
-        {t('Get a notification the moment we find you a match.')}
+        {t('Get a notification as soon as you’re matched.')}
       </Notice>
     );
   }
@@ -90,10 +90,10 @@ function Pool({ ticket }: { ticket: Ticket }) {
 }
 
 const status: Record<Ticket['status'], { icon: IconName; tint: Tint; label: string }> = {
-  searching: { icon: 'search', tint: 'sky', label: 'Matching in background' },
+  searching: { icon: 'search', tint: 'sky', label: 'Matching in the background' },
   offered: { icon: 'bolt', tint: 'lime', label: 'Match found' },
   paused: { icon: 'warning', tint: 'peach', label: 'Paused' },
-  matched: { icon: 'checkCircle', tint: 'mint', label: 'Game on' },
+  matched: { icon: 'checkCircle', tint: 'mint', label: 'Game confirmed' },
   expired: { icon: 'hourglass', tint: 'muted', label: 'No match this time' },
   cancelled: { icon: 'xCircle', tint: 'muted', label: 'Cancelled' },
 };
@@ -118,7 +118,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
       <article className="sticker animate-enter grid gap-4 bg-butter p-5 text-on-accent">
         <div className="text-center">
           <p className="text-footnote font-bold">{ticket.mode === 'doubles' ? t('Doubles') : t('Singles')} · {dayName(o.starts_at, tz)} {timeOf(o.starts_at, tz)}–{timeOf(o.ends_at, tz)}</p>
-          <h3 className="display mt-1 text-[1.75rem]">{waiting ? t('Waiting for everyone to confirm') : t('Found your buddies!')}</h3>
+          <h3 className="display mt-1 text-[1.75rem]">{waiting ? t('Waiting for everyone to confirm') : t('Players found')}</h3>
           <p className="text-footnote font-bold">{o.venue.name} · {o.venue.city}</p>
         </div>
         <Versus players={o.players} />
@@ -132,7 +132,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
           </span>
         </div>
         {waiting ? (
-          <p className="text-footnote font-bold" role="status">{t('You’re in. We’ll let you know when everyone has confirmed.')}</p>
+          <p className="text-footnote font-bold" role="status">{t('You’re in. You’ll get a notification when everyone has confirmed.')}</p>
         ) : (
           <>
             <p className="flex items-center gap-2 text-footnote font-bold">
@@ -140,7 +140,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
               {t('Confirm by {time} ({relative}). Declining is fine and doesn’t count against you.', { time: moment(o.respond_by, tz), relative: relative(o.respond_by) })}
             </p>
             <div className="grid grid-cols-[auto_1fr] gap-3">
-              <Button className="button-lg button-quiet" busy={busy === 'decline'} disabled={Boolean(busy)} onClick={() => act('decline', 'respond_offer', { p_offer: o.id, p_accept: false }, t('Declined. We’ll keep looking.'))}>
+              <Button className="button-lg button-quiet" busy={busy === 'decline'} disabled={Boolean(busy)} onClick={() => act('decline', 'respond_offer', { p_offer: o.id, p_accept: false }, t('Declined. Badie will keep looking.'))}>
                 {t('Not this time')}
               </Button>
               <Button className="button-lg" busy={busy === 'accept'} disabled={Boolean(busy)} onClick={() => act('accept', 'respond_offer', { p_offer: o.id, p_accept: true }, t('Confirmed'))}>
@@ -172,10 +172,10 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
         <Summary icon="pin" tint="sky" title={ticket.venues.map((v) => v.name).join(' · ')} subtitle={t('Only match with players who picked the same venue')} />
       </ul>
       {ticket.status === 'searching' && <Pool ticket={ticket} />}
-      {ticket.status === 'paused' && <p className="text-footnote font-bold">{t('You missed a confirmation, so we stopped sending you matches for this time.')}</p>}
+      {ticket.status === 'paused' && <p className="text-footnote font-bold">{t('You missed a confirmation, so matches for this time are paused.')}</p>}
       {ticket.status === 'expired' && (
         <p className="text-footnote text-ink-secondary">
-          {canGoLastMinute ? t('No one matched in time. Try a last-minute game: we’ll look for players who are free right now.') : t('No one matched this time. Try a wider window or more courts.')}
+          {canGoLastMinute ? t('No one matched in time. Try a last-minute game with players who are free right now.') : t('No one matched this time. Try a wider window or more courts.')}
         </p>
       )}
       <div className="flex flex-wrap gap-2">
@@ -185,7 +185,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
                     p_mode: ticket.mode, p_starts_at: ticket.starts_at, p_ends_at: ticket.ends_at, p_venue_ids: ticket.venues.map((v) => v.id),
                     p_skill_tolerance: ticket.skill_tolerance, p_auto_accept: true, p_play_with: ticket.play_with, p_mixed: ticket.mixed,
                   }, t('Looking for players who are free right now.'))}>
-            {t('Try last-minute')}
+            {t('Switch to last-minute')}
           </Button>
         )}
         {ticket.status === 'paused' && (
@@ -328,7 +328,7 @@ function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () =>
     });
     setBusy(false);
     if (error) return setError(problem(error));
-    toast(t('Request sent. We’re looking for players.'));
+    toast(t('Request sent. Looking for players.'));
     onCreated();
   }
 
@@ -347,7 +347,7 @@ function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () =>
       <TimeRange from={from} to={to} onChange={(start, end) => { setFrom(start); setTo(end); }} />
       {lastMinute && (
         <Notice icon="bolt" tint="peach">
-          {t('Last-minute game: we only match players who are looking right now, and everyone has 5–10 minutes to confirm. Turn on automatic accept below so you don’t miss it.')}
+          {t('Last-minute game: you’re only matched with players looking right now, and everyone has 5–10 minutes to confirm. Turn on automatic accept below so you don’t miss it.')}
         </Notice>
       )}
 

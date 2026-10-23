@@ -363,7 +363,7 @@ struct CourtDetailSheet: View {
                                 try await appState.venueService.confirmVenue(venue.id)
                                 hasConfirmed = true
                                 Haptics.success()
-                                appState.showToast(String(localized: "谢谢确认！"), style: .success)
+                                appState.showToast(String(localized: "谢谢确认。"), style: .success)
                             } catch {
                                 appState.showError(error)
                             }

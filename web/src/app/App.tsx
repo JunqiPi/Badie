@@ -160,7 +160,7 @@ function SignedInFrame({ path, me, children }: { path: string; me: Profile; chil
 }
 
 const lockedPages: { match: RegExp; title: string; icon: IconName; tint: Tint; text: string }[] = [
-  { match: /^\/games\//, title: 'Games', icon: 'games', tint: 'peach', text: 'Your upcoming games, results and reviews live here.' },
+  { match: /^\/games\//, title: 'Games', icon: 'games', tint: 'peach', text: 'Your upcoming games, results and reviews show up here.' },
   { match: /^\/messages\//, title: 'Messages', icon: 'chats', tint: 'sky', text: 'Chat with the players in your games, your groups and your friends.' },
   { match: /^\/me\//, title: 'Me', icon: 'me', tint: 'lavender', text: 'Your level, win rate, reliability and settings.' },
 ];

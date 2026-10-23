@@ -84,7 +84,7 @@ export function Courts() {
     if (!userId) return navigate(signInFirst('/courts/'));
     const { data, error } = await supabase!.rpc('confirm_venue', { target: venue.id });
     if (error) return toast(t('Couldn’t confirm right now. Try again later.'), 'error');
-    toast(t('Thanks! Your confirmation helps other players.'));
+    toast(t('Thanks. Your confirmation helps other players.'));
     setSelected(data as Venue);
   }
 

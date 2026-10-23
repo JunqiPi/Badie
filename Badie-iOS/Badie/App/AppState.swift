@@ -196,7 +196,7 @@ final class AppState: ObservableObject {
     func registerRemote(nickname: String, gender: Gender, avatar: Avatar, assessment: SkillAssessmentSummary?,
                         answers: [String: Int]) async throws {
         _ = try await backend.remoteRegister(nickname: nickname, gender: gender, avatar: avatar, assessment: assessment, answers: answers)
-        showToast(String(localized: "注册成功，欢迎加入 🏸"), style: .success)
+        showToast(String(localized: "注册成功，欢迎加入"), style: .success)
     }
 
     func register(
@@ -214,7 +214,7 @@ final class AppState: ObservableObject {
             phone: phone, nickname: nickname, gender: gender, avatar: avatar, level: level,
             preferredMode: preferredMode, recurringSlots: recurringSlots, location: location, assessment: assessment
         )
-        showToast(String(localized: "注册成功，欢迎加入 🏸"), style: .success)
+        showToast(String(localized: "注册成功，欢迎加入"), style: .success)
     }
 
     func updateProfile(_ user: User) async -> Bool {

@@ -42,16 +42,16 @@ async function request(page) {
 }
 
 await request(alex);
-await alex.getByText('Matching in background', { exact: true }).waitFor();
+await alex.getByText('Matching in the background', { exact: true }).waitFor();
 await alex.getByText('Free that day nearby').waitFor();
 await request(blake);
-await blake.getByText('Found your buddies!').waitFor();
+await blake.getByText('Players found').waitFor();
 await blake.getByRole('button', { name: 'Confirm game' }).click();
-await blake.getByText('You’re in. We’ll let you know when everyone has confirmed.').waitFor();
+await blake.getByText('You’re in. You’ll get a notification when everyone has confirmed.').waitFor();
 
 await alex.reload();
 await alex.getByRole('button', { name: 'Confirm game' }).click();
-await alex.getByText('Game on', { exact: true }).waitFor();
+await alex.getByText('Game confirmed', { exact: true }).waitFor();
 await alex.getByRole('link', { name: 'View game' }).click();
 await alex.getByRole('link', { name: 'Blake' }).waitFor();
 

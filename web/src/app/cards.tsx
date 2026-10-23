@@ -77,7 +77,7 @@ function requestState(r: Ticket): RequestState {
   if (r.offer && r.offer.my_response === 'pending') return { icon: 'bolt', tint: 'butter', title: t('Match found · confirm by {time}', { time: relative(r.offer.respond_by) }), action: true };
   if (r.offer) return { icon: 'hourglass', tint: 'mint', title: t('You’re in · waiting for {n} more', { n: r.offer.players.length - r.offer.accepted }), action: false };
   if (r.status === 'paused') return { icon: 'warning', tint: 'peach', title: t('Paused · you missed a confirmation'), action: true };
-  if (r.status === 'matched') return { icon: 'checkCircle', tint: 'mint', title: t('Game on'), action: false };
+  if (r.status === 'matched') return { icon: 'checkCircle', tint: 'mint', title: t('Game confirmed'), action: false };
   if (r.status === 'searching') return { icon: 'search', tint: 'sky', title: r.last_minute ? t('Last-minute · looking now') : t('Looking for players'), action: false };
   return { icon: 'clock', tint: 'muted', title: r.status === 'expired' ? t('No match this time') : t('Cancelled'), action: false };
 }

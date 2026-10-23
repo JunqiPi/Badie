@@ -39,7 +39,7 @@ export function Games() {
       </LargeTitle>
 
       {incoming > 0 && (
-        <Notice icon="challenge" tint="peach" action={{ label: t('Take a look'), to: '/challenges/' }}>
+        <Notice icon="challenge" tint="peach" action={{ label: t('View challenges'), to: '/challenges/' }}>
           {t('{n} challenge awaiting reply|{n} challenges awaiting reply', { n: incoming })}
         </Notice>
       )}
@@ -130,7 +130,7 @@ export function Games() {
 const shortcuts: { to: string; icon: IconName; tint: Tint; title: string; subtitle: string }[] = [
   { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Have a court, need players' },
   { to: '/groups/', icon: 'group', tint: 'sky', title: 'Regular games', subtitle: 'Weekly groups' },
-  { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Room code', subtitle: 'Room code or group ID' },
+  { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Room code', subtitle: 'Room or group code' },
 ];
 
 /** 本月战绩小卡（在球局页右栏） */
@@ -349,7 +349,7 @@ function Result({ game: g, canReport, busy, act }: {
   const reported = g.my_report?.outcome;
   const [score, setScore] = useState(g.my_report?.score ?? '');
   const { status, outcome } = g.result;
-  const choices: [Outcome | null, string][] = [[mine, 'We won'], [theirs, 'We lost'], ['friendly', 'Just for fun'], [null, 'Can’t remember']];
+  const choices: [Outcome | null, string][] = [[mine, 'We won'], [theirs, 'We lost'], ['friendly', 'Friendly game'], [null, 'Can’t remember']];
   const summary =
     status === 'verified'
       ? outcome === 'friendly' ? t('Confirmed: a friendly game, no winner.') : outcome === mine ? t('Confirmed: you won.') : t('Confirmed: you lost.')
@@ -479,13 +479,13 @@ export function Challenges() {
             {day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} · {c.venue.name}
           </p>
           {c.message && <p className="font-medium">“{c.message}”</p>}
-          <p className="text-sm font-semibold">{t('Answer by {date}. Declining is fine, they’ll only see it didn’t happen.', { date: day(c.expires_at, c.venue.tz) })}</p>
+          <p className="text-sm font-semibold">{t('Answer by {date}. If you decline, they’ll only see that it didn’t happen.', { date: day(c.expires_at, c.venue.tz) })}</p>
           {c.partner && (
             <PartnerSelect exclude={[c.player.id, c.partner.id]} value={partners[c.id] ?? ''} onChange={(id) => setPartners({ ...partners, [c.id]: id })} />
           )}
           <div className="flex flex-wrap gap-2">
             <Button busy={busy === `yes-${c.id}`} disabled={Boolean(busy) || Boolean(c.partner && !partners[c.id])}
-                    onClick={() => act(`yes-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: true, p_partner: partners[c.id] ?? null }, t('Game on!'))}>
+                    onClick={() => act(`yes-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: true, p_partner: partners[c.id] ?? null }, t('Challenge accepted.'))}>
               {t('Accept')}
             </Button>
             <Button variant="quiet" disabled={Boolean(busy)} onClick={() => act(`no-${c.id}`, 'respond_challenge', { p_challenge: c.id, p_accept: false }, t('Declined'))}>{t('Decline')}</Button>
@@ -507,7 +507,7 @@ export function Challenges() {
               <button className="link text-sm" disabled={Boolean(busy)} onClick={() => act(`w-${c.id}`, 'withdraw_challenge', { p_challenge: c.id }, t('Challenge withdrawn'))}>{t('Withdraw')}</button>
             </span>
           ) : c.status === 'accepted' && c.game_id ? (
-            <Link to={`/games/${c.game_id}/`} className="chip bg-mint">{t('Game on')}</Link>
+            <Link to={`/games/${c.game_id}/`} className="chip bg-mint">{t('Game confirmed')}</Link>
           ) : (
             <span className="chip bg-surface-muted text-ink">{t('Didn’t happen')}</span>
           )}

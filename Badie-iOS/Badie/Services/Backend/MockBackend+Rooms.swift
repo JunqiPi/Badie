@@ -195,7 +195,7 @@ extension MockBackend {
 
     private func notifyKicked(userId: String, room: Room) {
         addInbox(InboxItem(kind: .kicked, title: String(localized: "你已被移出房间 \(room.code)"),
-                           body: String(localized: "房主调整了人员，去看看其他球局吧。"), relatedId: room.code), to: userId)
+                           body: String(localized: "房主调整了人员，可以看看其他球局。"), relatedId: room.code), to: userId)
         if userId == currentUserId { emit(.kicked(roomCode: room.code)) }
     }
 

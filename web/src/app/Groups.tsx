@@ -86,7 +86,7 @@ export function Groups() {
         {!mine && <Skeleton className="h-32" />}
         {mine && mine.groups.length === 0 && (
           <Empty icon="group" tint="lavender" title={t('No groups yet')} action={{ label: t('Start a group'), to: '/groups/new/' }}>
-            {t('Find one nearby, enter a group number someone shared, or start your own.')}
+            {t('Find one nearby, enter a group code someone shared, or start your own.')}
           </Empty>
         )}
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{mine?.groups.map((g) => <GroupCard key={g.id} group={g} />)}</div>

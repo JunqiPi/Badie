@@ -53,8 +53,8 @@ export function RoomPage({ id, gender }: { id: string; gender: Gender | null }) 
 
   async function join() {
     const status = await act('join', 'join_room', room);
-    if (status === 'waitlisted') toast(t('You’re on the waitlist. We’ll tell you if a spot opens.'));
-    else if (status) toast(t('You’re in! The host starts the game when every spot is filled.'));
+    if (status === 'waitlisted') toast(t('You’re on the waitlist. You’ll get a notification if a spot opens.'));
+    else if (status) toast(t('Joined. The host starts the game when every spot is filled.'));
   }
 
   async function copyInvite() {
@@ -77,7 +77,7 @@ export function RoomPage({ id, gender }: { id: string; gender: Gender | null }) 
 
       {r.status === 'started' && (
         <Notice icon="checkCircle" tint="mint" action={inside && r.game_id ? { label: t('View game'), to: `/games/${r.game_id}/` } : undefined}>
-          {t('Game on! Everyone’s in.')}
+          {t('Game confirmed. Everyone’s in.')}
         </Notice>
       )}
       {r.status === 'closed' && r.closed_reason && (
@@ -171,11 +171,11 @@ export function RoomPage({ id, gender }: { id: string; gender: Gender | null }) 
                 </>
               )}
               {r.my_status === 'member' && <p className="flex items-center gap-2 font-bold"><Icon name="checkCircle" className="size-5" />{t('You’re in. The host starts the game when every spot is filled.')}</p>}
-              {r.my_status === 'waitlisted' && <p className="font-bold">{t('You’re on the waitlist. We’ll tell you if a spot opens.')}</p>}
+              {r.my_status === 'waitlisted' && <p className="font-bold">{t('You’re on the waitlist. You’ll get a notification if a spot opens.')}</p>}
 
               {r.my_status === 'owner' && (
                 full && r.starts_at && r.venue ? (
-                  <Button className="button-lg" busy={busy === 'start'} onClick={() => act('start', 'start_room', room, t('Game on! Everyone’s been told.'))}>{t('Start game')}</Button>
+                  <Button className="button-lg" busy={busy === 'start'} onClick={() => act('start', 'start_room', room, t('Game confirmed. Everyone’s been told.'))}>{t('Start game')}</Button>
                 ) : (
                   <p className="font-bold">
                     {!r.starts_at || !r.venue ? t('Set the time and court, then start when it’s full.') : t('Start when all {n} spots are filled.', { n: r.capacity })}
@@ -309,12 +309,12 @@ export function JoinRoom() {
 
   return (
     <div className="mx-auto grid max-w-lg gap-5">
-      <ScreenHeader title={t('Enter room code / group ID')} back="/games/" />
+      <ScreenHeader title={t('Enter a room or group code')} back="/games/" />
       <form onSubmit={join} noValidate className="sticker grid gap-4 bg-lavender p-6 text-on-accent">
         <IconTile icon="hash" tint="surface" size="xl" className="-rotate-6" />
         <div>
           <h2 className="text-title2">{t('Have a code?')}</h2>
-          <p className="text-subhead">{t('6-digit room code or group code from a friend')}</p>
+          <p className="text-subhead">{t('6-character room or group code from a friend')}</p>
         </div>
         <label htmlFor="code" className="sr-only">{t('Code')}</label>
         <input

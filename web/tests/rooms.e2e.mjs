@@ -42,18 +42,18 @@ await blake.getByRole('button', { name: 'Use my location' }).click();
 await blake.getByRole('link', { name: /Hosted by Alex/ }).first().click();
 await blake.getByText('Join to see who’s playing.').waitFor();
 await blake.getByRole('button', { name: 'Join game' }).click();
-await blake.getByText('You’re in! The host starts the game when every spot is filled.').waitFor();
+await blake.getByText('Joined. The host starts the game when every spot is filled.').waitFor();
 
 // 人齐了，Alex 开局，两边都能进球局页
 await alex.reload();
 await alex.getByRole('link', { name: 'Blake' }).waitFor();
 await alex.getByRole('button', { name: 'Start game' }).click();
-await alex.getByText('Game on! Everyone’s in.').waitFor();
+await alex.getByText('Game confirmed. Everyone’s in.').waitFor();
 await alex.getByRole('link', { name: 'View game' }).click();
 await alex.getByRole('link', { name: 'Blake' }).waitFor();
 
 await blake.reload();
-await blake.getByText('Game on! Everyone’s in.').waitFor();
+await blake.getByText('Game confirmed. Everyone’s in.').waitFor();
 
 // Blake 发起后天的私密双打，Alex 凭房间码加入
 await blake.goto(`${base}/app/rooms/`);

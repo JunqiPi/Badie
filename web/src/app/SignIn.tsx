@@ -219,7 +219,7 @@ export function SignIn() {
           {headline.map((part, i) => (i % 2 ? <mark key={i} className="marker">{part}</mark> : part))}
         </h1>
         <p className="max-w-md text-subhead text-ink-secondary">
-          {t('Get matched with nearby players by level, time and distance. Costs split evenly and transparently, check in on arrival, and reliable players get games more easily.')}
+          {t('Get matched with nearby players by level, time and distance. Split costs evenly and check in when you arrive. Reliable players find games more easily.')}
         </p>
         <ul className="flex flex-wrap gap-2">
           <li><Tag icon="level" tint="lavender">{t('Level match')}</Tag></li>

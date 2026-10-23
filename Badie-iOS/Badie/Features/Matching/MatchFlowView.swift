@@ -251,8 +251,8 @@ struct OfferView: View {
     }
 
     private var headline: Text {
-        if isMatched { return Text(marking: String(localized: "约好*搭子*了！")) }
-        if awaitsMe { return Text(marking: String(localized: "找到*搭子*了！")) }
+        if isMatched { return Text(marking: String(localized: "约好*搭子*了。")) }
+        if awaitsMe { return Text(marking: String(localized: "找到*搭子*了。")) }
         return Text(marking: String(localized: "等*大家*确认"))
     }
 
