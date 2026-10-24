@@ -5678,6 +5678,64 @@
         }
       }
     },
+    "%lld 场球局有变化" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld games changed"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld गेम में बदलाव हुआ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld permainan berubah"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 件の試合に変更があります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게임 %lld개에 변경이 있어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld permainan berubah"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มีการเปลี่ยนแปลง %lld เกม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld trận có thay đổi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 場球局有變化"
+          }
+        }
+      }
+    },
     "%lld 天前" : {
       "localizations" : {
         "en" : {
@@ -27622,64 +27680,6 @@
         }
       }
     },
-    "出行范围" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Travel distance"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "कितनी दूर तक जाएँगे"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jarak tempuh"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "移動範囲"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이동 거리"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jarak perjalanan"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ระยะเดินทาง"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Phạm vi di chuyển"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "出行範圍"
-          }
-        }
-      }
-    },
     "分享" : {
       "localizations" : {
         "en" : {
@@ -34486,64 +34486,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "只接受和你相差 1 級以內的挑戰"
-          }
-        }
-      }
-    },
-    "只显示并匹配这个范围内的球馆和球友；搜索不受范围限制" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Only venues and players in this range are shown and matched. Search isn't limited"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "सिर्फ़ इस दायरे के वेन्यू और खिलाड़ी दिखेंगे और मिलाए जाएँगे। सर्च पर कोई सीमा नहीं"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hanya GOR dan pemain dalam jangkauan ini yang ditampilkan dan dicocokkan. Pencarian tidak dibatasi"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "この範囲内の会場とプレイヤーだけを表示・マッチングします。検索は範囲に制限されません"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 범위 안의 체육관과 플레이어만 표시·매칭돼요. 검색은 범위 제한이 없어요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hanya gelanggang dan pemain dalam julat ini dipaparkan dan dipadankan. Carian tidak terhad"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "แสดงและจับคู่เฉพาะสนามและผู้เล่นในระยะนี้ การค้นหาไม่จำกัดระยะ"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chỉ hiển thị và ghép sân, người chơi trong phạm vi này. Tìm kiếm không bị giới hạn"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "只顯示並配對這個範圍內的球館和球友；搜尋不受範圍限制"
           }
         }
       }
@@ -83800,6 +83742,64 @@
         }
       }
     },
+    "知道了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Got it"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ठीक है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mengerti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "わかりました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faham"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รับทราบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã hiểu"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "知道了"
+          }
+        }
+      }
+    },
     "知道平高球和高远球的区别，知道什么时候打哪种，能控制弧度和落点" : {
       "localizations" : {
         "en" : {
@@ -108516,6 +108516,64 @@
         }
       }
     },
+    "附近的球馆、球局和球群按这个范围显示。匹配只看你选的球馆，搜索也不受范围限制。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby courts, games and groups are shown within this range. Matching only uses the courts you pick, and search isn’t limited by range."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आस-पास के कोर्ट, गेम और ग्रुप इसी दूरी तक दिखते हैं। मैचिंग सिर्फ़ आपके चुने कोर्ट पर होती है, और सर्च पर यह सीमा लागू नहीं होती।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "GOR, permainan, dan grup di sekitar ditampilkan dalam jarak ini. Pencocokan hanya memakai GOR yang kamu pilih, dan pencarian tidak dibatasi jarak."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くの体育館、試合、グループはこの範囲で表示されます。マッチングは選んだ体育館だけで行い、検索は範囲に関係なくできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주변 체육관, 게임, 모임은 이 범위 안에서 보여요. 매칭은 고른 체육관만 기준으로 하고, 검색은 범위와 상관없어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelanggang, permainan dan kumpulan berdekatan dipaparkan dalam jarak ini. Padanan hanya menggunakan gelanggang yang anda pilih, dan carian tidak terhad oleh jarak."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สนาม เกม และก๊วนใกล้ ๆ จะแสดงตามระยะนี้ การจับคู่ใช้เฉพาะสนามที่คุณเลือก และการค้นหาไม่ถูกจำกัดระยะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sân, trận và nhóm gần bạn được hiển thị trong phạm vi này. Ghép trận chỉ dựa vào các sân bạn chọn, và tìm kiếm không bị giới hạn phạm vi."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近的球館、球局和球群按這個範圍顯示。配對只看你選的球館，搜尋也不受範圍限制。"
+          }
+        }
+      }
+    },
     "附近符合水平的球友都能看到并报名，满员后可候补，有人退出自动递补。" : {
       "localizations" : {
         "en" : {
@@ -108570,6 +108628,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "附近符合水平的球友都能看到並報名，額滿後可候補，有人退出自動遞補。"
+          }
+        }
+      }
+    },
+    "附近范围" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nearby range"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आस-पास की दूरी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jarak sekitar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くの範囲"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "주변 범위"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jarak berdekatan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ระยะใกล้เคียง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phạm vi gần bạn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近範圍"
           }
         }
       }

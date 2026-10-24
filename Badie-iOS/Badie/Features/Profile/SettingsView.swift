@@ -49,7 +49,7 @@ struct SettingsView: View {
                                 }
                             }
                             InsetDivider()
-                            MenuRow(icon: "map.fill", tint: AppTheme.Colors.mint, title: String(localized: "出行范围"),
+                            MenuRow(icon: "map.fill", tint: AppTheme.Colors.mint, title: String(localized: "附近范围"),
                                     value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
                                 showRadius = true
                             }

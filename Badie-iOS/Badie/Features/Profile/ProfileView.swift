@@ -286,7 +286,7 @@ struct ProfileView: View {
                 router.open(.recurringSlots)
             }
             InsetDivider()
-            MenuRow(icon: "location.circle.fill", tint: AppTheme.Colors.sky, title: String(localized: "出行范围"),
+            MenuRow(icon: "location.circle.fill", tint: AppTheme.Colors.sky, title: String(localized: "附近范围"),
                     value: DistanceFormatter.radius(km: locationManager.preferences.travelRadiusKm)) {
                 showRadius = true
             }

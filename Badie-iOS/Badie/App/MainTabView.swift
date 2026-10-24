@@ -10,8 +10,13 @@ struct MainTabView: View {
     @EnvironmentObject private var surveyManager: SurveyManager
     @EnvironmentObject private var roomManager: RoomManager
     @EnvironmentObject private var locationManager: LocationManager
+    @EnvironmentObject private var inboxManager: InboxManager
+    @Environment(\.scenePhase) private var scenePhase
 
     @State private var pendingCreateAction: CreateAction?
+    /// 正在弹的重要通知，和这次打开 App 已经弹过的（划掉不算看过，下次打开再弹）
+    @State private var urgentItems: [InboxItem] = []
+    @State private var urgentShown: Set<String> = []
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -59,6 +64,26 @@ struct MainTabView: View {
         .fullScreenCover(isPresented: .constant(appState.isRemote && appState.currentUser?.gender == .unspecified)) {
             GenderPromptView()
         }
+        .sheet(isPresented: Binding(get: { !urgentItems.isEmpty }, set: { if !$0 { urgentItems = [] } })) {
+            UrgentNoticeSheet(items: urgentItems) { item in
+                urgentItems = []
+                InboxNavigator(router: router, inboxManager: inboxManager, roomManager: roomManager, surveyManager: surveyManager,
+                               appState: appState, matchManager: matchManager).open(item)
+            } onDone: {
+                urgentItems.forEach { inboxManager.markRead($0) }
+                urgentItems = []
+            }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
+        }
+        .onChange(of: inboxManager.items) { _, _ in showUrgent() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                urgentShown = []
+                showUrgent()
+            }
+        }
         // 新记了一次爽约：说明会怎样、可以申诉
         .sheet(isPresented: $appState.showsStrikes) {
             StrikesSheet()
@@ -94,6 +119,7 @@ struct MainTabView: View {
             roomManager.reload()
         }
         .onAppear {
+            showUrgent()
             roomManager.radiusKm = locationManager.preferences.travelRadiusKm
             roomManager.reload()
         }
@@ -114,6 +140,13 @@ struct MainTabView: View {
             .games: surveyManager.pendingSurveys.count,
             .messages: messageManager.unreadCount + friendManager.incomingRequests.count
         ]
+    }
+
+    private func showUrgent() {
+        let pending = inboxManager.items.filter { !$0.isRead && $0.kind.isUrgent && !urgentShown.contains($0.id) }
+        guard !pending.isEmpty, urgentItems.isEmpty else { return }
+        urgentShown.formUnion(pending.map(\.id))
+        urgentItems = pending
     }
 
     private func runPendingCreateAction() {

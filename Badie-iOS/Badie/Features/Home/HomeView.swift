@@ -28,6 +28,9 @@ struct HomeView: View {
                 header
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
+                updates
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+
                 if locationManager.isDenied {
                     NoticeBanner(icon: "location.slash.fill", text: LocationError.permissionDenied.message,
                                  actionTitle: String(localized: "去设置")) { openSettings() }
@@ -49,13 +52,6 @@ struct HomeView: View {
                 quickMatchCard
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
-                if pendingChallenges > 0 {
-                    NoticeBanner(icon: "figure.badminton", text: String(localized: "\(pendingChallenges) 个挑战待回应"),
-                                 tint: AppTheme.Colors.peach, actionTitle: String(localized: "去看看")) {
-                        router.open(.challenges)
-                    }
-                    .padding(.horizontal, AppTheme.Spacing.screen)
-                }
 
                 dateSection
 
@@ -299,6 +295,39 @@ struct HomeView: View {
         }
         .buttonStyle(PressableStyle(scale: 0.98))
         .accessibilityElement(children: .combine)
+    }
+
+    // MARK: 约球动态
+
+    private var navigator: InboxNavigator {
+        InboxNavigator(router: router, inboxManager: inboxManager, roomManager: roomManager, surveyManager: surveyManager,
+                       appState: appState, matchManager: matchManager)
+    }
+
+    /// 没看过的约球消息（取消、邀请、挑战、约成……）放在最上面，最多 3 条
+    private var actionableUpdates: [InboxItem] {
+        Array(inboxManager.items.filter { !$0.isRead && $0.kind.isActionable && $0.kind != .challenge }.prefix(3))
+    }
+
+    @ViewBuilder
+    private var updates: some View {
+        let items = actionableUpdates
+        if pendingChallenges > 0 || !items.isEmpty {
+            VStack(spacing: AppTheme.Spacing.sm) {
+                if pendingChallenges > 0 {
+                    NoticeBanner(icon: "flag.2.crossed.fill", text: String(localized: "\(pendingChallenges) 个挑战待回应"),
+                                 tint: AppTheme.Colors.peach, actionTitle: String(localized: "去看看")) {
+                        router.open(.challenges)
+                    }
+                }
+                ForEach(items) { item in
+                    NoticeBanner(icon: item.kind.icon, text: item.title, tint: item.kind.tint,
+                                 actionTitle: String(localized: "去看看")) {
+                        navigator.open(item)
+                    }
+                }
+            }
+        }
     }
 
     // MARK: Weekly leaderboard

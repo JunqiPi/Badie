@@ -105,7 +105,9 @@ select throws_ok($$ select public.join_group(pg_temp.id('club')) $$, '22023', 'g
 select pg_temp.login(4);
 select is(public.join_group(pg_temp.id('club')), 'member', '女生能进');
 
--- 约战“水平相近”按换算后的等级
+-- 约战“水平相近”按换算后的等级（新用户默认谁都能挑战，这里改成只接受水平相近的）
+reset role;
+update public.profiles set challenge_policy = 'similar' where id in (pg_temp.u(2), pg_temp.u(3));
 select pg_temp.login(1);
 select is(public.player_card(pg_temp.u(2)) ->> 'challenge', 'available', '男 3 约战女 4.5：换算后相近');
 select is(public.player_card(pg_temp.u(3)) ->> 'challenge', 'level_out_of_range', '男 3 约战女 3：换算后差 1.5 级');

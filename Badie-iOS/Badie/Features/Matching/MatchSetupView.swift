@@ -394,12 +394,25 @@ struct TimeStepper: View {
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
             HStack(spacing: 0) {
                 stepButton("minus", delta: -30)
-                Text(String(format: "%02d:%02d", minutes / 60, minutes % 60))
-                    .scaledFont(size: 22, relativeTo: .title3)
-                    .monospacedDigit()
-                    .foregroundStyle(AppTheme.Colors.ink)
-                    .frame(maxWidth: .infinity)
-                    .minimumScaleFactor(0.7)
+                // 点时间直接从列表里选，加减按钮微调
+                Menu {
+                    ForEach(Array(stride(from: range.lowerBound, through: range.upperBound, by: 30)), id: \.self) { option in
+                        Button {
+                            Haptics.selection()
+                            minutes = option
+                        } label: {
+                            if option == minutes { Label(Self.text(option), systemImage: "checkmark") } else { Text(Self.text(option)) }
+                        }
+                    }
+                } label: {
+                    Text(Self.text(minutes))
+                        .scaledFont(size: 22, relativeTo: .title3)
+                        .monospacedDigit()
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .minimumScaleFactor(0.7)
+                        .contentShape(Rectangle())
+                }
                 stepButton("plus", delta: 30)
             }
         }
@@ -431,6 +444,10 @@ struct TimeStepper: View {
         }
         .buttonStyle(PressableStyle(scale: 0.85))
         .disabled(!range.contains(minutes + delta))
+    }
+
+    private static func text(_ minutes: Int) -> String {
+        String(format: "%02d:%02d", minutes / 60, minutes % 60)
     }
 
     private func adjust(_ delta: Int) {

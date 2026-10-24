@@ -318,6 +318,11 @@ struct NotificationsView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var matchManager: MatchManager
 
+    private var navigator: InboxNavigator {
+        InboxNavigator(router: router, inboxManager: inboxManager, roomManager: roomManager, surveyManager: surveyManager,
+                       appState: appState, matchManager: matchManager)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "通知")) {
@@ -335,10 +340,10 @@ struct NotificationsView: View {
                     }
                     ForEach(inboxManager.items) { item in
                         Button {
-                            open(item)
+                            navigator.open(item)
                         } label: {
                             HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
-                                IconTile(systemName: icon(for: item.kind), fill: tint(for: item.kind), size: 40)
+                                IconTile(systemName: item.kind.icon, fill: item.kind.tint, size: 40)
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(item.title)
                                         .font(AppTheme.Typography.headline)
@@ -374,89 +379,6 @@ struct NotificationsView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
-        }
-    }
-
-    private func open(_ item: InboxItem) {
-        inboxManager.markRead(item)
-        switch item.kind {
-        case .friendRequest, .friendAccepted:
-            if let id = item.relatedId { appState.showPlayer(id) }
-        case .roomInvite, .roomJoined, .waitlistPromoted:
-            // 模拟后端给的是房间码，正式后端给的是房间 ID
-            if let key = item.relatedId {
-                if let room = roomManager.myRooms.first(where: { $0.code == key || $0.id == key }) {
-                    router.open(.room(id: room.id))
-                } else if appState.isRemote {
-                    router.open(.room(id: key))
-                } else {
-                    router.open(.joinRoom(code: key))
-                }
-            }
-        case .surveyDue:
-            if let id = item.relatedId, surveyManager.survey(id: id) != nil {
-                router.open(.survey(pendingId: id))
-            } else {
-                router.open(.surveys)
-            }
-        case .gameConfirmed, .gameCancelled, .gameReminder:
-            if let id = item.relatedId { router.open(.game(id: id)) }
-        case .reviewReceived:
-            router.select(.profile)
-        case .matchOffer, .matchUpdate:
-            if let id = item.relatedId { matchManager.openTicket(id) }
-        case .messageRequest:
-            if let id = item.relatedId { router.open(.chat(userId: id), in: .messages) }
-        case .groupUpdate:
-            if let id = item.relatedId { router.open(.group(id: id)) }
-        case .rematch:
-            if let id = item.relatedId { appState.showPlayer(id) }
-        case .challenge:
-            // 接受后 relatedId 是球局 ID，否则是挑战 ID
-            if let id = item.relatedId, appState.backend.db.games[id] != nil {
-                router.open(.game(id: id))
-            } else {
-                router.open(.challenges)
-            }
-        case .resultUpdate:
-            if let id = item.relatedId { router.open(.game(id: id)) }
-        case .kicked, .roomClosed, .system:
-            break
-        }
-    }
-
-    private func icon(for kind: InboxItem.Kind) -> String {
-        switch kind {
-        case .friendRequest, .friendAccepted: return "person.badge.plus"
-        case .roomInvite, .roomJoined, .waitlistPromoted: return "ticket.fill"
-        case .kicked, .roomClosed: return "door.left.hand.open"
-        case .surveyDue, .reviewReceived: return "star.fill"
-        case .gameConfirmed, .gameReminder: return "sportscourt.fill"
-        case .matchOffer: return "bolt.fill"
-        case .matchUpdate: return "arrow.triangle.2.circlepath"
-        case .messageRequest: return "envelope.badge.fill"
-        case .groupUpdate: return "person.3.fill"
-        case .rematch: return "arrow.uturn.left.circle.fill"
-        case .gameCancelled: return "xmark.circle.fill"
-        case .system: return "megaphone.fill"
-        case .challenge: return "flag.2.crossed.fill"
-        case .resultUpdate: return "checkmark.seal.fill"
-        }
-    }
-
-    private func tint(for kind: InboxItem.Kind) -> Color {
-        switch kind {
-        case .friendRequest, .friendAccepted: return AppTheme.Colors.lavender
-        case .roomInvite, .roomJoined, .waitlistPromoted: return AppTheme.Colors.peach
-        case .kicked, .roomClosed, .gameCancelled: return AppTheme.Colors.surfaceMuted
-        case .surveyDue, .reviewReceived: return AppTheme.Colors.pink
-        case .gameConfirmed, .gameReminder, .matchOffer: return AppTheme.Colors.lime
-        case .matchUpdate, .messageRequest: return AppTheme.Colors.butter
-        case .groupUpdate: return AppTheme.Colors.lavender
-        case .rematch: return AppTheme.Colors.mint
-        case .system: return AppTheme.Colors.sky
-        case .challenge: return AppTheme.Colors.peach
-        case .resultUpdate: return AppTheme.Colors.mint
         }
     }
 }

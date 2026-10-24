@@ -311,12 +311,12 @@ struct Avatar: Codable, Hashable {
 // MARK: - 隐私设置
 
 struct PrivacySettings: Codable, Hashable {
-    /// 在常去球馆的“同馆常客”里显示我（默认关闭）
-    var showsAsRegular = false
+    /// 在常去球馆的“同馆常客”里显示我（默认开启）
+    var showsAsRegular = true
     /// 允许同球群的球友给我发消息请求（默认开启；关闭后只有好友能私信）
     var allowsMessageRequests = true
-    /// 谁可以向我发起挑战（默认只接受水平相近的人）
-    var challengePolicy: ChallengePolicy = .similarLevel
+    /// 谁可以向我发起挑战（默认所有人）
+    var challengePolicy: ChallengePolicy = .everyone
     /// 出现在场馆榜和周榜上（关闭后仍能看榜，但自己不上榜）
     var showsOnLeaderboards = true
     /// 别人可以按昵称搜到我（默认开启）

@@ -20,7 +20,7 @@ struct CourtsView: View {
                     IconButton(systemName: "magnifyingglass", accessibilityLabel: String(localized: "搜索球馆")) {
                         showSearch = true
                     }
-                    IconButton(systemName: "slider.horizontal.3", accessibilityLabel: String(localized: "出行范围")) {
+                    IconButton(systemName: "slider.horizontal.3", accessibilityLabel: String(localized: "附近范围")) {
                         showRadius = true
                     }
                 }
@@ -429,7 +429,7 @@ struct CourtPickerSheet: View {
     }
 }
 
-// MARK: - 出行范围（公里/英里跟随设备地区）
+// MARK: - 附近范围（公里/英里跟随设备地区）：只管“附近”显示多远，不影响匹配
 
 struct TravelRadiusSheet: View {
     @EnvironmentObject private var locationManager: LocationManager
@@ -446,7 +446,7 @@ struct TravelRadiusSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-            Text("出行范围")
+            Text("附近范围")
                 .font(AppTheme.Typography.title)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .padding(.top, AppTheme.Spacing.xl)
@@ -460,9 +460,9 @@ struct TravelRadiusSheet: View {
             .foregroundStyle(AppTheme.Colors.ink)
             Slider(value: $value, in: range, step: 1)
                 .tint(AppTheme.Colors.ink)
-                .accessibilityLabel("出行范围")
+                .accessibilityLabel("附近范围")
                 .accessibilityValue("\(Int(value)) \(unit.title)")
-            Text("只显示并匹配这个范围内的球馆和球友；搜索不受范围限制")
+            Text("附近的球馆、球局和球群按这个范围显示。匹配只看你选的球馆，搜索也不受范围限制。")
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
             Button("完成") {
