@@ -82,7 +82,7 @@ select throws_ok($$ select public.send_message('dm', pg_temp.u(3), 'Hi Cal') $$,
 reset role;
 insert into public.favorite_venues (user_id, venue_id)
   select pg_temp.u(n), 'v-us-ca-21-badminton-club-21bc' from unnest(array[1, 6, 7]) n;
-update public.profiles set show_as_regular = true where id = pg_temp.u(6);
+update public.profiles set show_as_regular = (id = pg_temp.u(6)) where id in (pg_temp.u(6), pg_temp.u(7));
 select pg_temp.login(1);
 select is((select array_agg(r ->> 'nickname') from jsonb_array_elements(public.venue_regulars()) r), '{Fay}', '只有开启了的常客');
 select ok(public.player_card(pg_temp.u(6)) is not null and public.player_card(pg_temp.u(7)) is null, '能看常客的资料，没开启的看不到');

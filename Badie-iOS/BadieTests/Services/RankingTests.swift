@@ -173,6 +173,8 @@ final class RankingTests: XCTestCase {
         let far = try XCTUnwrap(backend.db.users.values.first {
             backend.isBot($0.id) && abs($0.displayTier.rating - me.displayTier.rating) > 1.5
         })
+        // 新用户默认谁都能挑战；这里测“只接受水平相近的”
+        backend.db.users[far.id]?.privacy.challengePolicy = .similarLevel
         XCTAssertEqual(backend.challengeAvailability(for: far.id), .levelOutOfRange)
         XCTAssertEqual(backend.challengeAvailability(for: similar.id), .available)
 
