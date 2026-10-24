@@ -56,8 +56,7 @@ struct RootView: View {
             }
         }
         .onAppear {
-            NotificationRouter.shared.router = router
-            NotificationRouter.shared.messages = messageManager
+            NotificationRouter.shared.attach(router: router, messages: messageManager)
         }
         // 点开 badie.rsvp 的链接（邀请、邮件里的球局）直接进 App 里对应的页面；哪些地址进 App 见网站的 apple-app-site-association
         .onOpenURL { url in
