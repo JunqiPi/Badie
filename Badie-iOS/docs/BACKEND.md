@@ -147,6 +147,11 @@ iOS App（SwiftUI）──┐
 第三批：`threads`、`messages`、`groups`、`group_sessions`、`inbox`、`verification_requests`。
 演示用的 `bots`、`seededUserIds` 只留在 `MockBackend`。
 
+2026-10 加的：
+- `game_results`：双方报的结果一致时把这一场每人的赛果算好存起来，周榜、球馆月榜和胜率直接按时间读（以前每次看榜都要把全站重算一遍）。由 `result_reports` 和 `games` 上的触发器维护。
+- `strikes`：爽约处罚（三档、180 天滚动计数、48 小时申诉、7 天没处理自动维持）。不能约球的人在报名、加入、发起、接受挑战时由触发器拦下。
+- `profiles.tag`、`profiles.friend_code`、`friend_link_opens`：昵称#编号和加球友链接。打开过链接的人可以看资料、加球友，重置链接后失效。
+
 ## 5.5 仓库结构：一个仓库，不拆分
 
 ```

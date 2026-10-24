@@ -4,6 +4,9 @@
 > **任何密钥（.p8 文件、密码）都不要发到聊天里，也不要提交到仓库。**
 > 第 0、1 步不花钱，可以先做；从第 2 步开始需要 Apple Developer Program（每年 $99）。
 
+**现状（2026-10-24）**：1.0 已提交审核（Build `20261023.2350`），选的是**手动发布**：审核通过后在版本页点 Release This Version 才上架。
+上架后把 App Store 链接告诉工程 agent：网站加下载按钮和 Safari 智能横幅，关于页的“iPhone App 测试中”改掉。
+
 ## 0. 现在就能做
 
 1. **决定用个人还是公司身份注册**
@@ -20,50 +23,11 @@
    - 举报原因有“不当内容（昵称、头像、消息）”，头像这类图片靠举报 + 人工处理。
    - **24 小时内处理举报要说到做到**：有人举报时管理员会收到通知，在网站的 `/admin/` 页处理（改掉昵称、撤下照片、封号或驳回），
      能看到被举报人最近 30 天发给举报人的消息。你的账号要在 `admin_users` 表里（Supabase → Table Editor 加一行）。
-4. **商店信息**（草稿，口径和 `STORY.md` 一致，按需改）
-   - 名称（30 字以内，全 App Store 唯一）：`Badie: Badminton Buddy`（App Store Connect 里已经用这个名字建好了，提交审核前都能改）。
-   - 副标题（30 字以内）：`Find players at your level`
-   - 推广文本（170 字以内，随时能改、不用重新审核）：`No need to ask strangers at the gym. Tell Badie when you’re free and it finds badminton players at your level, plus courts, weekly groups and mixed doubles.`
-   - 关键词（100 个字符以内，逗号后不加空格；名称里已有的 badminton、buddy 不用重复）：
-     `partner,doubles,singles,mixed,court,club,shuttlecock,racket,sports,match,players,game,group,level`
-   - 描述：
-
-     > Too shy to ask strangers for a game? Badie does the asking for you.
-     >
-     > Tell Badie when you're free and which courts you can get to, and it finds players at your level. Your usual partner can't make it tonight? Find someone for the same time, or join a last-minute game with players who are free right now. New in town? See the courts nearby and join a weekly group.
-     >
-     > • Matched by level: a 2-minute quiz places you on a 1–9 scale, and players you meet help keep it accurate.
-     > • Pick your event: singles, doubles, men's, women's or mixed doubles. Men's and women's levels are rated separately.
-     > • Nearby games: booked a court but short on players? Post it and nearby players can join.
-     > • Weekly groups: same time and court every week, with sign-ups and a waitlist.
-     > • Reliable players: no-shows and late cancellations are tracked, and both sides confirm results.
-     > • Weekly and court leaderboards, challenges and win rate, if you like a bit of competition.
-     > • Private by default: players see your nickname and level, not your contact details. Your location is only used to find courts nearby and is never stored.
-     >
-     > Badie is free and built by a player who wanted more people on court.
-   - **简体中文版**（App Store Connect → 版本页右上角语言菜单 → 添加 Chinese (Simplified)）：手机系统是中文的用户在美区也看到中文。
-     美区搜索只收录英文（和西班牙文）的关键词，中文关键词要等以后上架中国港澳台等地区才起作用。
-     - 名称：`Badie：羽毛球搭子`
-     - 副标题：`按水平找羽毛球球友`
-     - 推广文本：`不用在球馆里硬着头皮问陌生人。告诉 Badie 你什么时候有空，它按水平帮你找羽毛球球友，还能找球馆、每周固定的球群和混双搭子。`
-     - 关键词：`羽毛球,搭子,球友,约球,双打,混双,单打,球馆,球局,俱乐部,水平,定级,badminton`
-     - 描述：
-
-       > 不好意思在球馆里找陌生人打球？Badie 帮你找。
-       >
-       > 告诉 Badie 你什么时候有空、能去哪些球馆，它帮你找水平相当的球友。固定球友今晚来不了？找个同一时间的人，或者加入一场临时局，和现在就有空的人一起打。刚搬到新城市？看看附近的球馆，加入每周固定的球群。
-       >
-       > • 按水平匹配：2 分钟的定级问卷把你放到 1–9 级，和你打过球的人会帮忙校准。
-       > • 选你想打的项目：单打、双打、男双、女双或混双。男女等级分开算。
-       > • 附近球局：订了场地还缺人？发出来，附近的球友就能加入。
-       > • 每周球群：固定时间、固定球馆，可以报名和候补。
-       > • 靠谱的球友：爽约和临时取消会被记录，赛果由双方确认。
-       > • 周榜、球馆排行榜、挑战和胜率，想比一比也可以。
-       > • 默认保护隐私：球友只能看到你的昵称和水平，看不到你的联系方式。位置只用来找附近的球馆，不会保存。
-       >
-       > Badie 完全免费，是一位想让更多人上场打球的球友做的。
-     - 截图先用英文那组；要中文截图的话，截图工作流可以加一组中文界面的。
-   - 截图：在 GitHub → Actions → **App Store screenshots** → Run workflow，跑完下载 `app-store-screenshots`：最新 iPhone Pro Max（6.9 英寸，1320 × 2868）和 Pro（6.3 英寸，1206 × 2622）上各 8 张英文页面，已转成不带透明通道的 JPEG，直接上传。
+   - 同一页还有**爽约申诉**：选“撤销”或“维持”。7 天没处理会自动维持，所以要按时看。
+4. **商店信息**：10 种语言的最终文案在 `STORE_LISTING.md`（名称、副标题、关键词、推广文本、描述）。
+   - 截图：GitHub → Actions → **App Store screenshots** → Run workflow，跑完下载 `app-store-screenshots-6.9-inch` 和 `app-store-screenshots-6.3-inch`。
+     每个尺寸下按语言分文件夹（en、zh-Hans、zh-Hant、ja、ko、id、ms、th、vi、hi），每种 8 张，文件名开头的 1–8 是上传顺序。
+     每张上方有一行标题（文字在 `Badie-iOS/scripts/store_captions.json`，`*重点*` 用柠檬绿标出，中日文太长要手动加 `\n` 断行）。
 
 ## 1. 注册 Apple Developer Program
 
@@ -148,17 +112,28 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 - 位置**不用勾**：只在搜附近球馆时发一次，不保存（Apple 的定义里不算“收集”）。
 - 没有统计、崩溃收集、广告 SDK，所以 Usage Data、Diagnostics 都不勾。
 
-**Pricing and Availability**：Free；国家和地区先选美国（以后再加）。
+**Pricing and Availability**：Free。地区选了**除中国大陆以外的全部国家和地区**（中国大陆要 ICP 备案和国内主体）。
+Mac（Apple 芯片）勾上：iPhone 版在 Mac 上是固定的手机大小窗口，功能都能用；Vision Pro 不勾（没法测）。
 
 **版本页（1.0）**
-- 截图：6.9 英寸（1320 × 2868）和 6.3 英寸（1206 × 2622）各一组（2026-10 核对：Apple 要求 6.3 英寸至少一张，其余尺寸自动缩放）；每组 1～10 张，不能带透明通道。用第 0 步的截图工作流生成。只上 iPhone，不用 iPad 截图。
-- Description、Keywords、Support URL `https://badie.rsvp/contact/`、Marketing URL `https://badie.rsvp`、Privacy Policy URL `https://badie.rsvp/privacy/`、Copyright `2026 你的名字`。
+- 截图：必填的是 “iPhone with Dynamic Island (medium display)”，传 6.3 英寸那组；“large display” 可选，传 6.9 英寸那组更清晰。
+  iPhone Duo、Face ID、Home Button 那几个尺寸不用传，会自动缩放。iPad 标签在选好 Build 后就不再要求（App 只支持 iPhone）。
+  Header（商店页顶部大横幅，5244 × 2950）是可选的，第一版没传，下次更新时可以补。
+- **每种语言都要单独填**：Description、Keywords、Support URL `https://badie.rsvp/contact/`，以及 App Privacy 页上的 Privacy Policy URL `https://badie.rsvp/privacy/`。
+  只填英文的话，提交时会对每种语言报“This field is required”。切换语言前先点 Save，不然没保存的会丢。
+- Marketing URL `https://badie.rsvp`、Copyright `2026 你的名字`。
 - Build：选第 3 步上传的 Build。
 - **App Review Information**：
   - 演示账号的邮箱和密码（第 0 步建的），勾 Sign-in required。
   - 联系人：你的名字、电话、邮箱（只给审核员看）。
-  - Notes（英文写给审核员）示例：
-    > Badie helps badminton players find partners at their level and courts nearby. Sign in with the demo account (email + password). To test matching, open Play and pick a time and courts. A match needs a second player, so the demo account already has a past game and a friend. Report and block: open any player profile → Report / Block. Offensive words are filtered on the server: names containing them can't be saved, and they're masked in messages. Reports are reviewed within 24 hours on our admin page. Account deletion: Me tab → Settings (gear icon) → Delete account and data (Sign in with Apple accounts are revoked through Apple’s REST API). Location is only used to show courts nearby and is not stored.
+  - Notes（英文写给审核员，1.0 提交时用的）：
+    > Badie helps badminton players find partners at their level and courts nearby. It is free, with no ads or purchases.
+    > Demo account: sign in with the email and password above (Sign in with email, then Password). The account already has a friend and a past game so you can see real content.
+    > Matching: open Play, pick a time and up to 3 courts, then Start matching. A match needs a second real player, so it may stay in "searching" during review. The past game, chat, leaderboard and player profiles show what a confirmed game looks like.
+    > User-generated content (Guideline 1.2): offensive words are filtered on the server (names containing them can't be saved, and they're masked in messages). Report or block: open any player profile and tap Report or Block. Reports are reviewed within 24 hours on our admin page. Missed games: if most of the other players say someone didn't show up and they didn't check in, it is recorded. Within 180 days, the first time is a warning, the second blocks joining games for 7 days, the third permanently. Players can appeal within 48 hours.
+    > Account deletion: Me tab → Settings (gear icon) → Delete account and data. Sign in with Apple accounts are revoked through Apple's REST API.
+    > Location is only used to show courts nearby and is not stored.
+- 发布方式选了 **Manually release this version**。
 
 ## 5. 提交审核和上架
 
