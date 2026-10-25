@@ -1,0 +1,65 @@
+name: Review walkthrough video
+
+# 手动运行：在模拟器里按审核录屏的顺序依次打开各页面并录成一段视频，给真机录屏做参考（不能直接交给审核，苹果要真机录屏）
+on:
+  workflow_dispatch:
+    inputs:
+      language:
+        description: 界面语言（zh-Hans、en……）
+        default: zh-Hans
+
+jobs:
+  record:
+    runs-on: macos-26
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: Badie-iOS
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick simulator
+        id: sim
+        run: echo "udid=$(python3 scripts/pick_simulator.py)" >> "$GITHUB_OUTPUT"
+
+      - name: Build app
+        timeout-minutes: 25
+        run: |
+          xcodebuild build -project Badie.xcodeproj -scheme Badie -destination "id=${{ steps.sim.outputs.udid }}" \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO > build.log 2>&1 || { grep -E "error:" build.log | sort -u | head -50; exit 1; }
+
+      - name: Record
+        env:
+          UDID: ${{ steps.sim.outputs.udid }}
+          LANGUAGE: ${{ inputs.language }}
+        run: |
+          xcrun simctl boot "$UDID" 2>/dev/null || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 || true
+          xcrun simctl location "$UDID" set 34.0686,-118.0276 || true
+          xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/Badie.app
+          xcrun simctl privacy "$UDID" grant location com.badie.app || true
+          # 先预热一次，免得第一页录到白屏
+          xcrun simctl launch "$UDID" com.badie.app -BBDemoScreen welcome >/dev/null; sleep 8
+          xcrun simctl terminate "$UDID" com.badie.app || true
+          mkdir -p walkthrough
+          xcrun simctl io "$UDID" recordVideo --codec h264 --force walkthrough/walkthrough.mp4 &
+          recorder=$!
+          sleep 2
+          # 和录屏清单的顺序一样：启动、注册、定级、首页、匹配、发起球局、排行榜、球友资料（举报/屏蔽）、聊天、我的、设置（注销）
+          for screen in welcome login levelQuiz levelResult home matchSetup matching createMenu room leaderboard playerProfile chat profile settings; do
+            xcrun simctl terminate "$UDID" com.badie.app 2>/dev/null || true
+            SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" com.badie.app \
+              -BBDemoScreen "$screen" -AppleLanguages "($LANGUAGE)" >/dev/null
+            sleep 5
+          done
+          kill -INT "$recorder"
+          wait "$recorder" || true
+          ls -la walkthrough
+
+      - name: Upload video
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-walkthrough
+          path: Badie-iOS/walkthrough
+          retention-days: 14
