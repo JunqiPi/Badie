@@ -282,7 +282,7 @@ function preview(thread: ThreadSummary) {
   if (thread.last) return thread.last.mine ? t('You: {message}', { message: thread.last.body }) : thread.last.body;
   if (thread.kind === 'game') return t('Game chat');
   if (thread.kind === 'group') return t('Group chat · {venue}', { venue: thread.venue ?? '' });
-  return '';
+  return t("You're friends now. Say hi.");
 }
 
 // 见面前不需要转账、代付或验证码：非好友的消息里出现这些就提醒

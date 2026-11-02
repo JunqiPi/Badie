@@ -20479,6 +20479,64 @@
         }
       }
     },
+    "你们已经是球友了，打个招呼吧" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're friends now. Say hi."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你們已經是球友了，打個招呼吧"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "友達になりました。あいさつしてみましょう"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이제 친구예요. 인사해 보세요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अब आप दोस्त हैं। हाय कहें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalian sudah berteman. Sapa dia"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda kini berkawan. Tegurlah dia"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เป็นเพื่อนกันแล้ว ทักทายกันได้เลย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai bạn đã là bạn bè. Chào nhau một câu nhé"
+          }
+        }
+      }
+    },
     "你们的交集" : {
       "localizations" : {
         "en" : {

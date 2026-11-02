@@ -44,7 +44,7 @@ struct MessagesView: View {
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
         .refreshable {
-            messageManager.reload()
+            await messageManager.refresh()
             friendManager.reload()
         }
     }
@@ -178,7 +178,8 @@ private struct ThreadRow: View {
     }
 
     private var preview: String {
-        guard let message = thread.lastMessage else { return "" }
+        // 没聊过的私信只有新球友
+        guard let message = thread.lastMessage else { return thread.isGroup ? "" : String(localized: "你们已经是球友了，打个招呼吧") }
         if thread.isGroup, message.kind != .system, message.senderId != messageManager.currentUserId,
            let sender = messageManager.user(id: message.senderId) {
             return String(localized: "\(sender.nickname)：\(message.content)")

@@ -90,14 +90,17 @@ extension MockBackend {
     /// 球友、会话列表、通知
     func refreshRemoteSocial() async throws {
         guard let remote, let me = currentUserId else { return }
+        // 拉到一样先显示一样：后面哪步出错，新球友也已经在列表里了
         let friends: RemoteFriends = try await remote.rpc("my_friends")
+        var changed = [apply(friends: friends, me: me)]
+        // 每 15 秒轮询一次，多数时候什么都没变：变了才写盘
+        defer { if changed.contains(true) { scheduleSave() } }
         let threads: [RemoteThreadSummary] = try await remote.rpc("my_threads")
+        changed.append(apply(threads: threads, me: me))
         let notes: [RemoteNotification] = try await remote.select(
             "notifications", query: "select=id,kind,title,body,link,created_at,read_at&order=id.desc&limit=50")
-        let changed = [apply(friends: friends, me: me), apply(threads: threads, me: me), apply(notifications: notes, me: me)]
+        changed.append(apply(notifications: notes, me: me))
         try? await refreshRemoteRegulars()
-        // 每 15 秒轮询一次，多数时候什么都没变：变了才写盘
-        if changed.contains(true) { scheduleSave() }
     }
 
     @discardableResult

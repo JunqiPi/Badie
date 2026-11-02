@@ -190,6 +190,12 @@ final class MessageManager: ObservableObject {
         backend.refreshMessagesNow(activeThreadId: activeThreadId)
     }
 
+    /// 下拉刷新：去服务器重拉球友和会话（演示模式只读本机）
+    func refresh() async {
+        try? await backend.refreshRemoteSocial()
+        reload()
+    }
+
     func close(with userId: String) {
         if activeThreadId == threadId(with: userId) {
             activeThreadId = nil
