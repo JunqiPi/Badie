@@ -26,6 +26,7 @@ const address = formatAddress(venue);
 const place = cityName(city);
 const others = nearby(venue);
 
+// 数字格：手机上一行放不下三格时自动换行（“Percuma”“HK$27” 在 60px 宽的格子里放不下）
 const facts = [
   venue.courts && { label: 'courts in total', value: String(venue.courts), tint: 'bg-sky' },
   venue.price?.perPerson !== undefined && { label: 'drop-in per person', value: formatPrice(venue.price.perPerson, venue.country), tint: 'bg-butter' },
@@ -108,16 +109,16 @@ const jsonLd = {
         <span class="chip bg-lime" data-t={venue.facility ? facilityLabel[venue.facility] : 'Badminton court'}>{venue.facility ? facilityLabel[venue.facility] : 'Badminton court'}</span>
         {venue.confirmed ? <span class="chip bg-mint" data-t="Verified">Verified</span> : <span class="chip bg-surface-muted text-ink" data-t="Not yet confirmed by players">Not yet confirmed by players</span>}
       </div>
-      <h1 class="mt-3 text-display break-words lg:text-[2.75rem]">{venue.name}</h1>
+      <h1 class="mt-3 text-display lg:text-[2.75rem]">{venue.name}</h1>
       {alias && <p class="mt-1 text-title3 text-ink-secondary">{alias}</p>}
       <p class="mt-2 text-subhead text-ink-secondary">{address}</p>
       {
         facts.length > 0 && (
-          <dl class="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
+          <dl class="mt-6 grid grid-cols-[repeat(auto-fit,minmax(6.5rem,1fr))] gap-2 sm:gap-3">
             {facts.map((fact) => (
               <div class:list={['tile flex flex-col-reverse rounded-[14px]! p-3 text-on-accent sm:p-4', fact.tint]}>
                 <dt class="mt-1 text-caption sm:text-footnote" data-t={fact.label}>{fact.label}</dt>
-                <dd class="text-[1.75rem] leading-none font-black tabular-nums sm:text-[2.5rem]" data-t={fact.value === 'Free' ? 'Free' : undefined}>{fact.value}</dd>
+                <dd class="text-[1.5rem] leading-none font-black tabular-nums sm:text-[2.5rem]" data-t={fact.value === 'Free' ? 'Free' : undefined}>{fact.value}</dd>
               </div>
             ))}
           </dl>

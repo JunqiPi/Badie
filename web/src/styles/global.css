@@ -146,6 +146,8 @@
     font-family: var(--font-sans);
     font-weight: 500;
     -webkit-tap-highlight-color: transparent;
+    /* 长网址、长昵称、没有空格的长串在哪都能断行，不把卡片和页面撑宽 */
+    overflow-wrap: anywhere;
   }
   h1, h2, h3 { text-wrap: balance; }
   p { text-wrap: pretty; }
@@ -160,6 +162,9 @@
   [id] { scroll-margin-top: 5rem; }
   /* fieldset 默认最小宽度是内容宽度：里面有横向滚动的日期条时会把整页撑宽 */
   fieldset { min-inline-size: 0; }
+  /* 没写 grid-cols-* 的网格只有一列：这一列可以比内容窄（minmax(0,1fr)），
+     卡片里截断的长球馆名、长昵称不会把整列撑得比屏幕还宽。flex 行里的网格只改标了 min-w-0 的 */
+  :where(.grid):not(:where(.flex, .inline-flex) > *), :where(.flex, .inline-flex) > :where(.grid.min-w-0) { grid-template-columns: minmax(0, 1fr); }
   dialog::backdrop { background: rgb(23 20 15 / 0.45); }
 }
 
@@ -239,7 +244,9 @@
   font-size: var(--text-subhead);
   font-weight: 750;
   line-height: 1.15;
-  white-space: nowrap;
+  /* 译文长、屏幕窄时换行（按钮变高），不撑出卡片 */
+  text-align: center;
+  text-wrap: balance;
   color: var(--button-fg, var(--color-on-accent));
   background: var(--button-bg, var(--color-lime));
   cursor: pointer;
@@ -445,6 +452,10 @@
     radial-gradient(circle at 100% var(--notch, 62%), #0000 11px, var(--color-stroke) 11px 13px, #0000 13.5px);
   background-origin: border-box;
 }
+
+/* 一排能换行的标签里，比一整行还长的标签（球群的时间和费用、长译文）自己换行 */
+.flex-wrap > .chip, .flex-wrap > * > .chip, .flex-wrap > .toggle { white-space: normal; }
+.flex-wrap > .toggle { text-align: center; }
 
 /* 只在有脚本时显示（App 加载前的转圈） */
 .js-only { display: none; }

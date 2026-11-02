@@ -170,7 +170,7 @@ function VenueDetail({ ref, venue, favorite, onFavorite, onConfirm }: {
   return (
     <section ref={ref} key={venue.id} className="sticker animate-enter grid scroll-mt-20 gap-4 p-5" aria-label={venue.name}>
       <div className="flex items-start gap-3">
-        <IconTile icon="pin" tint="sky" size="lg" />
+        <IconTile icon="pin" tint="sky" size="lg" className="max-[379px]:hidden" />
         <div className="min-w-0 flex-1">
           <h3 className="text-title3">{venue.name}</h3>
           <p className="text-footnote text-ink-secondary">{address(venue)}</p>

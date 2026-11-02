@@ -64,9 +64,9 @@ function Report({ item, onDone }: { item: ReportItem; onDone: () => void }) {
 
   return (
     <article className="sticker grid gap-3 p-5">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Avatar id={item.reported.id} name={item.reported.nickname} photo={item.reported.avatar} size={48} />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-40">
           <Link to={`/players/${item.reported.id}/`} className="link font-bold">{item.reported.nickname}</Link>
           <p className="text-footnote text-ink-secondary">
             {t('Reported by {name}', { name: item.reporter.nickname })} · {relative(item.created_at)}
@@ -78,7 +78,7 @@ function Report({ item, onDone }: { item: ReportItem; onDone: () => void }) {
       <dl className="grid gap-1 text-footnote sm:grid-cols-[10rem_1fr]">
         <dt className="font-bold text-ink-tertiary">{t('Reason')}</dt>
         <dd>{t(reasonText[item.reason] ?? item.reason)}</dd>
-        {item.details && (<><dt className="font-bold text-ink-tertiary">{t('Details')}</dt><dd className="break-words">{item.details}</dd></>)}
+        {item.details && (<><dt className="font-bold text-ink-tertiary">{t('Details')}</dt><dd>{item.details}</dd></>)}
         {item.open_reports > 1 && (<><dt className="font-bold text-ink-tertiary">{t('Open reports')}</dt><dd>{item.open_reports}</dd></>)}
       </dl>
       {item.messages.length > 0 && (
@@ -86,7 +86,7 @@ function Report({ item, onDone }: { item: ReportItem; onDone: () => void }) {
           <summary className="cursor-pointer font-bold">{t('Their messages to the reporter ({n})', { n: item.messages.length })}</summary>
           <ul className="mt-2 grid gap-1.5">
             {item.messages.map((m, i) => (
-              <li key={i} className="break-words"><span className="text-ink-tertiary">{day(m.at)}</span> {m.body}</li>
+              <li key={i}><span className="text-ink-tertiary">{day(m.at)}</span> {m.body}</li>
             ))}
           </ul>
         </details>
@@ -151,7 +151,7 @@ export function StrikeAppeals() {
             <span className="text-footnote text-ink-secondary"> · {t('Missed game {n} of 3', { n: item.level })} · {day(item.game.starts_at)}{item.game.venue && ` · ${item.game.venue}`}</span>
           </p>
           <p className="text-footnote text-ink-secondary">{t('Said they didn’t show up: {names}', { names: item.reporters.join(', ') })}</p>
-          <p className="break-words rounded-[12px] bg-surface-muted p-3 text-footnote">{item.appeal}</p>
+          <p className="rounded-[12px] bg-surface-muted p-3 text-footnote">{item.appeal}</p>
           <div className="flex flex-wrap gap-2">
             <Button className="button-sm" busy={busy === `${item.id}-true`} disabled={Boolean(busy)} onClick={() => resolve(item.id, true)}>{t('Remove it')}</Button>
             <Button className="button-sm" variant="quiet" busy={busy === `${item.id}-false`} disabled={Boolean(busy)} onClick={() => resolve(item.id, false)}>{t('Keep it')}</Button>

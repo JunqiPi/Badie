@@ -47,8 +47,9 @@ export function PlayerPage({ id }: { id: string }) {
                 <Avatar id={card.id} name={card.nickname} photo={card.avatar} size={88} className="relative" />
               </span>
               <div className="grid min-w-0 gap-1.5">
-                <h1 id="player" className="truncate text-title">
-                  {card.nickname}{card.tag != null && <span className="text-ink-tertiary">{tagText(card.tag)}</span>}
+                {/* 昵称太长时只截昵称，编号一直看得到 */}
+                <h1 id="player" className="flex text-title">
+                  <span className="truncate">{card.nickname}</span>{card.tag != null && <span className="shrink-0 text-ink-tertiary">{tagText(card.tag)}</span>}
                 </h1>
                 <ul className="flex flex-wrap gap-1.5" aria-label={t('Highlights')}>
                   <li><LevelBadge rating={card.rating} /></li>

@@ -24,11 +24,12 @@ export function GroupCard({ group: g }: { group: GroupSummary }) {
     <Link to={`/groups/${g.id}/`} className="sticker lift grid content-start gap-3 p-4">
       <span className="flex items-start gap-3">
         <IconTile icon="group" tint="lavender" size="lg" />
+        {/* 状态标签放在球馆下面：放在右边时窄屏上群名只剩很窄的一条 */}
         <span className="min-w-0 flex-1">
           <span className="block text-headline">{g.name}</span>
           <span className="block truncate text-footnote text-ink-secondary">{g.venue.name}, {g.venue.city}</span>
+          {g.my_role && <span className="mt-1 flex">{g.my_role === 'pending' ? <Tag tint="peach">{t('Requested')}</Tag> : <Tag icon="check" tint="mint">{t('Joined')}</Tag>}</span>}
         </span>
-        {g.my_role === 'pending' ? <Tag tint="peach">{t('Requested')}</Tag> : g.my_role && <Tag icon="check" tint="mint">{t('Joined')}</Tag>}
       </span>
       <span className="flex flex-wrap gap-1.5">
         {g.schedules.map((sc, i) => <Tag key={i} icon="calendar">{scheduleText(sc)}</Tag>)}

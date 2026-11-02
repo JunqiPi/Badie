@@ -383,7 +383,7 @@ function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
             )}
             <div className={`grid gap-0.5 ${m.mine ? 'justify-items-end' : ''}`}>
               {!m.mine && kind !== 'dm' && <span className="px-1 text-caption text-ink-secondary">{names[m.sender] ?? t('Player')}</span>}
-              <p className={`rounded-[18px] border-2 border-stroke px-3.5 py-2 break-words whitespace-pre-wrap ${m.mine ? 'rounded-br-[6px] bg-lime text-on-accent' : 'rounded-bl-[6px] bg-surface'}`}>
+              <p className={`rounded-[18px] border-2 border-stroke px-3.5 py-2 whitespace-pre-wrap ${m.mine ? 'rounded-br-[6px] bg-lime text-on-accent' : 'rounded-bl-[6px] bg-surface'}`}>
                 {m.body}
               </p>
               <span className="px-1 text-[11px] text-ink-tertiary">{relative(m.created_at)}</span>
@@ -485,8 +485,8 @@ export function Notifications() {
               <>
                 <IconTile icon={icon} tint={tint} />
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline gap-2">
-                    <span className="min-w-0 flex-1 font-bold">{u.title}</span>
+                  <span className="flex flex-wrap items-baseline gap-x-2">
+                    <span className="min-w-0 flex-1 basis-32 font-bold">{u.title}</span>
                     <span className="shrink-0 text-caption text-ink-tertiary">{relative(u.created_at)}</span>
                   </span>
                   <span className="block text-footnote text-ink-secondary">{u.body}</span>
