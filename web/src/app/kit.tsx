@@ -61,7 +61,7 @@ export function IconTile({ icon, tint = 'lime', size = 'md', className = '' }: {
 export function CountBadge({ count, className = '' }: { count: number; className?: string }) {
   if (count <= 0) return null;
   return (
-    <span aria-hidden="true" className={`grid h-5 min-w-5 place-items-center rounded-full border-2 border-canvas bg-danger-fill px-1 text-[11px] leading-none font-black text-white tabular-nums ${className}`}>
+    <span aria-hidden="true" className={`grid h-5 min-w-5 shrink-0 place-items-center rounded-full border-2 border-canvas bg-danger-fill px-1 text-[11px] leading-none font-black whitespace-nowrap text-white tabular-nums ${className}`}>
       {count > 99 ? '99+' : count}
     </span>
   );
@@ -115,8 +115,9 @@ export function AvatarStack({ people, size = 32, max = 4 }: { people: { id: stri
 export function LevelBadge({ rating, named = true, compact = false }: { rating: number; named?: boolean; compact?: boolean }) {
   const level = tier(rating);
   return (
-    <span className={`inline-flex shrink-0 items-center rounded-[7px] bg-[#17140f] font-black whitespace-nowrap text-lime ${compact ? 'px-1.5 py-px text-[10px]' : 'px-2 py-0.5 text-caption'}`}>
-      Lv.{level.label}{named && ` ${level.name}`}
+    // 放不下时等级名换到第二行（窄卡片、长译文），“Lv.4+”本身不断开
+    <span className={`inline-flex shrink-0 flex-wrap items-center justify-center gap-x-1 rounded-[7px] bg-[#17140f] text-center font-black text-lime ${compact ? 'px-1.5 py-px text-[10px]' : 'px-2 py-0.5 text-caption'}`}>
+      <span className="whitespace-nowrap">Lv.{level.label}</span>{named && ` ${level.name}`}
     </span>
   );
 }
@@ -148,7 +149,7 @@ export function Segmented<T extends string>({ options, value, onChange, label }:
           type="button"
           aria-pressed={o.value === value}
           onClick={() => onChange(o.value)}
-          className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-[12px] px-3 text-subhead font-bold text-ink-secondary transition-colors duration-[var(--dur-1)] hover:text-ink aria-pressed:bg-inverse aria-pressed:text-on-inverse"
+          className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-[12px] px-2 text-subhead font-bold max-[379px]:text-footnote sm:px-3 text-ink-secondary transition-colors duration-[var(--dur-1)] hover:text-ink aria-pressed:bg-inverse aria-pressed:text-on-inverse"
         >
           {o.label}
           <CountBadge count={o.badge ?? 0} />
@@ -166,7 +167,7 @@ export function LargeTitle({ title, subtitle, children }: { title: string; subti
     <header className="flex items-center gap-3">
       <div className="min-w-0 flex-1">
         {subtitle && <p className="text-subhead font-bold text-ink-secondary">{subtitle}</p>}
-        <h1 className="text-display lg:text-[2.75rem]">{title}</h1>
+        <h1 className="text-display max-[379px]:text-[1.75rem] lg:text-[2.75rem]">{title}</h1>
       </div>
       {children && <div className="flex shrink-0 gap-2.5">{children}</div>}
     </header>
@@ -176,7 +177,7 @@ export function LargeTitle({ title, subtitle, children }: { title: string; subti
 /** 二级页面的标题栏（iOS 的 ScreenHeader）：返回按钮 + 居中标题 */
 export function ScreenHeader({ title, back, children }: { title: string; back: string; children?: ReactNode }) {
   return (
-    <header className="grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 lg:grid-cols-[2.75rem_auto_1fr]">
+    <header className="grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-center gap-3 lg:grid-cols-[2.75rem_minmax(0,auto)_1fr]">
       <IconButton icon="chevronLeft" label={t('Back')} to={back} />
       <h1 className="truncate text-center text-headline lg:text-left lg:text-title2">{title}</h1>
       <div className="flex min-w-[2.75rem] justify-end gap-2.5">{children}</div>
@@ -187,7 +188,7 @@ export function ScreenHeader({ title, back, children }: { title: string; back: s
 /** 分区标题：标题 + 灰色说明 + 右边的“全部”（说明太长时换到标题下面） */
 export function SectionTitle({ title, detail, action, id }: { title: string; detail?: string; action?: Action & { label: string }; id?: string }) {
   return (
-    <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-2">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-2">
       <div className="flex min-w-0 flex-wrap items-baseline gap-x-2">
         <h2 id={id} className="text-title3">{title}</h2>
         {detail && <span className="text-footnote font-bold text-ink-secondary">{detail}</span>}
@@ -234,16 +235,17 @@ export function Row({ icon, tint = 'lavender', title, subtitle, value, badge = 0
     <>
       <IconTile icon={icon} tint={tint} size="sm" />
       <span className="min-w-0 flex-1">
-        <span className={`block font-bold ${danger ? 'text-danger' : ''}`}>{title}</span>
+        <span className={`block font-bold max-[379px]:text-subhead ${danger ? 'text-danger' : ''}`}>{title}</span>
         {subtitle && <span className="block text-footnote text-ink-secondary">{subtitle}</span>}
       </span>
       <CountBadge count={badge} />
-      {value && <span className="shrink-0 text-footnote font-bold text-ink-secondary">{value}</span>}
+      {value && <span className="shrink-0 truncate text-footnote font-bold text-ink-secondary max-[379px]:max-w-[25%]">{value}</span>}
       {children}
       {clickable && <Icon name="chevronRight" className="size-3.5 text-ink-tertiary" />}
     </>
   );
-  const className = 'flex min-h-14 w-full items-center gap-3 py-2.5 text-left';
+  // 最窄的屏幕上间距小一点，标题（“Level verification”）才不用从词中间断开
+  const className = 'flex min-h-14 w-full items-center gap-3 py-2.5 text-left max-[379px]:gap-2';
   if (!clickable) return <div className={className}>{body}</div>;
   return <Pressable {...action} className={`${className} press rounded-[12px] transition-colors hover:bg-surface-muted/60 -mx-2 px-2 w-[calc(100%+1rem)]`}>{body}</Pressable>;
 }
@@ -254,10 +256,11 @@ export const Divider = () => <hr className="h-[1.5px] border-0 bg-divider" />;
 /** 横幅（iOS 的 NoticeBanner）：色块 + 图标 + 一句话 + 小按钮 */
 export function Notice({ icon, tint = 'butter', children, action }: { icon: IconName; tint?: Tint; children: ReactNode; action?: Action & { label: string } }) {
   return (
-    <div className={`tile flex items-center gap-3 rounded-[16px]! p-3 ${fill[tint]}`}>
+    // 文字放不下 7rem 时按钮换到下一行（靠右），不把文字挤成一列
+    <div className={`tile flex flex-wrap items-center gap-3 rounded-[16px]! p-3 ${fill[tint]}`}>
       <Icon name={icon} className="size-5" />
-      <p className="min-w-0 flex-1 text-footnote font-bold">{children}</p>
-      {action && <Pressable {...action} className="button button-sm button-quiet shrink-0">{action.label}</Pressable>}
+      <p className="min-w-0 flex-1 basis-28 text-footnote font-bold">{children}</p>
+      {action && <Pressable {...action} className="button button-sm button-quiet ml-auto shrink-0">{action.label}</Pressable>}
     </div>
   );
 }
@@ -326,7 +329,7 @@ export function Wordmark({ className = 'text-[1.75rem]', inverse = false }: { cl
 
 
 /** 欢迎页的插画（iOS 的 WelcomeCardFan）：三张展开的球友卡 + 羽毛球 + GO 星形 */
-export function CardFan({ className = '' }: { className?: string }) {
+export function CardFan({ className = 'max-[379px]:scale-[0.8]' }: { className?: string }) {
   const cards: [string, number, Tint, number, Tint][] = [
     ['Mia', 6.67, 'lavender', -14, 'mint'],
     ['AJ', 4.33, 'peach', 0, 'butter'],
@@ -338,7 +341,7 @@ export function CardFan({ className = '' }: { className?: string }) {
         <div
           key={name}
           style={{ ['--angle' as string]: `${angle}deg`, ['--x' as string]: `${(i - 1) * 78}px` }}
-          className={`sticker fan-card absolute bottom-6 left-1/2 grid h-[168px] w-32 -translate-x-1/2 place-content-center justify-items-center gap-2 rounded-[22px]! ${fill[tint]} ${i === 1 ? 'z-10 mb-4' : ''}`}
+          className={`sticker fan-card absolute bottom-6 left-1/2 grid h-[168px] w-32 place-content-center justify-items-center gap-2 rounded-[22px]! ${fill[tint]} ${i === 1 ? 'z-10 mb-4' : ''}`}
         >
           <span className={`grid size-[54px] place-items-center rounded-full border-2 border-stroke text-[1.4rem] font-black ${fill[avatar]}`}>{[...t(name)][0]}</span>
           <span className="text-headline">{t(name)}</span>

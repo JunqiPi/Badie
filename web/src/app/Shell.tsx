@@ -34,7 +34,7 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
 
       <header className="sticky top-0 z-30 bg-bar text-on-bar">
         <div className="page flex h-16 items-center gap-2 lg:gap-6">
-          <Link to="/" aria-label={t('Badie home')} className="press -ml-1 rounded-lg px-1">
+          <Link to="/" aria-label={t('Badie home')} className="press -ml-1 shrink-0 rounded-lg px-1">
             <Wordmark inverse className="text-[1.6rem]" />
           </Link>
           <nav aria-label={t('Main')} className="hidden lg:block">
@@ -45,9 +45,10 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
                     to={tab.to}
                     aria-current={current === tab ? 'page' : undefined}
                     aria-label={name(tab)}
-                    className="relative flex h-10 items-center gap-2 rounded-full px-4 text-subhead font-bold text-on-bar/80 transition-colors duration-[var(--dur-1)] hover:bg-on-bar/10 hover:text-on-bar aria-[current=page]:bg-lime aria-[current=page]:text-on-accent"
+                    className="relative flex h-10 items-center gap-2 rounded-full px-3 text-subhead whitespace-nowrap xl:px-4 font-bold text-on-bar/80 transition-colors duration-[var(--dur-1)] hover:bg-on-bar/10 hover:text-on-bar aria-[current=page]:bg-lime aria-[current=page]:text-on-accent"
                   >
-                    <Icon name={current === tab ? tab.active : tab.icon} className="size-5" />
+                    {/* 1280px 以下顶栏放不下图标 + 文字（马来文最长），只留文字 */}
+                    <Icon name={current === tab ? tab.active : tab.icon} className="hidden size-5 xl:block" />
                     {t(tab.label)}
                     <CountBadge count={badge(tab)} className="border-bar!" />
                   </Link>
@@ -55,7 +56,7 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
               ))}
             </ul>
           </nav>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <LanguageSwitch />
             {me ? (
               <>
@@ -76,7 +77,7 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
                 {t('Sign in')}
               </Link>
             )}
-            <button type="button" onClick={openMenu} className="button button-sm hidden border-lime! shadow-none! lg:inline-flex">
+            <button type="button" onClick={openMenu} className="button button-sm hidden border-lime! whitespace-nowrap shadow-none! lg:inline-flex">
               <Icon name="plus" className="size-4" />
               {t('Set up a game')}
             </button>
@@ -179,7 +180,8 @@ function TabBar({ current, badge, name, onCreate }: {
         to={tab.to}
         aria-current={current === tab.to ? 'page' : undefined}
         aria-label={name(tab)}
-        className="press group flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-bold text-ink-tertiary aria-[current=page]:text-ink"
+        // 标签不换行（“Messages”“Permainan”这样的长词不能断开），最窄的屏幕上字小一号
+        className="press group flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-bold whitespace-nowrap text-ink-tertiary aria-[current=page]:text-ink max-[359px]:text-[10px]"
       >
         <span className="relative">
           <Icon name={current === tab.to ? tab.active : tab.icon} className="size-6" />
@@ -322,8 +324,9 @@ export function LanguageSwitch() {
         className="flex h-10 items-center gap-1.5 rounded-full px-2.5 text-footnote font-bold text-on-bar transition-colors hover:bg-on-bar/10 aria-expanded:bg-on-bar/15 sm:px-3"
       >
         <Icon name="globe" className="size-5" />
-        <span className="hidden sm:inline">{name}</span>
-        <Icon name="chevronDown" className={`hidden size-3 transition-transform sm:block ${open ? 'rotate-180' : ''}`} />
+        {/* 桌面顶栏放了导航，1280px 以下只留地球图标，免得挤出屏幕 */}
+        <span className="hidden sm:inline lg:hidden xl:inline">{name}</span>
+        <Icon name="chevronDown" className={`hidden size-3 transition-transform sm:block lg:hidden xl:block ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <ul role="listbox" aria-label={t('Language')} onKeyDown={onKeyDown} className="sticker absolute top-full right-0 z-50 mt-2 grid w-56 origin-top-right animate-pop gap-0.5 p-1.5 text-ink">

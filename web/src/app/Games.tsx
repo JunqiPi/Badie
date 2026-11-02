@@ -44,11 +44,12 @@ export function Games() {
         </Notice>
       )}
 
-      <ul className="grid grid-cols-3 gap-3">
+      {/* 手机上三个并排时每格只剩 50–70px，长一点的词（Permainan、Regular）放不下：改成一行一个，图标在左 */}
+      <ul className="grid gap-3 sm:grid-cols-3">
         {shortcuts.map((s) => (
           <li key={s.to}>
-            <Link to={s.to} className={`sticker lift grid h-full content-start gap-2 p-4 ${fill[s.tint]}`}>
-              <Icon name={s.icon} className="size-6" />
+            <Link to={s.to} className={`sticker lift grid h-full content-start gap-2 p-4 max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-x-3 max-sm:gap-y-0.5 max-sm:py-3 ${fill[s.tint]}`}>
+              <Icon name={s.icon} className="size-6 max-sm:row-span-2 max-sm:self-center" />
               <span className="text-headline">{t(s.title)}</span>
               <span className="text-caption opacity-80">{t(s.subtitle)}</span>
             </Link>
@@ -211,11 +212,12 @@ export function GameDetail({ id }: { id: string }) {
 export function Lineup({ players, mode }: { players: Game['players']; mode: Game['mode'] }) {
   const teams = [1, 2].map((team) => players.filter((p) => p.team === team));
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
       {teams.map((team, i) => (
         <ul key={i} className={`grid gap-3 ${i === 1 ? 'order-3' : ''}`} aria-label={mode === 'doubles' ? t('Team {n}', { n: i + 1 }) : undefined}>
           {team.map((p) => (
-            <li key={p.id} className={`flex min-w-0 items-center gap-2.5 ${i === 1 ? 'flex-row-reverse text-right' : ''}`}>
+            // 最窄的手机上头像放到名字上面，名字和等级才放得下
+            <li key={p.id} className={`flex min-w-0 items-center gap-2.5 max-[379px]:flex-col ${i === 1 ? 'flex-row-reverse text-right max-[379px]:items-end' : 'max-[379px]:items-start'}`}>
               <Link to={p.me ? '/me/' : `/players/${p.id}/`} aria-label={p.me ? t('You') : p.nickname} className="press shrink-0 rounded-full">
                 <Avatar id={p.id} name={p.nickname} size={48} />
               </Link>
@@ -416,7 +418,7 @@ function Fees({ game: g, busy, act }: {
   }
   return (
     <section aria-labelledby="fees" className="sticker grid gap-2 p-5">
-      <h2 id="fees" className="flex items-center gap-3">
+      <h2 id="fees" className="flex flex-wrap items-center gap-3">
         <IconTile icon="coins" tint="butter" size="sm" />
         <span className="text-headline">{t('Court fee')}</span>
         <span className="ml-auto text-footnote font-bold text-ink-secondary tabular-nums">{t('{n} of {total} paid', { n: paid, total: g.players.length })}</span>
@@ -473,7 +475,7 @@ export function Challenges() {
             <Link to={`/players/${c.player.id}/`} className="underline">{c.player.nickname}</Link>{' '}
             {c.partner ? t('and {partner} challenged you to doubles', { partner: c.partner.nickname }) : t('challenged you to singles')}
             </p>
-            <Starburst size={48}>VS</Starburst>
+            <span className="max-[379px]:hidden"><Starburst size={48}>VS</Starburst></span>
           </div>
           <p className="text-headline">
             {day(c.starts_at, c.venue.tz)} · {hours(c.starts_at, c.ends_at, c.venue.tz)} · {c.venue.name}

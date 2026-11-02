@@ -139,7 +139,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
               <Icon name="clock" className="size-4" />
               {t('Confirm by {time} ({relative}). Declining is fine and doesn’t count against you.', { time: moment(o.respond_by, tz), relative: relative(o.respond_by) })}
             </p>
-            <div className="grid grid-cols-[auto_1fr] gap-3">
+            <div className="grid gap-3 min-[400px]:grid-cols-[auto_1fr]">
               <Button className="button-lg button-quiet" busy={busy === 'decline'} disabled={Boolean(busy)} onClick={() => act('decline', 'respond_offer', { p_offer: o.id, p_accept: false }, t('Declined. Badie will keep looking.'))}>
                 {t('Not this time')}
               </Button>
@@ -160,7 +160,7 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
   const event = eventLabel(ticket.mode, eventOf(ticket.play_with, ticket.mixed));
   return (
     <article className="sticker animate-enter grid gap-3 p-4">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Tag icon={s.icon} tint={s.tint}>{t(s.label)}</Tag>
         {ticket.last_minute && <Tag tint="peach">{t('Last-minute')}</Tag>}
         {event && <Tag tint="lavender">{event}</Tag>}
@@ -218,11 +218,11 @@ const Summary = ({ icon, tint, title, subtitle }: { icon: IconName; tint: Tint; 
 function Versus({ players }: { players: Player[] }) {
   const teams = [1, 2].map((team) => players.filter((p) => p.team === team));
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
       {teams.map((team, i) => (
         <ul key={i} className={`grid gap-2 ${i === 1 ? 'order-3' : ''}`}>
           {team.map((p) => (
-            <li key={p.id} className={`flex items-center gap-2 rounded-[14px] border-2 border-[#17140f] p-1.5 ${p.me ? 'bg-lime' : 'bg-lavender'}`}>
+            <li key={p.id} className={`flex items-center gap-2 rounded-[14px] border-2 border-[#17140f] p-1.5 max-[379px]:flex-col max-[379px]:items-start ${p.me ? 'bg-lime' : 'bg-lavender'}`}>
               <Avatar id={p.id} name={p.nickname} size={32} />
               <span className="grid min-w-0 justify-items-start">
                 {p.me ? <span className="truncate text-footnote font-bold">{t('You')}</span>
@@ -440,10 +440,10 @@ export function FormatPicker({ value, onChange }: { value: Mode; onChange: (mode
             key={m}
             onClick={() => onChange(m)}
             aria-pressed={value === m}
-            className="press grid justify-items-start gap-1 rounded-[20px] border-2 border-stroke bg-surface p-4 text-left aria-pressed:bg-lime aria-pressed:text-on-accent aria-pressed:shadow-card"
+            className="press grid justify-items-start gap-1 rounded-[20px] border-2 border-stroke bg-surface p-4 text-left aria-pressed:bg-lime aria-pressed:text-on-accent aria-pressed:shadow-card max-[399px]:p-3"
           >
             <Icon name={m === 'doubles' ? 'users' : 'user'} className="size-6" />
-            <span className="text-title3">{m === 'doubles' ? t('Doubles') : t('Singles')}</span>
+            <span className="text-title3 max-[399px]:text-headline max-[359px]:text-subhead">{m === 'doubles' ? t('Doubles') : t('Singles')}</span>
             <span className="text-footnote font-bold opacity-70">{m === 'doubles' ? t('2 vs 2') : t('1 vs 1')}</span>
           </button>
         ))}

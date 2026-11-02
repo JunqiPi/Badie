@@ -32,11 +32,11 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
       <h1 class="text-display lg:text-[2.75rem]" data-region={country.code}>{country.name}</h1>
       <div class="mt-5 grid max-w-md grid-cols-2 gap-3">
         <div class="tile rounded-[14px]! bg-sky p-4 text-on-accent">
-          <p class="text-[2.25rem] leading-none font-black tabular-nums">{country.venueCount.toLocaleString('en')}</p>
+          <p class="text-[1.75rem] leading-none font-black whitespace-nowrap tabular-nums sm:text-[2.25rem]">{country.venueCount.toLocaleString('en')}</p>
           <p class="text-footnote font-bold" data-t="courts">courts</p>
         </div>
         <div class="tile rounded-[14px]! bg-peach p-4 text-on-accent">
-          <p class="text-[2.25rem] leading-none font-black tabular-nums">{country.cities.length.toLocaleString('en')}</p>
+          <p class="text-[1.75rem] leading-none font-black whitespace-nowrap tabular-nums sm:text-[2.25rem]">{country.cities.length.toLocaleString('en')}</p>
           <p class="text-footnote font-bold" data-t="areas">areas</p>
         </div>
       </div>
@@ -82,7 +82,7 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
               <li data-area={cityName(city).toLowerCase()} class="break-inside-avoid">
                 <a href={city.path} class="flex justify-between gap-3 rounded-[10px] px-2 py-1.5 font-bold transition-colors hover:bg-surface">
                   <span class="truncate">{cityName(city)}</span>
-                  <span class="text-ink-tertiary">{city.venues.length}</span>
+                  <span class="shrink-0 text-ink-tertiary">{city.venues.length}</span>
                 </a>
               </li>
             ))}

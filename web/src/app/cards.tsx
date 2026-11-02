@@ -105,7 +105,7 @@ export function RoomCard({ room: r, distance, wide = false }: { room: RoomSummar
   const tz = r.venue?.tz;
   return (
     <Link to={`/rooms/${r.id}/`} className={`sticker lift grid content-start gap-2 p-4 ${wide ? 'w-full' : 'w-[17rem]'}`}>
-      <span className="flex items-center gap-1.5">
+      <span className="flex flex-wrap items-center gap-1.5">
         <Tag icon={r.mode === 'doubles' ? 'users' : 'user'} tint="lavender">{eventLabel(r.mode, eventOf(r.gender, r.mixed)) ?? modeName(r.mode)}</Tag>
         <Tag>{t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })}</Tag>
         <span className="ml-auto">

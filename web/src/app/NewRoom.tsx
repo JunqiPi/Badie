@@ -150,7 +150,7 @@ export function NewRoom({ profile }: { profile: Profile }) {
             <select aria-label={t('Lowest level')} value={min} onChange={(e) => setMin(Number(e.target.value))} className="field w-24">
               {levels.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>
-            <span aria-hidden="true">{t('to')}</span>
+            <span aria-hidden="true" className="shrink-0">{t('to')}</span>
             <select aria-label={t('Highest level')} value={max} onChange={(e) => setMax(Number(e.target.value))} className="field w-24">
               {levels.map((l) => <option key={l} value={l}>{l}</option>)}
             </select>

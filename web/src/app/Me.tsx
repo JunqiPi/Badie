@@ -48,7 +48,7 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
                 <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={76} className="relative" />
               </span>
               <div className="grid min-w-0 flex-1 basis-40 gap-1.5">
-                <h2 className="truncate text-title2">{profile.nickname}<span className="opacity-60">{tagText(profile.tag)}</span></h2>
+                <h2 className="flex text-title2"><span className="truncate">{profile.nickname}</span><span className="shrink-0 opacity-60">{tagText(profile.tag)}</span></h2>
                 <ul className="flex flex-wrap gap-1.5">
                   <li><LevelBadge rating={profile.rating} /></li>
                   {card?.reliable && <li><Tag icon="reliable" tint="mint">{t('Reliable')}</Tag></li>}
