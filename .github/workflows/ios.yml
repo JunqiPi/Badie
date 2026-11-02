@@ -27,6 +27,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Decide screenshots
+        id: ui
+        # 只有界面、文案、示例数据或截图脚本变了才截图；手动运行和 PR 总是截
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          ui='^Badie-iOS/(Badie/(App|DesignSystem|Features)/|Badie/Localizable\.xcstrings|Badie/Assets\.xcassets/(AccentColor|Logo)|Badie/Services/Backend/MockBackend\+World|scripts/ci_screenshots\.sh)'
+          if [ "${{ github.event_name }}" != push ] || [ -z "$BEFORE" ] || [ "$BEFORE" = 0000000000000000000000000000000000000000 ] \
+             || ! git fetch -q --depth=1 origin "$BEFORE" || git diff --name-only "$BEFORE" HEAD | grep -qE "$ui"; then
+            echo run=true >> "$GITHUB_OUTPUT"
+          else
+            echo run=false >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Xcode version
         run: xcodebuild -version
 
@@ -118,7 +132,7 @@ jobs:
           retention-days: 7
 
       - name: Capture screenshots
-        if: always() && steps.build.outcome == 'success'
+        if: always() && steps.build.outcome == 'success' && steps.ui.outputs.run == 'true'
         # 79 张约 14 分钟；模拟器慢的时候安装和预热还要多花近 10 分钟
         timeout-minutes: 35
         run: bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/Badie.app screenshots
