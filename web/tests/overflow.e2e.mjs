@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 import { base } from './helpers.mjs';
 
-const pages = ['/', '/signin/', '/levels/', '/about/', '/contact/', '/games/', '/courts/', '/courts/my/', '/courts/gb/', '/privacy/', '/zh/', '/zh/about/'];
+const pages = ['/', '/signin/', '/levels/', '/about/', '/contact/', '/support/', '/games/', '/courts/', '/courts/my/', '/courts/gb/', '/privacy/', '/zh/', '/zh/about/'];
 const widths = [320, 375, 768, 1024, 1440];
 const locales = ['en', 'ms', 'vi', 'hi', 'th'];
 
