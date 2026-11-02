@@ -4,7 +4,7 @@ export const faq: { q: string; a: string }[] = [
     q: 'What is Badie?',
     a: 'A free app that finds badminton partners at your level. Tell it when you’re free and which courts you can reach, and it matches you with players at a similar level. It also lists courts, weekly groups and open games near you.',
   },
-  { q: 'Is Badie free?', a: 'Yes. Every feature is free, with no ads and no paid plan.' },
+  { q: 'Is Badie free?', a: 'Yes. Every feature is free, with no ads and no paid plan. You can leave a tip if you like; it doesn’t unlock anything.' },
   {
     q: 'How does Badie know my level?',
     a: 'A 2-minute quiz places you on a 1–9 scale. After each game both sides confirm the result, and the players you meet help keep levels accurate. Levels 7 to 9 need proof, such as tournament results.',

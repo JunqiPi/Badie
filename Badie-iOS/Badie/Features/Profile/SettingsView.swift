@@ -9,6 +9,8 @@ struct SettingsView: View {
 
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
     @State private var showRadius = false
+    @State private var showHelp = false
+    @State private var showTips = false
     @State private var showPassword = false
     @State private var showSignOut = false
     @State private var showDelete = false
@@ -197,7 +199,17 @@ struct SettingsView: View {
                     }
 
                     section(String(localized: "帮助")) {
-                        ContactCard()
+                        VStack(spacing: 0) {
+                            MenuRow(icon: "questionmark.bubble.fill", tint: AppTheme.Colors.sky, title: String(localized: "帮助与反馈")) {
+                                showHelp = true
+                            }
+                            InsetDivider()
+                            MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.peach, title: String(localized: "支持 Badie")) {
+                                showTips = true
+                            }
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.lg)
+                        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
                     }
 
                     section(String(localized: "账号")) {
@@ -226,6 +238,15 @@ struct SettingsView: View {
         .sheet(isPresented: $showPassword) {
             PasswordSheet()
                 .presentationDetents([.height(340)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showHelp) {
+            HelpSheet()
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showTips) {
+            TipJarSheet()
+                .presentationDetents([.height(460)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showRadius) {

@@ -419,6 +419,8 @@ const problems: Record<string, string> = {
   invalid_slot: 'Pick a time window between 1 and 8 hours.',
   invalid_venues: 'Pick 1 to 3 courts.',
   too_many_requests: 'You have 5 open requests already. Cancel one first.',
+  invalid_feedback: 'Add a few more words about what happened.',
+  too_much_feedback: 'That’s a lot for one day. Try again tomorrow, or email us.',
   overlapping: 'You already have a request or game at that time.',
   offer_closed: 'This match is no longer open.',
   not_active: 'This request has already ended.',

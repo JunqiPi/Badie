@@ -90,6 +90,11 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
             <Divider />
             <Row icon="gear" tint="muted" title={t('Settings')} to="/settings/" />
           </nav>
+          <nav aria-label={t('Help')} className="sticker grid px-4 py-1">
+            <Row icon="question" tint="sky" title={t('Help & feedback')} to="/contact/" />
+            <Divider />
+            <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />
+          </nav>
           <AdminLink />
         </aside>
       </div>
@@ -337,7 +342,9 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       <PasswordSettings email={email} />
 
       <Group title={t('Help')}>
-        <Row icon="mail" tint="sky" title={t('Contact us')} subtitle={SUPPORT_EMAIL} to="/contact/" />
+        <Row icon="question" tint="sky" title={t('Help & feedback')} subtitle={SUPPORT_EMAIL} to="/contact/" />
+        <Divider />
+        <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />
       </Group>
 
       <Group title={t('Account')}>

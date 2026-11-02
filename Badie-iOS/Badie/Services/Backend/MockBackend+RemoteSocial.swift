@@ -348,6 +348,10 @@ extension MockBackend {
         try await requireRemote().call("appeal_strike", ["p_strike": id, "p_text": text])
     }
 
+    func remoteSubmitFeedback(kind: String, text: String, context: [String: String]) async throws {
+        try await requireRemote().call("submit_feedback", ["p_kind": kind, "p_body": text, "p_context": context])
+    }
+
     /// 打开别人的加球友链接：返回对方的 ID（之后照常看资料、加球友）；链接失效返回 nil
     func remoteOpenFriendLink(_ code: String) async throws -> String? {
         try await requireRemote().rpc("open_friend_link", ["p_code": code], as: String?.self)

@@ -8,6 +8,7 @@ struct BadieApp: App {
 
     init() {
         NotificationRouter.shared.install()
+        TipJar.finishPending()
     }
 
     var body: some Scene {

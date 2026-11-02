@@ -96,7 +96,7 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 - Category：Sports（第二分类可选 Social Networking）。
 - Content Rights：选“包含第三方内容”，并确认有权使用（球馆数据来自政府开放数据和 OpenStreetMap，都是开放许可）。
 - **Age Rating**：问卷照实答（有用户发的内容、有私信、没有无限制上网）。用户协议规定 13 岁以上，**最后把年龄分级改成 13+**，和协议一致。2026-09 起问卷里关于社交功能的问题是必答的。
-- **EU 数字服务法（DSA）**：即使不在欧盟上架也要声明。Badie 免费、没有广告和收费，选**非商家（Not a trader）**，这样不用公开地址和电话。以后加了广告或收费再改成商家（可以用邮政信箱和虚拟号码）。
+- **EU 数字服务法（DSA）**：即使不在欧盟上架也要声明。Badie 免费、没有广告和收费，选了**非商家（Not a trader）**，这样不用公开地址和电话。加了打赏（第 7 节）以后要不要改成商家，需要你自己判断；改的话可以用邮政信箱和虚拟号码。
 
 **App Privacy（隐私标签）**：不追踪用户（Tracking：No）。收集的数据都选“与身份关联、用于 App 功能”：
 
@@ -127,7 +127,7 @@ Mac（Apple 芯片）勾上：iPhone 版在 Mac 上是固定的手机大小窗�
   - 演示账号的邮箱和密码（第 0 步建的），勾 Sign-in required。
   - 联系人：你的名字、电话、邮箱（只给审核员看）。
   - Notes（英文写给审核员，1.0 提交时用的）：
-    > Badie helps badminton players find partners at their level and courts nearby. It is free, with no ads or purchases.
+    > Badie helps badminton players find partners at their level and courts nearby. It is free, with no ads. Optional tips (consumable in-app purchases) don't unlock anything.
     > Demo account: sign in with the email and password above (Sign in with email, then Password). The account already has a friend and a past game so you can see real content.
     > Matching: open Play, pick a time and up to 3 courts, then Start matching. A match needs a second real player, so it may stay in "searching" during review. The past game, chat, leaderboard and player profiles show what a confirmed game looks like.
     > User-generated content (Guideline 1.2): offensive words are filtered on the server (names containing them can't be saved, and they're masked in messages). Report or block: open any player profile and tap Report or Block. Reports are reviewed within 24 hours on our admin page. Missed games: if most of the other players say someone didn't show up and they didn't check in, it is recorded. Within 180 days, the first time is a warning, the second blocks joining games for 7 days, the third permanently. Players can appeal within 48 hours.
@@ -158,6 +158,24 @@ Mac（Apple 芯片）勾上：iPhone 版在 Mac 上是固定的手机大小窗�
 - 在备忘录里写 `https://badie.rsvp/join/?code=房间码`，点它直接打开 App 的加入页（通用链接）。
 - 附近球馆（允许 / 拒绝定位两种情况）、约球、聊天、举报、屏蔽。
 - 设置 → 联系我们能打开邮件；设置 → 注销账号能走完，Apple 登录的账号注销后在 iPhone 设置 → Apple ID → 使用 Apple 登录 里消失。
+
+## 7. 打赏（内购）
+
+App 里「我的 → 支持 Badie」有三档打赏，代码里的商品 ID 是 `com.badie.app.tip.small`、`com.badie.app.tip.medium`、`com.badie.app.tip.large`。打赏不解锁任何功能。没设置好之前，这个页面显示「现在打不开，稍后再试」。
+
+1. App Store Connect → **Business**（协议、税务和银行）→ 签 **Paid Apps Agreement**，填银行账户和税表。
+2. 申请 **App Store Small Business Program**：年收入 100 万美元以下，苹果抽成从 30% 降到 15%。
+3. App → **Monetization → In-App Purchases** → **+**，类型选 **Consumable**，建三个：
+
+   | 商品 ID | 参考名称 | 价格 | 显示名称（英文） |
+   |---|---|---|---|
+   | `com.badie.app.tip.small` | Tip small | $0.99 | A bottle of water |
+   | `com.badie.app.tip.medium` | Tip medium | $4.99 | A coffee |
+   | `com.badie.app.tip.large` | Tip large | $9.99 | A game of badminton |
+
+   每个都要填说明（比如 “A tip to support Badie. It doesn't unlock anything.”），再传一张审核截图（打赏页的截图即可）。
+4. 第一次加内购要跟着新版本一起提交：在版本页 **In-App Purchases and Subscriptions** 里勾上这三个。
+5. 网站用 Ko-fi：注册后把主页地址填进 `web/src/app/Contact.tsx` 的 `DONATE_URL`，网站「支持 Badie」页就会出现按钮。iPhone App 里不放 Ko-fi 链接：苹果只允许美国区放外部付款链接。
 
 ## 参考
 

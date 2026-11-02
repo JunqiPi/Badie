@@ -106,6 +106,10 @@ final class AppState: ObservableObject {
         strikes = try? await backend.remoteMyStrikes()
     }
 
+    func submitFeedback(_ kind: FeedbackKind, text: String) async throws {
+        try await backend.remoteSubmitFeedback(kind: kind.rawValue, text: text, context: FeedbackKind.context)
+    }
+
     func markStrikesSeen() {
         Task { await backend.remoteMarkStrikesSeen() }
     }

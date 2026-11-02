@@ -161,3 +161,77 @@ export function StrikeAppeals() {
     </section>
   );
 }
+
+interface FeedbackItem {
+  id: number;
+  kind: 'bug' | 'idea' | 'court' | 'other';
+  body: string;
+  context: Record<string, string>;
+  reply: string | null;
+  created_at: string;
+  user: { id: string; nickname: string; tag: number | null };
+}
+
+const feedbackKind: Record<FeedbackItem['kind'], string> = { bug: 'Something’s wrong', idea: 'Idea', court: 'Court info', other: 'Other' };
+
+/** 用户反馈：写回复会作为通知发给对方；不用回的直接标记处理完 */
+export function FeedbackInbox() {
+  const [status, setStatus] = useState<'new' | 'done'>('new');
+  const { data: items, refresh } = useLive<FeedbackItem[]>('admin_feedback', { args: { p_status: status }, every: 60_000 });
+  return (
+    <section aria-labelledby="feedback" className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="feedback" className="text-title2">{t('Feedback')}</h2>
+        <div role="radiogroup" aria-label={t('Feedback')} className="flex gap-2">
+          {(['new', 'done'] as const).map((value) => (
+            <button key={value} type="button" role="radio" aria-checked={status === value} onClick={() => setStatus(value)} className="toggle">
+              {t(value === 'new' ? 'To do' : 'Done')}
+            </button>
+          ))}
+        </div>
+      </div>
+      {!items ? <Skeleton className="h-24" /> : items.length === 0 ? (
+        <EmptyState title={t('No feedback')} />
+      ) : items.map((item) => <Feedback key={item.id} item={item} onDone={refresh} />)}
+    </section>
+  );
+}
+
+function Feedback({ item, onDone }: { item: FeedbackItem; onDone: () => Promise<void> }) {
+  const [reply, setReply] = useState('');
+  const [busy, setBusy] = useState<'reply' | 'close'>();
+
+  async function resolve(withReply: boolean) {
+    setBusy(withReply ? 'reply' : 'close');
+    const { error } = await supabase!.rpc('admin_reply_feedback', { p_id: item.id, p_reply: withReply ? reply.trim() : null });
+    if (!error) await onDone();
+    setBusy(undefined);
+    if (error) return toast(problem(error), 'error');
+    toast(t('Done'));
+  }
+
+  return (
+    <article className="sticker grid gap-3 p-5">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <Link to={`/players/${item.user.id}/`} className="link font-bold">{item.user.nickname}{item.user.tag != null && `#${item.user.tag}`}</Link>
+        <Tag>{t(feedbackKind[item.kind])}</Tag>
+        <span className="text-footnote text-ink-secondary">{relative(item.created_at)}</span>
+      </p>
+      <p className="whitespace-pre-wrap break-words">{item.body}</p>
+      <p className="text-caption break-words text-ink-tertiary">{Object.values(item.context).filter(Boolean).join(' · ')}</p>
+      {item.reply ? (
+        <p className="whitespace-pre-wrap break-words rounded-[12px] bg-surface-muted p-3 text-footnote">{item.reply}</p>
+      ) : (
+        <>
+          <label className="sr-only" htmlFor={`reply-${item.id}`}>{t('Reply')}</label>
+          <textarea id={`reply-${item.id}`} rows={2} maxLength={1000} value={reply} onChange={(e) => setReply(e.target.value)}
+                    placeholder={t('Reply in their language. It goes to their notifications.')} className="field" />
+          <div className="flex flex-wrap gap-2">
+            <Button className="button-sm" busy={busy === 'reply'} disabled={Boolean(busy) || !reply.trim()} onClick={() => resolve(true)}>{t('Send reply')}</Button>
+            <Button className="button-sm" variant="quiet" busy={busy === 'close'} disabled={Boolean(busy)} onClick={() => resolve(false)}>{t('Mark as done')}</Button>
+          </div>
+        </>
+      )}
+    </article>
+  );
+}

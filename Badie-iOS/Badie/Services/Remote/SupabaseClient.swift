@@ -81,6 +81,9 @@ enum RemoteError: LocalizedError, Equatable {
         case "blocked": return String(localized: "请先解除对这位球友的屏蔽。")
         case "no_request": return String(localized: "这条好友申请已失效。")
         case "no_contact_info": return String(localized: "请不要包含电话或链接。")
+        // 反馈
+        case "invalid_feedback": return String(localized: "多写几个字，说说发生了什么。")
+        case "too_much_feedback": return String(localized: "今天发得有点多了，明天再写，或者发邮件给我们。")
         // 球群
         case "invalid_schedule": return String(localized: "请添加 1–3 个每周场次。")
         case "too_many_groups": return String(localized: "你的球群数量已达上限。")

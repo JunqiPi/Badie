@@ -10,6 +10,8 @@ struct ProfileView: View {
 
     @State private var showRadius = false
     @State private var showFriendLink = false
+    @State private var showHelp = false
+    @State private var showTips = false
 
     var body: some View {
         ScrollView {
@@ -42,6 +44,7 @@ struct ProfileView: View {
                         reputationCard(user)
                         attendanceCard(user)
                         menuCard(user)
+                        supportCard
                     }
                     .padding(.horizontal, AppTheme.Spacing.screen)
                 }
@@ -52,6 +55,15 @@ struct ProfileView: View {
         .sheet(isPresented: $showRadius) {
             TravelRadiusSheet()
                 .presentationDetents([.height(320)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showHelp) {
+            HelpSheet()
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showTips) {
+            TipJarSheet()
+                .presentationDetents([.height(460)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showFriendLink) {
@@ -299,6 +311,20 @@ struct ProfileView: View {
             MenuRow(icon: "hand.raised.fill", tint: AppTheme.Colors.surfaceMuted, title: String(localized: "屏蔽名单"),
                     value: "\(messageManager.blockedUsers.count)") {
                 router.open(.blockedUsers)
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+    }
+
+    private var supportCard: some View {
+        VStack(spacing: 0) {
+            MenuRow(icon: "questionmark.bubble.fill", tint: AppTheme.Colors.sky, title: String(localized: "帮助与反馈")) {
+                showHelp = true
+            }
+            InsetDivider()
+            MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.peach, title: String(localized: "支持 Badie")) {
+                showTips = true
             }
         }
         .padding(.horizontal, AppTheme.Spacing.lg)
