@@ -95,13 +95,7 @@ export function Icon({ name, className = 'size-5' }: { name: IconName; className
   );
 }
 
-/** 品牌标识：羽毛球（白色羽毛裙 + 柠檬绿球托），和 iOS 的 ShuttlecockMark 一样 */
+/** 品牌标识：和 App 图标同一个羽毛球（public/logo.svg） */
 export function Shuttlecock({ className = 'size-16' }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden="true" fill="none" stroke="#17140f" strokeLinejoin="round" strokeLinecap="round">
-      <path d="M18 8h64L64 62H36z" fill="#fff" strokeWidth="4.5" />
-      <path d="M40.4 8 45.8 62M50 8v54M59.6 8 54.2 62M27 36h46" strokeWidth="3.2" />
-      <circle cx="50" cy="74" r="18" fill="var(--color-lime)" strokeWidth="4.5" />
-    </svg>
-  );
+  return <img src="/logo.svg" alt="" className={className} />;
 }

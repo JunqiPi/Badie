@@ -345,7 +345,7 @@ export function CardFan({ className = '' }: { className?: string }) {
           <LevelBadge rating={rating} />
         </div>
       ))}
-      <Shuttlecock className="absolute top-0 right-2 size-16 rotate-[-24deg]" />
+      <Shuttlecock className="absolute top-0 right-2 size-16" />
       <span className="absolute bottom-0 left-0"><Starburst tint="lime" size={64}>GO</Starburst></span>
     </div>
   );

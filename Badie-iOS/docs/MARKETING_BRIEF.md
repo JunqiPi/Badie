@@ -54,7 +54,7 @@
   - 字体：Nunito，粗圆体。
   - 风格：贴纸感，黑色粗描边加错位的硬投影。标题里的重点词用荧光绿底色标出来，比如 “Find one **today**!”。
 - **文件**（仓库里）：
-  - Logo（羽毛球图标）：`Badie-iOS/Badie/Assets.xcassets/Logo.imageset/Logo.png`
+  - Logo（羽毛球图标）：`Badie-iOS/Badie/Assets.xcassets/Logo.imageset/Logo.png`；矢量原稿（只有图形，黑色）：`web/public/logo.svg`
   - App 图标：`Badie-iOS/Badie/Assets.xcassets/AppIcon.appiconset/`（浅色、深色、单色三种）
   - 分享卡片图（1200×630）：`web/public/og.png`，网址 https://badie.rsvp/og.png
   - 网站图标：`web/public/icon-512.png`
