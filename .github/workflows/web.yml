@@ -22,7 +22,7 @@ concurrency:
 jobs:
   build:
     name: Check, build & deploy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     defaults:
       run:
@@ -61,7 +61,7 @@ jobs:
 
   app-e2e:
     name: App end-to-end (local Supabase)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
