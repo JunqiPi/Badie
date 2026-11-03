@@ -1,0 +1,7 @@
+.venv/
+video/node_modules/
+video/package-lock.json
+video/models/
+queue/
+*.mp4
+*.wav

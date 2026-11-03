@@ -1,0 +1,11 @@
+{
+  "lang": "zh",
+  "voice": "zf_xiaoxiao",
+  "speed": 1.0,
+  "scenes": [
+    {"say": "约球最怕什么？约到的人，要么太强，要么太弱。", "caption": "约到的人水平**差太多**？", "text": "太强？\n太弱？"},
+    {"say": "Badie 把羽毛球水平分成一到九级，两分钟做完问卷就知道自己几级。", "caption": "你是**几级**？", "url": "https://badie.rsvp/zh/levels/"},
+    {"say": "然后它只帮你配水平相近的人。打完双方确认赛果，等级会越来越准。", "caption": "只配**水平相近**的人", "url": "https://badie.rsvp/zh/levels/", "scroll": 900},
+    {"say": "完全免费。搜 Badie 羽毛球就能找到。", "caption": "Badie 羽毛球 · **免费**", "url": "https://badie.rsvp/zh/"}
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "badie-marketing-video",
+  "private": true,
+  "description": "把宣传视频的每个场景画成竖版图片",
+  "dependencies": {
+    "playwright": "1.56.1"
+  }
+}
