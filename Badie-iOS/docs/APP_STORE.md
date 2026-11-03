@@ -181,7 +181,7 @@ App 里「我的 → 支持 Badie」有三档打赏，代码里的商品 ID 是 
    每个都要填说明（比如 “A tip to support Badie. It doesn't unlock anything.”），再传一张审核截图（打赏页的截图即可）。
 4. 第一次加内购要跟着新版本一起提交：在版本页 **In-App Purchases and Subscriptions** 里勾上这三个。
 5. **美国区用 Ko-fi，其他地区用内购**：苹果只允许美国区的 App 放外部付款链接（审核规则 3.1.1），Ko-fi 不抽成。App 按 App Store 的地区判断（`Storefront`），不看手机语言和定位。
-   Ko-fi 注册好后，把主页地址同时填进 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`。没填之前美国区也走内购，网站的「支持 Badie」页不显示按钮。
+   Ko-fi 主页是 https://ko-fi.com/badie，已经填在 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`（清空就回到美国区也走内购、网站不显示按钮）。Ko-fi 要连好 PayPal 和 Stripe（刷卡）才能收钱。
    提交时 Notes 里写一句：“Tips are consumable in-app purchases and don't unlock anything. On the US storefront the tip page links to Ko-fi instead, as allowed by guideline 3.1.1.”
 
 ## 参考

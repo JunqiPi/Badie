@@ -7,8 +7,8 @@ import { problem, supabase } from './supabase';
 import { Button, Field, toast } from './ui';
 
 export const SUPPORT_EMAIL = 'support@badie.rsvp';
-/** Ko-fi 主页；没填之前网站上不显示打赏按钮（iPhone 上用 App 内购打赏） */
-export const DONATE_URL = '';
+/** Ko-fi 主页；清空就不显示打赏按钮。iPhone 上美国区也链到这里，其他地区用内购 */
+export const DONATE_URL = 'https://ko-fi.com/badie';
 
 /** 常见问题自己就能办，比等回信快 */
 const shortcuts: { icon: IconName; title: string; text: string; to?: string; action?: string }[] = [
