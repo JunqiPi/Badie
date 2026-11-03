@@ -1,7 +1,8 @@
 import StoreKit
 import SwiftUI
 
-/// 打赏：三档消耗型内购，不解锁任何功能。价格和收款在 App Store Connect 里设置
+/// 打赏：三档消耗型内购，不解锁任何功能。价格和收款在 App Store Connect 里设置。
+/// 美国区改用 Ko-fi 链接（苹果只允许美国区放外部付款链接），Ko-fi 不抽成
 @MainActor
 final class TipJar: ObservableObject {
     enum Tier: String, CaseIterable {
@@ -29,9 +30,15 @@ final class TipJar: ObservableObject {
     @Published private(set) var products: [Tier: Product] = [:]
     @Published private(set) var loadFailed = false
     @Published private(set) var buying: Tier?
+    @Published private(set) var usesKofi = false
 
     func load() async {
-        guard products.isEmpty else { return }
+        guard products.isEmpty, !usesKofi else { return }
+        // 按 App Store 的地区判断，不看手机语言和定位
+        if LegalLinks.kofi != nil, await Storefront.current?.countryCode == "USA" {
+            usesKofi = true
+            return
+        }
         do {
             let items = try await Product.products(for: Tier.allCases.map(\.rawValue))
             products = Dictionary(uniqueKeysWithValues: items.compactMap { item in Tier(rawValue: item.id).map { ($0, item) } })
@@ -64,6 +71,7 @@ final class TipJar: ObservableObject {
 struct TipJarSheet: View {
     @EnvironmentObject private var appState: AppState
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
     @StateObject private var jar = TipJar()
     @State private var thanked = false
 
@@ -89,7 +97,9 @@ struct TipJarSheet: View {
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                if jar.loadFailed {
+                if jar.usesKofi, let kofi = LegalLinks.kofi {
+                    kofiRow(kofi)
+                } else if jar.loadFailed {
                     Text("现在打不开，稍后再试。")
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -103,6 +113,29 @@ struct TipJarSheet: View {
         .padding(.bottom, AppTheme.Spacing.xl)
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .task { await jar.load() }
+    }
+
+    private func kofiRow(_ url: URL) -> some View {
+        Button { openURL(url) } label: {
+            HStack(spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "heart.fill", fill: AppTheme.Colors.butter, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("在 Ko-fi 上打赏")
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    Text("银行卡或 PayPal，金额随意。")
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                }
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+            }
+            .padding(AppTheme.Spacing.md)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md)
+        }
+        .buttonStyle(PressableStyle())
     }
 
     private func row(_ tier: TipJar.Tier) -> some View {

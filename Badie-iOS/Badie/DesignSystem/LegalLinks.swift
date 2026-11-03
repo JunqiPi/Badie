@@ -7,6 +7,8 @@ struct LegalLinks: View {
     static let privacy = URL(string: "https://badie.rsvp/privacy/")!
     static let contact = URL(string: "https://badie.rsvp/contact/")!
     static let supportEmail = "support@badie.rsvp"
+    /// Ko-fi 主页：填了以后，美国区的打赏走 Ko-fi（和网站 Contact.tsx 的 DONATE_URL 同一个）
+    static let kofi: URL? = nil
 
     var body: some View {
         // 字大或语言长的时候一行放不下，改成竖排
