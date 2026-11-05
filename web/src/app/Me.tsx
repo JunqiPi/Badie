@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
-import { SUPPORT_EMAIL } from './Contact';
+import { DONATIONS_OPEN, SUPPORT_EMAIL } from './Contact';
 import { GenderField } from './gender';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
@@ -92,8 +92,8 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
           </nav>
           <nav aria-label={t('Help')} className="sticker grid px-4 py-1">
             <Row icon="question" tint="sky" title={t('Help & feedback')} to="/contact/" />
-            <Divider />
-            <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />
+            {DONATIONS_OPEN && <Divider />}
+            {DONATIONS_OPEN && <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />}
           </nav>
           <AdminLink />
         </aside>
@@ -343,8 +343,8 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
 
       <Group title={t('Help')}>
         <Row icon="question" tint="sky" title={t('Help & feedback')} subtitle={SUPPORT_EMAIL} to="/contact/" />
-        <Divider />
-        <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />
+        {DONATIONS_OPEN && <Divider />}
+        {DONATIONS_OPEN && <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />}
       </Group>
 
       <Group title={t('Account')}>

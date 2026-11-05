@@ -188,6 +188,8 @@ Authentication → URL Configuration：
 
 Workers & Pages → badie → Custom domains → Set up a domain：先加 `badie.rsvp`，再加 `www.badie.rsvp`。**先在这里加，不要先手动建 DNS 记录**（会出 522 错误）。然后 Rules → Redirect Rules 用模板 “Redirect from WWW to root” 把 www 301 到根域名。`.rsvp` 强制 HTTPS，Pages 自带证书，不用额外设置。
 
+**访问统计**：Workers & Pages → badie → **Metrics** → Web Analytics → **Enable**。Cloudflare 会在每个页面自动插入统计脚本（不用 cookie、不识别个人），网站的 CSP 已经放行它（`astro.config.ts` 里的 `insights`）。数据在 Cloudflare 首页 → **Analytics & Logs → Web Analytics** 里看，只算真人浏览器，不算爬虫。
+
 ## 6.5 联系邮箱 support@badie.rsvp
 
 隐私政策和用户协议里写的联系邮箱是 `support@badie.rsvp`，用 Cloudflare 免费转发到你自己的邮箱（你的邮箱不会出现在网站上）：

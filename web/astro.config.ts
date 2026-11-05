@@ -14,6 +14,9 @@ const turnstile = 'https://challenges.cloudflare.com';
 const maps = 'https://tiles.openfreemap.org';
 // 设密码时查是否泄露过（只发 SHA-1 前 5 位，见 src/app/password.ts）
 const pwned = 'https://api.pwnedpasswords.com';
+// 访问统计：Cloudflare Web Analytics（Pages 自动插入，不用 cookie、不识别个人）
+const insights = 'https://static.cloudflareinsights.com';
+const insightsReport = 'https://cloudflareinsights.com';
 
 export default defineConfig({
   site: process.env.SITE_URL || 'http://localhost:4321',
@@ -28,14 +31,14 @@ export default defineConfig({
         "default-src 'self'",
         `img-src 'self' data: blob: ${supabase?.origin ?? ''} ${maps}`,
         "font-src 'self'",
-        `connect-src 'self' ${supabase ? `${supabase.origin} ${supabase.origin.replace(/^http/, 'ws')}` : ''} ${turnstile} ${maps} ${pwned}`,
+        `connect-src 'self' ${supabase ? `${supabase.origin} ${supabase.origin.replace(/^http/, 'ws')}` : ''} ${turnstile} ${maps} ${pwned} ${insightsReport}`,
         "worker-src 'self' blob:",
         `frame-src ${turnstile}`,
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self'",
       ],
-      scriptDirective: { resources: ["'self'", turnstile] },
+      scriptDirective: { resources: ["'self'", turnstile, insights] },
     },
   },
 });

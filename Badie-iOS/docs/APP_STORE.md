@@ -4,7 +4,7 @@
 > **任何密钥（.p8 文件、密码）都不要发到聊天里，也不要提交到仓库。**
 > 第 0、1 步不花钱，可以先做；从第 2 步开始需要 Apple Developer Program（每年 $99）。
 
-**现状（2026-11-03）**：1.0 在等第二次审核，选的是**手动发布**：审核通过后在版本页点 Release This Version 才上架。
+**现状（2026-11-05）**：1.0（Build `20261102.0440`）**审核通过**，选的是**手动发布**：在版本页点 Release This Version 才上架。
 - 2026-10-24 第一次提交（Build `20261023.2350`），被回 **2.1 Information Needed**：新开发者账号第一次提交，苹果要一段真机录屏（从启动 App 开始，演示注册、登录、主要功能、举报屏蔽、注销账号）和 6 个问题的回答（用途和用户、怎么用、用到的外部服务、地区差异、是否受监管行业）。
 - 2026-11-02 换成 Build `20261102.0440`（新 logo、修好点通知崩溃、一批体验改进）重新提交：录屏附在 Reply to App Review 里，回答同时贴在 Notes 和回复里。
 - 录屏是两段：用演示账号 `review@badie.rsvp` 走主要功能；再用一个临时邮箱（Gmail 地址加 `+badie2`）注册并注销，演示注册和注销。**演示账号不能注销**，审核员要用它登录。
@@ -181,7 +181,7 @@ App 里「我的 → 支持 Badie」有三档打赏，代码里的商品 ID 是 
    每个都要填说明（比如 “A tip to support Badie. It doesn't unlock anything.”），再传一张审核截图（打赏页的截图即可）。
 4. 第一次加内购要跟着新版本一起提交：在版本页 **In-App Purchases and Subscriptions** 里勾上这三个。
 5. **美国区用 Ko-fi，其他地区用内购**：苹果只允许美国区的 App 放外部付款链接（审核规则 3.1.1），Ko-fi 不抽成。App 按 App Store 的地区判断（`Storefront`），不看手机语言和定位。
-   Ko-fi 主页是 https://ko-fi.com/badie，已经填在 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`（清空就回到美国区也走内购、网站不显示按钮）。Ko-fi 要连好 PayPal 和 Stripe（刷卡）才能收钱。
+   Ko-fi 主页是 https://ko-fi.com/badie，已经填在 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`（`kofi` 改回 nil 就是美国区也走内购）。Ko-fi 要连好 PayPal 和 Stripe（刷卡）才能收钱；连好后把 `Contact.tsx` 的 `DONATIONS_OPEN` 改成 true，网站上才出现「支持 Badie」入口。
    提交时 Notes 里写一句：“Tips are consumable in-app purchases and don't unlock anything. On the US storefront the tip page links to Ko-fi instead, as allowed by guideline 3.1.1.”
 
 ## 参考
