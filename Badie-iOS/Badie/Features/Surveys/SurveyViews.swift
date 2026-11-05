@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 
 // MARK: - 待评价列表
@@ -58,6 +59,7 @@ struct SurveyFormView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var surveyManager: SurveyManager
+    @Environment(\.requestReview) private var requestReview
 
     @State private var attendance: AttendanceAnswer = .onTime
     @State private var calibration: LevelCalibration? = .accurate
@@ -341,6 +343,12 @@ struct SurveyFormView: View {
             router.pop()
             if let next = surveyManager.pending(forGame: survey.matchId).first {
                 router.open(.survey(pendingId: next.id))
+            } else if RatingPrompt.shouldAsk(totalGames: appState.currentUser?.totalGames ?? 0,
+                                             positive: attendance != .noShow && characterRating >= 4) {
+                RatingPrompt.markAsked()
+                // 等返回动画和提示走完再弹
+                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                requestReview()
             }
         } catch {
             appState.showError(error)
