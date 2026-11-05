@@ -10,7 +10,7 @@ export const SUPPORT_EMAIL = 'support@badie.rsvp';
 export const APP_STORE_URL = 'https://apps.apple.com/app/id6825569793';
 /** Ko-fi 主页：iPhone 上美国区也链到这里，其他地区用内购。Ko-fi 连好收款后才改成 true，网站上才出现打赏入口 */
 export const DONATE_URL = 'https://ko-fi.com/badie';
-export const DONATIONS_OPEN = false;
+export const DONATIONS_OPEN = true;
 
 /** 常见问题自己就能办，比等回信快 */
 const shortcuts: { icon: IconName; title: string; text: string; to?: string; action?: string }[] = [
@@ -141,7 +141,7 @@ export function Support() {
           <IconTile icon="heart" tint="surface" size="lg" className="-rotate-6" />
           <span className="min-w-0 flex-1">
             <span className="block text-title3">{t('Tip on Ko-fi')}</span>
-            <span className="block text-subhead">{t('Card or PayPal, any amount.')}</span>
+            <span className="block text-subhead">{t('Pay by card, any amount.')}</span>
           </span>
           <Icon name="chevronRight" className="size-5 shrink-0" />
         </a>

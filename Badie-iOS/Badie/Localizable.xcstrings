@@ -83278,6 +83278,64 @@
         }
       }
     },
+    "用银行卡付，金额随意。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pay by card, any amount."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用信用卡付，金額隨意。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードで、金額は自由です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카드로, 금액은 자유예요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्ड से, कोई भी रकम।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bayar pakai kartu, berapa pun."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bayar dengan kad, berapa sahaja."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จ่ายด้วยบัตร จำนวนเท่าไรก็ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trả bằng thẻ, số tiền tùy bạn."
+          }
+        }
+      }
+    },
     "由球友添加" : {
       "localizations" : {
         "en" : {
@@ -108326,64 +108384,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "再試一次"
-          }
-        }
-      }
-    },
-    "银行卡或 PayPal，金额随意。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Card or PayPal, any amount."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "信用卡或 PayPal，金額隨意。"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "カードまたは PayPal、金額は自由です。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "카드나 PayPal로, 금액은 자유예요."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "कार्ड या PayPal, कोई भी रकम।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kartu atau PayPal, berapa pun."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kad atau PayPal, berapa sahaja."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "บัตรหรือ PayPal จำนวนเท่าไรก็ได้"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thẻ hoặc PayPal, số tiền tùy bạn."
           }
         }
       }
