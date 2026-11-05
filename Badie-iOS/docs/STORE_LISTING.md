@@ -288,3 +288,78 @@
   > Badie मुफ़्त है। हम चाहते हैं कि दुनिया भर में ज़्यादा से ज़्यादा लोग बैडमिंटन खेलें।
 
 印地语、泰语、越南语、印尼语、马来语的文案意思准确、语气得体，但可能还有翻译腔。有当地母语的球友时请他们看一遍。
+
+## 1.0.1 更新说明（What's New in This Version）
+
+App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This Version**。评分弹窗不用写。
+
+- English (U.S.)：
+  ```
+  • Help & feedback: write to us from the Me tab. Our reply shows up in your notifications.
+  • New friends now show up in Messages right away.
+  • Support Badie: leave a tip if you like. It doesn't unlock anything.
+  • Fixes and small improvements.
+  ```
+- 简体中文：
+  ```
+  • 帮助与反馈：在「我的」页直接写给我们，回复会出现在通知里。
+  • 加了好友后，对方马上出现在消息列表里。
+  • 支持 Badie：想支持可以打赏，打赏不会解锁任何功能。
+  • 修复和小改进。
+  ```
+- 繁體中文：
+  ```
+  • 幫助與回饋：在「我的」頁直接寫給我們，回覆會出現在通知裡。
+  • 加了好友後，對方馬上出現在訊息列表裡。
+  • 支持 Badie：想支持可以打賞，打賞不會解鎖任何功能。
+  • 修正和小改進。
+  ```
+- 日本語：
+  ```
+  • ヘルプとフィードバック：マイページから直接送れます。返信は通知に届きます。
+  • 友達になった相手が、すぐにメッセージ一覧に表示されるようになりました。
+  • Badie を応援：チップを送れます。チップで機能が増えることはありません。
+  • 不具合の修正と細かな改善。
+  ```
+- 한국어：
+  ```
+  • 도움말 및 의견: 나 탭에서 바로 보낼 수 있어요. 답변은 알림으로 와요.
+  • 친구가 되면 바로 메시지에 나타나요.
+  • Badie 응원하기: 원하면 후원할 수 있어요. 후원으로 열리는 기능은 없어요.
+  • 오류 수정과 작은 개선.
+  ```
+- Bahasa Indonesia：
+  ```
+  • Bantuan & masukan: kirim langsung dari tab Saya. Balasan kami muncul di notifikasimu.
+  • Teman baru langsung muncul di Pesan.
+  • Dukung Badie: beri tip kalau mau. Tip tidak membuka fitur apa pun.
+  • Perbaikan dan peningkatan kecil.
+  ```
+- Bahasa Melayu：
+  ```
+  • Bantuan & maklum balas: hantar terus dari tab Saya. Balasan kami muncul dalam pemberitahuan anda.
+  • Rakan baharu terus muncul dalam Mesej.
+  • Sokong Badie: beri tip jika mahu. Tip tidak membuka sebarang ciri.
+  • Pembetulan dan penambahbaikan kecil.
+  ```
+- ไทย：
+  ```
+  • ความช่วยเหลือและความคิดเห็น: ส่งถึงเราได้จากแท็บ ฉัน คำตอบจะอยู่ในการแจ้งเตือน
+  • เพื่อนใหม่ขึ้นในรายการข้อความทันที
+  • สนับสนุน Badie: ให้ทิปได้ถ้าอยาก ทิปไม่ได้ปลดล็อกอะไรเพิ่ม
+  • แก้ไขข้อผิดพลาดและปรับปรุงเล็กน้อย
+  ```
+- Tiếng Việt：
+  ```
+  • Trợ giúp & góp ý: gửi cho chúng tôi ngay từ tab Tôi. Câu trả lời sẽ hiện trong thông báo.
+  • Bạn bè mới hiện ngay trong Tin nhắn.
+  • Ủng hộ Badie: bạn có thể ủng hộ nếu muốn. Việc ủng hộ không mở thêm tính năng nào.
+  • Sửa lỗi và cải thiện nhỏ.
+  ```
+- हिन्दी：
+  ```
+  • मदद और फ़ीडबैक: मैं टैब से सीधे हमें लिखें। जवाब आपकी सूचनाओं में आएगा।
+  • नए दोस्त अब तुरंत मैसेज में दिखते हैं।
+  • Badie को सपोर्ट करें: चाहें तो टिप दें। इससे कुछ अनलॉक नहीं होता।
+  • सुधार और छोटे बदलाव।
+  ```
