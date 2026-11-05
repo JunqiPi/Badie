@@ -7,6 +7,7 @@ import { problem, supabase } from './supabase';
 import { Button, Field, toast } from './ui';
 
 export const SUPPORT_EMAIL = 'support@badie.rsvp';
+export const APP_STORE_URL = 'https://apps.apple.com/app/id6825569793';
 /** Ko-fi 主页：iPhone 上美国区也链到这里，其他地区用内购。Ko-fi 连好收款后才改成 true，网站上才出现打赏入口 */
 export const DONATE_URL = 'https://ko-fi.com/badie';
 export const DONATIONS_OPEN = false;

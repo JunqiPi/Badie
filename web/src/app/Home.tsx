@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { tier } from './assessment';
 import { setArea, useArea } from './area';
 import { GameTicket, RequestCard, RoomCard } from './cards';
+import { APP_STORE_URL } from './Contact';
 import { km } from './Courts';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
@@ -317,7 +318,10 @@ function Welcome() {
         <div className="grid justify-items-start gap-6">
           <Headline text={t('Badminton buddy?\nFind one *today*.')} size="text-[2.25rem] sm:text-[3.75rem] lg:text-[4.5rem]" />
           <p className={`max-w-xl ${lead}`}>{t('Badie finds players at your level near you. Free.')}</p>
-          <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
+          <div className="flex flex-wrap gap-3">
+            <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
+            <a href={APP_STORE_URL} className="button button-lg button-quiet">{t('Get the iPhone app')}</a>
+          </div>
         </div>
         <div className="max-sm:-my-4 lg:px-12"><CardFan className="max-sm:scale-[0.8] lg:scale-125" /></div>
       </header>

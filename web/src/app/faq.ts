@@ -15,7 +15,7 @@ export const faq: { q: string; a: string }[] = [
   },
   {
     q: 'Where does Badie work?',
-    a: 'In any browser at badie.rsvp, and the iPhone app is in testing. Court listings cover the US, the UK, Hong Kong, Japan, Malaysia, Singapore and Taiwan. We’re starting in the US.',
+    a: 'In any browser at badie.rsvp, and in the iPhone app on the App Store. Court listings cover the US, the UK, Hong Kong, Japan, Malaysia, Singapore and Taiwan. We’re starting in the US.',
   },
   {
     q: 'Who can see my information?',
