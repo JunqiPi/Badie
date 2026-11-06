@@ -2,7 +2,7 @@
 
 > 2026-10-22 写，2026-10-24 更新（App 已提交审核、新功能、商店页文案）。你负责 Badie 的宣传：Instagram、小红书、TikTok，以及 Reddit、Facebook 群这类社区。
 > 产品和网站由另一个对话里的工程 agent 负责。需要改网站、加功能、出素材图时，请用户转达过去。
-> 第一个月的增长方案见 `Badie-iOS/docs/GROWTH_PLAN.md`。
+> 增长方案、视频脚本、发帖流程在私有仓库 JunqiPi/Badie_marketing。
 > 仓库是公开的：https://github.com/JunqiPi/Badie 。宣传口径以 `Badie-iOS/docs/STORY.md` 为准，本文和它冲突时，先问用户。
 
 ## 1. 和用户合作的规矩
