@@ -142,9 +142,10 @@ extension MockBackend {
     // MARK: 操作
 
     func remoteSubmitTicket(mode: GameMode, slot: TimeSlot, courtIds: [String], skillTolerance: Int, autoAccept: Bool,
-                            event: PlayEvent?) async throws -> MatchTicket {
+                            event: PlayEvent?, replacing: String? = nil) async throws -> MatchTicket {
         let remote = try requireRemote()
-        let id: String = try await remote.rpc("submit_ticket", [
+        // 修改请求：服务器在同一个事务里取消旧的、提交新的
+        var args: [String: Any] = [
             "p_mode": mode.serverValue,
             "p_starts_at": Self.iso(slot.startTime),
             "p_ends_at": Self.iso(slot.endTime),
@@ -153,7 +154,9 @@ extension MockBackend {
             "p_auto_accept": autoAccept,
             "p_play_with": event?.gender?.serverJSON ?? NSNull(),
             "p_mixed": event == .mixed,
-        ])
+        ]
+        if let replacing { args["p_ticket"] = replacing }
+        let id: String = try await remote.rpc(replacing == nil ? "submit_ticket" : "replace_ticket", args)
         await refreshRemoteActivity()
         guard let ticket = db.tickets[id] else { throw RemoteError.server("bad_response") }
         return ticket

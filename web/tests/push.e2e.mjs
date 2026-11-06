@@ -54,7 +54,7 @@ assert.equal(await page.getByRole('switch', { name: 'Email me about matches' }).
 await page.goto(`${base}/`);
 await page.getByRole('link', { name: 'Start matching' }).click();
 await page.getByRole('button', { name: 'Singles' }).click();
-await page.getByRole('radiogroup', { name: 'Date (next 14 days)' }).getByRole('radio').nth(1).click();
+await page.getByRole('radiogroup', { name: 'Date', exact: true }).getByRole('radio').nth(1).click();
 await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
 await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
 await page.getByRole('button', { name: 'Start matching' }).click();

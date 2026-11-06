@@ -135,6 +135,7 @@ struct TicketWaitingView: View {
     let ticket: MatchTicket
 
     @EnvironmentObject private var matchManager: MatchManager
+    @EnvironmentObject private var router: Router
     @State private var confirmsCancel = false
 
     var body: some View {
@@ -207,8 +208,12 @@ struct TicketWaitingView: View {
             VStack(spacing: AppTheme.Spacing.xs) {
                 Button("好的，有消息通知我") { matchManager.closeFlow() }
                     .buttonStyle(.brutalPrimary)
-                Button("取消请求") { confirmsCancel = true }
-                    .buttonStyle(TextActionStyle())
+                HStack(spacing: AppTheme.Spacing.xl) {
+                    Button("修改请求") { edit() }
+                        .buttonStyle(TextActionStyle())
+                    Button("取消请求") { confirmsCancel = true }
+                        .buttonStyle(TextActionStyle())
+                }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.vertical, AppTheme.Spacing.md)
@@ -219,6 +224,16 @@ struct TicketWaitingView: View {
             Button("继续找", role: .cancel) {}
         } message: {
             Text("还没约成，取消不影响任何记录。")
+        }
+    }
+
+    /// 关掉流程，打开填好原条件的设置页；保存时换掉这个请求
+    private func edit() {
+        matchManager.prepareEdit(ticket)
+        matchManager.closeFlow()
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 450_000_000)
+            router.isMatchSetupPresented = true
         }
     }
 

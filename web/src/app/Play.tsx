@@ -246,13 +246,16 @@ const presets: [string, number, number][] = [
   ['Late night 9–11 PM', 21 * 60, 23 * 60],
 ];
 
+/** 约球可以选任何时间：7 点到 23 点（开局最长 8 小时，没有这个选项） */
+const anyTime: [string, number, number] = ['Any time', 7 * 60, 23 * 60];
+
 /** 新的约球请求：模式、日期、时间段、球馆、对手水平 */
 function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () => void }) {
   const [mode, setMode] = useState<Mode>('doubles');
   const [courts, setCourts] = useState<Court[]>([]);
   const [favorites, setFavorites] = useState<Court[]>([]);
   const tz = courts[0]?.time_zone_id ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const days = nextDays(14);
+  const days = nextDays(30);
   // 默认今晚 7–9 点；已经来不及就默认明天
   const [date, setDate] = useState(() => {
     const asked = new URLSearchParams(location.search).get('date');
@@ -305,8 +308,8 @@ function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () =>
   const lastMinute = lead >= 30 * 60000 && lead < 2.5 * 3600000;
   const issue = !courts.length
     ? t('Pick at least one court.')
-    : hoursLong < 1 || hoursLong > 8
-      ? t('Pick a window between 1 and 8 hours.')
+    : hoursLong < 1 || hoursLong > 16
+      ? t('Pick a window between 1 and {n} hours.', { n: 16 })
       : lead < 30 * 60000
         ? t('Pick a start at least 30 minutes from now.')
         : undefined;
@@ -344,7 +347,7 @@ function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () =>
 
       <DayPicker days={days} value={date} onChange={setDate} />
 
-      <TimeRange from={from} to={to} onChange={(start, end) => { setFrom(start); setTo(end); }} />
+      <TimeRange from={from} to={to} maxHours={16} onChange={(start, end) => { setFrom(start); setTo(end); }} />
       {lastMinute && (
         <Notice icon="bolt" tint="peach">
           {t('Last-minute game: you’re only matched with players looking right now, and everyone has 5–10 minutes to confirm. Turn on automatic accept below so you don’t miss it.')}
@@ -452,12 +455,12 @@ export function FormatPicker({ value, onChange }: { value: Mode; onChange: (mode
   );
 }
 
-/** 日期条：接下来两周，选中的是柠檬绿 */
+/** 日期条：接下来 30 天，选中的是柠檬绿 */
 export function DayPicker({ days, value, onChange }: { days: string[]; value: string; onChange: (date: string) => void }) {
   return (
     <fieldset className="grid gap-2">
-      <legend className="mb-2 text-headline">{t('Date (next 14 days)')}</legend>
-      <div className="rail" role="radiogroup" aria-label={t('Date (next 14 days)')}>
+      <legend className="mb-2 text-headline">{t('Date')}</legend>
+      <div className="rail" role="radiogroup" aria-label={t('Date')}>
         {days.map((d, i) => {
           const chip = dateChip(d, i);
           return (
@@ -492,7 +495,7 @@ export function TimeRange({ from, to, onChange, maxHours = 8 }: { from: number; 
           : t('Pick a window between 1 and {n} hours.', { n: maxHours })}
       </p>
       <div className="rail">
-        {presets.map(([label, start, end]) => (
+        {(maxHours > 8 ? [anyTime, ...presets] : presets).map(([label, start, end]) => (
           <button key={label} type="button" aria-pressed={from === start && to === end} onClick={() => onChange(start, end)}
                   className="toggle aria-pressed:bg-peach!">
             {t(label)}

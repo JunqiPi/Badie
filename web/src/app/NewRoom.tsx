@@ -33,7 +33,7 @@ export function slotTimes(slot: Slot) {
 
 /** 球馆 + 日期 + 时间段 */
 export function SlotFields({ slot, onChange }: { slot: Slot; onChange: (slot: Slot) => void }) {
-  const days = nextDays(14);
+  const days = nextDays(30);
   return (
     <>
       <fieldset className="grid grid-cols-1 gap-2">

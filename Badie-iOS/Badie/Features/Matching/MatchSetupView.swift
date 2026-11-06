@@ -38,6 +38,13 @@ struct MatchSetupView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
+                        if matchManager.draft.replacingTicketId != nil {
+                            NoticeBanner(icon: "pencil", text: String(localized: "正在修改约球请求，保存后换掉原来的"),
+                                         actionTitle: String(localized: "不改了")) {
+                                matchManager.draft.replacingTicketId = nil
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.screen)
+                        }
                         modeSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
                         eventSection
@@ -117,7 +124,7 @@ struct MatchSetupView: View {
 
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label(String(localized: "日期（未来 14 天）"))
+            label(String(localized: "日期"))
                 .padding(.horizontal, AppTheme.Spacing.screen)
             DateStrip(
                 days: days,
@@ -131,7 +138,7 @@ struct MatchSetupView: View {
 
     private var timeSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            label(String(localized: "时间段（1–8 小时）"))
+            label(String(localized: "时间段"))
             HStack(spacing: AppTheme.Spacing.md) {
                 TimeStepper(title: String(localized: "开始"), minutes: $matchManager.draft.startMinutes, range: (6 * 60)...(23 * 60))
                 Image(systemName: "arrow.right")
@@ -150,6 +157,9 @@ struct MatchSetupView: View {
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AppTheme.Spacing.sm) {
+                    ChoiceChip(title: String(localized: "任何时间"), isSelected: matchManager.draft.isAnyTime, tint: AppTheme.Colors.lime) {
+                        matchManager.draft.setAnyTime()
+                    }
                     ForEach(Self.presets, id: \.0) { preset in
                         ChoiceChip(title: preset.0, isSelected: matchManager.draft.startMinutes == preset.1 && matchManager.draft.endMinutes == preset.2,
                                    tint: AppTheme.Colors.peach) {
@@ -336,7 +346,11 @@ struct MatchSetupView: View {
             Button {
                 start()
             } label: {
-                Label("开始匹配", systemImage: "bolt.fill")
+                if matchManager.draft.replacingTicketId != nil {
+                    Label("保存修改", systemImage: "checkmark")
+                } else {
+                    Label("开始匹配", systemImage: "bolt.fill")
+                }
             }
             .buttonStyle(.brutalPrimary)
             .disabled(!matchManager.draft.canSearch || !canRequest)

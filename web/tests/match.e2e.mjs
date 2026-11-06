@@ -35,7 +35,7 @@ async function request(page) {
   await page.getByRole('link', { name: 'Start matching' }).click();
   await page.getByRole('button', { name: 'Singles' }).click();
   // 选明天：今晚的局离现在不到 2 小时就算临时局，测试结果不能看运行的时间
-  await page.getByRole('radiogroup', { name: 'Date (next 14 days)' }).getByRole('radio').nth(1).click();
+  await page.getByRole('radiogroup', { name: 'Date', exact: true }).getByRole('radio').nth(1).click();
   await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
   await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
   await page.getByRole('button', { name: 'Start matching' }).click();

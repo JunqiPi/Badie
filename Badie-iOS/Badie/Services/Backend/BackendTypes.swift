@@ -81,6 +81,7 @@ enum BackendError: LocalizedError, Equatable {
     case notGroupMember
     case groupNameInvalid
     case groupScheduleInvalid
+    case notOrganizer
     case sessionClosed
     case ownerCannotLeave
     case assessmentTooSoon(Date)
@@ -143,9 +144,10 @@ enum BackendError: LocalizedError, Equatable {
         case .groupNotFound: return String(localized: "没有找到这个球群")
         case .notGroupMember: return String(localized: "加入球群后才能报名和聊天")
         case .groupNameInvalid: return String(localized: "球群名称需要 2–20 个字")
-        case .groupScheduleInvalid: return String(localized: "固定场次需要 1–8 小时，名额 4–40 人")
+        case .groupScheduleInvalid: return String(localized: "每个固定场次要 1–8 小时、在当天结束，名额 4–40 人，最多 7 个。")
         case .sessionClosed: return String(localized: "这一场已经结束或取消了")
-        case .ownerCannotLeave: return String(localized: "群主不能直接退出，可以先把群交给其他组织者")
+        case .notOrganizer: return String(localized: "只有组织者才能这样操作。")
+        case .ownerCannotLeave: return String(localized: "群主不能退出，可以解散球群。")
         case .assessmentTooSoon(let date): return String(localized: "每 90 天可以重测一次，下次：\(DateText.shortDay(date))")
         case .verificationInvalid(let reason): return reason
         }

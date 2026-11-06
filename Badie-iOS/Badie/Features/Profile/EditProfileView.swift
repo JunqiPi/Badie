@@ -13,6 +13,7 @@ struct EditProfileView: View {
     @State private var showReassess = false
     @State private var showGuide = false
     @State private var photoItem: PhotosPickerItem?
+    @State private var cropItem: AvatarCropSheet.Item?
     @State private var photo: UIImage?
     @State private var isUploadingPhoto = false
     @State private var isSaving = false
@@ -71,6 +72,9 @@ struct EditProfileView: View {
         .onChange(of: photoItem) { _, item in
             guard let item else { return }
             Task { await loadPhoto(item) }
+        }
+        .sheet(item: $cropItem) { item in
+            AvatarCropSheet(image: item.image) { jpeg in Task { await upload(jpeg) } }
         }
     }
 
@@ -206,12 +210,18 @@ struct EditProfileView: View {
         photo = AvatarPhotos.image(userId: user.id, avatar: user.avatar)
     }
 
+    /// 选完照片先去裁剪页调整，确定了再上传
     private func loadPhoto(_ item: PhotosPickerItem) async {
+        defer { photoItem = nil }
         guard let data = try? await item.loadTransferable(type: Data.self),
-              let jpeg = await AvatarPhotos.jpegData(fromPhoto: data) else {
+              let image = await AvatarPhotos.image(fromPhoto: data) else {
             appState.showToast(String(localized: "无法读取这张照片"), style: .error)
             return
         }
+        cropItem = AvatarCropSheet.Item(image: image)
+    }
+
+    private func upload(_ jpeg: Data) async {
         isUploadingPhoto = true
         defer { isUploadingPhoto = false }
         do {

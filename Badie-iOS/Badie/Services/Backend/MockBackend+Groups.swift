@@ -96,12 +96,7 @@ extension MockBackend {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard PlayGroup.nameLimit.contains(trimmed.count) else { throw BackendError.groupNameInvalid }
         guard let venue = venue(id: venueId) else { throw BackendError.venueNotFound }
-        guard !schedules.isEmpty, schedules.count <= PlayGroup.maxSchedules,
-              schedules.allSatisfy({ schedule in
-                  let minutes = schedule.endMinutes - schedule.startMinutes
-                  return (60...480).contains(minutes) && GroupSchedule.capacityRange.contains(schedule.capacity)
-                      && (1...7).contains(schedule.weekday)
-              }) else { throw BackendError.groupScheduleInvalid }
+        guard GroupSchedule.areValid(schedules) else { throw BackendError.groupScheduleInvalid }
         let existingCodes = Set(db.groups.values.map(\.inviteCode)).union(db.rooms.values.map(\.code))
         let group = PlayGroup(
             id: "grp-" + UUID().uuidString.prefix(8).lowercased(),
@@ -177,6 +172,37 @@ extension MockBackend {
         ensureGroupThread(for: group)
         addInbox(InboxItem(kind: .groupUpdate, title: String(localized: "已加入「\(group.name)」"),
                            body: String(localized: "组织者同意了你的申请，现在可以报名固定场次了。"), relatedId: groupId), to: userId)
+        scheduleSave()
+        emit(.groupsChanged)
+        emit(.threadsChanged)
+    }
+
+    /// 群主编辑球群（演示环境：直接改，以后的场次按新的每周安排生成）
+    func updateGroup(id: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+                     joinPolicy: PlayGroup.JoinPolicy, summary: String) throws {
+        let me = try requireUser()
+        guard var group = db.groups[id] else { throw BackendError.groupNotFound }
+        guard group.ownerId == me.id else { throw BackendError.notOrganizer }
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard PlayGroup.nameLimit.contains(trimmed.count) else { throw BackendError.groupNameInvalid }
+        guard GroupSchedule.areValid(schedules) else { throw BackendError.groupScheduleInvalid }
+        group.name = trimmed
+        group.summary = String(summary.trimmingCharacters(in: .whitespacesAndNewlines).prefix(120))
+        group.levelRange = levelRange
+        group.joinPolicy = joinPolicy
+        group.schedules = schedules
+        db.groups[id] = group
+        scheduleSave()
+        emit(.groupsChanged)
+    }
+
+    /// 群主解散球群
+    func disbandGroup(id: String) throws {
+        let me = try requireUser()
+        guard let group = db.groups[id] else { throw BackendError.groupNotFound }
+        guard group.ownerId == me.id else { throw BackendError.notOrganizer }
+        db.groups[id] = nil
+        db.groupSessions = db.groupSessions.filter { $0.value.groupId != id }
         scheduleSave()
         emit(.groupsChanged)
         emit(.threadsChanged)

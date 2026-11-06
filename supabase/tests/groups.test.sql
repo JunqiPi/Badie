@@ -43,10 +43,10 @@ select is((public.group_page(pg_temp.id('open')) ->> 'my_role'), 'owner', '建�
 select ok(jsonb_array_length(public.group_page(pg_temp.id('open')) -> 'sessions') >= 2, '自动生成未来 14 天的场次');
 select is(public.group_page(pg_temp.id('open')) -> 'sessions' -> 0 ->> 'capacity', '4', '名额来自固定场次');
 select throws_ok($$ select public.create_group('Bad', 'v-us-ca-21-badminton-club-21bc', '', 2, 5, 'open', pg_temp.schedule(2)) $$,
-                 '23514', null, '名额至少 4 个');
+                 '22023', 'invalid_schedule', '名额至少 4 个');
 select throws_ok($$ select public.create_group('Bad', 'v-us-ca-21-badminton-club-21bc', '', 2, 5, 'open',
-                                              pg_temp.schedule() || pg_temp.schedule() || pg_temp.schedule() || pg_temp.schedule()) $$,
-                 '22023', null, '最多 3 个固定场次');
+                                              (select jsonb_agg(e) from generate_series(1, 8), jsonb_array_elements(pg_temp.schedule()) e)) $$,
+                 '22023', 'invalid_schedule', '最多 7 个固定场次');
 select throws_ok($$ select public.create_group('wechat 5551234', 'v-us-ca-21-badminton-club-21bc', '', 2, 5, 'open', pg_temp.schedule()) $$,
                  '22023', null, '群名不能留联系方式');
 select throws_ok($$ select * from public.play_groups $$, '42501', null, '球群表不能直接读');

@@ -80,6 +80,21 @@ struct GamesView: View {
                     .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
+                if !groupManager.myGroups.isEmpty {
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                        SectionTitle(title: String(localized: "我的球群"), detail: "\(groupManager.myGroups.count)")
+                        ForEach(groupManager.myGroups) { group in
+                            Button {
+                                router.open(.group(id: group.id))
+                            } label: {
+                                GroupCard(group: group, venue: groupManager.venue(of: group), activity: groupManager.activity(of: group.id))
+                            }
+                            .buttonStyle(PressableStyle(scale: 0.98))
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                }
+
                 if !groupManager.mySessions.isEmpty {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                         SectionTitle(title: String(localized: "我报名的固定局"), detail: String(localized: "开场前 2 小时内退出算临时取消"))
@@ -156,7 +171,7 @@ struct GamesView: View {
             quickAction(icon: "sportscourt.fill", title: String(localized: "发起球局"), subtitle: String(localized: "有场地缺人"), tint: AppTheme.Colors.peach) {
                 router.open(.createRoom(nil, invitee: nil))
             }
-            quickAction(icon: "person.3.fill", title: String(localized: "固定局"), subtitle: String(localized: "每周固定的球群"), tint: AppTheme.Colors.sky) {
+            quickAction(icon: "person.3.fill", title: String(localized: "球群"), subtitle: String(localized: "每周固定的局"), tint: AppTheme.Colors.sky) {
                 router.open(.groups)
             }
             quickAction(icon: "number", title: String(localized: "房间码"), subtitle: String(localized: "房间码或群号"), tint: AppTheme.Colors.lavender) {

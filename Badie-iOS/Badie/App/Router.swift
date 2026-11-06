@@ -68,6 +68,8 @@ enum Route: Hashable {
     case groups
     /// 创建球群（可预选球馆）
     case createGroup(venueId: String?)
+    /// 群主编辑球群（名称、介绍、水平、加入方式、每周场次）
+    case editGroup(id: String)
     /// 1–9 级对照表
     case levelGuide
     /// 高水平认证申请

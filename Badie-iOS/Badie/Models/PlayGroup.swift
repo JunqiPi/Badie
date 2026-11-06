@@ -41,7 +41,7 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     /// 只限女生 / 男生；nil = 不限
     var audience: Gender? = nil
 
-    static let maxSchedules = 3
+    static let maxSchedules = 7
     static let nameLimit = 2...20
 
     func isMember(_ userId: String) -> Bool { memberIds.contains(userId) }
@@ -74,6 +74,14 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
     var feeNote: String?
 
     static let capacityRange = 4...40
+
+    /// 1–7 个；每个 1–8 小时、当天结束，名额 4–40（和服务器的 valid_schedules 一致）
+    static func areValid(_ schedules: [GroupSchedule]) -> Bool {
+        !schedules.isEmpty && schedules.count <= PlayGroup.maxSchedules && schedules.allSatisfy {
+            (60...480).contains($0.endMinutes - $0.startMinutes) && $0.endMinutes <= 24 * 60
+                && capacityRange.contains($0.capacity) && (1...7).contains($0.weekday)
+        }
+    }
 
     var weekdayTitle: String {
         let day = RecurringTimeSlot.weekdayNames[(weekday - 1 + 7) % 7]

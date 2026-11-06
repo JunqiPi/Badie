@@ -48,17 +48,29 @@ enum AvatarPhotos {
         return image
     }
 
-    /// 相册里选的照片：直接解码成小图再裁（4800 万像素的原图全尺寸解码要上百 MB），放在后台做
-    nonisolated static func jpegData(fromPhoto data: Data) async -> Data? {
+    /// 相册里选的照片：直接解码成长边不超过 1600 像素的图再裁（4800 万像素的原图全尺寸解码要上百 MB），放在后台做
+    nonisolated static func image(fromPhoto data: Data) async -> UIImage? {
         await Task.detached(priority: .userInitiated) {
             guard let source = CGImageSourceCreateWithData(data as CFData, nil),
                   let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
                       kCGImageSourceCreateThumbnailFromImageAlways: true,
                       kCGImageSourceCreateThumbnailWithTransform: true,
-                      kCGImageSourceThumbnailMaxPixelSize: 960,
+                      kCGImageSourceThumbnailMaxPixelSize: 1600,
                   ] as CFDictionary) else { return nil }
-            return jpegData(from: UIImage(cgImage: thumbnail))
+            return UIImage(cgImage: thumbnail)
         }.value
+    }
+
+    /// 按裁剪框（照片坐标）出正方形 JPEG
+    nonisolated static func jpegData(from image: UIImage, crop: CGRect, side: CGFloat = 320) -> Data? {
+        guard crop.width > 0 else { return nil }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let k = side / crop.width
+        let output = UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image { _ in
+            image.draw(in: CGRect(x: -crop.minX * k, y: -crop.minY * k, width: image.size.width * k, height: image.size.height * k))
+        }
+        return output.jpegData(compressionQuality: 0.8)
     }
 
     /// 居中裁成正方形并压缩。按 1 倍出图：默认按屏幕倍率会变成 960×960，超过服务器 256 KB 的上限

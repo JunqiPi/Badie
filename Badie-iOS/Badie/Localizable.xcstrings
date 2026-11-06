@@ -14647,6 +14647,64 @@
         }
       }
     },
+    "不改了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never mind"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不改了"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "やめる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그만두기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रहने दें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batal"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak jadi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่แก้แล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thôi"
+          }
+        }
+      }
+    },
     "不是羽毛球场地" : {
       "localizations" : {
         "en" : {
@@ -18883,6 +18941,64 @@
         }
       }
     },
+    "以后的场次和报名都会删掉，不能恢复。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upcoming sessions and sign-ups will be deleted. This can’t be undone."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以後的場次和報名都會刪掉，不能恢復。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今後の回と参加登録はすべて削除され、元に戻せません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앞으로의 일정과 신청이 모두 삭제되고 되돌릴 수 없어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आने वाले सेशन और साइन-अप हट जाएँगे। इसे वापस नहीं किया जा सकता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesi mendatang dan pendaftaran akan dihapus. Tidak bisa dibatalkan."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesi akan datang dan pendaftaran akan dipadam. Tidak boleh dibuat asal."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รอบที่จะมาถึงและการลงชื่อจะถูกลบทั้งหมด ย้อนกลับไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các buổi sắp tới và lượt đăng ký sẽ bị xóa. Không thể hoàn tác."
+          }
+        }
+      }
+    },
     "以球馆实际收费为准" : {
       "localizations" : {
         "en" : {
@@ -19169,6 +19285,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "任何同一國家/地區的球友都能向你發起挑戰"
+          }
+        }
+      }
+    },
+    "任何时间" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any time"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任何時間"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "いつでも"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "언제든"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कभी भी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapan saja"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bila-bila masa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เวลาไหนก็ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lúc nào cũng được"
           }
         }
       }
@@ -22905,6 +23079,64 @@
         }
       }
     },
+    "使用" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使う"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस्तेमाल करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakai"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guna"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dùng"
+          }
+        }
+      }
+    },
     "使用 %@" : {
       "localizations" : {
         "en" : {
@@ -23833,6 +24065,64 @@
         }
       }
     },
+    "保存修改" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save changes"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存修改"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更を保存"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경 저장"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बदलाव सेव करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan perubahan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan perubahan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกการแก้ไข"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lưu thay đổi"
+          }
+        }
+      }
+    },
     "保存密码" : {
       "localizations" : {
         "en" : {
@@ -24119,6 +24409,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "修改模式、時間和球館"
+          }
+        }
+      }
+    },
+    "修改请求" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit request"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改請求"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リクエストを編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "요청 수정"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रिक्वेस्ट एडिट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit permintaan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit permintaan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แก้คำขอ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa yêu cầu"
           }
         }
       }
@@ -27384,6 +27732,64 @@
         }
       }
     },
+    "再加一个场次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add another session"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再加一個場次"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回を追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일정 추가"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक और सेशन जोड़ें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah sesi"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah sesi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่มอีกรอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm một buổi"
+          }
+        }
+      }
+    },
     "再想想" : {
       "localizations" : {
         "en" : {
@@ -28720,6 +29126,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "初級"
+          }
+        }
+      }
+    },
+    "删掉这个场次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this session"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪掉這個場次"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この回を削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 일정 삭제"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह सेशन हटाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus sesi ini"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buang sesi ini"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลบรอบนี้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa buổi này"
           }
         }
       }
@@ -32460,6 +32924,64 @@
         }
       }
     },
+    "双指缩放，拖动调整位置" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pinch to zoom, drag to move"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雙指縮放，拖動調整位置"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピンチで拡大、ドラッグで位置を調整"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두 손가락으로 확대하고, 끌어서 위치를 옮기세요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ज़ूम के लिए पिंच करें, खिसकाने के लिए खींचें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cubit untuk memperbesar, geser untuk memindah"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cubit untuk zum, seret untuk alih"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้สองนิ้วซูม ลากเพื่อเลื่อน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chụm để phóng to, kéo để di chuyển"
+          }
+        }
+      }
+    },
     "双方已经确认了这个赛果。" : {
       "localizations" : {
         "en" : {
@@ -35836,60 +36358,60 @@
         }
       }
     },
-    "只能选择未来 14 天内" : {
+    "只能选择未来 30 天内" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can only pick a date within the next 14 days"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "आप सिर्फ़ अगले 14 दिनों के अंदर की तारीख चुन सकते हैं"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu hanya bisa memilih tanggal dalam 14 hari ke depan"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日から 14 日以内の日付のみ選べます"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앞으로 14일 이내 날짜만 선택할 수 있어요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anda hanya boleh memilih tarikh dalam 14 hari akan datang"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เลือกได้เฉพาะภายใน 14 วันข้างหน้า"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chỉ chọn được ngày trong 14 ngày tới"
+            "value" : "Pick a day within the next 30 days"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只能選擇未來 14 天內"
+            "value" : "只能選擇未來 30 天內"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 日以内の日を選んでください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30일 이내의 날짜를 골라 주세요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अगले 30 दिनों में से कोई दिन चुनें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih hari dalam 30 hari ke depan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih hari dalam 30 hari akan datang"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกวันภายใน 30 วันข้างหน้า"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn một ngày trong 30 ngày tới"
           }
         }
       }
@@ -38791,64 +39313,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "因多次爽約，快速配對暫停中"
-          }
-        }
-      }
-    },
-    "固定场次需要 1–8 小时，名额 4–40 人" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sessions must be 1–8 hours with 4–40 spots"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "सेशन 1–8 घंटे का और 4–40 जगहों वाला होना चाहिए"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sesi harus 1–8 jam dengan 4–40 slot"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "定例の回は 1〜8 時間、定員 4〜40 人で設定してください"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "정기 일정은 1–8시간, 정원 4–40명이어야 해요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sesi mestilah 1–8 jam dengan 4–40 tempat"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "รอบประจำต้องยาว 1–8 ชั่วโมง และรับ 4–40 คน"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buổi chơi phải dài 1–8 giờ, có 4–40 chỗ"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "固定場次需要 1–8 小時，名額 4–40 人"
           }
         }
       }
@@ -46227,6 +46691,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已付"
+          }
+        }
+      }
+    },
+    "已保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已儲存"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장했어요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेव हो गया"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tersimpan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disimpan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã lưu"
           }
         }
       }
@@ -56249,6 +56771,64 @@
         }
       }
     },
+    "我的球群" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My groups"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的球群"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マイグループ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내 모임"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मेरे ग्रुप"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grup saya"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kumpulan saya"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ก๊วนของฉัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhóm của tôi"
+          }
+        }
+      }
+    },
     "我的约球与房间" : {
       "localizations" : {
         "en" : {
@@ -65862,60 +66442,60 @@
         }
       }
     },
-    "日期（未来 14 天）" : {
+    "日期" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date (next 14 days)"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "तारीख (अगले 14 दिन)"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tanggal (14 hari ke depan)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日付（今後 14 日間）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "날짜 (향후 14일)"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tarikh (14 hari akan datang)"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "วันที่ (14 วันข้างหน้า)"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ngày (14 ngày tới)"
+            "value" : "Date"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "日期（未來 14 天）"
+            "value" : "日期"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "तारीख़"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tanggal"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarikh"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วันที่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày"
           }
         }
       }
@@ -66616,6 +67196,122 @@
         }
       }
     },
+    "时间段" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間段"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間帯"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "समय"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waktu"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ช่วงเวลา"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian"
+          }
+        }
+      }
+    },
+    "时间段不对：至少 1 小时，约球最长 16 小时，开局最长 8 小时。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That time window doesn’t work. At least 1 hour; matches up to 16 hours, posted games up to 8."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間段不對：至少 1 小時，約球最長 16 小時，開局最長 8 小時。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その時間帯は選べません。1 時間以上、マッチングは最長 16 時間、募集は最長 8 時間です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 시간대는 안 돼요. 최소 1시간, 매칭은 최대 16시간, 모집은 최대 8시간이에요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह समय नहीं चलेगा। कम से कम 1 घंटा; मैच 16 घंटे तक, पोस्ट किए गेम 8 घंटे तक।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rentang waktunya tidak bisa. Minimal 1 jam; cari lawan maksimal 16 jam, permainan yang diposting maksimal 8 jam."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Julat masa itu tidak sesuai. Sekurang-kurangnya 1 jam; padanan sehingga 16 jam, permainan disiarkan sehingga 8 jam."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ช่วงเวลานี้ใช้ไม่ได้ อย่างน้อย 1 ชั่วโมง จับคู่ได้สูงสุด 16 ชั่วโมง โพสต์เกมได้สูงสุด 8 ชั่วโมง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khung giờ này không được. Ít nhất 1 giờ; ghép trận tối đa 16 giờ, đăng trận tối đa 8 giờ."
+          }
+        }
+      }
+    },
     "时间段需要 1-8 小时" : {
       "localizations" : {
         "en" : {
@@ -66670,122 +67366,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "時段需要 1-8 小時"
-          }
-        }
-      }
-    },
-    "时间段（1–8 小时）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time slot (1–8 hours)"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "टाइम स्लॉट (1–8 घंटे)"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Slot waktu (1–8 jam)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時間帯（1〜8 時間）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시간대 (1–8시간)"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Slot masa (1–8 jam)"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ช่วงเวลา (1–8 ชั่วโมง)"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khung giờ (1–8 giờ)"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時段（1–8 小時）"
-          }
-        }
-      }
-    },
-    "时间范围请选 1–8 小时。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pick a time window between 1 and 8 hours."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 से 8 घंटे के बीच की समय रेंज चुनें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pilih rentang waktu antara 1 dan 8 jam."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時間帯は 1〜8 時間の範囲で選んでください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1–8시간 사이의 시간대를 고르세요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pilih slot masa antara 1 hingga 8 jam."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เลือกช่วงเวลาระหว่าง 1 ถึง 8 ชั่วโมง"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chọn khung giờ dài từ 1 đến 8 giờ."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時間範圍請選 1 到 8 小時。"
           }
         }
       }
@@ -68472,60 +69052,60 @@
         }
       }
     },
-    "最多只能提前两周安排。" : {
+    "最多只能提前 30 天安排。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can plan up to two weeks ahead."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "आप दो हफ़्ते आगे तक प्लान कर सकते हैं।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu bisa merencanakan sampai dua minggu ke depan."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "予定は 2 週間先まで立てられます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "최대 2주 후까지 계획할 수 있어요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anda boleh merancang hingga dua minggu lebih awal."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "นัดล่วงหน้าได้สูงสุดสองสัปดาห์"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bạn có thể lên lịch trước tối đa hai tuần."
+            "value" : "You can plan up to 30 days ahead."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最多只能安排兩週內的時間。"
+            "value" : "最多只能提前 30 天安排。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 日先まで予定を入れられます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최대 30일 뒤까지 잡을 수 있어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आप 30 दिन पहले तक प्लान कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu bisa merencanakan hingga 30 hari ke depan."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda boleh merancang sehingga 30 hari lebih awal."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วางแผนล่วงหน้าได้สูงสุด 30 วัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có thể lên lịch trước tối đa 30 ngày."
           }
         }
       }
@@ -69066,6 +69646,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最近有幾位球友提到「%@」。%@這則提醒只有你看得到，不會公開，也不影響配對。"
+          }
+        }
+      }
+    },
+    "最长 16 小时" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to 16 hours"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最長 16 小時"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最長 16 時間"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최대 16시간"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ज़्यादा से ज़्यादा 16 घंटे"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksimal 16 jam"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksimum 16 jam"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สูงสุด 16 ชั่วโมง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tối đa 16 giờ"
           }
         }
       }
@@ -73062,6 +73700,64 @@
         }
       }
     },
+    "正在修改约球请求，保存后换掉原来的" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editing your match request. Saving replaces the old one."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在修改約球請求，儲存後換掉原來的"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マッチングのリクエストを編集中です。保存すると前のものと置き換わります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매칭 요청을 수정 중이에요. 저장하면 이전 요청이 바뀌어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैच रिक्वेस्ट एडिट हो रही है। सेव करने पर पुरानी बदल जाएगी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sedang mengedit permintaan. Menyimpan akan mengganti yang lama."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sedang mengedit permintaan. Simpan akan menggantikan yang lama."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังแก้คำขอจับคู่ บันทึกแล้วจะแทนอันเดิม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang sửa yêu cầu ghép trận. Lưu sẽ thay yêu cầu cũ."
+          }
+        }
+      }
+    },
     "正在加载" : {
       "localizations" : {
         "en" : {
@@ -74002,6 +74698,64 @@
         }
       }
     },
+    "每个固定场次要 1–8 小时、在当天结束，名额 4–40 人，最多 7 个。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each weekly session needs to be 1–8 hours and end the same day, with 4–40 spots. Up to 7 sessions."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每個固定場次要 1–8 小時、在當天結束，名額 4–40 人，最多 7 個。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期の回は 1〜8 時間で当日中に終わること、定員 4〜40 人、最大 7 つまでです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정기 일정은 1–8시간, 당일 종료, 정원 4–40명이어야 하고 최대 7개까지예요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर साप्ताहिक सेशन 1–8 घंटे का हो और उसी दिन खत्म हो, 4–40 जगहें, ज़्यादा से ज़्यादा 7 सेशन।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiap sesi mingguan 1–8 jam dan selesai di hari yang sama, 4–40 tempat. Maksimal 7 sesi."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setiap sesi mingguan perlu 1–8 jam dan tamat pada hari yang sama, 4–40 tempat. Maksimum 7 sesi."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แต่ละรอบประจำต้องยาว 1–8 ชั่วโมงและจบในวันเดียวกัน รับ 4–40 คน ได้สูงสุด 7 รอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi buổi cố định dài 1–8 giờ, kết thúc trong ngày, 4–40 chỗ. Tối đa 7 buổi."
+          }
+        }
+      }
+    },
     "每个时间段需要 1-8 小时" : {
       "localizations" : {
         "en" : {
@@ -74292,60 +75046,60 @@
         }
       }
     },
-    "每周固定的球群" : {
+    "每周固定的局" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Weekly groups"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "साप्ताहिक ग्रुप"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grup mingguan"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "毎週の定期グループ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "매주 정기 그룹"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kumpulan mingguan"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "กลุ่มประจำสัปดาห์"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nhóm chơi hằng tuần"
+            "value" : "Weekly games"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每週固定的球群"
+            "value" : "每週固定的局"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎週の定期練習"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매주 정기 모임"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर हफ़्ते के गेम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main mingguan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permainan mingguan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เกมประจำสัปดาห์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trận cố định hằng tuần"
           }
         }
       }
@@ -74486,6 +75240,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每場 %lld 個名額，額滿自動候補"
+          }
+        }
+      }
+    },
+    "每场最长 8 小时" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each session can be up to 8 hours"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每場最長 8 小時"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 回は最長 8 時間です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 번에 최대 8시간이에요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर सेशन ज़्यादा से ज़्यादा 8 घंटे का"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiap sesi maksimal 8 jam"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setiap sesi maksimum 8 jam"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แต่ละรอบยาวได้สูงสุด 8 ชั่วโมง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi buổi tối đa 8 giờ"
           }
         }
       }
@@ -81760,6 +82572,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "球群名稱需要 2–20 個字"
+          }
+        }
+      }
+    },
+    "球群已解散，成员会收到通知" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group closed. Members will be notified."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "球群已解散，成員會收到通知"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループを解散しました。メンバーに通知されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임을 해산했어요. 멤버에게 알림이 가요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप बंद हो गया। सदस्यों को सूचना मिलेगी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grup dibubarkan. Anggota akan diberi tahu."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kumpulan dibubarkan. Ahli akan dimaklumkan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยุบก๊วนแล้ว สมาชิกจะได้รับการแจ้งเตือน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã giải tán nhóm. Thành viên sẽ nhận được thông báo."
           }
         }
       }
@@ -90268,6 +91138,122 @@
         }
       }
     },
+    "编辑球群" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit group"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯球群"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループを編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임 편집"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप एडिट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit grup"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit kumpulan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แก้ไขก๊วน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa nhóm"
+          }
+        }
+      }
+    },
+    "编辑球群和场次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit group and sessions"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯球群和場次"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループと回を編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임과 일정 편집"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप और सेशन एडिट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit grup dan sesi"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit kumpulan dan sesi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แก้ไขก๊วนและรอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa nhóm và các buổi"
+          }
+        }
+      }
+    },
     "编辑资料" : {
       "localizations" : {
         "en" : {
@@ -90570,64 +91556,6 @@
         }
       }
     },
-    "群主不能直接退出，可以先把群交给其他组织者" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "As the owner, you can't leave directly. Transfer the group to another organizer first"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ओनर होने के नाते आप सीधे ग्रुप नहीं छोड़ सकते। पहले ग्रुप किसी दूसरे ऑर्गनाइज़र को सौंपें"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sebagai pemilik, kamu tidak bisa langsung keluar. Serahkan grup ke penyelenggara lain dulu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "オーナーはそのまま退出できません。先にグループを他の主催者に譲ってください"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "그룹장은 바로 나갈 수 없어요. 먼저 다른 운영자에게 그룹을 넘겨주세요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sebagai pemilik, anda tidak boleh keluar terus. Serahkan kumpulan kepada penganjur lain dahulu"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เจ้าของกลุ่มออกเองไม่ได้ โอนกลุ่มให้ผู้จัดคนอื่นก่อน"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trưởng nhóm không thể rời ngay. Hãy chuyển nhóm cho người tổ chức khác trước"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "群主不能直接退出，可以先把球群交給其他組織者"
-          }
-        }
-      }
-    },
     "群主不能退出自己的球群。" : {
       "localizations" : {
         "en" : {
@@ -90682,6 +91610,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "群主不能退出自己的球群。"
+          }
+        }
+      }
+    },
+    "群主不能退出，可以解散球群。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The owner can’t leave, but can close the group."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "群主不能退出，可以解散球群。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オーナーは退出できませんが、グループを解散できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임장은 나갈 수 없지만 모임을 해산할 수 있어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मालिक ग्रुप नहीं छोड़ सकता, पर ग्रुप बंद कर सकता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemilik tidak bisa keluar, tapi bisa membubarkan grup."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemilik tidak boleh keluar, tetapi boleh membubarkan kumpulan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เจ้าของออกจากก๊วนไม่ได้ แต่ยุบก๊วนได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chủ nhóm không thể rời nhóm, nhưng có thể giải tán nhóm."
           }
         }
       }
@@ -93778,6 +94764,122 @@
         }
       }
     },
+    "解散球群" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close group"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解散球群"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループを解散"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임 해산"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप बंद करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan grup"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan kumpulan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยุบก๊วน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giải tán nhóm"
+          }
+        }
+      }
+    },
+    "解散这个球群？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close this group?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解散這個球群？"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このグループを解散しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 모임을 해산할까요?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह ग्रुप बंद करें?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan grup ini?"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan kumpulan ini?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยุบก๊วนนี้ไหม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giải tán nhóm này?"
+          }
+        }
+      }
+    },
     "解除" : {
       "localizations" : {
         "en" : {
@@ -96800,64 +97902,6 @@
         }
       }
     },
-    "请添加 1–3 个每周场次。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add 1 to 3 weekly sessions."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 से 3 साप्ताहिक सेशन जोड़ें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tambahkan 1 sampai 3 sesi mingguan."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "毎週の開催を 1〜3 件追加してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "매주 정기 일정을 1–3개 추가하세요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tambah 1 hingga 3 sesi mingguan."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เพิ่มรอบประจำสัปดาห์ 1 ถึง 3 รอบ"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thêm từ 1 đến 3 buổi hằng tuần."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "請新增 1 到 3 個每週場次。"
-          }
-        }
-      }
-    },
     "请补全街道和城市，方便其他球友确认位置" : {
       "localizations" : {
         "en" : {
@@ -97492,6 +98536,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "調整失敗"
+          }
+        }
+      }
+    },
+    "调整头像" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust photo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調整頭像"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真を調整"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 조정"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ोटो एडजस्ट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atur foto"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laraskan foto"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปรับรูป"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉnh ảnh"
           }
         }
       }
