@@ -3,6 +3,9 @@ import type { Centre } from './pickers';
 
 // 你在哪一带（定位或搜的城市）：首页、球馆、附近球局共用。只存在这个浏览器里，读不到就重新问
 
+/** 首页按天看人、日期条上的人数用多大范围（和附近球局、球群一样） */
+export const NEARBY_KM = 30;
+
 const key = 'badie-area';
 const listeners = new Set<() => void>();
 let area: Centre | undefined;

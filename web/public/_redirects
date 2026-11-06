@@ -3,6 +3,7 @@
 # App 里的页面：都由首页那份 HTML 打开，App 按地址显示对应的页面
 /signin/* / 200
 /play/* / 200
+/day/* / 200
 /games/* / 200
 /rooms/* / 200
 /groups/* / 200

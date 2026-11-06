@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
+import { AvatarCrop } from './AvatarCrop';
 import { DONATIONS_OPEN, SUPPORT_EMAIL } from './Contact';
 import { GenderField } from './gender';
 import { currentLocale, t } from './i18n';
@@ -488,14 +489,28 @@ function Nickname({ profile, email, onChange }: { profile: Profile; email?: stri
   );
 }
 
-/** 照片头像：裁成 320×320 的 JPEG（和 iOS 一样），先传新的、换上，再删旧的 */
+/** 照片头像：先调整位置和大小，裁成 320×320 的 JPEG（和 iOS 一样），先传新的、换上，再删旧的 */
 function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
   const [busy, setBusy] = useState(false);
+  const [picked, setPicked] = useState<ImageBitmap>();
 
-  async function upload(file: File) {
+  async function pick(file: File) {
+    try {
+      setPicked(await decode(file));
+    } catch {
+      toast(t('Couldn’t upload the photo. Try another one.'), 'error');
+    }
+  }
+
+  function close() {
+    picked?.close();
+    setPicked(undefined);
+  }
+
+  async function upload(jpeg: Blob) {
+    close();
     setBusy(true);
     try {
-      const jpeg = await squareJpeg(file, 320);
       const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
       const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;
@@ -527,27 +542,24 @@ function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Pr
       <label className={`button button-sm cursor-pointer ${busy ? 'pointer-events-none opacity-60' : ''}`}>
         {profile.avatar_path ? t('Change photo') : t('Upload photo')}
         <input type="file" accept="image/*" className="sr-only" disabled={busy}
-               onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void upload(file); }} />
+               onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void pick(file); }} />
       </label>
       {profile.avatar_path && <Button type="button" className="button-sm" variant="quiet" busy={busy} onClick={remove}>{t('Use text avatar')}</Button>}
       <p className="basis-full text-caption text-ink-tertiary">{t('Other players see your photo.')}</p>
+      {picked && <AvatarCrop image={picked} onDone={upload} onCancel={close} />}
     </div>
   );
 }
 
-/** 从中间裁成正方形、缩到 side×side 的 JPEG */
-async function squareJpeg(file: File, side: number): Promise<Blob> {
+/** 解码选的照片（按拍摄方向转正）；太大的先缩到长边 1600 像素，裁剪时不卡 */
+async function decode(file: File): Promise<ImageBitmap> {
   const bitmap = await createImageBitmap(file);
-  const crop = Math.min(bitmap.width, bitmap.height);
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = side;
-  const context = canvas.getContext('2d')!;
-  // JPEG 没有透明：透明的 PNG 先铺白底，不然是黑的
-  context.fillStyle = '#fff';
-  context.fillRect(0, 0, side, side);
-  context.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, side, side);
+  const longest = Math.max(bitmap.width, bitmap.height);
+  if (longest <= 1600) return bitmap;
+  const ratio = 1600 / longest;
+  const smaller = await createImageBitmap(bitmap, { resizeWidth: Math.round(bitmap.width * ratio), resizeHeight: Math.round(bitmap.height * ratio), resizeQuality: 'high' });
   bitmap.close();
-  return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('encode'))), 'image/jpeg', 0.85));
+  return smaller;
 }
 
 function Level({ profile }: { profile: Profile }) {

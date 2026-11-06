@@ -7,7 +7,7 @@ import { CourtSearch, type Court } from './pickers';
 import { enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
 import { problem, supabase, useLive, type Mode, type Player, type Profile, type Ticket } from './supabase';
-import { clock, dateChip, dayName, moment, nextDays, relative, timeOf, zoned } from './time';
+import { clock, dateChip, dayName, moment, nextDays, relative, timeOf, wallClock, zoned } from './time';
 import { Button, PageHeader, Skeleton, toast } from './ui';
 
 /** 快速匹配（iOS 的 MatchSetupView + 请求状态）：桌面左边设置、右边我的请求 */
@@ -15,6 +15,12 @@ export function Play({ profile }: { profile: Profile }) {
   const { data: tickets, failed, refresh } = useLive<Ticket[]>('my_matchmaking');
   const open = tickets?.filter((ticket) => ['searching', 'offered', 'paused'].includes(ticket.status)) ?? [];
   const recent = tickets?.filter((ticket) => !open.includes(ticket)).slice(0, 5) ?? [];
+  // 正在修改的请求：表单填好原来的条件，保存时换掉它
+  const [editing, setEditing] = useState<Ticket>();
+  const edit = (ticket: Ticket) => {
+    setEditing(ticket);
+    requestAnimationFrame(() => document.getElementById('request-form')?.scrollIntoView({ block: 'start' }));
+  };
 
   return (
     <div>
@@ -39,7 +45,7 @@ export function Play({ profile }: { profile: Profile }) {
             <Empty icon="bolt" tint="lime" title={t('No open requests')}>{t('Create one and Badie will look for players while you get on with your day.')}</Empty>
           )}
           {open.length > 0 && <PushPrompt emailOn={profile.email_alerts} />}
-          {open.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onChange={refresh} />)}
+          {open.map((ticket) => <TicketCard key={ticket.id} ticket={ticket} onChange={refresh} onEdit={edit} />)}
           {recent.length > 0 && (
             <>
               <h3 className="mt-3 text-footnote font-bold text-ink-secondary">{t('Recent')}</h3>
@@ -48,7 +54,8 @@ export function Play({ profile }: { profile: Profile }) {
           )}
         </section>
 
-        <NewRequest profile={profile} onCreated={refresh} />
+        <NewRequest key={editing?.id ?? 'new'} profile={profile} editing={editing} onCancelEdit={() => setEditing(undefined)}
+                    onCreated={() => { setEditing(undefined); refresh(); }} />
       </div>
     </div>
   );
@@ -98,7 +105,7 @@ const status: Record<Ticket['status'], { icon: IconName; tint: Tint; label: stri
   cancelled: { icon: 'xCircle', tint: 'muted', label: 'Cancelled' },
 };
 
-function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void }) {
+function TicketCard({ ticket, onChange, onEdit }: { ticket: Ticket; onChange: () => void; onEdit?: (ticket: Ticket) => void }) {
   const [busy, setBusy] = useState<string>();
 
   async function act(name: string, fn: string, args: Record<string, unknown>, done?: string) {
@@ -194,6 +201,11 @@ function TicketCard({ ticket, onChange }: { ticket: Ticket; onChange: () => void
           </Button>
         )}
         {ticket.status === 'matched' && ticket.game_id && <Link to={`/games/${ticket.game_id}/`} className="button button-sm">{t('View game')}</Link>}
+        {ticket.status === 'searching' && onEdit && (
+          <Button className="button-sm" variant="quiet" disabled={Boolean(busy)} onClick={() => onEdit(ticket)}>
+            <Icon name="pencil" className="size-3.5" />{t('Edit request')}
+          </Button>
+        )}
         {(ticket.status === 'searching' || ticket.status === 'paused') && (
           <Button className="button-sm" variant="quiet" busy={busy === 'cancel'} disabled={Boolean(busy)} onClick={() => act('cancel', 'cancel_ticket', { p_ticket: ticket.id }, t('Request cancelled'))}>
             {t('Cancel request')}
@@ -249,25 +261,42 @@ const presets: [string, number, number][] = [
 /** 约球可以选任何时间：7 点到 23 点（开局最长 8 小时，没有这个选项） */
 const anyTime: [string, number, number] = ['Any time', 7 * 60, 23 * 60];
 
-/** 新的约球请求：模式、日期、时间段、球馆、对手水平 */
-function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () => void }) {
-  const [mode, setMode] = useState<Mode>('doubles');
-  const [courts, setCourts] = useState<Court[]>([]);
+/** 修改请求时表单的初始值：按第一家球馆的时区算日期和钟点 */
+function draftOf(ticket: Ticket) {
+  const tz = ticket.venues[0]?.tz ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const start = wallClock(ticket.starts_at, tz);
+  const end = wallClock(ticket.ends_at, tz);
+  return {
+    date: start.date,
+    from: start.minutes,
+    // 到午夜结束时是第二天的 0 点
+    to: end.date === start.date ? end.minutes : end.minutes + 24 * 60,
+    courts: ticket.venues.map((v): Court => ({ id: v.id, name: v.name, city: v.city, time_zone_id: v.tz ?? null })),
+  };
+}
+
+/** 新的约球请求：模式、日期、时间段、球馆、对手水平；editing 是要换掉的旧请求 */
+function NewRequest({ profile, editing, onCreated, onCancelEdit }: { profile: Profile; editing?: Ticket; onCreated: () => void; onCancelEdit: () => void }) {
+  const [draft] = useState(() => (editing ? draftOf(editing) : undefined));
+  const [mode, setMode] = useState<Mode>(editing?.mode ?? 'doubles');
+  const [courts, setCourts] = useState<Court[]>(draft?.courts ?? []);
   const [favorites, setFavorites] = useState<Court[]>([]);
   const tz = courts[0]?.time_zone_id ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const days = nextDays(30);
   // 默认今晚 7–9 点；已经来不及就默认明天
   const [date, setDate] = useState(() => {
+    if (draft) return draft.date;
     const asked = new URLSearchParams(location.search).get('date');
     if (asked && days.includes(asked)) return asked;
     return zoned(days[0], 19 * 60, tz).getTime() - Date.now() < 30 * 60000 ? days[1] : days[0];
   });
-  const [from, setFrom] = useState(19 * 60);
-  const [to, setTo] = useState(21 * 60);
-  const [tolerance, setTolerance] = useState<1 | 2 | 8>(1);
-  const [autoAccept, setAutoAccept] = useState(false);
+  const [from, setFrom] = useState(draft?.from ?? 19 * 60);
+  const [to, setTo] = useState(draft?.to ?? 21 * 60);
+  const [tolerance, setTolerance] = useState<1 | 2 | 8>(editing?.skill_tolerance ?? 1);
+  const [autoAccept, setAutoAccept] = useState(editing?.auto_accept ?? false);
   // 项目：记住上次的选择（只存在这个浏览器里）；换成单打时混双不能选，按不限
   const [chosen, setChosen] = useState<PlayEvent>(() => {
+    if (editing) return eventOf(editing.play_with, editing.mixed);
     try {
       return (localStorage.getItem('badie.event') as PlayEvent | null) ?? 'any';
     } catch {
@@ -319,7 +348,8 @@ function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () =>
     if (issue) return setError(issue);
     setBusy(true);
     setError(undefined);
-    const { error } = await supabase!.rpc('submit_ticket', {
+    const { error } = await supabase!.rpc(editing ? 'replace_ticket' : 'submit_ticket', {
+      ...(editing && { p_ticket: editing.id }),
       p_mode: mode,
       p_starts_at: startsAt.toISOString(),
       p_ends_at: endsAt.toISOString(),
@@ -331,15 +361,21 @@ function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () =>
     });
     setBusy(false);
     if (error) return setError(problem(error));
-    toast(t('Request sent. Looking for players.'));
+    toast(editing ? t('Saved') : t('Request sent. Looking for players.'));
     onCreated();
   }
 
   const suggestions = favorites.filter((f) => !courts.some((c) => c.id === f.id));
 
   return (
-    <form onSubmit={submit} noValidate aria-labelledby="new-request" className="grid min-w-0 gap-6 lg:order-1">
-      <h2 id="new-request" className="sr-only">{t('New request')}</h2>
+    <form id="request-form" onSubmit={submit} noValidate aria-labelledby="new-request" className="grid min-w-0 gap-6 lg:order-1">
+      <h2 id="new-request" className="sr-only">{editing ? t('Edit request') : t('New request')}</h2>
+
+      {editing && (
+        <Notice icon="pencil" tint="butter" action={{ label: t('Never mind'), onClick: onCancelEdit }}>
+          {t('Editing your match request. Saving replaces the old one.')}
+        </Notice>
+      )}
 
       <FormatPicker value={mode} onChange={setMode} />
 
@@ -408,7 +444,9 @@ function NewRequest({ profile, onCreated }: { profile: Profile; onCreated: () =>
       </label>
 
       {error && <p role="alert" className="font-bold text-danger">{error}</p>}
-      <Button busy={busy} className="button-lg w-full"><Icon name="bolt" className="size-5" />{t('Start matching')}</Button>
+      <Button busy={busy} className="button-lg w-full">
+        {editing ? <><Icon name="check" className="size-5" />{t('Save changes')}</> : <><Icon name="bolt" className="size-5" />{t('Start matching')}</>}
+      </Button>
     </form>
   );
 }

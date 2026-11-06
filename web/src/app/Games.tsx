@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { GameTicket, RequestCard, RoomCard } from './cards';
+import { GroupCard } from './Groups';
 import { money } from './Courts';
 import { toReview } from './Home';
 import { currentLocale, t } from './i18n';
@@ -103,6 +104,12 @@ export function Games() {
               {open.map((r) => <RequestCard key={r.id} request={r} />)}
             </section>
           )}
+          {groups && groups.groups.length > 0 && (
+            <section aria-labelledby="my-groups" className="grid gap-2">
+              <SectionTitle id="my-groups" title={t('My groups')} detail={String(groups.groups.length)} action={{ label: t('See all'), to: '/groups/' }} />
+              {groups.groups.map((g) => <GroupCard key={g.id} group={g} />)}
+            </section>
+          )}
           {groups && groups.sessions.length > 0 && (
             <section aria-labelledby="sessions" className="grid gap-2">
               <SectionTitle id="sessions" title={t('My weekly sessions')} action={{ label: t('Groups'), to: '/groups/' }} />
@@ -130,7 +137,7 @@ export function Games() {
 
 const shortcuts: { to: string; icon: IconName; tint: Tint; title: string; subtitle: string }[] = [
   { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Have a court, need players' },
-  { to: '/groups/', icon: 'group', tint: 'sky', title: 'Regular games', subtitle: 'Weekly groups' },
+  { to: '/groups/', icon: 'group', tint: 'sky', title: 'Groups', subtitle: 'Weekly games' },
   { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Room code', subtitle: 'Room or group code' },
 ];
 

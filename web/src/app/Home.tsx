@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { tier } from './assessment';
-import { setArea, useArea } from './area';
+import { NEARBY_KM, setArea, useArea } from './area';
 import { GameTicket, RequestCard, RoomCard } from './cards';
 import { APP_STORE_URL } from './Contact';
 import { km } from './Courts';
@@ -11,7 +11,7 @@ import type { Centre } from './pickers';
 import { Link } from './router';
 import { signInFirst } from './Shell';
 import { supabase, useLive, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
-import { dayName, timeOf } from './time';
+import { dateChip, dayName, nextDays, timeOf } from './time';
 import { toast } from './ui';
 
 const live = (g: Game) => g.status === 'scheduled' && new Date(g.ends_at).getTime() > Date.now();
@@ -70,6 +70,8 @@ function Dashboard({ me }: { me: Profile }) {
         </div>
       </header>
 
+      <DayStrip />
+
       {!me.assessed_at && (
         <Notice icon="sparkle" tint="lavender" action={{ label: t('Take the quiz'), to: '/level-quiz/' }}>
           {t('You’re starting at level 3. Take the 2-minute level quiz so you’re matched with the right players.')}
@@ -111,6 +113,42 @@ function Dashboard({ me }: { me: Profile }) {
         </aside>
       </div>
     </div>
+  );
+}
+
+/** 哪天有空：接下来 30 天，每天附近有几个人在找；点一天打开这天的球友卡片 */
+function DayStrip() {
+  const area = useArea();
+  const days = nextDays(30);
+  const [counts, setCounts] = useState<Record<string, number>>();
+  useEffect(() => {
+    if (!area) return;
+    supabase!
+      .rpc('pool_by_day', { p_lat: area.lat, p_lon: area.lon, p_radius_km: NEARBY_KM, p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone })
+      .then(({ data }) => setCounts((data ?? {}) as Record<string, number>));
+  }, [area?.lat, area?.lon]);
+
+  return (
+    <section aria-labelledby="days" className="grid gap-1">
+      <SectionTitle id="days" title={t('Which days work for you?')} detail={t('Tap a day to see who else is free')} />
+      <ul className="rail">
+        {days.map((d, i) => {
+          const chip = dateChip(d, i);
+          const n = counts?.[d] ?? 0;
+          return (
+            <li key={d}>
+              <Link to={`/day/${d}/`} aria-label={counts ? chip.full + t(', {n} available', { n }) : chip.full}
+                    className={`press grid min-w-[3.5rem] justify-items-center gap-0.5 rounded-[16px] border-2 border-stroke px-1.5 py-2 ${n ? 'bg-lime/45' : 'bg-surface hover:bg-surface-muted'}`}>
+                <span className="text-caption">{chip.label}</span>
+                <span className="text-[1.25rem] leading-tight font-black tabular-nums">{chip.day}</span>
+                {/* 没人的天不写 0，留出同样的高度 */}
+                {counts && <span aria-hidden="true" className={`text-[10px] leading-tight font-bold whitespace-nowrap ${n ? '' : 'invisible'}`}>{n ? t('{n} free', { n }) : '0'}</span>}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }
 
@@ -215,7 +253,7 @@ function GroupsCard() {
   const sessions = data?.sessions.slice(0, 2) ?? [];
   return (
     <section aria-labelledby="groups" className="grid gap-2">
-      <SectionTitle id="groups" title={t('Regular games')} detail={data?.groups.length ? t('{n} group|{n} groups', { n: data.groups.length }) : t('No more sign-up lists in chat')} action={{ label: t('See all'), to: '/groups/' }} />
+      <SectionTitle id="groups" title={t('Groups')} detail={data?.groups.length ? t('{n} group|{n} groups', { n: data.groups.length }) : t('No more sign-up lists in chat')} action={{ label: t('See all'), to: '/groups/' }} />
       {sessions.length === 0 ? (
         <Link to="/groups/" className="sticker lift flex items-center gap-3 bg-sky p-4 text-on-accent">
           <IconTile icon="group" tint="surface" />

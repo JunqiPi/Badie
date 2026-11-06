@@ -139,6 +139,18 @@ export interface Ticket {
   };
 }
 
+/** 首页按天看人：这天附近在找人、我能约的请求（day_candidates） */
+export interface DayCandidate {
+  ticket: string;
+  mode: Mode;
+  mixed: boolean;
+  play_with: Gender | null;
+  starts_at: string;
+  ends_at: string;
+  user: { id: string; nickname: string; tag: number | null; rating: number; gender: Gender | null; recent_no_shows: number | null };
+  venues: { id: string; name: string }[] | null;
+}
+
 export type Outcome = 'team1' | 'team2' | 'friendly';
 
 export interface Game {
@@ -382,7 +394,7 @@ export interface Update {
   read_at: string | null;
 }
 
-/** 调用数据库函数；页面可见时定时（默认 30 秒）、切回页面时自动刷新（别人确认了、约成了能及时看到） */
+/** 调用数据库函数；页面可见时定时（默认 30 秒）、切回页面时自动刷新（别人确认了、约成了能及时看到）。fn 为空时不调用 */
 export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record<string, unknown>; every?: number } = {}) {
   // 记下结果对应的参数：换了参数（另一个人、上一周）就不再显示旧数据
   const [result, setResult] = useState<{ key: string; data: T }>();
@@ -392,6 +404,7 @@ export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record
   const latest = useRef(key);
   latest.current = key;
   const refresh = useCallback(async () => {
+    if (!fn) return;
     const { data, error } = await supabase!.rpc(fn, JSON.parse(key));
     if (latest.current !== key) return;
     setFailed(Boolean(error));
@@ -424,6 +437,7 @@ const problems: Record<string, string> = {
   too_much_feedback: 'That’s a lot for one day. Try again tomorrow, or email us.',
   overlapping: 'You already have a request or game at that time.',
   offer_closed: 'This match is no longer open.',
+  not_available: 'They’re already matched or can’t be invited right now.',
   not_active: 'This request has already ended.',
   not_paused: 'This request can’t be resumed anymore.',
   cannot_cancel: 'This game can’t be cancelled anymore.',
@@ -439,7 +453,7 @@ const problems: Record<string, string> = {
   not_allowed: 'You can only do this with players you’ve been matched with.',
   blocked: 'Unblock this player first.',
   no_request: 'This friend request is no longer open.',
-  invalid_schedule: 'Add 1 to 3 weekly sessions.',
+  invalid_schedule: 'Each weekly session needs to be 1–12 hours and end the same day, with 4–40 spots. Up to 7 sessions.',
   no_contact_info: 'Leave out phone numbers and links.',
   invalid_partner: 'Pick a friend who’s free then as your partner.',
   invalid_evidence: 'This link isn’t the right kind of page for this evidence. Check it and try again.',

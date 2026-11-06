@@ -17,7 +17,7 @@ for (const [page, name] of [[alex, 'Alex'], [blake, 'Blake']]) {
   await page.getByRole('button', { name: 'Skip for now' }).click();
   await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
   await page.goto(`${base}/groups/`);
-  await page.getByRole('heading', { name: 'Regular games · Groups', level: 1 }).waitFor();
+  await page.getByRole('heading', { name: 'Groups', level: 1, exact: true }).waitFor();
 }
 
 // Alex 建群：明天（洛杉矶）那个星期几

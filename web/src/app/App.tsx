@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Admin, VerificationPage } from './Verification';
 import { Contact, Support } from './Contact';
+import { DayCards } from './DayCards';
 import { Challenges, GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
 import { startLocale, t, useLocale } from './i18n';
@@ -12,7 +13,7 @@ import { Empty, LargeTitle, type Tint } from './kit';
 import { About, LevelGuide } from './Levels';
 import { LevelQuiz } from './LevelQuiz';
 import { Me, Settings } from './Me';
-import { NewGroup } from './NewGroup';
+import { EditGroup, NewGroup } from './NewGroup';
 import { NewRoom } from './NewRoom';
 import { AddByLink, Messages, Notifications } from './Messages';
 import { GenderPrompt, Onboarding } from './Onboarding';
@@ -121,8 +122,12 @@ export default function App() {
   const group = id('groups');
   const room = id('rooms');
   const chat = path.match(/^\/messages\/(game|group|dm)\/([0-9a-f-]{36})\//);
+  const editing = path.match(/^\/groups\/([0-9a-f-]{36})\/edit\//)?.[1];
+  const day = path.match(/^\/day\/(\d{4}-\d{2}-\d{2})\//)?.[1];
   return shell(
-    player ? <PlayerPage key={player} id={player} />
+    day ? <DayCards key={day} date={day} />
+    : editing ? <EditGroup key={editing} id={editing} profile={profile} />
+    : player ? <PlayerPage key={player} id={player} />
     : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />
     : group ? <GroupPage key={group} id={group} />
     : room ? <RoomPage key={room} id={room} gender={profile?.gender ?? null} />
