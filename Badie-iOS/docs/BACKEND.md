@@ -64,7 +64,7 @@ iOS App（SwiftUI）──┐
    ↑                       ├─ Postgres + PostGIS：数据、附近查询、RLS 权限
    │                       ├─ SQL 函数：赛果确认、胜率/榜单（定时任务算好写表）、匹配、限流、挑战规则
    │                       ├─ Realtime：聊天、匹配状态
-   │                       ├─ Storage：头像（客户端压到 30KB 以下，带缓存头）
+   │                       ├─ Storage：头像（320×320）和卡片背景（600×800），都是 JPEG、每张最多 256KB，在公开的 avatars 桶里（文件名随机，每人最多 4 个文件）
    │                       └─ Edge Function：APNs + Web Push 推送
    └── Cloudflare Pages（公开页静态 HTML + /app 单页应用，全球 CDN）
 备份：GitHub Actions 定时 pg_dump 到 Cloudflare R2（免费额度内）

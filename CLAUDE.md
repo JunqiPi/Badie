@@ -29,7 +29,7 @@
   - 界面文字的英文原文就是 key，9 种语言的译文在 `src/app/locales/*.json`。测试会检查每种语言都齐。
   - 中文版静态页面（`/zh/…`）在构建时翻译，见 `src/lib/static-i18n.ts`。
 - **端到端测试**（`web/tests/*.e2e.mjs`）：需要本机的 Supabase（`supabase start`），网站要按本机 Supabase 的地址构建。
-- **iOS**：只能在 CI（GitHub Actions 的 macOS）上编译和测试。xcstrings 的格式是 `json.dumps(d, ensure_ascii=False, indent=2, separators=(",", " : "))`，key 排序。
+- **iOS**：只能在 CI（GitHub Actions 的 macOS）上编译和测试。开发分支只编译和跑测试（约 15 分钟）；推 main、开 PR 或手动运行 iOS CI 才截图（多 20–30 分钟）。xcstrings 的格式是 `json.dumps(d, ensure_ascii=False, indent=2, separators=(",", " : "))`，key 排序。
 - **数据库**：迁移放在 `supabase/migrations/`，pgTAP 测试放在 `supabase/tests/`。
 
 ## 省 token
