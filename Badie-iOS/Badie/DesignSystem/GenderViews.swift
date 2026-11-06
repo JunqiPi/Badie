@@ -45,9 +45,11 @@ struct AudiencePicker: View {
 struct EventPicker: View {
     let mode: GameMode
     let gender: Gender
+    /// 直接约的那个人的性别
+    var partner: Gender?
     @Binding var selection: PlayEvent?
 
-    private var choices: [PlayEvent?] { PlayEvent.choices(mode: mode, gender: gender) }
+    private var choices: [PlayEvent?] { PlayEvent.choices(mode: mode, gender: gender, partner: partner) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {

@@ -61,7 +61,7 @@ struct CreateRoomView: View {
                             }
                         }
                     }
-                    eventGroup
+                    if eventChoices.count > 1 { eventGroup }
                     group(String(localized: "招募方式")) {
                         SegmentedSticker(options: [RoomVisibility.privateRoom, .publicListing], selection: $visibility) {
                             $0 == .privateRoom ? String(localized: "仅邀请（私密）") : String(localized: "公开到附近")
@@ -101,6 +101,9 @@ struct CreateRoomView: View {
                 .presentationDragIndicator(.visible)
         }
         .onAppear(perform: setup)
+        .onChange(of: eventChoices) { _, choices in
+            if !choices.contains(event) { event = choices.first ?? nil }
+        }
     }
 
     // MARK: Groups
@@ -193,9 +196,16 @@ struct CreateRoomView: View {
     }
 
     /// 项目：不限、男单 / 女单 / 男双 / 女双（只能是自己的性别）、混双。换了项目，自己的等级可能跟着换算，范围重新围着自己
+    /// 约了某个人：按两人的性别定能选的项目；只剩一个时不显示，直接用它
+    private var inviteeGender: Gender? { inviteeId.flatMap { friendManager.user(id: $0)?.gender } }
+
+    private var eventChoices: [PlayEvent?] {
+        PlayEvent.choices(mode: mode, gender: appState.currentUser?.gender ?? .unspecified, partner: inviteeGender)
+    }
+
     private var eventGroup: some View {
         group(String(localized: "项目")) {
-            EventPicker(mode: mode, gender: appState.currentUser?.gender ?? .unspecified, selection: $event)
+            EventPicker(mode: mode, gender: appState.currentUser?.gender ?? .unspecified, partner: inviteeGender, selection: $event)
         }
         .onChange(of: event) { _, event in
             let level = appState.currentUser?.level(in: event) ?? 4
@@ -262,6 +272,9 @@ struct CreateRoomView: View {
         guard !didSetup else { return }
         didSetup = true
         if let initialMode { mode = initialMode }
+        if !eventChoices.contains(event) { event = eventChoices.first ?? nil }
+        // 约的人还没拉过资料时，拉到性别再定项目
+        if let inviteeId { Task { await friendManager.refreshPlayer(inviteeId) } }
         let suggested = TimeSlot.suggestedDefault()
         let calendar = Calendar.current
         day = calendar.startOfDay(for: suggested.startTime)

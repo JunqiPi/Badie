@@ -8,11 +8,19 @@ enum PlayEvent: String, Codable, Hashable, Identifiable {
 
     var id: String { rawValue }
 
-    /// 能选的项目（含不限 = nil）：只能选自己的性别；混双只有双打，也要先选性别
-    static func choices(mode: GameMode, gender: Gender) -> [PlayEvent?] {
+    /// 能选的项目（含不限 = nil）：只能选自己的性别；混双只有双打，也要先选性别。
+    /// 直接约某个人（partner 是对方的性别）时按两个人的性别定：单打同性就是男单/女单、异性就是不限；
+    /// 双打两人同性可以男双/女双或不限，异性可以混双或不限
+    static func choices(mode: GameMode, gender: Gender, partner: Gender? = nil) -> [PlayEvent?] {
         guard gender != .unspecified else { return [nil] }
         let own: PlayEvent = gender == .female ? .women : .men
-        return mode == .doubles ? [nil, own, .mixed] : [nil, own]
+        guard let partner, partner != .unspecified else { return mode == .doubles ? [nil, own, .mixed] : [nil, own] }
+        switch (mode, partner == gender) {
+        case (.singles, true): return [own]
+        case (.singles, false): return [nil]
+        case (.doubles, true): return [nil, own]
+        case (.doubles, false): return [nil, .mixed]
+        }
     }
 
     /// 服务器存的是性别限制和是否混双
