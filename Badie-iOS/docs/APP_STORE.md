@@ -100,7 +100,7 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 - Category：Sports（第二分类可选 Social Networking）。
 - Content Rights：选“包含第三方内容”，并确认有权使用（球馆数据来自政府开放数据和 OpenStreetMap，都是开放许可）。
 - **Age Rating**：问卷照实答（有用户发的内容、有私信、没有无限制上网）。用户协议规定 13 岁以上，**最后把年龄分级改成 13+**，和协议一致。2026-09 起问卷里关于社交功能的问题是必答的。
-- **EU 数字服务法（DSA）**：即使不在欧盟上架也要声明。Badie 免费、没有广告和收费，选了**非商家（Not a trader）**，这样不用公开地址和电话。加了打赏（第 7 节）以后要不要改成商家，需要你自己判断；改的话可以用邮政信箱和虚拟号码。
+- **EU 数字服务法（DSA）**：即使不在欧盟上架也要声明。Badie 免费、没有广告和收费，选了**非商家（Not a trader）**，这样不用公开地址和电话。加了打赏以后，欧盟 27 国的商店不显示打赏入口（App 按 App Store 地区判断），在欧盟不收钱，所以继续申报非商家。以后要在欧盟收钱，就要改成商家并公开地址（可以用邮政信箱）和电话（可以用虚拟号码）。
 
 **App Privacy（隐私标签）**：不追踪用户（Tracking：No）。收集的数据都选“与身份关联、用于 App 功能”：
 
@@ -180,7 +180,7 @@ App 里「我的 → 支持 Badie」有三档打赏，代码里的商品 ID 是 
 
    每个都要填说明（比如 “A tip to support Badie. It doesn't unlock anything.”），再传一张审核截图（打赏页的截图即可）。
 4. 第一次加内购要跟着新版本一起提交：在版本页 **In-App Purchases and Subscriptions** 里勾上这三个。
-5. **美国区用 Ko-fi，其他地区用内购**：苹果只允许美国区的 App 放外部付款链接（审核规则 3.1.1），Ko-fi 不抽成。App 按 App Store 的地区判断（`Storefront`），不看手机语言和定位。
+5. **美国区用 Ko-fi，欧盟不显示，其他地区用内购**：欧盟 27 国的商店里「支持 Badie」整个入口不显示（见上面的欧盟数字服务法）。苹果只允许美国区的 App 放外部付款链接（审核规则 3.1.1），Ko-fi 不抽成。App 按 App Store 的地区判断（`Storefront`），不看手机语言和定位。
    Ko-fi 主页是 https://ko-fi.com/badie，已经填在 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`（`kofi` 改回 nil 就是美国区也走内购）。Ko-fi 要连好 PayPal 和 Stripe（刷卡）才能收钱；连好后把 `Contact.tsx` 的 `DONATIONS_OPEN` 改成 true，网站上才出现「支持 Badie」入口。
    提交时 Notes 里写一句：“Tips are consumable in-app purchases and don't unlock anything. On the US storefront the tip page links to Ko-fi instead, as allowed by guideline 3.1.1.”
 

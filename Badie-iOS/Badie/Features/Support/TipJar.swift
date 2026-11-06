@@ -2,7 +2,8 @@ import StoreKit
 import SwiftUI
 
 /// 打赏：三档消耗型内购，不解锁任何功能。价格和收款在 App Store Connect 里设置。
-/// 美国区改用 Ko-fi 链接（苹果只允许美国区放外部付款链接），Ko-fi 不抽成
+/// 美国区改用 Ko-fi 链接（苹果只允许美国区放外部付款链接），Ko-fi 不抽成。
+/// 欧盟的商店不显示打赏：在那里不收钱，按《数字服务法》申报的是“非商家”
 @MainActor
 final class TipJar: ObservableObject {
     enum Tier: String, CaseIterable {
@@ -25,6 +26,18 @@ final class TipJar: ObservableObject {
             case .large: return "figure.badminton"
             }
         }
+    }
+
+    /// 欧盟 27 国（App Store 的地区代码）
+    private static let euStorefronts: Set<String> = [
+        "AUT", "BEL", "BGR", "HRV", "CYP", "CZE", "DNK", "EST", "FIN", "FRA", "DEU", "GRC", "HUN", "IRL",
+        "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "POL", "PRT", "ROU", "SVK", "SVN", "ESP", "SWE",
+    ]
+
+    /// 这台设备的 App Store 地区能不能打赏（不是欧盟才显示入口；拿不到地区时也不显示）
+    nonisolated static func isAvailable() async -> Bool {
+        guard let code = await Storefront.current?.countryCode else { return false }
+        return !euStorefronts.contains(code)
     }
 
     @Published private(set) var products: [Tier: Product] = [:]

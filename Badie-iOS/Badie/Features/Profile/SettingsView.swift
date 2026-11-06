@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var showRadius = false
     @State private var showHelp = false
     @State private var showTips = false
+    @State private var showsSupport = false
     @State private var showPassword = false
     @State private var showSignOut = false
     @State private var showDelete = false
@@ -214,9 +215,11 @@ struct SettingsView: View {
                             MenuRow(icon: "questionmark.bubble.fill", tint: AppTheme.Colors.sky, title: String(localized: "帮助与反馈")) {
                                 showHelp = true
                             }
-                            InsetDivider()
-                            MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.peach, title: String(localized: "支持 Badie")) {
-                                showTips = true
+                            if showsSupport {
+                                InsetDivider()
+                                MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.peach, title: String(localized: "支持 Badie")) {
+                                    showTips = true
+                                }
                             }
                         }
                         .padding(.horizontal, AppTheme.Spacing.lg)
@@ -255,6 +258,7 @@ struct SettingsView: View {
             HelpSheet()
                 .presentationDragIndicator(.visible)
         }
+        .task { showsSupport = await TipJar.isAvailable() }
         .sheet(isPresented: $showTips) {
             TipJarSheet()
                 .presentationDetents([.height(460)])
