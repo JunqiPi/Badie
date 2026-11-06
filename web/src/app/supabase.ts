@@ -56,6 +56,7 @@ export interface Profile {
   discoverable: boolean;
   /** 在收藏了同一家球馆的人那里显示为常客 */
   show_as_regular: boolean;
+  show_searching: boolean;
   /** 同球群的人可以给我发消息请求 */
   allow_message_requests: boolean;
   /** 约球消息也发邮件（默认关，主要靠推送） */

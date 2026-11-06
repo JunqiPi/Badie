@@ -101,6 +101,17 @@ struct SettingsView: View {
 
                     section(String(localized: "谁能看到我、联系我")) {
                         VStack(spacing: AppTheme.Spacing.md) {
+                            Toggle(isOn: privacyBinding(\.showsWhenSearching)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("找球友时，让附近的人在首页看到我")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("显示昵称、头像、等级和你想打的时间、球馆，不显示联系方式")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
+                            InsetDivider()
                             Toggle(isOn: privacyBinding(\.showsAsRegular)) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("在常去球馆的“同馆常客”里显示我")

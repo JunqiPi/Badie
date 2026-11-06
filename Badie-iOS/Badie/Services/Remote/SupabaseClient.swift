@@ -63,6 +63,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "too_many_requests": return String(localized: "你已有 5 个进行中的约球请求，先取消一个。")
         case "overlapping": return String(localized: "这个时间你已经有约球请求或球局了。")
         case "offer_closed": return String(localized: "这次匹配已失效。")
+        case "not_available": return String(localized: "TA 已经约上了，或者暂时约不了。")
         case "not_active": return String(localized: "这个约球请求已结束。")
         case "not_paused": return String(localized: "这个约球请求已无法恢复。")
         case "cannot_cancel": return String(localized: "这场球局已经不能取消了。")

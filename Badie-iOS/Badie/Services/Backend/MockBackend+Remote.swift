@@ -16,6 +16,7 @@ extension MockBackend {
         let challengePolicy: String
         let discoverable: Bool?
         let showAsRegular: Bool?
+        let showSearching: Bool?
         let allowMessageRequests: Bool?
         let emailAlerts: Bool?
         let verifiedKind: String?
@@ -229,6 +230,7 @@ extension MockBackend {
         user.privacy.showsAsRegular = profile.showAsRegular ?? false
         user.privacy.allowsMessageRequests = profile.allowMessageRequests ?? true
         user.privacy.emailAlerts = profile.emailAlerts ?? false
+        user.privacy.showsWhenSearching = profile.showSearching ?? true
         user.gender = Gender(server: profile.gender)
         if let kind = profile.verifiedKind.flatMap(VerificationStatus.init(server:)), let rating = profile.verifiedRating {
             user.applyVerification(kind, tier: SkillTier(rating: rating))

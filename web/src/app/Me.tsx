@@ -278,7 +278,7 @@ const policies = [
   ['nobody', 'No one'],
 ] as const;
 
-type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts' | 'gender'>;
+type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'show_searching' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts' | 'gender'>;
 
 /** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
 export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
@@ -311,6 +311,9 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       </Group>
 
       <Group title={t('Who can find me')}>
+        <Switch checked={profile.show_searching} onChange={(v) => save({ show_searching: v })} title={t('Show me to nearby players when I’m looking for a game')}
+                text={t('They see your nickname, photo, level and the time and courts you picked. Never your contact details.')} />
+        <Divider />
         <Switch checked={profile.discoverable} onChange={(v) => save({ discoverable: v })} title={t('Let players find me by nickname')}
                 text={t('They see your nickname and level, and can send a friend request.')} />
         <Divider />

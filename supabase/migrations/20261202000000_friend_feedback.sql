@@ -3,6 +3,10 @@
 -- 2. 约球请求可以修改：取消旧的、提交新的在同一个事务里，新的不合格就都不变
 -- 3. 球群：每周场次最多 7 个、每个最长 12 小时，时长不对时给出能看懂的错误；群主可以编辑球群和场次、解散球群；每人最多当 10 个群的群主
 
+-- 约球请求表本身也限制了最长 8 小时
+alter table public.match_tickets drop constraint match_tickets_check;
+alter table public.match_tickets add constraint match_tickets_check check (ends_at - starts_at between interval '1 hour' and interval '16 hours');
+
 -- 每周场次：1–7 个，每个 1–12 小时、按半小时、同一天内结束
 create function public.valid_schedules(p jsonb)
 returns boolean language sql immutable set search_path = '' as $$

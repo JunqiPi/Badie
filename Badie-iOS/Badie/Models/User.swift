@@ -323,6 +323,8 @@ struct PrivacySettings: Codable, Hashable {
     var findableByNickname = true
     /// 约球消息也发邮件（默认关闭，主要靠推送）
     var emailAlerts = false
+    /// 发了约球请求时，附近的人在首页能看到我（默认开启）
+    var showsWhenSearching = true
 }
 
 extension PrivacySettings {
@@ -336,6 +338,7 @@ extension PrivacySettings {
         showsOnLeaderboards = try container.decodeIfPresent(Bool.self, forKey: .showsOnLeaderboards) ?? defaults.showsOnLeaderboards
         findableByNickname = try container.decodeIfPresent(Bool.self, forKey: .findableByNickname) ?? defaults.findableByNickname
         emailAlerts = try container.decodeIfPresent(Bool.self, forKey: .emailAlerts) ?? defaults.emailAlerts
+        showsWhenSearching = try container.decodeIfPresent(Bool.self, forKey: .showsWhenSearching) ?? defaults.showsWhenSearching
     }
 }
 
