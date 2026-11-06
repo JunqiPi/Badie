@@ -15,7 +15,6 @@ struct HomeView: View {
     @State private var regulars: [VenueRegular] = []
     @State private var weeklyStanding: WeeklyStanding?
     @State private var pendingChallenges = 0
-    @State private var showDayCards = false
 
     private var days: [Date] {
         let calendar = Calendar.current
@@ -76,7 +75,7 @@ struct HomeView: View {
             .padding(.top, AppTheme.Spacing.sm)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
-        .sheet(isPresented: $showDayCards) {
+        .sheet(isPresented: $appState.showsDayCards) {
             DayCandidatesView(day: matchManager.draft.day)
                 .presentationDragIndicator(.visible)
         }
@@ -272,9 +271,9 @@ struct HomeView: View {
                 counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) }
             )
             let count = matchManager.availableCount(on: matchManager.draft.day, radiusKm: locationManager.preferences.travelRadiusKm)
-            if appState.isRemote, count > 0 {
+            if count > 0 {
                 Button {
-                    showDayCards = true
+                    appState.showsDayCards = true
                 } label: {
                     Label(String(localized: "看看这天有谁（\(count)）"), systemImage: "rectangle.stack.person.crop")
                 }

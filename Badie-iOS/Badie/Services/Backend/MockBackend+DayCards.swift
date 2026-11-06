@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - 首页按天看能约的人
-/// 只有正式后端有：演示模式没有真人在找，返回空
+/// 正式后端：服务器列出这天附近在找人、我能约的请求。演示模式：用示例球友当天有空的时间段
 extension MockBackend {
 
     struct DayCandidate: Identifiable, Equatable {
@@ -46,7 +46,7 @@ extension MockBackend {
     }
 
     func dayCandidates(on day: Date, center: Coordinate, radiusKm: Double) async throws -> [DayCandidate] {
-        guard let remote else { return [] }
+        guard let remote else { return demoDayCandidates(on: day, center: center, radiusKm: radiusKm) }
         let start = Calendar.current.startOfDay(for: day)
         let end = Calendar.current.date(byAdding: .day, value: 1, to: start) ?? start
         let items: [RemoteCandidate] = try await remote.rpc("day_candidates", [
@@ -62,12 +62,28 @@ extension MockBackend {
         }
     }
 
+    private func demoDayCandidates(on day: Date, center: Coordinate, radiusKm: Double, now: Date = Date()) -> [DayCandidate] {
+        let blocked = blockedIds()
+        let courts = venues(near: center, radiusKm: radiusKm)
+        let people = db.bots.keys.sorted().compactMap { id -> DayCandidate? in
+            guard !blocked.contains(id), let user = db.users[id], let location = user.location, location.distanceKm(to: center) <= radiusKm,
+                  let slot = availability(for: id, on: day).first(where: { $0.endTime > now.addingTimeInterval(3600) }) else { return nil }
+            let near = courts.sorted { $0.location.distanceKm(to: location) < $1.location.distanceKm(to: location) }.prefix(2)
+            guard !near.isEmpty else { return nil }
+            return DayCandidate(ticketId: "demo-\(id)", userId: id, mode: user.preferredMode ?? .singles, mixed: false,
+                                startsAt: max(slot.startTime, now), endsAt: slot.endTime, recentNoShows: 0,
+                                venues: near.map { DayCandidate.Venue(id: $0.id, name: $0.name) })
+        }
+        return Array(people.prefix(12))
+    }
+
     func skipCandidate(_ ticketId: String) async {
         try? await remote?.call("skip_candidate", ["p_ticket": ticketId])
     }
 
     /// 约 TA 打单打：服务器给我们俩发提议（我这边已确认），TA 确认就成局
     func inviteCandidate(_ ticketId: String, venueId: String, startsAt: Date) async throws {
+        guard isRemote else { return }
         try await requireRemote().call("invite_ticket", ["p_ticket": ticketId, "p_venue": venueId, "p_starts_at": Self.iso(startsAt)])
         await refreshRemoteActivity()
     }

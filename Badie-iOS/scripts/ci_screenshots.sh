@@ -7,9 +7,9 @@ UDID="$1"
 APP="$2"
 OUT="$3"
 BUNDLE="com.badie.app"
-SCREENS="${SCREENS:-welcome login levelQuiz levelResult levelGuide levelGuideElite verification home createMenu matchSetup matchSetupVenues venuePicker venueSearch venueDetail addVenue courts matching matchFound ticketWaiting offerWaiting homeTicket ticket games groups groupDetail groupChat playerProfile messages chat friends room joinRoom survey profile editProfile settings notifications leaderboard venueLeaderboard challenges gameResult}"
+SCREENS="${SCREENS:-welcome login levelQuiz levelResult levelGuide levelGuideElite verification home dayCards createMenu matchSetup matchSetupVenues venuePicker venueSearch venueDetail addVenue courts matching matchFound ticketWaiting offerWaiting homeTicket ticket games groups groupDetail groupChat playerProfile messages chat friends room joinRoom survey profile editProfile settings notifications leaderboard venueLeaderboard challenges gameResult}"
 # 深色模式只截关键页面（CI 模拟器较慢，全部截两遍会超时）
-DARK_SCREENS="${DARK_SCREENS:-home matchFound offerWaiting groupDetail playerProfile chat profile}"
+DARK_SCREENS="${DARK_SCREENS:-home dayCards matchFound offerWaiting groupDetail playerProfile chat profile}"
 # 英文界面抽查
 EN_SCREENS="${EN_SCREENS:-welcome levelQuiz levelResult home matchSetup matchFound games groupDetail playerProfile survey profile settings leaderboard venueLeaderboard challenges}"
 

@@ -108,6 +108,11 @@ enum DemoLauncher {
                 environment.messageManager.reload()
                 router.show(.groupChat(threadId: thread.id), in: .messages)
             }
+        case "dayCards":
+            // 首页点明天：附近有空的球友卡片
+            router.selectedTab = .home
+            environment.matchManager.draft.day = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
+            environment.appState.showsDayCards = true
         case "playerProfile":
             // 昨天一起打过单打的球友：资料页显示“你们的交集”
             router.selectedTab = .home

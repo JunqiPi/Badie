@@ -58,6 +58,8 @@ final class AppState: ObservableObject {
     /// 我的爽约记录；有没看过的就弹出说明
     @Published private(set) var strikes: MyStrikes?
     @Published var showsStrikes = false
+    /// 首页“看看这天有谁”的卡片（演示截图也从这里打开）
+    @Published var showsDayCards = false
     @Published var appearance: AppAppearance {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: Self.appearanceKey) }
     }
