@@ -307,9 +307,15 @@ extension MockBackend {
 
     /// 通知和邮件用 App 当前的界面语言（和服务器支持的语言一致）
     static var serverLocale: String {
-        let supported = ["en", "zh-Hans", "zh-Hant", "ja", "ko", "id", "ms", "th", "vi", "hi"]
-        let language = Bundle.main.preferredLocalizations.first ?? "en"
-        return supported.contains(language) ? language : "en"
+        AppLanguage.current
+    }
+
+    /// 在 App 里换了语言：通知、邮件也跟着换
+    func syncServerLocale() {
+        guard let id = currentUserId else { return }
+        runRemote { remote in
+            try await remote.update("profiles", query: "id=eq.\(id)", ["locale": Self.serverLocale])
+        }
     }
 }
 

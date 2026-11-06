@@ -81,9 +81,20 @@ final class AppHost: ObservableObject {
     @Published private(set) var environment: AppEnvironment
     /// 每换一次环境加一，用作根视图的 id
     private(set) var generation = 0
+    /// App 里选的语言（换了就从头建界面）
+    @Published private(set) var language = AppLanguage.current
 
     init() {
         environment = AppEnvironment.makeForLaunch()
+    }
+
+    /// 换语言：nil = 跟随系统。通知、邮件也改用这种语言
+    func setLanguage(_ code: String?) {
+        AppLanguage.choose(code)
+        guard AppLanguage.current != language else { return }
+        generation += 1
+        language = AppLanguage.current
+        environment.appState.backend.syncServerLocale()
     }
 
     func setDemoMode(_ isOn: Bool) {

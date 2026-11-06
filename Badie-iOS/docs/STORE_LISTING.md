@@ -405,6 +405,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • When you invite someone directly, the event follows both players' genders, so there's nothing to pick.
   • You can open the profile of anyone on the cards.
   • If no one is free that day, send a match request from the same screen.
+  • Language: change the app language in Settings. It applies right away.
   ```
 - 简体中文：
   ```
@@ -413,6 +414,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 直接约人时，项目按你们两人的性别自动定，不用再选。
   • 卡片上的人都能点开看资料。
   • 这天没人有空时，可以直接发约球请求。
+  • 语言：在「设置」里直接换 App 语言，马上生效，不用再去系统设置。
   ```
 - 繁體中文：
   ```
@@ -421,6 +423,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 直接約人時，項目按你們兩人的性別自動決定，不用再選。
   • 卡片上的人都能點開看資料。
   • 這天沒人有空時，可以直接送出約球請求。
+  • 語言：在「設定」裡直接換 App 語言，馬上生效，不用再去系統設定。
   ```
 - 日本語：
   ```
@@ -429,6 +432,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 相手を直接誘うとき、種目は 2 人の性別で自動的に決まります。
   • カードに出ている人のプロフィールを開けます。
   • その日に空いている人がいないときは、同じ画面からマッチングのリクエストを送れます。
+  • 言語：「設定」からアプリの言語を直接変更でき、すぐに反映されます。
   ```
 - 한국어：
   ```
@@ -437,6 +441,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 직접 초대할 때 종목은 두 사람의 성별에 맞춰 자동으로 정해져요.
   • 카드에 나온 사람의 프로필을 열어 볼 수 있어요.
   • 그날 시간 되는 사람이 없으면 같은 화면에서 바로 매칭 요청을 보낼 수 있어요.
+  • 언어: '설정'에서 앱 언어를 바로 바꿀 수 있고, 즉시 적용돼요.
   ```
 - Bahasa Indonesia：
   ```
@@ -445,6 +450,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Saat mengajak seseorang langsung, nomor pertandingan mengikuti jenis kelamin kalian berdua, jadi tidak perlu memilih.
   • Profil setiap orang di kartu bisa dibuka.
   • Kalau tidak ada yang kosong hari itu, kirim permintaan main dari layar yang sama.
+  • Bahasa: ganti bahasa aplikasi langsung di Pengaturan. Langsung berlaku.
   ```
 - Bahasa Melayu：
   ```
@@ -453,6 +459,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Apabila mengajak seseorang secara terus, acara ditentukan mengikut jantina anda berdua, jadi tidak perlu memilih.
   • Profil setiap orang pada kad boleh dibuka.
   • Jika tiada yang lapang hari itu, hantar permintaan permainan dari skrin yang sama.
+  • Bahasa: tukar bahasa aplikasi terus dalam Tetapan. Terus berkuat kuasa.
   ```
 - ไทย：
   ```
@@ -461,6 +468,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • ชวนใครโดยตรง ประเภทการแข่งขันจะตั้งตามเพศของทั้งสองคนให้เอง ไม่ต้องเลือก
   • เปิดดูโปรไฟล์ของคนบนการ์ดได้
   • ถ้าวันนั้นไม่มีใครว่าง ส่งคำขอจับคู่ได้จากหน้าเดียวกัน
+  • ภาษา: เปลี่ยนภาษาในแอปได้จาก การตั้งค่า มีผลทันที
   ```
 - Tiếng Việt：
   ```
@@ -469,6 +477,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Khi rủ trực tiếp, nội dung thi đấu tự theo giới tính của hai người, không cần chọn.
   • Có thể mở hồ sơ của bất kỳ ai trên thẻ.
   • Nếu hôm đó không ai rảnh, gửi yêu cầu ghép trận ngay trên màn hình đó.
+  • Ngôn ngữ: đổi ngôn ngữ ứng dụng ngay trong Cài đặt, áp dụng ngay lập tức.
   ```
 - हिन्दी：
   ```
@@ -477,4 +486,5 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • किसी को सीधे बुलाने पर इवेंट दोनों खिलाड़ियों के जेंडर से अपने-आप तय होता है, कुछ चुनना नहीं पड़ता।
   • कार्ड पर दिख रहे किसी भी खिलाड़ी की प्रोफ़ाइल खोल सकते हैं।
   • उस दिन कोई खाली न हो तो उसी स्क्रीन से मैच रिक्वेस्ट भेजें।
+  • भाषा: ऐप की भाषा सीधे सेटिंग्स में बदलें। यह तुरंत लागू होती है।
   ```

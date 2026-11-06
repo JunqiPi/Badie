@@ -101,7 +101,7 @@ enum FeedbackKind: String, CaseIterable, Identifiable {
         let info = Bundle.main.infoDictionary
         let version = "\(info?["CFBundleShortVersionString"] as? String ?? "") (\(info?["CFBundleVersion"] as? String ?? ""))"
         return ["app": version, "platform": "ios", "os": "iOS \(UIDevice.current.systemVersion)",
-                "device": deviceModel, "locale": Locale.preferredLanguages.first ?? ""]
+                "device": deviceModel, "locale": AppLanguage.current]
     }
 
     static var contextLine: String {

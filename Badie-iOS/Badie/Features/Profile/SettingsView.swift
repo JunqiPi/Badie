@@ -16,6 +16,7 @@ struct SettingsView: View {
     @State private var showSignOut = false
     @State private var showDelete = false
     @State private var showReset = false
+    @State private var showLanguage = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,11 +27,11 @@ struct SettingsView: View {
                         SegmentedSticker(options: AppAppearance.allCases, selection: $appState.appearance, title: { $0.title })
                     }
 
-                    // iOS 在 App 的系统设置页里提供“首选语言”，切换后系统会重启 App
+                    // 在 App 里直接选，马上生效（不用去系统设置）
                     section(String(localized: "语言")) {
                         MenuRow(icon: "globe", tint: AppTheme.Colors.sky, title: String(localized: "App 语言"),
-                                value: currentLanguageName) {
-                            openSystemSettings()
+                                value: AppLanguage.chosen.map(AppLanguage.name) ?? String(localized: "跟随系统")) {
+                            showLanguage = true
                         }
                         .padding(.horizontal, AppTheme.Spacing.lg)
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
@@ -264,6 +265,11 @@ struct SettingsView: View {
                 .presentationDetents([.height(460)])
                 .presentationDragIndicator(.visible)
         }
+        .sheet(isPresented: $showLanguage) {
+            LanguagePicker()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $showRadius) {
             TravelRadiusSheet()
                 .presentationDetents([.height(320)])
@@ -402,11 +408,6 @@ struct SettingsView: View {
         } else {
             openSystemSettings()
         }
-    }
-
-    private var currentLanguageName: String? {
-        guard let id = Bundle.main.preferredLocalizations.first else { return nil }
-        return Locale(identifier: id).localizedString(forIdentifier: id)
     }
 
     private func openSystemSettings() {
