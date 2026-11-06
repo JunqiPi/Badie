@@ -393,3 +393,88 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • नए दोस्त अब तुरंत मैसेज में दिखते हैं।
   • Badie को सपोर्ट करें: चाहें तो टिप दें। इससे कुछ अनलॉक नहीं होता।
   ```
+
+## 1.0.2 更新说明（What's New in This Version）
+
+1.0.1（build 20261106.636）之后的改动。App Store Connect → 1.0.2 版本页 → 每种语言的 **What's New in This Version**。
+
+- English (U.S.)：
+  ```
+  • Home: the days are now at the top. Tap a day to see who's free, one full-screen card at a time.
+  • Card background: add a photo for your card, separate from your profile photo, or pick a color. Tap Preview to see what others see.
+  • When you invite someone directly, the event follows both players' genders, so there's nothing to pick.
+  • You can open the profile of anyone on the cards.
+  • If no one is free that day, send a match request from the same screen.
+  ```
+- 简体中文：
+  ```
+  • 首页：日期放到了最上面，点一天就能全屏看这天谁有空。
+  • 卡片背景：可以给自己的卡片单独传一张照片（和头像分开），也可以选颜色。点「预览」看看别人刷到你时的样子。
+  • 直接约人时，项目按你们两人的性别自动定，不用再选。
+  • 卡片上的人都能点开看资料。
+  • 这天没人有空时，可以直接发约球请求。
+  ```
+- 繁體中文：
+  ```
+  • 首頁：日期移到最上面，點一天就能全螢幕看這天誰有空。
+  • 卡片背景：可以替自己的卡片另外傳一張照片（和頭像分開），也可以選顏色。點「預覽」看看別人滑到你時的樣子。
+  • 直接約人時，項目按你們兩人的性別自動決定，不用再選。
+  • 卡片上的人都能點開看資料。
+  • 這天沒人有空時，可以直接送出約球請求。
+  ```
+- 日本語：
+  ```
+  • ホーム：日付を一番上に移しました。日付をタップすると、その日空いている人を全画面のカードで見られます。
+  • カードの背景：プロフィール写真とは別に、カード用の写真を設定できます。色を選ぶこともできます。「プレビュー」でほかの人からの見え方を確認できます。
+  • 相手を直接誘うとき、種目は 2 人の性別で自動的に決まります。
+  • カードに出ている人のプロフィールを開けます。
+  • その日に空いている人がいないときは、同じ画面からマッチングのリクエストを送れます。
+  ```
+- 한국어：
+  ```
+  • 홈: 날짜를 맨 위로 옮겼어요. 날짜를 누르면 그날 시간 되는 사람을 전체 화면 카드로 볼 수 있어요.
+  • 카드 배경: 프로필 사진과 따로 카드용 사진을 올리거나 색을 고를 수 있어요. '미리보기'로 다른 사람에게 어떻게 보이는지 확인하세요.
+  • 직접 초대할 때 종목은 두 사람의 성별에 맞춰 자동으로 정해져요.
+  • 카드에 나온 사람의 프로필을 열어 볼 수 있어요.
+  • 그날 시간 되는 사람이 없으면 같은 화면에서 바로 매칭 요청을 보낼 수 있어요.
+  ```
+- Bahasa Indonesia：
+  ```
+  • Beranda: tanggal kini ada di paling atas. Ketuk satu hari untuk melihat siapa yang kosong, satu kartu layar penuh setiap kali.
+  • Latar kartu: pasang foto khusus untuk kartumu, terpisah dari foto profil, atau pilih warna. Ketuk Pratinjau untuk melihat tampilannya bagi orang lain.
+  • Saat mengajak seseorang langsung, nomor pertandingan mengikuti jenis kelamin kalian berdua, jadi tidak perlu memilih.
+  • Profil setiap orang di kartu bisa dibuka.
+  • Kalau tidak ada yang kosong hari itu, kirim permintaan main dari layar yang sama.
+  ```
+- Bahasa Melayu：
+  ```
+  • Utama: tarikh kini di bahagian paling atas. Ketik satu hari untuk melihat siapa yang lapang, satu kad skrin penuh pada satu masa.
+  • Latar kad: letak foto khas untuk kad anda, berasingan daripada foto profil, atau pilih warna. Ketik Pratonton untuk melihat paparan kad anda kepada orang lain.
+  • Apabila mengajak seseorang secara terus, acara ditentukan mengikut jantina anda berdua, jadi tidak perlu memilih.
+  • Profil setiap orang pada kad boleh dibuka.
+  • Jika tiada yang lapang hari itu, hantar permintaan permainan dari skrin yang sama.
+  ```
+- ไทย：
+  ```
+  • หน้าแรก: ย้ายวันที่ไปไว้บนสุด แตะวันไหนก็ดูได้ว่าวันนั้นใครว่าง เป็นการ์ดเต็มจอทีละใบ
+  • พื้นหลังการ์ด: ใส่รูปสำหรับการ์ดแยกจากรูปโปรไฟล์ได้ หรือเลือกสี แตะ ดูตัวอย่าง เพื่อดูว่าคนอื่นเห็นการ์ดของคุณแบบไหน
+  • ชวนใครโดยตรง ประเภทการแข่งขันจะตั้งตามเพศของทั้งสองคนให้เอง ไม่ต้องเลือก
+  • เปิดดูโปรไฟล์ของคนบนการ์ดได้
+  • ถ้าวันนั้นไม่มีใครว่าง ส่งคำขอจับคู่ได้จากหน้าเดียวกัน
+  ```
+- Tiếng Việt：
+  ```
+  • Trang chủ: ngày được đưa lên trên cùng. Chạm vào một ngày để xem ai rảnh, mỗi lần một thẻ toàn màn hình.
+  • Nền thẻ: đặt ảnh riêng cho thẻ của bạn, tách khỏi ảnh đại diện, hoặc chọn màu. Chạm Xem trước để xem người khác thấy thẻ của bạn thế nào.
+  • Khi rủ trực tiếp, nội dung thi đấu tự theo giới tính của hai người, không cần chọn.
+  • Có thể mở hồ sơ của bất kỳ ai trên thẻ.
+  • Nếu hôm đó không ai rảnh, gửi yêu cầu ghép trận ngay trên màn hình đó.
+  ```
+- हिन्दी：
+  ```
+  • होम: तारीखें अब सबसे ऊपर हैं। कोई दिन चुनें और देखें कि उस दिन कौन खाली है, एक बार में एक फ़ुल-स्क्रीन कार्ड।
+  • कार्ड बैकग्राउंड: अपने कार्ड के लिए प्रोफ़ाइल फ़ोटो से अलग फ़ोटो लगाएँ, या कोई रंग चुनें। प्रीव्यू पर टैप करके देखें कि दूसरों को आपका कार्ड कैसा दिखता है।
+  • किसी को सीधे बुलाने पर इवेंट दोनों खिलाड़ियों के जेंडर से अपने-आप तय होता है, कुछ चुनना नहीं पड़ता।
+  • कार्ड पर दिख रहे किसी भी खिलाड़ी की प्रोफ़ाइल खोल सकते हैं।
+  • उस दिन कोई खाली न हो तो उसी स्क्रीन से मैच रिक्वेस्ट भेजें।
+  ```
