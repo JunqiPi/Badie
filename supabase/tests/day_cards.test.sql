@@ -1,7 +1,7 @@
 -- 首页按天看能约的人：只列在找人、没关掉可见的；左滑跳过；右滑约单打，对方确认就成局
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(9);
+select plan(10);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000034' || lpad(n::text, 2, '0'))::uuid, 'dc' || n || '@test.local' from generate_series(1, 3) n;
@@ -41,6 +41,7 @@ insert into ids select 't3', public.submit_ticket('singles', pg_temp.at(4, 18), 
 select pg_temp.login(1);
 select is(jsonb_array_length(pg_temp.cards(3)), 1, '第 3 天能看到 2 号');
 select is(pg_temp.cards(3) -> 0 -> 'user' ->> 'nickname', 'Card2', '卡片上有昵称');
+select is(public.player_card(pg_temp.u(2)) ->> 'nickname', 'Card2', '卡片上的人能看资料');
 select is(jsonb_array_length(pg_temp.cards(4)), 0, '关掉可见的看不到');
 
 -- 左滑跳过就不再出现
