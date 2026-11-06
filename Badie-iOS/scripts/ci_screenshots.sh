@@ -30,12 +30,13 @@ xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 # 每一轮：文件名前缀 外观 语言 区域 页面列表
 capture() {
   local prefix="$1" appearance="$2" language="$3" locale="$4" list="$5"
+  # EXTRA_ARGS：额外的启动参数（比如 -BadieLanguage ko：在 App 里选的语言）
   xcrun simctl ui "$UDID" appearance "$appearance" || true
   for screen in $list; do
     xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
     # App 使用洛杉矶时区（CI 机器是 UTC），时间显示与演示城市一致
     SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" "$BUNDLE" \
-      -BBDemoScreen "$screen" -AppleLanguages "($language)" -AppleLocale "$locale" >/dev/null
+      -BBDemoScreen "$screen" -AppleLanguages "($language)" -AppleLocale "$locale" ${EXTRA_ARGS:-} >/dev/null
     sleep 5
     # 慢的模拟器偶尔还没画出页面：只有状态栏的截图很小（不到 150 KB），等一会儿再截，最多再试 3 次
     for _ in 1 2 3 4; do
@@ -67,3 +68,5 @@ capture en light en en_US "$EN_SCREENS"
 for pair in zh-Hant:zh_TW ja:ja_JP ko:ko_KR id:id_ID ms:ms_MY th:th_TH vi:vi_VN hi:hi_IN; do
   capture "${pair%%:*}" light "${pair%%:*}" "${pair##*:}" "home levelResult welcome"
 done
+# 在 App 里选了韩语、系统是简体中文：界面应该全是韩语
+EXTRA_ARGS="-BadieLanguage ko" capture inapp-ko light zh-Hans zh_CN "home settings editProfile"

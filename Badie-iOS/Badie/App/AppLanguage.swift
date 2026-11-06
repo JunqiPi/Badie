@@ -46,6 +46,9 @@ enum AppLanguage {
 
     static var locale: Locale { Locale(identifier: current) }
 
+    /// 所选语言的文字表（String(localized:) 要显式传进去才会换语言）
+    static var bundle: Bundle { LocalizedBundle.table }
+
     /// 启动时调用：之前选过语言就接着用
     static func installAtLaunch() {
         LocalizedBundle.use(current)
@@ -72,6 +75,21 @@ private final class LocalizedBundle: Bundle, @unchecked Sendable {
     nonisolated(unsafe) private static var target: Bundle?
     nonisolated(unsafe) private static var usesKeys = false
     nonisolated(unsafe) private static var installed = false
+    /// 源语言没有单独的文字表时：用一个空目录，查不到就显示 key（key 就是简体中文）
+    nonisolated(unsafe) private static var keysOnly: Bundle?
+
+    static var table: Bundle {
+        if let target = Self.target { return target }
+        if Self.usesKeys {
+            if keysOnly == nil {
+                let url = FileManager.default.temporaryDirectory.appendingPathComponent("BadieKeys.bundle", isDirectory: true)
+                try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+                keysOnly = Bundle(url: url)
+            }
+            if let keysOnly { return keysOnly }
+        }
+        return .main
+    }
 
     static func use(_ code: String) {
         if !installed {
@@ -106,5 +124,12 @@ private final class LocalizedBundle: Bundle, @unchecked Sendable {
     override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
         if let text = Self.lookup(key, value, tableName) { return text }
         return super.localizedString(forKey: key, value: value, table: tableName)
+    }
+}
+
+extension String {
+    /// 和系统的 String(localized:) 一样，只是按 App 里选的语言查：系统那个只认启动时的语言，换了语言不会变
+    init(localized value: String.LocalizationValue, comment: StaticString? = nil) {
+        self.init(localized: value, table: nil, bundle: AppLanguage.bundle, locale: AppLanguage.locale, comment: comment)
     }
 }
