@@ -1,0 +1,35 @@
+name: Fix App Store version number
+
+# 改 App Store Connect 里还没提交的版本号（网页上改不了）。这个文件有改动时在开发分支上自动跑一次，也可以手动运行
+on:
+  push:
+    branches: [ "claude/**" ]
+    paths: [ ".github/workflows/asc-version.yml" ]
+  workflow_dispatch:
+    inputs:
+      old:
+        description: 原来的版本号
+        default: "1.001"
+      new:
+        description: 新版本号
+        default: "1.0.1"
+
+permissions:
+  contents: read
+
+jobs:
+  rename:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rename version
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          OLD: ${{ inputs.old || '1.001' }}
+          NEW: ${{ inputs.new || '1.0.1' }}
+        run: |
+          (umask 077; printf '%s\n' "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/AuthKey.p8")
+          ASC_KEY_PATH="$RUNNER_TEMP/AuthKey.p8" python3 Badie-iOS/scripts/asc_version.py "$OLD" "$NEW"
+          rm -f "$RUNNER_TEMP/AuthKey.p8"
