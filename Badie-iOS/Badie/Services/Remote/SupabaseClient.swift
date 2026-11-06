@@ -85,7 +85,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "invalid_feedback": return String(localized: "多写几个字，说说发生了什么。")
         case "too_much_feedback": return String(localized: "今天发得有点多了，明天再写，或者发邮件给我们。")
         // 球群
-        case "invalid_schedule": return String(localized: "每个固定场次要 1–8 小时、在当天结束，名额 4–40 人，最多 7 个。")
+        case "invalid_schedule": return String(localized: "每个固定场次要 1–12 小时、在当天结束，名额 4–40 人，最多 7 个。")
         case "too_many_groups": return String(localized: "你的球群数量已达上限。")
         case "group_not_found": return String(localized: "没有找到这个球群。")
         case "level_out_of_range": return String(localized: "你的水平不在 TA 接受的范围内。")

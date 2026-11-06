@@ -1,7 +1,7 @@
 -- 朋友试用后的改动：30 天、任何时间（16 小时）、修改约球请求、球群场次校验、编辑和解散球群
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(16);
+select plan(17);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000033' || lpad(n::text, 2, '0'))::uuid, 'ff' || n || '@test.local' from generate_series(1, 3) n;
@@ -56,6 +56,8 @@ select is(pg_temp.status(pg_temp.id('t2')), 'searching', '新请求在找人');
 -- 球群：跨过午夜（结束早于开始）的场次给出能看懂的错误
 select throws_ok($$ select public.create_group('Late night', 'v-us-ca-21-badminton-club-21bc', '', 2, 5, 'open', pg_temp.schedule(22, 1)) $$,
                  '22023', 'invalid_schedule', '结束早于开始');
+select lives_ok($$ select public.create_group('All day', 'v-us-ca-21-badminton-club-21bc', '', 2, 5, 'open', pg_temp.schedule(9, 21)) $$,
+                '一场可以 12 小时');
 insert into ids select 'g', public.create_group('Weeknights', 'v-us-ca-21-badminton-club-21bc', '', 2, 5, 'open', pg_temp.schedule(19, 21));
 select is(pg_temp.future_sessions(pg_temp.id('g')), 2, '生成未来两周的场次');
 

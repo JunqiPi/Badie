@@ -144,7 +144,7 @@ enum BackendError: LocalizedError, Equatable {
         case .groupNotFound: return String(localized: "没有找到这个球群")
         case .notGroupMember: return String(localized: "加入球群后才能报名和聊天")
         case .groupNameInvalid: return String(localized: "球群名称需要 2–20 个字")
-        case .groupScheduleInvalid: return String(localized: "每个固定场次要 1–8 小时、在当天结束，名额 4–40 人，最多 7 个。")
+        case .groupScheduleInvalid: return String(localized: "每个固定场次要 1–12 小时、在当天结束，名额 4–40 人，最多 7 个。")
         case .sessionClosed: return String(localized: "这一场已经结束或取消了")
         case .notOrganizer: return String(localized: "只有组织者才能这样操作。")
         case .ownerCannotLeave: return String(localized: "群主不能退出，可以解散球群。")

@@ -1,9 +1,9 @@
 -- 朋友试用后的一批改动：
 -- 1. 约球、开局、约战可以选未来 30 天（原来 14 天）；约球时间段最长 16 小时（“任何时间”）
 -- 2. 约球请求可以修改：取消旧的、提交新的在同一个事务里，新的不合格就都不变
--- 3. 球群：每周场次最多 7 个，时长不对时给出能看懂的错误；群主可以编辑球群和场次、解散球群；每人最多当 10 个群的群主
+-- 3. 球群：每周场次最多 7 个、每个最长 12 小时，时长不对时给出能看懂的错误；群主可以编辑球群和场次、解散球群；每人最多当 10 个群的群主
 
--- 每周场次：1–7 个，每个 1–8 小时、按半小时、同一天内结束
+-- 每周场次：1–7 个，每个 1–12 小时、按半小时、同一天内结束
 create function public.valid_schedules(p jsonb)
 returns boolean language sql immutable set search_path = '' as $$
   select coalesce(jsonb_typeof(p) = 'array' and jsonb_array_length(p) between 1 and 7
@@ -12,8 +12,11 @@ returns boolean language sql immutable set search_path = '' as $$
       cross join lateral (select coalesce((s ->> 'weekday')::int, -1) as d, coalesce((s ->> 'start')::int, -1) as a,
                                  coalesce((s ->> 'end')::int, -1) as b, coalesce((s ->> 'capacity')::int, -1) as c) x
       where x.d not between 0 and 6 or x.a not between 0 and 1410 or x.a % 30 <> 0 or x.b not between 30 and 1440 or x.b % 30 <> 0
-         or x.b - x.a not between 60 and 480 or x.c not between 4 and 40 or char_length(coalesce(s ->> 'fee', '')) > 40), false)
+         or x.b - x.a not between 60 and 720 or x.c not between 4 and 40 or char_length(coalesce(s ->> 'fee', '')) > 40), false)
 $$;
+
+alter table public.group_schedules drop constraint group_schedules_check;
+alter table public.group_schedules add constraint group_schedules_check check (end_minutes - start_minutes between 60 and 720);
 
 -- 改场次时删掉旧的每周安排，已经过去的场次留着（报名和出勤记录还要用）
 alter table public.group_sessions alter column schedule_id drop not null;

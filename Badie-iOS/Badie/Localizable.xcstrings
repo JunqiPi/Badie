@@ -74698,60 +74698,60 @@
         }
       }
     },
-    "每个固定场次要 1–8 小时、在当天结束，名额 4–40 人，最多 7 个。" : {
+    "每个固定场次要 1–12 小时、在当天结束，名额 4–40 人，最多 7 个。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Each weekly session needs to be 1–8 hours and end the same day, with 4–40 spots. Up to 7 sessions."
+            "value" : "Each weekly session needs to be 1–12 hours and end the same day, with 4–40 spots. Up to 7 sessions."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每個固定場次要 1–8 小時、在當天結束，名額 4–40 人，最多 7 個。"
+            "value" : "每個固定場次要 1–12 小時、在當天結束，名額 4–40 人，最多 7 個。"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "定期の回は 1〜8 時間で当日中に終わること、定員 4〜40 人、最大 7 つまでです。"
+            "value" : "定期の回は 1〜12 時間で当日中に終わること、定員 4〜40 人、最大 7 つまでです。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "정기 일정은 1–8시간, 당일 종료, 정원 4–40명이어야 하고 최대 7개까지예요."
+            "value" : "정기 일정은 1–12시간, 당일 종료, 정원 4–40명이어야 하고 최대 7개까지예요."
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "हर साप्ताहिक सेशन 1–8 घंटे का हो और उसी दिन खत्म हो, 4–40 जगहें, ज़्यादा से ज़्यादा 7 सेशन।"
+            "value" : "हर साप्ताहिक सेशन 1–12 घंटे का हो और उसी दिन खत्म हो, 4–40 जगहें, ज़्यादा से ज़्यादा 7 सेशन।"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiap sesi mingguan 1–8 jam dan selesai di hari yang sama, 4–40 tempat. Maksimal 7 sesi."
+            "value" : "Tiap sesi mingguan 1–12 jam dan selesai di hari yang sama, 4–40 tempat. Maksimal 7 sesi."
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Setiap sesi mingguan perlu 1–8 jam dan tamat pada hari yang sama, 4–40 tempat. Maksimum 7 sesi."
+            "value" : "Setiap sesi mingguan perlu 1–12 jam dan tamat pada hari yang sama, 4–40 tempat. Maksimum 7 sesi."
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "แต่ละรอบประจำต้องยาว 1–8 ชั่วโมงและจบในวันเดียวกัน รับ 4–40 คน ได้สูงสุด 7 รอบ"
+            "value" : "แต่ละรอบประจำต้องยาว 1–12 ชั่วโมงและจบในวันเดียวกัน รับ 4–40 คน ได้สูงสุด 7 รอบ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mỗi buổi cố định dài 1–8 giờ, kết thúc trong ngày, 4–40 chỗ. Tối đa 7 buổi."
+            "value" : "Mỗi buổi cố định dài 1–12 giờ, kết thúc trong ngày, 4–40 chỗ. Tối đa 7 buổi."
           }
         }
       }
@@ -75244,60 +75244,60 @@
         }
       }
     },
-    "每场最长 8 小时" : {
+    "每场最长 12 小时" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Each session can be up to 8 hours"
+            "value" : "Each session can be up to 12 hours"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每場最長 8 小時"
+            "value" : "每場最長 12 小時"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1 回は最長 8 時間です"
+            "value" : "1 回は最長 12 時間です"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "한 번에 최대 8시간이에요"
+            "value" : "한 번에 최대 12시간이에요"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "हर सेशन ज़्यादा से ज़्यादा 8 घंटे का"
+            "value" : "हर सेशन ज़्यादा से ज़्यादा 12 घंटे का"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tiap sesi maksimal 8 jam"
+            "value" : "Tiap sesi maksimal 12 jam"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Setiap sesi maksimum 8 jam"
+            "value" : "Setiap sesi maksimum 12 jam"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "แต่ละรอบยาวได้สูงสุด 8 ชั่วโมง"
+            "value" : "แต่ละรอบยาวได้สูงสุด 12 ชั่วโมง"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mỗi buổi tối đa 8 giờ"
+            "value" : "Mỗi buổi tối đa 12 giờ"
           }
         }
       }

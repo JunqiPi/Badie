@@ -595,7 +595,7 @@ struct CreateGroupView: View {
         if !PlayGroup.nameLimit.contains(trimmed.count) { return String(localized: "球群名称需要 2–20 个字") }
         if !isEditing && venue == nil { return String(localized: "选择固定的球馆") }
         if schedules.contains(where: { $0.endMinutes - $0.startMinutes < 60 }) { return String(localized: "每场至少 1 小时") }
-        if schedules.contains(where: { $0.endMinutes - $0.startMinutes > 480 }) { return String(localized: "每场最长 8 小时") }
+        if schedules.contains(where: { $0.endMinutes - $0.startMinutes > 720 }) { return String(localized: "每场最长 12 小时") }
         return nil
     }
 

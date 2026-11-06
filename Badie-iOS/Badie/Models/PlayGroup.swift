@@ -75,10 +75,10 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
 
     static let capacityRange = 4...40
 
-    /// 1–7 个；每个 1–8 小时、当天结束，名额 4–40（和服务器的 valid_schedules 一致）
+    /// 1–7 个；每个 1–12 小时、当天结束，名额 4–40（和服务器的 valid_schedules 一致）
     static func areValid(_ schedules: [GroupSchedule]) -> Bool {
         !schedules.isEmpty && schedules.count <= PlayGroup.maxSchedules && schedules.allSatisfy {
-            (60...480).contains($0.endMinutes - $0.startMinutes) && $0.endMinutes <= 24 * 60
+            (60...720).contains($0.endMinutes - $0.startMinutes) && $0.endMinutes <= 24 * 60
                 && capacityRange.contains($0.capacity) && (1...7).contains($0.weekday)
         }
     }
