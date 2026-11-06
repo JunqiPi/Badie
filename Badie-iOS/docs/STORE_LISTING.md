@@ -295,71 +295,101 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
 
 - English (U.S.)：
   ```
+  • See who's free: on Home, pick a day and swipe through players at your level. Swipe right to invite. The game is on once they confirm.
+  • Match requests: pick "Any time", plan up to 30 days ahead, and edit a request after sending it.
+  • Groups: organizers can edit the group, add up to 7 weekly sessions of up to 12 hours each, or close the group.
+  • Zoom and move your photo before using it.
   • Help & feedback: write to us from the Me tab. Our reply shows up in your notifications.
-  • New friends now show up in Messages right away.
+  • New friends show up in Messages right away.
   • Support Badie: leave a tip if you like. It doesn't unlock anything.
-  • Fixes and small improvements.
   ```
 - 简体中文：
   ```
+  • 看看谁有空：在首页选一天，左右滑看水平相近的球友，右滑约 TA，对方确认就成局。
+  • 约球请求：可以选「任何时间」，最多提前 30 天，发出后也能修改。
+  • 球群：组织者可以编辑球群、加到 7 个每周场次（每场最长 12 小时），也可以解散。
+  • 换头像时可以缩放、移动照片。
   • 帮助与反馈：在「我的」页直接写给我们，回复会出现在通知里。
   • 加了好友后，对方马上出现在消息列表里。
   • 支持 Badie：想支持可以打赏，打赏不会解锁任何功能。
-  • 修复和小改进。
   ```
 - 繁體中文：
   ```
+  • 看看誰有空：在首頁選一天，左右滑看程度相近的球友，右滑約 TA，對方確認就成局。
+  • 約球請求：可以選「任何時間」，最多提前 30 天，送出後也能修改。
+  • 球群：組織者可以編輯球群、加到 7 個每週場次（每場最長 12 小時），也可以解散。
+  • 換頭像時可以縮放、移動照片。
   • 幫助與回饋：在「我的」頁直接寫給我們，回覆會出現在通知裡。
   • 加了好友後，對方馬上出現在訊息列表裡。
   • 支持 Badie：想支持可以打賞，打賞不會解鎖任何功能。
-  • 修正和小改進。
   ```
 - 日本語：
   ```
+  • 空いている人を探す：ホームで日付を選び、近いレベルの人を左右にスワイプ。右スワイプで誘い、相手が確定すれば試合成立です。
+  • マッチングのリクエスト：「いつでも」を選べるようになり、30 日先まで予定を入れられ、送信後も編集できます。
+  • グループ：主催者はグループの編集、毎週の回の追加（最大 7 つ、1 回最長 12 時間）、解散ができます。
+  • プロフィール写真を拡大・移動して調整できます。
   • ヘルプとフィードバック：マイページから直接送れます。返信は通知に届きます。
-  • 友達になった相手が、すぐにメッセージ一覧に表示されるようになりました。
+  • 友達になった相手が、すぐにメッセージ一覧に表示されます。
   • Badie を応援：チップを送れます。チップで機能が増えることはありません。
-  • 不具合の修正と細かな改善。
   ```
 - 한국어：
   ```
+  • 누가 시간 되는지 보기: 홈에서 날짜를 고르고 비슷한 급수의 사람을 좌우로 넘겨 보세요. 오른쪽으로 밀면 초대, 상대가 확정하면 게임이 성사돼요.
+  • 매칭 요청: '언제든'을 고를 수 있고, 30일 뒤까지 잡을 수 있으며, 보낸 뒤에도 수정할 수 있어요.
+  • 모임: 운영자가 모임을 편집하고, 매주 일정을 7개까지(한 번에 최대 12시간) 추가하거나 모임을 해산할 수 있어요.
+  • 프로필 사진을 확대하고 위치를 옮길 수 있어요.
   • 도움말 및 의견: 나 탭에서 바로 보낼 수 있어요. 답변은 알림으로 와요.
   • 친구가 되면 바로 메시지에 나타나요.
   • Badie 응원하기: 원하면 후원할 수 있어요. 후원으로 열리는 기능은 없어요.
-  • 오류 수정과 작은 개선.
   ```
 - Bahasa Indonesia：
   ```
+  • Lihat siapa yang kosong: di Beranda, pilih hari dan geser pemain yang selevel. Geser kanan untuk mengajak, main jadi setelah dia konfirmasi.
+  • Permintaan main: bisa pilih "Kapan saja", rencanakan hingga 30 hari ke depan, dan edit setelah dikirim.
+  • Grup: penyelenggara bisa mengedit grup, menambah hingga 7 sesi mingguan (maksimal 12 jam per sesi), atau membubarkan grup.
+  • Perbesar dan geser foto profilmu sebelum dipakai.
   • Bantuan & masukan: kirim langsung dari tab Saya. Balasan kami muncul di notifikasimu.
   • Teman baru langsung muncul di Pesan.
   • Dukung Badie: beri tip kalau mau. Tip tidak membuka fitur apa pun.
-  • Perbaikan dan peningkatan kecil.
   ```
 - Bahasa Melayu：
   ```
+  • Lihat siapa yang lapang: di Utama, pilih hari dan leret pemain yang setahap. Leret kanan untuk mengajak, permainan jadi apabila dia sahkan.
+  • Permintaan permainan: boleh pilih "Bila-bila masa", rancang sehingga 30 hari lebih awal, dan edit selepas dihantar.
+  • Kumpulan: penganjur boleh mengedit kumpulan, menambah sehingga 7 sesi mingguan (maksimum 12 jam setiap sesi), atau membubarkan kumpulan.
+  • Zum dan alihkan foto profil anda sebelum digunakan.
   • Bantuan & maklum balas: hantar terus dari tab Saya. Balasan kami muncul dalam pemberitahuan anda.
   • Rakan baharu terus muncul dalam Mesej.
   • Sokong Badie: beri tip jika mahu. Tip tidak membuka sebarang ciri.
-  • Pembetulan dan penambahbaikan kecil.
   ```
 - ไทย：
   ```
+  • ดูว่าใครว่าง: ที่หน้าแรกเลือกวัน แล้วปัดดูคนระดับใกล้กัน ปัดขวาเพื่อชวน อีกฝ่ายยืนยันก็ได้ตีเลย
+  • คำขอจับคู่: เลือก "เวลาไหนก็ได้" ได้ วางแผนล่วงหน้าได้ 30 วัน และแก้ไขได้หลังส่ง
+  • ก๊วน: ผู้จัดแก้ไขก๊วน เพิ่มรอบประจำสัปดาห์ได้ถึง 7 รอบ (รอบละไม่เกิน 12 ชั่วโมง) หรือยุบก๊วนได้
+  • ซูมและเลื่อนรูปโปรไฟล์ได้ก่อนใช้
   • ความช่วยเหลือและความคิดเห็น: ส่งถึงเราได้จากแท็บ ฉัน คำตอบจะอยู่ในการแจ้งเตือน
   • เพื่อนใหม่ขึ้นในรายการข้อความทันที
   • สนับสนุน Badie: ให้ทิปได้ถ้าอยาก ทิปไม่ได้ปลดล็อกอะไรเพิ่ม
-  • แก้ไขข้อผิดพลาดและปรับปรุงเล็กน้อย
   ```
 - Tiếng Việt：
   ```
+  • Xem ai rảnh: ở Trang chủ, chọn một ngày và vuốt xem người chơi cùng trình độ. Vuốt phải để rủ, họ xác nhận là có trận.
+  • Yêu cầu ghép trận: chọn được "Lúc nào cũng được", lên lịch trước tối đa 30 ngày, và sửa sau khi gửi.
+  • Nhóm: người tổ chức có thể sửa nhóm, thêm tối đa 7 buổi mỗi tuần (mỗi buổi tối đa 12 giờ), hoặc giải tán nhóm.
+  • Phóng to và di chuyển ảnh đại diện trước khi dùng.
   • Trợ giúp & góp ý: gửi cho chúng tôi ngay từ tab Tôi. Câu trả lời sẽ hiện trong thông báo.
   • Bạn bè mới hiện ngay trong Tin nhắn.
   • Ủng hộ Badie: bạn có thể ủng hộ nếu muốn. Việc ủng hộ không mở thêm tính năng nào.
-  • Sửa lỗi và cải thiện nhỏ.
   ```
 - हिन्दी：
   ```
+  • कौन खाली है देखें: होम पर एक दिन चुनें और अपने लेवल के खिलाड़ियों को स्वाइप करें। बुलाने के लिए दाएँ स्वाइप करें, उनके पुष्टि करते ही गेम पक्का।
+  • मैच रिक्वेस्ट: "कभी भी" चुन सकते हैं, 30 दिन पहले तक प्लान कर सकते हैं, और भेजने के बाद बदल सकते हैं।
+  • ग्रुप: आयोजक ग्रुप एडिट कर सकते हैं, हफ़्ते के 7 तक सेशन जोड़ सकते हैं (हर सेशन 12 घंटे तक), या ग्रुप बंद कर सकते हैं।
+  • प्रोफ़ाइल फ़ोटो को ज़ूम और खिसकाकर सेट करें।
   • मदद और फ़ीडबैक: मैं टैब से सीधे हमें लिखें। जवाब आपकी सूचनाओं में आएगा।
   • नए दोस्त अब तुरंत मैसेज में दिखते हैं।
   • Badie को सपोर्ट करें: चाहें तो टिप दें। इससे कुछ अनलॉक नहीं होता।
-  • सुधार और छोटे बदलाव।
   ```
