@@ -9,24 +9,34 @@ struct DayCandidatesView: View {
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var friendManager: FriendManager
     @EnvironmentObject private var locationManager: LocationManager
+    @EnvironmentObject private var matchManager: MatchManager
     @Environment(\.dismiss) private var dismiss
 
     @State private var cards: [MockBackend.DayCandidate] = []
     @State private var isLoading = true
     @State private var drag: CGSize = .zero
     @State private var inviting: MockBackend.DayCandidate?
+    /// 全屏页上面要自己弹资料页（首页那层弹不出来）
+    @State private var profile: PlayerSheetItem?
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
             HStack {
-                Text(day.formatted(.dateTime.month().day().weekday(.wide)))
-                    .font(AppTheme.Typography.title)
-                    .foregroundStyle(AppTheme.Colors.ink)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(day.formatted(.dateTime.month().day().weekday(.wide)))
+                        .font(AppTheme.Typography.title)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    if !cards.isEmpty {
+                        Text("右滑约 TA，左滑跳过")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    }
+                }
                 Spacer()
                 IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
-            .padding(.top, AppTheme.Spacing.xl)
+            .padding(.top, AppTheme.Spacing.md)
 
             if isLoading {
                 Spacer()
@@ -35,7 +45,7 @@ struct DayCandidatesView: View {
             } else if let card = cards.first {
                 ZStack {
                     if cards.count > 1 {
-                        cardView(cards[1]).scaleEffect(0.95).offset(y: 12).allowsHitTesting(false)
+                        cardView(cards[1]).scaleEffect(0.96).offset(y: 10).allowsHitTesting(false)
                     }
                     cardView(card)
                         .offset(x: drag.width, y: drag.height * 0.2)
@@ -50,23 +60,29 @@ struct DayCandidatesView: View {
                                 }
                         )
                 }
+                .frame(maxHeight: .infinity)
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 HStack(spacing: AppTheme.Spacing.xxl) {
                     roundButton("xmark", tint: AppTheme.Colors.surface, label: String(localized: "跳过")) { skip(card) }
                     roundButton("heart.fill", tint: AppTheme.Colors.lime, label: String(localized: "约 TA")) { like(card) }
                 }
-                Text("右滑约 TA，左滑跳过")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                Spacer(minLength: 0)
+                .padding(.bottom, AppTheme.Spacing.lg)
             } else {
+                Spacer()
                 EmptyStateView(icon: "person.2", title: String(localized: "这天附近没有能约的球友了"),
-                               message: String(localized: "发个约球请求，有人对得上会通知你。"))
+                               message: String(localized: "发个约球请求，有人对得上会通知你。"),
+                               actionTitle: String(localized: "发个约球请求")) { request() }
                 Spacer()
             }
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .task { await load() }
+        .sheet(item: $profile) { item in
+            PlayerProfileSheet(userId: item.id)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
+        }
         .confirmationDialog(inviteTitle, isPresented: Binding(get: { inviting != nil }, set: { if !$0 { inviting = nil } }),
                             titleVisibility: .visible, presenting: inviting) { card in
             ForEach(card.venues, id: \.id) { venue in
@@ -85,40 +101,53 @@ struct DayCandidatesView: View {
 
     // MARK: Card
 
+    /// 一张铺满的卡片：上面是大照片（没传照片就是大头像），下面是等级、时间、球馆
     private func cardView(_ card: MockBackend.DayCandidate) -> some View {
         let user = friendManager.user(id: card.userId)
-        return VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-            HStack(spacing: AppTheme.Spacing.lg) {
+        return VStack(alignment: .leading, spacing: 0) {
+            ZStack {
+                AppTheme.Colors.surfaceMuted
+                if let user, let photo = AvatarPhotos.image(userId: user.id, avatar: user.avatar) {
+                    Image(uiImage: photo).resizable().scaledToFill()
+                } else if let user {
+                    AvatarView(user: user, size: 140)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                 if let user {
-                    AvatarView(user: user, size: 84)
-                    VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: AppTheme.Spacing.sm) {
                         NicknameText(user: user)
                             .font(AppTheme.Typography.title2)
                             .foregroundStyle(AppTheme.Colors.ink)
+                            .lineLimit(1)
+                        Spacer(minLength: 0)
                         LevelBadge(tier: user.displayTier)
                     }
                 }
-                Spacer(minLength: 0)
-            }
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Label(card.mixed ? String(localized: "混双") : card.mode.title, systemImage: "figure.badminton")
-                Label("\(card.startsAt.formatted(date: .omitted, time: .shortened))–\(card.endsAt.formatted(date: .omitted, time: .shortened))",
-                      systemImage: "clock")
-                ForEach(card.venues, id: \.id) { venue in
-                    Label(venue.name, systemImage: "mappin.and.ellipse")
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                    Label(card.mixed ? String(localized: "混双") : card.mode.title, systemImage: "figure.badminton")
+                    Label("\(card.startsAt.formatted(date: .omitted, time: .shortened))–\(card.endsAt.formatted(date: .omitted, time: .shortened))",
+                          systemImage: "clock")
+                    ForEach(card.venues, id: \.id) { venue in
+                        Label(venue.name, systemImage: "mappin.and.ellipse").lineLimit(1)
+                    }
+                    if card.recentNoShows > 0 {
+                        Label(String(localized: "近 180 天爽约 \(card.recentNoShows) 次"), systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(AppTheme.Colors.danger)
+                    }
                 }
-                if card.recentNoShows > 0 {
-                    Label(String(localized: "近 180 天爽约 \(card.recentNoShows) 次"), systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(AppTheme.Colors.danger)
-                }
+                .font(AppTheme.Typography.bodyBold)
+                .foregroundStyle(AppTheme.Colors.ink)
+                Button("看资料") { profile = PlayerSheetItem(id: card.userId) }
+                    .buttonStyle(TextActionStyle())
             }
-            .font(AppTheme.Typography.bodyBold)
-            .foregroundStyle(AppTheme.Colors.ink)
-            Button("看资料") { appState.showPlayer(card.userId) }
-                .buttonStyle(TextActionStyle())
+            .padding(AppTheme.Spacing.lg)
         }
-        .padding(AppTheme.Spacing.xl)
-        .frame(maxWidth: .infinity, minHeight: 360, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppTheme.Colors.surface)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous))
         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
     }
 
@@ -136,6 +165,16 @@ struct DayCandidatesView: View {
     }
 
     // MARK: Actions
+
+    /// 没人可约：回到首页打开约球设置，日期就是这天
+    private func request() {
+        matchManager.draft.day = day
+        dismiss()
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 450_000_000)
+            router.isMatchSetupPresented = true
+        }
+    }
 
     private func load() async {
         defer { isLoading = false }

@@ -28,6 +28,8 @@ struct HomeView: View {
                 header
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
+                dateSection
+
                 updates
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
@@ -52,9 +54,6 @@ struct HomeView: View {
                 quickMatchCard
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
-
-                dateSection
-
                 if let survey = surveyManager.pendingSurveys.first {
                     surveyBanner(survey)
                         .padding(.horizontal, AppTheme.Spacing.screen)
@@ -75,9 +74,8 @@ struct HomeView: View {
             .padding(.top, AppTheme.Spacing.sm)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
-        .sheet(isPresented: $appState.showsDayCards) {
+        .fullScreenCover(isPresented: $appState.showsDayCards) {
             DayCandidatesView(day: matchManager.draft.day)
-                .presentationDragIndicator(.visible)
         }
         .refreshable {
             locationManager.refreshCourts()
@@ -255,7 +253,7 @@ struct HomeView: View {
 
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "哪天有空？"), detail: String(localized: "附近可约人数"))
+            SectionTitle(title: String(localized: "哪天有空？"), detail: String(localized: "点日期看谁也有空"))
                 .padding(.horizontal, AppTheme.Spacing.screen)
             DateStrip(
                 days: days,
@@ -268,18 +266,9 @@ struct HomeView: View {
                         }
                     }
                 ),
-                counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) }
+                counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) },
+                onTap: { _ in appState.showsDayCards = true }
             )
-            let count = matchManager.availableCount(on: matchManager.draft.day, radiusKm: locationManager.preferences.travelRadiusKm)
-            if count > 0 {
-                Button {
-                    appState.showsDayCards = true
-                } label: {
-                    Label(String(localized: "看看这天有谁（\(count)）"), systemImage: "rectangle.stack.person.crop")
-                }
-                .buttonStyle(TextActionStyle())
-                .padding(.horizontal, AppTheme.Spacing.screen)
-            }
         }
     }
 
