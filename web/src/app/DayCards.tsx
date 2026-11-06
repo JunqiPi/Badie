@@ -5,9 +5,10 @@ import { eventLabel, eventOf } from './gender';
 import { AreaPrompt } from './Home';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
-import { Avatar, Empty, IconButton, LevelBadge } from './kit';
+import { Empty, IconButton } from './kit';
+import { DayCard } from './PlayerCard';
 import { Link, navigate } from './router';
-import { avatarUrl, problem, supabase, tagText, type DayCandidate, type PlayerCard } from './supabase';
+import { problem, supabase, type DayCandidate } from './supabase';
 import { dateChip, timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
 
@@ -31,7 +32,6 @@ const SWIPE = 110;
 export function DayCards({ date }: { date: string }) {
   const area = useArea();
   const [cards, setCards] = useState<DayCandidate[]>();
-  const [photos, setPhotos] = useState<Record<string, string | null>>({});
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const [leaving, setLeaving] = useState<'left' | 'right'>();
   const [inviting, setInviting] = useState<DayCandidate>();
@@ -52,19 +52,6 @@ export function DayCards({ date }: { date: string }) {
         setCards((data ?? []) as DayCandidate[]);
       });
   }, [date, area?.lat, area?.lon]);
-
-  // 照片：用资料卡上的（看不到资料卡就用大头像）。只拉最上面两张
-  useEffect(() => {
-    for (const card of cards?.slice(0, 2) ?? []) {
-      const id = card.user.id;
-      if (id in photos) continue;
-      setPhotos((known) => ({ ...known, [id]: null }));
-      supabase!.rpc('player_card', { p_user: id }).then(({ data }) => {
-        const avatar = (data as PlayerCard | null)?.avatar;
-        if (avatar) setPhotos((known) => ({ ...known, [id]: avatar }));
-      });
-    }
-  }, [cards]);
 
   // 全屏：底下的页面不滚动，焦点放到标题上
   useEffect(() => {
@@ -179,7 +166,7 @@ export function DayCards({ date }: { date: string }) {
           <div className="relative h-full">
             {cards[1] && (
               <div aria-hidden="true" className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
-                <Card card={cards[1]} photo={photos[cards[1].user.id]} />
+                <Card card={cards[1]} />
               </div>
             )}
             <div
@@ -194,7 +181,7 @@ export function DayCards({ date }: { date: string }) {
               }}
               className="absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
             >
-              <Card card={top} photo={photos[top.user.id]} hint={leaving ?? (drag.x > 40 ? 'right' : drag.x < -40 ? 'left' : undefined)} />
+              <Card card={top} hint={leaving ?? (drag.x > 40 ? 'right' : drag.x < -40 ? 'left' : undefined)} />
             </div>
           </div>
         )}
@@ -233,55 +220,23 @@ export function DayCards({ date }: { date: string }) {
   );
 }
 
-/** 一张铺满的卡片：上面是大照片（没传照片就是大头像），下面是等级、项目、时间、球馆 */
-function Card({ card, photo, hint }: { card: DayCandidate; photo?: string | null; hint?: 'left' | 'right' }) {
-  const { user } = card;
+/** 一张铺满的卡片：上面是背景照片或颜色，下面是等级、项目、时间、球馆 */
+function Card({ card, hint }: { card: DayCandidate; hint?: 'left' | 'right' }) {
   const event = eventLabel(card.mode, eventOf(card.play_with, card.mixed)) ?? (card.mode === 'doubles' ? t('Doubles') : t('Singles'));
-  const rows: [IconName, string][] = [
-    [card.mode === 'doubles' ? 'users' : 'user', event],
-    ['clock', `${timeOf(card.starts_at)} – ${timeOf(card.ends_at)}`],
-    ...(card.venues ?? []).map((v): [IconName, string] => ['pin', v.name]),
-  ];
   return (
-    <article aria-label={user.nickname} className="sticker flex h-full flex-col overflow-hidden">
-      <div className="relative grid min-h-0 flex-1 place-items-center overflow-hidden bg-surface-muted">
-        {photo ? (
-          <img src={avatarUrl(photo)} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
-        ) : (
-          <Avatar id={user.id} name={user.nickname} size={140} />
-        )}
-        {hint && (
-          <span aria-hidden="true" className={`absolute top-4 rounded-[12px] border-2 border-stroke px-3 py-1 text-headline font-black ${hint === 'right' ? 'left-4 -rotate-6 bg-lime text-on-accent' : 'right-4 rotate-6 bg-surface text-ink'}`}>
-            {hint === 'right' ? t('Invite') : t('Skip')}
-          </span>
-        )}
-      </div>
-      <div className="grid gap-3 border-t-2 border-stroke p-4 sm:p-5">
-        <div className="flex min-w-0 items-center gap-2">
-          {/* 昵称太长时只截昵称，编号一直看得到 */}
-          <p className="flex min-w-0 flex-1 text-title3">
-            <span className="truncate">{user.nickname}</span>
-            {user.tag != null && <span className="shrink-0 text-ink-tertiary">{tagText(user.tag)}</span>}
-          </p>
-          <LevelBadge rating={user.rating} named={false} />
-        </div>
-        <ul className="grid gap-1 text-subhead font-bold">
-          {rows.map(([icon, text], i) => (
-            <li key={i} className="flex min-w-0 items-center gap-2">
-              <Icon name={icon} className="size-4 shrink-0 text-ink-secondary" />
-              <span className="truncate">{text}</span>
-            </li>
-          ))}
-          {Boolean(user.recent_no_shows) && (
-            <li className="flex min-w-0 items-center gap-2 text-danger">
-              <Icon name="warning" className="size-4 shrink-0" />
-              <span>{t('{n} missed game in 180 days|{n} missed games in 180 days', { n: user.recent_no_shows! })}</span>
-            </li>
-          )}
-        </ul>
-        <Link to={`/players/${user.id}/`} className="link -my-2 flex min-h-11 items-center justify-self-start text-footnote font-bold">{t('View profile')}</Link>
-      </div>
-    </article>
+    <DayCard
+      person={card.user}
+      event={{ icon: card.mode === 'doubles' ? 'users' : 'user', text: event }}
+      time={`${timeOf(card.starts_at)} – ${timeOf(card.ends_at)}`}
+      venues={(card.venues ?? []).map((v) => v.name)}
+      footer={<Link to={`/players/${card.user.id}/`} className="link -my-2 flex min-h-11 items-center justify-self-start text-footnote font-bold">{t('View profile')}</Link>}
+    >
+      {hint && (
+        <span aria-hidden="true" className={`absolute top-4 rounded-[12px] border-2 border-stroke px-3 py-1 text-headline font-black ${hint === 'right' ? 'left-4 -rotate-6 bg-lime text-on-accent' : 'right-4 rotate-6 bg-surface text-ink'}`}>
+          {hint === 'right' ? t('Invite') : t('Skip')}
+        </span>
+      )}
+    </DayCard>
   );
 }
 

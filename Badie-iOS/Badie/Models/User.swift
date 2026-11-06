@@ -298,6 +298,10 @@ struct Avatar: Codable, Hashable {
     var paletteIndex: Int
     /// 上传过照片时的版本号（每次重新上传 +1，用于刷新缓存）；为空表示没有照片
     var photoVersion: Int?
+    /// 首页卡片：没传背景照片时用的颜色（为空 = 按用户 ID 给的默认色）
+    var cardColor: CardColor?
+    /// 卡片背景照片的版本号；为空表示没有
+    var cardPhotoVersion: Int?
 
     static func `default`(for seed: String) -> Avatar {
         Avatar(symbol: "", paletteIndex: abs(seed.stableHash) % 6)

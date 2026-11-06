@@ -22,6 +22,8 @@ extension MockBackend {
         let verifiedKind: String?
         let verifiedRating: Double?
         let avatarPath: String?
+        let cardColor: String?
+        let cardPhotoPath: String?
         let locale: String
         let gender: String?
         let createdAt: Date?
@@ -153,6 +155,7 @@ extension MockBackend {
     func clearRemoteCache() {
         remoteIsAdmin = false
         remoteAvatarPath = nil
+        remoteCardPhotoPath = nil
         remoteAvatarChecked = []
         remoteNoShows = [:]
         remoteMessageOptions = [:]
@@ -173,7 +176,7 @@ extension MockBackend {
             try? await remote.invoke("apple-revoke", ["code": code])
         }
         // 照片文件先删掉（账号删了以后就没权限删了）
-        if let path = remoteAvatarPath { try? await remote.removeFile("avatars", path: path) }
+        for path in [remoteAvatarPath, remoteCardPhotoPath].compactMap({ $0 }) { try? await remote.removeFile("avatars", path: path) }
         try await remote.call("delete_account")
         await remote.signOut()
         store.erase()
@@ -199,6 +202,8 @@ extension MockBackend {
         try? await refreshRemoteVerification()
         remoteAvatarPath = profile.avatarPath
         await applyAvatar(profile.avatarPath, to: profile.id)
+        remoteCardPhotoPath = profile.cardPhotoPath
+        await applyCardPhoto(profile.cardPhotoPath, to: profile.id)
         user = db.users[profile.id] ?? user
         if profile.locale != Self.serverLocale {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["locale": Self.serverLocale])
@@ -232,6 +237,7 @@ extension MockBackend {
         user.privacy.emailAlerts = profile.emailAlerts ?? false
         user.privacy.showsWhenSearching = profile.showSearching ?? true
         user.gender = Gender(server: profile.gender)
+        user.avatar.cardColor = profile.cardColor.flatMap(CardColor.init(rawValue:))
         if let kind = profile.verifiedKind.flatMap(VerificationStatus.init(server:)), let rating = profile.verifiedRating {
             user.applyVerification(kind, tier: SkillTier(rating: rating))
         } else {

@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
-import { AvatarCrop } from './AvatarCrop';
+import { AvatarCrop, decode } from './AvatarCrop';
+import { CardBackground } from './CardBackground';
 import { DONATIONS_OPEN, SUPPORT_EMAIL } from './Contact';
 import { GenderField } from './gender';
 import { currentLocale, t } from './i18n';
@@ -298,6 +299,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
     <div className="mx-auto grid max-w-2xl gap-6">
       <ScreenHeader title={t('Settings')} back="/me/" />
       <Nickname profile={profile} email={email} onChange={onChange} />
+      <CardBackground profile={profile} onChange={onChange} />
 
       <Group title={t('Levels')}>
         <div className="py-3">
@@ -354,7 +356,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       <Group title={t('Account')}>
         <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => disablePush().catch(() => {}).finally(() => supabase!.auth.signOut())} />
         <Divider />
-        <DeleteAccount avatar={profile.avatar_path} />
+        <DeleteAccount photos={[profile.avatar_path, profile.card_photo_path]} />
       </Group>
 
       <p className="flex justify-center gap-4 text-footnote font-bold">
@@ -551,17 +553,6 @@ function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Pr
   );
 }
 
-/** 解码选的照片（按拍摄方向转正）；太大的先缩到长边 1600 像素，裁剪时不卡 */
-async function decode(file: File): Promise<ImageBitmap> {
-  const bitmap = await createImageBitmap(file);
-  const longest = Math.max(bitmap.width, bitmap.height);
-  if (longest <= 1600) return bitmap;
-  const ratio = 1600 / longest;
-  const smaller = await createImageBitmap(bitmap, { resizeWidth: Math.round(bitmap.width * ratio), resizeHeight: Math.round(bitmap.height * ratio), resizeQuality: 'high' });
-  bitmap.close();
-  return smaller;
-}
-
 function Level({ profile }: { profile: Profile }) {
   const level = tier(profile.rating);
   const retakeAt = profile.assessed_at ? new Date(new Date(profile.assessed_at).getTime() + 90 * 86400000) : undefined;
@@ -584,7 +575,7 @@ function Level({ profile }: { profile: Profile }) {
 }
 
 /** 注销：先说清会删掉什么，再点一次才删 */
-function DeleteAccount({ avatar }: { avatar: string | null }) {
+function DeleteAccount({ photos }: { photos: (string | null)[] }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   // 用 Apple 登录过：网页拿不到 Apple 的授权码去撤销，告诉用户可以在 Apple 账户里自己停用（Apple 的建议）
@@ -596,9 +587,10 @@ function DeleteAccount({ avatar }: { avatar: string | null }) {
   async function remove() {
     setBusy(true);
     // 照片文件先删掉（账号删了以后就没权限删了）；先解除引用，注销失败也不会留下坏图
-    if (avatar) {
-      await supabase!.rpc('set_avatar', { p_path: null });
-      await supabase!.storage.from('avatars').remove([avatar]);
+    const files = photos.filter((p): p is string => Boolean(p));
+    if (files.length) {
+      await Promise.all([supabase!.rpc('set_avatar', { p_path: null }), supabase!.rpc('set_card_photo', { p_path: null })]);
+      await supabase!.storage.from('avatars').remove(files);
     }
     const { error } = await supabase!.rpc('delete_account');
     if (error) {

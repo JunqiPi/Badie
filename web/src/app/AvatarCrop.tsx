@@ -4,14 +4,17 @@ import { Button } from './ui';
 
 const MAX_ZOOM = 4;
 
-/** 选完照片：拖动、缩放（双指、滚轮或滑块），圆圈里的部分就是头像（iOS 的 AvatarCropSheet）。
- *  确定后裁成 size×size 的 JPEG 交给 onDone */
-export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
+/** 选完照片：拖动、缩放（双指、滚轮或滑块）（iOS 的 AvatarCropSheet）。
+ *  头像是圆框，裁成 320×320；卡片背景是 3:4 的竖框，裁成 600×800。确定后把 JPEG 交给 onDone */
+export function AvatarCrop({ image, card = false, onDone, onCancel }: {
   image: ImageBitmap;
-  size?: number;
+  card?: boolean;
   onDone: (jpeg: Blob) => void;
   onCancel: () => void;
 }) {
+  const [width, height] = card ? [600, 800] : [320, 320];
+  // 偏移、尺寸都以框的宽度为 1；框高 = 1 / aspect
+  const aspect = width / height;
   const dialog = useRef<HTMLDialogElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const preview = useRef<HTMLCanvasElement>(null);
@@ -30,14 +33,14 @@ export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
     return () => observer.disconnect();
   }, []);
 
-  /** 短边正好铺满方框时的倍数 */
-  const base = (length: number) => length / Math.min(image.width, image.height);
+  /** 照片正好盖满整个框时的倍数 */
+  const base = () => Math.max(1 / image.width, 1 / aspect / image.height);
 
-  /** 照片始终盖住整个方框，拖不出空白 */
+  /** 照片始终盖住整个框，拖不出空白 */
   function clamp(next: { x: number; y: number }, z = zoom) {
-    const scale = base(1) * z;
+    const scale = base() * z;
     const maxX = Math.max(0, (image.width * scale - 1) / 2);
-    const maxY = Math.max(0, (image.height * scale - 1) / 2);
+    const maxY = Math.max(0, (image.height * scale - 1 / aspect) / 2);
     return { x: Math.min(maxX, Math.max(-maxX, next.x)), y: Math.min(maxY, Math.max(-maxY, next.y)) };
   }
 
@@ -47,13 +50,14 @@ export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
     setOffset((o) => clamp(o, next));
   };
 
-  /** 方框里要用的那一块（照片的像素坐标） */
+  /** 框里要用的那一块（照片的像素坐标） */
   function cropRect() {
-    const scale = base(1) * zoom;
-    const length = 1 / scale;
+    const scale = base() * zoom;
+    const w = 1 / scale;
+    const h = 1 / aspect / scale;
     const cx = image.width / 2 - offset.x / scale;
     const cy = image.height / 2 - offset.y / scale;
-    return { x: cx - length / 2, y: cy - length / 2, length };
+    return { x: cx - w / 2, y: cy - h / 2, w, h };
   }
 
   // 预览：直接画到方框里的画布上
@@ -61,10 +65,11 @@ export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
     const canvas = preview.current;
     if (!canvas || !side) return;
     const ratio = devicePixelRatio || 1;
-    canvas.width = canvas.height = Math.round(side * ratio);
+    canvas.width = Math.round(side * ratio);
+    canvas.height = Math.round((side / aspect) * ratio);
     const context = canvas.getContext('2d')!;
     const r = cropRect();
-    context.drawImage(image, r.x, r.y, r.length, r.length, 0, 0, canvas.width, canvas.height);
+    context.drawImage(image, r.x, r.y, r.w, r.h, 0, 0, canvas.width, canvas.height);
   }, [side, zoom, offset, image]);
 
   function down(event: ReactPointerEvent<HTMLDivElement>) {
@@ -91,16 +96,22 @@ export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
     if (pointers.current.size < 2) pinch.current = null;
   }
 
-  function finish() {
+  async function finish() {
     const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = size;
+    canvas.width = width;
+    canvas.height = height;
     const context = canvas.getContext('2d')!;
     // JPEG 没有透明：透明的 PNG 先铺白底，不然是黑的
     context.fillStyle = '#fff';
-    context.fillRect(0, 0, size, size);
+    context.fillRect(0, 0, width, height);
     const r = cropRect();
-    context.drawImage(image, r.x, r.y, r.length, r.length, 0, 0, size, size);
-    canvas.toBlob((blob) => (blob ? onDone(blob) : onCancel()), 'image/jpeg', 0.85);
+    context.drawImage(image, r.x, r.y, r.w, r.h, 0, 0, width, height);
+    // 服务器每张最多 256 KB：太大就再压一压
+    for (const quality of [0.85, 0.7, 0.55, 0.4]) {
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+      if (blob && blob.size <= 250_000) return onDone(blob);
+    }
+    onCancel();
   }
 
   return (
@@ -114,7 +125,7 @@ export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
       className="m-0 mt-auto w-full max-w-none bg-transparent p-0 text-ink open:animate-sheet sm:m-auto sm:max-w-md sm:open:animate-pop"
     >
       <div className="grid gap-4 rounded-t-[28px] border-2 border-b-0 border-stroke bg-canvas px-5 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:rounded-[28px] sm:border-b-2 sm:p-6 sm:shadow-card">
-        <h2 id="crop-title" className="text-title3">{t('Adjust photo')}</h2>
+        <h2 id="crop-title" className="text-title3">{card ? t('Adjust card background') : t('Adjust photo')}</h2>
         <div
           ref={frame}
           onPointerDown={down}
@@ -122,11 +133,12 @@ export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
           onPointerUp={up}
           onPointerCancel={up}
           onWheel={(event) => setZoomClamped(zoom * (event.deltaY < 0 ? 1.08 : 1 / 1.08))}
-          className="relative mx-auto aspect-square w-full max-w-[min(20rem,50dvh)] cursor-grab touch-none overflow-hidden rounded-[16px] border-2 border-stroke bg-surface-muted select-none active:cursor-grabbing"
+          style={{ aspectRatio: `${width} / ${height}`, maxWidth: `min(20rem, ${50 * aspect}dvh)` }}
+          className="relative mx-auto w-full cursor-grab touch-none overflow-hidden rounded-[16px] border-2 border-stroke bg-surface-muted select-none active:cursor-grabbing"
         >
           <canvas ref={preview} aria-hidden="true" className="absolute inset-0 size-full" />
-          {/* 圆圈外面压暗 */}
-          <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full border-2 border-white shadow-[0_0_0_100vmax_rgb(0_0_0/0.45)]" />
+          {/* 头像：圆圈外面压暗 */}
+          {!card && <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full border-2 border-white shadow-[0_0_0_100vmax_rgb(0_0_0/0.45)]" />}
         </div>
         <label className="grid gap-1.5">
           <span className="text-footnote font-bold text-ink-secondary">{t('Zoom')}</span>
@@ -136,9 +148,20 @@ export function AvatarCrop({ image, size = 320, onDone, onCancel }: {
         <p className="text-footnote text-ink-secondary">{t('Pinch to zoom, drag to move')}</p>
         <div className="grid grid-cols-2 gap-3">
           <Button type="button" variant="quiet" onClick={onCancel}>{t('Cancel')}</Button>
-          <Button type="button" onClick={finish}>{t('Use')}</Button>
+          <Button type="button" onClick={() => void finish()}>{t('Use')}</Button>
         </div>
       </div>
     </dialog>
   );
+}
+
+/** 解码选的照片（按拍摄方向转正）；太大的先缩到长边 1600 像素，裁剪时不卡 */
+export async function decode(file: File): Promise<ImageBitmap> {
+  const bitmap = await createImageBitmap(file);
+  const longest = Math.max(bitmap.width, bitmap.height);
+  if (longest <= 1600) return bitmap;
+  const ratio = 1600 / longest;
+  const smaller = await createImageBitmap(bitmap, { resizeWidth: Math.round(bitmap.width * ratio), resizeHeight: Math.round(bitmap.height * ratio), resizeQuality: 'high' });
+  bitmap.close();
+  return smaller;
 }

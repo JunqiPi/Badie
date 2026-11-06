@@ -29,6 +29,9 @@ extension MockBackend {
             let tag: Int?
             let rating: Double
             let recentNoShows: Int?
+            let avatar: String?
+            let cardColor: String?
+            let cardPhoto: String?
         }
 
         struct Place: Decodable {
@@ -53,10 +56,26 @@ extension MockBackend {
             "p_from": Self.iso(start), "p_to": Self.iso(end),
             "p_lat": center.latitude, "p_lon": center.longitude, "p_radius_km": radiusKm,
         ])
-        return items.map { item in
-            // 存进缓存：卡片上的头像、资料页都从这里读
+        for item in items {
+            // 存进缓存：卡片上的头像、背景、资料页都从这里读
             cacheRemoteUser(id: item.user.id, nickname: item.user.nickname, rating: item.user.rating, tag: item.user.tag)
-            return DayCandidate(ticketId: item.ticket, userId: item.user.id, mode: GameMode(server: item.mode), mixed: item.mixed,
+            applyCardColor(item.user.cardColor, to: item.user.id)
+        }
+        // 前两张的照片先下好再显示，后面的边刷边下
+        for item in items.prefix(2) {
+            await applyAvatar(item.user.avatar, to: item.user.id)
+            await applyCardPhoto(item.user.cardPhoto, to: item.user.id)
+        }
+        let rest = Array(items.dropFirst(2))
+        Task {
+            for item in rest {
+                await applyAvatar(item.user.avatar, to: item.user.id)
+                await applyCardPhoto(item.user.cardPhoto, to: item.user.id)
+            }
+            emit(.friendsChanged)
+        }
+        return items.map { item in
+            DayCandidate(ticketId: item.ticket, userId: item.user.id, mode: GameMode(server: item.mode), mixed: item.mixed,
                                 startsAt: item.startsAt, endsAt: item.endsAt, recentNoShows: item.user.recentNoShows ?? 0,
                                 venues: (item.venues ?? []).map { DayCandidate.Venue(id: $0.id, name: $0.name) })
         }

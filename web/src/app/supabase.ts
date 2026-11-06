@@ -63,6 +63,10 @@ export interface Profile {
   email_alerts: boolean;
   /** 照片头像在 avatars 桶里的位置（App 里上传） */
   avatar_path: string | null;
+  /** 首页卡片：没传背景照片时用的颜色（null = 按用户 ID 给的默认色） */
+  card_color: string | null;
+  /** 卡片背景照片（也在 avatars 桶里，和头像分开） */
+  card_photo_path: string | null;
   /** 高水平认证（管理员审核通过后才有） */
   verified_kind: VerificationKind | null;
   verified_rating: number | null;
@@ -147,7 +151,10 @@ export interface DayCandidate {
   play_with: Gender | null;
   starts_at: string;
   ends_at: string;
-  user: { id: string; nickname: string; tag: number | null; rating: number; gender: Gender | null; recent_no_shows: number | null };
+  user: {
+    id: string; nickname: string; tag: number | null; rating: number; gender: Gender | null; recent_no_shows: number | null;
+    avatar: string | null; card_color: string | null; card_photo: string | null;
+  };
   venues: { id: string; name: string }[] | null;
 }
 
@@ -218,6 +225,8 @@ export interface PlayerCard {
   /** 照片头像在 avatars 桶里的位置 */
   avatar: string | null;
   gender: Gender | null;
+  card_color: string | null;
+  card_photo: string | null;
 }
 
 /** 收藏了同一家球馆、愿意被看到的常客 */

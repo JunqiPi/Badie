@@ -101,54 +101,11 @@ struct DayCandidatesView: View {
 
     // MARK: Card
 
-    /// 一张铺满的卡片：上面是大照片（没传照片就是大头像），下面是等级、时间、球馆
     private func cardView(_ card: MockBackend.DayCandidate) -> some View {
-        let user = friendManager.user(id: card.userId)
-        return VStack(alignment: .leading, spacing: 0) {
-            ZStack {
-                AppTheme.Colors.surfaceMuted
-                if let user, let photo = AvatarPhotos.image(userId: user.id, avatar: user.avatar) {
-                    Image(uiImage: photo).resizable().scaledToFill()
-                } else if let user {
-                    AvatarView(user: user, size: 140)
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .clipped()
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                if let user {
-                    HStack(spacing: AppTheme.Spacing.sm) {
-                        NicknameText(user: user)
-                            .font(AppTheme.Typography.title2)
-                            .foregroundStyle(AppTheme.Colors.ink)
-                            .lineLimit(1)
-                        Spacer(minLength: 0)
-                        LevelBadge(tier: user.displayTier)
-                    }
-                }
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                    Label(card.mixed ? String(localized: "混双") : card.mode.title, systemImage: "figure.badminton")
-                    Label("\(card.startsAt.formatted(date: .omitted, time: .shortened))–\(card.endsAt.formatted(date: .omitted, time: .shortened))",
-                          systemImage: "clock")
-                    ForEach(card.venues, id: \.id) { venue in
-                        Label(venue.name, systemImage: "mappin.and.ellipse").lineLimit(1)
-                    }
-                    if card.recentNoShows > 0 {
-                        Label(String(localized: "近 180 天爽约 \(card.recentNoShows) 次"), systemImage: "exclamationmark.triangle.fill")
-                            .foregroundStyle(AppTheme.Colors.danger)
-                    }
-                }
-                .font(AppTheme.Typography.bodyBold)
-                .foregroundStyle(AppTheme.Colors.ink)
-                Button("看资料") { profile = PlayerSheetItem(id: card.userId) }
-                    .buttonStyle(TextActionStyle())
-            }
-            .padding(AppTheme.Spacing.lg)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppTheme.Colors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous))
-        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+        DayCardView(user: friendManager.user(id: card.userId),
+                    details: .init(mode: card.mixed ? String(localized: "混双") : card.mode.title, startsAt: card.startsAt, endsAt: card.endsAt,
+                                   venues: card.venues.map(\.name), recentNoShows: card.recentNoShows),
+                    onProfile: { profile = PlayerSheetItem(id: card.userId) })
     }
 
     private func roundButton(_ icon: String, tint: Color, label: String, action: @escaping () -> Void) -> some View {

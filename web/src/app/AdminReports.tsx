@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { t } from './i18n';
 import { Avatar, Tag } from './kit';
 import { Link } from './router';
-import { problem, supabase, useLive } from './supabase';
+import { avatarUrl, problem, supabase, useLive } from './supabase';
 import { day, relative } from './time';
 import { Button, EmptyState, Skeleton, toast } from './ui';
 
@@ -12,7 +12,7 @@ interface ReportItem {
   details: string | null;
   created_at: string;
   reporter: { id: string; nickname: string };
-  reported: { id: string; nickname: string; avatar: string | null; suspended: boolean };
+  reported: { id: string; nickname: string; avatar: string | null; card_photo: string | null; suspended: boolean };
   open_reports: number;
   /** 被举报人最近 30 天在举报人看得到的会话里发的消息 */
   messages: { body: string; at: string }[];
@@ -75,6 +75,10 @@ function Report({ item, onDone }: { item: ReportItem; onDone: () => void }) {
         {item.reported.suspended && <Tag tint="muted">{t('Suspended')}</Tag>}
         {overdue && <Tag tint="pink">{t('Due soon')}</Tag>}
       </div>
+      {/* 卡片背景照片（和头像分开传的） */}
+      {item.reported.card_photo && (
+        <img src={avatarUrl(item.reported.card_photo)} alt={t('Card background')} className="h-40 w-30 rounded-[12px] border-2 border-stroke object-cover" />
+      )}
       <dl className="grid gap-1 text-footnote sm:grid-cols-[10rem_1fr]">
         <dt className="font-bold text-ink-tertiary">{t('Reason')}</dt>
         <dd>{t(reasonText[item.reason] ?? item.reason)}</dd>
@@ -95,7 +99,7 @@ function Report({ item, onDone }: { item: ReportItem; onDone: () => void }) {
         <Button variant="quiet" className="button-sm" busy={busy === 'reset_nickname'} disabled={Boolean(busy)} onClick={() => resolve('reset_nickname')}>
           {t('Reset nickname')}
         </Button>
-        {item.reported.avatar && (
+        {(item.reported.avatar || item.reported.card_photo) && (
           <Button variant="quiet" className="button-sm" busy={busy === 'clear_avatar'} disabled={Boolean(busy)} onClick={() => resolve('clear_avatar')}>
             {t('Remove photo')}
           </Button>

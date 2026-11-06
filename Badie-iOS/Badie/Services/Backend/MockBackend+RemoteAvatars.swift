@@ -27,6 +27,59 @@ extension MockBackend {
         return user
     }
 
+    /// 上传卡片背景：和头像一样先传新的、换上，再删旧的
+    func remoteUploadCardPhoto(_ jpeg: Data) async throws -> User {
+        let remote = try requireRemote()
+        guard var user = currentUser else { throw BackendError.notSignedIn }
+        let path = "\(user.id)/\(UUID().uuidString.lowercased()).jpg"
+        try await remote.upload("avatars", path: path, data: jpeg, contentType: "image/jpeg")
+        try await remote.call("set_card_photo", ["p_path": path])
+        if let old = remoteCardPhotoPath { try? await remote.removeFile("avatars", path: old) }
+        remoteCardPhotoPath = path
+        db.avatarPhotos[AvatarPhotos.cardKey(user.id)] = jpeg
+        user.avatar.cardPhotoVersion = Self.avatarVersion(path)
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+        return user
+    }
+
+    /// 不用卡片背景照片了（改用颜色）
+    func remoteRemoveCardPhoto() {
+        let old = remoteCardPhotoPath
+        remoteCardPhotoPath = nil
+        runRemote { remote in
+            try await remote.call("set_card_photo", ["p_path": NSNull()])
+            if let old { try? await remote.removeFile("avatars", path: old) }
+        }
+    }
+
+    /// 卡片背景：地址变了才下载，没有就清掉
+    func applyCardPhoto(_ path: String?, to userId: String) async {
+        let version = path.map(Self.avatarVersion)
+        let key = AvatarPhotos.cardKey(userId)
+        guard var user = db.users[userId], user.avatar.cardPhotoVersion != version || (path != nil && db.avatarPhotos[key] == nil) else { return }
+        if let path {
+            guard let data = try? await remote?.download("avatars", path: path) else { return }
+            db.avatarPhotos[key] = data
+        } else {
+            db.avatarPhotos[key] = nil
+        }
+        user.avatar.cardPhotoVersion = version
+        db.users[userId] = user
+        scheduleSave()
+        if userId == currentUserId { emit(.userUpdated(user)) }
+    }
+
+    /// 别人卡片上的颜色
+    func applyCardColor(_ value: String?, to userId: String) {
+        guard var user = db.users[userId] else { return }
+        let color = value.flatMap(CardColor.init(rawValue:))
+        guard user.avatar.cardColor != color else { return }
+        user.avatar.cardColor = color
+        db.users[userId] = user
+    }
+
     /// 改回文字头像
     func remoteRemoveAvatar() {
         let old = remoteAvatarPath

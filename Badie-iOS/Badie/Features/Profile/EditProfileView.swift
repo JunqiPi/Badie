@@ -16,6 +16,11 @@ struct EditProfileView: View {
     @State private var cropItem: AvatarCropSheet.Item?
     @State private var photo: UIImage?
     @State private var isUploadingPhoto = false
+    @State private var cardColor: CardColor?
+    @State private var cardItem: PhotosPickerItem?
+    @State private var cardCropItem: AvatarCropSheet.Item?
+    @State private var isUploadingCard = false
+    @State private var showsCardPreview = false
     @State private var isSaving = false
     @State private var didLoad = false
 
@@ -25,6 +30,7 @@ struct EditProfileView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
                     avatarSection
+                    cardSection
                     BrutalTextField(label: String(localized: "昵称"), placeholder: String(localized: "2-12 个字"), text: $nickname,
                                     contentType: .nickname,
                                     errorText: nickname.isEmpty || MockBackend.isValidNickname(nickname) ? nil : String(localized: "昵称需为 2-12 个字符"),
@@ -76,6 +82,18 @@ struct EditProfileView: View {
         .sheet(item: $cropItem) { item in
             AvatarCropSheet(image: item.image) { jpeg in Task { await upload(jpeg) } }
         }
+        .onChange(of: cardItem) { _, item in
+            guard let item else { return }
+            Task { await loadCardPhoto(item) }
+        }
+        .sheet(item: $cardCropItem) { item in
+            AvatarCropSheet(image: item.image, shape: .card) { jpeg in Task { await uploadCard(jpeg) } }
+        }
+        .fullScreenCover(isPresented: $showsCardPreview) {
+            if let user = previewUser {
+                MyCardPreview(user: user)
+            }
+        }
     }
 
     private var avatarSection: some View {
@@ -114,6 +132,124 @@ struct EditProfileView: View {
             Text("上传的照片会显示给其他球友")
                 .font(AppTheme.Typography.caption)
                 .foregroundStyle(AppTheme.Colors.inkTertiary)
+        }
+    }
+
+    // MARK: 卡片背景（别人在首页刷到你时看到的卡片）
+
+    /// 还没保存的改动也显示出来：昵称、头像颜色、卡片颜色
+    private var previewUser: User? {
+        guard var user = appState.currentUser else { return nil }
+        if MockBackend.isValidNickname(nickname) { user.nickname = nickname }
+        user.avatar.symbol = avatar.symbol
+        user.avatar.paletteIndex = avatar.paletteIndex
+        user.avatar.cardColor = cardColor
+        return user
+    }
+
+    private var cardSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            fieldLabel(String(localized: "卡片背景"))
+            if let user = previewUser {
+                let cover = AvatarPhotos.cardImage(userId: user.id, avatar: user.avatar)
+                VStack(alignment: .leading, spacing: 0) {
+                    CardCover(color: user.cardColor, photo: cover) {
+                        AvatarView(text: user.avatarText, paletteIndex: avatar.paletteIndex, size: 64, image: photo)
+                    }
+                    .frame(height: 132)
+                    .overlay {
+                        if isUploadingCard {
+                            Color.black.opacity(0.35)
+                            ProgressView().tint(.white)
+                        }
+                    }
+                    .overlay(alignment: .bottomLeading) {
+                        if cover != nil {
+                            AvatarView(text: user.avatarText, paletteIndex: avatar.paletteIndex, size: 40, image: photo)
+                                .padding(.leading, AppTheme.Spacing.md)
+                                .offset(y: 20)
+                        }
+                    }
+                    .zIndex(1)
+                    NicknameText(user: user)
+                        .font(AppTheme.Typography.subheadlineBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .lineLimit(1)
+                        .padding(.horizontal, AppTheme.Spacing.md)
+                        .padding(.top, cover != nil ? 24 : AppTheme.Spacing.sm)
+                        .padding(.bottom, AppTheme.Spacing.sm)
+                }
+                .background(AppTheme.Colors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
+                .accessibilityHidden(true)
+
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    PhotosPicker(selection: $cardItem, matching: .images) {
+                        Label("上传背景照片", systemImage: "camera.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small))
+                    .disabled(isUploadingCard)
+                    Button {
+                        showsCardPreview = true
+                    } label: {
+                        Label("预览", systemImage: "eye")
+                    }
+                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
+                }
+                if cover != nil {
+                    Button("移除背景照片") { appState.backend.removeCardPhoto() }
+                        .buttonStyle(TextActionStyle())
+                } else {
+                    Text("不传照片时用这个颜色")
+                        .font(AppTheme.Typography.caption)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    HStack(spacing: 0) {
+                        ForEach(CardColor.allCases) { color in
+                            let selected = color == user.cardColor
+                            Button {
+                                Haptics.selection()
+                                cardColor = color
+                            } label: {
+                                Circle()
+                                    .fill(color.fill)
+                                    .frame(width: 30, height: 30)
+                                    .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: 2))
+                                    .padding(4)
+                                    .overlay(Circle().strokeBorder(selected ? AppTheme.Colors.ink : .clear, lineWidth: 2.5))
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(color.name)
+                            .accessibilityAddTraits(selected ? .isSelected : [])
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func loadCardPhoto(_ item: PhotosPickerItem) async {
+        defer { cardItem = nil }
+        guard let data = try? await item.loadTransferable(type: Data.self),
+              let image = await AvatarPhotos.image(fromPhoto: data) else {
+            appState.showToast(String(localized: "无法读取这张照片"), style: .error)
+            return
+        }
+        cardCropItem = AvatarCropSheet.Item(image: image)
+    }
+
+    private func uploadCard(_ jpeg: Data) async {
+        isUploadingCard = true
+        defer { isUploadingCard = false }
+        do {
+            try await appState.backend.uploadCardPhoto(jpeg)
+            appState.showToast(String(localized: "卡片背景已更新"), style: .success)
+        } catch {
+            appState.showError(error)
         }
     }
 
@@ -207,6 +343,7 @@ struct EditProfileView: View {
         gender = user.gender
         preferredMode = user.preferredMode
         avatar = user.avatar
+        cardColor = user.avatar.cardColor
         photo = AvatarPhotos.image(userId: user.id, avatar: user.avatar)
     }
 
@@ -241,7 +378,9 @@ struct EditProfileView: View {
         user.bio = bio
         user.gender = gender
         user.preferredMode = preferredMode
-        user.avatar = avatar
+        user.avatar.symbol = avatar.symbol
+        user.avatar.paletteIndex = avatar.paletteIndex
+        user.avatar.cardColor = cardColor
         if await appState.updateProfile(user) {
             router.pop()
         }
