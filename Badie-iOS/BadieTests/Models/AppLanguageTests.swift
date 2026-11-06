@@ -11,8 +11,10 @@ final class AppLanguageTests: XCTestCase {
     }
 
     func testChoosingLanguageChangesStringsRightAway() {
+        XCTAssertNotNil(Bundle.main.path(forResource: "en", ofType: "lproj"), "打包里有英文文字表")
         AppLanguage.choose("en")
         XCTAssertEqual(AppLanguage.chosen, "en")
+        XCTAssertEqual(Bundle.main.localizedString(forKey: "设置", value: nil, table: nil), "Settings", "直接查")
         XCTAssertEqual(String(localized: "设置"), "Settings")
 
         AppLanguage.choose("ko")

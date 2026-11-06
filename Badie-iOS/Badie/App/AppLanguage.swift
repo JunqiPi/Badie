@@ -76,15 +76,35 @@ private final class LocalizedBundle: Bundle, @unchecked Sendable {
     static func use(_ code: String) {
         if !installed {
             object_setClass(Bundle.main, LocalizedBundle.self)
+            addLocalizationsVariant()
             installed = true
         }
         target = Bundle.main.path(forResource: code, ofType: "lproj").flatMap(Bundle.init(path:))
         usesKeys = target == nil && code == AppLanguage.source
     }
 
-    override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
+    /// 按所选语言查一条文字；没选过（target 为空、也不是源语言）返回 nil，交回系统查
+    private static func lookup(_ key: String, _ value: String?, _ tableName: String?) -> String? {
         if let target = Self.target { return target.localizedString(forKey: key, value: value, table: tableName) }
-        if Self.usesKeys, tableName == nil || tableName == "Localizable" { return (value?.isEmpty == false ? value : nil) ?? key }
+        if usesKeys, tableName == nil || tableName == "Localizable" { return (value?.isEmpty == false ? value : nil) ?? key }
+        return nil
+    }
+
+    /// String(localized:) 在新系统上走带 localizations 参数的查找（按语言列表挑），这个也要接过来
+    private static func addLocalizationsVariant() {
+        let selector = NSSelectorFromString("localizedStringForKey:value:table:localizations:")
+        guard let original = class_getInstanceMethod(Bundle.self, selector) else { return }
+        typealias Lookup = @convention(c) (AnyObject, Selector, NSString, NSString?, NSString?, NSArray?) -> NSString
+        let superImp = unsafeBitCast(method_getImplementation(original), to: Lookup.self)
+        let block: @convention(block) (AnyObject, NSString, NSString?, NSString?, NSArray?) -> NSString = { bundle, key, value, table, localizations in
+            if let text = lookup(key as String, value as String?, table as String?) { return text as NSString }
+            return superImp(bundle, selector, key, value, table, localizations)
+        }
+        class_addMethod(LocalizedBundle.self, selector, imp_implementationWithBlock(block), method_getTypeEncoding(original))
+    }
+
+    override func localizedString(forKey key: String, value: String?, table tableName: String?) -> String {
+        if let text = Self.lookup(key, value, tableName) { return text }
         return super.localizedString(forKey: key, value: value, table: tableName)
     }
 }
