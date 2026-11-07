@@ -176,7 +176,12 @@ extension MockBackend {
             try? await remote.invoke("apple-revoke", ["code": code])
         }
         // 照片文件先删掉（账号删了以后就没权限删了）
-        for path in [remoteAvatarPath, remoteCardPhotoPath].compactMap({ $0 }) { try? await remote.removeFile("avatars", path: path) }
+        // 先把资料里的照片清掉（注销失败时别人不会看到坏图），再删文件夹里的全部文件
+        if remoteAvatarPath != nil { try? await remote.call("set_avatar", ["p_path": NSNull()]) }
+        if remoteCardPhotoPath != nil { try? await remote.call("set_card_photo", ["p_path": NSNull()]) }
+        remoteAvatarPath = nil
+        remoteCardPhotoPath = nil
+        await cleanUpPhotoFolder(keeping: [])
         try await remote.call("delete_account")
         await remote.signOut()
         store.erase()

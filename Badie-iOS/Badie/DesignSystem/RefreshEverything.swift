@@ -22,7 +22,7 @@ struct RefreshEverything: ViewModifier {
             matchManager.reloadGames()
             friendManager.reload()
             await friendManager.refreshRegulars()
-            await messageManager.refresh()
+            messageManager.reload()
             roomManager.reload()
             surveyManager.refresh()
             inboxManager.reload()

@@ -1,7 +1,7 @@
 -- 首页按天看能约的人：只列在找人、没关掉可见的；左滑跳过；右滑约单打，对方确认就成局；右滑约双打，替我开局并邀请 TA
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(17);
+select plan(16);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000034' || lpad(n::text, 2, '0'))::uuid, 'dc' || n || '@test.local' from generate_series(1, 3) n;

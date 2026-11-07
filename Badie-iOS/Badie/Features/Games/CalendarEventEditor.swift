@@ -14,7 +14,7 @@ struct CalendarEventEditor: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> EKEventEditViewController {
         let store = EKEventStore()
         let event = EKEvent(eventStore: store)
-        event.title = String(localized: "🏸 \(game.mode.title)球局")
+        event.title = String(localized: "羽毛球 · \(game.mode.title)")
         event.startDate = game.slot.startTime
         event.endDate = game.slot.endTime
         event.location = "\(game.court.name), \(game.court.address)"

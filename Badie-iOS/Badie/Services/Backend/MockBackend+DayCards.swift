@@ -34,6 +34,7 @@ extension MockBackend {
             let avatar: String?
             let cardColor: String?
             let cardPhoto: String?
+            let gender: String?
         }
 
         struct Place: Decodable {
@@ -63,6 +64,11 @@ extension MockBackend {
             // 存进缓存：卡片上的头像、背景、资料页都从这里读
             cacheRemoteUser(id: item.user.id, nickname: item.user.nickname, rating: item.user.rating, tag: item.user.tag)
             applyCardColor(item.user.cardColor, to: item.user.id)
+            // 性别：筛选“对方性别”要用
+            if var user = db.users[item.user.id], item.user.gender != nil {
+                user.gender = Gender(server: item.user.gender)
+                db.users[item.user.id] = user
+            }
         }
         // 前两张的照片先下好再显示，后面的边刷边下
         for item in items.prefix(2) {

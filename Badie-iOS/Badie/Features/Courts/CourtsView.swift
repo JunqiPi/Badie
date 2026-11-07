@@ -14,11 +14,6 @@ struct CourtsView: View {
     @State private var addDraft: AddVenueDraft?
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "附近球馆")) {
                 HStack(spacing: AppTheme.Spacing.sm) {
@@ -96,6 +91,7 @@ struct CourtsView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.vertical, AppTheme.Spacing.lg)
             }
+            .refreshesEverything()
         }
         .sheet(item: $selectedCourt) { court in
             CourtDetailSheet(court: court)

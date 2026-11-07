@@ -94,7 +94,7 @@ extension MockBackend {
             guard let self, let game = self.db.games[gameId], let claimed = game.resultReports.first else { return }
             for botId in game.playerIds where self.isBot(botId) && game.report(by: botId) == nil {
                 self.addResultReport(ResultReport(reporterId: botId, winningTeam: claimed.winningTeam,
-                                                  score: claimed.score, reportedAt: Date()), to: gameId)
+                                                  score: claimed.score, reportedAt: Date(), teamGames: claimed.teamGames), to: gameId)
             }
         }
     }

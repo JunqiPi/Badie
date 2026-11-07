@@ -20,11 +20,6 @@ struct GameDetailView: View {
     private var me: String? { appState.currentUser?.id }
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "球局详情")) {
                 if let game {
@@ -73,7 +68,7 @@ struct GameDetailView: View {
                 CompleteGameSheet(game: game, isConfirming: purpose == .confirm,
                                   initial: purpose == .confirm ? suggestedSubmission(game) : nil) { submission in
                     Task {
-                        if purpose == .confirm || submission.choice == .unsure {
+                        if purpose == .confirm {
                             await confirmResult(game, submission)
                         } else {
                             await complete(game, submission)
@@ -146,6 +141,7 @@ struct GameDetailView: View {
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.bottom, AppTheme.Spacing.xxxl)
         }
+        .refreshesEverything()
     }
 
     // MARK: Venue
@@ -474,7 +470,12 @@ struct GameDetailView: View {
                 Text(resultHeadline(status: status, outcome: outcome))
                     .font(AppTheme.Typography.headline)
                 Spacer()
-                if !score.isEmpty {
+                // 确认过的局数（我方 : 对方），没有就显示比分
+                if let rounds = confirmedRounds(game, status: status) {
+                    Text("\(rounds.mine) : \(rounds.theirs)")
+                        .font(AppTheme.Typography.headline)
+                        .monospacedDigit()
+                } else if !score.isEmpty {
                     Text(score)
                         .font(AppTheme.Typography.footnoteBold)
                         .monospacedDigit()
@@ -506,8 +507,17 @@ struct GameDetailView: View {
         .card(AppTheme.Colors.surface)
     }
 
+    private func confirmedRounds(_ game: Game, status: ResultStatus) -> (mine: Int, theirs: Int)? {
+        guard let me else { return nil }
+        switch status {
+        case .verified, .draw: return game.reportedGames(for: me)
+        default: return nil
+        }
+    }
+
     private func resultHeadline(status: ResultStatus, outcome: Bool?) -> String {
         if status == .friendly { return String(localized: "友谊局") }
+        if status == .draw { return String(localized: "平局") }
         switch outcome {
         case true?: return String(localized: "赢下了这场")
         case false?: return String(localized: "惜败，下次再来")
@@ -528,6 +538,8 @@ struct GameDetailView: View {
             return String(localized: "双方说法不一致，本场不计入胜率")
         case .friendly:
             return String(localized: "友谊局，不计胜负")
+        case .draw:
+            return String(localized: "平局 · 局数计入本月胜率")
         case .unsure:
             return String(localized: "有一方记不清，本场不计入胜率")
         case .expired:
@@ -541,6 +553,7 @@ struct GameDetailView: View {
         case .verified: return "checkmark.seal.fill"
         case .disputed: return "exclamationmark.triangle.fill"
         case .friendly: return "hand.wave.fill"
+        case .draw: return "equal.circle.fill"
         case .unsure: return "questionmark.circle.fill"
         case .expired: return "clock.badge.xmark"
         }
@@ -552,6 +565,7 @@ struct GameDetailView: View {
         case .verified: return AppTheme.Colors.mint
         case .disputed: return AppTheme.Colors.pink
         case .friendly: return AppTheme.Colors.sky
+        case .draw: return AppTheme.Colors.mint
         case .unsure, .expired: return AppTheme.Colors.surfaceMuted
         }
     }
@@ -568,7 +582,7 @@ struct GameDetailView: View {
     /// 其他球员各自报的结果（以我方视角描述）
     private func otherClaims(_ game: Game) -> [String] {
         guard let me, let mine = game.team(of: me) else { return [] }
-        return game.resultReports.filter { $0.reporterId != me }.map { report in
+        return game.resultReports.filter { $0.reporterId != me && !$0.reporterId.isEmpty }.map { report in
             let name = friendManager.user(id: report.reporterId)?.nickname ?? String(localized: "球友")
             if report.unsure { return String(localized: "\(name)：记不清了") }
             if let games = game.games(of: report, for: me) { return String(localized: "\(name) 报：我方 \(games.mine) : \(games.theirs) 对方") }
@@ -626,6 +640,7 @@ struct GameDetailView: View {
         resultSheet = nil
         do {
             try await matchManager.complete(game, didWin: nil, score: submission.score, games: submission.games)
+            if submission.choice == .unsure { try await appState.backend.reportResultUnsure(gameId: game.id) }
             appState.showToast(String(localized: "球局已完成，去给球友评分"), style: .success)
             if let first = surveyManager.pending(forGame: game.id).first {
                 router.open(.survey(pendingId: first.id))
@@ -650,16 +665,16 @@ struct GameDetailView: View {
         }
     }
 
-    /// 预选：我上次报的，否则别人报的（换成我方视角）。只报了输赢、没报局数的老记录按 1 局算
+    /// 预选：我上次报的，否则别人报的（换成我方视角）。只报了输赢、没报局数的不预填（不凭空造出 1:0）
     private func suggestedSubmission(_ game: Game) -> CompleteGameSheet.Submission? {
-        guard let me, let mine = game.team(of: me),
+        guard let me, game.team(of: me) != nil,
               let report = game.report(by: me) ?? game.resultReports.first(where: { !$0.unsure }) else { return nil }
         if report.unsure { return .init(choice: .unsure, mine: 0, theirs: 0, score: "") }
         if let games = game.games(of: report, for: me) {
             return .init(choice: .counted, mine: games.mine, theirs: games.theirs, score: report.score)
         }
-        guard let winner = report.winningTeam else { return .init(choice: .practice, mine: 0, theirs: 0, score: report.score) }
-        return .init(choice: .counted, mine: winner == mine ? 1 : 0, theirs: winner == mine ? 0 : 1, score: report.score)
+        guard report.winningTeam != nil else { return .init(choice: .practice, mine: 0, theirs: 0, score: "") }
+        return nil
     }
 }
 
@@ -703,11 +718,16 @@ struct CompleteGameSheet: View {
     @State private var showsScore = false
 
     private var scoreIsValid: Bool { GameResult.isValidScore(score) }
+    /// 填了每局比分、又手动改了局数，两边对不上
+    private var scoreDisagrees: Bool {
+        guard let games = GameResult.games(fromScore: score) else { return false }
+        return games.mine != mine || games.theirs != theirs
+    }
     private var isSingles: Bool { game.mode == .singles }
 
     private var canSubmit: Bool {
         switch choice {
-        case .counted?: return mine + theirs >= 1 && scoreIsValid
+        case .counted?: return mine + theirs >= 1 && scoreIsValid && !scoreDisagrees
         case .practice?, .unsure?: return true
         case nil: return false
         }
@@ -748,7 +768,8 @@ struct CompleteGameSheet: View {
                 if showsScore {
                     BrutalTextField(label: String(localized: "每局比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
                                     keyboard: .numbersAndPunctuation,
-                                    errorText: scoreIsValid ? nil : String(localized: "比分只能填数字，如 21:18 19:21。"),
+                                    errorText: !scoreIsValid ? String(localized: "比分只能填数字，如 21:18 19:21。")
+                                        : choice == .counted && scoreDisagrees ? String(localized: "比分和上面的局数对不上。") : nil,
                                     characterLimit: 40)
                         .onChange(of: score) { _, value in applyScore(value) }
                 } else {
@@ -778,7 +799,7 @@ struct CompleteGameSheet: View {
         .safeAreaInset(edge: .bottom) {
             Button(isConfirming ? String(localized: "提交赛果") : String(localized: "完成并去评价")) {
                 guard let choice else { return }
-                onComplete(Submission(choice: choice, mine: mine, theirs: theirs, score: choice == .unsure ? "" : score))
+                onComplete(Submission(choice: choice, mine: mine, theirs: theirs, score: choice == .counted ? score : ""))
             }
             .buttonStyle(.brutalPrimary)
             .disabled(!canSubmit)

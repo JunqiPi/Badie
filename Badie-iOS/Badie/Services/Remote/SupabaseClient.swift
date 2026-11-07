@@ -291,6 +291,13 @@ final class SupabaseClient {
         _ = try await send("storage/v1/object/\(bucket)/\(path)", method: "DELETE")
     }
 
+    /// 文件夹里的文件名（不含文件夹），最多 100 个
+    func listFiles(_ bucket: String, folder: String) async throws -> [String] {
+        struct Item: Decodable { let name: String }
+        let data = try await send("storage/v1/object/list/\(bucket)", body: ["prefix": folder, "limit": 100])
+        return try JSONDecoder().decode([Item].self, from: data).map(\.name)
+    }
+
     /// 下载公开桶里的文件（不需要登录）
     func download(_ bucket: String, path: String) async throws -> Data {
         try await send("storage/v1/object/public/\(bucket)/\(path)", method: "GET", authorized: false)

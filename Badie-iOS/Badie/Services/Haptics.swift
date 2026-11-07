@@ -81,8 +81,12 @@ enum AvatarPhotos {
         guard crop.width > 0 else { return nil }
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
+        format.opaque = true
         let k = size.width / crop.width
-        let output = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+        let output = UIGraphicsImageRenderer(size: size, format: format).image { context in
+            // JPEG 没有透明：透明的 PNG 先铺白底，不然是黑的
+            UIColor.white.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
             image.draw(in: CGRect(x: -crop.minX * k, y: -crop.minY * k, width: image.size.width * k, height: image.size.height * k))
         }
         for quality in [0.8, 0.65, 0.5, 0.35] {

@@ -15,11 +15,6 @@ struct ProfileView: View {
     @State private var showsSupport = false
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                 LargeTitleHeader(title: String(localized: "我的")) {
@@ -58,6 +53,7 @@ struct ProfileView: View {
             .padding(.top, AppTheme.Spacing.sm)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
+            .refreshesEverything()
         .sheet(isPresented: $showRadius) {
             TravelRadiusSheet()
                 .presentationDetents([.height(320)])

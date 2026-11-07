@@ -187,10 +187,10 @@ struct RecurringTimeSlot: Identifiable, Codable, Hashable {
         self.isActive = isActive
     }
 
-    static let weekdayNames = [
+    static var weekdayNames: [String] { [
         String(localized: "周日"), String(localized: "周一"), String(localized: "周二"), String(localized: "周三"),
         String(localized: "周四"), String(localized: "周五"), String(localized: "周六")
-    ]
+    ] }
 
     var dayOfWeekName: String {
         (1...7).contains(dayOfWeek) ? Self.weekdayNames[dayOfWeek - 1] : String(localized: "未知")
@@ -234,15 +234,25 @@ extension Array where Element == RecurringTimeSlot {
 
 enum DateText {
     /// 时刻，12/24 小时制随系统地区
-    private static let timeFormatter = makeFormatter(template: "jmm")
+    private static var timeFormatter = makeFormatter(template: "jmm")
     /// 月日 + 星期，如中文 "10月15日周三"、英文 "Wed, Oct 15"
-    private static let dayFormatter = makeFormatter(template: "MMMdEEE")
+    private static var dayFormatter = makeFormatter(template: "MMMdEEE")
     /// 数字月日，如 "10/15"
-    private static let shortDayFormatter = makeFormatter(template: "Md")
+    private static var shortDayFormatter = makeFormatter(template: "Md")
+
+    /// 在 App 里换了语言：日期按新语言重新排
+    static func reset() {
+        timeFormatter = makeFormatter(template: "jmm")
+        dayFormatter = makeFormatter(template: "MMMdEEE")
+        shortDayFormatter = makeFormatter(template: "Md")
+    }
 
     private static func makeFormatter(template: String) -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = .current
+        // 语言用 App 里选的，地区（12/24 小时制等）沿用系统的
+        var components = Locale.Components(locale: .current)
+        components.languageComponents = Locale.Language.Components(identifier: AppLanguage.current)
+        formatter.locale = Locale(components: components)
         formatter.setLocalizedDateFormatFromTemplate(template)
         return formatter
     }

@@ -57,11 +57,6 @@ struct GroupsView: View {
     @EnvironmentObject private var router: Router
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "球群 · 固定局")) {
                 IconButton(systemName: "plus", accessibilityLabel: String(localized: "建一个球群")) {
@@ -91,6 +86,7 @@ struct GroupsView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .refreshesEverything()
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
@@ -133,11 +129,6 @@ struct GroupDetailView: View {
     private var me: String? { appState.currentUser?.id }
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: group?.name ?? String(localized: "球群")) {
                 if let group, let venue = groupManager.venue(of: group) {
@@ -182,6 +173,7 @@ struct GroupDetailView: View {
                     .padding(.horizontal, AppTheme.Spacing.screen)
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
+            .refreshesEverything()
             } else {
                 EmptyStateView(icon: "person.3", title: String(localized: "没有找到这个球群"))
                 Spacer()

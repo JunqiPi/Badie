@@ -74,12 +74,13 @@ struct HomeView: View {
             .padding(.top, AppTheme.Spacing.sm)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
-        .fullScreenCover(isPresented: $appState.showsDayCards) {
-            DayCandidatesView(day: matchManager.draft.day)
-        }
+        // 下拉刷新只给首页这一屏（放在弹出的全屏页之前，不然卡片页和筛选页也会跟着下拉刷新）
         .refreshesEverything {
             reloadPlayers()
             reloadRankings()
+        }
+        .fullScreenCover(isPresented: $appState.showsDayCards) {
+            DayCandidatesView(day: matchManager.draft.day)
         }
         .task {
             await friendManager.refreshRegulars()

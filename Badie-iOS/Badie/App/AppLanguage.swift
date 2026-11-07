@@ -2,7 +2,8 @@ import Foundation
 import ObjectiveC
 
 /// App 里自己选语言（不用去系统设置）。
-/// - 选的语言写进本 App 的 AppleLanguages：和系统“App 首选语言”存在同一个地方，下次启动系统就按它来（日期格式、App 名字也跟着变）
+/// - 选的语言写进本 App 的 AppleLanguages：和系统“设置 → Badie → 语言”存在同一个地方，两边改的是同一个值，
+///   下次启动系统就按它来（日期格式、App 名字、权限说明也跟着变）
 /// - 这次启动马上生效：把 Bundle.main 的文字查找转到所选语言的 .lproj；界面用新的 locale 从头建一遍
 enum AppLanguage {
     /// 和服务器（通知、邮件）一致的 10 种语言
@@ -10,7 +11,6 @@ enum AppLanguage {
     /// 源语言：string catalog 里的 key 就是简体中文
     static let source = "zh-Hans"
 
-    private static let chosenKey = "BadieLanguage"
     private static let appleLanguages = "AppleLanguages"
 
     /// 每种语言用它自己的写法显示
@@ -30,18 +30,28 @@ enum AppLanguage {
         }
     }
 
-    /// 在 App 里选过的语言；nil = 跟随系统
+    /// 只给本 App 设的语言（在 App 里或系统设置里选的）；nil = 跟随系统
     static var chosen: String? {
-        UserDefaults.standard.string(forKey: chosenKey).flatMap { supported.contains($0) ? $0 : nil }
+        guard let value = CFPreferencesCopyValue(appleLanguages as CFString, kCFPreferencesCurrentApplication,
+                                                 kCFPreferencesCurrentUser, kCFPreferencesAnyHost) as? [String],
+              let first = value.first else { return nil }
+        return Bundle.preferredLocalizations(from: supported, forPreferences: [first]).first
     }
 
     /// 现在实际用的语言
     static var current: String { chosen ?? system }
 
-    /// 跟随系统时用哪种：按系统的语言顺序挑第一个我们有的
+    /// 跟随系统时用哪种：按系统的语言顺序挑第一个我们有的（都没有就用英文）
     static var system: String {
-        let preferences = UserDefaults.standard.stringArray(forKey: appleLanguages) ?? Locale.preferredLanguages
-        return Bundle.preferredLocalizations(from: supported, forPreferences: preferences).first ?? "en"
+        // 给本 App 设了语言时，UserDefaults 读到的是 App 这一层，要读系统那一层
+        let preferences = chosen == nil
+            ? UserDefaults.standard.stringArray(forKey: appleLanguages)
+            : CFPreferencesCopyValue(appleLanguages as CFString, kCFPreferencesAnyApplication,
+                                     kCFPreferencesCurrentUser, kCFPreferencesAnyHost) as? [String]
+        let match = Bundle.preferredLocalizations(from: supported, forPreferences: preferences ?? Locale.preferredLanguages).first
+        // preferredLocalizations 找不到时会随便给一个：只有真的在系统语言里才算数
+        guard let match, (preferences ?? []).contains(where: { $0.hasPrefix(match.prefix(2)) }) else { return "en" }
+        return match
     }
 
     static var locale: Locale { Locale(identifier: current) }
@@ -57,15 +67,15 @@ enum AppLanguage {
     /// 换语言（nil = 跟随系统）
     static func choose(_ code: String?) {
         let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: "BadieLanguage")
         if let code, supported.contains(code) {
-            defaults.set(code, forKey: chosenKey)
             defaults.set([code], forKey: appleLanguages)
         } else {
-            defaults.removeObject(forKey: chosenKey)
             // 删掉本 App 这一层，读到的就是系统的语言顺序
             defaults.removeObject(forKey: appleLanguages)
         }
         LocalizedBundle.use(current)
+        DateText.reset()
     }
 }
 

@@ -23,11 +23,6 @@ struct RoomLobbyView: View {
     private var me: String? { appState.currentUser?.id }
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: room?.visibility == .publicListing ? String(localized: "公开球局") : String(localized: "私密房间")) {
                 if let room, !room.code.isEmpty {
@@ -54,6 +49,7 @@ struct RoomLobbyView: View {
                     .padding(.horizontal, AppTheme.Spacing.screen)
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
+            .refreshesEverything()
                 footer(room)
             } else {
                 Spacer()

@@ -25,15 +25,7 @@ struct RootView: View {
                     .transition(.opacity)
             }
         }
-        .overlay(alignment: .top) {
-            if let toast = appState.toast {
-                ToastView(toast: toast)
-                    .padding(.top, AppTheme.Spacing.sm)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .onTapGesture { appState.toast = nil }
-                    .zIndex(10)
-            }
-        }
+        .showsToasts()
         .tint(AppTheme.Colors.ink)
         .preferredColorScheme(appState.appearance.colorScheme)
         .onChange(of: scenePhase) { _, phase in
@@ -111,4 +103,25 @@ extension View {
             .toolbar(.hidden, for: .navigationBar)
             .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
+}
+
+/// 提示条：根页面和全屏页（全屏页会盖住根页面的提示）各挂一个
+struct ToastHost: ViewModifier {
+    @EnvironmentObject private var appState: AppState
+
+    func body(content: Content) -> some View {
+        content.overlay(alignment: .top) {
+            if let toast = appState.toast {
+                ToastView(toast: toast)
+                    .padding(.top, AppTheme.Spacing.sm)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .onTapGesture { appState.toast = nil }
+                    .zIndex(10)
+            }
+        }
+    }
+}
+
+extension View {
+    func showsToasts() -> some View { modifier(ToastHost()) }
 }

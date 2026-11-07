@@ -23,6 +23,13 @@ struct DayCandidatesView: View {
     @State private var showsFilter = false
     /// 全屏页上面要自己弹资料页（首页那层弹不出来）
     @State private var profile: PlayerSheetItem?
+    /// 卡片正在飞走：这段时间不再接受右滑、左滑和按钮（防止连点约两次）
+    @State private var leaving = false
+
+    /// 没开定位：不能按默认城市找人（会约到别的城市）
+    private var needsLocation: Bool {
+        appState.isRemote && locationManager.currentLocation == nil
+    }
 
     /// 筛选后的
     private var visible: [MockBackend.DayCandidate] { filtered(by: filter) }
@@ -52,14 +59,20 @@ struct DayCandidatesView: View {
 
             filterBar
 
-            if isLoading {
+            if needsLocation {
+                Spacer()
+                EmptyStateView(icon: "location", title: String(localized: "开启定位"),
+                               message: String(localized: "用来找附近的球馆和球友。"),
+                               actionTitle: String(localized: "开启定位")) { enableLocation() }
+                Spacer()
+            } else if isLoading {
                 Spacer()
                 ProgressView()
                 Spacer()
             } else if let card = visible.first {
                 ZStack {
                     if visible.count > 1 {
-                        cardView(visible[1]).scaleEffect(0.96).offset(y: 10).allowsHitTesting(false)
+                        cardView(visible[1]).scaleEffect(0.96).offset(y: 10).allowsHitTesting(false).accessibilityHidden(true)
                     }
                     cardView(card)
                         .overlay(alignment: drag.width > 0 ? .topLeading : .topTrailing) { swipeStamp }
@@ -67,8 +80,9 @@ struct DayCandidatesView: View {
                         .rotationEffect(.degrees(drag.width / 25))
                         .gesture(
                             DragGesture()
-                                .onChanged { drag = $0.translation }
+                                .onChanged { if !leaving { drag = $0.translation } }
                                 .onEnded { value in
+                                    guard !leaving else { return }
                                     if value.translation.width > 110 { like(card) }
                                     else if value.translation.width < -110 { skip(card) }
                                     else { withAnimation(AppTheme.Motion.standard) { drag = .zero } }
@@ -82,6 +96,7 @@ struct DayCandidatesView: View {
                     roundButton("xmark", tint: AppTheme.Colors.surface, label: String(localized: "跳过")) { skip(card) }
                     roundButton("heart.fill", tint: AppTheme.Colors.lime, label: String(localized: "约 TA")) { like(card) }
                 }
+                .disabled(leaving)
                 .padding(.bottom, AppTheme.Spacing.lg)
             } else if !cards.isEmpty {
                 Spacer()
@@ -98,6 +113,12 @@ struct DayCandidatesView: View {
             }
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
+        .showsToasts()
+        // 在资料页里点了私信、约球等：先关掉这一页，新页面才看得见
+        .onChange(of: router.navigations) { _, _ in dismiss() }
+        .onChange(of: locationManager.currentLocation == nil) { _, missing in
+            if !missing { Task { await load(showsErrors: true) } }
+        }
         .task { await keepFresh() }
         .sheet(item: $profile) { item in
             PlayerProfileSheet(userId: item.id)
@@ -164,7 +185,9 @@ struct DayCandidatesView: View {
         var chips: [Chip] = []
         if filter.event != .any { chips.append(Chip(title: filter.event.title) { $0.event = .any }) }
         if !filter.venueIds.isEmpty {
-            let names = venueCounts.filter { filter.venueIds.contains($0.venue.id) }.map(\.venue.name)
+            let names = filter.venueIds.sorted().map { id in
+                venueCounts.first { $0.venue.id == id }?.venue.name ?? filter.venueNames[id] ?? id
+            }
             let title = names.count == 1 ? names[0] : String(localized: "\(filter.venueIds.count) 家球馆")
             chips.append(Chip(title: title) { $0.venueIds = [] })
         }
@@ -278,6 +301,7 @@ struct DayCandidatesView: View {
     }
 
     private func next(_ card: MockBackend.DayCandidate, toRight: Bool) {
+        leaving = true
         seen.insert(card.id)
         withAnimation(AppTheme.Motion.standard) {
             drag = CGSize(width: toRight ? 600 : -600, height: 0)
@@ -286,10 +310,31 @@ struct DayCandidatesView: View {
             try? await Task.sleep(nanoseconds: 220_000_000)
             cards.removeAll { $0.id == card.id }
             drag = .zero
+            leaving = false
+        }
+    }
+
+    /// 没约成（网络、撞时间等）：卡片放回最前面，还能再滑；TA 已经约不了的就不放回
+    private func putBack(_ card: MockBackend.DayCandidate, after error: Error) {
+        if case RemoteError.server("not_available")? = error as? RemoteError { return }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            seen.remove(card.id)
+            cards.removeAll { $0.id == card.id }
+            cards.insert(card, at: 0)
+        }
+    }
+
+    private func enableLocation() {
+        if locationManager.isDenied, let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        } else {
+            locationManager.requestAuthorization()
         }
     }
 
     private func skip(_ card: MockBackend.DayCandidate) {
+        guard !leaving else { return }
         Haptics.selection()
         next(card, toRight: false)
         Task { await appState.backend.skipCandidate(card.ticketId) }
@@ -297,7 +342,7 @@ struct DayCandidatesView: View {
 
     /// 右滑和点爱心一样：直接约，不再让人选
     private func like(_ card: MockBackend.DayCandidate) {
-        guard let venue = filter.venue(for: card) else { return }
+        guard !leaving, let venue = filter.venue(for: card) else { return }
         Haptics.tap()
         next(card, toRight: true)
         let start = Self.inviteStart(for: card)
@@ -314,8 +359,22 @@ struct DayCandidatesView: View {
                     appState.showToast(String(localized: "已开一个双打局并邀请 TA，附近的人可以加入"), style: .success)
                 }
             } catch {
-                appState.showError(error)
+                appState.showToast(Self.inviteError(error), style: .error)
+                putBack(card, after: error)
             }
+        }
+    }
+
+    /// 卡片页上没有让人选时间，有些通用的错误说法会让人看不懂，换成这里的说法
+    static func inviteError(_ error: Error) -> String {
+        guard case RemoteError.server(let code)? = error as? RemoteError else { return error.localizedDescription }
+        switch code {
+        case "overlapping": return String(localized: "这个时间你已经有球局或待确认的约球了。")
+        case "too_soon", "invalid_slot": return String(localized: "TA 的时间快到了，来不及约了。")
+        case "too_many_requests": return String(localized: "今天约得太多了，明天再来。")
+        case "too_many_rooms": return String(localized: "你已经开了 3 个局，先关掉一个再约双打。")
+        case "invalid_event": return String(localized: "约混双要先在资料里填性别。")
+        default: return error.localizedDescription
         }
     }
 

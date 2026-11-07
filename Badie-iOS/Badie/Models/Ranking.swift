@@ -24,8 +24,10 @@ enum ResultStatus: Hashable {
     case verified(winningTeam: Int)
     /// 双方说法不一致：期限内可以改，改不到一致就不计入
     case disputed
-    /// 双方都选了不计胜负
+    /// 双方都选了不计胜负（没计分，就是练球）
     case friendly
+    /// 平局：两边赢的局一样多，局数计入胜率
+    case draw
     /// 有一队全员记不清，无法确认
     case unsure
     /// 期限内没凑齐确认
@@ -62,11 +64,13 @@ extension Game {
     func resultStatus(now: Date = Date()) -> ResultStatus {
         let claims = resultReports.filter { !$0.unsure }
         let outcomes = Set(claims.map(\.winningTeam))
-        // 局数也要一致（没填局数的不比）
-        if outcomes.count > 1 || Set(claims.compactMap(\.teamGames)).count > 1 { return .disputed }
+        // 局数也要一致（没填局数的不比）；“练球”（没填局数）和“平局”（填了一样多）是两种说法
+        let friendlyKinds = Set(claims.filter { $0.winningTeam == nil }.map { $0.teamGames == nil })
+        if outcomes.count > 1 || Set(claims.compactMap(\.teamGames)).count > 1 || friendlyKinds.count > 1 { return .disputed }
         let claimingTeams = Set(claims.compactMap { team(of: $0.reporterId) })
         if claimingTeams.count == teams.count, let outcome = outcomes.first {
-            return outcome.map { .verified(winningTeam: $0) } ?? .friendly
+            if let outcome { return .verified(winningTeam: outcome) }
+            return claims.contains { $0.teamGames != nil } ? .draw : .friendly
         }
         if teams.contains(where: { $0.allSatisfy { report(by: $0)?.unsure == true } }) { return .unsure }
         return now > resultDeadline ? .expired : .awaiting
@@ -77,7 +81,7 @@ extension Game {
         guard status == .completed, now <= resultDeadline else { return false }
         switch resultStatus(now: now) {
         case .awaiting, .disputed, .unsure: return true
-        case .verified, .friendly, .expired: return false
+        case .verified, .friendly, .draw, .expired: return false
         }
     }
 }

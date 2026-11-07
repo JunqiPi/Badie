@@ -13,11 +13,6 @@ struct ChallengesView: View {
     @State private var acceptingDoubles: Challenge?
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         let me = appState.currentUser?.id ?? ""
         let all = appState.backend.challenges()
         // 待回应的排在前面（列表本身已按时间新到旧）
@@ -62,6 +57,7 @@ struct ChallengesView: View {
                 .padding(.top, AppTheme.Spacing.sm)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .refreshesEverything()
         }
         .sheet(item: $acceptingDoubles) { challenge in
             AcceptDoublesSheet(challenge: challenge) { partnerId in

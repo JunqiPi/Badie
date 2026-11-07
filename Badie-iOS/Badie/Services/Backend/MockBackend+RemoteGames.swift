@@ -109,14 +109,23 @@ extension MockBackend {
             emit(.gamesChanged)
             return
         }
-        remotePoolByDay = nil
+        // 让各处的缓存都过期（数字先照旧显示，拉到新的再换，不会闪成 0）
+        remotePoolByDay = remotePoolByDay.map { ($0.center, $0.radiusKm, .distantPast, $0.counts) }
         remotePoolLoadedAt = [:]
+        remoteNearbyRooms = remoteNearbyRooms.map { ($0.center, $0.ids, .distantPast) }
+        remoteNearbyGroups = remoteNearbyGroups.map { ($0.center, $0.ids, .distantPast) }
+        remoteRoomLoadedAt = [:]
+        remoteGroupLoadedAt = [:]
+        remoteBoardLoadedAt = [:]
+        remoteVenuesLoaded = nil
         await refreshRemoteActivity(force: true)
         _ = try? await refreshRemoteProfile()
         try? await refreshRemoteRegulars(force: true)
         _ = try? await loadRemoteRecord()
         emit(.matchmakingChanged)
         emit(.rankingsChanged)
+        emit(.groupsChanged)
+        emit(.roomsChanged)
     }
 
     /// 拉取我的请求、提议、球局、球友、会话、通知写进缓存。force 为 false 时 10 秒内只刷新一次
@@ -383,8 +392,8 @@ extension MockBackend {
             reports.append(ResultReport(reporterId: opponent, winningTeam: index(result.outcome), score: remote.score ?? "",
                                         reportedAt: Date(), teamGames: remote.rounds.map { [$0.team1, $0.team2] }))
         case "disputed":
-            let mine = reports.first?.winningTeam
-            reports.append(ResultReport(reporterId: opponent, winningTeam: mine == 0 ? 1 : 0, score: "", reportedAt: Date()))
+            // 服务器只说有分歧，不说谁报了什么：放两份互相矛盾、没有人名的说法，界面只显示“双方填的不一样”
+            reports += [0, 1].map { ResultReport(reporterId: "", winningTeam: $0, score: "", reportedAt: Date()) }
         case "unsure" where remote.myReport?.outcome != nil:
             reports += opponents.map { ResultReport(reporterId: $0, winningTeam: nil, score: "", reportedAt: Date(), unsure: true) }
         default:

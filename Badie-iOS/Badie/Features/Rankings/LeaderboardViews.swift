@@ -84,11 +84,6 @@ struct WeeklyLeaderboardView: View {
     }
 
     var body: some View {
-        page.refreshesEverything()
-    }
-
-    @ViewBuilder
-    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "排行榜")) {
                 if venueId == nil {
@@ -115,6 +110,7 @@ struct WeeklyLeaderboardView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .refreshesEverything()
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .onAppear {

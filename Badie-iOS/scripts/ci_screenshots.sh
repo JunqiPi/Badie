@@ -30,7 +30,7 @@ xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
 # 每一轮：文件名前缀 外观 语言 区域 页面列表
 capture() {
   local prefix="$1" appearance="$2" language="$3" locale="$4" list="$5"
-  # EXTRA_ARGS：额外的启动参数（比如 -BadieLanguage ko：在 App 里选的语言）
+  # EXTRA_ARGS：额外的启动参数
   xcrun simctl ui "$UDID" appearance "$appearance" || true
   for screen in $list; do
     xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
@@ -68,5 +68,3 @@ capture en light en en_US "$EN_SCREENS"
 for pair in zh-Hant:zh_TW ja:ja_JP ko:ko_KR id:id_ID ms:ms_MY th:th_TH vi:vi_VN hi:hi_IN; do
   capture "${pair%%:*}" light "${pair%%:*}" "${pair##*:}" "home levelResult welcome"
 done
-# 在 App 里选了韩语、系统是简体中文：界面应该全是韩语
-EXTRA_ARGS="-BadieLanguage ko" capture inapp-ko light zh-Hans zh_CN "home settings editProfile"

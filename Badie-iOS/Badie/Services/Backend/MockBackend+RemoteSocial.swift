@@ -85,6 +85,7 @@ extension MockBackend {
         let suspendedUntil: String?
         let cardColor: String?
         let cardPhoto: String?
+        let avatar: String?
     }
 
     // MARK: 刷新
@@ -414,6 +415,7 @@ extension MockBackend {
         remoteNoShows[card.id] = (card.recentNoShows ?? 0, Self.suspension(card.suspendedUntil))
         remoteMessageOptions[card.id] = card.message
         applyCardColor(card.cardColor, to: card.id)
+        await applyAvatar(card.avatar, to: card.id)
         await applyCardPhoto(card.cardPhoto, to: card.id)
         if let rate = card.winRate {
             remoteWinRates[card.id] = rate.rate

@@ -135,14 +135,15 @@ struct GameResult: Codable, Hashable {
     var didWin: Bool?
     var score: String
 
-    /// 每局比分（“21:18 19:21 21:15”，前面的数是我方）数出两边各赢了几局；一局都数不出来返回 nil
+    /// 每局比分（“21:18 19:21 21:15”，前面的数是我方）数出两边各赢了几局；一局都数不出来返回 nil。
+    /// 每局至少有一边到 11 分才算（“2:1”这种是局数，不是比分）
     static func games(fromScore score: String) -> (mine: Int, theirs: Int)? {
-        let pattern = #"(\d{1,2})\s*[:/-]\s*(\d{1,2})"#
+        let pattern = #"(?<!\d)(\d{1,2})\s*[:/-]\s*(\d{1,2})(?!\d)"#
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
         var mine = 0, theirs = 0
         for match in regex.matches(in: score, range: NSRange(score.startIndex..., in: score)) {
             guard let a = Range(match.range(at: 1), in: score).flatMap({ Int(score[$0]) }),
-                  let b = Range(match.range(at: 2), in: score).flatMap({ Int(score[$0]) }), a != b else { continue }
+                  let b = Range(match.range(at: 2), in: score).flatMap({ Int(score[$0]) }), a != b, max(a, b) >= 11 else { continue }
             if a > b { mine += 1 } else { theirs += 1 }
         }
         return mine + theirs > 0 ? (mine, theirs) : nil
@@ -201,7 +202,7 @@ struct Game: Identifiable, Codable, Hashable {
 
     /// 可标记完成：开赛后
     func canComplete(now: Date = Date()) -> Bool {
-        status == .confirmed && now >= slot.startTime
+        status == .confirmed && now >= slot.startTime && now <= slot.endTime.addingTimeInterval(7 * 86400)
     }
 
     /// 现在取消是否属于临时取消

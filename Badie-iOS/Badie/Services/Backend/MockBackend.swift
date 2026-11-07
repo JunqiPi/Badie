@@ -52,6 +52,8 @@ final class MockBackend {
     var remoteAvatarPath: String?
     /// 我的卡片背景照片在桶里的位置
     var remoteCardPhotoPath: String?
+    /// 别人的卡片背景照片：只放内存（首页一天能刷几十张，存进缓存文件会越来越大）
+    var remoteCardPhotos: [String: Data] = [:]
     var remoteAvatarChecked: Set<String> = []
     var remoteAvatarQueue: [String] = []
     /// 有多少人在找：每个请求的人数，和按天的人数（上次拉取的地点、半径和时间）
@@ -74,8 +76,11 @@ final class MockBackend {
     init(store: DatabaseStore, seedsWorld: Bool = true) {
         self.store = store
         db = store.load() ?? Database()
+        // 老版本把别人的卡片背景也存进了缓存文件：清掉，只留自己的
+        let mine = db.currentUserId.map(AvatarPhotos.cardKey)
+        db.avatarPhotos = db.avatarPhotos.filter { !$0.key.hasPrefix("card:") || $0.key == mine }
         if seedsWorld { ensureWorld() }
-        AvatarPhotos.source = { [weak self] userId in self?.db.avatarPhotos[userId] }
+        AvatarPhotos.source = { [weak self] key in self?.db.avatarPhotos[key] ?? self?.remoteCardPhotos[key] }
     }
 
     // MARK: Events
@@ -386,7 +391,7 @@ final class MockBackend {
         guard var user = currentUser else { throw BackendError.notSignedIn }
         await networkDelay()
         db.avatarPhotos[user.id] = jpeg
-        user.avatar.photoVersion = (user.avatar.photoVersion ?? 0) + 1
+        user.avatar.photoVersion = Int.random(in: 1...Int(Int32.max))
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))
@@ -400,11 +405,23 @@ final class MockBackend {
         guard var user = currentUser else { throw BackendError.notSignedIn }
         await networkDelay()
         db.avatarPhotos[AvatarPhotos.cardKey(user.id)] = jpeg
-        user.avatar.cardPhotoVersion = (user.avatar.cardPhotoVersion ?? 0) + 1
+        user.avatar.cardPhotoVersion = Int.random(in: 1...Int(Int32.max))
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))
         return user
+    }
+
+    /// 卡片颜色：点了就存
+    func setCardColor(_ color: CardColor) {
+        guard var user = currentUser, user.avatar.cardColor != color else { return }
+        user.avatar.cardColor = color
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+        runRemote { remote in
+            try await remote.update("profiles", query: "id=eq.\(user.id)", ["card_color": color.rawValue])
+        }
     }
 
     func removeCardPhoto() {

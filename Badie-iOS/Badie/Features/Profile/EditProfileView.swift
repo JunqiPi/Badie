@@ -212,6 +212,7 @@ struct EditProfileView: View {
                             Button {
                                 Haptics.selection()
                                 cardColor = color
+                                appState.backend.setCardColor(color)
                             } label: {
                                 Circle()
                                     .fill(color.fill)

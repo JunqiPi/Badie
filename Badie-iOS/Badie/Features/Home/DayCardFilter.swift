@@ -36,6 +36,8 @@ struct DayCardFilter: Codable, Equatable {
     var event: Event = .any
     /// 空 = 全部球馆
     var venueIds: Set<String> = []
+    /// 选过的球馆的名字（这天没人约那家时，也能在筛选页和小标签里看到）
+    var venueNames: [String: String] = [:]
     var minLevel = 1
     var maxLevel = 9
     /// 空 = 不限
@@ -45,6 +47,22 @@ struct DayCardFilter: Codable, Equatable {
     var reliableOnly = false
 
     static let levels = 1...9
+
+    init() {}
+
+    /// 以后加了新条件，老的存档也能读（缺的用默认值）
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let empty = DayCardFilter()
+        event = (try? c.decodeIfPresent(Event.self, forKey: .event)) ?? empty.event
+        venueIds = (try? c.decodeIfPresent(Set<String>.self, forKey: .venueIds)) ?? empty.venueIds
+        venueNames = (try? c.decodeIfPresent([String: String].self, forKey: .venueNames)) ?? empty.venueNames
+        minLevel = (try? c.decodeIfPresent(Int.self, forKey: .minLevel)) ?? empty.minLevel
+        maxLevel = (try? c.decodeIfPresent(Int.self, forKey: .maxLevel)) ?? empty.maxLevel
+        times = (try? c.decodeIfPresent(Set<TimeOfDay>.self, forKey: .times)) ?? empty.times
+        gender = try? c.decodeIfPresent(Gender.self, forKey: .gender)
+        reliableOnly = (try? c.decodeIfPresent(Bool.self, forKey: .reliableOnly)) ?? empty.reliableOnly
+    }
 
     /// 选了几个条件（按钮上显示）
     var activeCount: Int {
@@ -121,10 +139,10 @@ struct DayCardFilterSheet: View {
                     section(String(localized: "项目")) {
                         SegmentedSticker(options: DayCardFilter.Event.allCases, selection: $draft.event, title: { $0.title })
                     }
-                    if !venues.isEmpty {
+                    if !allVenues.isEmpty {
                         section(String(localized: "球馆")) {
                             VStack(spacing: AppTheme.Spacing.sm) {
-                                ForEach(venues, id: \.venue.id) { item in
+                                ForEach(allVenues, id: \.venue.id) { item in
                                     venueRow(item.venue, count: item.count)
                                 }
                             }
@@ -176,6 +194,15 @@ struct DayCardFilterSheet: View {
         .onAppear { draft = filter }
     }
 
+    /// 这天卡片里的球馆，加上以前选过、这天没人约的（人数 0，可以去掉）
+    private var allVenues: [(venue: MockBackend.DayCandidate.Venue, count: Int)] {
+        let present = Set(venues.map(\.venue.id))
+        let saved = filter.venueIds.subtracting(present).sorted().map {
+            (venue: MockBackend.DayCandidate.Venue(id: $0, name: filter.venueNames[$0] ?? $0), count: 0)
+        }
+        return venues + saved
+    }
+
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Text(title)
@@ -190,7 +217,13 @@ struct DayCardFilterSheet: View {
         let selected = draft.venueIds.contains(venue.id)
         return Button {
             Haptics.selection()
-            if selected { draft.venueIds.remove(venue.id) } else { draft.venueIds.insert(venue.id) }
+            if selected {
+                draft.venueIds.remove(venue.id)
+                draft.venueNames[venue.id] = nil
+            } else {
+                draft.venueIds.insert(venue.id)
+                draft.venueNames[venue.id] = venue.name
+            }
         } label: {
             HStack(spacing: AppTheme.Spacing.sm) {
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")
