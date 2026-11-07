@@ -406,6 +406,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • You can open the profile of anyone on the cards.
   • If no one is free that day, send a match request from the same screen.
   • Language: change the app language in Settings. It applies right away.
+  • Swipe right or tap the heart to invite right away. Filter the cards by event, court, level, time and more.
+  • After a game, enter how many games each side won. Win rate now counts games won.
+  • Pull down on any list to refresh everything.
   ```
 - 简体中文：
   ```
@@ -415,6 +418,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 卡片上的人都能点开看资料。
   • 这天没人有空时，可以直接发约球请求。
   • 语言：在「设置」里直接换 App 语言，马上生效，不用再去系统设置。
+  • 右滑或点爱心直接约，不用再选。卡片可以按项目、球馆、等级、时间等筛选。
+  • 打完球填两边各赢了几局，胜率按局算。
+  • 任何列表下拉，都会把所有内容刷新一遍。
   ```
 - 繁體中文：
   ```
@@ -424,6 +430,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 卡片上的人都能點開看資料。
   • 這天沒人有空時，可以直接送出約球請求。
   • 語言：在「設定」裡直接換 App 語言，馬上生效，不用再去系統設定。
+  • 右滑或點愛心直接約，不用再選。卡片可以按項目、球館、程度、時間等篩選。
+  • 打完球填兩邊各贏了幾局，勝率按局算。
+  • 任何列表下拉，都會把所有內容重新整理一遍。
   ```
 - 日本語：
   ```
@@ -433,6 +442,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • カードに出ている人のプロフィールを開けます。
   • その日に空いている人がいないときは、同じ画面からマッチングのリクエストを送れます。
   • 言語：「設定」からアプリの言語を直接変更でき、すぐに反映されます。
+  • 右スワイプかハートですぐに誘えます。カードは種目、コート、レベル、時間などで絞り込めます。
+  • 試合後は、それぞれが何ゲーム取ったかを入力します。勝率はゲーム単位になりました。
+  • どの一覧も下に引っぱると、すべてが更新されます。
   ```
 - 한국어：
   ```
@@ -442,6 +454,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 카드에 나온 사람의 프로필을 열어 볼 수 있어요.
   • 그날 시간 되는 사람이 없으면 같은 화면에서 바로 매칭 요청을 보낼 수 있어요.
   • 언어: '설정'에서 앱 언어를 바로 바꿀 수 있고, 즉시 적용돼요.
+  • 오른쪽으로 밀거나 하트를 누르면 바로 초대돼요. 종목, 코트, 급수, 시간 등으로 카드를 걸러 볼 수 있어요.
+  • 게임이 끝나면 양쪽이 각각 몇 게임 이겼는지 입력해요. 승률은 게임 기준으로 바뀌었어요.
+  • 어느 목록이든 아래로 당기면 전부 새로 고쳐져요.
   ```
 - Bahasa Indonesia：
   ```
@@ -451,6 +466,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Profil setiap orang di kartu bisa dibuka.
   • Kalau tidak ada yang kosong hari itu, kirim permintaan main dari layar yang sama.
   • Bahasa: ganti bahasa aplikasi langsung di Pengaturan. Langsung berlaku.
+  • Geser kanan atau ketuk hati untuk langsung mengajak. Kartu bisa difilter menurut nomor, lapangan, level, waktu, dan lainnya.
+  • Setelah main, isi berapa gim yang dimenangkan tiap pihak. Persentase menang kini dihitung per gim.
+  • Tarik ke bawah di daftar mana pun untuk menyegarkan semuanya.
   ```
 - Bahasa Melayu：
   ```
@@ -460,6 +478,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Profil setiap orang pada kad boleh dibuka.
   • Jika tiada yang lapang hari itu, hantar permintaan permainan dari skrin yang sama.
   • Bahasa: tukar bahasa aplikasi terus dalam Tetapan. Terus berkuat kuasa.
+  • Leret kanan atau ketik hati untuk terus mengajak. Kad boleh ditapis ikut acara, gelanggang, tahap, masa dan lain-lain.
+  • Selepas bermain, isi berapa set yang dimenangi setiap pihak. Kadar menang kini dikira ikut set.
+  • Tarik ke bawah pada mana-mana senarai untuk muat semula semuanya.
   ```
 - ไทย：
   ```
@@ -469,6 +490,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • เปิดดูโปรไฟล์ของคนบนการ์ดได้
   • ถ้าวันนั้นไม่มีใครว่าง ส่งคำขอจับคู่ได้จากหน้าเดียวกัน
   • ภาษา: เปลี่ยนภาษาในแอปได้จาก การตั้งค่า มีผลทันที
+  • ปัดขวาหรือแตะหัวใจเพื่อชวนได้ทันที กรองการ์ดตามประเภท สนาม ระดับ เวลา และอื่น ๆ ได้
+  • ตีเสร็จแล้วกรอกว่าแต่ละฝ่ายชนะกี่เกม อัตราชนะตอนนี้คิดเป็นเกม
+  • ดึงลงที่รายการไหนก็ได้ จะรีเฟรชทุกอย่าง
   ```
 - Tiếng Việt：
   ```
@@ -478,6 +502,9 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Có thể mở hồ sơ của bất kỳ ai trên thẻ.
   • Nếu hôm đó không ai rảnh, gửi yêu cầu ghép trận ngay trên màn hình đó.
   • Ngôn ngữ: đổi ngôn ngữ ứng dụng ngay trong Cài đặt, áp dụng ngay lập tức.
+  • Vuốt phải hoặc chạm trái tim để rủ ngay. Lọc thẻ theo nội dung, sân, trình độ, thời gian và hơn thế nữa.
+  • Đánh xong, nhập mỗi bên thắng mấy ván. Tỉ lệ thắng giờ tính theo ván.
+  • Kéo xuống ở danh sách nào cũng làm mới tất cả.
   ```
 - हिन्दी：
   ```
@@ -487,4 +514,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • कार्ड पर दिख रहे किसी भी खिलाड़ी की प्रोफ़ाइल खोल सकते हैं।
   • उस दिन कोई खाली न हो तो उसी स्क्रीन से मैच रिक्वेस्ट भेजें।
   • भाषा: ऐप की भाषा सीधे सेटिंग्स में बदलें। यह तुरंत लागू होती है।
+  • दाएँ स्वाइप करें या दिल पर टैप करें, तुरंत बुलावा चला जाता है। कार्ड को इवेंट, कोर्ट, लेवल, समय वगैरह से फ़िल्टर करें।
+  • गेम के बाद भरें कि हर तरफ़ ने कितने गेम जीते। जीत दर अब गेम के हिसाब से है।
+  • किसी भी लिस्ट को नीचे खींचें, सब कुछ रीफ़्रेश हो जाता है।
   ```
