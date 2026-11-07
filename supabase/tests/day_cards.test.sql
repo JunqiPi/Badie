@@ -1,7 +1,7 @@
--- 首页按天看能约的人：只列在找人、没关掉可见的；左滑跳过；右滑约单打，对方确认就成局
+-- 首页按天看能约的人：只列在找人、没关掉可见的；左滑跳过；右滑约单打，对方确认就成局；右滑约双打，替我开局并邀请 TA
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(11);
+select plan(15);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000034' || lpad(n::text, 2, '0'))::uuid, 'dc' || n || '@test.local' from generate_series(1, 3) n;
@@ -46,6 +46,7 @@ reset role;
 update public.profiles set card_color = 'sky' where id = pg_temp.u(2);
 select pg_temp.login(1);
 select is(pg_temp.cards(3) -> 0 -> 'user' ->> 'card_color', 'sky', '卡片带上自己选的颜色');
+select ok((pg_temp.cards(3) -> 0 -> 'venues' -> 0 ->> 'km')::numeric < 1, '球馆带上离我多远');
 select is(jsonb_array_length(pg_temp.cards(4)), 0, '关掉可见的看不到');
 
 -- 左滑跳过就不再出现
@@ -73,6 +74,18 @@ select public.respond_offer(pg_temp.id('offer'), true);
 select is(pg_temp.status(pg_temp.id('t2')), 'matched', '成局');
 reset role;
 select is((select count(*)::int from public.match_tickets where user_id = pg_temp.u(1) and status = 'matched'), 1, '我这边也成局');
+
+
+-- 双打：2 号第 5 天找双打；1 号右滑，替 1 号开一个公开的双打局并邀请 2 号，卡片不再出现
+select pg_temp.login(2);
+insert into ids select 'd2', public.submit_ticket('doubles', pg_temp.at(5, 18), pg_temp.at(5, 21), '{v-us-ca-21-badminton-club-21bc}', 2, false);
+select pg_temp.login(1);
+insert into ids select 'room', public.invite_doubles(pg_temp.id('d2'), 'v-us-ca-21-badminton-club-21bc', pg_temp.at(5, 18));
+select is(jsonb_array_length(pg_temp.cards(5)), 0, '约过的双打卡片不再出现');
+reset role;
+select is((select mode::text || ' ' || visibility::text from public.rooms where id = pg_temp.id('room')), 'doubles public', '开了公开的双打局');
+select is((select title from public.notifications where user_id = pg_temp.u(2) and kind = 'room' order by id desc limit 1),
+          'Card1 invited you to play', '对方收到邀请');
 
 select * from finish();
 rollback;
