@@ -137,7 +137,9 @@ returns jsonb language sql stable security definer set search_path = '' as $$
       -- 最近一次填的比分（双方都填了以后来的为准）
       'score', (select r.score from public.result_reports r where r.game_id = g.id and r.score is not null
                 order by r.updated_at desc limit 1),
-      'rounds', (select jsonb_build_object('team1', x.team1, 'team2', x.team2) from public.game_rounds(g.id) x),
+      -- 双方确认以后才给局数
+      'rounds', (select jsonb_build_object('team1', x.team1, 'team2', x.team2) from public.game_rounds(g.id) x
+                 where (select r.status from public.game_result(g.id) r) = 'verified'),
       'review_until', g.ends_at + interval '48 hours',
       'players', (select jsonb_agg(jsonb_build_object('id', p.id, 'nickname', p.nickname, 'rating', gp.rating, 'team', gp.team,
                                                       'me', gp.user_id = auth.uid(), 'checked_in', gp.checked_in_at is not null,
