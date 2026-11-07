@@ -2,7 +2,7 @@
 -- 1. 赛果：局数要两队都填、一致才算；“练球”和“平局”是两种说法；平局不上榜，老字段 games / wins 不含平局；比分换成我方视角
 -- 2. 按天看人：连点、同时点两张卡不会重复约；我这个时间已有单打请求就直接用它去约；为邀请建的请求没约成自动取消；
 --    别人约我、我没回不会被暂停；同一张卡只能约一次，双打每天最多邀请 20 次；性别没填刷不到混双；日期人数和卡片一致
--- 3. 管理员撤下的照片不能再换回来；拉黑了看不到对方的资料卡
+-- 3. 管理员撤下的照片不能再换回来；拉黑了看不到对方的照片
 
 -- 1. 赛果 -------------------------------------------------------------------------
 
@@ -477,15 +477,15 @@ returns jsonb language sql stable security definer set search_path = '' as $$
     'challenge', public.challenge_availability(p_user),
     'message', public.message_option(auth.uid(), p_user) - 'group_id',
     'verified', pr.verified_kind,
-    'avatar', pr.avatar_path,
+    'avatar', case when not public.blocked_between(auth.uid(), p_user) then pr.avatar_path end,
     'gender', pr.gender,
     'tag', pr.tag,
     'card_color', pr.card_color,
-    'card_photo', pr.card_photo_path,
+    'card_photo', case when not public.blocked_between(auth.uid(), p_user) then pr.card_photo_path end,
     'recent_no_shows', public.recent_no_shows(p_user),
     'suspended_until', public.suspended_until(p_user))
   from public.player_card_base(p_user) base, public.win_rate(p_user) w, public.profiles pr
-  where base is not null and pr.id = p_user and not public.blocked_between(auth.uid(), p_user)
+  where base is not null and pr.id = p_user
 $$;
 
 
