@@ -1,7 +1,7 @@
 -- 赛果按局：两边各赢几局，双方一致才算；局数不一样算有分歧；胜率按局算；平局也计入
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(14);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000036' || lpad(n::text, 2, '0'))::uuid, 'rd' || n || '@test.local' from generate_series(1, 2) n;
@@ -30,6 +30,8 @@ $$;
 select pg_temp.game('a', 1);
 select pg_temp.game('b', 5);
 select pg_temp.game('c', 9);
+select pg_temp.game('d', 13);
+select pg_temp.game('e', 17);
 
 -- a：两人都报 3:2（1 号是 team1）
 select pg_temp.login(1);
@@ -60,7 +62,23 @@ select is((select won::text || ' ' || rounds_won || '/' || rounds_played from pu
 
 -- 1 号本月：3/5 + 2/4 = 5/9 局；按场是 2 场
 select is((public.win_rate(pg_temp.u(1)) ->> 'round_wins') || '/' || (public.win_rate(pg_temp.u(1)) ->> 'rounds'), '5/9', '胜率按局算');
-select is((public.win_rate(pg_temp.u(1)) ->> 'games')::int, 2, '按场的数也还在（给老版本）');
+select is((public.win_rate(pg_temp.u(1)) ->> 'games')::int, 1, '按场的数（给老版本）不含平局');
+
+-- d：一方选“练球”（没计分），一方填 2:2 平局：说法不一样
+select pg_temp.login(1);
+select public.report_result(pg_temp.id('d'), 'friendly', null);
+select pg_temp.login(2);
+select is(public.report_result(pg_temp.id('d'), null, null, 2, 2), 'disputed', '练球和平局是两种说法');
+
+-- e：只有一方填了局数（另一方只报谁赢）：按 1 局算，不能靠自己填的局数刷胜率
+select pg_temp.login(1);
+select public.report_result(pg_temp.id('e'), null, null, 15, 0);
+select pg_temp.login(2);
+select is(public.report_result(pg_temp.id('e'), 'team1', null), 'verified', '谁赢一致就确认');
+reset role;
+select is((select rounds_won || '/' || rounds_played from public.game_results where game_id = pg_temp.id('e') and user_id = pg_temp.u(1)), '1/1',
+          '只有一方填的局数不算');
+select is((select draw from public.game_results where game_id = pg_temp.id('c') and user_id = pg_temp.u(1)), true, '平局记成平局，不上榜');
 
 select * from finish();
 rollback;

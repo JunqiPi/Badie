@@ -37,7 +37,7 @@ select throws_ok($$ select public.report_result(pg_temp.id('game'), 'team2', 'ca
 select is(public.report_result(pg_temp.id('game'), 'team2', ' 21:18 19:21 21:15 '), 'awaiting', '可以带比分报赛果');
 select is(public.my_games() -> 0 -> 'my_report' ->> 'score', '21:18 19:21 21:15', '比分去掉首尾空格后保存');
 select pg_temp.login(1);
-select is(public.my_games() -> 0 ->> 'score', '21:18 19:21 21:15', '同场的人都看得到比分');
+select is(public.my_games() -> 0 ->> 'score', '18:21 21:19 15:21', '同场的人都看得到比分（对方填的换成我方视角）');
 select is(public.my_games() -> 0 ->> 'host_id', pg_temp.u(1)::text, '房间开的局，房主是发起人');
 select is(public.report_result(pg_temp.id('game'), null, '21:18'), 'awaiting', '可以改成记不清（另一位队友还没报）');
 select is(public.my_games() -> 0 -> 'my_report' ->> 'score', null, '记不清的那份申报没有比分');

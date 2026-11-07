@@ -1,7 +1,7 @@
 -- 首页按天看能约的人：只列在找人、没关掉可见的；左滑跳过；右滑约单打，对方确认就成局；右滑约双打，替我开局并邀请 TA
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(15);
+select plan(17);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000034' || lpad(n::text, 2, '0'))::uuid, 'dc' || n || '@test.local' from generate_series(1, 3) n;
@@ -82,6 +82,8 @@ insert into ids select 'd2', public.submit_ticket('doubles', pg_temp.at(5, 18), 
 select pg_temp.login(1);
 insert into ids select 'room', public.invite_doubles(pg_temp.id('d2'), 'v-us-ca-21-badminton-club-21bc', pg_temp.at(5, 18));
 select is(jsonb_array_length(pg_temp.cards(5)), 0, '约过的双打卡片不再出现');
+select throws_ok($$ select public.invite_doubles(pg_temp.id('d2'), 'v-us-ca-21-badminton-club-21bc', pg_temp.at(5, 18)) $$,
+                 'P0002', 'not_available', '同一张卡不能再约');
 reset role;
 select is((select mode::text || ' ' || visibility::text from public.rooms where id = pg_temp.id('room')), 'doubles public', '开了公开的双打局');
 select is((select title from public.notifications where user_id = pg_temp.u(2) and kind = 'room' order by id desc limit 1),

@@ -1,7 +1,7 @@
--- 照片头像和卡片背景：只能传到自己的文件夹、最多 4 个文件；地址只给打过交道的人；管理员能一起撤下
+-- 照片头像和卡片背景：只能传到自己的文件夹、一天最多传 10 个；地址只给打过交道的人；管理员能一起撤下，撤下的不能再设回去
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(13);
+select plan(14);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000015' || lpad(n::text, 2, '0'))::uuid, 'a' || n || '@test.local' from generate_series(1, 3) n;
@@ -25,10 +25,10 @@ insert into public.admin_users (user_id) values (pg_temp.u(3));
 select pg_temp.login(1);
 select throws_ok($$ insert into storage.objects (bucket_id, name, owner) values ('avatars', pg_temp.file(2, 1), pg_temp.u(1)) $$,
                  '42501', null, '不能传到别人的文件夹');
-select lives_ok($$ insert into storage.objects (bucket_id, name, owner) select 'avatars', pg_temp.file(1, k), pg_temp.u(1) from generate_series(1, 4) k $$,
+select lives_ok($$ insert into storage.objects (bucket_id, name, owner) select 'avatars', pg_temp.file(1, k), pg_temp.u(1) from generate_series(1, 10) k $$,
                 '传到自己的文件夹');
-select throws_ok($$ insert into storage.objects (bucket_id, name, owner) values ('avatars', pg_temp.file(1, 5), pg_temp.u(1)) $$,
-                 '42501', null, '最多 4 个文件');
+select throws_ok($$ insert into storage.objects (bucket_id, name, owner) values ('avatars', pg_temp.file(1, 11), pg_temp.u(1)) $$,
+                 '42501', null, '一天最多传 10 个');
 select throws_ok($$ select public.set_avatar('../x.jpg') $$, '22023', 'invalid_avatar', '只能用自己传的文件');
 select lives_ok($$ select public.set_avatar(pg_temp.file(1, 2)) $$, '换上照片');
 select throws_ok($$ select public.set_card_photo(pg_temp.file(2, 1)) $$, '22023', 'invalid_avatar', '卡片背景也只能用自己传的文件');
@@ -45,6 +45,8 @@ select lives_ok($$ select public.admin_clear_avatar(pg_temp.u(1), 'Not a real ph
 reset role;
 select is((select avatar_path from public.profiles where id = pg_temp.u(1)), null, '改回文字头像');
 select is((select card_photo_path from public.profiles where id = pg_temp.u(1)), null, '卡片背景也撤下');
+select pg_temp.login(1);
+select throws_ok($$ select public.set_avatar(pg_temp.file(1, 2)) $$, '22023', 'invalid_avatar', '撤下的照片不能再设回去');
 
 select * from finish();
 rollback;
