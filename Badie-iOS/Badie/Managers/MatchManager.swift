@@ -414,8 +414,8 @@ final class MatchManager: ObservableObject {
         backend.togglePaid(gameId: game.id, userId: userId)
     }
 
-    func complete(_ game: Game, didWin: Bool?, score: String) async throws {
-        try await backend.completeGame(id: game.id, didWin: didWin, score: score)
+    func complete(_ game: Game, didWin: Bool?, score: String, games: (mine: Int, theirs: Int)? = nil) async throws {
+        try await backend.completeGame(id: game.id, didWin: didWin, score: score, games: games)
         ReminderService.cancel(gameId: game.id)
         reloadGames()
     }

@@ -66,6 +66,13 @@ extension MockBackend {
         struct Report: Decodable {
             let outcome: String?
             let score: String?
+            let team1Games: Int?
+            let team2Games: Int?
+        }
+
+        struct Rounds: Decodable {
+            let team1: Int
+            let team2: Int
         }
 
         struct Result: Decodable {
@@ -87,6 +94,8 @@ extension MockBackend {
         let result: Result?
         /// 最近一次填的比分
         let score: String?
+        /// 确认过的局数
+        let rounds: Rounds?
         let reviewUntil: Date
         let players: [RemotePlayer]?
     }
@@ -220,7 +229,8 @@ extension MockBackend {
     }
 
     /// 赛果：didWin 为 nil 表示友谊局（不计胜负），unsure 表示记不清
-    func remoteReportResult(gameId: String, didWin: Bool?, score: String = "", unsure: Bool = false) async throws {
+    func remoteReportResult(gameId: String, didWin: Bool?, score: String = "", unsure: Bool = false,
+                            games: (mine: Int, theirs: Int)? = nil) async throws {
         let remote = try requireRemote()
         guard let game = db.games[gameId], let me = currentUserId, let mine = game.team(of: me) else { throw BackendError.gameNotFound }
         let outcome: Any
@@ -231,7 +241,12 @@ extension MockBackend {
         } else {
             outcome = "friendly"
         }
-        try await remote.call("report_result", ["p_game": gameId, "p_outcome": outcome, "p_score": score])
+        var args: [String: Any] = ["p_game": gameId, "p_outcome": outcome, "p_score": score]
+        if !unsure, let counts = teamGames(in: game, for: me, games) {
+            args["p_team1_games"] = counts[0]
+            args["p_team2_games"] = counts[1]
+        }
+        try await remote.call("report_result", args)
         await refreshRemoteActivity()
     }
 
@@ -342,13 +357,14 @@ extension MockBackend {
         var reports: [ResultReport] = []
         if let report = remote.myReport {
             reports.append(ResultReport(reporterId: me, winningTeam: index(report.outcome), score: report.score ?? "",
-                                        reportedAt: Date(), unsure: report.outcome == nil))
+                                        reportedAt: Date(), unsure: report.outcome == nil,
+                                        teamGames: report.team1Games.flatMap { a in report.team2Games.map { [a, $0] } }))
         }
         guard let result = remote.result, let opponent = opponents.first else { return reports }
         switch result.status {
         case "verified":
             reports.append(ResultReport(reporterId: opponent, winningTeam: index(result.outcome), score: remote.score ?? "",
-                                        reportedAt: Date()))
+                                        reportedAt: Date(), teamGames: remote.rounds.map { [$0.team1, $0.team2] }))
         case "disputed":
             let mine = reports.first?.winningTeam
             reports.append(ResultReport(reporterId: opponent, winningTeam: mine == 0 ? 1 : 0, score: "", reportedAt: Date()))

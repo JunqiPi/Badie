@@ -66,13 +66,13 @@ begin
     raise exception 'invalid_games' using errcode = '22023';
   end if;
   if p_team1_games is not null then
-    outcome := case when p_team1_games > p_team2_games then 'team1' when p_team2_games > p_team1_games then 'team2' else 'friendly' end;
+    outcome := (case when p_team1_games > p_team2_games then 'team1' when p_team2_games > p_team1_games then 'team2' else 'friendly' end)::public.result_outcome;
   end if;
   perform 1 from public.games where id = p_game for update;
   if (select r.status from public.game_result(p_game) r) = 'verified' then raise exception 'result_locked' using errcode = '22023'; end if;
   insert into public.result_reports (game_id, reporter_id, outcome, score, team1_games, team2_games)
     values (p_game, auth.uid(), outcome, case when outcome is null then null else score end,
-            case when outcome is not null then p_team1_games end, case when outcome is not null then p_team2_games end)
+            case when outcome is not null then p_team1_games::smallint end, case when outcome is not null then p_team2_games::smallint end)
     on conflict (game_id, reporter_id) do update
       set outcome = excluded.outcome, score = excluded.score, team1_games = excluded.team1_games, team2_games = excluded.team2_games,
           updated_at = now();

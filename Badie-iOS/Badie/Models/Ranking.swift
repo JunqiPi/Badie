@@ -14,6 +14,8 @@ struct ResultReport: Codable, Hashable {
     let reportedAt: Date
     /// 记不清了：不算确认，也不算争议
     var unsure = false
+    /// 各队赢了几局（下标同 `Game.teams`）；nil = 没填局数（老版本，或“没计分，就是练球”）
+    var teamGames: [Int]? = nil
 }
 
 enum ResultStatus: Hashable {
@@ -44,10 +46,24 @@ extension Game {
         resultReports.first { $0.reporterId == userId }
     }
 
+    /// 报上来的局数，换成某人的视角：(我方, 对方)
+    func games(of report: ResultReport, for userId: String) -> (mine: Int, theirs: Int)? {
+        guard let counts = report.teamGames, counts.count == 2, let mine = team(of: userId) else { return nil }
+        return (counts[mine], counts[1 - mine])
+    }
+
+    /// 已经有人报的局数（我方视角），我报的优先
+    func reportedGames(for userId: String) -> (mine: Int, theirs: Int)? {
+        let reports = resultReports.filter { $0.teamGames != nil }
+        guard let report = reports.first(where: { $0.reporterId == userId }) ?? reports.first else { return nil }
+        return games(of: report, for: userId)
+    }
+
     func resultStatus(now: Date = Date()) -> ResultStatus {
         let claims = resultReports.filter { !$0.unsure }
         let outcomes = Set(claims.map(\.winningTeam))
-        if outcomes.count > 1 { return .disputed }
+        // 局数也要一致（没填局数的不比）
+        if outcomes.count > 1 || Set(claims.compactMap(\.teamGames)).count > 1 { return .disputed }
         let claimingTeams = Set(claims.compactMap { team(of: $0.reporterId) })
         if claimingTeams.count == teams.count, let outcome = outcomes.first {
             return outcome.map { .verified(winningTeam: $0) } ?? .friendly

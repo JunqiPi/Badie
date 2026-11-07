@@ -102,8 +102,9 @@ extension MockBackend {
     }
 
     /// 结束球局：申报我方赛果（等对方确认），生成互评问卷
-    func completeGame(id: String, didWin: Bool?, score: String) async throws {
-        if isRemote { return try await remoteReportResult(gameId: id, didWin: didWin, score: score) }
+    func completeGame(id: String, didWin: Bool?, score: String, games: (mine: Int, theirs: Int)? = nil) async throws {
+        let didWin = games.map { $0.mine == $0.theirs ? nil : $0.mine > $0.theirs } ?? didWin
+        if isRemote { return try await remoteReportResult(gameId: id, didWin: didWin, score: score, games: games) }
         var me = try requireUser()
         guard var game = db.games[id], game.playerIds.contains(me.id) else { throw BackendError.gameNotFound }
         guard game.status == .confirmed else { throw BackendError.gameAlreadyFinished }
@@ -114,7 +115,7 @@ extension MockBackend {
         confirmVenueFromCheckIns(game)
         game.result = GameResult(didWin: didWin, score: String(score.prefix(40)))
         game.resultReports = [ResultReport(reporterId: me.id, winningTeam: winningTeam(in: game, for: me.id, didWin: didWin),
-                                           score: String(score.prefix(40)), reportedAt: now)]
+                                           score: String(score.prefix(40)), reportedAt: now, teamGames: teamGames(in: game, for: me.id, games))]
         db.games[id] = game
 
         // 胜场要等对方确认赛果后才计入（见 MockBackend+Rankings）

@@ -11,13 +11,20 @@ extension MockBackend {
         return didWin ? mine : game.teams.indices.first { $0 != mine }
     }
 
-    /// 确认或修改我报的赛果；didWin 为 nil 表示不计胜负
-    func reportResult(gameId: String, didWin: Bool?, score: String) async throws {
-        if isRemote { return try await remoteReportResult(gameId: gameId, didWin: didWin, score: score) }
+    /// 确认或修改我报的赛果；didWin 为 nil 表示不计胜负。games：各赢了几局（我方, 对方），填了就按局数定输赢
+    func reportResult(gameId: String, didWin: Bool?, score: String, games: (mine: Int, theirs: Int)? = nil) async throws {
+        let didWin = games.map { $0.mine == $0.theirs ? nil : $0.mine > $0.theirs } ?? didWin
+        if isRemote { return try await remoteReportResult(gameId: gameId, didWin: didWin, score: score, games: games) }
         try await submitResult(gameId: gameId) { game, me in
             ResultReport(reporterId: me, winningTeam: self.winningTeam(in: game, for: me, didWin: didWin),
-                         score: String(score.prefix(40)), reportedAt: Date())
+                         score: String(score.prefix(40)), reportedAt: Date(), teamGames: self.teamGames(in: game, for: me, games))
         }
+    }
+
+    /// 我方视角的局数换成按队伍下标
+    func teamGames(in game: Game, for userId: String, _ games: (mine: Int, theirs: Int)?) -> [Int]? {
+        guard let games, let mine = game.team(of: userId), game.teams.count == 2 else { return nil }
+        return mine == 0 ? [games.mine, games.theirs] : [games.theirs, games.mine]
     }
 
     /// 记不清了：这场不计入，也不算争议

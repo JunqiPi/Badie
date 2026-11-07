@@ -135,6 +135,19 @@ struct GameResult: Codable, Hashable {
     var didWin: Bool?
     var score: String
 
+    /// 每局比分（“21:18 19:21 21:15”，前面的数是我方）数出两边各赢了几局；一局都数不出来返回 nil
+    static func games(fromScore score: String) -> (mine: Int, theirs: Int)? {
+        let pattern = #"(\d{1,2})\s*[:/-]\s*(\d{1,2})"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
+        var mine = 0, theirs = 0
+        for match in regex.matches(in: score, range: NSRange(score.startIndex..., in: score)) {
+            guard let a = Range(match.range(at: 1), in: score).flatMap({ Int(score[$0]) }),
+                  let b = Range(match.range(at: 2), in: score).flatMap({ Int(score[$0]) }), a != b else { continue }
+            if a > b { mine += 1 } else { theirs += 1 }
+        }
+        return mine + theirs > 0 ? (mine, theirs) : nil
+    }
+
     /// 比分只能是数字和分隔符（如 21:18 19:21），最多 40 个字，和服务器的检查一致
     static func isValidScore(_ score: String) -> Bool {
         let trimmed = score.trimmingCharacters(in: .whitespaces)
