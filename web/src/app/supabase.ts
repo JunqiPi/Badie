@@ -155,7 +155,7 @@ export interface DayCandidate {
     id: string; nickname: string; tag: number | null; rating: number; gender: Gender | null; recent_no_shows: number | null;
     avatar: string | null; card_color: string | null; card_photo: string | null;
   };
-  venues: { id: string; name: string }[] | null;
+  venues: { id: string; name: string; km?: number }[] | null;
 }
 
 export type Outcome = 'team1' | 'team2' | 'friendly';
@@ -171,9 +171,11 @@ export interface Game {
   host_id: string | null;
   my_team: 1 | 2;
   checked_in: boolean;
-  my_report: { outcome: Outcome | null; score: string | null } | null;
+  my_report: { outcome: Outcome | null; score: string | null; team1_games?: number | null; team2_games?: number | null } | null;
   /** 最近一次填的比分 */
   score: string | null;
+  /** 确认过的局数（一场常常打好几局） */
+  rounds?: { team1: number; team2: number } | null;
   result: { status: 'awaiting' | 'verified' | 'disputed' | 'unsure' | 'expired'; outcome: Outcome | null };
   review_until: string;
   players: Player[];
@@ -183,6 +185,9 @@ export interface Game {
 export interface WinRate {
   games: number;
   wins: number;
+  /** 按局：打了几局、赢了几局（胜率按局算） */
+  rounds?: number;
+  round_wins?: number;
   opponents: number;
   /** 对手平均比我方强多少级（负数 = 偏弱） */
   gap: number;
@@ -504,6 +509,7 @@ const problems: Record<string, string> = {
   too_many_invites: 'Invite up to 10 friends at a time.',
   too_many_searches: 'You’re searching too fast. Try again in a few minutes.',
   invalid_score: 'Scores can only have numbers, like 21:18 19:21.',
+  invalid_games: 'Enter how many games each side won.',
 };
 /** 一次爽约：第 1 次警告、第 2 次 7 天不能约球、第 3 次永久；48 小时内可以申诉 */
 export interface Strike {
@@ -530,3 +536,21 @@ export const tagText = (tag: number) => `#${String(tag).padStart(4, '0')}`;
 export const friendLink = (code: string) => `${location.origin}/add/${code}/`;
 
 export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');
+
+/** 胜率按局算：赢的局数 ÷ 打的局数（老数据没有局数就按每场一局）；没打过返回 null */
+export function winPercent(rate: WinRate | null | undefined) {
+  const played = rate?.rounds ?? rate?.games ?? 0;
+  const won = rate?.round_wins ?? rate?.wins ?? 0;
+  return played ? Math.round((won / played) * 100) : null;
+}
+
+/** 每局比分（“21:18 19:21”，前面是我方）数出两边各赢了几局；一局都数不出来返回 null */
+export function gamesFromScore(score: string) {
+  let mine = 0;
+  let theirs = 0;
+  for (const [, a, b] of score.matchAll(/(\d{1,2})\s*[:/-]\s*(\d{1,2})/g)) {
+    if (Number(a) > Number(b)) mine += 1;
+    else if (Number(b) > Number(a)) theirs += 1;
+  }
+  return mine + theirs ? { mine, theirs } : null;
+}

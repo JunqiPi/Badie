@@ -61,8 +61,11 @@ sql(`update games set starts_at = date_trunc('hour', now()) - interval '1 hour',
 await alex.reload();
 await alex.getByRole('button', { name: 'I’m here' }).click();
 await alex.getByText('You’re checked in.').waitFor();
-await alex.getByLabel('Score (optional)').fill('21:15 21:18');
-await alex.getByRole('button', { name: 'We won' }).click();
+// 填每局比分，自动数出两边各赢几局（2:0）
+await alex.getByRole('button', { name: '+ Add the score of each game (optional)' }).click();
+await alex.getByLabel('Score of each game (optional)').fill('21:15 21:18');
+await alex.getByText('2 games · you won more').waitFor();
+await alex.getByRole('button', { name: 'Save result' }).click();
 await alex.getByText('Waiting for the other side to report.').waitFor();
 await alex.getByText('21:15 21:18', { exact: true }).waitFor();
 // 场地费：标自己已付，不能替对方标（匹配的局没有发起人）
@@ -74,12 +77,16 @@ if (await alex.getByRole('checkbox', { name: /Blake/ }).isEnabled()) throw new E
 await blake.goto(`${base}/app/games/`);
 await blake.waitForURL(`${base}/games/`);
 await blake.getByRole('link', { name: /Singles · .*Los Angeles Badminton Club/ }).click();
-await blake.getByRole('button', { name: 'We lost' }).click();
-await blake.getByText('Confirmed: you lost.').waitFor();
-await blake.getByText('21:15 21:18', { exact: true }).waitFor();
+// 对方赢了 2 局
+const them = blake.getByRole('group', { name: 'Them' });
+await them.getByRole('button', { name: 'One more game' }).click();
+await them.getByRole('button', { name: 'One more game' }).click();
+await blake.getByRole('button', { name: 'Save result' }).click();
+await blake.getByText('Confirmed: they won more games.').waitFor();
+await blake.getByText('0 : 2', { exact: true }).waitFor();
 
 await alex.goto(`${base}/games/`);
 await alex.getByText('100%').waitFor();
 
-console.log('ok: two players matched, confirmed, checked in, agreed on the result and score, and marked the court fee');
+console.log('ok: two players matched, confirmed, checked in, agreed on how many games each side won, and marked the court fee');
 await browser.close();

@@ -10,7 +10,7 @@ import { ArrowLabel, Avatar, CardFan, Empty, IconTile, Notice, SectionTitle, Sta
 import type { Centre } from './pickers';
 import { Link } from './router';
 import { signInFirst } from './Shell';
-import { supabase, useLive, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
+import { supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
 import { dateChip, dayName, nextDays, timeOf } from './time';
 import { toast } from './ui';
 
@@ -65,7 +65,7 @@ function Dashboard({ me }: { me: Profile }) {
           <Link to="/levels/" className="press rounded-[14px]"><StatTile stacked tint="lavender" icon="level" value={`Lv.${level.label}`} label={level.name} /></Link>
           <Link to="/games/" className="press rounded-[14px]"><StatTile stacked tint="peach" icon="games" value={record?.games_played ?? '–'} label={t('Games')} /></Link>
           <Link to="/rankings/" className="press rounded-[14px]">
-            <StatTile stacked tint="lime" icon="trophy" value={record?.games ? `${Math.round((record.wins / record.games) * 100)}%` : '–'} label={t('Win rate')} />
+            <StatTile stacked tint="lime" icon="trophy" value={winPercent(record) === null ? '–' : `${winPercent(record)}%`} label={t('Win rate')} />
           </Link>
         </div>
       </header>

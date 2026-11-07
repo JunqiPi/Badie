@@ -9,7 +9,7 @@ import { ArrowLabel, Avatar, AvatarStack, Empty, IconButton, IconTile, LargeTitl
 import { PartnerSelect } from './Player';
 import { Reviews } from './Review';
 import { Link } from './router';
-import { problem, supabase, useLive, type Game, type MyChallenges, type MyGroups, type Outcome, type PlayRecord, type RoomSummary, type Ticket } from './supabase';
+import { gamesFromScore, problem, supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type PlayRecord, type RoomSummary, type Ticket } from './supabase';
 import { day, dayName, hours, timeOf } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 
@@ -149,7 +149,7 @@ function WeeklyMini() {
     <section aria-labelledby="month" className="grid gap-2">
       <SectionTitle id="month" title={t('This month')} action={{ label: t('Leaderboard'), to: '/rankings/' }} />
       <div className="grid grid-cols-3 gap-2">
-        <StatTile tint="lime" value={record.games ? `${Math.round((record.wins / record.games) * 100)}%` : '–'} label={t('Win rate')} />
+        <StatTile tint="lime" value={winPercent(record) === null ? '–' : `${winPercent(record)}%`} label={t('Win rate')} />
         <StatTile tint="butter" value={`${record.wins}–${record.losses}`} label={t('W–L')} />
         <StatTile tint="peach" value={record.games_played} label={t('Played')} />
       </div>
@@ -347,21 +347,30 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => Promise<v
   );
 }
 
+/** 赛果：一场常常打好几局，先填两边各赢了几局（不问“谁赢了”）；也可以选“没计分，就是练球”或“记不清了”。
+ *  双方填的一致才算数，胜率按局算 */
 function Result({ game: g, canReport, busy, act }: {
   game: Game;
   canReport: boolean;
   busy?: string;
   act: (name: string, fn: string, args: Record<string, unknown>, done: string) => void;
 }) {
-  const mine: Outcome = g.my_team === 1 ? 'team1' : 'team2';
-  const theirs: Outcome = g.my_team === 1 ? 'team2' : 'team1';
-  const reported = g.my_report?.outcome;
+  const team1 = g.my_team === 1;
+  const reported = g.my_report;
+  const reportedMine = team1 ? reported?.team1_games : reported?.team2_games;
+  const reportedTheirs = team1 ? reported?.team2_games : reported?.team1_games;
+  const [mine, setMine] = useState(reportedMine ?? 0);
+  const [theirs, setTheirs] = useState(reportedTheirs ?? 0);
   const [score, setScore] = useState(g.my_report?.score ?? '');
+  const [showScore, setShowScore] = useState(Boolean(g.my_report?.score));
   const { status, outcome } = g.result;
-  const choices: [Outcome | null, string][] = [[mine, 'We won'], [theirs, 'We lost'], ['friendly', 'Friendly game'], [null, 'Can’t remember']];
+  const rounds = g.rounds ? (team1 ? [g.rounds.team1, g.rounds.team2] : [g.rounds.team2, g.rounds.team1]) : null;
+  const singles = g.mode === 'singles';
   const summary =
     status === 'verified'
-      ? outcome === 'friendly' ? t('Confirmed: a friendly game, no winner.') : outcome === mine ? t('Confirmed: you won.') : t('Confirmed: you lost.')
+      ? rounds
+        ? rounds[0] === rounds[1] ? t('Confirmed: a draw.') : rounds[0] > rounds[1] ? t('Confirmed: you won more games.') : t('Confirmed: they won more games.')
+        : outcome === 'friendly' ? t('Confirmed: a practice session, no score.') : outcome === (team1 ? 'team1' : 'team2') ? t('Confirmed: you won.') : t('Confirmed: you lost.')
       : status === 'disputed'
         ? t('Your reports don’t match. Either side can change theirs within 7 days of the game.')
         : status === 'unsure'
@@ -370,38 +379,88 @@ function Result({ game: g, canReport, busy, act }: {
             ? t('No result was agreed within 7 days.')
             : g.my_report
               ? t('Waiting for the other side to report.')
-              : t('How did it go? The result counts once both sides agree.');
+              : t('How many games did each side win? It counts once both sides agree.');
 
+  function typeScore(value: string) {
+    setScore(value);
+    const games = gamesFromScore(value);
+    if (games) {
+      setMine(games.mine);
+      setTheirs(games.theirs);
+    }
+  }
+
+  function save() {
+    const [a, b] = team1 ? [mine, theirs] : [theirs, mine];
+    act('report', 'report_result', { p_game: g.id, p_outcome: 'friendly', p_score: score, p_team1_games: a, p_team2_games: b }, t('Result saved'));
+  }
+
+  const total = mine + theirs;
   return (
     <section aria-labelledby="result" className={`sticker grid gap-4 p-5 ${status === 'verified' ? 'bg-mint text-on-accent' : status === 'disputed' ? 'bg-pink text-on-accent' : ''}`}>
       <div className="flex items-center gap-3">
         <IconTile icon="trophy" tint={status === 'verified' ? 'surface' : 'butter'} />
         <h2 id="result" className="text-headline">{t('Result')}</h2>
-        {g.score && <span className="ml-auto text-title3 tabular-nums">{g.score}</span>}
+        {rounds ? <span className="ml-auto text-title3 tabular-nums">{rounds[0]} : {rounds[1]}</span>
+          : g.score && <span className="ml-auto text-title3 tabular-nums">{g.score}</span>}
       </div>
       <p role="status" className="text-subhead font-bold">{summary}</p>
       {canReport && (
-        <Field label={t('Score (optional)')} hint={t('Pick the result below to save it.')}>
-          {(props) => <input {...props} value={score} maxLength={40} inputMode="numeric" placeholder="21:18 19:21 21:15"
-                             onChange={(e) => setScore(e.target.value)} className="field max-w-xs tabular-nums" />}
-        </Field>
-      )}
-      {canReport && (
-        <div className="flex flex-wrap gap-2" role="group" aria-label={t('Report the result')}>
-          {choices.map(([value, label]) => (
-            <button
-              key={label}
-              onClick={() => act('report', 'report_result', { p_game: g.id, p_outcome: value, p_score: score }, t('Result saved'))}
-              disabled={Boolean(busy)}
-              aria-pressed={g.my_report !== null && reported === value}
-              className="toggle"
-            >
-              {t(label)}
+        <>
+          <div className="flex flex-wrap items-start justify-center gap-4">
+            <GamesCounter label={singles ? t('You') : t('Your side')} value={mine} onChange={setMine} />
+            <span aria-hidden="true" className="pt-9 text-title2 font-black">:</span>
+            <GamesCounter label={t('Them')} value={theirs} onChange={setTheirs} />
+          </div>
+          {total > 0 && (
+            <p className="justify-self-center rounded-[10px] border-2 border-stroke bg-lime px-3 py-1 text-footnote font-bold text-on-accent">
+              {t('{n} games', { n: total })} · {mine === theirs ? t('a draw') : mine > theirs ? t('you won more') : t('they won more')}
+            </p>
+          )}
+          {showScore ? (
+            <Field label={t('Score of each game (optional)')}>
+              {(props) => <input {...props} value={score} maxLength={40} inputMode="numeric" placeholder="21:18 19:21 21:15"
+                                 onChange={(e) => typeScore(e.target.value)} className="field max-w-xs tabular-nums" />}
+            </Field>
+          ) : (
+            <button type="button" className="link justify-self-start text-footnote font-bold" onClick={() => setShowScore(true)}>
+              {t('+ Add the score of each game (optional)')}
             </button>
-          ))}
-        </div>
+          )}
+          <Button type="button" className="justify-self-start" busy={busy === 'report'} disabled={Boolean(busy) || total === 0} onClick={save}>
+            {t('Save result')}
+          </Button>
+          <div className="flex flex-wrap gap-2" role="group" aria-label={t('Or')}>
+            <button type="button" className="toggle" disabled={Boolean(busy)} aria-pressed={reported?.outcome === 'friendly' && reportedMine == null}
+                    onClick={() => act('report', 'report_result', { p_game: g.id, p_outcome: 'friendly', p_score: '' }, t('Result saved'))}>
+              {t('No score, just practice')}
+            </button>
+            <button type="button" className="toggle" disabled={Boolean(busy)} aria-pressed={reported != null && reported.outcome === null}
+                    onClick={() => act('report', 'report_result', { p_game: g.id, p_outcome: null, p_score: '' }, t('Result saved'))}>
+              {t('Can’t remember')}
+            </button>
+          </div>
+          <p className="text-caption text-ink-secondary">{t('It counts once both sides agree. Win rate is by game: games won ÷ games played.')}</p>
+        </>
       )}
     </section>
+  );
+}
+
+/** 一边赢了几局：− 数字 + */
+function GamesCounter({ label, value, onChange }: { label: string; value: number; onChange: (n: number) => void }) {
+  return (
+    <div className="grid justify-items-center gap-1" role="group" aria-label={label}>
+      <span className="font-bold">{label}</span>
+      <div className="flex items-center gap-1 rounded-[14px] border-2 border-stroke bg-surface px-1">
+        <button type="button" aria-label={t('One fewer game')} disabled={value === 0} onClick={() => onChange(Math.max(0, value - 1))}
+                className="grid size-11 place-items-center text-title3 font-black disabled:opacity-40">−</button>
+        <output aria-live="polite" className="min-w-8 text-center text-[2rem] font-black tabular-nums">{value}</output>
+        <button type="button" aria-label={t('One more game')} disabled={value >= 15} onClick={() => onChange(Math.min(15, value + 1))}
+                className="grid size-11 place-items-center text-title3 font-black disabled:opacity-40">+</button>
+      </div>
+      <span className="text-caption text-ink-secondary">{t('games won')}</span>
+    </div>
   );
 }
 

@@ -11,7 +11,7 @@ import { nicknameProblem } from './Onboarding';
 import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
-import { friendLink, problem, supabase, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
+import { friendLink, problem, supabase, winPercent, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
 import { day } from './time';
 import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
@@ -224,8 +224,8 @@ function WinRate({ record }: { record: PlayRecord }) {
       <h2 id="win-rate" className="text-headline">{t('Win rate this month')}</h2>
       {record.games >= minimum ? (
         <p className="flex items-baseline gap-2">
-          <span className="text-[2.75rem] leading-none font-black tabular-nums">{Math.round((record.wins / record.games) * 100)}%</span>
-          <span className="text-footnote font-bold text-ink-secondary">{t('{wins}W {losses}L', { wins: record.wins, losses: record.losses })}</span>
+          <span className="text-[2.75rem] leading-none font-black tabular-nums">{winPercent(record) ?? 0}%</span>
+          <span className="text-footnote font-bold text-ink-secondary">{t('Won {won} of {played} games', { won: record.round_wins ?? record.wins, played: record.rounds ?? record.games })}</span>
         </p>
       ) : (
         <>

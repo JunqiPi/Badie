@@ -5,7 +5,7 @@ import { Icon } from './icons';
 import { Avatar, Empty, IconTile, LevelBadge, Notice, ScreenHeader, Starburst, StatTile, Tag, fill, paletteTint } from './kit';
 import { SlotFields, type Slot } from './NewRoom';
 import { Link } from './router';
-import { problem, supabase, suspendedText, tagText, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
+import { problem, supabase, suspendedText, tagText, useLive, winPercent, type Friend, type Mode, type PlayerCard } from './supabase';
 import { day, nextDays, zoned } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 import { kindLabel } from './Verification';
@@ -73,7 +73,7 @@ export function PlayerPage({ id }: { id: string }) {
 
           <div className="grid grid-cols-2 gap-2.5">
             <StatTile icon="games" tint="peach" value={t(card.games_band)} label={t('Played')} />
-            <StatTile icon="trophy" tint="lime" value={rate?.games ? `${Math.round((rate.wins / rate.games) * 100)}%` : '–'} label={t('Win rate this month')} />
+            <StatTile icon="trophy" tint="lime" value={winPercent(rate) === null ? '–' : `${winPercent(rate)}%`} label={t('Win rate this month')} />
           </div>
 
           {rate && rate.games > 0 && (
