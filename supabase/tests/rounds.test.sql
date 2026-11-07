@@ -35,6 +35,7 @@ select pg_temp.game('c', 9);
 select pg_temp.login(1);
 select throws_ok($$ select public.report_result(pg_temp.id('a'), null, null, 3, null) $$, '22023', 'invalid_games', '局数要两边都填');
 select is(public.report_result(pg_temp.id('a'), 'team2', null, 3, 2), 'awaiting', '填了局数按局数定输赢');
+reset role;
 select is((select outcome::text from public.result_reports where game_id = pg_temp.id('a') and reporter_id = pg_temp.u(1)), 'team1', '3:2 是 team1 赢');
 select pg_temp.login(2);
 select is(public.report_result(pg_temp.id('a'), 'team1', null, 3, 2), 'verified', '双方一致就确认');
