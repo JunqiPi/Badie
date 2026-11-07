@@ -208,9 +208,15 @@ enum Rankings {
         let opponents: Int
         /// 对手平均比我高多少级（负数 = 对手偏弱）
         let averageGap: Double
+        /// 按局：打了几局、赢了几局（一场常常打好几局）。没有就按每场一局
+        var rounds: Int? = nil
+        var roundWins: Int? = nil
 
+        var playedRounds: Int { rounds ?? games }
+        var wonRounds: Int { roundWins ?? wins }
         var isPublic: Bool { games >= Rankings.winRateMinimumGames }
-        var percentage: Int { games == 0 ? 0 : Int((Double(wins) / Double(games) * 100).rounded()) }
+        /// 胜率按局算：赢的局数 ÷ 打的局数
+        var percentage: Int { playedRounds == 0 ? 0 : Int((Double(wonRounds) / Double(playedRounds) * 100).rounded()) }
     }
 
     static func winRate(for userId: String, records: [MatchRecord], month: DateInterval) -> WinRate {

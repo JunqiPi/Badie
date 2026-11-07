@@ -416,7 +416,7 @@ extension MockBackend {
         applyCardColor(card.cardColor, to: card.id)
         await applyCardPhoto(card.cardPhoto, to: card.id)
         if let rate = card.winRate {
-            remoteWinRates[card.id] = Rankings.WinRate(games: rate.games, wins: rate.wins, opponents: rate.opponents, averageGap: rate.gap)
+            remoteWinRates[card.id] = rate.rate
         }
         emit(.rankingsChanged)
         emit(.friendsChanged)

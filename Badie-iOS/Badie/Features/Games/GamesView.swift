@@ -153,11 +153,7 @@ struct GamesView: View {
             .padding(.top, AppTheme.Spacing.sm)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
-        .refreshable {
-            matchManager.reloadGames()
-            roomManager.reload()
-            surveyManager.refresh()
-        }
+        .refreshesEverything()
     }
 
     /// 别人发给我、还没回应的挑战（挑战变化会刷新 matchManager，从而重绘）

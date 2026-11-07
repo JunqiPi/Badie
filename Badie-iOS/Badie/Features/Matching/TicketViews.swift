@@ -139,6 +139,11 @@ struct TicketWaitingView: View {
     @State private var confirmsCancel = false
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         let summary = matchManager.poolSummary(for: ticket)
         VStack(spacing: 0) {
             HStack {

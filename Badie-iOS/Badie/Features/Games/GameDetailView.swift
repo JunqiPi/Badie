@@ -20,6 +20,11 @@ struct GameDetailView: View {
     private var me: String? { appState.currentUser?.id }
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "球局详情")) {
                 if let game {

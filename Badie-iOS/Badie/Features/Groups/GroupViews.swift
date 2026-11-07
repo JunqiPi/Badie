@@ -57,6 +57,11 @@ struct GroupsView: View {
     @EnvironmentObject private var router: Router
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "球群 · 固定局")) {
                 IconButton(systemName: "plus", accessibilityLabel: String(localized: "建一个球群")) {
@@ -128,6 +133,11 @@ struct GroupDetailView: View {
     private var me: String? { appState.currentUser?.id }
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: group?.name ?? String(localized: "球群")) {
                 if let group, let venue = groupManager.venue(of: group) {

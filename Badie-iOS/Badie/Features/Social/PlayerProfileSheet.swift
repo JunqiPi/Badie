@@ -340,6 +340,11 @@ struct NotificationsView: View {
     }
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "通知")) {
                 if inboxManager.unreadCount > 0 {

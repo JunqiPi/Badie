@@ -102,6 +102,23 @@ extension MockBackend {
 
     // MARK: 刷新
 
+    /// 下拉刷新：缓存全部作废，马上重拉
+    func refreshEverything() async {
+        guard isRemote else {
+            emit(.matchmakingChanged)
+            emit(.gamesChanged)
+            return
+        }
+        remotePoolByDay = nil
+        remotePoolLoadedAt = [:]
+        await refreshRemoteActivity(force: true)
+        _ = try? await refreshRemoteProfile()
+        try? await refreshRemoteRegulars(force: true)
+        _ = try? await loadRemoteRecord()
+        emit(.matchmakingChanged)
+        emit(.rankingsChanged)
+    }
+
     /// 拉取我的请求、提议、球局、球友、会话、通知写进缓存。force 为 false 时 10 秒内只刷新一次
     func refreshRemoteActivity(force: Bool = true) async {
         guard let remote, let me = currentUser else { return }
@@ -191,10 +208,10 @@ extension MockBackend {
         return remotePools[ticketId] ?? (0, 0)
     }
 
-    /// 日期条：某天附近有多少人在找。同一片区域 5 分钟内只拉一次
+    /// 日期条：某天附近有多少人在找。同一片区域 1 分钟内只拉一次（下拉刷新时马上重拉）
     func remoteAvailableCount(on day: Date, center: Coordinate, radiusKm: Double) -> Int {
         let cached = remotePoolByDay
-        let stale = cached.map { Date().timeIntervalSince($0.at) > 300 || $0.radiusKm != radiusKm || $0.center.distanceKm(to: center) > 2 } ?? true
+        let stale = cached.map { Date().timeIntervalSince($0.at) > 60 || $0.radiusKm != radiusKm || $0.center.distanceKm(to: center) > 2 } ?? true
         if stale, let remote {
             remotePoolByDay = (center, radiusKm, Date(), cached?.counts ?? [:])
             Task {

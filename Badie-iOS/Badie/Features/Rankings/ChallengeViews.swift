@@ -13,6 +13,11 @@ struct ChallengesView: View {
     @State private var acceptingDoubles: Challenge?
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         let me = appState.currentUser?.id ?? ""
         let all = appState.backend.challenges()
         // 待回应的排在前面（列表本身已按时间新到旧）

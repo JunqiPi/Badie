@@ -77,11 +77,9 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $appState.showsDayCards) {
             DayCandidatesView(day: matchManager.draft.day)
         }
-        .refreshable {
-            locationManager.refreshCourts()
-            roomManager.reload()
-            await friendManager.refreshRegulars()
+        .refreshesEverything {
             reloadPlayers()
+            reloadRankings()
         }
         .task {
             await friendManager.refreshRegulars()

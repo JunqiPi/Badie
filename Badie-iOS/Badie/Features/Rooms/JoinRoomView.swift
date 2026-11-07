@@ -198,7 +198,7 @@ struct PublicGamesView: View {
                 }
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
-            .refreshable { roomManager.reload() }
+            .refreshesEverything()
         }
     }
 }

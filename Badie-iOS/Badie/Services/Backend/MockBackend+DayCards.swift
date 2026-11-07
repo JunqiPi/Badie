@@ -8,6 +8,8 @@ extension MockBackend {
         struct Venue: Equatable {
             let id: String
             let name: String
+            /// 离我多远（公里）
+            var km: Double? = nil
         }
 
         let ticketId: String
@@ -37,6 +39,7 @@ extension MockBackend {
         struct Place: Decodable {
             let id: String
             let name: String
+            let km: Double?
         }
 
         let ticket: String
@@ -77,7 +80,7 @@ extension MockBackend {
         return items.map { item in
             DayCandidate(ticketId: item.ticket, userId: item.user.id, mode: GameMode(server: item.mode), mixed: item.mixed,
                                 startsAt: item.startsAt, endsAt: item.endsAt, recentNoShows: item.user.recentNoShows ?? 0,
-                                venues: (item.venues ?? []).map { DayCandidate.Venue(id: $0.id, name: $0.name) })
+                                venues: (item.venues ?? []).map { DayCandidate.Venue(id: $0.id, name: $0.name, km: $0.km) })
         }
     }
 
@@ -91,13 +94,20 @@ extension MockBackend {
             guard !near.isEmpty else { return nil }
             return DayCandidate(ticketId: "demo-\(id)", userId: id, mode: user.preferredMode ?? .singles, mixed: false,
                                 startsAt: max(slot.startTime, now), endsAt: slot.endTime, recentNoShows: 0,
-                                venues: near.map { DayCandidate.Venue(id: $0.id, name: $0.name) })
+                                venues: near.map { DayCandidate.Venue(id: $0.id, name: $0.name, km: $0.location.distanceKm(to: center)) })
         }
         return Array(people.prefix(12))
     }
 
     func skipCandidate(_ ticketId: String) async {
         try? await remote?.call("skip_candidate", ["p_ticket": ticketId])
+    }
+
+    /// 约 TA 打双打：服务器替我开一个公开的双打局（TA 的时间、这家球馆）并邀请 TA，附近的人可以加入补齐
+    func inviteDoublesCandidate(_ ticketId: String, venueId: String, startsAt: Date) async throws {
+        guard isRemote else { return }
+        let _: String = try await requireRemote().rpc("invite_doubles", ["p_ticket": ticketId, "p_venue": venueId, "p_starts_at": Self.iso(startsAt)])
+        await refreshRemoteActivity()
     }
 
     /// 约 TA 打单打：服务器给我们俩发提议（我这边已确认），TA 确认就成局

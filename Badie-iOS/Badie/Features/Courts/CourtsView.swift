@@ -14,6 +14,11 @@ struct CourtsView: View {
     @State private var addDraft: AddVenueDraft?
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "附近球馆")) {
                 HStack(spacing: AppTheme.Spacing.sm) {

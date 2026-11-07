@@ -15,6 +15,11 @@ struct ProfileView: View {
     @State private var showsSupport = false
 
     var body: some View {
+        page.refreshesEverything()
+    }
+
+    @ViewBuilder
+    private var page: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                 LargeTitleHeader(title: String(localized: "我的")) {
@@ -143,7 +148,7 @@ struct ProfileView: View {
                     Text("\(rate.percentage)%")
                         .scaledFont(size: 40, relativeTo: .largeTitle)
                         .monospacedDigit()
-                    Text("\(rate.wins) 胜 \(rate.games - rate.wins) 负")
+                    Text("赢 \(rate.wonRounds) 局 · 输 \(rate.playedRounds - rate.wonRounds) 局")
                         .font(AppTheme.Typography.footnoteBold)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
