@@ -548,9 +548,18 @@ export function winPercent(rate: WinRate | null | undefined) {
 export function gamesFromScore(score: string) {
   let mine = 0;
   let theirs = 0;
-  for (const [, a, b] of score.matchAll(/(\d{1,2})\s*[:/-]\s*(\d{1,2})/g)) {
+  // 每局至少有一边到 11 分才算（“2:1”这种是局数，不是比分）
+  for (const [, a, b] of score.matchAll(/(?<!\d)(\d{1,2})\s*[:/-]\s*(\d{1,2})(?!\d)/g)) {
+    if (Math.max(Number(a), Number(b)) < 11) continue;
     if (Number(a) > Number(b)) mine += 1;
     else if (Number(b) > Number(a)) theirs += 1;
   }
   return mine + theirs ? { mine, theirs } : null;
+}
+
+/** 照片文件夹里没在用的文件（以前没删成的、被管理员撤下的）：传新照片前、注销前清掉 */
+export async function cleanPhotoFolder(userId: string, keep: (string | null)[]) {
+  const { data } = await supabase!.storage.from('avatars').list(userId, { limit: 100 });
+  const stale = (data ?? []).map((f) => `${userId}/${f.name}`).filter((path) => !keep.includes(path));
+  if (stale.length) await supabase!.storage.from('avatars').remove(stale);
 }

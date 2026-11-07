@@ -11,7 +11,7 @@ import { nicknameProblem } from './Onboarding';
 import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
-import { friendLink, problem, supabase, winPercent, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
+import { cleanPhotoFolder, friendLink, problem, supabase, winPercent, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
 import { day } from './time';
 import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
@@ -356,7 +356,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       <Group title={t('Account')}>
         <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => disablePush().catch(() => {}).finally(() => supabase!.auth.signOut())} />
         <Divider />
-        <DeleteAccount photos={[profile.avatar_path, profile.card_photo_path]} />
+        <DeleteAccount id={profile.id} photos={[profile.avatar_path, profile.card_photo_path]} />
       </Group>
 
       <p className="flex justify-center gap-4 text-footnote font-bold">
@@ -513,6 +513,7 @@ function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Pr
     close();
     setBusy(true);
     try {
+      await cleanPhotoFolder(profile.id, [profile.avatar_path, profile.card_photo_path]).catch(() => {});
       const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
       const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;
@@ -575,7 +576,7 @@ function Level({ profile }: { profile: Profile }) {
 }
 
 /** 注销：先说清会删掉什么，再点一次才删 */
-function DeleteAccount({ photos }: { photos: (string | null)[] }) {
+function DeleteAccount({ id, photos }: { id: string; photos: (string | null)[] }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   // 用 Apple 登录过：网页拿不到 Apple 的授权码去撤销，告诉用户可以在 Apple 账户里自己停用（Apple 的建议）
@@ -587,11 +588,8 @@ function DeleteAccount({ photos }: { photos: (string | null)[] }) {
   async function remove() {
     setBusy(true);
     // 照片文件先删掉（账号删了以后就没权限删了）；先解除引用，注销失败也不会留下坏图
-    const files = photos.filter((p): p is string => Boolean(p));
-    if (files.length) {
-      await Promise.all([supabase!.rpc('set_avatar', { p_path: null }), supabase!.rpc('set_card_photo', { p_path: null })]);
-      await supabase!.storage.from('avatars').remove(files);
-    }
+    if (photos.some(Boolean)) await Promise.all([supabase!.rpc('set_avatar', { p_path: null }), supabase!.rpc('set_card_photo', { p_path: null })]);
+    await cleanPhotoFolder(id, []).catch(() => {});
     const { error } = await supabase!.rpc('delete_account');
     if (error) {
       setBusy(false);

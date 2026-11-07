@@ -45,6 +45,9 @@ export function DayCards({ date }: { date: string }) {
   const seen = useRef(new Set<string>());
   const visible = cards?.filter((c) => matches(filter, c));
   const top = visible?.[0];
+  // 正在看的那张：自动刷新时不能让它突然消失
+  const currentTop = useRef<string>(undefined);
+  currentTop.current = top?.ticket;
 
   const setFilter = (next: DayFilter) => {
     setFilterState(next);
@@ -62,14 +65,17 @@ export function DayCards({ date }: { date: string }) {
       supabase!
         .rpc('day_candidates', { p_from: from.toISOString(), p_to: to.toISOString(), p_lat: area.lat, p_lon: area.lon, p_radius_km: NEARBY_KM })
         .then(({ data, error }) => {
-          if (error && first) toast(problem(error), 'error');
+          if (error && first) {
+            toast(problem(error), 'error');
+            setCards((list) => list ?? []);
+          }
           first = false;
           if (error) return;
           const fresh = (data ?? []) as DayCandidate[];
           setCards((current) => {
             if (!current) return fresh;
             const ids = new Set(fresh.map((c) => c.ticket));
-            const kept = current.filter((c, i) => ids.has(c.ticket) || i === 0);
+            const kept = current.filter((c) => ids.has(c.ticket) || c.ticket === currentTop.current);
             const known = new Set(kept.map((c) => c.ticket));
             return [...kept, ...fresh.filter((c) => !known.has(c.ticket) && !seen.current.has(c.ticket))];
           });
@@ -124,12 +130,20 @@ export function DayCards({ date }: { date: string }) {
   /** 右滑和点爱心一样：直接约，不再让人选 */
   async function like(card: DayCandidate) {
     const venue = inviteVenue(filter, card);
-    if (!venue) return;
+    if (!venue || leaving) return;
     next(card, 'right');
     const starts = inviteStart(card).toISOString();
     const singles = card.mode === 'singles' && !card.mixed;
     const { error } = await supabase!.rpc(singles ? 'invite_ticket' : 'invite_doubles', { p_ticket: card.ticket, p_venue: venue.id, p_starts_at: starts });
-    if (error) return toast(problem(error), 'error');
+    if (error) {
+      toast(inviteProblem(error), 'error');
+      // 没约成（网络、撞时间等）：卡片放回最前面，还能再滑；TA 已经约不了的就不放回
+      if (error.message !== 'not_available') {
+        seen.current.delete(card.ticket);
+        setTimeout(() => setCards((list) => [card, ...(list ?? []).filter((c) => c.ticket !== card.ticket)]), 300);
+      }
+      return;
+    }
     toast(singles ? t('Invited them to play singles at {time} at {venue}. If they confirm, the game is on.', { time: timeOf(starts), venue: venue.name })
       : t('Opened a doubles game and invited them. Players nearby can join.'));
   }
@@ -280,6 +294,19 @@ function Card({ card, filter, hint }: { card: DayCandidate; filter: DayFilter; h
 }
 
 /** 这天卡片里出现的球馆，按人数排 */
+/** 卡片页上没有让人选时间，有些通用的错误说法会让人看不懂，换成这里的说法 */
+function inviteProblem(error: { message: string }) {
+  switch (error.message) {
+    case 'overlapping': return t('You already have a game or a pending invite at this time.');
+    case 'too_soon':
+    case 'invalid_slot': return t('Their time is too soon to invite them now.');
+    case 'too_many_requests': return t('You’ve sent a lot of invites today. Try again tomorrow.');
+    case 'too_many_rooms': return t('You already have 3 open games. Close one before inviting for doubles.');
+    case 'invalid_event': return t('Add your gender in your profile to invite for mixed doubles.');
+    default: return problem(error);
+  }
+}
+
 function venueCounts(cards: DayCandidate[]) {
   const counts = new Map<string, { id: string; name: string; count: number }>();
   for (const card of cards) for (const v of card.venues ?? []) counts.set(v.id, { id: v.id, name: v.name, count: (counts.get(v.id)?.count ?? 0) + 1 });
@@ -291,7 +318,7 @@ function chips(f: DayFilter, cards: DayCandidate[]): [string, (f: DayFilter) => 
   const list: [string, (f: DayFilter) => DayFilter][] = [];
   if (f.event !== 'any') list.push([eventLabels()[f.event], (x) => ({ ...x, event: 'any' })]);
   if (f.venues.length) {
-    const names = venueCounts(cards).filter((v) => f.venues.includes(v.id)).map((v) => v.name);
+    const names = f.venues.map((id) => venueCounts(cards).find((v) => v.id === id)?.name ?? f.venueNames[id] ?? id);
     list.push([names.length === 1 ? names[0] : t('{n} courts', { n: f.venues.length }), (x) => ({ ...x, venues: [] })]);
   }
   if (f.minLevel > 1 || f.maxLevel < 9) list.push([`Lv.${f.minLevel}–${f.maxLevel}`, (x) => ({ ...x, minLevel: 1, maxLevel: 9 })]);
@@ -328,8 +355,10 @@ function FilterSheet({ initial, cards, onDone, onCancel }: { initial: DayFilter;
         </div>
         <div className={section} role="group" aria-labelledby="f-venues">
           <span id="f-venues" className={label}>{t('Courts')}</span>
-          {venueCounts(cards).map((v) => (
-            <button key={v.id} type="button" aria-pressed={draft.venues.includes(v.id)} onClick={() => set({ venues: toggle(draft.venues, v.id) })}
+          {[...venueCounts(cards), ...initial.venues.filter((id) => !venueCounts(cards).some((v) => v.id === id))
+              .map((id) => ({ id, name: initial.venueNames[id] ?? id, count: 0 }))].map((v) => (
+            <button key={v.id} type="button" aria-pressed={draft.venues.includes(v.id)}
+                    onClick={() => set({ venues: toggle(draft.venues, v.id), venueNames: { ...draft.venueNames, [v.id]: v.name } })}
                     className={`flex min-h-12 items-center gap-2 rounded-[14px] border-2 border-stroke px-3 text-left text-subhead font-bold ${draft.venues.includes(v.id) ? 'bg-lime text-on-accent' : 'bg-surface'}`}>
               <Icon name={draft.venues.includes(v.id) ? 'check' : 'pin'} className="size-4 shrink-0" />
               <span className="min-w-0 flex-1">{v.name}</span>

@@ -64,7 +64,7 @@ await alex.getByText('You’re checked in.').waitFor();
 // 填每局比分，自动数出两边各赢几局（2:0）
 await alex.getByRole('button', { name: '+ Add the score of each game (optional)' }).click();
 await alex.getByLabel('Score of each game (optional)').fill('21:15 21:18');
-await alex.getByText('2 games · you won more').waitFor();
+await alex.getByText('Games: 2 · you won more').waitFor();
 await alex.getByRole('button', { name: 'Save result' }).click();
 await alex.getByText('Waiting for the other side to report.').waitFor();
 await alex.getByText('21:15 21:18', { exact: true }).waitFor();

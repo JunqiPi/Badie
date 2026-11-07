@@ -79,7 +79,7 @@ export function PlayerPage({ id }: { id: string }) {
           {rate && rate.games > 0 && (
             <p className="flex items-center gap-2 text-footnote font-bold text-ink-secondary">
               <Icon name="level" className="size-4" />
-              {t('{n} game|{n} games', { n: rate.games })} · {rate.wins}–{rate.games - rate.wins} · {t('{n} opponent|{n} opponents', { n: rate.opponents })} · {gapText(rate.gap)}
+              {t('{n} match|{n} matches', { n: rate.games })} · {t('Won {won} of {played} games', { won: rate.round_wins ?? rate.wins, played: rate.rounds ?? rate.games })} · {t('{n} opponent|{n} opponents', { n: rate.opponents })} · {gapText(rate.gap)}
             </p>
           )}
           {card.relationship === 'self' && rate && !rate.public && <p className="text-footnote text-ink-secondary">{t('Others can see this after 5 confirmed games.')}</p>}

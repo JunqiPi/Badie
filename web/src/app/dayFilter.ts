@@ -8,6 +8,8 @@ export interface DayFilter {
   event: 'any' | 'singles' | 'doubles' | 'mixed';
   /** 空 = 全部球馆 */
   venues: string[];
+  /** 选过的球馆的名字（这天没人约那家时，也能看到并去掉） */
+  venueNames: Record<string, string>;
   minLevel: number;
   maxLevel: number;
   /** 空 = 不限 */
@@ -18,7 +20,7 @@ export interface DayFilter {
 
 export type TimeOfDay = 'morning' | 'afternoon' | 'evening';
 
-export const emptyFilter: DayFilter = { event: 'any', venues: [], minLevel: 1, maxLevel: 9, times: [], gender: null, reliableOnly: false };
+export const emptyFilter: DayFilter = { event: 'any', venues: [], venueNames: {}, minLevel: 1, maxLevel: 9, times: [], gender: null, reliableOnly: false };
 
 export const eventLabels = (): Record<DayFilter['event'], string> => ({ any: t('All'), singles: t('Singles'), doubles: t('Doubles'), mixed: t('Mixed doubles') });
 export const timeLabels = (): Record<TimeOfDay, string> => ({ morning: t('Morning'), afternoon: t('Afternoon'), evening: t('Evening') });

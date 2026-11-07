@@ -5,7 +5,7 @@ import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, IconButton } from './kit';
 import { CARD_COLORS, CardCover, DayCard, cardColorName, cardColorOf, type CardColor, type CardPerson } from './PlayerCard';
-import { supabase, tagText, useLive, type Profile, type Ticket } from './supabase';
+import { cleanPhotoFolder, supabase, tagText, useLive, type Profile, type Ticket } from './supabase';
 import { timeOf } from './time';
 import { Button, toast } from './ui';
 
@@ -38,6 +38,7 @@ export function CardBackground({ profile, onChange }: { profile: Profile; onChan
     close();
     setBusy(true);
     try {
+      await cleanPhotoFolder(profile.id, [profile.avatar_path, profile.card_photo_path]).catch(() => {});
       const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
       const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;

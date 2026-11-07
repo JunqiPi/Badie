@@ -150,7 +150,7 @@ function WeeklyMini() {
       <SectionTitle id="month" title={t('This month')} action={{ label: t('Leaderboard'), to: '/rankings/' }} />
       <div className="grid grid-cols-3 gap-2">
         <StatTile tint="lime" value={winPercent(record) === null ? '–' : `${winPercent(record)}%`} label={t('Win rate')} />
-        <StatTile tint="butter" value={`${record.wins}–${record.losses}`} label={t('W–L')} />
+        <StatTile tint="butter" value={`${record.round_wins ?? record.wins}–${(record.rounds ?? record.games) - (record.round_wins ?? record.wins)}`} label={t('Games won–lost')} />
         <StatTile tint="peach" value={record.games_played} label={t('Played')} />
       </div>
     </section>
@@ -390,6 +390,10 @@ function Result({ game: g, canReport, busy, act }: {
     }
   }
 
+  // 填了每局比分、又手动改了局数，两边对不上
+  const parsed = gamesFromScore(score);
+  const mismatch = parsed !== null && (parsed.mine !== mine || parsed.theirs !== theirs);
+
   function save() {
     const [a, b] = team1 ? [mine, theirs] : [theirs, mine];
     act('report', 'report_result', { p_game: g.id, p_outcome: 'friendly', p_score: score, p_team1_games: a, p_team2_games: b }, t('Result saved'));
@@ -414,12 +418,12 @@ function Result({ game: g, canReport, busy, act }: {
           </div>
           {total > 0 && (
             <p className="justify-self-center rounded-[10px] border-2 border-stroke bg-lime px-3 py-1 text-footnote font-bold text-on-accent">
-              {t('{n} games', { n: total })} · {mine === theirs ? t('a draw') : mine > theirs ? t('you won more') : t('they won more')}
+              {t('Games: {n}', { n: total })} · {mine === theirs ? t('a draw') : mine > theirs ? t('you won more') : t('they won more')}
             </p>
           )}
           {showScore ? (
-            <Field label={t('Score of each game (optional)')}>
-              {(props) => <input {...props} value={score} maxLength={40} inputMode="numeric" placeholder="21:18 19:21 21:15"
+            <Field label={t('Score of each game (optional)')} error={mismatch ? t('The scores don’t match the games above.') : undefined}>
+              {(props) => <input {...props} value={score} maxLength={40} inputMode="text" autoComplete="off" placeholder="21:18 19:21 21:15"
                                  onChange={(e) => typeScore(e.target.value)} className="field max-w-xs tabular-nums" />}
             </Field>
           ) : (
@@ -427,7 +431,7 @@ function Result({ game: g, canReport, busy, act }: {
               {t('+ Add the score of each game (optional)')}
             </button>
           )}
-          <Button type="button" className="justify-self-start" busy={busy === 'report'} disabled={Boolean(busy) || total === 0} onClick={save}>
+          <Button type="button" className="justify-self-start" busy={busy === 'report'} disabled={Boolean(busy) || total === 0 || mismatch} onClick={save}>
             {t('Save result')}
           </Button>
           <div className="flex flex-wrap gap-2" role="group" aria-label={t('Or')}>
