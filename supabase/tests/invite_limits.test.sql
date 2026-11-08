@@ -25,15 +25,12 @@ create temp table ids (k text primary key, id uuid);
 grant all on ids to authenticated;
 create function pg_temp.id(key text) returns uuid language sql as $$ select id from ids where k = key $$;
 
--- 2–5 号第 3 天晚上都在找单打
-do $$
-begin
-  for n in 2..5 loop
-    perform pg_temp.login(n);
-    insert into ids select 't' || n, public.submit_ticket('singles', pg_temp.at(3, 18), pg_temp.at(3, 21), '{v-us-ca-21-badminton-club-21bc}', 2, false);
-  end loop;
-end
-$$;
+-- 2–5 号第 3 天晚上都在找单打（直接写进去：用 submit_ticket 的话他们会先互相配上）
+insert into ids select 't' || n, gen_random_uuid() from generate_series(2, 5) n;
+insert into public.match_tickets (id, user_id, mode, starts_at, ends_at, venue_ids, skill_tolerance, auto_accept, lock_at, last_minute, status)
+  select pg_temp.id('t' || n), pg_temp.u(n), 'singles', pg_temp.at(3, 18), pg_temp.at(3, 21), '{v-us-ca-21-badminton-club-21bc}', 2, false,
+         pg_temp.at(3, 16), false, 'searching'
+  from generate_series(2, 5) n;
 
 -- 1 号连着右滑：时间都重叠，前 3 个都能发出去，第 4 个超了
 select pg_temp.login(1);
