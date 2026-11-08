@@ -372,6 +372,7 @@ struct DayCandidatesView: View {
         case "overlapping": return String(localized: "这个时间你已经有球局或待确认的约球了。")
         case "too_soon", "invalid_slot": return String(localized: "TA 的时间快到了，来不及约了。")
         case "too_many_requests": return String(localized: "今天约得太多了，明天再来。")
+        case "too_many_invites": return String(localized: "这天已经在等 3 个人回复了，有人回复再约。")
         case "too_many_rooms": return String(localized: "你已经开了 3 个局，先关掉一个再约双打。")
         case "invalid_event": return String(localized: "约混双要先在资料里填性别。")
         default: return error.localizedDescription

@@ -109536,6 +109536,64 @@
         }
       }
     },
+    "这天已经在等 3 个人回复了，有人回复再约。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're already waiting on 3 replies for this day. Invite more once someone replies."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस दिन के लिए आप पहले से 3 लोगों के जवाब का इंतज़ार कर रहे हैं। किसी के जवाब देने के बाद और बुलाएँ।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu sudah menunggu balasan dari 3 orang untuk hari ini. Ajak lagi setelah ada yang membalas."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日はすでに 3 人の返事を待っています。誰かが返事をしたら、また誘えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이날은 이미 3명의 답을 기다리고 있어요. 누군가 답하면 더 초대할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda sudah menunggu balasan 3 orang untuk hari ini. Ajak lagi selepas ada yang membalas."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วันนี้คุณรอคำตอบจาก 3 คนอยู่แล้ว รอให้มีคนตอบก่อนค่อยชวนเพิ่ม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày này bạn đang chờ 3 người trả lời rồi. Có người trả lời thì rủ thêm."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這天已經在等 3 個人回覆了，有人回覆再約。"
+          }
+        }
+      }
+    },
     "这天附近没有能约的球友了" : {
       "localizations" : {
         "en" : {

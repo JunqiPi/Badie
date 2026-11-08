@@ -1336,6 +1336,7 @@
  "Your world ranking or international match wins are listed on bwfbadminton.com": "มีอันดับโลกหรือผลชนะในการแข่งขันนานาชาติของคุณบน bwfbadminton.com",
  "You’ll be matched with players in the same country.": "คุณจะได้จับคู่กับผู้เล่นในประเทศเดียวกัน",
  "You’re #{rank} with {points} points.": "คุณอยู่อันดับ #{rank} มี {points} คะแนน",
+ "You’re already waiting on 3 replies for this day. Invite more once someone replies.": "วันนี้คุณรอคำตอบจาก 3 คนอยู่แล้ว รอให้มีคนตอบก่อนค่อยชวนเพิ่ม",
  "You’re both in {group}.": "คุณทั้งคู่อยู่ใน {group}",
  "You’re both in {group}. Send one message to start: text only, no links or contact details. You can keep chatting once they accept.": "คุณทั้งคู่อยู่ใน {group} ส่งข้อความแรกได้ 1 ข้อความ: ตัวอักษรเท่านั้น ห้ามใส่ลิงก์หรือช่องทางติดต่อ คุยต่อได้เมื่ออีกฝ่ายยอมรับ",
  "You’re checked in.": "คุณเช็กอินแล้ว",

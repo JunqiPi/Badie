@@ -1336,6 +1336,7 @@
  "Your world ranking or international match wins are listed on bwfbadminton.com": "bwfbadminton.com で本人の世界ランキングまたは国際大会での勝利記録を確認できる",
  "You’ll be matched with players in the same country.": "同じ国のプレイヤーとマッチングされます。",
  "You’re #{rank} with {points} points.": "現在 {rank} 位、{points} ポイントです。",
+ "You’re already waiting on 3 replies for this day. Invite more once someone replies.": "この日はすでに 3 人の返事を待っています。誰かが返事をしたら、また誘えます。",
  "You’re both in {group}.": "どちらも「{group}」のメンバーです。",
  "You’re both in {group}. Send one message to start: text only, no links or contact details. You can keep chatting once they accept.": "どちらも「{group}」のメンバーです。まずメッセージを 1 通送れます（テキストのみ、リンクや連絡先は不可）。相手が承認するとやり取りを続けられます。",
  "You’re checked in.": "チェックイン済みです。",

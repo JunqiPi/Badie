@@ -301,6 +301,7 @@ function inviteProblem(error: { message: string }) {
     case 'too_soon':
     case 'invalid_slot': return t('Their time is too soon to invite them now.');
     case 'too_many_requests': return t('You’ve sent a lot of invites today. Try again tomorrow.');
+    case 'too_many_invites': return t('You’re already waiting on 3 replies for this day. Invite more once someone replies.');
     case 'too_many_rooms': return t('You already have 3 open games. Close one before inviting for doubles.');
     case 'invalid_event': return t('Add your gender in your profile to invite for mixed doubles.');
     default: return problem(error);

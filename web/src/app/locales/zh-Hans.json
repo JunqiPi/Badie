@@ -1348,6 +1348,7 @@
  "Your world ranking or international match wins are listed on bwfbadminton.com": "bwfbadminton.com 能查到本人的世界排名或国际赛赢球记录",
  "You’ll be matched with players in the same country.": "只会和同一国家的球友匹配。",
  "You’re #{rank} with {points} points.": "你排第 {rank} 名，共 {points} 分。",
+ "You’re already waiting on 3 replies for this day. Invite more once someone replies.": "这天已经在等 3 个人回复了，有人回复再约。",
  "You’re both in {group}.": "你们都在「{group}」。",
  "You’re both in {group}. Send one message to start: text only, no links or contact details. You can keep chatting once they accept.": "你们都在「{group}」。可以先发一条消息：纯文字，不能留链接或联系方式，对方接受后再继续聊。",
  "You’re checked in.": "你已签到。",
