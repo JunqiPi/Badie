@@ -2,6 +2,8 @@
 
 免费的羽毛球找搭子 App：网站 https://badie.rsvp（Astro + React，`web/`）、iPhone App（SwiftUI，`Badie-iOS/`）、后端 Supabase（`supabase/`）。
 
+**新会话先读 `STATUS.md`**：现在的版本、怎么发版、最近的功能和已知问题。
+
 ## 和用户合作
 
 - **用中文回复**。话要短，给推荐，不要列一长串选项。
