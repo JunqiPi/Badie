@@ -48,17 +48,51 @@ enum AvatarPhotos {
         return image
     }
 
-    /// 相册里选的照片：直接解码成小图再裁（4800 万像素的原图全尺寸解码要上百 MB），放在后台做
-    nonisolated static func jpegData(fromPhoto data: Data) async -> Data? {
+    /// 卡片背景照片（和头像分开存，键前面加 card:）
+    static func cardImage(userId: String, avatar: Avatar) -> UIImage? {
+        guard let version = avatar.cardPhotoVersion else { return nil }
+        let key = "card:\(userId)#\(version)" as NSString
+        if let cached = cache.object(forKey: key) { return cached }
+        guard let data = source(cardKey(userId)), let image = UIImage(data: data) else { return nil }
+        cache.setObject(image, forKey: key)
+        return image
+    }
+
+    nonisolated static func cardKey(_ userId: String) -> String { "card:\(userId)" }
+
+    /// 卡片背景：竖图 600×800
+    static let cardSize = CGSize(width: 600, height: 800)
+
+    /// 相册里选的照片：直接解码成长边不超过 1600 像素的图再裁（4800 万像素的原图全尺寸解码要上百 MB），放在后台做
+    nonisolated static func image(fromPhoto data: Data) async -> UIImage? {
         await Task.detached(priority: .userInitiated) {
             guard let source = CGImageSourceCreateWithData(data as CFData, nil),
                   let thumbnail = CGImageSourceCreateThumbnailAtIndex(source, 0, [
                       kCGImageSourceCreateThumbnailFromImageAlways: true,
                       kCGImageSourceCreateThumbnailWithTransform: true,
-                      kCGImageSourceThumbnailMaxPixelSize: 960,
+                      kCGImageSourceThumbnailMaxPixelSize: 1600,
                   ] as CFDictionary) else { return nil }
-            return jpegData(from: UIImage(cgImage: thumbnail))
+            return UIImage(cgImage: thumbnail)
         }.value
+    }
+
+    /// 按裁剪框（照片坐标）出 JPEG：默认 320×320 的头像。服务器每张最多 256 KB，太大就再压一压
+    nonisolated static func jpegData(from image: UIImage, crop: CGRect, size: CGSize = CGSize(width: 320, height: 320)) -> Data? {
+        guard crop.width > 0 else { return nil }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.opaque = true
+        let k = size.width / crop.width
+        let output = UIGraphicsImageRenderer(size: size, format: format).image { context in
+            // JPEG 没有透明：透明的 PNG 先铺白底，不然是黑的
+            UIColor.white.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+            image.draw(in: CGRect(x: -crop.minX * k, y: -crop.minY * k, width: image.size.width * k, height: image.size.height * k))
+        }
+        for quality in [0.8, 0.65, 0.5, 0.35] {
+            if let data = output.jpegData(compressionQuality: quality), data.count <= 250_000 { return data }
+        }
+        return nil
     }
 
     /// 居中裁成正方形并压缩。按 1 倍出图：默认按屏幕倍率会变成 960×960，超过服务器 256 KB 的上限

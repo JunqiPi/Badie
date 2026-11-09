@@ -43,10 +43,7 @@ struct MessagesView: View {
             .padding(.top, AppTheme.Spacing.sm)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
-        .refreshable {
-            await messageManager.refresh()
-            friendManager.reload()
-        }
+        .refreshesEverything()
     }
 
     @ViewBuilder

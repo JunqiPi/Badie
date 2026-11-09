@@ -7,8 +7,14 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Badie"
+            "state" : "translated",
+            "value" : "轻羽"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕羽"
           }
         }
       }
@@ -19,8 +25,14 @@
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Badie"
+            "state" : "translated",
+            "value" : "轻羽"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕羽"
           }
         }
       }

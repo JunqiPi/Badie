@@ -14,6 +14,8 @@ struct ResultReport: Codable, Hashable {
     let reportedAt: Date
     /// 记不清了：不算确认，也不算争议
     var unsure = false
+    /// 各队赢了几局（下标同 `Game.teams`）；nil = 没填局数（老版本，或“没计分，就是练球”）
+    var teamGames: [Int]? = nil
 }
 
 enum ResultStatus: Hashable {
@@ -22,8 +24,10 @@ enum ResultStatus: Hashable {
     case verified(winningTeam: Int)
     /// 双方说法不一致：期限内可以改，改不到一致就不计入
     case disputed
-    /// 双方都选了不计胜负
+    /// 双方都选了不计胜负（没计分，就是练球）
     case friendly
+    /// 平局：两边赢的局一样多，局数计入胜率
+    case draw
     /// 有一队全员记不清，无法确认
     case unsure
     /// 期限内没凑齐确认
@@ -44,13 +48,29 @@ extension Game {
         resultReports.first { $0.reporterId == userId }
     }
 
+    /// 报上来的局数，换成某人的视角：(我方, 对方)
+    func games(of report: ResultReport, for userId: String) -> (mine: Int, theirs: Int)? {
+        guard let counts = report.teamGames, counts.count == 2, let mine = team(of: userId) else { return nil }
+        return (counts[mine], counts[1 - mine])
+    }
+
+    /// 已经有人报的局数（我方视角），我报的优先
+    func reportedGames(for userId: String) -> (mine: Int, theirs: Int)? {
+        let reports = resultReports.filter { $0.teamGames != nil }
+        guard let report = reports.first(where: { $0.reporterId == userId }) ?? reports.first else { return nil }
+        return games(of: report, for: userId)
+    }
+
     func resultStatus(now: Date = Date()) -> ResultStatus {
         let claims = resultReports.filter { !$0.unsure }
         let outcomes = Set(claims.map(\.winningTeam))
-        if outcomes.count > 1 { return .disputed }
+        // 局数也要一致（没填局数的不比）；“练球”（没填局数）和“平局”（填了一样多）是两种说法
+        let friendlyKinds = Set(claims.filter { $0.winningTeam == nil }.map { $0.teamGames == nil })
+        if outcomes.count > 1 || Set(claims.compactMap(\.teamGames)).count > 1 || friendlyKinds.count > 1 { return .disputed }
         let claimingTeams = Set(claims.compactMap { team(of: $0.reporterId) })
         if claimingTeams.count == teams.count, let outcome = outcomes.first {
-            return outcome.map { .verified(winningTeam: $0) } ?? .friendly
+            if let outcome { return .verified(winningTeam: outcome) }
+            return claims.contains { $0.teamGames != nil } ? .draw : .friendly
         }
         if teams.contains(where: { $0.allSatisfy { report(by: $0)?.unsure == true } }) { return .unsure }
         return now > resultDeadline ? .expired : .awaiting
@@ -61,7 +81,7 @@ extension Game {
         guard status == .completed, now <= resultDeadline else { return false }
         switch resultStatus(now: now) {
         case .awaiting, .disputed, .unsure: return true
-        case .verified, .friendly, .expired: return false
+        case .verified, .friendly, .draw, .expired: return false
         }
     }
 }
@@ -192,9 +212,15 @@ enum Rankings {
         let opponents: Int
         /// 对手平均比我高多少级（负数 = 对手偏弱）
         let averageGap: Double
+        /// 按局：打了几局、赢了几局（一场常常打好几局）。没有就按每场一局
+        var rounds: Int? = nil
+        var roundWins: Int? = nil
 
+        var playedRounds: Int { rounds ?? games }
+        var wonRounds: Int { roundWins ?? wins }
         var isPublic: Bool { games >= Rankings.winRateMinimumGames }
-        var percentage: Int { games == 0 ? 0 : Int((Double(wins) / Double(games) * 100).rounded()) }
+        /// 胜率按局算：赢的局数 ÷ 打的局数
+        var percentage: Int { playedRounds == 0 ? 0 : Int((Double(wonRounds) / Double(playedRounds) * 100).rounded()) }
     }
 
     static func winRate(for userId: String, records: [MatchRecord], month: DateInterval) -> WinRate {

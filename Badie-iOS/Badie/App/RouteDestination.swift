@@ -54,6 +54,8 @@ struct RouteDestination: View {
             GroupsView()
         case .createGroup(let venueId):
             CreateGroupView(initialVenueId: venueId)
+        case .editGroup(let id):
+            CreateGroupView(editingGroupId: id)
         case .levelGuide:
             LevelGuidePage()
         case .verification:

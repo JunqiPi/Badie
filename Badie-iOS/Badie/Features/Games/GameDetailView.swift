@@ -66,12 +66,12 @@ struct GameDetailView: View {
         .sheet(item: $resultSheet) { purpose in
             if let game {
                 CompleteGameSheet(game: game, isConfirming: purpose == .confirm,
-                                  initialOutcome: purpose == .confirm ? suggestedOutcome(game) : nil) { outcome, score in
+                                  initial: purpose == .confirm ? suggestedSubmission(game) : nil) { submission in
                     Task {
                         if purpose == .confirm {
-                            await confirmResult(game, outcome: outcome, score: score)
+                            await confirmResult(game, submission)
                         } else {
-                            await complete(game, didWin: outcome.didWin, score: score)
+                            await complete(game, submission)
                         }
                     }
                 }
@@ -141,6 +141,7 @@ struct GameDetailView: View {
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.bottom, AppTheme.Spacing.xxxl)
         }
+        .refreshesEverything()
     }
 
     // MARK: Venue
@@ -469,7 +470,12 @@ struct GameDetailView: View {
                 Text(resultHeadline(status: status, outcome: outcome))
                     .font(AppTheme.Typography.headline)
                 Spacer()
-                if !score.isEmpty {
+                // 确认过的局数（我方 : 对方），没有就显示比分
+                if let rounds = confirmedRounds(game, status: status) {
+                    Text("\(rounds.mine) : \(rounds.theirs)")
+                        .font(AppTheme.Typography.headline)
+                        .monospacedDigit()
+                } else if !score.isEmpty {
                     Text(score)
                         .font(AppTheme.Typography.footnoteBold)
                         .monospacedDigit()
@@ -501,8 +507,17 @@ struct GameDetailView: View {
         .card(AppTheme.Colors.surface)
     }
 
+    private func confirmedRounds(_ game: Game, status: ResultStatus) -> (mine: Int, theirs: Int)? {
+        guard let me else { return nil }
+        switch status {
+        case .verified, .draw: return game.reportedGames(for: me)
+        default: return nil
+        }
+    }
+
     private func resultHeadline(status: ResultStatus, outcome: Bool?) -> String {
         if status == .friendly { return String(localized: "友谊局") }
+        if status == .draw { return String(localized: "平局") }
         switch outcome {
         case true?: return String(localized: "赢下了这场")
         case false?: return String(localized: "惜败，下次再来")
@@ -523,6 +538,8 @@ struct GameDetailView: View {
             return String(localized: "双方说法不一致，本场不计入胜率")
         case .friendly:
             return String(localized: "友谊局，不计胜负")
+        case .draw:
+            return String(localized: "平局 · 局数计入本月胜率")
         case .unsure:
             return String(localized: "有一方记不清，本场不计入胜率")
         case .expired:
@@ -536,6 +553,7 @@ struct GameDetailView: View {
         case .verified: return "checkmark.seal.fill"
         case .disputed: return "exclamationmark.triangle.fill"
         case .friendly: return "hand.wave.fill"
+        case .draw: return "equal.circle.fill"
         case .unsure: return "questionmark.circle.fill"
         case .expired: return "clock.badge.xmark"
         }
@@ -547,6 +565,7 @@ struct GameDetailView: View {
         case .verified: return AppTheme.Colors.mint
         case .disputed: return AppTheme.Colors.pink
         case .friendly: return AppTheme.Colors.sky
+        case .draw: return AppTheme.Colors.mint
         case .unsure, .expired: return AppTheme.Colors.surfaceMuted
         }
     }
@@ -563,9 +582,10 @@ struct GameDetailView: View {
     /// 其他球员各自报的结果（以我方视角描述）
     private func otherClaims(_ game: Game) -> [String] {
         guard let me, let mine = game.team(of: me) else { return [] }
-        return game.resultReports.filter { $0.reporterId != me }.map { report in
+        return game.resultReports.filter { $0.reporterId != me && !$0.reporterId.isEmpty }.map { report in
             let name = friendManager.user(id: report.reporterId)?.nickname ?? String(localized: "球友")
             if report.unsure { return String(localized: "\(name)：记不清了") }
+            if let games = game.games(of: report, for: me) { return String(localized: "\(name) 报：我方 \(games.mine) : \(games.theirs) 对方") }
             guard let winner = report.winningTeam else { return String(localized: "\(name) 报：友谊局，不计胜负") }
             return winner == mine ? String(localized: "\(name) 报：我方赢") : String(localized: "\(name) 报：我方输")
         }
@@ -616,10 +636,11 @@ struct GameDetailView: View {
         }
     }
 
-    private func complete(_ game: Game, didWin: Bool?, score: String) async {
+    private func complete(_ game: Game, _ submission: CompleteGameSheet.Submission) async {
         resultSheet = nil
         do {
-            try await matchManager.complete(game, didWin: didWin, score: score)
+            try await matchManager.complete(game, didWin: nil, score: submission.score, games: submission.games)
+            if submission.choice == .unsure { try await appState.backend.reportResultUnsure(gameId: game.id) }
             appState.showToast(String(localized: "球局已完成，去给球友评分"), style: .success)
             if let first = surveyManager.pending(forGame: game.id).first {
                 router.open(.survey(pendingId: first.id))
@@ -629,14 +650,14 @@ struct GameDetailView: View {
         }
     }
 
-    private func confirmResult(_ game: Game, outcome: CompleteGameSheet.Outcome, score: String) async {
+    private func confirmResult(_ game: Game, _ submission: CompleteGameSheet.Submission) async {
         resultSheet = nil
         do {
-            if outcome == .unsure {
+            if submission.choice == .unsure {
                 try await appState.backend.reportResultUnsure(gameId: game.id)
                 appState.showToast(String(localized: "好的，这场不计入胜率"))
             } else {
-                try await appState.backend.reportResult(gameId: game.id, didWin: outcome.didWin, score: score)
+                try await appState.backend.reportResult(gameId: game.id, didWin: nil, score: submission.score, games: submission.games)
                 appState.showToast(String(localized: "已提交，双方一致后计入胜率"), style: .success)
             }
         } catch {
@@ -644,13 +665,16 @@ struct GameDetailView: View {
         }
     }
 
-    /// 预选：我上次报的，否则别人报的（换成我方视角）
-    private func suggestedOutcome(_ game: Game) -> CompleteGameSheet.Outcome? {
-        guard let me, let mine = game.team(of: me),
+    /// 预选：我上次报的，否则别人报的（换成我方视角）。只报了输赢、没报局数的不预填（不凭空造出 1:0）
+    private func suggestedSubmission(_ game: Game) -> CompleteGameSheet.Submission? {
+        guard let me, game.team(of: me) != nil,
               let report = game.report(by: me) ?? game.resultReports.first(where: { !$0.unsure }) else { return nil }
-        if report.unsure { return .unsure }
-        guard let winner = report.winningTeam else { return .friendly }
-        return winner == mine ? .win : .lose
+        if report.unsure { return .init(choice: .unsure, mine: 0, theirs: 0, score: "") }
+        if let games = game.games(of: report, for: me) {
+            return .init(choice: .counted, mine: games.mine, theirs: games.theirs, score: report.score)
+        }
+        guard report.winningTeam != nil else { return .init(choice: .practice, mine: 0, theirs: 0, score: "") }
+        return nil
     }
 }
 
@@ -662,72 +686,110 @@ private enum ResultSheetPurpose: String, Identifiable {
 
 // MARK: - 结束球局 / 确认赛果
 
+/// 一场常常打好几局：先问两边各赢了几局（不问“谁赢了”），也可以选“没计分，就是练球”或“记不清了”
 struct CompleteGameSheet: View {
-    enum Outcome: CaseIterable, Identifiable {
-        case win, lose, friendly, unsure
+    enum Choice: Hashable {
+        /// 填了局数
+        case counted
+        /// 没计分，就是练球（不计胜负）
+        case practice
+        case unsure
+    }
 
-        var id: Self { self }
+    struct Submission {
+        var choice: Choice
+        var mine: Int
+        var theirs: Int
+        var score: String
 
-        var title: String {
-            switch self {
-            case .win: return String(localized: "我方赢了")
-            case .lose: return String(localized: "我方输了")
-            case .friendly: return String(localized: "友谊局，不计胜负")
-            case .unsure: return String(localized: "记不清了")
-            }
-        }
-
-        var icon: String {
-            switch self {
-            case .win: return "trophy.fill"
-            case .lose: return "arrow.uturn.down"
-            case .friendly: return "hand.wave.fill"
-            case .unsure: return "questionmark.circle"
-            }
-        }
-
-        var didWin: Bool? {
-            switch self {
-            case .win: return true
-            case .lose: return false
-            case .friendly, .unsure: return nil
-            }
-        }
+        var games: (mine: Int, theirs: Int)? { choice == .counted ? (mine, theirs) : nil }
     }
 
     let game: Game
     /// 别人已结束球局，我来确认 / 修改赛果
     var isConfirming = false
-    var initialOutcome: Outcome?
-    let onComplete: (Outcome, String) -> Void
+    var initial: Submission?
+    let onComplete: (Submission) -> Void
 
-    @State private var outcome: Outcome?
+    @State private var choice: Choice?
+    @State private var mine = 0
+    @State private var theirs = 0
     @State private var score = ""
+    @State private var showsScore = false
 
     private var scoreIsValid: Bool { GameResult.isValidScore(score) }
+    /// 填了每局比分、又手动改了局数，两边对不上
+    private var scoreDisagrees: Bool {
+        guard let games = GameResult.games(fromScore: score) else { return false }
+        return games.mine != mine || games.theirs != theirs
+    }
+    private var isSingles: Bool { game.mode == .singles }
+
+    private var canSubmit: Bool {
+        switch choice {
+        case .counted?: return mine + theirs >= 1 && scoreIsValid && !scoreDisagrees
+        case .practice?, .unsure?: return true
+        case nil: return false
+        }
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                Text(isConfirming ? String(localized: "确认赛果") : String(localized: "结束球局"))
-                    .font(AppTheme.Typography.title)
-                    .foregroundStyle(AppTheme.Colors.ink)
-                    .padding(.top, AppTheme.Spacing.xl)
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                    Text(isConfirming ? String(localized: "确认赛果") : String(localized: "这场打得怎么样"))
+                        .font(AppTheme.Typography.title)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    Text("打了几局都行，记个大概")
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                }
+                .padding(.top, AppTheme.Spacing.xl)
+
+                HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                    counter(isSingles ? String(localized: "我") : String(localized: "我们"), value: $mine)
+                    Text(":")
+                        .font(.system(size: 30, weight: .heavy, design: .rounded))
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .padding(.top, 34)
+                    counter(String(localized: "对方"), value: $theirs)
+                }
+                .opacity(choice == .counted || choice == nil ? 1 : 0.4)
+
+                if choice == .counted, mine + theirs > 0 {
+                    Text(summary)
+                        .font(AppTheme.Typography.subheadlineBold)
+                        .foregroundStyle(AppTheme.Colors.onAccent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, AppTheme.Spacing.sm)
+                        .sticker(AppTheme.Colors.lime, radius: AppTheme.Radius.sm, shadow: .zero)
+                }
+
+                if showsScore {
+                    BrutalTextField(label: String(localized: "每局比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
+                                    keyboard: .numbersAndPunctuation,
+                                    errorText: !scoreIsValid ? String(localized: "比分只能填数字，如 21:18 19:21。")
+                                        : choice == .counted && scoreDisagrees ? String(localized: "比分和上面的局数对不上。") : nil,
+                                    characterLimit: 40)
+                        .onChange(of: score) { _, value in applyScore(value) }
+                } else {
+                    Button {
+                        showsScore = true
+                    } label: {
+                        Label("填每局比分（可选）", systemImage: "plus")
+                    }
+                    .buttonStyle(TextActionStyle())
+                }
+
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                    Text("这场的结果")
+                    Text("或者")
                         .font(AppTheme.Typography.footnoteBold)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    ForEach(isConfirming ? Outcome.allCases : [.win, .lose, .friendly]) { option in
-                        optionRow(option)
-                    }
+                    optionRow(.practice, title: String(localized: "没计分，就是练球"), icon: "hand.wave.fill")
+                    optionRow(.unsure, title: String(localized: "记不清了"), icon: "questionmark.circle")
                 }
-                if outcome != .unsure {
-                    BrutalTextField(label: String(localized: "比分（可选）"), placeholder: String(localized: "如 21:18 19:21 21:15"), text: $score,
-                                    keyboard: .numbersAndPunctuation,
-                                    errorText: scoreIsValid ? nil : String(localized: "比分只能填数字，如 21:18 19:21。"),
-                                    characterLimit: 40)
-                }
-                Label("打了好几局就按赢得多的一方算。双方一致才计入胜率；记不清就选“记不清了”，不算分歧", systemImage: "checkmark.shield")
+
+                Label("双方填的一致才算数。胜率按局算：赢的局数 ÷ 打的局数。", systemImage: "checkmark.shield")
                     .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkTertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -736,30 +798,104 @@ struct CompleteGameSheet: View {
         }
         .safeAreaInset(edge: .bottom) {
             Button(isConfirming ? String(localized: "提交赛果") : String(localized: "完成并去评价")) {
-                guard let outcome else { return }
-                onComplete(outcome, outcome == .unsure ? "" : score)
+                guard let choice else { return }
+                onComplete(Submission(choice: choice, mine: mine, theirs: theirs, score: choice == .counted ? score : ""))
             }
             .buttonStyle(.brutalPrimary)
-            .disabled(outcome == nil || (outcome != .unsure && !scoreIsValid))
+            .disabled(!canSubmit)
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.vertical, AppTheme.Spacing.lg)
             .background(AppTheme.Colors.canvas)
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
-        .onAppear { outcome = outcome ?? initialOutcome }
+        .onAppear {
+            guard let initial, choice == nil else { return }
+            choice = initial.choice
+            mine = initial.mine
+            theirs = initial.theirs
+            score = initial.score
+            showsScore = !initial.score.isEmpty
+        }
     }
 
-    private func optionRow(_ option: Outcome) -> some View {
-        let selected = outcome == option
+    private var summary: String {
+        let total = mine + theirs
+        if mine == theirs { return String(localized: "一共 \(total) 局 · 平局") }
+        return mine > theirs ? String(localized: "一共 \(total) 局 · 我方赢得多") : String(localized: "一共 \(total) 局 · 对方赢得多")
+    }
+
+    /// 一边的局数：− 数字 +
+    private func counter(_ title: String, value: Binding<Int>) -> some View {
+        VStack(spacing: AppTheme.Spacing.xs) {
+            Text(title)
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.ink)
+            HStack(spacing: AppTheme.Spacing.sm) {
+                stepButton("minus", label: String(localized: "少一局")) { value.wrappedValue = max(0, value.wrappedValue - 1) }
+                    .disabled(value.wrappedValue == 0)
+                Text("\(value.wrappedValue)")
+                    .font(.system(size: 34, weight: .heavy, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .frame(minWidth: 36)
+                stepButton("plus", label: String(localized: "多一局")) { value.wrappedValue = min(15, value.wrappedValue + 1) }
+            }
+            .padding(.horizontal, AppTheme.Spacing.sm)
+            .padding(.vertical, AppTheme.Spacing.xs)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
+            Text("赢的局数")
+                .font(AppTheme.Typography.caption)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(Text("\(title)赢的局数"))
+        .accessibilityValue(Text("\(value.wrappedValue)"))
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: value.wrappedValue = min(15, value.wrappedValue + 1)
+            case .decrement: value.wrappedValue = max(0, value.wrappedValue - 1)
+            @unknown default: break
+            }
+            choice = .counted
+        }
+    }
+
+    private func stepButton(_ icon: String, label: String, action: @escaping () -> Void) -> some View {
+        Button {
+            Haptics.selection()
+            action()
+            choice = .counted
+        } label: {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .heavy))
+                .foregroundStyle(AppTheme.Colors.ink)
+                .frame(width: 36, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
+    /// 填了每局比分就按比分数出两边各赢几局
+    private func applyScore(_ value: String) {
+        guard scoreIsValid, let games = GameResult.games(fromScore: value) else { return }
+        mine = games.mine
+        theirs = games.theirs
+        choice = .counted
+    }
+
+    private func optionRow(_ option: Choice, title: String, icon: String) -> some View {
+        let selected = choice == option
         return Button {
             Haptics.selection()
-            outcome = option
+            choice = selected ? nil : option
         } label: {
             HStack(spacing: AppTheme.Spacing.md) {
-                Image(systemName: option.icon)
+                Image(systemName: icon)
                     .font(.system(size: 16, weight: .bold))
                     .frame(width: 24)
-                Text(option.title)
+                Text(title)
                     .font(AppTheme.Typography.bodyBold)
                 Spacer(minLength: 0)
                 Image(systemName: selected ? "checkmark.circle.fill" : "circle")

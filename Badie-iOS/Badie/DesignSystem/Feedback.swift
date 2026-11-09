@@ -188,6 +188,8 @@ struct DateStrip: View {
     let days: [Date]
     @Binding var selection: Date
     var counts: (Date) -> Int? = { _ in nil }
+    /// 点了日期之后还要做的事（首页：打开这天的球友卡片）
+    var onTap: ((Date) -> Void)?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -196,6 +198,7 @@ struct DateStrip: View {
                     DateChip(day: day, isSelected: Calendar.current.isDate(day, inSameDayAs: selection), count: counts(day)) {
                         Haptics.selection()
                         withAnimation(AppTheme.Motion.standard) { selection = day }
+                        onTap?(day)
                     }
                 }
             }

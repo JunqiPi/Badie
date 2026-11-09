@@ -3,10 +3,10 @@ import { audienceLabel, EventField, eventOptions, WOMEN_OFFSET, type Gender, typ
 import { t } from './i18n';
 import { CourtSearch, type Court } from './pickers';
 import { Icon } from './icons';
-import { IconTile } from './kit';
+import { IconTile, Notice } from './kit';
 import { DayPicker, FormatPicker, TimeRange } from './Play';
 import { navigate } from './router';
-import { problem, supabase, type Mode, type Profile, type RoomTag } from './supabase';
+import { problem, supabase, useLive, type Mode, type PlayerCard, type Profile, type RoomTag } from './supabase';
 import { nextDays, today, zoned } from './time';
 import { tagText } from './Rooms';
 import { Button, Field, PageHeader } from './ui';
@@ -33,7 +33,7 @@ export function slotTimes(slot: Slot) {
 
 /** 球馆 + 日期 + 时间段 */
 export function SlotFields({ slot, onChange }: { slot: Slot; onChange: (slot: Slot) => void }) {
-  const days = nextDays(14);
+  const days = nextDays(30);
   return (
     <>
       <fieldset className="grid grid-cols-1 gap-2">
@@ -90,11 +90,28 @@ export function AudienceField({ profile, value, onChange }: { profile: Profile; 
   );
 }
 
+/** 地址里带的：?mode=doubles&invite=<球友 id>&gender=female&name=…（首页按天看人时右滑双打） */
+function asked() {
+  const q = new URLSearchParams(location.search);
+  const id = q.get('invite')?.match(/^[0-9a-f-]{36}$/)?.[0];
+  const gender = q.get('gender');
+  return {
+    mode: (q.get('mode') === 'singles' ? 'singles' : 'doubles') as Mode,
+    invitee: id ? { id, name: q.get('name') ?? '', gender: (gender === 'male' || gender === 'female' ? gender : null) as Gender | null } : undefined,
+  };
+}
+
 export function NewRoom({ profile }: { profile: Profile }) {
-  const [mode, setMode] = useState<Mode>('doubles');
+  const [start] = useState(asked);
+  const invitee = start.invitee;
+  // 约的人的性别和是不是好友：以资料卡为准，看不到资料卡时用地址里带的
+  const { data: card } = useLive<PlayerCard | null>(invitee ? 'player_card' : '', { args: { p_user: invitee?.id }, every: 600_000 });
+  const partner = card?.gender ?? invitee?.gender ?? null;
+  const [mode, setMode] = useState<Mode>(start.mode);
   const [chosen, setChosen] = useState<PlayEvent>('any');
-  // 换成单打时混双不能选，按不限
-  const playEvent = eventOptions(mode, profile.gender).includes(chosen) ? chosen : 'any';
+  // 能选的项目跟着模式和两人的性别变：选的不在里面时用第一个（单打同性就是男单 / 女单）
+  const options = eventOptions(mode, profile.gender, invitee ? partner : null);
+  const playEvent = options.includes(chosen) ? chosen : options[0];
   const level = eventLevel(profile, playEvent);
   const [isPublic, setPublic] = useState(true);
   const [slot, setSlot] = useState<Slot>(() => ({ date: today(zone(), 1), from: 19 * 60, to: 21 * 60 }));
@@ -119,8 +136,13 @@ export function NewRoom({ profile }: { profile: Profile }) {
       p_level_min: min, p_level_max: max, p_tags: picked, p_note: note.trim(),
       p_gender: playEvent === 'male' || playEvent === 'female' ? playEvent : null, p_mixed: playEvent === 'mixed',
     });
+    if (error) {
+      setBusy(false);
+      return setError(problem(error));
+    }
+    // 只有好友会收到邀请（服务器会跳过不是好友的人）
+    if (invitee) await supabase!.rpc('invite_to_room', { p_room: data, p_users: [invitee.id] });
     setBusy(false);
-    if (error) return setError(problem(error));
     navigate(`/rooms/${data}/`, true);
   }
 
@@ -132,11 +154,20 @@ export function NewRoom({ profile }: { profile: Profile }) {
       </PageHeader>
 
       <form onSubmit={submit} noValidate className="grid gap-6">
+        {/* 好友收到邀请；不是好友的，公开到附近时也能看到、报名 */}
+        {invitee && (card?.relationship === 'friend' || isPublic) && (
+          <Notice icon="userPlus" tint="lavender">
+            {card?.relationship === 'friend'
+              ? t('{name} gets an invite once it’s posted.', { name: card.nickname })
+              : t('Players nearby can join once it’s posted, {name} included.', { name: card?.nickname ?? invitee.name })}
+          </Notice>
+        )}
+
         <FormatPicker value={mode} onChange={setMode} />
 
         <SlotFields slot={slot} onChange={setSlot} />
 
-        <EventField mode={mode} gender={profile.gender} value={playEvent} onChange={(value) => {
+        <EventField mode={mode} gender={profile.gender} partner={invitee ? partner : null} value={playEvent} onChange={(value) => {
           // 换了项目，自己的等级可能跟着换算：范围重新围着自己
           const own = eventLevel(profile, value);
           setChosen(value);

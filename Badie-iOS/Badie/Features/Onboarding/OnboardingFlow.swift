@@ -99,6 +99,7 @@ struct OnboardingFlow: View {
     @State private var step: OnboardingStep = .welcome
     @State private var form = OnboardingForm()
     @State private var photoItem: PhotosPickerItem?
+    @State private var cropItem: AvatarCropSheet.Item?
     @State private var isWorking = false
     @State private var errorText: String?
     @State private var resendRemaining = 0
@@ -457,13 +458,16 @@ struct OnboardingFlow: View {
             .onChange(of: photoItem) { _, item in
                 guard let item else { return }
                 Task {
-                    if let data = try? await item.loadTransferable(type: Data.self), let jpeg = await AvatarPhotos.jpegData(fromPhoto: data) {
-                        form.photo = jpeg
+                    if let data = try? await item.loadTransferable(type: Data.self), let image = await AvatarPhotos.image(fromPhoto: data) {
+                        cropItem = AvatarCropSheet.Item(image: image)
                     } else {
                         appState.showToast(String(localized: "无法读取这张照片"), style: .error)
                     }
                     photoItem = nil
                 }
+            }
+            .sheet(item: $cropItem) { item in
+                AvatarCropSheet(image: item.image) { jpeg in form.photo = jpeg }
             }
             if form.photo != nil {
                 Button("移除照片，使用文字头像") { form.photo = nil }

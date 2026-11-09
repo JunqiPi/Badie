@@ -28,6 +28,8 @@ struct HomeView: View {
                 header
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
+                dateSection
+
                 updates
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
@@ -52,9 +54,6 @@ struct HomeView: View {
                 quickMatchCard
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
-
-                dateSection
-
                 if let survey = surveyManager.pendingSurveys.first {
                     surveyBanner(survey)
                         .padding(.horizontal, AppTheme.Spacing.screen)
@@ -75,11 +74,13 @@ struct HomeView: View {
             .padding(.top, AppTheme.Spacing.sm)
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
-        .refreshable {
-            locationManager.refreshCourts()
-            roomManager.reload()
-            await friendManager.refreshRegulars()
+        // 下拉刷新只给首页这一屏（放在弹出的全屏页之前，不然卡片页和筛选页也会跟着下拉刷新）
+        .refreshesEverything {
             reloadPlayers()
+            reloadRankings()
+        }
+        .fullScreenCover(isPresented: $appState.showsDayCards) {
+            DayCandidatesView(day: matchManager.draft.day)
         }
         .task {
             await friendManager.refreshRegulars()
@@ -251,7 +252,7 @@ struct HomeView: View {
 
     private var dateSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "哪天有空？"), detail: String(localized: "附近可约人数"))
+            SectionTitle(title: String(localized: "哪天有空？"), detail: String(localized: "点日期看谁也有空"))
                 .padding(.horizontal, AppTheme.Spacing.screen)
             DateStrip(
                 days: days,
@@ -264,7 +265,8 @@ struct HomeView: View {
                         }
                     }
                 ),
-                counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) }
+                counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) },
+                onTap: { _ in appState.showsDayCards = true }
             )
         }
     }

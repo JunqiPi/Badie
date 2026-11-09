@@ -8,6 +8,11 @@ final class PlayEventTests: XCTestCase {
         XCTAssertEqual(PlayEvent.choices(mode: .singles, gender: .male), [nil, .men])
         XCTAssertEqual(PlayEvent.choices(mode: .doubles, gender: .female), [nil, .women, .mixed])
         XCTAssertEqual(PlayEvent.choices(mode: .doubles, gender: .unspecified), [nil], "没选性别只能不限")
+        // 直接约某个人：按两个人的性别定
+        XCTAssertEqual(PlayEvent.choices(mode: .singles, gender: .male, partner: .male), [.men], "两个男生约单打就是男单")
+        XCTAssertEqual(PlayEvent.choices(mode: .singles, gender: .male, partner: .female), [nil], "男女约单打只能不限")
+        XCTAssertEqual(PlayEvent.choices(mode: .doubles, gender: .female, partner: .female), [nil, .women])
+        XCTAssertEqual(PlayEvent.choices(mode: .doubles, gender: .female, partner: .male), [nil, .mixed])
     }
 
     func testServerMapping() {

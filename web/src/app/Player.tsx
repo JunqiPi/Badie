@@ -5,7 +5,7 @@ import { Icon } from './icons';
 import { Avatar, Empty, IconTile, LevelBadge, Notice, ScreenHeader, Starburst, StatTile, Tag, fill, paletteTint } from './kit';
 import { SlotFields, type Slot } from './NewRoom';
 import { Link } from './router';
-import { problem, supabase, suspendedText, tagText, useLive, type Friend, type Mode, type PlayerCard } from './supabase';
+import { problem, supabase, suspendedText, tagText, useLive, winPercent, type Friend, type Mode, type PlayerCard } from './supabase';
 import { day, nextDays, zoned } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 import { kindLabel } from './Verification';
@@ -73,13 +73,13 @@ export function PlayerPage({ id }: { id: string }) {
 
           <div className="grid grid-cols-2 gap-2.5">
             <StatTile icon="games" tint="peach" value={t(card.games_band)} label={t('Played')} />
-            <StatTile icon="trophy" tint="lime" value={rate?.games ? `${Math.round((rate.wins / rate.games) * 100)}%` : '–'} label={t('Win rate this month')} />
+            <StatTile icon="trophy" tint="lime" value={winPercent(rate) === null ? '–' : `${winPercent(rate)}%`} label={t('Win rate this month')} />
           </div>
 
           {rate && rate.games > 0 && (
             <p className="flex items-center gap-2 text-footnote font-bold text-ink-secondary">
               <Icon name="level" className="size-4" />
-              {t('{n} game|{n} games', { n: rate.games })} · {rate.wins}–{rate.games - rate.wins} · {t('{n} opponent|{n} opponents', { n: rate.opponents })} · {gapText(rate.gap)}
+              {t('{n} match|{n} matches', { n: rate.games })} · {t('Won {won} of {played} games', { won: rate.round_wins ?? rate.wins, played: rate.rounds ?? rate.games })} · {t('{n} opponent|{n} opponents', { n: rate.opponents })} · {gapText(rate.gap)}
             </p>
           )}
           {card.relationship === 'self' && rate && !rate.public && <p className="text-footnote text-ink-secondary">{t('Others can see this after 5 confirmed games.')}</p>}

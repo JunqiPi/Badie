@@ -39,9 +39,9 @@
 
 ## 简体中文
 
-- 名称：`Badie：羽毛球搭子`
-- 副标题：`约水平差不多的人打球`
-- 关键词：`球友,约球,双打,混双,单打,男双,女双,球馆,球局,俱乐部,水平,定级,badminton`
+- 名称：`轻羽`（中文界面装好后手机上显示「轻羽」，和商店名一致；名字里没有「羽毛球」，所以放进副标题；关键词里放 `badie`，搜英文名也能搜到）
+- 副标题：`按水平约羽毛球`
+- 关键词：`badie,搭子,球友,约球,双打,混双,单打,男双,女双,球馆,球局,俱乐部,水平,定级,badminton`
 - 推广文本：
 
   > 不用在球馆里硬着头皮问陌生人。说一声你几点有空，Badie 帮你找水平差不多的人；订好的场还缺人，也能补上。
@@ -67,9 +67,9 @@
 
 台湾说「羽球」、香港说「羽毛球」，两个都放进关键词。「搭子」是大陆说法，繁体用「球友」；「水平」用「程度」。
 
-- 名称：`Badie：羽球球友`
-- 副标题：`約程度差不多的人打球`
-- 关键词：`羽毛球,羽球,球友,球伴,約球,雙打,混雙,單打,男雙,女雙,球館,俱樂部,程度,badminton`
+- 名称：`輕羽`（手机上顯示「輕羽」；關鍵詞裡放 `badie`）
+- 副标题：`按程度約羽球`
+- 关键词：`badie,羽毛球,球友,球伴,約球,雙打,混雙,單打,男雙,女雙,球館,俱樂部,程度,badminton`
 - 推广文本：
 
   > 不用在球館裡硬著頭皮問陌生人。說一聲你幾點有空，Badie 幫你找程度差不多的人；訂好的場還缺人，也能補上。
@@ -288,3 +288,233 @@
   > Badie मुफ़्त है। हम चाहते हैं कि दुनिया भर में ज़्यादा से ज़्यादा लोग बैडमिंटन खेलें।
 
 印地语、泰语、越南语、印尼语、马来语的文案意思准确、语气得体，但可能还有翻译腔。有当地母语的球友时请他们看一遍。
+
+## 1.0.1 更新说明（What's New in This Version）
+
+App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This Version**。评分弹窗不用写。
+
+- English (U.S.)：
+  ```
+  • See who's free: on Home, pick a day and swipe through players at your level. Swipe right to invite. The game is on once they confirm.
+  • Match requests: pick "Any time", plan up to 30 days ahead, and edit a request after sending it.
+  • Groups: organizers can edit the group, add up to 7 weekly sessions of up to 12 hours each, or close the group.
+  • Zoom and move your photo before using it.
+  • Help & feedback: write to us from the Me tab. Our reply shows up in your notifications.
+  • New friends show up in Messages right away.
+  • Support Badie: leave a tip if you like. It doesn't unlock anything.
+  ```
+- 简体中文：
+  ```
+  • 看看谁有空：在首页选一天，左右滑看水平相近的球友，右滑约 TA，对方确认就成局。
+  • 约球请求：可以选「任何时间」，最多提前 30 天，发出后也能修改。
+  • 球群：组织者可以编辑球群、加到 7 个每周场次（每场最长 12 小时），也可以解散。
+  • 换头像时可以缩放、移动照片。
+  • 帮助与反馈：在「我的」页直接写给我们，回复会出现在通知里。
+  • 加了好友后，对方马上出现在消息列表里。
+  • 支持 Badie：想支持可以打赏，打赏不会解锁任何功能。
+  ```
+- 繁體中文：
+  ```
+  • 看看誰有空：在首頁選一天，左右滑看程度相近的球友，右滑約 TA，對方確認就成局。
+  • 約球請求：可以選「任何時間」，最多提前 30 天，送出後也能修改。
+  • 球群：組織者可以編輯球群、加到 7 個每週場次（每場最長 12 小時），也可以解散。
+  • 換頭像時可以縮放、移動照片。
+  • 幫助與回饋：在「我的」頁直接寫給我們，回覆會出現在通知裡。
+  • 加了好友後，對方馬上出現在訊息列表裡。
+  • 支持 Badie：想支持可以打賞，打賞不會解鎖任何功能。
+  ```
+- 日本語：
+  ```
+  • 空いている人を探す：ホームで日付を選び、近いレベルの人を左右にスワイプ。右スワイプで誘い、相手が確定すれば試合成立です。
+  • マッチングのリクエスト：「いつでも」を選べるようになり、30 日先まで予定を入れられ、送信後も編集できます。
+  • グループ：主催者はグループの編集、毎週の回の追加（最大 7 つ、1 回最長 12 時間）、解散ができます。
+  • プロフィール写真を拡大・移動して調整できます。
+  • ヘルプとフィードバック：マイページから直接送れます。返信は通知に届きます。
+  • 友達になった相手が、すぐにメッセージ一覧に表示されます。
+  • Badie を応援：チップを送れます。チップで機能が増えることはありません。
+  ```
+- 한국어：
+  ```
+  • 누가 시간 되는지 보기: 홈에서 날짜를 고르고 비슷한 급수의 사람을 좌우로 넘겨 보세요. 오른쪽으로 밀면 초대, 상대가 확정하면 게임이 성사돼요.
+  • 매칭 요청: '언제든'을 고를 수 있고, 30일 뒤까지 잡을 수 있으며, 보낸 뒤에도 수정할 수 있어요.
+  • 모임: 운영자가 모임을 편집하고, 매주 일정을 7개까지(한 번에 최대 12시간) 추가하거나 모임을 해산할 수 있어요.
+  • 프로필 사진을 확대하고 위치를 옮길 수 있어요.
+  • 도움말 및 의견: 나 탭에서 바로 보낼 수 있어요. 답변은 알림으로 와요.
+  • 친구가 되면 바로 메시지에 나타나요.
+  • Badie 응원하기: 원하면 후원할 수 있어요. 후원으로 열리는 기능은 없어요.
+  ```
+- Bahasa Indonesia：
+  ```
+  • Lihat siapa yang kosong: di Beranda, pilih hari dan geser pemain yang selevel. Geser kanan untuk mengajak, main jadi setelah dia konfirmasi.
+  • Permintaan main: bisa pilih "Kapan saja", rencanakan hingga 30 hari ke depan, dan edit setelah dikirim.
+  • Grup: penyelenggara bisa mengedit grup, menambah hingga 7 sesi mingguan (maksimal 12 jam per sesi), atau membubarkan grup.
+  • Perbesar dan geser foto profilmu sebelum dipakai.
+  • Bantuan & masukan: kirim langsung dari tab Saya. Balasan kami muncul di notifikasimu.
+  • Teman baru langsung muncul di Pesan.
+  • Dukung Badie: beri tip kalau mau. Tip tidak membuka fitur apa pun.
+  ```
+- Bahasa Melayu：
+  ```
+  • Lihat siapa yang lapang: di Utama, pilih hari dan leret pemain yang setahap. Leret kanan untuk mengajak, permainan jadi apabila dia sahkan.
+  • Permintaan permainan: boleh pilih "Bila-bila masa", rancang sehingga 30 hari lebih awal, dan edit selepas dihantar.
+  • Kumpulan: penganjur boleh mengedit kumpulan, menambah sehingga 7 sesi mingguan (maksimum 12 jam setiap sesi), atau membubarkan kumpulan.
+  • Zum dan alihkan foto profil anda sebelum digunakan.
+  • Bantuan & maklum balas: hantar terus dari tab Saya. Balasan kami muncul dalam pemberitahuan anda.
+  • Rakan baharu terus muncul dalam Mesej.
+  • Sokong Badie: beri tip jika mahu. Tip tidak membuka sebarang ciri.
+  ```
+- ไทย：
+  ```
+  • ดูว่าใครว่าง: ที่หน้าแรกเลือกวัน แล้วปัดดูคนระดับใกล้กัน ปัดขวาเพื่อชวน อีกฝ่ายยืนยันก็ได้ตีเลย
+  • คำขอจับคู่: เลือก "เวลาไหนก็ได้" ได้ วางแผนล่วงหน้าได้ 30 วัน และแก้ไขได้หลังส่ง
+  • ก๊วน: ผู้จัดแก้ไขก๊วน เพิ่มรอบประจำสัปดาห์ได้ถึง 7 รอบ (รอบละไม่เกิน 12 ชั่วโมง) หรือยุบก๊วนได้
+  • ซูมและเลื่อนรูปโปรไฟล์ได้ก่อนใช้
+  • ความช่วยเหลือและความคิดเห็น: ส่งถึงเราได้จากแท็บ ฉัน คำตอบจะอยู่ในการแจ้งเตือน
+  • เพื่อนใหม่ขึ้นในรายการข้อความทันที
+  • สนับสนุน Badie: ให้ทิปได้ถ้าอยาก ทิปไม่ได้ปลดล็อกอะไรเพิ่ม
+  ```
+- Tiếng Việt：
+  ```
+  • Xem ai rảnh: ở Trang chủ, chọn một ngày và vuốt xem người chơi cùng trình độ. Vuốt phải để rủ, họ xác nhận là có trận.
+  • Yêu cầu ghép trận: chọn được "Lúc nào cũng được", lên lịch trước tối đa 30 ngày, và sửa sau khi gửi.
+  • Nhóm: người tổ chức có thể sửa nhóm, thêm tối đa 7 buổi mỗi tuần (mỗi buổi tối đa 12 giờ), hoặc giải tán nhóm.
+  • Phóng to và di chuyển ảnh đại diện trước khi dùng.
+  • Trợ giúp & góp ý: gửi cho chúng tôi ngay từ tab Tôi. Câu trả lời sẽ hiện trong thông báo.
+  • Bạn bè mới hiện ngay trong Tin nhắn.
+  • Ủng hộ Badie: bạn có thể ủng hộ nếu muốn. Việc ủng hộ không mở thêm tính năng nào.
+  ```
+- हिन्दी：
+  ```
+  • कौन खाली है देखें: होम पर एक दिन चुनें और अपने लेवल के खिलाड़ियों को स्वाइप करें। बुलाने के लिए दाएँ स्वाइप करें, उनके पुष्टि करते ही गेम पक्का।
+  • मैच रिक्वेस्ट: "कभी भी" चुन सकते हैं, 30 दिन पहले तक प्लान कर सकते हैं, और भेजने के बाद बदल सकते हैं।
+  • ग्रुप: आयोजक ग्रुप एडिट कर सकते हैं, हफ़्ते के 7 तक सेशन जोड़ सकते हैं (हर सेशन 12 घंटे तक), या ग्रुप बंद कर सकते हैं।
+  • प्रोफ़ाइल फ़ोटो को ज़ूम और खिसकाकर सेट करें।
+  • मदद और फ़ीडबैक: मैं टैब से सीधे हमें लिखें। जवाब आपकी सूचनाओं में आएगा।
+  • नए दोस्त अब तुरंत मैसेज में दिखते हैं।
+  • Badie को सपोर्ट करें: चाहें तो टिप दें। इससे कुछ अनलॉक नहीं होता।
+  ```
+
+## 1.0.2 更新说明（What's New in This Version）
+
+1.0.1（build 20261106.636）之后的改动。App Store Connect → 1.0.2 版本页 → 每种语言的 **What's New in This Version**。
+
+- English (U.S.)：
+  ```
+  • Home: the days are now at the top. Tap a day to see who's free, one full-screen card at a time.
+  • Card background: add a photo for your card, separate from your profile photo, or pick a color. Tap Preview to see what others see.
+  • When you invite someone directly, the event follows both players' genders, so there's nothing to pick.
+  • You can open the profile of anyone on the cards.
+  • If no one is free that day, send a match request from the same screen.
+  • Language: change the app language in Settings. It applies right away.
+  • Swipe right or tap the heart to invite right away. Filter the cards by event, court, level, time and more.
+  • After a game, enter how many games each side won. Win rate now counts games won.
+  • Pull down on any list to refresh everything.
+  ```
+- 简体中文：
+  ```
+  • 首页：日期放到了最上面，点一天就能全屏看这天谁有空。
+  • 卡片背景：可以给自己的卡片单独传一张照片（和头像分开），也可以选颜色。点「预览」看看别人刷到你时的样子。
+  • 直接约人时，项目按你们两人的性别自动定，不用再选。
+  • 卡片上的人都能点开看资料。
+  • 这天没人有空时，可以直接发约球请求。
+  • 语言：在「设置」里直接换 App 语言，马上生效，不用再去系统设置。
+  • 右滑或点爱心直接约，不用再选。卡片可以按项目、球馆、等级、时间等筛选。
+  • 打完球填两边各赢了几局，胜率按局算。
+  • 任何列表下拉，都会把所有内容刷新一遍。
+  ```
+- 繁體中文：
+  ```
+  • 首頁：日期移到最上面，點一天就能全螢幕看這天誰有空。
+  • 卡片背景：可以替自己的卡片另外傳一張照片（和頭像分開），也可以選顏色。點「預覽」看看別人滑到你時的樣子。
+  • 直接約人時，項目按你們兩人的性別自動決定，不用再選。
+  • 卡片上的人都能點開看資料。
+  • 這天沒人有空時，可以直接送出約球請求。
+  • 語言：在「設定」裡直接換 App 語言，馬上生效，不用再去系統設定。
+  • 右滑或點愛心直接約，不用再選。卡片可以按項目、球館、程度、時間等篩選。
+  • 打完球填兩邊各贏了幾局，勝率按局算。
+  • 任何列表下拉，都會把所有內容重新整理一遍。
+  ```
+- 日本語：
+  ```
+  • ホーム：日付を一番上に移しました。日付をタップすると、その日空いている人を全画面のカードで見られます。
+  • カードの背景：プロフィール写真とは別に、カード用の写真を設定できます。色を選ぶこともできます。「プレビュー」でほかの人からの見え方を確認できます。
+  • 相手を直接誘うとき、種目は 2 人の性別で自動的に決まります。
+  • カードに出ている人のプロフィールを開けます。
+  • その日に空いている人がいないときは、同じ画面からマッチングのリクエストを送れます。
+  • 言語：「設定」からアプリの言語を直接変更でき、すぐに反映されます。
+  • 右スワイプかハートですぐに誘えます。カードは種目、コート、レベル、時間などで絞り込めます。
+  • 試合後は、それぞれが何ゲーム取ったかを入力します。勝率はゲーム単位になりました。
+  • どの一覧も下に引っぱると、すべてが更新されます。
+  ```
+- 한국어：
+  ```
+  • 홈: 날짜를 맨 위로 옮겼어요. 날짜를 누르면 그날 시간 되는 사람을 전체 화면 카드로 볼 수 있어요.
+  • 카드 배경: 프로필 사진과 따로 카드용 사진을 올리거나 색을 고를 수 있어요. '미리보기'로 다른 사람에게 어떻게 보이는지 확인하세요.
+  • 직접 초대할 때 종목은 두 사람의 성별에 맞춰 자동으로 정해져요.
+  • 카드에 나온 사람의 프로필을 열어 볼 수 있어요.
+  • 그날 시간 되는 사람이 없으면 같은 화면에서 바로 매칭 요청을 보낼 수 있어요.
+  • 언어: '설정'에서 앱 언어를 바로 바꿀 수 있고, 즉시 적용돼요.
+  • 오른쪽으로 밀거나 하트를 누르면 바로 초대돼요. 종목, 코트, 급수, 시간 등으로 카드를 걸러 볼 수 있어요.
+  • 게임이 끝나면 양쪽이 각각 몇 게임 이겼는지 입력해요. 승률은 게임 기준으로 바뀌었어요.
+  • 어느 목록이든 아래로 당기면 전부 새로 고쳐져요.
+  ```
+- Bahasa Indonesia：
+  ```
+  • Beranda: tanggal kini ada di paling atas. Ketuk satu hari untuk melihat siapa yang kosong, satu kartu layar penuh setiap kali.
+  • Latar kartu: pasang foto khusus untuk kartumu, terpisah dari foto profil, atau pilih warna. Ketuk Pratinjau untuk melihat tampilannya bagi orang lain.
+  • Saat mengajak seseorang langsung, nomor pertandingan mengikuti jenis kelamin kalian berdua, jadi tidak perlu memilih.
+  • Profil setiap orang di kartu bisa dibuka.
+  • Kalau tidak ada yang kosong hari itu, kirim permintaan main dari layar yang sama.
+  • Bahasa: ganti bahasa aplikasi langsung di Pengaturan. Langsung berlaku.
+  • Geser kanan atau ketuk hati untuk langsung mengajak. Kartu bisa difilter menurut nomor, lapangan, level, waktu, dan lainnya.
+  • Setelah main, isi berapa gim yang dimenangkan tiap pihak. Persentase menang kini dihitung per gim.
+  • Tarik ke bawah di daftar mana pun untuk menyegarkan semuanya.
+  ```
+- Bahasa Melayu：
+  ```
+  • Utama: tarikh kini di bahagian paling atas. Ketik satu hari untuk melihat siapa yang lapang, satu kad skrin penuh pada satu masa.
+  • Latar kad: letak foto khas untuk kad anda, berasingan daripada foto profil, atau pilih warna. Ketik Pratonton untuk melihat paparan kad anda kepada orang lain.
+  • Apabila mengajak seseorang secara terus, acara ditentukan mengikut jantina anda berdua, jadi tidak perlu memilih.
+  • Profil setiap orang pada kad boleh dibuka.
+  • Jika tiada yang lapang hari itu, hantar permintaan permainan dari skrin yang sama.
+  • Bahasa: tukar bahasa aplikasi terus dalam Tetapan. Terus berkuat kuasa.
+  • Leret kanan atau ketik hati untuk terus mengajak. Kad boleh ditapis ikut acara, gelanggang, tahap, masa dan lain-lain.
+  • Selepas bermain, isi berapa set yang dimenangi setiap pihak. Kadar menang kini dikira ikut set.
+  • Tarik ke bawah pada mana-mana senarai untuk muat semula semuanya.
+  ```
+- ไทย：
+  ```
+  • หน้าแรก: ย้ายวันที่ไปไว้บนสุด แตะวันไหนก็ดูได้ว่าวันนั้นใครว่าง เป็นการ์ดเต็มจอทีละใบ
+  • พื้นหลังการ์ด: ใส่รูปสำหรับการ์ดแยกจากรูปโปรไฟล์ได้ หรือเลือกสี แตะ ดูตัวอย่าง เพื่อดูว่าคนอื่นเห็นการ์ดของคุณแบบไหน
+  • ชวนใครโดยตรง ประเภทการแข่งขันจะตั้งตามเพศของทั้งสองคนให้เอง ไม่ต้องเลือก
+  • เปิดดูโปรไฟล์ของคนบนการ์ดได้
+  • ถ้าวันนั้นไม่มีใครว่าง ส่งคำขอจับคู่ได้จากหน้าเดียวกัน
+  • ภาษา: เปลี่ยนภาษาในแอปได้จาก การตั้งค่า มีผลทันที
+  • ปัดขวาหรือแตะหัวใจเพื่อชวนได้ทันที กรองการ์ดตามประเภท สนาม ระดับ เวลา และอื่น ๆ ได้
+  • ตีเสร็จแล้วกรอกว่าแต่ละฝ่ายชนะกี่เกม อัตราชนะตอนนี้คิดเป็นเกม
+  • ดึงลงที่รายการไหนก็ได้ จะรีเฟรชทุกอย่าง
+  ```
+- Tiếng Việt：
+  ```
+  • Trang chủ: ngày được đưa lên trên cùng. Chạm vào một ngày để xem ai rảnh, mỗi lần một thẻ toàn màn hình.
+  • Nền thẻ: đặt ảnh riêng cho thẻ của bạn, tách khỏi ảnh đại diện, hoặc chọn màu. Chạm Xem trước để xem người khác thấy thẻ của bạn thế nào.
+  • Khi rủ trực tiếp, nội dung thi đấu tự theo giới tính của hai người, không cần chọn.
+  • Có thể mở hồ sơ của bất kỳ ai trên thẻ.
+  • Nếu hôm đó không ai rảnh, gửi yêu cầu ghép trận ngay trên màn hình đó.
+  • Ngôn ngữ: đổi ngôn ngữ ứng dụng ngay trong Cài đặt, áp dụng ngay lập tức.
+  • Vuốt phải hoặc chạm trái tim để rủ ngay. Lọc thẻ theo nội dung, sân, trình độ, thời gian và hơn thế nữa.
+  • Đánh xong, nhập mỗi bên thắng mấy ván. Tỉ lệ thắng giờ tính theo ván.
+  • Kéo xuống ở danh sách nào cũng làm mới tất cả.
+  ```
+- हिन्दी：
+  ```
+  • होम: तारीखें अब सबसे ऊपर हैं। कोई दिन चुनें और देखें कि उस दिन कौन खाली है, एक बार में एक फ़ुल-स्क्रीन कार्ड।
+  • कार्ड बैकग्राउंड: अपने कार्ड के लिए प्रोफ़ाइल फ़ोटो से अलग फ़ोटो लगाएँ, या कोई रंग चुनें। प्रीव्यू पर टैप करके देखें कि दूसरों को आपका कार्ड कैसा दिखता है।
+  • किसी को सीधे बुलाने पर इवेंट दोनों खिलाड़ियों के जेंडर से अपने-आप तय होता है, कुछ चुनना नहीं पड़ता।
+  • कार्ड पर दिख रहे किसी भी खिलाड़ी की प्रोफ़ाइल खोल सकते हैं।
+  • उस दिन कोई खाली न हो तो उसी स्क्रीन से मैच रिक्वेस्ट भेजें।
+  • भाषा: ऐप की भाषा सीधे सेटिंग्स में बदलें। यह तुरंत लागू होती है।
+  • दाएँ स्वाइप करें या दिल पर टैप करें, तुरंत बुलावा चला जाता है। कार्ड को इवेंट, कोर्ट, लेवल, समय वगैरह से फ़िल्टर करें।
+  • गेम के बाद भरें कि हर तरफ़ ने कितने गेम जीते। जीत दर अब गेम के हिसाब से है।
+  • किसी भी लिस्ट को नीचे खींचें, सब कुछ रीफ़्रेश हो जाता है।
+  ```

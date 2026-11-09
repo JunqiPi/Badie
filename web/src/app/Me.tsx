@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
-import { SUPPORT_EMAIL } from './Contact';
+import { AvatarCrop, decode } from './AvatarCrop';
+import { CardBackground } from './CardBackground';
+import { DONATIONS_OPEN, SUPPORT_EMAIL } from './Contact';
 import { GenderField } from './gender';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
@@ -9,7 +11,7 @@ import { nicknameProblem } from './Onboarding';
 import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
-import { friendLink, problem, supabase, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
+import { cleanPhotoFolder, friendLink, problem, supabase, winPercent, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
 import { day } from './time';
 import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
@@ -92,8 +94,8 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
           </nav>
           <nav aria-label={t('Help')} className="sticker grid px-4 py-1">
             <Row icon="question" tint="sky" title={t('Help & feedback')} to="/contact/" />
-            <Divider />
-            <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />
+            {DONATIONS_OPEN && <Divider />}
+            {DONATIONS_OPEN && <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />}
           </nav>
           <AdminLink />
         </aside>
@@ -222,8 +224,8 @@ function WinRate({ record }: { record: PlayRecord }) {
       <h2 id="win-rate" className="text-headline">{t('Win rate this month')}</h2>
       {record.games >= minimum ? (
         <p className="flex items-baseline gap-2">
-          <span className="text-[2.75rem] leading-none font-black tabular-nums">{Math.round((record.wins / record.games) * 100)}%</span>
-          <span className="text-footnote font-bold text-ink-secondary">{t('{wins}W {losses}L', { wins: record.wins, losses: record.losses })}</span>
+          <span className="text-[2.75rem] leading-none font-black tabular-nums">{winPercent(record) ?? 0}%</span>
+          <span className="text-footnote font-bold text-ink-secondary">{t('Won {won} of {played} games', { won: record.round_wins ?? record.wins, played: record.rounds ?? record.games })}</span>
         </p>
       ) : (
         <>
@@ -278,7 +280,7 @@ const policies = [
   ['nobody', 'No one'],
 ] as const;
 
-type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts' | 'gender'>;
+type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'show_searching' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts' | 'gender'>;
 
 /** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
 export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
@@ -297,6 +299,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
     <div className="mx-auto grid max-w-2xl gap-6">
       <ScreenHeader title={t('Settings')} back="/me/" />
       <Nickname profile={profile} email={email} onChange={onChange} />
+      <CardBackground profile={profile} onChange={onChange} />
 
       <Group title={t('Levels')}>
         <div className="py-3">
@@ -311,6 +314,9 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       </Group>
 
       <Group title={t('Who can find me')}>
+        <Switch checked={profile.show_searching} onChange={(v) => save({ show_searching: v })} title={t('Show me to nearby players when I’m looking for a game')}
+                text={t('They see your nickname, photo, level and the time and courts you picked. Never your contact details.')} />
+        <Divider />
         <Switch checked={profile.discoverable} onChange={(v) => save({ discoverable: v })} title={t('Let players find me by nickname')}
                 text={t('They see your nickname and level, and can send a friend request.')} />
         <Divider />
@@ -343,14 +349,14 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
 
       <Group title={t('Help')}>
         <Row icon="question" tint="sky" title={t('Help & feedback')} subtitle={SUPPORT_EMAIL} to="/contact/" />
-        <Divider />
-        <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />
+        {DONATIONS_OPEN && <Divider />}
+        {DONATIONS_OPEN && <Row icon="heart" tint="peach" title={t('Support Badie')} to="/support/" />}
       </Group>
 
       <Group title={t('Account')}>
         <Row icon="signOut" tint="muted" title={t('Sign out')} onClick={() => disablePush().catch(() => {}).finally(() => supabase!.auth.signOut())} />
         <Divider />
-        <DeleteAccount avatar={profile.avatar_path} />
+        <DeleteAccount id={profile.id} photos={[profile.avatar_path, profile.card_photo_path]} />
       </Group>
 
       <p className="flex justify-center gap-4 text-footnote font-bold">
@@ -485,14 +491,29 @@ function Nickname({ profile, email, onChange }: { profile: Profile; email?: stri
   );
 }
 
-/** 照片头像：裁成 320×320 的 JPEG（和 iOS 一样），先传新的、换上，再删旧的 */
+/** 照片头像：先调整位置和大小，裁成 320×320 的 JPEG（和 iOS 一样），先传新的、换上，再删旧的 */
 function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
   const [busy, setBusy] = useState(false);
+  const [picked, setPicked] = useState<ImageBitmap>();
 
-  async function upload(file: File) {
+  async function pick(file: File) {
+    try {
+      setPicked(await decode(file));
+    } catch {
+      toast(t('Couldn’t upload the photo. Try another one.'), 'error');
+    }
+  }
+
+  function close() {
+    picked?.close();
+    setPicked(undefined);
+  }
+
+  async function upload(jpeg: Blob) {
+    close();
     setBusy(true);
     try {
-      const jpeg = await squareJpeg(file, 320);
+      await cleanPhotoFolder(profile.id, [profile.avatar_path, profile.card_photo_path]).catch(() => {});
       const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
       const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
       if (uploadError) throw uploadError;
@@ -524,27 +545,13 @@ function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Pr
       <label className={`button button-sm cursor-pointer ${busy ? 'pointer-events-none opacity-60' : ''}`}>
         {profile.avatar_path ? t('Change photo') : t('Upload photo')}
         <input type="file" accept="image/*" className="sr-only" disabled={busy}
-               onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void upload(file); }} />
+               onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void pick(file); }} />
       </label>
       {profile.avatar_path && <Button type="button" className="button-sm" variant="quiet" busy={busy} onClick={remove}>{t('Use text avatar')}</Button>}
       <p className="basis-full text-caption text-ink-tertiary">{t('Other players see your photo.')}</p>
+      {picked && <AvatarCrop image={picked} onDone={upload} onCancel={close} />}
     </div>
   );
-}
-
-/** 从中间裁成正方形、缩到 side×side 的 JPEG */
-async function squareJpeg(file: File, side: number): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
-  const crop = Math.min(bitmap.width, bitmap.height);
-  const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = side;
-  const context = canvas.getContext('2d')!;
-  // JPEG 没有透明：透明的 PNG 先铺白底，不然是黑的
-  context.fillStyle = '#fff';
-  context.fillRect(0, 0, side, side);
-  context.drawImage(bitmap, (bitmap.width - crop) / 2, (bitmap.height - crop) / 2, crop, crop, 0, 0, side, side);
-  bitmap.close();
-  return new Promise((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('encode'))), 'image/jpeg', 0.85));
 }
 
 function Level({ profile }: { profile: Profile }) {
@@ -569,7 +576,7 @@ function Level({ profile }: { profile: Profile }) {
 }
 
 /** 注销：先说清会删掉什么，再点一次才删 */
-function DeleteAccount({ avatar }: { avatar: string | null }) {
+function DeleteAccount({ id, photos }: { id: string; photos: (string | null)[] }) {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   // 用 Apple 登录过：网页拿不到 Apple 的授权码去撤销，告诉用户可以在 Apple 账户里自己停用（Apple 的建议）
@@ -581,10 +588,8 @@ function DeleteAccount({ avatar }: { avatar: string | null }) {
   async function remove() {
     setBusy(true);
     // 照片文件先删掉（账号删了以后就没权限删了）；先解除引用，注销失败也不会留下坏图
-    if (avatar) {
-      await supabase!.rpc('set_avatar', { p_path: null });
-      await supabase!.storage.from('avatars').remove([avatar]);
-    }
+    if (photos.some(Boolean)) await Promise.all([supabase!.rpc('set_avatar', { p_path: null }), supabase!.rpc('set_card_photo', { p_path: null })]);
+    await cleanPhotoFolder(id, []).catch(() => {});
     const { error } = await supabase!.rpc('delete_account');
     if (error) {
       setBusy(false);

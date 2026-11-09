@@ -13,8 +13,14 @@ struct PlayerProfileSheet: View {
 
     @State private var showReport = false
     @State private var showChallenge = false
+    /// 正式后端：手机上还没有这个人的资料时先去服务器拉，拉完才判断找不到
+    @State private var isLoading = false
+    @State private var loadedRevision = 0
 
-    private var user: User? { friendManager.user(id: userId) }
+    private var user: User? {
+        _ = loadedRevision
+        return friendManager.user(id: userId)
+    }
 
     var body: some View {
         ScrollView {
@@ -36,11 +42,21 @@ struct PlayerProfileSheet: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.top, AppTheme.Spacing.xl)
                 .padding(.bottom, AppTheme.Spacing.xl)
+            } else if isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, AppTheme.Spacing.xxl)
             } else {
                 EmptyStateView(icon: "person.fill.questionmark", title: String(localized: "找不到这位球友"))
             }
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
+        .task(id: userId) {
+            isLoading = user == nil
+            await friendManager.refreshPlayer(userId)
+            isLoading = false
+            loadedRevision += 1
+        }
         .sheet(isPresented: $showReport) {
             ReportSheet(userId: userId, nickname: user?.nickname ?? String(localized: "TA"))
         }
@@ -379,6 +395,7 @@ struct NotificationsView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .refreshesEverything()
         }
     }
 }

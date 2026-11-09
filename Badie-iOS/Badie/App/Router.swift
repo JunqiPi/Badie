@@ -68,6 +68,8 @@ enum Route: Hashable {
     case groups
     /// 创建球群（可预选球馆）
     case createGroup(venueId: String?)
+    /// 群主编辑球群（名称、介绍、水平、加入方式、每周场次）
+    case editGroup(id: String)
     /// 1–9 级对照表
     case levelGuide
     /// 高水平认证申请
@@ -93,6 +95,8 @@ struct VenuePrefill: Hashable {
 @MainActor
 final class Router: ObservableObject {
     @Published var selectedTab: MainTab = .home
+    /// 每跳一次页面加一：全屏页（按天看人、匹配流程）看到它变了就自己关掉，不然新页面在它后面看不见
+    @Published private(set) var navigations = 0
     @Published var paths: [MainTab: [Route]] = [:]
     /// 中间“+”按钮的创建菜单
     @Published var isCreateMenuPresented = false
@@ -124,6 +128,7 @@ final class Router: ObservableObject {
 
     /// 在指定标签页（默认当前页）推入页面
     func open(_ route: Route, in tab: MainTab? = nil) {
+        navigations += 1
         let target = tab ?? selectedTab
         if target != selectedTab {
             selectedTab = target
@@ -137,6 +142,7 @@ final class Router: ObservableObject {
 
     /// 切换到某个标签页并重置为指定页面
     func show(_ route: Route, in tab: MainTab) {
+        navigations += 1
         selectedTab = tab
         paths[tab] = [route]
     }

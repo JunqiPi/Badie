@@ -16,11 +16,14 @@ extension MockBackend {
         let challengePolicy: String
         let discoverable: Bool?
         let showAsRegular: Bool?
+        let showSearching: Bool?
         let allowMessageRequests: Bool?
         let emailAlerts: Bool?
         let verifiedKind: String?
         let verifiedRating: Double?
         let avatarPath: String?
+        let cardColor: String?
+        let cardPhotoPath: String?
         let locale: String
         let gender: String?
         let createdAt: Date?
@@ -152,6 +155,7 @@ extension MockBackend {
     func clearRemoteCache() {
         remoteIsAdmin = false
         remoteAvatarPath = nil
+        remoteCardPhotoPath = nil
         remoteAvatarChecked = []
         remoteNoShows = [:]
         remoteMessageOptions = [:]
@@ -172,7 +176,12 @@ extension MockBackend {
             try? await remote.invoke("apple-revoke", ["code": code])
         }
         // 照片文件先删掉（账号删了以后就没权限删了）
-        if let path = remoteAvatarPath { try? await remote.removeFile("avatars", path: path) }
+        // 先把资料里的照片清掉（注销失败时别人不会看到坏图），再删文件夹里的全部文件
+        if remoteAvatarPath != nil { try? await remote.call("set_avatar", ["p_path": NSNull()]) }
+        if remoteCardPhotoPath != nil { try? await remote.call("set_card_photo", ["p_path": NSNull()]) }
+        remoteAvatarPath = nil
+        remoteCardPhotoPath = nil
+        await cleanUpPhotoFolder(keeping: [])
         try await remote.call("delete_account")
         await remote.signOut()
         store.erase()
@@ -198,6 +207,8 @@ extension MockBackend {
         try? await refreshRemoteVerification()
         remoteAvatarPath = profile.avatarPath
         await applyAvatar(profile.avatarPath, to: profile.id)
+        remoteCardPhotoPath = profile.cardPhotoPath
+        await applyCardPhoto(profile.cardPhotoPath, to: profile.id)
         user = db.users[profile.id] ?? user
         if profile.locale != Self.serverLocale {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["locale": Self.serverLocale])
@@ -229,7 +240,9 @@ extension MockBackend {
         user.privacy.showsAsRegular = profile.showAsRegular ?? false
         user.privacy.allowsMessageRequests = profile.allowMessageRequests ?? true
         user.privacy.emailAlerts = profile.emailAlerts ?? false
+        user.privacy.showsWhenSearching = profile.showSearching ?? true
         user.gender = Gender(server: profile.gender)
+        user.avatar.cardColor = profile.cardColor.flatMap(CardColor.init(rawValue:))
         if let kind = profile.verifiedKind.flatMap(VerificationStatus.init(server:)), let rating = profile.verifiedRating {
             user.applyVerification(kind, tier: SkillTier(rating: rating))
         } else {
@@ -299,9 +312,15 @@ extension MockBackend {
 
     /// 通知和邮件用 App 当前的界面语言（和服务器支持的语言一致）
     static var serverLocale: String {
-        let supported = ["en", "zh-Hans", "zh-Hant", "ja", "ko", "id", "ms", "th", "vi", "hi"]
-        let language = Bundle.main.preferredLocalizations.first ?? "en"
-        return supported.contains(language) ? language : "en"
+        AppLanguage.current
+    }
+
+    /// 在 App 里换了语言：通知、邮件也跟着换
+    func syncServerLocale() {
+        guard let id = currentUserId else { return }
+        runRemote { remote in
+            try await remote.update("profiles", query: "id=eq.\(id)", ["locale": Self.serverLocale])
+        }
     }
 }
 

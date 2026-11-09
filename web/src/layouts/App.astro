@@ -31,6 +31,8 @@ const languages = alternates(Astro.url.pathname, Astro.site ?? new URL('http://l
     {noindex && <meta name="robots" content="noindex" />}
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#17140f" />
+    <!-- Safari 顶部的“在 App Store 打开”横幅 -->
+    <meta name="apple-itunes-app" content="app-id=6825569793" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Badie" />
     <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'zh_CN'} />

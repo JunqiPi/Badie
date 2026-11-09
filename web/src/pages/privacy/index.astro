@@ -2,7 +2,7 @@
 import LegalPage from '../../components/LegalPage.astro';
 ---
 
-<LegalPage title="Privacy Policy" updated="October 20, 2026"
+<LegalPage title="Privacy Policy" updated="November 6, 2026"
            description="What Badie collects, why, who it is shared with, and how to delete your data.">
   <section>
     <p>
@@ -12,7 +12,7 @@ import LegalPage from '../../components/LegalPage.astro';
     <ul>
       <li>We collect what we need to match you with players: your email, a nickname, your level and the games you set up.</li>
       <li>Other players see your nickname, photo, level and game record. They never see your email.</li>
-      <li>We don’t sell your information and we don’t use advertising or analytics trackers.</li>
+      <li>We don’t sell your information and we don’t use advertising or tracking. We count website visits without cookies.</li>
       <li>You can delete your account and its data at any time in Settings.</li>
     </ul>
   </section>
@@ -23,8 +23,8 @@ import LegalPage from '../../components/LegalPage.astro';
       <li><strong>Account:</strong> your email address and password. The password is stored only as a one-way hash by our sign-in
         provider. If you continue with Google or Apple, we receive the name and email they share; Apple lets you hide your email
         behind a relay address.</li>
-      <li><strong>Profile:</strong> nickname, country, app language, gender, level and your level-quiz answers, the photo you choose to
-        upload, and your settings. Men’s and women’s levels are rated separately, so gender is used only to place your level and to
+      <li><strong>Profile:</strong> nickname, country, app language, gender, level and your level-quiz answers, the photos you choose to
+        upload (profile photo and card background), your card color, and your settings. Men’s and women’s levels are rated separately, so gender is used only to place your level and to
         match you. It isn’t about how you identify, and you can change it in Settings.</li>
       <li><strong>Activity:</strong> match requests (date, time, courts and level range), games, check-ins, results and scores,
         court-fee “paid” marks, groups, rooms and challenges you join, friends, messages, reviews you give and receive, reports and
@@ -37,6 +37,9 @@ import LegalPage from '../../components/LegalPage.astro';
         with that search and are not stored. The website remembers the last area you searched in your own browser.</li>
       <li><strong>Technical:</strong> like any website, our hosting providers process IP addresses and request logs to keep the
         service secure and prevent abuse.</li>
+      <li><strong>Visit counts:</strong> the website uses Cloudflare Web Analytics to count page views, where visitors come from
+        and how fast pages load. It doesn’t use cookies or store anything on your device, and doesn’t identify you or follow
+        you across sites. The iPhone app doesn’t use it.</li>
     </ul>
   </section>
 
@@ -49,7 +52,7 @@ import LegalPage from '../../components/LegalPage.astro';
         messages the reported player sent in the last 30 days in conversations the reporter was part of.</li>
       <li>To prevent abuse: bot checks, rate limits, and checking new passwords against known data breaches. For that check only the
         first 5 characters of a hash of your password are sent; the password itself never leaves your device.</li>
-      <li>We don’t sell or rent personal information. If we ever add advertising or analytics, we will update this policy first.</li>
+      <li>We don’t sell or rent personal information. If we ever add advertising, we will update this policy first.</li>
     </ul>
   </section>
 
@@ -58,8 +61,9 @@ import LegalPage from '../../components/LegalPage.astro';
     <ul>
       <li>Your nickname, photo, level (and whether it’s on the men’s or women’s ladder), games played, reliability and the positive
         tags others gave you. Reviews are only shown as anonymous totals.</li>
-      <li>Leaderboards (you can turn this off), “regulars” at your courts (only if you turn it on) and search by nickname (you can
-        turn this off).</li>
+      <li>Leaderboards, “regulars” at your courts and search by nickname. You can turn each of these off.</li>
+      <li>When you’re looking for a game, nearby players can see your nickname, photo, card background, level, and the time and courts you picked,
+        and invite you to play. You can turn this off in Settings. Your contact details are never shown.</li>
       <li>Messages are seen by the people in that conversation.</li>
       <li>Your email address is never shown to other players.</li>
     </ul>
@@ -70,11 +74,11 @@ import LegalPage from '../../components/LegalPage.astro';
     <p>We use these companies to run Badie. They process information only to provide their service to us.</p>
     <ul>
       <li><strong>Supabase</strong>: database, sign-in and file storage.</li>
-      <li><strong>Cloudflare</strong>: website hosting and bot checks.</li>
+      <li><strong>Cloudflare</strong>: website hosting, bot checks and visit counts.</li>
       <li><strong>Email delivery providers</strong> (such as Resend): the emails you receive from us.</li>
       <li><strong>Apple Push Notification service</strong> and your browser’s push service: notifications.</li>
       <li><strong>Google and Apple</strong>: only if you choose to sign in with them.</li>
-      <li><strong>Apple</strong> (tips in the iPhone app) and <strong>Ko-fi</strong> (tips on the website): they handle the payment.
+      <li><strong>Apple</strong> (tips in the iPhone app) and <strong>Ko-fi</strong> (tips on the website and, in the US, from the iPhone app): they handle the payment.
         We don’t receive your card details, and a tip doesn’t change anything in your account.</li>
       <li><strong>Have I Been Pwned</strong>: the breached-password check (it receives only a 5-character hash prefix).</li>
       <li><strong>OpenFreeMap</strong> (maps on the website) and <strong>Apple Maps</strong> (maps and place search in the iPhone app).</li>
@@ -86,7 +90,7 @@ import LegalPage from '../../components/LegalPage.astro';
     <h2>How long we keep it</h2>
     <p>
       We keep your information while your account exists. When you delete your account in Settings (on the website or in the app),
-      we delete your profile, photo, requests, games, messages, reviews, friends and devices. Courts you added stay in the directory
+      we delete your profile, photos, requests, games, messages, reviews, friends and devices. Courts you added stay in the directory
       without your name. Copies in backups are removed as the backups expire. If you signed in with Apple, deleting your account in
       the iPhone app also removes Badie from your Apple account.
     </p>

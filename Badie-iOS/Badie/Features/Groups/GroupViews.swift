@@ -86,6 +86,7 @@ struct GroupsView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .refreshesEverything()
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
@@ -117,6 +118,7 @@ struct GroupDetailView: View {
     @EnvironmentObject private var router: Router
 
     @State private var confirmsLeave = false
+    @State private var confirmsDisband = false
     @State private var sessionDetail: GroupSession?
 
     private var group: PlayGroup? {
@@ -158,16 +160,42 @@ struct GroupDetailView: View {
                                 .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
                                 .frame(maxWidth: .infinity)
                         }
+                        if group.ownerId == me {
+                            VStack(spacing: AppTheme.Spacing.sm) {
+                                Button("编辑球群和场次") { router.open(.editGroup(id: group.id)) }
+                                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+                                Button("解散球群") { confirmsDisband = true }
+                                    .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
                     }
                     .padding(.horizontal, AppTheme.Spacing.screen)
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
+            .refreshesEverything()
             } else {
                 EmptyStateView(icon: "person.3", title: String(localized: "没有找到这个球群"))
                 Spacer()
             }
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
+        .confirmationDialog("解散这个球群？", isPresented: $confirmsDisband, titleVisibility: .visible) {
+            Button("解散", role: .destructive) {
+                Task {
+                    do {
+                        try await groupManager.disband(groupId)
+                        appState.showToast(String(localized: "球群已解散，成员会收到通知"))
+                        router.pop()
+                    } catch {
+                        appState.showError(error)
+                    }
+                }
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("以后的场次和报名都会删掉，不能恢复。")
+        }
         .confirmationDialog("退出这个球群？", isPresented: $confirmsLeave, titleVisibility: .visible) {
             Button("退出", role: .destructive) {
                 Task {
@@ -527,8 +555,10 @@ struct SessionSheet: View {
 
 // MARK: - 建群
 
+/// 建球群；带 editingGroupId 时是群主编辑（球馆和谁能来不能改）
 struct CreateGroupView: View {
     var initialVenueId: String?
+    var editingGroupId: String?
 
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
@@ -538,16 +568,17 @@ struct CreateGroupView: View {
     @State private var name = ""
     @State private var summary = ""
     @State private var venueId: String?
-    @State private var weekday = 5
-    @State private var startMinutes = 19 * 60 + 30
-    @State private var endMinutes = 22 * 60
-    @State private var capacity = 12
+    @State private var schedules = [GroupSchedule(id: UUID().uuidString, weekday: 5, startMinutes: 19 * 60 + 30, endMinutes: 22 * 60,
+                                                  capacity: 12, feeNote: nil)]
     @State private var lowerLevel = 1
     @State private var upperLevel = 9
     @State private var joinPolicy: PlayGroup.JoinPolicy = .open
     @State private var audience: Gender?
     @State private var showVenuePicker = false
     @State private var didSetup = false
+    @State private var isSaving = false
+
+    private var isEditing: Bool { editingGroupId != nil }
 
     private let weekdays = [
         (2, String(localized: "一", comment: "星期一（简写）")),
@@ -564,14 +595,15 @@ struct CreateGroupView: View {
     private var validationMessage: String? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         if !PlayGroup.nameLimit.contains(trimmed.count) { return String(localized: "球群名称需要 2–20 个字") }
-        if venue == nil { return String(localized: "选择固定的球馆") }
-        if endMinutes - startMinutes < 60 { return String(localized: "每场至少 1 小时") }
+        if !isEditing && venue == nil { return String(localized: "选择固定的球馆") }
+        if schedules.contains(where: { $0.endMinutes - $0.startMinutes < 60 }) { return String(localized: "每场至少 1 小时") }
+        if schedules.contains(where: { $0.endMinutes - $0.startMinutes > 720 }) { return String(localized: "每场最长 12 小时") }
         return nil
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "建一个球群"))
+            ScreenHeader(title: isEditing ? String(localized: "编辑球群") : String(localized: "建一个球群"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
                     section(String(localized: "名称")) {
@@ -579,51 +611,30 @@ struct CreateGroupView: View {
                         BrutalTextField(label: String(localized: "介绍（可选）"), placeholder: String(localized: "例：轮换上场，新手友好；费用按人头在前台付"),
                                         text: $summary, characterLimit: 120, axis: .vertical)
                     }
-                    section(String(localized: "固定球馆")) {
-                        Button {
-                            showVenuePicker = true
-                        } label: {
-                            HStack(spacing: AppTheme.Spacing.md) {
-                                IconTile(systemName: "sportscourt.fill", fill: AppTheme.Colors.sky, size: 40)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(venue?.name ?? String(localized: "选择球馆"))
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text(venue?.address ?? String(localized: "搜索球馆名、简称或地址"))
-                                        .font(AppTheme.Typography.footnote)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(AppTheme.Colors.inkTertiary)
-                            }
-                            .padding(AppTheme.Spacing.md)
-                            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
-                        }
-                        .buttonStyle(PressableStyle(scale: 0.98))
+                    if !isEditing {
+                        section(String(localized: "固定球馆")) { venueButton }
                     }
                     section(String(localized: "每周固定场次")) {
-                        HStack(spacing: 6) {
-                            ForEach(weekdays.indices, id: \.self) { index in
-                                ChoiceChip(title: weekdays[index].1, isSelected: weekday == weekdays[index].0) {
-                                    weekday = weekdays[index].0
-                                }
+                        ForEach($schedules) { $schedule in
+                            scheduleEditor($schedule)
+                        }
+                        if schedules.count < PlayGroup.maxSchedules {
+                            Button {
+                                var next = schedules.last ?? schedules[0]
+                                next = GroupSchedule(id: UUID().uuidString, weekday: next.weekday % 7 + 1, startMinutes: next.startMinutes,
+                                                     endMinutes: next.endMinutes, capacity: next.capacity, feeNote: nil)
+                                schedules.append(next)
+                            } label: {
+                                Label("再加一个场次", systemImage: "plus.circle.fill")
                             }
-                        }
-                        HStack(spacing: AppTheme.Spacing.md) {
-                            TimeStepper(title: String(localized: "开始"), minutes: $startMinutes, range: (6 * 60)...(23 * 60))
-                            TimeStepper(title: String(localized: "结束"), minutes: $endMinutes, range: (7 * 60)...(24 * 60))
-                        }
-                        Stepper(value: $capacity, in: GroupSchedule.capacityRange, step: 2) {
-                            Text("每场 \(capacity) 个名额，满了自动候补")
-                                .font(AppTheme.Typography.bodyBold)
-                                .foregroundStyle(AppTheme.Colors.ink)
+                            .buttonStyle(TextActionStyle())
                         }
                     }
-                    section(String(localized: "谁能来")) {
-                        AudiencePicker(options: appState.currentUser.map { $0.gender == .unspecified ? [] : [$0.gender] } ?? [],
-                                       selection: $audience)
+                    if !isEditing {
+                        section(String(localized: "谁能来")) {
+                            AudiencePicker(options: appState.currentUser.map { $0.gender == .unspecified ? [] : [$0.gender] } ?? [],
+                                           selection: $audience)
+                        }
                     }
                     section(String(localized: "接受的水平")) {
                         HStack(spacing: AppTheme.Spacing.md) {
@@ -644,9 +655,9 @@ struct CreateGroupView: View {
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.danger)
                 }
-                Button("建群") { create() }
+                Button(isEditing ? String(localized: "保存") : String(localized: "建群")) { save() }
                     .buttonStyle(.brutalPrimary)
-                    .disabled(validationMessage != nil)
+                    .disabled(validationMessage != nil || isSaving)
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.top, AppTheme.Spacing.md)
@@ -660,20 +671,68 @@ struct CreateGroupView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
-        .onAppear {
-            guard !didSetup else { return }
-            didSetup = true
-            venueId = initialVenueId ?? locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil }
-            let level = appState.currentUser?.level(for: audience) ?? 4
-            lowerLevel = max(1, level - 2)
-            upperLevel = min(9, level + 2)
-        }
+        .onAppear(perform: setup)
         // 换了谁能来，自己的等级可能跟着换算：范围重新围着自己
         .onChange(of: audience) { _, audience in
+            guard !isEditing else { return }
             let level = appState.currentUser?.level(for: audience) ?? 4
             lowerLevel = max(1, level - 2)
             upperLevel = min(9, level + 2)
         }
+    }
+
+    private var venueButton: some View {
+        Button {
+            showVenuePicker = true
+        } label: {
+            HStack(spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "sportscourt.fill", fill: AppTheme.Colors.sky, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(venue?.name ?? String(localized: "选择球馆"))
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    Text(venue?.address ?? String(localized: "搜索球馆名、简称或地址"))
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+            }
+            .padding(AppTheme.Spacing.md)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
+        }
+        .buttonStyle(PressableStyle(scale: 0.98))
+    }
+
+    private func scheduleEditor(_ schedule: Binding<GroupSchedule>) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(spacing: 6) {
+                ForEach(weekdays.indices, id: \.self) { index in
+                    ChoiceChip(title: weekdays[index].1, isSelected: schedule.wrappedValue.weekday == weekdays[index].0) {
+                        schedule.wrappedValue.weekday = weekdays[index].0
+                    }
+                }
+            }
+            HStack(spacing: AppTheme.Spacing.md) {
+                TimeStepper(title: String(localized: "开始"), minutes: schedule.startMinutes, range: (6 * 60)...(23 * 60))
+                TimeStepper(title: String(localized: "结束"), minutes: schedule.endMinutes, range: (7 * 60)...(24 * 60))
+            }
+            Stepper(value: schedule.capacity, in: GroupSchedule.capacityRange, step: 2) {
+                Text("每场 \(schedule.wrappedValue.capacity) 个名额，满了自动候补")
+                    .font(AppTheme.Typography.bodyBold)
+                    .foregroundStyle(AppTheme.Colors.ink)
+            }
+            if schedules.count > 1 {
+                Button("删掉这个场次", role: .destructive) {
+                    schedules.removeAll { $0.id == schedule.wrappedValue.id }
+                }
+                .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
+            }
+        }
+        .padding(AppTheme.Spacing.md)
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
     }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -686,13 +745,38 @@ struct CreateGroupView: View {
         }
     }
 
-    private func create() {
-        guard let venueId else { return }
-        let schedule = GroupSchedule(id: "s1", weekday: weekday, startMinutes: startMinutes, endMinutes: endMinutes,
-                                     capacity: capacity, feeNote: nil)
+    private func setup() {
+        guard !didSetup else { return }
+        didSetup = true
+        if let editingGroupId, let group = groupManager.group(id: editingGroupId) {
+            name = group.name
+            summary = group.summary
+            schedules = group.schedules.isEmpty ? schedules : group.schedules
+            lowerLevel = group.levelRange.lowerBound
+            upperLevel = group.levelRange.upperBound
+            joinPolicy = group.joinPolicy
+            return
+        }
+        venueId = initialVenueId ?? locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil }
+        let level = appState.currentUser?.level(for: audience) ?? 4
+        lowerLevel = max(1, level - 2)
+        upperLevel = min(9, level + 2)
+    }
+
+    private func save() {
+        isSaving = true
         Task {
+            defer { isSaving = false }
             do {
-                let group = try await groupManager.create(name: name, venueId: venueId, schedules: [schedule],
+                if let editingGroupId {
+                    try await groupManager.update(editingGroupId, name: name, schedules: schedules, levelRange: lowerLevel...upperLevel,
+                                                  joinPolicy: joinPolicy, summary: summary)
+                    appState.showToast(String(localized: "已保存"), style: .success)
+                    router.pop()
+                    return
+                }
+                guard let venueId else { return }
+                let group = try await groupManager.create(name: name, venueId: venueId, schedules: schedules,
                                                           levelRange: lowerLevel...upperLevel, joinPolicy: joinPolicy, summary: summary,
                                                           audience: audience)
                 Haptics.success()

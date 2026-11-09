@@ -52,13 +52,20 @@ struct MainTabView: View {
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(28)
         }
-        .sheet(isPresented: $router.isMatchSetupPresented) {
+        // 点了“修改请求”又没改就关掉：下次发新请求时不再停在“正在修改”
+        .sheet(isPresented: $router.isMatchSetupPresented, onDismiss: { matchManager.draft.replacingTicketId = nil }) {
             MatchSetupView()
+                .showsToasts()
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
         }
         .fullScreenCover(isPresented: $matchManager.isFlowPresented) {
             MatchFlowView()
+                .showsToasts()
+        }
+        // 全屏的匹配流程里点了私信、看球局等：先关掉它，新页面才看得见
+        .onChange(of: router.navigations) { _, _ in
+            if matchManager.isFlowPresented { matchManager.isFlowPresented = false }
         }
         // 以前注册、还没选定级用的性别：先补上（男女等级分开算，匹配要用）
         .fullScreenCover(isPresented: .constant(appState.isRemote && appState.currentUser?.gender == .unspecified)) {

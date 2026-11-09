@@ -50,6 +50,10 @@ final class MockBackend {
     var remoteVerification: VerificationRequest?
     /// 照片头像：我的照片在桶里的位置；这次启动查过头像的人、等着一起查的人
     var remoteAvatarPath: String?
+    /// 我的卡片背景照片在桶里的位置
+    var remoteCardPhotoPath: String?
+    /// 别人的卡片背景照片：只放内存（首页一天能刷几十张，存进缓存文件会越来越大）
+    var remoteCardPhotos: [String: Data] = [:]
     var remoteAvatarChecked: Set<String> = []
     var remoteAvatarQueue: [String] = []
     /// 有多少人在找：每个请求的人数，和按天的人数（上次拉取的地点、半径和时间）
@@ -72,8 +76,11 @@ final class MockBackend {
     init(store: DatabaseStore, seedsWorld: Bool = true) {
         self.store = store
         db = store.load() ?? Database()
+        // 老版本把别人的卡片背景也存进了缓存文件：清掉，只留自己的
+        let mine = db.currentUserId.map(AvatarPhotos.cardKey)
+        db.avatarPhotos = db.avatarPhotos.filter { !$0.key.hasPrefix("card:") || $0.key == mine }
         if seedsWorld { ensureWorld() }
-        AvatarPhotos.source = { [weak self] userId in self?.db.avatarPhotos[userId] }
+        AvatarPhotos.source = { [weak self] key in self?.db.avatarPhotos[key] ?? self?.remoteCardPhotos[key] }
     }
 
     // MARK: Events
@@ -346,7 +353,8 @@ final class MockBackend {
         emit(.userUpdated(user))
         pushRemote(["show_on_boards": privacy.showsOnLeaderboards, "challenge_policy": privacy.challengePolicy.serverValue,
                     "discoverable": privacy.findableByNickname, "show_as_regular": privacy.showsAsRegular,
-                    "allow_message_requests": privacy.allowsMessageRequests, "email_alerts": privacy.emailAlerts])
+                    "allow_message_requests": privacy.allowsMessageRequests, "email_alerts": privacy.emailAlerts,
+                    "show_searching": privacy.showsWhenSearching])
     }
 
     func updateProfile(_ updated: User) async throws -> User {
@@ -362,8 +370,12 @@ final class MockBackend {
         user.nickname = updated.nickname.trimmingCharacters(in: .whitespacesAndNewlines)
         user.bio = String(updated.bio.prefix(60))
         if updated.gender != .unspecified { user.gender = updated.gender }
+        if let remote, updated.avatar.cardColor != user.avatar.cardColor {
+            try await remote.update("profiles", query: "id=eq.\(user.id)", ["card_color": updated.avatar.cardColor?.rawValue ?? NSNull()])
+        }
         user.avatar.symbol = updated.avatar.symbol
         user.avatar.paletteIndex = updated.avatar.paletteIndex
+        user.avatar.cardColor = updated.avatar.cardColor
         user.preferredMode = updated.preferredMode
         // 等级不能在这里直接改：只能通过定级问卷（每 90 天一次）或球友评价校准
         db.users[user.id] = user
@@ -379,11 +391,47 @@ final class MockBackend {
         guard var user = currentUser else { throw BackendError.notSignedIn }
         await networkDelay()
         db.avatarPhotos[user.id] = jpeg
-        user.avatar.photoVersion = (user.avatar.photoVersion ?? 0) + 1
+        user.avatar.photoVersion = Int.random(in: 1...Int(Int32.max))
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))
         return user
+    }
+
+    /// 上传卡片背景照片：别人在首页刷到你时看到
+    @discardableResult
+    func uploadCardPhoto(_ jpeg: Data) async throws -> User {
+        if isRemote { return try await remoteUploadCardPhoto(jpeg) }
+        guard var user = currentUser else { throw BackendError.notSignedIn }
+        await networkDelay()
+        db.avatarPhotos[AvatarPhotos.cardKey(user.id)] = jpeg
+        user.avatar.cardPhotoVersion = Int.random(in: 1...Int(Int32.max))
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+        return user
+    }
+
+    /// 卡片颜色：点了就存
+    func setCardColor(_ color: CardColor) {
+        guard var user = currentUser, user.avatar.cardColor != color else { return }
+        user.avatar.cardColor = color
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+        runRemote { remote in
+            try await remote.update("profiles", query: "id=eq.\(user.id)", ["card_color": color.rawValue])
+        }
+    }
+
+    func removeCardPhoto() {
+        guard var user = currentUser else { return }
+        db.avatarPhotos[AvatarPhotos.cardKey(user.id)] = nil
+        user.avatar.cardPhotoVersion = nil
+        db.users[user.id] = user
+        scheduleSave()
+        emit(.userUpdated(user))
+        if isRemote { remoteRemoveCardPhoto() }
     }
 
     func removeAvatarPhoto() {

@@ -66,8 +66,18 @@ final class ModelTests: XCTestCase {
 
     func testDateRangeValidation() {
         XCTAssertFalse(slot(day: -1, 19, 21).validate().isValid, "过去的日期无效")
-        XCTAssertTrue(slot(day: 14, 19, 21).validate().isValid)
-        XCTAssertFalse(slot(day: 15, 19, 21).validate().isValid, "超过 14 天无效")
+        XCTAssertTrue(slot(day: 30, 19, 21).validate().isValid)
+        XCTAssertFalse(slot(day: 31, 19, 21).validate().isValid, "超过 30 天无效")
+    }
+
+    func testAnyTimeAllowsSixteenHoursForMatching() {
+        XCTAssertFalse(slot(day: 2, 7, 23).validate().isValid, "开局最长 8 小时")
+        XCTAssertTrue(slot(day: 2, 7, 23).validate(maxDuration: TimeSlotConstants.maximumMatchDuration).isValid)
+        var draft = MatchDraft()
+        draft.day = Calendar.current.date(byAdding: .day, value: 2, to: Calendar.current.startOfDay(for: Date()))!
+        draft.setAnyTime()
+        XCTAssertTrue(draft.isAnyTime)
+        XCTAssertTrue(draft.validation.isValid)
     }
 
     func testTrimmedForGameCapsAtTwoHours() {

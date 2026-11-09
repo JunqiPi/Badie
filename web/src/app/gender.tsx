@@ -32,9 +32,15 @@ export const audienceLabel = (gender: Gender | null | undefined) =>
 /** 项目：不限、男单 / 女单 / 男双 / 女双（只和自己同性别的人）、混双（两男两女，每边一男一女） */
 export type PlayEvent = 'any' | Gender | 'mixed';
 
-/** 能选的项目：只能选自己的性别；混双只有双打，也要先填性别 */
-export const eventOptions = (mode: Mode, gender: Gender | null | undefined): PlayEvent[] =>
-  gender ? (mode === 'doubles' ? ['any', gender, 'mixed'] : ['any', gender]) : ['any'];
+/** 能选的项目：只能选自己的性别；混双只有双打，也要先填性别。
+ *  直接约某个人（partner 是对方的性别）时按两人的性别定：单打同性就是男单 / 女单、异性就是不限；
+ *  双打两人同性可以男双 / 女双或不限，异性可以混双或不限 */
+export function eventOptions(mode: Mode, gender: Gender | null | undefined, partner?: Gender | null): PlayEvent[] {
+  if (!gender) return ['any'];
+  if (!partner) return mode === 'doubles' ? ['any', gender, 'mixed'] : ['any', gender];
+  if (mode === 'singles') return partner === gender ? [gender] : ['any'];
+  return partner === gender ? ['any', gender] : ['any', 'mixed'];
+}
 
 /** 服务器存的是性别限制和是否混双 */
 export const eventOf = (gender: Gender | null | undefined, mixed: boolean | null | undefined): PlayEvent => (mixed ? 'mixed' : gender ?? 'any');
@@ -48,12 +54,20 @@ export function eventLabel(mode: Mode, event: PlayEvent) {
 }
 
 /** 约球、开局共用的“项目”选择 */
-export function EventField({ mode, gender, value, onChange }: { mode: Mode; gender: Gender | null | undefined; value: PlayEvent; onChange: (event: PlayEvent) => void }) {
+export function EventField({ mode, gender, partner, value, onChange }: {
+  mode: Mode;
+  gender: Gender | null | undefined;
+  /** 直接约的人的性别：只剩一个项目时不显示 */
+  partner?: Gender | null;
+  value: PlayEvent;
+  onChange: (event: PlayEvent) => void;
+}) {
+  if (partner && eventOptions(mode, gender, partner).length < 2) return null;
   return (
     <fieldset className="grid gap-2">
       <legend className="mb-2 text-headline">{t('Event')}</legend>
       <div className="flex flex-wrap gap-2">
-        {eventOptions(mode, gender).map((event) => (
+        {eventOptions(mode, gender, partner).map((event) => (
           <button type="button" key={event} onClick={() => onChange(event)} aria-pressed={value === event} className="toggle">
             {eventLabel(mode, event) ?? t('Anyone')}
           </button>

@@ -49,6 +49,7 @@ struct RoomLobbyView: View {
                     .padding(.horizontal, AppTheme.Spacing.screen)
                     .padding(.bottom, AppTheme.Spacing.xxl)
                 }
+            .refreshesEverything()
                 footer(room)
             } else {
                 Spacer()

@@ -7,6 +7,7 @@ struct BadieApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     init() {
+        AppLanguage.installAtLaunch()
         NotificationRouter.shared.install()
         TipJar.finishPending()
     }
@@ -26,6 +27,7 @@ struct BadieApp: App {
                 .environmentObject(environment.surveyManager)
                 .environmentObject(environment.inboxManager)
                 .environmentObject(environment.groupManager)
+                .environment(\.locale, Locale(identifier: host.language))
                 // 换了环境就从头建界面，不留旧环境的页面和状态
                 .id(host.generation)
         }

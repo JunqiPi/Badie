@@ -22,6 +22,8 @@
   X-Robots-Tag: noindex
 /games/*
   X-Robots-Tag: noindex
+/day/*
+  X-Robots-Tag: noindex
 /rooms/*
   X-Robots-Tag: noindex
 /groups/*

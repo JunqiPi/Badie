@@ -55,10 +55,11 @@ extension MockBackend {
     /// 发起约球请求。会立刻尝试匹配一次；找不到就挂着，有人了再通知。
     @discardableResult
     func submitTicket(mode: GameMode, slot: TimeSlot, courtIds: [String], skillTolerance: Int, radiusKm: Double,
-                      origin: Coordinate, autoAccept: Bool, event: PlayEvent? = nil, now: Date = Date()) async throws -> MatchTicket {
+                      origin: Coordinate, autoAccept: Bool, event: PlayEvent? = nil, replacing: String? = nil,
+                      now: Date = Date()) async throws -> MatchTicket {
         if isRemote {
             return try await remoteSubmitTicket(mode: mode, slot: slot, courtIds: courtIds, skillTolerance: skillTolerance,
-                                                autoAccept: autoAccept, event: event)
+                                                autoAccept: autoAccept, event: event, replacing: replacing)
         }
         let me = try requireUser()
         guard me.attendance.standing != .suspended else { throw BackendError.matchingSuspended }
@@ -70,7 +71,7 @@ extension MockBackend {
         }
         guard !resolved.isEmpty else { throw BackendError.venueNotFound }
         let overlapping = db.tickets.values.contains { other in
-            other.userId == me.id && other.isActive
+            other.userId == me.id && other.isActive && other.id != replacing
                 && other.slot.startTime < slot.endTime && slot.startTime < other.slot.endTime
         }
         guard !overlapping else { throw BackendError.ticketOverlap }
@@ -94,6 +95,7 @@ extension MockBackend {
             hasPriority: false,
             excludedUserIds: []
         )
+        if let replacing { cancelTicket(replacing, now: now) }
         db.tickets[ticket.id] = ticket
         runMatchmaking(ticketId: ticket.id, now: now)
         scheduleSave()

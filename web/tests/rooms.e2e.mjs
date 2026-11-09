@@ -24,7 +24,7 @@ async function post(page, { mode, isPublic, daysAhead, event }) {
   await page.getByRole('button', { name: new RegExp(`^${mode} `) }).click();
   await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
   await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
-  await page.getByRole('radiogroup', { name: 'Date (next 14 days)' }).getByRole('radio').nth(daysAhead).click();
+  await page.getByRole('radiogroup', { name: 'Date', exact: true }).getByRole('radio').nth(daysAhead).click();
   if (!isPublic) await page.getByRole('button', { name: 'Only people with the code' }).click();
   if (event) await page.getByRole('button', { name: event }).click();
   await page.getByRole('button', { name: 'Casual' }).click();

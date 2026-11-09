@@ -4,8 +4,16 @@
 > **任何密钥（.p8 文件、密码）都不要发到聊天里，也不要提交到仓库。**
 > 第 0、1 步不花钱，可以先做；从第 2 步开始需要 Apple Developer Program（每年 $99）。
 
-**现状（2026-10-24）**：1.0 已提交审核（Build `20261023.2350`），选的是**手动发布**：审核通过后在版本页点 Release This Version 才上架。
-上架后把 App Store 链接告诉工程 agent：网站加下载按钮和 Safari 智能横幅，关于页的“iPhone App 测试中”改掉。
+**现状（2026-11-06）**：
+- **1.0.1**（Build `20261106.0636`）已提交：按天看谁有空、约球请求可修改和“任何时间”、球群编辑和多场次、头像裁剪、帮助与反馈、打赏。
+- **1.0.2**（Build `20261106.2251`，main `b1d92f0`）已在 TestFlight，等 1.0.1 审核通过后再提交：日期放到首页最上面、全屏卡片、卡片背景照片和颜色（可预览）、直接约人按两人性别定项目、App 里直接换语言。10 种语言的更新说明在 `STORE_LISTING.md` 的“1.0.2 更新说明”。
+- 两个版本都带打赏：提交时 Notes 要按第 4 步和第 7 节第 5 步写。
+
+1.0（Build `20261102.0440`）审核通过，**已经上架**：https://apps.apple.com/app/id6825569793 （App ID `6825569793`）。网站已加下载按钮和 Safari 顶部的下载横幅。刚上架的 App 在 App Store 里搜名字要过几小时到几天才搜得到，链接一直能打开。
+- 2026-10-24 第一次提交（Build `20261023.2350`），被回 **2.1 Information Needed**：新开发者账号第一次提交，苹果要一段真机录屏（从启动 App 开始，演示注册、登录、主要功能、举报屏蔽、注销账号）和 6 个问题的回答（用途和用户、怎么用、用到的外部服务、地区差异、是否受监管行业）。
+- 2026-11-02 换成 Build `20261102.0440`（新 logo、修好点通知崩溃、一批体验改进）重新提交：录屏附在 Reply to App Review 里，回答同时贴在 Notes 和回复里。
+- 录屏是两段：用演示账号 `review@badie.rsvp` 走主要功能；再用一个临时邮箱（Gmail 地址加 `+badie2`）注册并注销，演示注册和注销。**演示账号不能注销**，审核员要用它登录。
+- 带打赏的版本（1.0.1 起）提交时，Notes 里 “no ads and no purchases” 要改成第 4 步那句，再加上第 7 节第 5 步那句。
 
 ## 0. 现在就能做
 
@@ -96,7 +104,7 @@ My Apps → **+** → New App：平台 iOS，名称，主语言 English (U.S.)�
 - Category：Sports（第二分类可选 Social Networking）。
 - Content Rights：选“包含第三方内容”，并确认有权使用（球馆数据来自政府开放数据和 OpenStreetMap，都是开放许可）。
 - **Age Rating**：问卷照实答（有用户发的内容、有私信、没有无限制上网）。用户协议规定 13 岁以上，**最后把年龄分级改成 13+**，和协议一致。2026-09 起问卷里关于社交功能的问题是必答的。
-- **EU 数字服务法（DSA）**：即使不在欧盟上架也要声明。Badie 免费、没有广告和收费，选了**非商家（Not a trader）**，这样不用公开地址和电话。加了打赏（第 7 节）以后要不要改成商家，需要你自己判断；改的话可以用邮政信箱和虚拟号码。
+- **EU 数字服务法（DSA）**：即使不在欧盟上架也要声明。Badie 免费、没有广告和收费，选了**非商家（Not a trader）**，这样不用公开地址和电话。加了打赏以后，欧盟 27 国的商店不显示打赏入口（App 按 App Store 地区判断），在欧盟不收钱，所以继续申报非商家。以后要在欧盟收钱，就要改成商家并公开地址（可以用邮政信箱）和电话（可以用虚拟号码）。
 
 **App Privacy（隐私标签）**：不追踪用户（Tracking：No）。收集的数据都选“与身份关联、用于 App 功能”：
 
@@ -157,7 +165,8 @@ Mac（Apple 芯片）勾上：iPhone 版在 Mac 上是固定的手机大小窗�
 - 另一个账号（有头像）给自己发私信：锁屏通知左边是对方的头像；点开直接进这个私信；正开着这个私信时不弹通知。
 - 在备忘录里写 `https://badie.rsvp/join/?code=房间码`，点它直接打开 App 的加入页（通用链接）。
 - 附近球馆（允许 / 拒绝定位两种情况）、约球、聊天、举报、屏蔽。
-- 设置 → 联系我们能打开邮件；设置 → 注销账号能走完，Apple 登录的账号注销后在 iPhone 设置 → Apple ID → 使用 Apple 登录 里消失。
+- 我的 → 帮助与反馈：发一条反馈，管理员在网站 `/admin/` 能看到并回复，回复出现在通知里；里面的“写邮件”能打开邮件。
+- 设置 → 注销账号能走完，Apple 登录的账号注销后在 iPhone 设置 → Apple ID → 使用 Apple 登录 里消失。
 
 ## 7. 打赏（内购）
 
@@ -175,7 +184,9 @@ App 里「我的 → 支持 Badie」有三档打赏，代码里的商品 ID 是 
 
    每个都要填说明（比如 “A tip to support Badie. It doesn't unlock anything.”），再传一张审核截图（打赏页的截图即可）。
 4. 第一次加内购要跟着新版本一起提交：在版本页 **In-App Purchases and Subscriptions** 里勾上这三个。
-5. 网站用 Ko-fi：注册后把主页地址填进 `web/src/app/Contact.tsx` 的 `DONATE_URL`，网站「支持 Badie」页就会出现按钮。iPhone App 里不放 Ko-fi 链接：苹果只允许美国区放外部付款链接。
+5. **美国区用 Ko-fi，欧盟不显示，其他地区用内购**：欧盟 27 国的商店里「支持 Badie」整个入口不显示（见上面的欧盟数字服务法）。苹果只允许美国区的 App 放外部付款链接（审核规则 3.1.1），Ko-fi 不抽成。App 按 App Store 的地区判断（`Storefront`），不看手机语言和定位。
+   Ko-fi 主页是 https://ko-fi.com/badie，已经填在 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`（`kofi` 改回 nil 就是美国区也走内购）。Ko-fi 要连好 PayPal 和 Stripe（刷卡）才能收钱；连好后把 `Contact.tsx` 的 `DONATIONS_OPEN` 改成 true，网站上才出现「支持 Badie」入口。
+   提交时 Notes 里写一句：“Tips are consumable in-app purchases and don't unlock anything. On the US storefront the tip page links to Ko-fi instead, as allowed by guideline 3.1.1.”
 
 ## 参考
 

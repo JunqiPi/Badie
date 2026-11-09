@@ -144,7 +144,7 @@ function translateStatic() {
 /** 页脚：真正的页面链接（不是本页的锚点） */
 function Footer() {
   const columns: [string, [string, string][]][] = [
-    ['Play', [['Home', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Regular games', '/groups/']]],
+    ['Play', [['Home', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Groups', '/groups/']]],
     ['Courts', [['Nearby venues', '/courts/'], ['Level chart', '/levels/'], ['Leaderboard', '/rankings/']]],
     ['Badie', [['About Badie', '/about/'], ['Contact us', '/contact/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
   ];
@@ -219,7 +219,7 @@ function TabBar({ current, badge, name, onCreate }: {
 const createOptions: { to: string; icon: IconName; tint: Tint; title: string; subtitle: string }[] = [
   { to: '/play/', icon: 'bolt', tint: 'lime', title: 'Quick Match', subtitle: 'Finds buddies by level, time and distance' },
   { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Fill a court you’ve booked, or play with friends' },
-  { to: '/groups/', icon: 'group', tint: 'sky', title: 'Regular games · Groups', subtitle: 'Same time and venue weekly. One-tap sign-up, auto-waitlist' },
+  { to: '/groups/', icon: 'group', tint: 'sky', title: 'Groups', subtitle: 'Same time and venue weekly. One-tap sign-up, auto-waitlist' },
   { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Enter a room or group code', subtitle: '6-character room or group code from a friend' },
 ];
 

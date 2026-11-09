@@ -298,6 +298,10 @@ struct Avatar: Codable, Hashable {
     var paletteIndex: Int
     /// 上传过照片时的版本号（每次重新上传 +1，用于刷新缓存）；为空表示没有照片
     var photoVersion: Int?
+    /// 首页卡片：没传背景照片时用的颜色（为空 = 按用户 ID 给的默认色）
+    var cardColor: CardColor?
+    /// 卡片背景照片的版本号；为空表示没有
+    var cardPhotoVersion: Int?
 
     static func `default`(for seed: String) -> Avatar {
         Avatar(symbol: "", paletteIndex: abs(seed.stableHash) % 6)
@@ -323,6 +327,8 @@ struct PrivacySettings: Codable, Hashable {
     var findableByNickname = true
     /// 约球消息也发邮件（默认关闭，主要靠推送）
     var emailAlerts = false
+    /// 发了约球请求时，附近的人在首页能看到我（默认开启）
+    var showsWhenSearching = true
 }
 
 extension PrivacySettings {
@@ -336,6 +342,7 @@ extension PrivacySettings {
         showsOnLeaderboards = try container.decodeIfPresent(Bool.self, forKey: .showsOnLeaderboards) ?? defaults.showsOnLeaderboards
         findableByNickname = try container.decodeIfPresent(Bool.self, forKey: .findableByNickname) ?? defaults.findableByNickname
         emailAlerts = try container.decodeIfPresent(Bool.self, forKey: .emailAlerts) ?? defaults.emailAlerts
+        showsWhenSearching = try container.decodeIfPresent(Bool.self, forKey: .showsWhenSearching) ?? defaults.showsWhenSearching
     }
 }
 

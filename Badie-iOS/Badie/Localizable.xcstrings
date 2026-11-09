@@ -333,7 +333,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ %2$lld"
+            "value" : "%1$@ %2$@"
           }
         },
         "zh-Hant" : {
@@ -583,7 +583,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ %2$lld 级"
+            "value" : "%1$@ %2$@ 级"
           }
         },
         "zh-Hant" : {
@@ -647,7 +647,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ %2$lld 级，技术特点"
+            "value" : "%1$@ %2$@ 级，技术特点"
           }
         },
         "zh-Hant" : {
@@ -711,7 +711,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ %2$lld 级，短板"
+            "value" : "%1$@ %2$@ 级，短板"
           }
         },
         "zh-Hant" : {
@@ -2280,6 +2280,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 回報：友誼局，不計勝負"
+          }
+        }
+      }
+    },
+    "%@ 报：我方 %lld : %lld 对方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ reported: your side %2$lld : %3$lld them"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ने बताया: आपकी टीम %2$lld : %3$lld वे"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ melapor: tim kamu %2$lld : %3$lld lawan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ の報告：自分たち %2$lld : %3$lld 相手"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 보고: 우리 %2$lld : %3$lld 상대"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ melaporkan: pasukan anda %2$lld : %3$lld lawan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ แจ้ง: ฝั่งเรา %2$lld : %3$lld อีกฝ่าย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ báo: đội bạn %2$lld : %3$lld đối thủ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 報：我方 %2$lld : %3$lld 對方"
           }
         }
       }
@@ -3940,6 +3998,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@等級"
+          }
+        }
+      }
+    },
+    "%@赢的局数" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Games won by %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ के जीते गेम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gim yang dimenangkan %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ が取ったゲーム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 이긴 게임"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set dimenangi %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เกมที่ %@ ชนะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Số ván %@ thắng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@贏的局數"
           }
         }
       }
@@ -10914,6 +11030,64 @@
         }
       }
     },
+    "TA 已经约上了，或者暂时约不了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They’re already matched or can’t be invited right now."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TA 已經約上了，或者暫時約不了。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手はすでに相手が決まっているか、今は誘えません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대가 이미 매칭됐거나 지금은 초대할 수 없어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उनका मैच हो चुका है या अभी बुलाया नहीं जा सकता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dia sudah dapat lawan atau belum bisa diajak sekarang."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dia sudah dapat padanan atau tidak boleh diajak sekarang."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อีกฝ่ายได้คู่แล้ว หรือตอนนี้ยังชวนไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Họ đã có trận hoặc hiện chưa thể rủ."
+          }
+        }
+      }
+    },
     "TA 待处理的挑战太多了，请稍后再试。" : {
       "localizations" : {
         "en" : {
@@ -11200,6 +11374,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "對方的實際水平和標示的 %@ 比起來？"
+          }
+        }
+      }
+    },
+    "TA 的时间快到了，来不及约了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Their time is too soon to invite them now."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उनका समय बहुत पास है, अब बुला नहीं सकते।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waktunya sudah terlalu dekat untuk diajak."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手の時間が近すぎて、もう誘えません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대 시간이 너무 가까워서 지금은 초대할 수 없어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masanya terlalu dekat untuk diajak sekarang."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใกล้เวลาของอีกฝ่ายเกินไป ชวนไม่ทันแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giờ của họ sắp đến, không kịp rủ nữa."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TA 的時間快到了，來不及約了。"
+          }
+        }
+      }
+    },
+    "TA 确认就成局。没确认的话，你的请求会接着帮你找人。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If they confirm, the game is on. If not, your request keeps looking for someone."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TA 確認就成局。沒確認的話，你的請求會接著幫你找人。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手が確定すれば試合成立です。確定されなければ、あなたのリクエストで引き続き相手を探します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대가 확정하면 게임이 성사돼요. 확정하지 않으면 요청이 계속 상대를 찾아요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "वे पुष्टि करें तो गेम पक्का। नहीं तो आपकी रिक्वेस्ट किसी और को ढूँढती रहेगी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kalau dia konfirmasi, main jadi. Kalau tidak, permintaanmu tetap mencarikan lawan."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jika dia sahkan, permainan jadi. Jika tidak, permintaan anda terus mencari pemain."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ถ้าอีกฝ่ายยืนยันก็ได้ตีเลย ถ้าไม่ คำขอของคุณจะหาคนต่อให้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu họ xác nhận là có trận. Nếu không, yêu cầu của bạn vẫn tiếp tục tìm người."
           }
         }
       }
@@ -12684,6 +12974,180 @@
         }
       }
     },
+    "一共 %lld 局 · 对方赢得多" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Games: %lld · they won more"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld गेम · उन्होंने ज़्यादा जीते"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld gim · lawan menang lebih banyak"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全 %lld ゲーム · 相手のほうが多い"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "총 %lld게임 · 상대가 더 많이 이김"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld set · lawan menang lebih banyak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld เกม · อีกฝ่ายชนะมากกว่า"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ván · đối thủ thắng nhiều hơn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一共 %lld 局 · 對方贏得多"
+          }
+        }
+      }
+    },
+    "一共 %lld 局 · 平局" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Games: %lld · a draw"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld गेम · बराबरी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld gim · seri"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全 %lld ゲーム · 引き分け"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "총 %lld게임 · 무승부"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld set · seri"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld เกม · เสมอ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ván · hòa"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一共 %lld 局 · 平手"
+          }
+        }
+      }
+    },
+    "一共 %lld 局 · 我方赢得多" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Games: %lld · you won more"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld गेम · आपने ज़्यादा जीते"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld gim · kamu menang lebih banyak"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全 %lld ゲーム · 自分たちのほうが多い"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "총 %lld게임 · 우리가 더 많이 이김"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld set · anda menang lebih banyak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld เกม · เราชนะมากกว่า"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld ván · bạn thắng nhiều hơn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一共 %lld 局 · 我方贏得多"
+          }
+        }
+      }
+    },
     "一句话介绍" : {
       "localizations" : {
         "en" : {
@@ -13603,6 +14067,122 @@
         }
       }
     },
+    "上传背景照片" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upload photo"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ोटो अपलोड करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unggah foto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真をアップロード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 올리기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muat naik foto"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัปโหลดรูป"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tải ảnh lên"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上傳背景照片"
+          }
+        }
+      }
+    },
+    "上午" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morning"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सुबह"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "午前"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오전"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เช้า"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sáng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上午"
+          }
+        }
+      }
+    },
     "上周" : {
       "localizations" : {
         "en" : {
@@ -14009,6 +14589,64 @@
         }
       }
     },
+    "下午" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afternoon"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दोपहर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siang"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "午後"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오후"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Petang"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บ่าย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiều"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下午"
+          }
+        }
+      }
+    },
     "下午 14–17" : {
       "localizations" : {
         "en" : {
@@ -14357,6 +14995,64 @@
         }
       }
     },
+    "不传照片时用这个颜色" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without a photo, your card uses this color"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ोटो न हो तो कार्ड इस रंग का होगा"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tanpa foto, kartu memakai warna ini"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真がないときはこの色になります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진이 없으면 이 색으로 보여요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tanpa foto, kad guna warna ini"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ถ้าไม่มีรูป การ์ดจะใช้สีนี้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không có ảnh thì thẻ dùng màu này"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不傳照片時用這個顏色"
+          }
+        }
+      }
+    },
     "不公开、不扣分；多位球友都提到时，我们会私下提醒 TA，不说是谁" : {
       "localizations" : {
         "en" : {
@@ -14643,6 +15339,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "不接受"
+          }
+        }
+      }
+    },
+    "不改了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Never mind"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不改了"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "やめる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "그만두기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रहने दें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Batal"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak jadi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่แก้แล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thôi"
           }
         }
       }
@@ -18477,6 +19231,64 @@
         }
       }
     },
+    "今天约得太多了，明天再来。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've sent a lot of invites today. Try again tomorrow."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आज आपने बहुत बुलावे भेजे हैं। कल फिर कोशिश करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu sudah mengajak banyak orang hari ini. Coba lagi besok."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日はたくさん誘いました。また明日どうぞ。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 초대를 많이 보냈어요. 내일 다시 해 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda sudah mengajak ramai orang hari ini. Cuba lagi esok."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วันนี้ชวนเยอะแล้ว พรุ่งนี้ค่อยลองใหม่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hôm nay bạn đã rủ nhiều rồi. Mai thử lại nhé."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天約得太多了，明天再來。"
+          }
+        }
+      }
+    },
     "今晚，\n打*一场*？" : {
       "localizations" : {
         "en" : {
@@ -18709,6 +19521,64 @@
         }
       }
     },
+    "从" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "से"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dari"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "から"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "부터"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dari"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จาก"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Từ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從"
+          }
+        }
+      }
+    },
     "从球局开始到结束后 7 天内，都可以填报赛果。" : {
       "localizations" : {
         "en" : {
@@ -18879,6 +19749,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "以後可以用電子郵件和這個密碼登入。至少 8 位，用一句好記的話最方便。"
+          }
+        }
+      }
+    },
+    "以后的场次和报名都会删掉，不能恢复。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upcoming sessions and sign-ups will be deleted. This can’t be undone."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以後的場次和報名都會刪掉，不能恢復。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今後の回と参加登録はすべて削除され、元に戻せません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앞으로의 일정과 신청이 모두 삭제되고 되돌릴 수 없어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आने वाले सेशन और साइन-अप हट जाएँगे। इसे वापस नहीं किया जा सकता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesi mendatang dan pendaftaran akan dihapus. Tidak bisa dibatalkan."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesi akan datang dan pendaftaran akan dipadam. Tidak boleh dibuat asal."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รอบที่จะมาถึงและการลงชื่อจะถูกลบทั้งหมด ย้อนกลับไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Các buổi sắp tới và lượt đăng ký sẽ bị xóa. Không thể hoàn tác."
           }
         }
       }
@@ -19169,6 +20097,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "任何同一國家/地區的球友都能向你發起挑戰"
+          }
+        }
+      }
+    },
+    "任何时间" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any time"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "任何時間"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "いつでも"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "언제든"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कभी भी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapan saja"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bila-bila masa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เวลาไหนก็ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lúc nào cũng được"
           }
         }
       }
@@ -21971,6 +22957,64 @@
         }
       }
     },
+    "你已经开了 3 个局，先关掉一个再约双打。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You already have 3 open games. Close one before inviting for doubles."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपके 3 गेम पहले से खुले हैं। डबल्स के लिए बुलाने से पहले एक बंद करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu sudah punya 3 permainan terbuka. Tutup satu dulu sebelum mengajak main ganda."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すでに 3 つの試合を開いています。ダブルスに誘う前に 1 つ閉じてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미 게임 3개를 열어 두었어요. 복식에 초대하기 전에 하나를 닫아 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda sudah ada 3 permainan terbuka. Tutup satu dahulu sebelum mengajak main beregu."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คุณเปิดเกมไว้แล้ว 3 เกม ปิดสักเกมก่อนชวนตีคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đang mở 3 trận rồi. Đóng một trận trước khi rủ đánh đôi."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你已經開了 3 個局，先關掉一個再約雙打。"
+          }
+        }
+      }
+    },
     "你已经挑战过 TA 了，请等 TA 回复。" : {
       "localizations" : {
         "en" : {
@@ -22905,6 +23949,64 @@
         }
       }
     },
+    "使用" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使う"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사용"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस्तेमाल करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pakai"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guna"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dùng"
+          }
+        }
+      }
+    },
     "使用 %@" : {
       "localizations" : {
         "en" : {
@@ -23833,6 +24935,64 @@
         }
       }
     },
+    "保存修改" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save changes"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存修改"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更を保存"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "변경 저장"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बदलाव सेव करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan perubahan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simpan perubahan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกการแก้ไข"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lưu thay đổi"
+          }
+        }
+      }
+    },
     "保存密码" : {
       "localizations" : {
         "en" : {
@@ -24119,6 +25279,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "修改模式、時間和球館"
+          }
+        }
+      }
+    },
+    "修改请求" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit request"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "修改請求"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リクエストを編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "요청 수정"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "रिक्वेस्ट एडिट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit permintaan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit permintaan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แก้คำขอ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa yêu cầu"
           }
         }
       }
@@ -27384,6 +28602,64 @@
         }
       }
     },
+    "再加一个场次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add another session"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再加一個場次"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回を追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일정 추가"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक और सेशन जोड़ें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah sesi"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah sesi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่มอีกรอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm một buổi"
+          }
+        }
+      }
+    },
     "再想想" : {
       "localizations" : {
         "en" : {
@@ -28724,6 +30000,64 @@
         }
       }
     },
+    "删掉这个场次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove this session"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪掉這個場次"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この回を削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 일정 삭제"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह सेशन हटाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus sesi ini"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buang sesi ini"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลบรอบนี้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa buổi này"
+          }
+        }
+      }
+    },
     "删除 %@" : {
       "localizations" : {
         "en" : {
@@ -28898,6 +30232,64 @@
         }
       }
     },
+    "别人刷到你时就是这样" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This is what others see"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दूसरों को यही दिखता है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seperti ini yang dilihat orang lain"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ほかの人にはこう見えます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 사람에게 이렇게 보여요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inilah yang orang lain nampak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คนอื่นจะเห็นแบบนี้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Người khác sẽ thấy như thế này"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "別人刷到你時就是這樣"
+          }
+        }
+      }
+    },
     "别人看不到“发起挑战”" : {
       "localizations" : {
         "en" : {
@@ -28952,6 +30344,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "別人看不到「發起挑戰」"
+          }
+        }
+      }
+    },
+    "到" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "तक"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sampai"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まで"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "까지"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hingga"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ถึง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đến"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "到"
           }
         }
       }
@@ -31242,6 +32692,122 @@
         }
       }
     },
+    "卡片背景" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card background"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्ड बैकग्राउंड"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latar kartu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードの背景"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카드 배경"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latar kad"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "พื้นหลังการ์ด"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nền thẻ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卡片背景"
+          }
+        }
+      }
+    },
+    "卡片背景已更新" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Card background updated"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्ड बैकग्राउंड अपडेट हो गया"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latar kartu diperbarui"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードの背景を更新しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카드 배경을 바꿨어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Latar kad dikemas kini"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัปเดตพื้นหลังการ์ดแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã cập nhật nền thẻ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卡片背景已更新"
+          }
+        }
+      }
+    },
     "印度" : {
       "localizations" : {
         "en" : {
@@ -31586,6 +33152,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始定級"
+          }
+        }
+      }
+    },
+    "去掉 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ हटाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ を外す"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 지우기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buang %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เอา %@ ออก"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "去掉 %@"
           }
         }
       }
@@ -32460,6 +34084,122 @@
         }
       }
     },
+    "双指缩放，拖动调整位置" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pinch to zoom, drag to move"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雙指縮放，拖動調整位置"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピンチで拡大、ドラッグで位置を調整"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "두 손가락으로 확대하고, 끌어서 위치를 옮기세요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ज़ूम के लिए पिंच करें, खिसकाने के लिए खींचें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cubit untuk memperbesar, geser untuk memindah"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cubit untuk zum, seret untuk alih"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้สองนิ้วซูม ลากเพื่อเลื่อน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chụm để phóng to, kéo để di chuyển"
+          }
+        }
+      }
+    },
+    "双方填的一致才算数。胜率按局算：赢的局数 ÷ 打的局数。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It counts once both sides agree. Win rate is by game: games won ÷ games played."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दोनों तरफ़ एक जैसा भरें तभी गिना जाएगा। जीत दर गेम के हिसाब से: जीते गेम ÷ खेले गेम।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dihitung setelah kedua pihak sepakat. Persentase menang dihitung per gim: gim menang ÷ gim dimainkan."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "両方の入力が一致すると記録されます。勝率はゲーム単位：取ったゲーム数 ÷ プレーしたゲーム数。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "양쪽이 같게 입력하면 기록돼요. 승률은 게임 기준: 이긴 게임 ÷ 한 게임."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dikira apabila kedua-dua pihak sepakat. Kadar menang dikira ikut set: set dimenangi ÷ set dimainkan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ทั้งสองฝ่ายกรอกตรงกันจึงจะนับ อัตราชนะคิดเป็นเกม: เกมที่ชนะ ÷ เกมที่เล่น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hai bên nhập giống nhau thì mới tính. Tỉ lệ thắng tính theo ván: số ván thắng ÷ số ván đã đánh."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雙方填的一致才算數。勝率按局算：贏的局數 ÷ 打的局數。"
+          }
+        }
+      }
+    },
     "双方已经确认了这个赛果。" : {
       "localizations" : {
         "en" : {
@@ -32978,6 +34718,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "反手高遠球底線到底線；被動時反手過渡依然非常熟練"
+          }
+        }
+      }
+    },
+    "发个约球请求" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send a match request"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發個約球請求"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マッチングのリクエストを送る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매칭 요청 보내기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैच रिक्वेस्ट भेजें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kirim permintaan main"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hantar permintaan permainan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ส่งคำขอจับคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gửi yêu cầu ghép trận"
+          }
+        }
+      }
+    },
+    "发个约球请求，有人对得上会通知你。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send a match request and we’ll let you know when someone fits."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發個約球請求，有人對得上會通知你。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マッチングのリクエストを出せば、合う人がいたときに通知します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매칭 요청을 보내면 맞는 사람이 있을 때 알려드려요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैच रिक्वेस्ट भेजें, कोई मेल खाएगा तो हम बताएँगे।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kirim permintaan dan kami kabari kalau ada yang cocok."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hantar permintaan dan kami akan maklumkan bila ada yang sesuai."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ส่งคำขอจับคู่ไว้ ถ้ามีคนเหมาะเราจะแจ้ง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gửi yêu cầu ghép trận, có người phù hợp chúng tôi sẽ báo."
           }
         }
       }
@@ -35534,6 +37390,64 @@
         }
       }
     },
+    "只看没爽约过的" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only players with no missed games"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सिर्फ़ जिन्होंने कभी गेम नहीं छोड़ा"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya pemain yang tak pernah absen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドタキャンのない人だけ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노쇼 없는 사람만"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya pemain yang tidak pernah ponteng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เฉพาะคนที่ไม่เคยเบี้ยว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ người chưa từng vắng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只看沒爽約過的"
+          }
+        }
+      }
+    },
     "只算双方都确认的比赛，每月 1 日重新计算；同一对手每月最多计入 %lld 场" : {
       "localizations" : {
         "en" : {
@@ -35836,60 +37750,60 @@
         }
       }
     },
-    "只能选择未来 14 天内" : {
+    "只能选择未来 30 天内" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can only pick a date within the next 14 days"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "आप सिर्फ़ अगले 14 दिनों के अंदर की तारीख चुन सकते हैं"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu hanya bisa memilih tanggal dalam 14 hari ke depan"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "今日から 14 日以内の日付のみ選べます"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앞으로 14일 이내 날짜만 선택할 수 있어요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anda hanya boleh memilih tarikh dalam 14 hari akan datang"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เลือกได้เฉพาะภายใน 14 วันข้างหน้า"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chỉ chọn được ngày trong 14 ngày tới"
+            "value" : "Pick a day within the next 30 days"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只能選擇未來 14 天內"
+            "value" : "只能選擇未來 30 天內"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 日以内の日を選んでください"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30일 이내의 날짜를 골라 주세요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "अगले 30 दिनों में से कोई दिन चुनें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih hari dalam 30 hari ke depan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih hari dalam 30 hari akan datang"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกวันภายใน 30 วันข้างหน้า"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn một ngày trong 30 ngày tới"
           }
         }
       }
@@ -36238,6 +38152,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "可接受的水平差"
+          }
+        }
+      }
+    },
+    "右滑约 TA，左滑跳过" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swipe right to invite, left to skip"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右滑約 TA，左滑略過"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右にスワイプで誘う、左でスキップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오른쪽으로 밀면 초대, 왼쪽은 건너뛰기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बुलाने के लिए दाएँ, छोड़ने के लिए बाएँ स्वाइप करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geser kanan untuk ajak, kiri untuk lewati"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leret kanan untuk ajak, kiri untuk langkau"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปัดขวาเพื่อชวน ปัดซ้ายเพื่อข้าม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuốt phải để rủ, vuốt trái để bỏ qua"
+          }
+        }
+      }
+    },
+    "右滑约 TA，左滑跳过 · %lld 人" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swipe right to invite, left to skip · %lld"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दाएँ स्वाइप करके बुलाएँ, बाएँ से छोड़ें · %lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geser kanan untuk mengajak, kiri untuk lewati · %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右スワイプで誘う、左でスキップ · %lld 人"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오른쪽으로 밀면 초대, 왼쪽은 건너뛰기 · %lld명"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leret kanan untuk ajak, kiri untuk langkau · %lld"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปัดขวาเพื่อชวน ปัดซ้ายเพื่อข้าม · %lld คน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vuốt phải để rủ, trái để bỏ qua · %lld người"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右滑約 TA，左滑跳過 · %lld 人"
           }
         }
       }
@@ -38795,64 +40825,6 @@
         }
       }
     },
-    "固定场次需要 1–8 小时，名额 4–40 人" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sessions must be 1–8 hours with 4–40 spots"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "सेशन 1–8 घंटे का और 4–40 जगहों वाला होना चाहिए"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sesi harus 1–8 jam dengan 4–40 slot"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "定例の回は 1〜8 時間、定員 4〜40 人で設定してください"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "정기 일정은 1–8시간, 정원 4–40명이어야 해요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sesi mestilah 1–8 jam dengan 4–40 tempat"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "รอบประจำต้องยาว 1–8 ชั่วโมง และรับ 4–40 คน"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Buổi chơi phải dài 1–8 giờ, có 4–40 chỗ"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "固定場次需要 1–8 小時，名額 4–40 人"
-          }
-        }
-      }
-    },
     "固定局" : {
       "localizations" : {
         "en" : {
@@ -39603,6 +41575,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "圖釘處的地址"
+          }
+        }
+      }
+    },
+    "在 %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "At %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ で"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에서"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ पर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di %@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Di %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ที่ %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tại %@"
+          }
+        }
+      }
+    },
+    "在 Ko-fi 上打赏" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip on Ko-fi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Ko-fi 上打賞"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ko-fi でチップを送る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ko-fi에서 후원하기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ko-fi पर टिप दें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beri tip di Ko-fi"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beri tip di Ko-fi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ให้ทิปผ่าน Ko-fi"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ủng hộ qua Ko-fi"
           }
         }
       }
@@ -40773,6 +42861,64 @@
         }
       }
     },
+    "填一下两边各赢了几局。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enter how many games each side won."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर तरफ़ ने कितने गेम जीते, यह भरें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isi berapa gim yang dimenangkan tiap pihak."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "それぞれが何ゲーム取ったか入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "양쪽이 각각 몇 게임 이겼는지 입력하세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isi berapa set yang dimenangi setiap pihak."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใส่ว่าแต่ละฝ่ายชนะกี่เกม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhập số ván mỗi bên thắng."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填一下兩邊各贏了幾局。"
+          }
+        }
+      }
+    },
     "填入" : {
       "localizations" : {
         "en" : {
@@ -40885,6 +43031,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入球館名稱"
+          }
+        }
+      }
+    },
+    "填每局比分（可选）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add the score of each game (optional)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर गेम का स्कोर जोड़ें (वैकल्पिक)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah skor tiap gim (opsional)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各ゲームのスコアを入力（任意）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게임별 점수 추가 (선택)"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah skor setiap set (pilihan)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใส่คะแนนแต่ละเกม (ไม่บังคับ)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm tỉ số từng ván (không bắt buộc)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填每局比分（可選）"
+          }
+        }
+      }
+    },
+    "墨黑" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ink"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गहरा काला"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitam"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "잉크"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hitam"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดำ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đen mực"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "墨黑"
           }
         }
       }
@@ -41175,6 +43437,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "外觀"
+          }
+        }
+      }
+    },
+    "多一局" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One more game"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक गेम ज़्यादा"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah satu gim"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 ゲーム増やす"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 게임 더하기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tambah satu set"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่มหนึ่งเกม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm một ván"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "多一局"
           }
         }
       }
@@ -41701,6 +44021,64 @@
         }
       }
     },
+    "天蓝" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sky blue"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आसमानी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biru langit"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スカイブルー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하늘색"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biru langit"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ฟ้า"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xanh da trời"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天藍"
+          }
+        }
+      }
+    },
     "头像已更新" : {
       "localizations" : {
         "en" : {
@@ -42103,6 +44481,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "女生友善"
+          }
+        }
+      }
+    },
+    "奶黄" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Butter"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बटर पीला"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kuning mentega"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バター"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "버터"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kuning mentega"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เหลืองครีม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vàng bơ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "奶黃"
           }
         }
       }
@@ -43853,6 +46289,64 @@
         }
       }
     },
+    "对方" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Them"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "वे"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lawan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lawan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อีกฝ่าย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đối thủ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對方"
+          }
+        }
+      }
+    },
     "对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。对方接受时会选自己的搭档；四人都确认赛果后计入排行。" : {
       "localizations" : {
         "en" : {
@@ -44023,6 +46517,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "對方會收到通知，候補中的球友會自動遞補。"
+          }
+        }
+      }
+    },
+    "对方性别" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Their gender"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उनका जेंडर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jenis kelamin lawan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手の性別"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상대 성별"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jantina lawan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพศของอีกฝ่าย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giới tính đối phương"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對方性別"
           }
         }
       }
@@ -44719,6 +47271,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "小紅"
+          }
+        }
+      }
+    },
+    "少一局" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One fewer game"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक गेम कम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurangi satu gim"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 ゲーム減らす"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 게임 빼기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kurang satu set"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลดหนึ่งเกม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bớt một ván"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "少一局"
           }
         }
       }
@@ -46173,6 +48783,64 @@
         }
       }
     },
+    "已保存" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已儲存"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存しました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저장했어요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "सेव हो गया"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tersimpan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disimpan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "บันทึกแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã lưu"
+          }
+        }
+      }
+    },
     "已候补第 %lld 位，有人退出会自动递补并通知你" : {
       "localizations" : {
         "en" : {
@@ -46865,6 +49533,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已送出訊息請求，對方接受後才能繼續聊"
+          }
+        }
+      }
+    },
+    "已发出邀请，TA 确认就成局" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite sent. If they confirm, the game is on."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已發出邀請，TA 確認就成局"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "誘いを送りました。相手が確定すれば試合成立です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "초대를 보냈어요. 상대가 확정하면 게임이 성사돼요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "न्योता भेजा गया। वे पुष्टि करें तो गेम पक्का"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajakan terkirim. Kalau dia konfirmasi, main jadi"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajakan dihantar. Jika dia sahkan, permainan jadi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ส่งคำชวนแล้ว อีกฝ่ายยืนยันก็ได้ตีเลย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã gửi lời mời. Họ xác nhận là có trận"
           }
         }
       }
@@ -47619,6 +50345,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "球群已建立，球群編號 %@，可以分享到微信"
+          }
+        }
+      }
+    },
+    "已开一个双打局并邀请 TA，附近的人可以加入" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opened a doubles game and invited them. Players nearby can join."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "एक डबल्स गेम खोला और उन्हें बुलाया। आसपास के खिलाड़ी जुड़ सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sudah buka permainan ganda dan mengajaknya. Pemain sekitar bisa ikut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダブルスの試合を作って誘いました。近くの人も参加できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "복식 게임을 열고 초대했어요. 근처 사람도 참가할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sudah buka permainan beregu dan ajak dia. Pemain berdekatan boleh sertai."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดเกมคู่และชวนแล้ว คนใกล้ ๆ เข้าร่วมได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã mở một trận đôi và rủ họ. Người gần đây có thể tham gia."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已開一個雙打局並邀請 TA，附近的人可以加入"
           }
         }
       }
@@ -49793,6 +52577,64 @@
         }
       }
     },
+    "已约 TA %@ 在 %@ 打单打，对方确认就成局" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invited them to play singles at %1$@ at %2$@. If they confirm, the game is on."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उन्हें %1$@ बजे %2$@ में सिंगल्स के लिए बुलाया। उनके पुष्टि करते ही गेम पक्का।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sudah mengajak main tunggal pukul %1$@ di %2$@. Kalau dia konfirmasi, main jadi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ に %2$@ でのシングルスに誘いました。相手が確定すれば試合成立です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ %2$@에서 단식하자고 초대했어요. 상대가 확정하면 게임이 성사돼요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sudah ajak main perseorangan pukul %1$@ di %2$@. Jika dia sahkan, permainan jadi."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชวนตีเดี่ยว %1$@ ที่ %2$@ แล้ว อีกฝ่ายยืนยันก็ได้ตีเลย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã rủ đánh đơn lúc %1$@ ở %2$@. Họ xác nhận là có trận."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已約 TA %1$@ 在 %2$@ 打單打，對方確認就成局"
+          }
+        }
+      }
+    },
     "已经发送过申请，等待对方通过" : {
       "localizations" : {
         "en" : {
@@ -51419,6 +54261,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "平台已核實地址%@"
+          }
+        }
+      }
+    },
+    "平局" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draw"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बराबरी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seri"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引き分け"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무승부"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seri"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เสมอ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hòa"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平手"
+          }
+        }
+      }
+    },
+    "平局 · 局数计入本月胜率" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draw · games count toward this month's win rate"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बराबरी · गेम इस महीने की जीत दर में गिने जाते हैं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seri · gim dihitung dalam persentase menang bulan ini"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "引き分け · ゲーム数は今月の勝率に入ります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "무승부 · 게임 수는 이번 달 승률에 들어가요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seri · set dikira dalam kadar menang bulan ini"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เสมอ · จำนวนเกมนับในอัตราชนะเดือนนี้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hòa · số ván được tính vào tỉ lệ thắng tháng này"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平手 · 局數計入本月勝率"
           }
         }
       }
@@ -55089,6 +58047,64 @@
         }
       }
     },
+    "我们" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your side"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपकी टीम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tim kamu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自分たち"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "우리 팀"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasukan anda"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ฝั่งเรา"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đội bạn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我們"
+          }
+        }
+      }
+    },
     "我们会读每一条，回复会出现在你的通知里。" : {
       "localizations" : {
         "en" : {
@@ -55959,6 +58975,64 @@
         }
       }
     },
+    "我的卡片" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My card"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मेरा कार्ड"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kartu saya"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マイカード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내 카드"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kad saya"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "การ์ดของฉัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thẻ của tôi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的卡片"
+          }
+        }
+      }
+    },
     "我的口碑" : {
       "localizations" : {
         "en" : {
@@ -56187,6 +59261,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "我的球友"
+          }
+        }
+      }
+    },
+    "我的球群" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "My groups"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的球群"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マイグループ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내 모임"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मेरे ग्रुप"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grup saya"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kumpulan saya"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ก๊วนของฉัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhóm của tôi"
           }
         }
       }
@@ -56825,6 +59957,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "或奧運 / 世錦賽 8 強、Super 750 以上 4 強"
+          }
+        }
+      }
+    },
+    "或者" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Or"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "या"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atau"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "または"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "또는"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atau"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หรือ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoặc"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "或者"
           }
         }
       }
@@ -59109,6 +62299,64 @@
         }
       }
     },
+    "打了几局都行，记个大概" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any number of games. A rough count is fine."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कितने भी गेम, मोटा-मोटा याद हो तो चलेगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berapa gim pun boleh, kira-kira saja."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何ゲームでも大丈夫。だいたいで構いません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "몇 게임이든 괜찮아요. 대충이면 돼요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Berapa set pun boleh, anggaran pun cukup."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กี่เกมก็ได้ ประมาณ ๆ ก็พอ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mấy ván cũng được, nhớ đại khái là được."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打了幾局都行，記個大概"
+          }
+        }
+      }
+    },
     "打了好几局就按赢得多的一方算。双方一致才计入胜率；记不清就选“记不清了”，不算分歧" : {
       "localizations" : {
         "en" : {
@@ -60683,6 +63931,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "找到搭子了，請確認"
+          }
+        }
+      }
+    },
+    "找球友时，让附近的人在首页看到我" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show me to nearby players when I’m looking for a game"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找球友時，讓附近的人在首頁看到我"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相手を探しているとき、近くの人のホームに表示する"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "파트너를 찾을 때 근처 사람의 홈에 나를 보여주기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गेम ढूँढते समय आस-पास के खिलाड़ियों को मुझे दिखाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tampilkan aku ke pemain sekitar saat sedang cari lawan main"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tunjukkan saya kepada pemain berdekatan semasa mencari permainan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตอนหาคนตี ให้คนแถวนี้เห็นฉันที่หน้าแรก"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiện tôi với người chơi gần đây khi tôi đang tìm trận"
           }
         }
       }
@@ -62955,6 +66261,64 @@
         }
       }
     },
+    "提高" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Higher"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बढ़ाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naikkan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上げる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "높이기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naikkan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่ม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tăng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提高"
+          }
+        }
+      }
+    },
     "握拍" : {
       "localizations" : {
         "en" : {
@@ -64521,6 +67885,64 @@
         }
       }
     },
+    "放宽一点条件试试。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try loosening them a little."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "थोड़ा ढीला करके देखें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coba longgarkan sedikit."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "少しゆるめてみてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조금 넓혀 보세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cuba longgarkan sedikit."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลองผ่อนเงื่อนไขลงหน่อย"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thử nới lỏng một chút."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放寬一點條件試試。"
+          }
+        }
+      }
+    },
     "放宽到 ±%lld 级" : {
       "localizations" : {
         "en" : {
@@ -65804,60 +69226,60 @@
         }
       }
     },
-    "日期（未来 14 天）" : {
+    "日期" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Date (next 14 days)"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "तारीख (अगले 14 दिन)"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tanggal (14 hari ke depan)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日付（今後 14 日間）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "날짜 (향후 14일)"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tarikh (14 hari akan datang)"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "วันที่ (14 วันข้างหน้า)"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ngày (14 ngày tới)"
+            "value" : "Date"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "日期（未來 14 天）"
+            "value" : "日期"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "तारीख़"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tanggal"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarikh"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วันที่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày"
           }
         }
       }
@@ -66558,6 +69980,122 @@
         }
       }
     },
+    "时间段" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間段"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間帯"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "समय"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waktu"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masa"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ช่วงเวลา"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thời gian"
+          }
+        }
+      }
+    },
+    "时间段不对：至少 1 小时，约球最长 16 小时，开局最长 8 小时。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That time window doesn’t work. At least 1 hour; matches up to 16 hours, posted games up to 8."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間段不對：至少 1 小時，約球最長 16 小時，開局最長 8 小時。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その時間帯は選べません。1 時間以上、マッチングは最長 16 時間、募集は最長 8 時間です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 시간대는 안 돼요. 최소 1시간, 매칭은 최대 16시간, 모집은 최대 8시간이에요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह समय नहीं चलेगा। कम से कम 1 घंटा; मैच 16 घंटे तक, पोस्ट किए गेम 8 घंटे तक।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rentang waktunya tidak bisa. Minimal 1 jam; cari lawan maksimal 16 jam, permainan yang diposting maksimal 8 jam."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Julat masa itu tidak sesuai. Sekurang-kurangnya 1 jam; padanan sehingga 16 jam, permainan disiarkan sehingga 8 jam."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ช่วงเวลานี้ใช้ไม่ได้ อย่างน้อย 1 ชั่วโมง จับคู่ได้สูงสุด 16 ชั่วโมง โพสต์เกมได้สูงสุด 8 ชั่วโมง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khung giờ này không được. Ít nhất 1 giờ; ghép trận tối đa 16 giờ, đăng trận tối đa 8 giờ."
+          }
+        }
+      }
+    },
     "时间段需要 1-8 小时" : {
       "localizations" : {
         "en" : {
@@ -66612,122 +70150,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "時段需要 1-8 小時"
-          }
-        }
-      }
-    },
-    "时间段（1–8 小时）" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Time slot (1–8 hours)"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "टाइम स्लॉट (1–8 घंटे)"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Slot waktu (1–8 jam)"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時間帯（1〜8 時間）"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시간대 (1–8시간)"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Slot masa (1–8 jam)"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ช่วงเวลา (1–8 ชั่วโมง)"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Khung giờ (1–8 giờ)"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時段（1–8 小時）"
-          }
-        }
-      }
-    },
-    "时间范围请选 1–8 小时。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pick a time window between 1 and 8 hours."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 से 8 घंटे के बीच की समय रेंज चुनें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pilih rentang waktu antara 1 dan 8 jam."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時間帯は 1〜8 時間の範囲で選んでください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1–8시간 사이의 시간대를 고르세요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pilih slot masa antara 1 hingga 8 jam."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เลือกช่วงเวลาระหว่าง 1 ถึง 8 ชั่วโมง"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chọn khung giờ dài từ 1 đến 8 giờ."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "時間範圍請選 1 到 8 小時。"
           }
         }
       }
@@ -67540,6 +70962,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示密碼"
+          }
+        }
+      }
+    },
+    "显示昵称、头像、等级和你想打的时间、球馆，不显示联系方式" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "They see your nickname, photo, level and the time and courts you picked. Never your contact details."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示暱稱、頭像、等級和你想打的時間、球館，不顯示聯絡方式"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ニックネーム、写真、レベル、希望の時間とコートが表示されます。連絡先は表示されません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "닉네임, 사진, 급수, 원하는 시간과 코트가 보여요. 연락처는 보이지 않아요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपका निकनेम, फ़ोटो, लेवल और चुना हुआ समय व कोर्ट दिखेगा। संपर्क जानकारी कभी नहीं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mereka melihat nama panggilan, foto, level, serta waktu dan lapangan pilihanmu. Kontakmu tidak ditampilkan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mereka nampak nama panggilan, foto, tahap serta masa dan gelanggang pilihan anda. Butiran hubungan tidak ditunjukkan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เห็นชื่อเล่น รูป ระดับ และเวลากับสนามที่คุณเลือก ไม่เห็นช่องทางติดต่อ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Họ thấy biệt danh, ảnh, trình độ, giờ và sân bạn chọn. Không thấy thông tin liên lạc"
+          }
+        }
+      }
+    },
+    "晚上" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evening"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "शाम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malam"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夜"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저녁"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Malam"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เย็น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tối"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晚上"
           }
         }
       }
@@ -68414,60 +71952,60 @@
         }
       }
     },
-    "最多只能提前两周安排。" : {
+    "最多只能提前 30 天安排。" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can plan up to two weeks ahead."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "आप दो हफ़्ते आगे तक प्लान कर सकते हैं।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamu bisa merencanakan sampai dua minggu ke depan."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "予定は 2 週間先まで立てられます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "최대 2주 후까지 계획할 수 있어요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anda boleh merancang hingga dua minggu lebih awal."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "นัดล่วงหน้าได้สูงสุดสองสัปดาห์"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bạn có thể lên lịch trước tối đa hai tuần."
+            "value" : "You can plan up to 30 days ahead."
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最多只能安排兩週內的時間。"
+            "value" : "最多只能提前 30 天安排。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 日先まで予定を入れられます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최대 30일 뒤까지 잡을 수 있어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आप 30 दिन पहले तक प्लान कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu bisa merencanakan hingga 30 hari ke depan."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda boleh merancang sehingga 30 hari lebih awal."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วางแผนล่วงหน้าได้สูงสุด 30 วัน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn có thể lên lịch trước tối đa 30 ngày."
           }
         }
       }
@@ -69008,6 +72546,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最近有幾位球友提到「%@」。%@這則提醒只有你看得到，不會公開，也不影響配對。"
+          }
+        }
+      }
+    },
+    "最长 16 小时" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up to 16 hours"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最長 16 小時"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最長 16 時間"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "최대 16시간"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ज़्यादा से ज़्यादा 16 घंटे"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksimal 16 jam"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maksimum 16 jam"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สูงสุด 16 ชั่วโมง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tối đa 16 giờ"
           }
         }
       }
@@ -70781,7 +74377,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Win rate this month: %lld%% (%lld games · %lld opponents)"
+            "value" : "Win rate this month: %lld%% (%lld matches · %lld opponents)"
           }
         },
         "hi" : {
@@ -71902,6 +75498,64 @@
         }
       }
     },
+    "柠檬绿" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lime"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लाइम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hijau limau"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "라임"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hijau limau"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เขียวมะนาว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xanh chanh"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檸檬綠"
+          }
+        }
+      }
+    },
     "查看个人资料" : {
       "localizations" : {
         "en" : {
@@ -73004,6 +76658,64 @@
         }
       }
     },
+    "正在修改约球请求，保存后换掉原来的" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editing your match request. Saving replaces the old one."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在修改約球請求，儲存後換掉原來的"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マッチングのリクエストを編集中です。保存すると前のものと置き換わります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매칭 요청을 수정 중이에요. 저장하면 이전 요청이 바뀌어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मैच रिक्वेस्ट एडिट हो रही है। सेव करने पर पुरानी बदल जाएगी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sedang mengedit permintaan. Menyimpan akan mengganti yang lama."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sedang mengedit permintaan. Simpan akan menggantikan yang lama."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "กำลังแก้คำขอจับคู่ บันทึกแล้วจะแทนอันเดิม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang sửa yêu cầu ghép trận. Lưu sẽ thay yêu cầu cũ."
+          }
+        }
+      }
+    },
     "正在加载" : {
       "localizations" : {
         "en" : {
@@ -73944,6 +77656,64 @@
         }
       }
     },
+    "每个固定场次要 1–12 小时、在当天结束，名额 4–40 人，最多 7 个。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each weekly session needs to be 1–12 hours and end the same day, with 4–40 spots. Up to 7 sessions."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每個固定場次要 1–12 小時、在當天結束，名額 4–40 人，最多 7 個。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "定期の回は 1〜12 時間で当日中に終わること、定員 4〜40 人、最大 7 つまでです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정기 일정은 1–12시간, 당일 종료, 정원 4–40명이어야 하고 최대 7개까지예요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर साप्ताहिक सेशन 1–12 घंटे का हो और उसी दिन खत्म हो, 4–40 जगहें, ज़्यादा से ज़्यादा 7 सेशन।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiap sesi mingguan 1–12 jam dan selesai di hari yang sama, 4–40 tempat. Maksimal 7 sesi."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setiap sesi mingguan perlu 1–12 jam dan tamat pada hari yang sama, 4–40 tempat. Maksimum 7 sesi."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แต่ละรอบประจำต้องยาว 1–12 ชั่วโมงและจบในวันเดียวกัน รับ 4–40 คน ได้สูงสุด 7 รอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi buổi cố định dài 1–12 giờ, kết thúc trong ngày, 4–40 chỗ. Tối đa 7 buổi."
+          }
+        }
+      }
+    },
     "每个时间段需要 1-8 小时" : {
       "localizations" : {
         "en" : {
@@ -74234,60 +78004,60 @@
         }
       }
     },
-    "每周固定的球群" : {
+    "每周固定的局" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Weekly groups"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "साप्ताहिक ग्रुप"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Grup mingguan"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "毎週の定期グループ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "매주 정기 그룹"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kumpulan mingguan"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "กลุ่มประจำสัปดาห์"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nhóm chơi hằng tuần"
+            "value" : "Weekly games"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每週固定的球群"
+            "value" : "每週固定的局"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎週の定期練習"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "매주 정기 모임"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर हफ़्ते के गेम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Main mingguan"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permainan mingguan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เกมประจำสัปดาห์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trận cố định hằng tuần"
           }
         }
       }
@@ -74428,6 +78198,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每場 %lld 個名額，額滿自動候補"
+          }
+        }
+      }
+    },
+    "每场最长 12 小时" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each session can be up to 12 hours"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每場最長 12 小時"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 回は最長 12 時間です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 번에 최대 12시간이에요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर सेशन ज़्यादा से ज़्यादा 12 घंटे का"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiap sesi maksimal 12 jam"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setiap sesi maksimum 12 jam"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แต่ละรอบยาวได้สูงสุด 12 ชั่วโมง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi buổi tối đa 12 giờ"
           }
         }
       }
@@ -74606,6 +78434,64 @@
         }
       }
     },
+    "每局比分（可选）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Score of each game (optional)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर गेम का स्कोर (वैकल्पिक)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skor tiap gim (opsional)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各ゲームのスコア（任意）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "게임별 점수 (선택)"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skor setiap set (pilihan)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คะแนนแต่ละเกม (ไม่บังคับ)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tỉ số từng ván (không bắt buộc)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每局比分（可選）"
+          }
+        }
+      }
+    },
     "每边一男一女。男生和男生比、女生和女生比，所以等级不换算。" : {
       "localizations" : {
         "en" : {
@@ -74718,6 +78604,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "比分只能填數字，如 21:18 19:21。"
+          }
+        }
+      }
+    },
+    "比分和上面的局数对不上。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The scores don't match the games above."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्कोर ऊपर के गेम से मेल नहीं खाते।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skor tidak cocok dengan jumlah gim di atas."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スコアが上のゲーム数と合いません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "점수가 위의 게임 수와 맞지 않아요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skor tidak sepadan dengan bilangan set di atas."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คะแนนไม่ตรงกับจำนวนเกมด้านบน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tỉ số không khớp với số ván ở trên."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比分和上面的局數對不上。"
           }
         }
       }
@@ -76526,6 +80470,64 @@
         }
       }
     },
+    "没有符合筛选的人" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No one matches your filters"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़िल्टर से कोई नहीं मिला"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak ada yang cocok dengan filter"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "条件に合う人がいません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "조건에 맞는 사람이 없어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiada yang sepadan dengan penapis"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่มีใครตรงกับตัวกรอง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không có ai khớp bộ lọc"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有符合篩選的人"
+          }
+        }
+      }
+    },
     "没有，最近打得少（以前打得多）" : {
       "localizations" : {
         "en" : {
@@ -76638,6 +80640,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒來"
+          }
+        }
+      }
+    },
+    "没爽约过" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No missed games"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कोई गैरहाज़िरी नहीं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tak pernah absen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドタキャンなし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노쇼 없음"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiada ponteng"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่เคยเบี้ยว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa từng vắng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒爽約過"
           }
         }
       }
@@ -76986,6 +81046,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法辨識這個地圖連結，試試直接搜尋名稱"
+          }
+        }
+      }
+    },
+    "没计分，就是练球" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No score, just practice"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "स्कोर नहीं रखा, सिर्फ़ प्रैक्टिस"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak dihitung, cuma latihan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スコアなし、練習だけ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "점수 안 셌어요, 연습만"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiada skor, latihan sahaja"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ไม่ได้นับคะแนน แค่ซ้อม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không tính điểm, chỉ tập"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒計分，就是練球"
           }
         }
       }
@@ -78052,6 +82170,64 @@
         }
       }
     },
+    "淡紫" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lavender"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "लैवेंडर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lavender"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ラベンダー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "라벤더"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lavender"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ม่วงลาเวนเดอร์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tím nhạt"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淡紫"
+          }
+        }
+      }
+    },
     "深色" : {
       "localizations" : {
         "en" : {
@@ -78632,6 +82808,64 @@
         }
       }
     },
+    "清除筛选" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear filters"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़िल्टर हटाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus filter"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "絞り込みを解除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필터 지우기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kosongkan penapis"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ล้างตัวกรอง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa bộ lọc"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除篩選"
+          }
+        }
+      }
+    },
     "满员·可候补" : {
       "localizations" : {
         "en" : {
@@ -79208,6 +83442,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "點按更換"
+          }
+        }
+      }
+    },
+    "点日期看谁也有空" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap a day to see who else is free"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點日期看誰也有空"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付をタップして空いている人を見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜를 눌러 누가 시간 되는지 보기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दिन पर टैप करके देखें और कौन खाली है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketuk hari untuk lihat siapa yang juga kosong"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ketik hari untuk lihat siapa lagi yang lapang"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แตะวันที่เพื่อดูว่าใครว่างบ้าง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chạm vào ngày để xem ai cũng rảnh"
           }
         }
       }
@@ -81706,6 +85998,64 @@
         }
       }
     },
+    "球群已解散，成员会收到通知" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Group closed. Members will be notified."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "球群已解散，成員會收到通知"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループを解散しました。メンバーに通知されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임을 해산했어요. 멤버에게 알림이 가요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप बंद हो गया। सदस्यों को सूचना मिलेगी।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grup dibubarkan. Anggota akan diberi tahu."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kumpulan dibubarkan. Ahli akan dimaklumkan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยุบก๊วนแล้ว สมาชิกจะได้รับการแจ้งเตือน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã giải tán nhóm. Thành viên sẽ nhận được thông báo."
+          }
+        }
+      }
+    },
     "球群群聊" : {
       "localizations" : {
         "en" : {
@@ -83046,6 +87396,64 @@
         }
       }
     },
+    "用来找附近的球馆和球友。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Used to find courts and players near you."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आपके पास के कोर्ट और खिलाड़ी ढूँढने के लिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dipakai untuk mencari lapangan dan pemain di dekatmu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くのコートと相手を探すのに使います。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "근처 코트와 사람을 찾는 데 써요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Digunakan untuk mencari gelanggang dan pemain berdekatan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใช้หาสนามและเพื่อนตีที่อยู่ใกล้คุณ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dùng để tìm sân và người chơi gần bạn."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用來找附近的球館和球友。"
+          }
+        }
+      }
+    },
     "用注册时的邮箱和密码登录。" : {
       "localizations" : {
         "en" : {
@@ -83216,6 +87624,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用電子郵件登入"
+          }
+        }
+      }
+    },
+    "用银行卡付，金额随意。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pay by card, any amount."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用信用卡付，金額隨意。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードで、金額は自由です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카드로, 금액은 자유예요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्ड से, कोई भी रकम।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bayar pakai kartu, berapa pun."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bayar dengan kad, berapa sahaja."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "จ่ายด้วยบัตร จำนวนเท่าไรก็ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trả bằng thẻ, số tiền tùy bạn."
           }
         }
       }
@@ -84786,6 +89252,64 @@
         }
       }
     },
+    "看 %lld 个人" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show %lld"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld खिलाड़ी देखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lihat %lld pemain"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 人を見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld명 보기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lihat %lld pemain"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดู %lld คน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem %lld người"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "看 %lld 個人"
+          }
+        }
+      }
+    },
     "看 1–9 级对照表" : {
       "localizations" : {
         "en" : {
@@ -84898,6 +89422,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "看對手強弱"
+          }
+        }
+      }
+    },
+    "看资料" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View profile"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "看資料"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロフィールを見る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프로필 보기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "प्रोफ़ाइल देखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lihat profil"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lihat profil"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดูโปรไฟล์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem hồ sơ"
           }
         }
       }
@@ -86290,6 +90872,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除照片，使用文字頭像"
+          }
+        }
+      }
+    },
+    "移除背景照片" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove background photo"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बैकग्राउंड फ़ोटो हटाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hapus foto latar"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背景写真を削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "배경 사진 삭제"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buang foto latar"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลบรูปพื้นหลัง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xóa ảnh nền"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除背景照片"
           }
         }
       }
@@ -87890,6 +92530,64 @@
         }
       }
     },
+    "筛选" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filters"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़िल्टर"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "絞り込み"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필터"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penapis"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวกรอง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ lọc"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "篩選"
+          }
+        }
+      }
+    },
     "筛选 %@ 的球友…" : {
       "localizations" : {
         "en" : {
@@ -87944,6 +92642,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "篩選 %@ 的球友…"
+          }
+        }
+      }
+    },
+    "筛选 · %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filters · %lld"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़िल्टर · %lld"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filter · %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "絞り込み · %lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "필터 · %lld"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Penapis · %lld"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตัวกรอง · %lld"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ lọc · %lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "篩選 · %lld"
           }
         }
       }
@@ -88238,6 +92994,64 @@
         }
       }
     },
+    "粉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pink"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "गुलाबी"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merah muda"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピンク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "분홍"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Merah jambu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชมพู"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hồng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "粉"
+          }
+        }
+      }
+    },
     "粘贴地图链接" : {
       "localizations" : {
         "en" : {
@@ -88466,6 +93280,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "約 %@"
+          }
+        }
+      }
+    },
+    "约 TA" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "約 TA"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "誘う"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "초대하기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बुलाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajak"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชวน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rủ chơi"
+          }
+        }
+      }
+    },
+    "约 TA %@ 打单打？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invite them to play singles at %@?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "約 TA %@ 打單打？"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ からシングルスに誘いますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@에 단식하자고 초대할까요?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ पर सिंगल्स के लिए बुलाएँ?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajak main tunggal jam %@?"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajak main perseorangan pada %@?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชวนตีเดี่ยวเวลา %@ ไหม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rủ chơi đơn lúc %@?"
           }
         }
       }
@@ -88872,6 +93802,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "約時間、約球館、怎麼分攤費用，都可以在這裡說。"
+          }
+        }
+      }
+    },
+    "约混双要先在资料里填性别。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add your gender in your profile to invite for mixed doubles."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मिक्स्ड डबल्स के लिए बुलाने से पहले प्रोफ़ाइल में अपना जेंडर भरें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isi jenis kelamin di profil untuk mengajak main ganda campuran."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ミックスダブルスに誘うには、プロフィールで性別を入力してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "혼합 복식에 초대하려면 프로필에 성별을 입력하세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Isi jantina dalam profil untuk mengajak main beregu campuran."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ใส่เพศในโปรไฟล์ก่อนชวนตีคู่ผสม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm giới tính trong hồ sơ để rủ đánh đôi nam nữ."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "約混雙要先在資料裡填性別。"
           }
         }
       }
@@ -90152,6 +95140,122 @@
         }
       }
     },
+    "编辑球群" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit group"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯球群"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループを編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임 편집"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप एडिट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit grup"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit kumpulan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แก้ไขก๊วน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa nhóm"
+          }
+        }
+      }
+    },
+    "编辑球群和场次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit group and sessions"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯球群和場次"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループと回を編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임과 일정 편집"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप और सेशन एडिट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit grup dan sesi"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit kumpulan dan sesi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แก้ไขก๊วนและรอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sửa nhóm và các buổi"
+          }
+        }
+      }
+    },
     "编辑资料" : {
       "localizations" : {
         "en" : {
@@ -90454,64 +95558,6 @@
         }
       }
     },
-    "群主不能直接退出，可以先把群交给其他组织者" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "As the owner, you can't leave directly. Transfer the group to another organizer first"
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ओनर होने के नाते आप सीधे ग्रुप नहीं छोड़ सकते। पहले ग्रुप किसी दूसरे ऑर्गनाइज़र को सौंपें"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sebagai pemilik, kamu tidak bisa langsung keluar. Serahkan grup ke penyelenggara lain dulu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "オーナーはそのまま退出できません。先にグループを他の主催者に譲ってください"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "그룹장은 바로 나갈 수 없어요. 먼저 다른 운영자에게 그룹을 넘겨주세요"
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sebagai pemilik, anda tidak boleh keluar terus. Serahkan kumpulan kepada penganjur lain dahulu"
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เจ้าของกลุ่มออกเองไม่ได้ โอนกลุ่มให้ผู้จัดคนอื่นก่อน"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trưởng nhóm không thể rời ngay. Hãy chuyển nhóm cho người tổ chức khác trước"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "群主不能直接退出，可以先把球群交給其他組織者"
-          }
-        }
-      }
-    },
     "群主不能退出自己的球群。" : {
       "localizations" : {
         "en" : {
@@ -90566,6 +95612,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "群主不能退出自己的球群。"
+          }
+        }
+      }
+    },
+    "群主不能退出，可以解散球群。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The owner can’t leave, but can close the group."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "群主不能退出，可以解散球群。"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オーナーは退出できませんが、グループを解散できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임장은 나갈 수 없지만 모임을 해산할 수 있어요."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मालिक ग्रुप नहीं छोड़ सकता, पर ग्रुप बंद कर सकता है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemilik tidak bisa keluar, tapi bisa membubarkan grup."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemilik tidak boleh keluar, tetapi boleh membubarkan kumpulan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เจ้าของออกจากก๊วนไม่ได้ แต่ยุบก๊วนได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chủ nhóm không thể rời nhóm, nhưng có thể giải tán nhóm."
           }
         }
       }
@@ -90752,6 +95856,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "群聊"
+          }
+        }
+      }
+    },
+    "羽毛球 · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badminton · %@"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बैडमिंटन · %@"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bulu tangkis · %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バドミントン · %@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "배드민턴 · %@"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badminton · %@"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แบดมินตัน · %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cầu lông · %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "羽毛球 · %@"
           }
         }
       }
@@ -93024,6 +98186,122 @@
         }
       }
     },
+    "薄荷" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mint"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मिंट"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mint"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ミント"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "민트"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pudina"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มิ้นต์"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạc hà"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "薄荷"
+          }
+        }
+      }
+    },
+    "蜜桃" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peach"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पीच"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Persik"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピーチ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "피치"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pic"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "พีช"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hồng đào"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "蜜桃"
+          }
+        }
+      }
+    },
     "街道门牌" : {
       "localizations" : {
         "en" : {
@@ -93658,6 +98936,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "解散房間？所有人都會收到通知"
+          }
+        }
+      }
+    },
+    "解散球群" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close group"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解散球群"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "グループを解散"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모임 해산"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ग्रुप बंद करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan grup"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan kumpulan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยุบก๊วน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giải tán nhóm"
+          }
+        }
+      }
+    },
+    "解散这个球群？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close this group?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解散這個球群？"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このグループを解散しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 모임을 해산할까요?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह ग्रुप बंद करें?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan grup ini?"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bubarkan kumpulan ini?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยุบก๊วนนี้ไหม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giải tán nhóm này?"
           }
         }
       }
@@ -96684,64 +102078,6 @@
         }
       }
     },
-    "请添加 1–3 个每周场次。" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Add 1 to 3 weekly sessions."
-          }
-        },
-        "hi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "1 से 3 साप्ताहिक सेशन जोड़ें।"
-          }
-        },
-        "id" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tambahkan 1 sampai 3 sesi mingguan."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "毎週の開催を 1〜3 件追加してください。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "매주 정기 일정을 1–3개 추가하세요."
-          }
-        },
-        "ms" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tambah 1 hingga 3 sesi mingguan."
-          }
-        },
-        "th" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "เพิ่มรอบประจำสัปดาห์ 1 ถึง 3 รอบ"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Thêm từ 1 đến 3 buổi hằng tuần."
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "請新增 1 到 3 個每週場次。"
-          }
-        }
-      }
-    },
     "请补全街道和城市，方便其他球友确认位置" : {
       "localizations" : {
         "en" : {
@@ -97322,6 +102658,64 @@
         }
       }
     },
+    "调整卡片背景" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust card background"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कार्ड बैकग्राउंड एडजस्ट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atur latar kartu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードの背景を調整"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카드 배경 조정"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laraskan latar kad"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปรับพื้นหลังการ์ด"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉnh nền thẻ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調整卡片背景"
+          }
+        }
+      }
+    },
     "调整失败" : {
       "localizations" : {
         "en" : {
@@ -97376,6 +102770,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "調整失敗"
+          }
+        }
+      }
+    },
+    "调整头像" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adjust photo"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調整頭像"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真を調整"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 조정"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ोटो एडजस्ट करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atur foto"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laraskan foto"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปรับรูป"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉnh ảnh"
           }
         }
       }
@@ -98424,6 +103876,64 @@
         }
       }
     },
+    "赢 %lld 局 · 输 %lld 局" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Won %1$lld · lost %2$lld games"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld गेम जीते · %2$lld हारे"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menang %1$lld · kalah %2$lld gim"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld ゲーム勝ち · %2$lld ゲーム負け"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld게임 승 · %2$lld게임 패"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menang %1$lld · kalah %2$lld set"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ชนะ %1$lld · แพ้ %2$lld เกม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thắng %1$lld · thua %2$lld ván"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "贏 %1$lld 局 · 輸 %2$lld 局"
+          }
+        }
+      }
+    },
     "赢下了这场" : {
       "localizations" : {
         "en" : {
@@ -98536,6 +104046,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "贏了"
+          }
+        }
+      }
+    },
+    "赢的局数" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Games won"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जीते गेम"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gim menang"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取ったゲーム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이긴 게임"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set dimenangi"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เกมที่ชนะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ván thắng"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "贏的局數"
           }
         }
       }
@@ -99116,6 +104684,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路徑：%@"
+          }
+        }
+      }
+    },
+    "跳过" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skip"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "略過"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "건너뛰기"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "छोड़ें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewati"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langkau"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ข้าม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bỏ qua"
           }
         }
       }
@@ -102802,6 +108428,64 @@
         }
       }
     },
+    "这个时间你已经有球局或待确认的约球了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You already have a game or a pending invite at this time."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस समय आपका पहले से एक गेम या पुष्टि का इंतज़ार कर रहा बुलावा है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu sudah punya permainan atau ajakan yang menunggu konfirmasi di jam ini."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この時間にはすでに試合か確認待ちの誘いがあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 시간에 이미 게임이나 확인 대기 중인 초대가 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda sudah ada permainan atau ajakan yang menunggu pengesahan pada masa ini."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เวลานี้คุณมีเกมหรือคำชวนที่รอยืนยันอยู่แล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giờ này bạn đã có trận hoặc lời rủ đang chờ xác nhận."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這個時間你已經有球局或待確認的約球了。"
+          }
+        }
+      }
+    },
     "这个时间你已经有约球请求或球局了。" : {
       "localizations" : {
         "en" : {
@@ -103678,6 +109362,64 @@
         }
       }
     },
+    "这场打得怎么样" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How did it go?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कैसा रहा?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bagaimana mainnya?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どうでしたか"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "어땠나요?"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bagaimana permainan tadi?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เป็นยังไงบ้าง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trận thế nào?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這場打得怎麼樣"
+          }
+        }
+      }
+    },
     "这场球局已经不能取消了。" : {
       "localizations" : {
         "en" : {
@@ -103790,6 +109532,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這場的賽果"
+          }
+        }
+      }
+    },
+    "这天已经在等 3 个人回复了，有人回复再约。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're already waiting on 3 replies for this day. Invite more once someone replies."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस दिन के लिए आप पहले से 3 लोगों के जवाब का इंतज़ार कर रहे हैं। किसी के जवाब देने के बाद और बुलाएँ।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamu sudah menunggu balasan dari 3 orang untuk hari ini. Ajak lagi setelah ada yang membalas."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日はすでに 3 人の返事を待っています。誰かが返事をしたら、また誘えます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이날은 이미 3명의 답을 기다리고 있어요. 누군가 답하면 더 초대할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anda sudah menunggu balasan 3 orang untuk hari ini. Ajak lagi selepas ada yang membalas."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วันนี้คุณรอคำตอบจาก 3 คนอยู่แล้ว รอให้มีคนตอบก่อนค่อยชวนเพิ่ม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày này bạn đang chờ 3 người trả lời rồi. Có người trả lời thì rủ thêm."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這天已經在等 3 個人回覆了，有人回覆再約。"
+          }
+        }
+      }
+    },
+    "这天附近没有能约的球友了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No one nearby to invite that day"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這天附近沒有能約的球友了"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日は近くで誘える人がいません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이날 근처에 초대할 수 있는 사람이 없어요"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "उस दिन आस-पास बुलाने के लिए कोई नहीं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tidak ada yang bisa diajak di sekitar hari itu"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiada sesiapa berdekatan untuk diajak hari itu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วันนั้นไม่มีคนแถวนี้ให้ชวนแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hôm đó không còn ai gần đây để rủ"
           }
         }
       }
@@ -109792,6 +115650,64 @@
         }
       }
     },
+    "附近的球馆" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A court nearby"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पास का कोर्ट"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lapangan terdekat"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くのコート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "근처 코트"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelanggang berdekatan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "คอร์ทใกล้ ๆ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sân gần đây"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近的球館"
+          }
+        }
+      }
+    },
     "附近的球馆、球局和球群按这个范围显示。匹配只看你选的球馆，搜索也不受范围限制。" : {
       "localizations" : {
         "en" : {
@@ -110194,6 +116110,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "陌生人不能直接私訊你：好友可以聊，同一場球局用球局群聊，同球群只能傳一則訊息請求"
+          }
+        }
+      }
+    },
+    "降低" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lower"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कम करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turunkan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下げる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "낮추기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turunkan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ลด"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giảm"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降低"
           }
         }
       }
@@ -111238,6 +117212,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "項目"
+          }
+        }
+      }
+    },
+    "预览" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preview"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "प्रीव्यू"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pratinjau"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレビュー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리보기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pratonton"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดูตัวอย่าง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Xem trước"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預覽"
           }
         }
       }

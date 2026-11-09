@@ -83,6 +83,9 @@ extension MockBackend {
         let recentNoShows: Int?
         /// 时间，或永久的 "infinity"
         let suspendedUntil: String?
+        let cardColor: String?
+        let cardPhoto: String?
+        let avatar: String?
     }
 
     // MARK: 刷新
@@ -411,8 +414,11 @@ extension MockBackend {
         remoteChallengeStatus[card.id] = card.challenge
         remoteNoShows[card.id] = (card.recentNoShows ?? 0, Self.suspension(card.suspendedUntil))
         remoteMessageOptions[card.id] = card.message
+        applyCardColor(card.cardColor, to: card.id)
+        await applyAvatar(card.avatar, to: card.id)
+        await applyCardPhoto(card.cardPhoto, to: card.id)
         if let rate = card.winRate {
-            remoteWinRates[card.id] = Rankings.WinRate(games: rate.games, wins: rate.wins, opponents: rate.opponents, averageGap: rate.gap)
+            remoteWinRates[card.id] = rate.rate
         }
         emit(.rankingsChanged)
         emit(.friendsChanged)

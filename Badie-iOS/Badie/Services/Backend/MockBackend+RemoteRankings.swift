@@ -10,6 +10,12 @@ extension MockBackend {
         let wins: Int
         let opponents: Int
         let gap: Double
+        let rounds: Int?
+        let roundWins: Int?
+
+        var rate: Rankings.WinRate {
+            Rankings.WinRate(games: games, wins: wins, opponents: opponents, averageGap: gap, rounds: rounds, roundWins: roundWins)
+        }
     }
 
     struct RemoteBoardEntry: Decodable, Equatable {
@@ -175,7 +181,7 @@ extension MockBackend {
     func loadRemoteRecord() async throws -> Bool {
         guard let remote, let me = currentUserId else { return false }
         let record: RemoteWinRate = try await remote.rpc("my_record")
-        let rate = Rankings.WinRate(games: record.games, wins: record.wins, opponents: record.opponents, averageGap: record.gap)
+        let rate = record.rate
         guard rate != remoteWinRates[me] else { return false }
         remoteWinRates[me] = rate
         return true

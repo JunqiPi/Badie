@@ -17,6 +17,11 @@ struct MatchDraft: Equatable {
     var autoAccept = false
     /// 项目：男单女单男双女双、混双；nil = 不限
     var event: PlayEvent?
+    /// 修改已有的请求：提交时换掉这个请求
+    var replacingTicketId: String?
+
+    static let anyTimeStart = 7 * 60
+    static let anyTimeEnd = 23 * 60
 
     static let maxCourts = 3
 
@@ -27,8 +32,22 @@ struct MatchDraft: Equatable {
 
     var validation: TimeSlotValidationResult {
         guard let slot else { return .invalid(reason: String(localized: "时间无效")) }
-        return slot.validate()
+        return slot.validate(maxDuration: TimeSlotConstants.maximumMatchDuration)
     }
+
+    /// 任何时间：当天 7 点到 23 点；今天的话从现在起至少 30 分钟后、按半小时开始
+    mutating func setAnyTime(now: Date = Date()) {
+        var start = Self.anyTimeStart
+        let calendar = Calendar.current
+        if calendar.isDate(day, inSameDayAs: now) {
+            let minutes = calendar.component(.hour, from: now) * 60 + calendar.component(.minute, from: now) + 30
+            start = max(start, (minutes + 29) / 30 * 30)
+        }
+        startMinutes = min(start, Self.anyTimeEnd - 60)
+        endMinutes = Self.anyTimeEnd
+    }
+
+    var isAnyTime: Bool { endMinutes == Self.anyTimeEnd && endMinutes - startMinutes > 8 * 60 }
 
     var canSearch: Bool { validation.isValid && !courtIds.isEmpty }
 
@@ -252,7 +271,8 @@ final class MatchManager: ObservableObject {
             do {
                 outcome = .success(try await self.backend.submitTicket(
                     mode: snapshot.mode, slot: slot, courtIds: courtIds, skillTolerance: snapshot.skillTolerance,
-                    radiusKm: radiusKm, origin: location, autoAccept: snapshot.autoAccept, event: snapshot.event))
+                    radiusKm: radiusKm, origin: location, autoAccept: snapshot.autoAccept, event: snapshot.event,
+                    replacing: snapshot.replacingTicketId))
             } catch {
                 outcome = .failure(error)
             }
@@ -267,6 +287,7 @@ final class MatchManager: ObservableObject {
             withAnimation(AppTheme.Motion.standard) {
                 switch outcome {
                 case .success(let ticket):
+                    self.draft.replacingTicketId = nil
                     self.flowTicketId = ticket.id
                     self.reloadMatchmaking(announce: false)
                     self.phase = .idle
@@ -278,6 +299,17 @@ final class MatchManager: ObservableObject {
                 }
             }
         }
+    }
+
+    /// 修改请求：把它的条件填回设置页，提交时换掉旧请求（新的不合格就保留旧的）
+    func prepareEdit(_ ticket: MatchTicket) {
+        draft.apply(ticket.slot)
+        draft.mode = ticket.mode
+        draft.courtIds = ticket.courtIds
+        draft.skillTolerance = ticket.skillTolerance
+        draft.autoAccept = ticket.autoAccept
+        draft.event = ticket.event
+        draft.replacingTicketId = ticket.id
     }
 
     /// 打开某个请求（首页卡片、通知）
@@ -382,8 +414,8 @@ final class MatchManager: ObservableObject {
         backend.togglePaid(gameId: game.id, userId: userId)
     }
 
-    func complete(_ game: Game, didWin: Bool?, score: String) async throws {
-        try await backend.completeGame(id: game.id, didWin: didWin, score: score)
+    func complete(_ game: Game, didWin: Bool?, score: String, games: (mine: Int, theirs: Int)? = nil) async throws {
+        try await backend.completeGame(id: game.id, didWin: didWin, score: score, games: games)
         ReminderService.cancel(gameId: game.id)
         reloadGames()
     }

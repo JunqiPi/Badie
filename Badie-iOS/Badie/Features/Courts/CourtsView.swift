@@ -91,6 +91,7 @@ struct CourtsView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.vertical, AppTheme.Spacing.lg)
             }
+            .refreshesEverything()
         }
         .sheet(item: $selectedCourt) { court in
             CourtDetailSheet(court: court)

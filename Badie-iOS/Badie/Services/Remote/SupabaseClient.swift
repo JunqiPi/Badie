@@ -57,12 +57,13 @@ enum RemoteError: LocalizedError, Equatable {
         case "appeal_closed": return String(localized: "爽约 48 小时后就不能申诉了。")
         // 约球
         case "too_soon": return String(localized: "开始时间至少要在 30 分钟后。")
-        case "too_far": return String(localized: "最多只能提前两周安排。")
-        case "invalid_slot": return String(localized: "时间范围请选 1–8 小时。")
+        case "too_far": return String(localized: "最多只能提前 30 天安排。")
+        case "invalid_slot": return String(localized: "时间段不对：至少 1 小时，约球最长 16 小时，开局最长 8 小时。")
         case "invalid_venues": return String(localized: "请选 1–3 个球馆。")
         case "too_many_requests": return String(localized: "你已有 5 个进行中的约球请求，先取消一个。")
         case "overlapping": return String(localized: "这个时间你已经有约球请求或球局了。")
         case "offer_closed": return String(localized: "这次匹配已失效。")
+        case "not_available": return String(localized: "TA 已经约上了，或者暂时约不了。")
         case "not_active": return String(localized: "这个约球请求已结束。")
         case "not_paused": return String(localized: "这个约球请求已无法恢复。")
         case "cannot_cancel": return String(localized: "这场球局已经不能取消了。")
@@ -70,6 +71,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "cannot_report": return String(localized: "从球局开始到结束后 7 天内，都可以填报赛果。")
         case "result_locked": return String(localized: "双方已经确认了这个赛果。")
         case "invalid_score": return String(localized: "比分只能填数字，如 21:18 19:21。")
+        case "invalid_games": return String(localized: "填一下两边各赢了几局。")
         case "retake_too_soon": return String(localized: "距上次测试满 90 天后，才能重新测试。")
         // 评价、球友、私信
         case "cannot_review": return String(localized: "评价在球局结束后 48 小时内开放。")
@@ -85,7 +87,7 @@ enum RemoteError: LocalizedError, Equatable {
         case "invalid_feedback": return String(localized: "多写几个字，说说发生了什么。")
         case "too_much_feedback": return String(localized: "今天发得有点多了，明天再写，或者发邮件给我们。")
         // 球群
-        case "invalid_schedule": return String(localized: "请添加 1–3 个每周场次。")
+        case "invalid_schedule": return String(localized: "每个固定场次要 1–12 小时、在当天结束，名额 4–40 人，最多 7 个。")
         case "too_many_groups": return String(localized: "你的球群数量已达上限。")
         case "group_not_found": return String(localized: "没有找到这个球群。")
         case "level_out_of_range": return String(localized: "你的水平不在 TA 接受的范围内。")
@@ -287,6 +289,13 @@ final class SupabaseClient {
 
     func removeFile(_ bucket: String, path: String) async throws {
         _ = try await send("storage/v1/object/\(bucket)/\(path)", method: "DELETE")
+    }
+
+    /// 文件夹里的文件名（不含文件夹），最多 100 个
+    func listFiles(_ bucket: String, folder: String) async throws -> [String] {
+        struct Item: Decodable { let name: String }
+        let data = try await send("storage/v1/object/list/\(bucket)", body: ["prefix": folder, "limit": 100])
+        return try JSONDecoder().decode([Item].self, from: data).map(\.name)
     }
 
     /// 下载公开桶里的文件（不需要登录）

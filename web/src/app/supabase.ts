@@ -56,12 +56,17 @@ export interface Profile {
   discoverable: boolean;
   /** 在收藏了同一家球馆的人那里显示为常客 */
   show_as_regular: boolean;
+  show_searching: boolean;
   /** 同球群的人可以给我发消息请求 */
   allow_message_requests: boolean;
   /** 约球消息也发邮件（默认关，主要靠推送） */
   email_alerts: boolean;
   /** 照片头像在 avatars 桶里的位置（App 里上传） */
   avatar_path: string | null;
+  /** 首页卡片：没传背景照片时用的颜色（null = 按用户 ID 给的默认色） */
+  card_color: string | null;
+  /** 卡片背景照片（也在 avatars 桶里，和头像分开） */
+  card_photo_path: string | null;
   /** 高水平认证（管理员审核通过后才有） */
   verified_kind: VerificationKind | null;
   verified_rating: number | null;
@@ -138,6 +143,21 @@ export interface Ticket {
   };
 }
 
+/** 首页按天看人：这天附近在找人、我能约的请求（day_candidates） */
+export interface DayCandidate {
+  ticket: string;
+  mode: Mode;
+  mixed: boolean;
+  play_with: Gender | null;
+  starts_at: string;
+  ends_at: string;
+  user: {
+    id: string; nickname: string; tag: number | null; rating: number; gender: Gender | null; recent_no_shows: number | null;
+    avatar: string | null; card_color: string | null; card_photo: string | null;
+  };
+  venues: { id: string; name: string; km?: number }[] | null;
+}
+
 export type Outcome = 'team1' | 'team2' | 'friendly';
 
 export interface Game {
@@ -151,9 +171,11 @@ export interface Game {
   host_id: string | null;
   my_team: 1 | 2;
   checked_in: boolean;
-  my_report: { outcome: Outcome | null; score: string | null } | null;
+  my_report: { outcome: Outcome | null; score: string | null; team1_games?: number | null; team2_games?: number | null } | null;
   /** 最近一次填的比分 */
   score: string | null;
+  /** 确认过的局数（一场常常打好几局） */
+  rounds?: { team1: number; team2: number } | null;
   result: { status: 'awaiting' | 'verified' | 'disputed' | 'unsure' | 'expired'; outcome: Outcome | null };
   review_until: string;
   players: Player[];
@@ -163,6 +185,9 @@ export interface Game {
 export interface WinRate {
   games: number;
   wins: number;
+  /** 按局：打了几局、赢了几局（胜率按局算） */
+  rounds?: number;
+  round_wins?: number;
   opponents: number;
   /** 对手平均比我方强多少级（负数 = 偏弱） */
   gap: number;
@@ -205,6 +230,8 @@ export interface PlayerCard {
   /** 照片头像在 avatars 桶里的位置 */
   avatar: string | null;
   gender: Gender | null;
+  card_color: string | null;
+  card_photo: string | null;
 }
 
 /** 收藏了同一家球馆、愿意被看到的常客 */
@@ -381,7 +408,7 @@ export interface Update {
   read_at: string | null;
 }
 
-/** 调用数据库函数；页面可见时定时（默认 30 秒）、切回页面时自动刷新（别人确认了、约成了能及时看到） */
+/** 调用数据库函数；页面可见时定时（默认 30 秒）、切回页面时自动刷新（别人确认了、约成了能及时看到）。fn 为空时不调用 */
 export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record<string, unknown>; every?: number } = {}) {
   // 记下结果对应的参数：换了参数（另一个人、上一周）就不再显示旧数据
   const [result, setResult] = useState<{ key: string; data: T }>();
@@ -391,6 +418,7 @@ export function useLive<T>(fn: string, { args, every = 30_000 }: { args?: Record
   const latest = useRef(key);
   latest.current = key;
   const refresh = useCallback(async () => {
+    if (!fn) return;
     const { data, error } = await supabase!.rpc(fn, JSON.parse(key));
     if (latest.current !== key) return;
     setFailed(Boolean(error));
@@ -415,14 +443,15 @@ const problems: Record<string, string> = {
   invalid_appeal: 'Say what happened in a few words.',
   appeal_closed: 'Appeals close 48 hours after a missed game.',
   too_soon: 'Pick a start at least 30 minutes from now.',
-  too_far: 'You can plan up to two weeks ahead.',
-  invalid_slot: 'Pick a time window between 1 and 8 hours.',
+  too_far: 'You can plan up to 30 days ahead.',
+  invalid_slot: 'That time window doesn’t work. Matches can be up to 16 hours, posted games up to 8.',
   invalid_venues: 'Pick 1 to 3 courts.',
   too_many_requests: 'You have 5 open requests already. Cancel one first.',
   invalid_feedback: 'Add a few more words about what happened.',
   too_much_feedback: 'That’s a lot for one day. Try again tomorrow, or email us.',
   overlapping: 'You already have a request or game at that time.',
   offer_closed: 'This match is no longer open.',
+  not_available: 'They’re already matched or can’t be invited right now.',
   not_active: 'This request has already ended.',
   not_paused: 'This request can’t be resumed anymore.',
   cannot_cancel: 'This game can’t be cancelled anymore.',
@@ -438,7 +467,7 @@ const problems: Record<string, string> = {
   not_allowed: 'You can only do this with players you’ve been matched with.',
   blocked: 'Unblock this player first.',
   no_request: 'This friend request is no longer open.',
-  invalid_schedule: 'Add 1 to 3 weekly sessions.',
+  invalid_schedule: 'Each weekly session needs to be 1–12 hours and end the same day, with 4–40 spots. Up to 7 sessions.',
   no_contact_info: 'Leave out phone numbers and links.',
   invalid_partner: 'Pick a friend who’s free then as your partner.',
   invalid_evidence: 'This link isn’t the right kind of page for this evidence. Check it and try again.',
@@ -480,6 +509,7 @@ const problems: Record<string, string> = {
   too_many_invites: 'Invite up to 10 friends at a time.',
   too_many_searches: 'You’re searching too fast. Try again in a few minutes.',
   invalid_score: 'Scores can only have numbers, like 21:18 19:21.',
+  invalid_games: 'Enter how many games each side won.',
 };
 /** 一次爽约：第 1 次警告、第 2 次 7 天不能约球、第 3 次永久；48 小时内可以申诉 */
 export interface Strike {
@@ -506,3 +536,30 @@ export const tagText = (tag: number) => `#${String(tag).padStart(4, '0')}`;
 export const friendLink = (code: string) => `${location.origin}/add/${code}/`;
 
 export const problem = (error: { message: string }) => t(problems[error.message] ?? 'Something went wrong. Try again.');
+
+/** 胜率按局算：赢的局数 ÷ 打的局数（老数据没有局数就按每场一局）；没打过返回 null */
+export function winPercent(rate: WinRate | null | undefined) {
+  const played = rate?.rounds ?? rate?.games ?? 0;
+  const won = rate?.round_wins ?? rate?.wins ?? 0;
+  return played ? Math.round((won / played) * 100) : null;
+}
+
+/** 每局比分（“21:18 19:21”，前面是我方）数出两边各赢了几局；一局都数不出来返回 null */
+export function gamesFromScore(score: string) {
+  let mine = 0;
+  let theirs = 0;
+  // 每局至少有一边到 11 分才算（“2:1”这种是局数，不是比分）
+  for (const [, a, b] of score.matchAll(/(?<!\d)(\d{1,2})\s*[:/-]\s*(\d{1,2})(?!\d)/g)) {
+    if (Math.max(Number(a), Number(b)) < 11) continue;
+    if (Number(a) > Number(b)) mine += 1;
+    else if (Number(b) > Number(a)) theirs += 1;
+  }
+  return mine + theirs ? { mine, theirs } : null;
+}
+
+/** 照片文件夹里没在用的文件（以前没删成的、被管理员撤下的）：传新照片前、注销前清掉 */
+export async function cleanPhotoFolder(userId: string, keep: (string | null)[]) {
+  const { data } = await supabase!.storage.from('avatars').list(userId, { limit: 100 });
+  const stale = (data ?? []).map((f) => `${userId}/${f.name}`).filter((path) => !keep.includes(path));
+  if (stale.length) await supabase!.storage.from('avatars').remove(stale);
+}

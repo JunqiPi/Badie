@@ -4,7 +4,7 @@ import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Divider, Empty, IconButton, IconTile, LevelBadge, ScreenHeader, SectionTitle, Tag } from './kit';
-import { Link } from './router';
+import { Link, navigate } from './router';
 import { problem, supabase, useLive, type GroupDetail, type GroupSession } from './supabase';
 import { dayName, hours } from './time';
 import { Button, Skeleton, toast } from './ui';
@@ -37,6 +37,16 @@ export function GroupPage({ id }: { id: string }) {
     const status = await act('join', 'join_group', { p_group: g!.id });
     if (status === 'pending') toast(t('Request sent. An organizer will review it.'));
     else if (status) toast(t('Welcome to {name}.', { name: g!.name }));
+  }
+
+  // 解散：以后的场次和报名一起删掉，成员收到通知
+  async function disband() {
+    setBusy('disband');
+    const { error } = await supabase!.rpc('disband_group', { p_group: g!.id });
+    setBusy(undefined);
+    if (error) return toast(problem(error), 'error');
+    toast(t('Group closed. Members will be notified.'));
+    navigate('/groups/', true);
   }
 
   async function copyInvite() {
@@ -135,6 +145,23 @@ export function GroupPage({ id }: { id: string }) {
                   <p className="mt-1 font-mono text-[1.75rem] font-black tracking-[0.3em]">{g.invite_code}</p>
                 </div>
                 <Button onClick={copyInvite}><Icon name="copy" className="size-4" />{t('Copy invite')}</Button>
+                {g.my_role === 'owner' && (
+                  <>
+                    <Link to={`/groups/${g.id}/edit/`} className="button button-quiet"><Icon name="pencil" className="size-4" />{t('Edit group and sessions')}</Link>
+                    {confirm === 'disband' ? (
+                      <div role="alert" className="tile grid gap-2 rounded-[16px]! bg-pink p-3 text-on-accent">
+                        <p className="text-headline">{t('Close this group?')}</p>
+                        <p className="text-footnote font-bold">{t('Upcoming sessions and sign-ups will be deleted. This can’t be undone.')}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="danger" className="button-sm" busy={busy === 'disband'} onClick={disband}>{t('Close group')}</Button>
+                          <Button variant="quiet" className="button-sm" disabled={busy === 'disband'} onClick={() => setConfirm(undefined)}>{t('Cancel')}</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setConfirm('disband')} className="min-h-11 text-footnote font-bold text-danger hover:underline">{t('Close group')}</button>
+                    )}
+                  </>
+                )}
                 {g.my_role !== 'owner' && (confirm === 'leave' ? (
                   <Button variant="danger" busy={busy === 'leave'} onClick={() => act('leave', 'leave_group', { p_group: g.id }, t('You left the group'))}>
                     {t('Yes, leave group')}

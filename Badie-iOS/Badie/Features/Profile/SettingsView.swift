@@ -11,10 +11,12 @@ struct SettingsView: View {
     @State private var showRadius = false
     @State private var showHelp = false
     @State private var showTips = false
+    @State private var showsSupport = false
     @State private var showPassword = false
     @State private var showSignOut = false
     @State private var showDelete = false
     @State private var showReset = false
+    @State private var showLanguage = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,11 +27,11 @@ struct SettingsView: View {
                         SegmentedSticker(options: AppAppearance.allCases, selection: $appState.appearance, title: { $0.title })
                     }
 
-                    // iOS 在 App 的系统设置页里提供“首选语言”，切换后系统会重启 App
+                    // 在 App 里直接选，马上生效（不用去系统设置）
                     section(String(localized: "语言")) {
                         MenuRow(icon: "globe", tint: AppTheme.Colors.sky, title: String(localized: "App 语言"),
-                                value: currentLanguageName) {
-                            openSystemSettings()
+                                value: AppLanguage.chosen.map(AppLanguage.name) ?? String(localized: "跟随系统")) {
+                            showLanguage = true
                         }
                         .padding(.horizontal, AppTheme.Spacing.lg)
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
@@ -101,6 +103,17 @@ struct SettingsView: View {
 
                     section(String(localized: "谁能看到我、联系我")) {
                         VStack(spacing: AppTheme.Spacing.md) {
+                            Toggle(isOn: privacyBinding(\.showsWhenSearching)) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("找球友时，让附近的人在首页看到我")
+                                        .font(AppTheme.Typography.bodyBold)
+                                        .foregroundStyle(AppTheme.Colors.ink)
+                                    Text("显示昵称、头像、等级和你想打的时间、球馆，不显示联系方式")
+                                        .font(AppTheme.Typography.caption)
+                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                }
+                            }
+                            InsetDivider()
                             Toggle(isOn: privacyBinding(\.showsAsRegular)) {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text("在常去球馆的“同馆常客”里显示我")
@@ -203,9 +216,11 @@ struct SettingsView: View {
                             MenuRow(icon: "questionmark.bubble.fill", tint: AppTheme.Colors.sky, title: String(localized: "帮助与反馈")) {
                                 showHelp = true
                             }
-                            InsetDivider()
-                            MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.peach, title: String(localized: "支持 Badie")) {
-                                showTips = true
+                            if showsSupport {
+                                InsetDivider()
+                                MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.peach, title: String(localized: "支持 Badie")) {
+                                    showTips = true
+                                }
                             }
                         }
                         .padding(.horizontal, AppTheme.Spacing.lg)
@@ -244,9 +259,15 @@ struct SettingsView: View {
             HelpSheet()
                 .presentationDragIndicator(.visible)
         }
+        .task { showsSupport = await TipJar.isAvailable() }
         .sheet(isPresented: $showTips) {
             TipJarSheet()
                 .presentationDetents([.height(460)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showLanguage) {
+            LanguagePicker()
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showRadius) {
@@ -387,11 +408,6 @@ struct SettingsView: View {
         } else {
             openSystemSettings()
         }
-    }
-
-    private var currentLanguageName: String? {
-        guard let id = Bundle.main.preferredLocalizations.first else { return nil }
-        return Locale(identifier: id).localizedString(forIdentifier: id)
     }
 
     private func openSystemSettings() {

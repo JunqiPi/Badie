@@ -155,14 +155,37 @@ extension MockBackend {
             "p_level_max": levelRange.upperBound,
             "p_policy": joinPolicy.rawValue,
             "p_gender": audience?.serverJSON ?? NSNull(),
-            "p_schedules": schedules.map { schedule -> [String: Any] in
-                ["weekday": schedule.weekday - 1, "start": schedule.startMinutes, "end": schedule.endMinutes,
-                 "capacity": schedule.capacity, "fee": schedule.feeNote ?? ""]
-            },
+            "p_schedules": Self.serverSchedules(schedules),
         ])
         try await loadRemoteGroup(id)
         guard let group = db.groups[id] else { throw BackendError.groupNotFound }
         return group
+    }
+
+    func remoteUpdateGroup(_ groupId: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+                           joinPolicy: PlayGroup.JoinPolicy, summary: String) async throws {
+        try await requireRemote().call("update_group", [
+            "p_group": groupId,
+            "p_name": name.trimmingCharacters(in: .whitespacesAndNewlines),
+            "p_summary": summary.trimmingCharacters(in: .whitespacesAndNewlines),
+            "p_level_min": levelRange.lowerBound,
+            "p_level_max": levelRange.upperBound,
+            "p_policy": joinPolicy.rawValue,
+            "p_schedules": Self.serverSchedules(schedules),
+        ])
+        try await loadRemoteGroup(groupId)
+    }
+
+    func remoteDisbandGroup(_ groupId: String) async throws {
+        try await requireRemote().call("disband_group", ["p_group": groupId])
+        db.groups[groupId] = nil
+        try await refreshRemoteGroups()
+        try await refreshRemoteSocial()
+    }
+
+    /// 服务器的星期是 0 = 周日
+    private static func serverSchedules(_ schedules: [GroupSchedule]) -> [[String: Any]] {
+        schedules.map { ["weekday": $0.weekday - 1, "start": $0.startMinutes, "end": $0.endMinutes, "capacity": $0.capacity, "fee": $0.feeNote ?? ""] }
     }
 
     /// 输群号找球群

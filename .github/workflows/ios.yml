@@ -29,10 +29,15 @@ jobs:
 
       - name: Decide screenshots
         id: ui
-        # 只有界面、文案、示例数据或截图脚本变了才截图；手动运行和 PR 总是截
+        # 开发分支平时不截图（省 20–30 分钟）；推 main 时界面、文案、示例数据或截图脚本变了才截；手动运行和 PR 总是截
         env:
           BEFORE: ${{ github.event.before }}
         run: |
+          if [ "${{ github.event_name }}" = push ] && [ "${{ github.ref }}" != refs/heads/main ]; then
+            echo "开发分支不截图（需要时手动运行这个工作流）"
+            echo run=false >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           ui='^Badie-iOS/(Badie/(App|DesignSystem|Features)/|Badie/Localizable\.xcstrings|Badie/Assets\.xcassets/(AccentColor|Logo)|Badie/Services/Backend/MockBackend\+World|scripts/ci_screenshots\.sh)'
           if [ "${{ github.event_name }}" != push ] || [ -z "$BEFORE" ] || [ "$BEFORE" = 0000000000000000000000000000000000000000 ] \
              || ! git fetch -q --depth=1 origin "$BEFORE" || git diff --name-only "$BEFORE" HEAD | grep -qE "$ui"; then

@@ -72,6 +72,12 @@ final class FriendManager: ObservableObject {
 
     func user(id: String) -> User? { backend.user(id: id) }
 
+    /// 拉取最新的资料（正式后端）；演示模式什么都不做
+    func refreshPlayer(_ userId: String) async {
+        guard backend.isRemote else { return }
+        await backend.refreshRemotePlayer(userId)
+    }
+
     func distance(to userId: String) -> Double? { backend.distanceToCurrentUser(userId) }
 
     func isFriend(_ userId: String) -> Bool { friends.contains { $0.id == userId } }
@@ -470,6 +476,21 @@ final class GroupManager: ObservableObject {
                                       joinPolicy: joinPolicy, summary: summary)
         reload()
         return group
+    }
+
+    func update(_ groupId: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+                joinPolicy: PlayGroup.JoinPolicy, summary: String) async throws {
+        if backend.isRemote {
+            try await backend.remoteUpdateGroup(groupId, name: name, schedules: schedules, levelRange: levelRange, joinPolicy: joinPolicy, summary: summary)
+        } else {
+            try backend.updateGroup(id: groupId, name: name, schedules: schedules, levelRange: levelRange, joinPolicy: joinPolicy, summary: summary)
+        }
+        reload()
+    }
+
+    func disband(_ groupId: String) async throws {
+        if backend.isRemote { try await backend.remoteDisbandGroup(groupId) } else { try backend.disbandGroup(id: groupId) }
+        reload()
     }
 
     /// 输群号找球群（正式后端要问服务器）

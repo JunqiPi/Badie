@@ -42,7 +42,7 @@ export function GroupCard({ group: g }: { group: GroupSummary }) {
   );
 }
 
-/** 球群 · 固定局（iOS 的 GroupsView）：我加入的、我报名的场次、附近的球群 */
+/** 球群（iOS 的 GroupsView）：我加入的、我报名的场次、附近的球群 */
 export function Groups() {
   const { data: mine } = useLive<MyGroups>('my_groups', { every: 60_000 });
   const area = useArea();
@@ -59,7 +59,7 @@ export function Groups() {
 
   return (
     <div className="grid gap-6">
-      <ScreenHeader title={t('Regular games · Groups')} back="/games/">
+      <ScreenHeader title={t('Groups')} back="/games/">
         <IconButton icon="plus" label={t('Start a group')} to="/groups/new/" />
       </ScreenHeader>
 

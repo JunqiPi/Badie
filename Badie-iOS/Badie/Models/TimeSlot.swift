@@ -5,12 +5,14 @@ import Foundation
 enum TimeSlotConstants {
     /// 最短 1 小时
     static let minimumDuration: TimeInterval = 3600
-    /// 最长 8 小时
+    /// 最长 8 小时（开局、球群）
     static let maximumDuration: TimeInterval = 8 * 3600
+    /// 约球可以选“任何时间”：最长 16 小时
+    static let maximumMatchDuration: TimeInterval = 16 * 3600
     /// 匹配所需最小重叠 30 分钟
     static let minimumOverlapDuration: TimeInterval = 1800
-    /// 可选择未来 14 天
-    static let maximumDaysAhead = 14
+    /// 可选择未来 30 天
+    static let maximumDaysAhead = 30
     /// 最多保存 5 个常用时间
     static let maximumRecurringSlots = 5
     /// 一场球的默认时长上限（匹配结果截取）
@@ -91,16 +93,18 @@ struct TimeSlot: Codable, Hashable {
         return slot
     }
 
-    func validate(now: Date = Date()) -> TimeSlotValidationResult {
+    func validate(now: Date = Date(), maxDuration: TimeInterval = TimeSlotConstants.maximumDuration) -> TimeSlotValidationResult {
         guard endTime > startTime else { return .invalid(reason: String(localized: "结束时间需要晚于开始时间")) }
         guard duration >= TimeSlotConstants.minimumDuration else { return .invalid(reason: String(localized: "至少需要 1 小时")) }
-        guard duration <= TimeSlotConstants.maximumDuration else { return .invalid(reason: String(localized: "最长 8 小时")) }
+        guard duration <= maxDuration else {
+            return .invalid(reason: maxDuration > TimeSlotConstants.maximumDuration ? String(localized: "最长 16 小时") : String(localized: "最长 8 小时"))
+        }
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: now)
         let day = calendar.startOfDay(for: date)
         guard day >= today else { return .invalid(reason: String(localized: "不能选择过去的日期")) }
         if let maxDate = calendar.date(byAdding: .day, value: TimeSlotConstants.maximumDaysAhead, to: today), day > maxDate {
-            return .invalid(reason: String(localized: "只能选择未来 14 天内"))
+            return .invalid(reason: String(localized: "只能选择未来 30 天内"))
         }
         guard endTime > now else { return .invalid(reason: String(localized: "这个时间段已经过去了")) }
         return .valid
@@ -183,10 +187,10 @@ struct RecurringTimeSlot: Identifiable, Codable, Hashable {
         self.isActive = isActive
     }
 
-    static let weekdayNames = [
+    static var weekdayNames: [String] { [
         String(localized: "周日"), String(localized: "周一"), String(localized: "周二"), String(localized: "周三"),
         String(localized: "周四"), String(localized: "周五"), String(localized: "周六")
-    ]
+    ] }
 
     var dayOfWeekName: String {
         (1...7).contains(dayOfWeek) ? Self.weekdayNames[dayOfWeek - 1] : String(localized: "未知")
@@ -207,7 +211,7 @@ struct RecurringTimeSlot: Identifiable, Codable, Hashable {
         return seconds >= TimeSlotConstants.minimumDuration && seconds <= TimeSlotConstants.maximumDuration
     }
 
-    /// 从 now 起（含当天）14 天内下一次还没结束的具体时间段
+    /// 从 now 起（含当天）30 天内下一次还没结束的具体时间段
     func nextOccurrence(from now: Date = Date()) -> TimeSlot? {
         let calendar = Calendar.current
         for offset in 0..<TimeSlotConstants.maximumDaysAhead {
@@ -230,15 +234,25 @@ extension Array where Element == RecurringTimeSlot {
 
 enum DateText {
     /// 时刻，12/24 小时制随系统地区
-    private static let timeFormatter = makeFormatter(template: "jmm")
+    private static var timeFormatter = makeFormatter(template: "jmm")
     /// 月日 + 星期，如中文 "10月15日周三"、英文 "Wed, Oct 15"
-    private static let dayFormatter = makeFormatter(template: "MMMdEEE")
+    private static var dayFormatter = makeFormatter(template: "MMMdEEE")
     /// 数字月日，如 "10/15"
-    private static let shortDayFormatter = makeFormatter(template: "Md")
+    private static var shortDayFormatter = makeFormatter(template: "Md")
+
+    /// 在 App 里换了语言：日期按新语言重新排
+    static func reset() {
+        timeFormatter = makeFormatter(template: "jmm")
+        dayFormatter = makeFormatter(template: "MMMdEEE")
+        shortDayFormatter = makeFormatter(template: "Md")
+    }
 
     private static func makeFormatter(template: String) -> DateFormatter {
         let formatter = DateFormatter()
-        formatter.locale = .current
+        // 语言用 App 里选的，地区（12/24 小时制等）沿用系统的
+        var components = Locale.Components(locale: .current)
+        components.languageComponents = Locale.Language.Components(identifier: AppLanguage.current)
+        formatter.locale = Locale(components: components)
         formatter.setLocalizedDateFormatFromTemplate(template)
         return formatter
     }

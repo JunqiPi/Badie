@@ -7,8 +7,10 @@ import { problem, supabase } from './supabase';
 import { Button, Field, toast } from './ui';
 
 export const SUPPORT_EMAIL = 'support@badie.rsvp';
-/** Ko-fi 主页；没填之前网站上不显示打赏按钮（iPhone 上用 App 内购打赏） */
-export const DONATE_URL = '';
+export const APP_STORE_URL = 'https://apps.apple.com/app/id6825569793';
+/** Ko-fi 主页：iPhone 上美国区也链到这里，其他地区用内购。Ko-fi 连好收款后才改成 true，网站上才出现打赏入口 */
+export const DONATE_URL = 'https://ko-fi.com/badie';
+export const DONATIONS_OPEN = true;
 
 /** 常见问题自己就能办，比等回信快 */
 const shortcuts: { icon: IconName; title: string; text: string; to?: string; action?: string }[] = [
@@ -134,17 +136,16 @@ export function Support() {
   return (
     <div className="mx-auto grid max-w-2xl gap-6">
       <LargeTitle title={t('Support Badie')} subtitle={t('Badie is free, with no ads. If it helps you, you can buy us a drink.')} />
-      {DONATE_URL && (
+      {DONATIONS_OPEN && (
         <a href={DONATE_URL} target="_blank" rel="noopener" className="sticker lift flex items-center gap-4 bg-butter p-5 text-on-accent">
           <IconTile icon="heart" tint="surface" size="lg" className="-rotate-6" />
           <span className="min-w-0 flex-1">
             <span className="block text-title3">{t('Tip on Ko-fi')}</span>
-            <span className="block text-subhead">{t('Card or PayPal, any amount.')}</span>
+            <span className="block text-subhead">{t('Pay by card, any amount.')}</span>
           </span>
           <Icon name="chevronRight" className="size-5 shrink-0" />
         </a>
       )}
-      <p className="text-subhead text-ink-secondary">{t('On iPhone, open the Badie app and go to Me → Support Badie.')}</p>
     </div>
   );
 }

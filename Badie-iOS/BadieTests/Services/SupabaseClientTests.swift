@@ -958,15 +958,19 @@ final class SupabaseClientTests: XCTestCase {
         server.on("POST /rest/v1/rpc/set_avatar", "")
         let jpeg = Data([0xFF, 0xD8, 0xFF, 0xE0])
         let pathPattern = #"^/storage/v1/object/avatars/\#(userId)/[0-9a-f-]{36}\.jpg$"#
+        // 先清掉文件夹里没在用的旧文件（以前没删成的、被管理员撤下的）
+        server.on("POST /storage/v1/object/list/avatars", #"[{"name":"stray.jpg"}]"#)
+        server.onPrefix("DELETE /storage/v1/object/avatars/", "{}")
         // 上传：路径是 <我的 id>/<随机>.jpg，然后换上
         server.onPrefix("POST /storage/v1/object/avatars/\(userId)/", "{}")
         let user = try await backend.uploadAvatarPhoto(jpeg)
-        let upload = try XCTUnwrap(server.requests.first)
-        XCTAssertNotNil(upload.url?.path.range(of: pathPattern, options: .regularExpression))
+        XCTAssertTrue(server.requests.contains { $0.httpMethod == "DELETE" && $0.url?.path == "/storage/v1/object/avatars/\(userId)/stray.jpg" })
+        let uploadIndex = try XCTUnwrap(server.requests.firstIndex { $0.httpMethod == "POST" && $0.url?.path.range(of: pathPattern, options: .regularExpression) != nil })
+        let upload = server.requests[uploadIndex]
         XCTAssertEqual(upload.value(forHTTPHeaderField: "Content-Type"), "image/jpeg")
         XCTAssertEqual(upload.httpBody, jpeg)
         let path = String(upload.url!.path.dropFirst("/storage/v1/object/avatars/".count))
-        XCTAssertEqual(server.json(1)["p_path"] as? String, path)
+        XCTAssertEqual(server.json(uploadIndex + 1)["p_path"] as? String, path)
         XCTAssertNotNil(user.avatar.photoVersion)
 
         // 别人的照片：见到了就批量查地址，下载后显示
@@ -1003,7 +1007,8 @@ final class SupabaseClientTests: XCTestCase {
         server.on("POST /auth/v1/logout", status: 204, "")
         try await backend.remoteDeleteAccount()
         // 先看是不是用 Apple 登录过（邮箱账号不用找 Apple 撤销），再注销
-        XCTAssertEqual(server.requests.map { $0.url?.path }, ["/auth/v1/user", "/rest/v1/rpc/delete_account", "/auth/v1/logout"])
+        XCTAssertEqual(server.requests.map { $0.url?.path }, ["/auth/v1/user", "/storage/v1/object/list/avatars", "/rest/v1/rpc/delete_account", "/auth/v1/logout"],
+                       "注销前先删掉照片文件夹里的全部文件")
         XCTAssertNil(backend.currentUser)
         XCTAssertNil(backend.remote?.session, "本机的登录也清掉")
         XCTAssertTrue(backend.db.users.isEmpty, "缓存里不留这个账号的数据")

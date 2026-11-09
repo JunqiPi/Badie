@@ -110,6 +110,7 @@ struct WeeklyLeaderboardView: View {
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .refreshesEverything()
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .onAppear {

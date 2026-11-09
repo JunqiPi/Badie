@@ -57,6 +57,7 @@ struct ChallengesView: View {
                 .padding(.top, AppTheme.Spacing.sm)
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
+            .refreshesEverything()
         }
         .sheet(item: $acceptingDoubles) { challenge in
             AcceptDoublesSheet(challenge: challenge) { partnerId in
