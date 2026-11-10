@@ -121,6 +121,9 @@ def upload(app_id, versions, number, root):
             print(f"  {locale}: 这个版本没有这种语言，跳过")
             continue
         sets = screenshot_sets(by_locale[locale])
+        other = sorted(set(sets) - set(DISPLAY_TYPES.values()))
+        if other:
+            print(f"  {locale}: 还有别的尺寸的截图组没动：{', '.join(other)}")
         for size, kind in DISPLAY_TYPES.items():
             directory = os.path.join(folders[size], folder)
             files = sorted((f for f in os.listdir(directory) if f.endswith(".jpg")), key=lambda f: int(f.split("-")[0]))
