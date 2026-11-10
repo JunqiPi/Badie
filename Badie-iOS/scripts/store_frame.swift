@@ -164,6 +164,26 @@ func logoMark() -> CGImage? {
     return context.makeImage()
 }
 
+/// 从 startY 往下，在图片中间那一列找第一个接近这个颜色的像素，返回它在第几行（从上往下数）
+func firstRow(of image: CGImage, from startY: Int, matching hex: Int, tolerance: Int = 45) -> Int? {
+    let width = image.width, height = image.height
+    guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+                                  space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+          let data = context.data else { return nil }
+    context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+    // 位图的第 0 行是图片最上面一行
+    let pixels = data.bindMemory(to: UInt8.self, capacity: width * height * 4)
+    let red = (hex >> 16) & 0xFF, green = (hex >> 8) & 0xFF, blue = hex & 0xFF
+    let x = width / 2
+    for y in max(0, startY)..<height {
+        let offset = (y * width + x) * 4
+        let distance = abs(Int(pixels[offset]) - red) + abs(Int(pixels[offset + 1]) - green) + abs(Int(pixels[offset + 2]) - blue)
+        if distance < tolerance { return y }
+    }
+    return nil
+}
+
 func roundedPath(_ rect: CGRect, _ radius: CGFloat) -> CGPath {
     CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
 }
@@ -239,7 +259,11 @@ for (index, key) in config.order.enumerated() {
     case .panel(let cropTop, let scale), .flat(let cropTop, let scale):
         guard let shot else { break }
         let bottom = drawTitle(caption, theme: theme, top: 210 * unit, cap: middleCap * unit, width: width)
-        let cropY = cropTop * unit
+        var cropY = cropTop * unit
+        // 定级结果：卡片上面的说明文字各语言行数不同，从柠檬色卡片的上边开始裁
+        if key == "levelResult", let row = firstRow(of: shot, from: Int(480 * unit), matching: 0xD4F33F) {
+            cropY = CGFloat(row) - 16 * unit
+        }
         guard let piece = shot.cropping(to: CGRect(x: 0, y: cropY, width: width, height: height - cropY)) else { break }
         let pieceWidth = width * scale, pieceHeight = (height - cropY) * scale
         // 高的从标题下面开始、底部出血；矮的放在剩下空间的中间

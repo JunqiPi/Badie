@@ -38,6 +38,8 @@ capture() {
     SIMCTL_CHILD_TZ="America/Los_Angeles" xcrun simctl launch "$UDID" "$BUNDLE" \
       -BBDemoScreen "$screen" -AppleLanguages "($language)" -AppleLocale "$locale" ${EXTRA_ARGS:-} >/dev/null
     sleep 5
+    # “找到搭子了”要先放完匹配动画：多等一会儿，免得截到动画中间
+    [ "$screen" = "matchFound" ] && sleep 4
     # 慢的模拟器偶尔还没画出页面：只有状态栏的截图很小（不到 150 KB），等一会儿再截，最多再试 3 次
     for _ in 1 2 3 4; do
       xcrun simctl io "$UDID" screenshot "$OUT/${prefix}-${screen}.png" >/dev/null 2>&1
