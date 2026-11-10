@@ -1,0 +1,41 @@
+name: Update App Store text
+
+# 把 Badie-iOS/scripts/store_text.json 里的更新说明和描述写进 App Store Connect 的某个版本。
+# mode = list 只看不改；upload 才真的写。这个文件有改动时在开发分支上自动跑一次（按下面的默认值），也可以手动运行。
+# 动的是苹果账号：改成 upload 之前先问用户
+on:
+  push:
+    branches: [ "claude/**" ]
+    paths: [ ".github/workflows/asc-text.yml" ]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: list = 只看；upload = 写进去
+        default: list
+      version:
+        description: 版本号
+        default: "1.0.3"
+
+permissions:
+  contents: read
+
+env:
+  MODE: ${{ inputs.mode || 'upload' }}
+  VERSION: ${{ inputs.version || '1.0.3' }}
+
+jobs:
+  text:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: ${{ env.MODE }}
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          (umask 077; printf '%s\n' "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/AuthKey.p8")
+          trap 'rm -f "$RUNNER_TEMP/AuthKey.p8"' EXIT
+          cd Badie-iOS/scripts
+          ASC_KEY_PATH="$RUNNER_TEMP/AuthKey.p8" python3 asc_text.py "$MODE" "$VERSION"

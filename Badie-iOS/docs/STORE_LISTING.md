@@ -533,7 +533,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
 
 ## 1.0.3 更新说明（What's New in This Version）
 
-1.0.2 之后 iPhone 上的改动只有教练带课的球群和费用说明。写法见 `VOICE.md` 的“更新说明”。文字同时放在 `Badie-iOS/scripts/whats_new.json`（给上传脚本用）。
+1.0.2 之后 iPhone 上的改动只有教练带课的球群和费用说明。写法见 `VOICE.md` 的“更新说明”。更新说明和描述同时放在 `Badie-iOS/scripts/store_text.json`，用 Actions → Update App Store text 写进 App Store Connect；改了这里的文字要同步改那个文件。
 
 - English (U.S.)：
   ```
