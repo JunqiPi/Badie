@@ -190,6 +190,7 @@ App 里「我的 → 支持 Badie」有三档打赏，代码里的商品 ID 是 
 5. **美国区用 Ko-fi，欧盟不显示，其他地区用内购**：欧盟 27 国的商店里「支持 Badie」整个入口不显示（见上面的欧盟数字服务法）。苹果只允许美国区的 App 放外部付款链接（审核规则 3.1.1），Ko-fi 不抽成。App 按 App Store 的地区判断（`Storefront`），不看手机语言和定位。
    Ko-fi 主页是 https://ko-fi.com/badie，已经填在 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`（`kofi` 改回 nil 就是美国区也走内购）。Ko-fi 要连好 PayPal 和 Stripe（刷卡）才能收钱；连好后把 `Contact.tsx` 的 `DONATIONS_OPEN` 改成 true，网站上才出现「支持 Badie」入口。
    提交时 Notes 里写一句：“Tips are consumable in-app purchases and don't unlock anything. On the US storefront the tip page links to Ko-fi instead, as allowed by guideline 3.1.1.”
+   1.0.3 起有教练带课的球群，Notes 里再加一句：“Coach-led groups: the fee note is plain text written by the organizer about court or lesson fees, which are paid in person. Badie doesn't process payments and takes no commission.”
 
 ## 参考
 

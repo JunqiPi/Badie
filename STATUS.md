@@ -10,7 +10,7 @@
 | iPhone 1.0 | 已上架：https://apps.apple.com/app/id6825569793 （App ID `6825569793`，bundle `com.badie.app`） |
 | iPhone 1.0.1 | Build `20261106.0636`，已提交过 |
 | iPhone 1.0.2 | Build `20261108.2349`（main `29b144b`），**已上架**（2026-11-10 查到状态是 READY_FOR_DISTRIBUTION） |
-| iPhone 1.0.3 | 2026-11-10 在 App Store Connect 新建，状态“准备提交”。截图、更新说明、描述（10 种语言）都已用脚本写好；工程版本号已是 1.0.3，2026-11-10 23:12 UTC 触发了 TestFlight 上传（main `59b6fc2`）。**还没提交审核**：构建处理完要挂到版本上（Actions → Attach TestFlight build），由用户点提交 |
+| iPhone 1.0.3 | 2026-11-10 在 App Store Connect 新建，状态“准备提交”。截图、更新说明、描述（10 种语言）都已用脚本写好；Build `20261110.2311`（main `59b6fc2`）已挂到版本上，审核信息沿用上一版（备注和演示账号都在）。**只差用户点“提交审核”**；建议在审核备注里加一句教练带课的费用说明（见 `APP_STORE.md`） |
 | 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261209000000_coached_groups.sql`） |
 
 - 1.0.2 的 10 种语言更新说明、推广文本在 `Badie-iOS/docs/STORE_LISTING.md`。给用户时**直接贴内容**，不要只给路径。
