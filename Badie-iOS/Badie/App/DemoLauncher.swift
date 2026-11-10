@@ -112,10 +112,20 @@ enum DemoLauncher {
             // 首页点明天：附近有空的球友卡片
             router.selectedTab = .home
             environment.matchManager.draft.day = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
+            // 卡片用柠檬色（商店截图里和标题的色块同色）
+            for id in backend.db.bots.keys {
+                backend.db.users[id]?.avatar.cardColor = .lime
+            }
             environment.appState.showsDayCards = true
         case "playerProfile":
             // 昨天一起打过单打的球友：资料页显示“你们的交集”
             router.selectedTab = .home
+            environment.appState.presentedPlayer = PlayerSheetItem(id: "bot-2")
+        case "playerNoShow":
+            // 商店截图：资料页上能看到近 180 天的爽约次数（有爽约就没有“靠谱”徽章）
+            router.selectedTab = .home
+            backend.db.users["bot-2"]?.attendance.noShows = 1
+            backend.remoteNoShows["bot-2"] = (recent: 1, suspendedUntil: nil)
             environment.appState.presentedPlayer = PlayerSheetItem(id: "bot-2")
         case "homeTicket":
             // 首页“约球请求”卡片：找到了，等我确认

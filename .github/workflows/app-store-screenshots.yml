@@ -1,20 +1,22 @@
 name: App Store screenshots
 
-# 手动运行：在最新的 iPhone Pro Max（6.9 英寸，1320 × 2868）和 Pro（6.3 英寸，1206 × 2622，Apple 要求至少一张）模拟器上
-# 截 10 种语言的宣传页并配上标题（文字在 scripts/store_captions.json），下载后按语言上传到 App Store Connect
+# 手动运行：在最新的 iPhone Pro Max（6.9 英寸，1320 × 2868）模拟器上截 10 种语言的页面，排成海报式的宣传图
+# （文字在 scripts/store_captions.json，版式在 scripts/store_frame.swift）。
+# 6.3 英寸那组（1206 × 2622，Apple 要求至少一张）由成品等比缩小得到，两种屏幕长宽比相同。
+# 下载后按语言上传到 App Store Connect
 on:
   workflow_dispatch:
+    inputs:
+      langs:
+        description: "只跑这些语言（试版式用），格式 en:en_US zh-Hans:zh_CN；留空 = 全部 10 种"
+        required: false
+        default: ""
 
 jobs:
   screenshots:
-    name: ${{ matrix.size }} screenshots
+    name: Screenshots
     runs-on: macos-26
     timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        # 6.9 英寸（1320 × 2868）和 6.3 英寸（1206 × 2622，Apple 要求至少一张）
-        size: [6.9-inch, 6.3-inch]
     defaults:
       run:
         working-directory: Badie-iOS
@@ -23,7 +25,7 @@ jobs:
 
       - name: Pick simulator
         id: sim
-        run: echo "udid=$(python3 scripts/pick_simulator.py ${{ matrix.size == '6.9-inch' && '--max' || '' }})" >> "$GITHUB_OUTPUT"
+        run: echo "udid=$(python3 scripts/pick_simulator.py --max)" >> "$GITHUB_OUTPUT"
 
       - name: Build app
         timeout-minutes: 25
@@ -32,13 +34,22 @@ jobs:
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO > build.log 2>&1 || { grep -E "error:" build.log | sort -u | head -50; exit 1; }
 
       - name: Capture and frame screenshots
-        # 10 种语言 × 9 张
+        # 10 种语言 × 8 页（第 9 张只有字和 logo）
         timeout-minutes: 45
-        run: STORE=1 bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/Badie.app store-screenshots/${{ matrix.size }}
+        env:
+          STORE_LANGS: ${{ inputs.langs }}
+        run: STORE=1 bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/Badie.app store-screenshots/6.9-inch
 
-      - name: Upload screenshots
+      - name: Upload 6.9-inch screenshots
         uses: actions/upload-artifact@v4
         with:
-          name: app-store-screenshots-${{ matrix.size }}
-          path: Badie-iOS/store-screenshots
+          name: app-store-screenshots-6.9-inch
+          path: Badie-iOS/store-screenshots/6.9-inch
+          retention-days: 30
+
+      - name: Upload 6.3-inch screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-screenshots-6.3-inch
+          path: Badie-iOS/store-screenshots/6.3-inch
           retention-days: 30

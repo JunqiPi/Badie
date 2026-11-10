@@ -48,14 +48,27 @@ capture() {
   done
 }
 
-# App Store 用：每种语言截几张宣传页，再配上大字标题（store_frame.swift），输出 <语言>/<顺序>-<页面>.jpg
+# App Store 用：每种语言截几张宣传页，再排成海报式的宣传图（store_frame.swift），输出 <语言>/<顺序>-<页面>.jpg。
+# 在 6.9 英寸的模拟器上跑，OUT 是 …/6.9-inch；6.3 英寸那组放在旁边的 6.3-inch 里
 if [ -n "${STORE:-}" ]; then
-  STORE_SCREENS="${STORE_SCREENS:-$(python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["order"]))' "$(dirname "$0")/store_captions.json")}"
+  # 最后一张（free）只有字和 logo，不用截图
+  STORE_SCREENS="${STORE_SCREENS:-$(python3 -c 'import json,sys; print(" ".join(s for s in json.load(open(sys.argv[1]))["order"] if s != "free"))' "$(dirname "$0")/store_captions.json")}"
+  LOGO="$(dirname "$0")/../Badie/Assets.xcassets/Logo.imageset/Logo.png"
+  SMALL="$(dirname "$OUT")/6.3-inch"
+  # 预热“按天看人”：第一次打开时卡片还没画出来就截图，会截到空白页
+  xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen dayCards >/dev/null || true
+  sleep 8
+  xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
   for pair in ${STORE_LANGS:-en:en_US zh-Hans:zh_CN zh-Hant:zh_TW ja:ja_JP ko:ko_KR hi:hi_IN id:id_ID ms:ms_MY th:th_TH vi:vi_VN}; do
     language="${pair%%:*}"
     mkdir -p "$OUT/raw/$language"
     capture "raw/$language/store" light "$language" "${pair##*:}" "$STORE_SCREENS"
-    swift "$(dirname "$0")/store_frame.swift" "$(dirname "$0")/store_captions.json" "$language" "$OUT/raw/$language" "$OUT/$language"
+    swift "$(dirname "$0")/store_frame.swift" "$(dirname "$0")/store_captions.json" "$language" "$OUT/raw/$language" "$OUT/$language" "$LOGO"
+    # 6.3 英寸（1206 × 2622）和 6.9 英寸长宽比相同：把成品等比缩小，两组版式完全一样
+    mkdir -p "$SMALL/$language"
+    for image in "$OUT/$language"/*.jpg; do
+      sips -z 2622 1206 "$image" --out "$SMALL/$language/$(basename "$image")" >/dev/null
+    done
   done
   rm -rf "$OUT/raw"
   exit 0

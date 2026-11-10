@@ -5,10 +5,10 @@
     "matchFound",
     "dayCards",
     "levelResult",
-    "playerProfile",
+    "playerNoShow",
     "room",
     "groupDetail",
-    "profile"
+    "free"
   ],
   "captions": {
     "en": {
@@ -17,10 +17,10 @@
       "matchFound": "Opponents *at your level*",
       "dayCards": "See who's free *tomorrow*",
       "levelResult": "Your level *in 2 minutes*",
-      "playerProfile": "No-shows *on record*",
+      "playerNoShow": "No-shows *on record*",
       "room": "Need *one more player*",
       "groupDetail": "Your *weekly game*",
-      "profile": "Free. *No ads.*"
+      "free": "Free. *No ads.*"
     },
     "zh-Hans": {
       "home": "i 人也能*约到球*",
@@ -28,10 +28,10 @@
       "matchFound": "*实力相近*的对手",
       "dayCards": "明天*谁有空*",
       "levelResult": "2 分钟*测出几级*",
-      "playerProfile": "爽约次数*看得到*",
+      "playerNoShow": "爽约次数*看得到*",
       "room": "订了场，*差一人*",
       "groupDetail": "每周*固定局*",
-      "profile": "免费，*没有广告*"
+      "free": "免费，*没有广告*"
     },
     "zh-Hant": {
       "home": "I 人也能*約到球*",
@@ -39,10 +39,10 @@
       "matchFound": "*實力相近*的對手",
       "dayCards": "明天*誰有空*",
       "levelResult": "2 分鐘*測出幾級*",
-      "playerProfile": "爽約次數*看得到*",
+      "playerNoShow": "爽約次數*看得到*",
       "room": "訂了場，*差一人*",
       "groupDetail": "每週*固定局*",
-      "profile": "免費，*沒有廣告*"
+      "free": "免費，*沒有廣告*"
     },
     "ja": {
       "home": "人見知りでも*相手が見つかる*",
@@ -50,10 +50,10 @@
       "matchFound": "*同じレベル*の相手",
       "dayCards": "明日*空いている人*",
       "levelResult": "*2分*でレベル判定",
-      "playerProfile": "ドタキャンは*記録される*",
+      "playerNoShow": "ドタキャンは*記録される*",
       "room": "コートは予約済み、*あと一人*",
       "groupDetail": "毎週の*定期グループ*",
-      "profile": "無料、*広告なし*"
+      "free": "無料、*広告なし*"
     },
     "ko": {
       "home": "먼저 말 걸지 않아도 *돼요*",
@@ -61,10 +61,10 @@
       "matchFound": "*비슷한 실력*의 상대",
       "dayCards": "내일 *누가 시간 돼요*",
       "levelResult": "*2분*이면 실력 확인",
-      "playerProfile": "노쇼는 *기록돼요*",
+      "playerNoShow": "노쇼는 *기록돼요*",
       "room": "코트 예약 완료, *한 명만 더*",
       "groupDetail": "매주 *정기 모임*",
-      "profile": "무료예요. *광고도 없어요*"
+      "free": "무료예요. *광고도 없어요*"
     },
     "hi": {
       "home": "बिना पूछे *गेम पाएँ*",
@@ -72,10 +72,10 @@
       "matchFound": "*आपके लेवल* के खिलाड़ी",
       "dayCards": "कल *कौन फ़्री है*",
       "levelResult": "*2 मिनट* में अपना लेवल जानें",
-      "playerProfile": "नो-शो *रिकॉर्ड होते हैं*",
+      "playerNoShow": "नो-शो *रिकॉर्ड होते हैं*",
       "room": "कोर्ट बुक है, *एक खिलाड़ी कम*",
       "groupDetail": "हर हफ़्ते *तय गेम*",
-      "profile": "मुफ़्त। *कोई विज्ञापन नहीं।*"
+      "free": "मुफ़्त। *कोई विज्ञापन नहीं।*"
     },
     "id": {
       "home": "Dapat teman main *tanpa harus bertanya*",
@@ -83,10 +83,10 @@
       "matchFound": "Lawan *selevel denganmu*",
       "dayCards": "Siapa yang kosong *besok*",
       "levelResult": "Tahu levelmu *dalam 2 menit*",
-      "playerProfile": "Yang tidak datang *tercatat*",
+      "playerNoShow": "Yang tidak datang *tercatat*",
       "room": "Lapangan sudah ada, *kurang satu*",
       "groupDetail": "Main rutin *tiap minggu*",
-      "profile": "Gratis. *Tanpa iklan.*"
+      "free": "Gratis. *Tanpa iklan.*"
     },
     "ms": {
       "home": "Cari permainan *tanpa perlu bertanya*",
@@ -94,10 +94,10 @@
       "matchFound": "Lawan *setahap dengan anda*",
       "dayCards": "Siapa lapang *esok*",
       "levelResult": "Tahu tahap anda *dalam 2 minit*",
-      "playerProfile": "Yang tidak hadir *direkodkan*",
+      "playerNoShow": "Yang tidak hadir *direkodkan*",
       "room": "Gelanggang sudah ada, *kurang seorang*",
       "groupDetail": "Main tetap *setiap minggu*",
-      "profile": "Percuma. *Tanpa iklan.*"
+      "free": "Percuma. *Tanpa iklan.*"
     },
     "th": {
       "home": "หาคนตีด้วย*โดยไม่ต้องถามใคร*",
@@ -105,10 +105,10 @@
       "matchFound": "คู่แข่ง*ระดับเดียวกัน*",
       "dayCards": "พรุ่งนี้*ใครว่าง*",
       "levelResult": "รู้ระดับ*ใน 2 นาที*",
-      "playerProfile": "คนเบี้ยวนัด*มีบันทึก*",
+      "playerNoShow": "คนเบี้ยวนัด*มีบันทึก*",
       "room": "จองสนามแล้ว *ขาดหนึ่งคน*",
       "groupDetail": "ก๊วน*ประจำสัปดาห์*",
-      "profile": "ฟรี *ไม่มีโฆษณา*"
+      "free": "ฟรี *ไม่มีโฆษณา*"
     },
     "vi": {
       "home": "Tìm người đánh *không cần mở lời*",
@@ -116,10 +116,10 @@
       "matchFound": "Đối thủ *cùng trình độ*",
       "dayCards": "Mai *ai rảnh*",
       "levelResult": "Biết trình độ *trong 2 phút*",
-      "playerProfile": "Bùng kèo *bị ghi lại*",
+      "playerNoShow": "Bùng kèo *bị ghi lại*",
       "room": "Có sân rồi, *thiếu một người*",
       "groupDetail": "Nhóm *cố định hằng tuần*",
-      "profile": "Miễn phí. *Không quảng cáo.*"
+      "free": "Miễn phí. *Không quảng cáo.*"
     }
   }
 }
