@@ -91,12 +91,12 @@ extension MockBackend {
 
     @discardableResult
     func createGroup(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                     joinPolicy: PlayGroup.JoinPolicy, summary: String, now: Date = Date()) throws -> PlayGroup {
+                     joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool = false, now: Date = Date()) throws -> PlayGroup {
         let me = try requireUser()
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard PlayGroup.nameLimit.contains(trimmed.count) else { throw BackendError.groupNameInvalid }
         guard let venue = venue(id: venueId) else { throw BackendError.venueNotFound }
-        guard GroupSchedule.areValid(schedules) else { throw BackendError.groupScheduleInvalid }
+        guard GroupSchedule.areValid(schedules, coached: coached) else { throw BackendError.groupScheduleInvalid }
         let existingCodes = Set(db.groups.values.map(\.inviteCode)).union(db.rooms.values.map(\.code))
         let group = PlayGroup(
             id: "grp-" + UUID().uuidString.prefix(8).lowercased(),
@@ -111,7 +111,8 @@ extension MockBackend {
             schedules: schedules,
             joinPolicy: joinPolicy,
             inviteCode: Room.generateCode(excluding: existingCodes),
-            createdAt: now
+            createdAt: now,
+            coached: coached
         )
         db.groups[group.id] = group
         ensureGroupThread(for: group, at: now)
@@ -129,7 +130,8 @@ extension MockBackend {
         guard var group = db.groups[id] else { throw BackendError.groupNotFound }
         guard !isBlockedEitherWay(me.id, group.ownerId) else { throw BackendError.groupNotFound }
         guard !group.isMember(me.id) else { return group }
-        guard group.levelRange.contains(me.displayLevel) else {
+        // 教练带课的群，水平范围只作提示
+        guard group.isCoached || group.levelRange.contains(me.displayLevel) else {
             throw BackendError.levelOutOfRange(String(localized: "这个球群适合 \(group.levelText)，你目前是 \(me.displayTier.text)"))
         }
         switch group.joinPolicy {
@@ -179,13 +181,14 @@ extension MockBackend {
 
     /// 群主编辑球群（演示环境：直接改，以后的场次按新的每周安排生成）
     func updateGroup(id: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                     joinPolicy: PlayGroup.JoinPolicy, summary: String) throws {
+                     joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool? = nil) throws {
         let me = try requireUser()
         guard var group = db.groups[id] else { throw BackendError.groupNotFound }
         guard group.ownerId == me.id else { throw BackendError.notOrganizer }
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard PlayGroup.nameLimit.contains(trimmed.count) else { throw BackendError.groupNameInvalid }
-        guard GroupSchedule.areValid(schedules) else { throw BackendError.groupScheduleInvalid }
+        guard GroupSchedule.areValid(schedules, coached: coached ?? group.isCoached) else { throw BackendError.groupScheduleInvalid }
+        group.coached = coached ?? group.coached
         group.name = trimmed
         group.summary = String(summary.trimmingCharacters(in: .whitespacesAndNewlines).prefix(120))
         group.levelRange = levelRange

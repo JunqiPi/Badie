@@ -324,6 +324,8 @@ export interface GroupSummary {
   join_policy: 'open' | 'approval';
   /** 只限男生 / 女生；null = 不限 */
   gender: Gender | null;
+  /** 教练带课：每场 1–40 人，水平范围只作提示 */
+  coached?: boolean;
   venue: { id: string; name: string; city: string; tz: string | null };
   schedules: Schedule[];
   activity: { sessions: number; average: number };

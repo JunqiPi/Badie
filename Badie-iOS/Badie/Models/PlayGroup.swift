@@ -40,6 +40,8 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     var createdAt: Date
     /// 只限女生 / 男生；nil = 不限
     var audience: Gender? = nil
+    /// 教练带课：每场 1–40 人，水平范围只作提示（旧数据里没有这一项）
+    var coached: Bool? = nil
 
     static let maxSchedules = 7
     static let nameLimit = 2...20
@@ -51,6 +53,15 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     func isPending(_ userId: String) -> Bool { pendingIds.contains(userId) }
 
     var levelText: String { "Lv.\(levelRange.lowerBound)–\(levelRange.upperBound)" }
+
+    var isCoached: Bool { coached ?? false }
+
+    /// 收费说明：各场一样就只留一条，不一样就写明是哪一场
+    var feeLines: [String] {
+        let notes: [(GroupSchedule, String)] = schedules.compactMap { schedule in schedule.feeNote.map { (schedule, $0) } }
+        if notes.count == schedules.count, Set(notes.map { $0.1 }).count == 1 { return [notes[0].1] }
+        return notes.map { "\($0.0.weekdayTitle) \($0.0.timeText): \($0.1)" }
+    }
 
     /// 分享到微信的文字
     func inviteText(venueName: String) -> String {
@@ -73,14 +84,17 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
     /// 费用说明，如“每人 $15”
     var feeNote: String?
 
-    static let capacityRange = 4...40
+    static let feeNoteLimit = 120
 
-    /// 1–7 个；每个 1–12 小时、当天结束，名额 4–40（和服务器的 valid_schedules 一致）
-    static func areValid(_ schedules: [GroupSchedule]) -> Bool {
+    /// 名额 4–40；教练带课的群 1–40（教练不报名，人数指学员）
+    static func capacityRange(coached: Bool) -> ClosedRange<Int> { coached ? 1...40 : 4...40 }
+
+    /// 1–7 个；每个 1–12 小时、当天结束，名额和收费说明的长度（和服务器的 valid_schedules 一致）
+    static func areValid(_ schedules: [GroupSchedule], coached: Bool = false) -> Bool {
         !schedules.isEmpty && schedules.count <= PlayGroup.maxSchedules && schedules.allSatisfy {
             (60...720).contains($0.endMinutes - $0.startMinutes) && $0.endMinutes <= 24 * 60
-                && capacityRange.contains($0.capacity) && (1...7).contains($0.weekday)
-        }
+                && capacityRange(coached: coached).contains($0.capacity) && (1...7).contains($0.weekday)
+        } && schedules.allSatisfy { ($0.feeNote?.count ?? 0) <= feeNoteLimit }
     }
 
     var weekdayTitle: String {

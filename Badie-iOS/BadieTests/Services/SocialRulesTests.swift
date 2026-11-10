@@ -189,6 +189,30 @@ final class SocialRulesTests: XCTestCase {
                        "加入后进入球群群聊")
     }
 
+    func testCoachedGroupsTakeAnyLevelAndSmallSessions() throws {
+        let coach = signUp()
+        let tomorrow = Calendar.current.component(.weekday, from: Date().addingTimeInterval(86400))
+        let lesson = GroupSchedule(id: "s", weekday: tomorrow, startMinutes: 19 * 60, endMinutes: 20 * 60, capacity: 1, feeNote: "$40 a lesson")
+        XCTAssertThrowsError(try backend.createGroup(name: "私教课", venueId: BadmintonCourt.mock.id, schedules: [lesson],
+                                                     levelRange: 1...2, joinPolicy: .open, summary: ""), "普通群至少 4 个名额")
+        let group = try backend.createGroup(name: "私教课", venueId: BadmintonCourt.mock.id, schedules: [lesson],
+                                            levelRange: 1...2, joinPolicy: .open, summary: "", coached: true)
+        XCTAssertTrue(group.isCoached)
+        XCTAssertEqual(group.feeLines, ["$40 a lesson"], "各场收费一样只写一次")
+
+        // 水平不在范围内的人也能加入
+        let student = try XCTUnwrap(backend.db.users.values.first { $0.id != coach.id && $0.displayLevel > 2 })
+        backend.currentUserIdOverride(student.id)
+        XCTAssertTrue(try backend.joinGroup(id: group.id).isMember(student.id))
+
+        // 群主编辑时不传 coached：标记不变；改回普通群时名额要回到 4 个以上
+        backend.currentUserIdOverride(coach.id)
+        try backend.updateGroup(id: group.id, name: "私教课", schedules: [lesson], levelRange: 1...2, joinPolicy: .open, summary: "")
+        XCTAssertEqual(backend.group(id: group.id)?.isCoached, true)
+        XCTAssertThrowsError(try backend.updateGroup(id: group.id, name: "私教课", schedules: [lesson], levelRange: 1...2,
+                                                    joinPolicy: .open, summary: "", coached: false), "普通群至少 4 个名额")
+    }
+
     // MARK: Venue regulars
 
     func testVenueRegularsAreOptInAndShareAVenue() throws {

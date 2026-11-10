@@ -31358,6 +31358,64 @@
         }
       }
     },
+    "加入后就能报名每周的场次。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Join, then sign up for weekly sessions."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "जुड़ें, फिर साप्ताहिक सेशन के लिए साइन अप करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gabung, lalu daftar sesi mingguan."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "参加後は毎週の開催に申し込めます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "참여 후 매주 일정에 신청할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sertai, kemudian daftar untuk sesi mingguan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เข้าร่วมแล้วลงชื่อรอบประจำสัปดาห์ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vào nhóm rồi đăng ký các buổi hằng tuần."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入後就能報名每週的場次。"
+          }
+        }
+      }
+    },
     "加入后显示“待确认”，3 位球友确认（或在这里签到打球）后显示“球友确认”。" : {
       "localizations" : {
         "en" : {
@@ -68175,6 +68233,64 @@
         }
       }
     },
+    "教练带课" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coach-led"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "कोच के साथ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dipandu pelatih"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コーチ指導"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "코치 지도"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dipimpin jurulatih"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "มีโค้ชสอน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Có huấn luyện viên"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "教練帶課"
+          }
+        }
+      }
+    },
     "数据保存在本机，用同一手机号登录即可恢复。" : {
       "localizations" : {
         "en" : {
@@ -78198,6 +78314,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每場 %lld 個名額，額滿自動候補"
+          }
+        }
+      }
+    },
+    "每场最少 1 人。水平范围只作参考。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lessons can be as small as 1. Levels are only a guide."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 खिलाड़ी से भी शुरू कर सकते हैं। लेवल सिर्फ़ अंदाज़े के लिए है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bisa mulai dari 1 orang. Level hanya sebagai panduan."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 人から開けます。レベルは目安です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1명부터 열 수 있습니다. 레벨은 참고용입니다."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boleh bermula dengan 1 orang. Tahap hanya sebagai panduan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดได้ตั้งแต่ 1 คน ระดับเป็นเพียงแนวทาง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Có thể mở từ 1 người. Trình độ chỉ để tham khảo."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每場最少 1 人。水平範圍僅供參考。"
           }
         }
       }
@@ -103350,6 +103524,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "費用待定"
+          }
+        }
+      }
+    },
+    "费用说明（选填）" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fee note (optional)"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "फ़ीस की जानकारी (वैकल्पिक)"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Catatan biaya (opsional)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "料金メモ（任意）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비용 안내 (선택)"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nota bayaran (pilihan)"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หมายเหตุค่าใช้จ่าย (ไม่บังคับ)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ghi chú phí (không bắt buộc)"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "費用說明（選填）"
           }
         }
       }

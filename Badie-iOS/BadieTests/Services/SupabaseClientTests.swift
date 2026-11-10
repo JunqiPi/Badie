@@ -704,6 +704,7 @@ final class SupabaseClientTests: XCTestCase {
         let create = server.json(0)
         XCTAssertEqual(create["p_name"] as? String, "Thu doubles")
         XCTAssertEqual(create["p_policy"] as? String, "approval")
+        XCTAssertEqual(create["p_coached"] as? Bool, false, "不勾就是普通群")
         let schedules = try XCTUnwrap(create["p_schedules"] as? [[String: Any]])
         XCTAssertEqual(schedules.first?["weekday"] as? Int, 4, "本地周四 5 → 服务器 4")
         XCTAssertEqual(schedules.first?["start"] as? Int, 1170)

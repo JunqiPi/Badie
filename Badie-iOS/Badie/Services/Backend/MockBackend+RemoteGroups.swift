@@ -33,6 +33,7 @@ extension MockBackend {
         let levelMax: Int
         let joinPolicy: String
         let gender: String?
+        let coached: Bool?
         let venue: Venue
         let schedules: [RemoteSchedule]?
         let activity: Activity
@@ -72,6 +73,7 @@ extension MockBackend {
         let levelMax: Int
         let joinPolicy: String
         let gender: String?
+        let coached: Bool?
         let venue: RemoteGroupSummary.Venue
         let schedules: [RemoteSchedule]?
         let activity: RemoteGroupSummary.Activity
@@ -145,7 +147,8 @@ extension MockBackend {
     // MARK: 操作
 
     func remoteCreateGroup(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                           joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil) async throws -> PlayGroup {
+                           joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil,
+                           coached: Bool = false) async throws -> PlayGroup {
         let remote = try requireRemote()
         let id: String = try await remote.rpc("create_group", [
             "p_name": name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -155,6 +158,7 @@ extension MockBackend {
             "p_level_max": levelRange.upperBound,
             "p_policy": joinPolicy.rawValue,
             "p_gender": audience?.serverJSON ?? NSNull(),
+            "p_coached": coached,
             "p_schedules": Self.serverSchedules(schedules),
         ])
         try await loadRemoteGroup(id)
@@ -163,7 +167,7 @@ extension MockBackend {
     }
 
     func remoteUpdateGroup(_ groupId: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                           joinPolicy: PlayGroup.JoinPolicy, summary: String) async throws {
+                           joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool) async throws {
         try await requireRemote().call("update_group", [
             "p_group": groupId,
             "p_name": name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -172,6 +176,7 @@ extension MockBackend {
             "p_level_max": levelRange.upperBound,
             "p_policy": joinPolicy.rawValue,
             "p_schedules": Self.serverSchedules(schedules),
+            "p_coached": coached,
         ])
         try await loadRemoteGroup(groupId)
     }
@@ -239,13 +244,13 @@ extension MockBackend {
 
     private func cacheGroup(_ summary: RemoteGroupSummary, me: String) {
         cacheGroup(id: summary.id, name: summary.name, summary: summary.summary, levels: summary.levelMin...max(summary.levelMin, summary.levelMax),
-                   joinPolicy: summary.joinPolicy, audience: summary.gender, venue: summary.venue, schedules: summary.schedules ?? [], activity: summary.activity,
+                   joinPolicy: summary.joinPolicy, audience: summary.gender, coached: summary.coached, venue: summary.venue, schedules: summary.schedules ?? [], activity: summary.activity,
                    myRole: summary.myRole, inviteCode: nil, members: nil, pending: nil, me: me)
     }
 
     private func cacheGroup(_ detail: RemoteGroupDetail, me: String) {
         cacheGroup(id: detail.id, name: detail.name, summary: detail.summary, levels: detail.levelMin...max(detail.levelMin, detail.levelMax),
-                   joinPolicy: detail.joinPolicy, audience: detail.gender, venue: detail.venue, schedules: detail.schedules ?? [], activity: detail.activity,
+                   joinPolicy: detail.joinPolicy, audience: detail.gender, coached: detail.coached, venue: detail.venue, schedules: detail.schedules ?? [], activity: detail.activity,
                    myRole: detail.myRole, inviteCode: detail.inviteCode, members: detail.members, pending: detail.pending, me: me)
         guard let group = db.groups[detail.id] else { return }
         let calendar = venue(id: group.venueId)?.calendar ?? .current
@@ -277,7 +282,7 @@ extension MockBackend {
         }
     }
 
-    private func cacheGroup(id: String, name: String, summary: String?, levels: ClosedRange<Int>, joinPolicy: String, audience: String?,
+    private func cacheGroup(id: String, name: String, summary: String?, levels: ClosedRange<Int>, joinPolicy: String, audience: String?, coached: Bool?,
                             venue place: RemoteGroupSummary.Venue, schedules: [RemoteSchedule], activity: RemoteGroupSummary.Activity,
                             myRole: String?, inviteCode: String?, members: [RemoteGroupDetail.Member]?,
                             pending: [RemoteGroupDetail.Member]?, me: String) {
@@ -311,7 +316,7 @@ extension MockBackend {
             },
             joinPolicy: joinPolicy == "approval" ? .approval : .open,
             inviteCode: inviteCode ?? existing?.inviteCode ?? "", createdAt: existing?.createdAt ?? Date(),
-            audience: audience.flatMap(Gender.init(rawValue:))
+            audience: audience.flatMap(Gender.init(rawValue:)), coached: coached
         )
         remoteGroupActivity[id] = GroupActivity(sessionsLast30Days: activity.sessions, averageTurnout: activity.average)
     }

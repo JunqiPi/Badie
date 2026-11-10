@@ -2,9 +2,12 @@
 
 免费的羽毛球找搭子 App：网站 https://badie.rsvp（Astro + React，`web/`）、iPhone App（SwiftUI，`Badie-iOS/`）、后端 Supabase（`supabase/`）。
 
+**新会话先读 `STATUS.md`**：现在的版本、怎么发版、最近的功能和已知问题。
+
 ## 和用户合作
 
 - **用中文回复**。话要短，给推荐，不要列一长串选项。
+- **不要只给文件路径**：用户看不到仓库里的文件。要用户复制、填写的内容（更新说明、Notes、SQL 等）直接贴在聊天里。
 - **说“推到 main”才推 main**，平时只推自己的开发分支。不开 PR，除非用户要。
 - **对外的动作先问**：上传 TestFlight、动用户的 Apple / Google / Supabase 账号、发帖。
 - **密钥不进聊天、不进仓库**：让用户自己填到 GitHub Secrets、Supabase 或 Vault。仓库是公开的：CI 里不打印密钥，也不打印签名证书名（里面有真名）；数据库备份不能传成 Actions 产物；前端不放 `sb_secret_` 开头的密钥。

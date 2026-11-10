@@ -33,6 +33,7 @@ export function GroupCard({ group: g }: { group: GroupSummary }) {
       </span>
       <span className="flex flex-wrap gap-1.5">
         {g.schedules.map((sc, i) => <Tag key={i} icon="calendar">{scheduleText(sc)}</Tag>)}
+        {g.coached && <Tag icon="user" tint="sky">{t('Coach-led')}</Tag>}
         <Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag>
         {g.gender && <Tag icon="users" tint="lavender">{audienceLabel(g.gender)}</Tag>}
         {g.join_policy === 'approval' && <Tag icon="lock" tint="lavender">{t('Organizer approves')}</Tag>}

@@ -42,6 +42,9 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
   const [min, setMin] = useState(group?.level_min ?? Math.max(1, level - 1));
   const [max, setMax] = useState(group?.level_max ?? Math.min(9, level + 1));
   const [approval, setApproval] = useState(group?.join_policy === 'approval');
+  // 教练带课：每场 1–40 人，水平范围只作提示
+  const [coached, setCoached] = useState(group?.coached ?? false);
+  const minSpots = coached ? 1 : 4;
   const [schedules, setSchedules] = useState<Schedule[]>(() => (group?.schedules.length ? group.schedules.map((s) => ({ ...s, fee: s.fee ?? '' })) : [blank()]));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -58,7 +61,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
     : min > max ? t('The lowest level can’t be above the highest.')
     : schedules.some((s) => s.end - s.start > 720) ? t('Each session can be up to 12 hours')
     : schedules.some((s) => s.end - s.start < 60) ? t('Each session needs at least 1 hour')
-    : schedules.some((s) => !(s.capacity >= 4 && s.capacity <= 40)) ? t('Each session needs 4 to 40 spots.')
+    : schedules.some((s) => !(s.capacity >= minSpots && s.capacity <= 40)) ? (coached ? t('Each session needs 1 to 40 spots.') : t('Each session needs 4 to 40 spots.'))
     : undefined;
 
   async function submit(event: SubmitEvent) {
@@ -66,7 +69,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
     if (issue) return setError(issue);
     setBusy(true);
     setError(undefined);
-    const common = { p_name: name.trim(), p_summary: summary.trim(), p_level_min: min, p_level_max: max, p_policy: approval ? 'approval' : 'open', p_schedules: schedules };
+    const common = { p_name: name.trim(), p_summary: summary.trim(), p_level_min: min, p_level_max: max, p_policy: approval ? 'approval' : 'open', p_schedules: schedules, p_coached: coached };
     const { data, error } = group
       ? await supabase!.rpc('update_group', { p_group: group.id, ...common })
       : await supabase!.rpc('create_group', { ...common, p_venue: court!.id, p_gender: audience });
@@ -119,6 +122,11 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
           {(props) => <textarea {...props} rows={2} maxLength={120} value={summary} onChange={(e) => setSummary(e.target.value)} className="field" />}
         </Field>
 
+        <div className="grid gap-2">
+          <button type="button" onClick={() => setCoached(!coached)} aria-pressed={coached} className="toggle justify-self-start">{t('Coach-led')}</button>
+          {coached && <p className="text-footnote text-ink-secondary">{t('Lessons can be as small as 1. Levels are only a guide.')}</p>}
+        </div>
+
         {!group && (
           <AudienceField profile={profile} value={audience} onChange={(value) => {
             const own = audienceLevel(profile, value);
@@ -144,7 +152,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
         <fieldset className="grid gap-2">
           <legend className="mb-2 text-headline">{t('Who can join')}</legend>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => setApproval(false)} aria-pressed={!approval} className="toggle">{t('Anyone at these levels')}</button>
+            <button type="button" onClick={() => setApproval(false)} aria-pressed={!approval} className="toggle">{coached ? t('Anyone') : t('Anyone at these levels')}</button>
             <button type="button" onClick={() => setApproval(true)} aria-pressed={approval} className="toggle">{t('Organizer approves')}</button>
           </div>
         </fieldset>
@@ -161,7 +169,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
               </label>
               <label className="grid gap-1.5">
                 <span className="text-footnote font-bold text-ink-secondary">{t('Spots')}</span>
-                <input type="number" inputMode="numeric" min={4} max={40} value={s.capacity}
+                <input type="number" inputMode="numeric" min={minSpots} max={40} value={s.capacity}
                        onChange={(e) => update(i, { capacity: Number(e.target.value) })} className="field" />
               </label>
               <label className="grid gap-1.5">
@@ -178,7 +186,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
               </label>
               <label className="grid gap-1.5 sm:col-span-2">
                 <span className="text-footnote font-bold text-ink-secondary">{t('Fee note')} {t('(optional)')}</span>
-                <input value={s.fee ?? ''} maxLength={40} placeholder={t('$12 each, pay at the desk')} onChange={(e) => update(i, { fee: e.target.value })} className="field" />
+                <input value={s.fee ?? ''} maxLength={120} placeholder={t('$12 each, pay at the desk')} onChange={(e) => update(i, { fee: e.target.value })} className="field" />
               </label>
               {schedules.length > 1 && (
                 <button type="button" onClick={() => setSchedules(schedules.filter((_, n) => n !== i))} className="link justify-self-start text-sm">
