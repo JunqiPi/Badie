@@ -124,7 +124,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
 
         <div className="grid gap-2">
           <button type="button" onClick={() => setCoached(!coached)} aria-pressed={coached} className="toggle justify-self-start">{t('Coach-led')}</button>
-          {coached && <p className="text-footnote text-ink-secondary">{t('Lessons can be as small as 1. Levels are only a guide.')}</p>}
+          {coached && <p className="text-footnote text-ink-secondary">{t('Sessions can have as few as 1 spot. Levels are only a guide.')}</p>}
         </div>
 
         {!group && (

@@ -11,7 +11,7 @@
 - 搜索只看名称、副标题和关键词字段，描述不参与搜索。关键词不重复名称和副标题里的词。
 - 多数人只看前一两张截图，截图加一行标题比改描述有用（SplitMetrics 等 A/B 测试公司的数据，有夸大成分，看方向）。
 - 同类 App（Playtomic，4.8 分、1.4 万评分）的差评集中在爽约、等级不准、订场扣钱，所以描述把这三件事放在最前面。
-- 截图顺序：水平相当 → 今晚有空 → 爽约有记录 → 单打双打混双 → 缺人发局 → 每周球群 → 2 分钟定级 → 周榜。
+- 截图（2026-11-10 重做）：9 张，定位句加整部手机 → 选时间和球馆 → 实力相近的对手 → 明天谁有空 → 2 分钟定级 → 爽约次数 → 订了场差一人 → 每周固定局 → 免费、没有广告。
 
 ## English (U.S.)
 
@@ -517,4 +517,89 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • दाएँ स्वाइप करें या दिल पर टैप करें, तुरंत बुलावा चला जाता है। कार्ड को इवेंट, कोर्ट, लेवल, समय वगैरह से फ़िल्टर करें।
   • गेम के बाद भरें कि हर तरफ़ ने कितने गेम जीते। जीत दर अब गेम के हिसाब से है।
   • किसी भी लिस्ट को नीचे खींचें, सब कुछ रीफ़्रेश हो जाता है।
+  ```
+
+## 1.0.3 更新说明（What's New in This Version）
+
+1.0.2 之后 iPhone 上的改动只有教练带课的球群和费用说明。写法见 `VOICE.md` 的“更新说明”。文字同时放在 `Badie-iOS/scripts/whats_new.json`（给上传脚本用）。
+
+- English (U.S.)：
+  ```
+  Groups can now be coach-led.
+
+  • Sessions can have as few as 1 spot, so private lessons and small classes fit.
+  • Levels are only a guide. Anyone can join or ask to join.
+  • Add a fee note to each session when you set up a group. It shows on the group page.
+  ```
+- 简体中文：
+  ```
+  球群现在可以标成“教练带课”。
+
+  • 每场最少 1 个名额，私教和小班都能开。
+  • 水平范围只作参考，谁都能加入或申请。
+  • 建群时可以给每个场次写费用说明，球群页上看得到。
+  ```
+- 繁體中文：
+  ```
+  球群現在可以標成「教練帶課」。
+
+  • 每場最少 1 個名額，私人課和小班都能開。
+  • 水平範圍只作參考，誰都能加入或申請。
+  • 建群時可以替每個場次寫費用說明，球群頁上看得到。
+  ```
+- 日本語：
+  ```
+  グループを「コーチ指導」にできるようになりました。
+
+  • 1 回の枠は 1 人から。個人レッスンも少人数クラスも開けます。
+  • レベルの範囲は目安です。誰でも参加・申請できます。
+  • グループを作るとき、各回に料金メモを書けます。グループのページに表示されます。
+  ```
+- 한국어：
+  ```
+  그룹을 ‘코치 지도’로 표시할 수 있어요.
+
+  • 일정마다 자리는 1개부터 정할 수 있어요. 개인 레슨도, 소규모 수업도 열 수 있어요.
+  • 레벨 범위는 참고용이에요. 누구나 참여하거나 신청할 수 있어요.
+  • 그룹을 만들 때 일정마다 비용 안내를 적을 수 있어요. 그룹 페이지에 표시돼요.
+  ```
+- Bahasa Indonesia：
+  ```
+  Grup sekarang bisa ditandai “Dipandu pelatih”.
+
+  • Tiap sesi bisa mulai dari 1 slot, jadi les privat dan kelas kecil bisa dibuka.
+  • Rentang level hanya panduan. Siapa pun bisa bergabung atau mengajukan diri.
+  • Saat membuat grup, kamu bisa menulis catatan biaya untuk tiap sesi. Catatan itu tampil di halaman grup.
+  ```
+- Bahasa Melayu：
+  ```
+  Kumpulan kini boleh ditanda “Dipimpin jurulatih”.
+
+  • Setiap sesi boleh bermula dengan 1 tempat, jadi kelas persendirian dan kelas kecil boleh dibuka.
+  • Julat tahap hanya panduan. Sesiapa sahaja boleh sertai atau memohon.
+  • Semasa mencipta kumpulan, anda boleh menulis nota bayaran untuk setiap sesi. Nota itu dipaparkan di halaman kumpulan.
+  ```
+- ไทย：
+  ```
+  ตั้งกลุ่มเป็น “มีโค้ชสอน” ได้แล้ว
+
+  • แต่ละรอบเปิดได้ตั้งแต่ 1 ที่ จะสอนตัวต่อตัวหรือกลุ่มเล็กก็ได้
+  • ช่วงระดับเป็นเพียงแนวทาง ใครก็เข้าร่วมหรือขอเข้าร่วมได้
+  • ตอนสร้างกลุ่ม เขียนหมายเหตุค่าใช้จ่ายของแต่ละรอบได้ และจะแสดงในหน้ากลุ่ม
+  ```
+- Tiếng Việt：
+  ```
+  Nhóm giờ có thể đánh dấu “Có huấn luyện viên”.
+
+  • Mỗi buổi có thể mở từ 1 chỗ, nên dạy kèm hay lớp nhỏ đều được.
+  • Khoảng trình độ chỉ để tham khảo. Ai cũng có thể tham gia hoặc xin vào.
+  • Khi tạo nhóm, bạn có thể ghi chú phí cho từng buổi. Ghi chú hiện trên trang nhóm.
+  ```
+- हिन्दी：
+  ```
+  अब ग्रुप को “कोच के साथ” के रूप में चिह्नित किया जा सकता है।
+
+  • हर सेशन में 1 जगह से शुरुआत हो सकती है, इसलिए प्राइवेट लेसन और छोटी क्लास दोनों चल सकती हैं।
+  • लेवल की सीमा सिर्फ़ अंदाज़े के लिए है। कोई भी जुड़ सकता है या जुड़ने का अनुरोध कर सकता है।
+  • ग्रुप बनाते समय हर सेशन के लिए फ़ीस की जानकारी लिख सकते हैं। यह ग्रुप के पेज पर दिखती है।
   ```
