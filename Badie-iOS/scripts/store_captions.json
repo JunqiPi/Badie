@@ -25,7 +25,7 @@
     "zh-Hans": {
       "home": "i 人也能*约到球*",
       "matchSetup": "选时间，*选球馆*",
-      "matchFound": "*实力相近*的对手",
+      "matchFound": "*实力相近的*对手",
       "dayCards": "明天*谁有空*",
       "levelResult": "2 分钟*测出几级*",
       "playerNoShow": "爽约次数*看得到*",
@@ -36,7 +36,7 @@
     "zh-Hant": {
       "home": "I 人也能*約到球*",
       "matchSetup": "選時間，*選球館*",
-      "matchFound": "*實力相近*的對手",
+      "matchFound": "*實力相近的*對手",
       "dayCards": "明天*誰有空*",
       "levelResult": "2 分鐘*測出幾級*",
       "playerNoShow": "爽約次數*看得到*",
@@ -47,9 +47,9 @@
     "ja": {
       "home": "人見知りでも*相手が見つかる*",
       "matchSetup": "時間と*コートを選ぶだけ*",
-      "matchFound": "*同じレベル*の相手",
+      "matchFound": "相手は*同じレベル*",
       "dayCards": "明日*空いている人*",
-      "levelResult": "*2分*でレベル判定",
+      "levelResult": "*2分で*レベル判定",
       "playerNoShow": "ドタキャンは*記録される*",
       "room": "コートは予約済み、*あと一人*",
       "groupDetail": "毎週の*定期グループ*",
@@ -58,9 +58,9 @@
     "ko": {
       "home": "먼저 말 걸지 않아도 *돼요*",
       "matchSetup": "시간과 *코트만 고르세요*",
-      "matchFound": "*비슷한 실력*의 상대",
+      "matchFound": "*비슷한 실력의* 상대",
       "dayCards": "내일 *누가 시간 돼요*",
-      "levelResult": "*2분*이면 실력 확인",
+      "levelResult": "*2분이면* 실력 확인",
       "playerNoShow": "노쇼는 *기록돼요*",
       "room": "코트 예약 완료, *한 명만 더*",
       "groupDetail": "매주 *정기 모임*",
@@ -69,9 +69,9 @@
     "hi": {
       "home": "बिना पूछे *गेम पाएँ*",
       "matchSetup": "समय *और कोर्ट चुनें*",
-      "matchFound": "*आपके लेवल* के खिलाड़ी",
+      "matchFound": "*आपके लेवल के* खिलाड़ी",
       "dayCards": "कल *कौन फ़्री है*",
-      "levelResult": "*2 मिनट* में अपना लेवल जानें",
+      "levelResult": "*2 मिनट में* अपना लेवल जानें",
       "playerNoShow": "नो-शो *रिकॉर्ड होते हैं*",
       "room": "कोर्ट बुक है, *एक खिलाड़ी कम*",
       "groupDetail": "हर हफ़्ते *तय गेम*",

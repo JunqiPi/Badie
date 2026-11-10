@@ -107,17 +107,22 @@ func rect(_ x: CGFloat, _ top: CGFloat, _ width: CGFloat, _ height: CGFloat) -> 
     CGRect(x: x, y: canvasHeight - top - height, width: width, height: height)
 }
 
-/// 画标题，返回标题底边的位置（从上往下量）
-func drawTitle(_ caption: String, theme: Theme, top: CGFloat, cap: CGFloat, width: CGFloat) -> CGFloat {
-    let rows = lines(of: caption)
+/// 这句标题每行都放得下的最大字号（不超过 cap），几行用同一个字号
+func fittingSize(_ caption: String, cap: CGFloat, width: CGFloat) -> CGFloat {
     let maxWidth = width * 0.86
-    // 每行都要放得下，几行用同一个字号
     var size = cap
-    for row in rows {
+    for row in lines(of: caption) {
         let padding: CGFloat = row.boxed ? cap * 0.28 : 0
         let natural = text(row.text, size: cap, color: ink).size().width + padding
         if natural > maxWidth { size = min(size, cap * maxWidth / natural) }
     }
+    return size
+}
+
+/// 画标题，返回标题底边的位置（从上往下量）
+func drawTitle(_ caption: String, theme: Theme, top: CGFloat, cap: CGFloat, width: CGFloat) -> CGFloat {
+    let rows = lines(of: caption)
+    let size = fittingSize(caption, cap: cap, width: width)
     let rowHeight = size * 1.24
     let gap = size * 0.1
     var y = top
@@ -172,6 +177,22 @@ func drawClipped(_ image: CGImage, in frame: CGRect, radius: CGFloat, context: C
     context.restoreGState()
 }
 
+// 中间几张的标题用同一个字号：取都放得下的那个，但不小于上限的 62%（个别特别长的那句自己再缩）
+var middleCap: CGFloat = 205
+if let first = loadImage(inputDir.appendingPathComponent("store-\(config.order[0]).png")) {
+    let width = CGFloat(first.width)
+    let cap = 205 * width / 1320
+    var smallest = cap
+    for key in config.order {
+        guard let caption = captions[key], let slide = slides[key] else { continue }
+        switch slide.art {
+        case .phone, .logo: continue
+        default: smallest = min(smallest, fittingSize(caption, cap: cap, width: width))
+        }
+    }
+    middleCap = max(smallest, cap * 0.62) / (width / 1320)
+}
+
 for (index, key) in config.order.enumerated() {
     guard let caption = captions[key], let slide = slides[key] else {
         print("跳过 \(language)/\(key)：没有文字或版式")
@@ -217,7 +238,7 @@ for (index, key) in config.order.enumerated() {
 
     case .panel(let cropTop, let scale), .flat(let cropTop, let scale):
         guard let shot else { break }
-        let bottom = drawTitle(caption, theme: theme, top: 210 * unit, cap: 205 * unit, width: width)
+        let bottom = drawTitle(caption, theme: theme, top: 210 * unit, cap: middleCap * unit, width: width)
         let cropY = cropTop * unit
         guard let piece = shot.cropping(to: CGRect(x: 0, y: cropY, width: width, height: height - cropY)) else { break }
         let pieceWidth = width * scale, pieceHeight = (height - cropY) * scale
@@ -236,7 +257,7 @@ for (index, key) in config.order.enumerated() {
 
     case .playerCard:
         guard let shot else { break }
-        let bottom = drawTitle(caption, theme: theme, top: 210 * unit, cap: 205 * unit, width: width)
+        let bottom = drawTitle(caption, theme: theme, top: 210 * unit, cap: middleCap * unit, width: width)
         // 卡片和爱心按钮在截图里的位置（6.9 英寸上量的）
         let cardRect = CGRect(x: 60 * unit, y: 556 * unit, width: 1198 * unit, height: 1907 * unit)
         let heartRect = CGRect(x: 698 * unit, y: 2504 * unit, width: 212 * unit, height: 212 * unit)
