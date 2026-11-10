@@ -4,7 +4,7 @@
 > 口径以 `STORY.md` 为准，语气按 `VOICE.md`。
 > 每种语言都要单独填：支持网址 `https://badie.rsvp/contact/`、隐私政策网址 `https://badie.rsvp/privacy/`（在 App Privacy 页）。营销网址 `https://badie.rsvp`。
 > 推广文本随时能改，不用重新审核；其余改动要随下一个版本提交。
-> 截图：GitHub Actions → App Store screenshots，产物按尺寸、语言分文件夹，标题在 `Badie-iOS/scripts/store_captions.json`。
+> 截图：GitHub Actions → App Store screenshots，产物按尺寸、语言分文件夹，标题在 `Badie-iOS/scripts/store_captions.json`，版式（海报式）在 `Badie-iOS/scripts/store_frame.swift`。
 
 ## 怎么写的（调研结论，2026-10）
 

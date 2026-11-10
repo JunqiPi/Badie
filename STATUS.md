@@ -45,6 +45,12 @@
   - 看效果：SQL 编辑器里跑 `select * from public.coached_group_stats();`。
   - 旧版 App 照常能用（不传 `p_coached`）。上线后 `STORY.md` 的功能表加一行“教练可以用球群带课”。
 
+## 商店截图（2026-11-10 重做，在开发分支上）
+
+- 文案和版式都换了：9 张、海报式，细节见 `Badie-iOS/docs/APP_STORE.md` 第 0 步的“截图”和 `VOICE.md` 的“商店截图上的标题”。
+- 最新一套成品：Actions → App Store screenshots 第 13 次运行的产物（30 天后过期，过期了重跑）。还没上传到 App Store Connect。
+- 新加了演示页面 `playerNoShow`（资料页显示“近 180 天爽约 1 次”），“按天看人”的演示卡片改成柠檬色。
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。

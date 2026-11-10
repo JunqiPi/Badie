@@ -35,7 +35,9 @@
 4. **商店信息**：10 种语言的最终文案在 `STORE_LISTING.md`（名称、副标题、关键词、推广文本、描述）。
    - 截图：GitHub → Actions → **App Store screenshots** → Run workflow，跑完下载 `app-store-screenshots-6.9-inch` 和 `app-store-screenshots-6.3-inch`。
      每个尺寸下按语言分文件夹（en、zh-Hans、zh-Hant、ja、ko、id、ms、th、vi、hi），每种 9 张，文件名开头的 1–9 是上传顺序。
-     每张上方有一行标题（文字在 `Badie-iOS/scripts/store_captions.json`，`*重点*` 用柠檬绿标出，中日文太长要手动加 `\n` 断行）。
+     海报式：第 1 张是一句定位加整部手机，第 2–8 张各放大一页的关键部分，第 9 张只有字和 logo；底色只用柠檬、墨、米三色。
+     文字在 `Badie-iOS/scripts/store_captions.json`：`*标出的部分*` 单独一行、带色块，其余的另一行；写法见 `VOICE.md` 的“商店截图上的标题”。版式在 `Badie-iOS/scripts/store_frame.swift`。
+     只在 6.9 英寸的模拟器上截，6.3 英寸那组由成品等比缩小（两种屏幕长宽比相同）。试版式时可以在 Run workflow 里只填几种语言（如 `en:en_US zh-Hans:zh_CN`），约 15 分钟；全部 10 种约 25 分钟。
 
 ## 1. 注册 Apple Developer Program
 
