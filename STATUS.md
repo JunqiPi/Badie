@@ -10,7 +10,7 @@
 | iPhone 1.0 | 已上架：https://apps.apple.com/app/id6825569793 （App ID `6825569793`，bundle `com.badie.app`） |
 | iPhone 1.0.1 | Build `20261106.0636`，已提交过 |
 | iPhone 1.0.2 | Build `20261108.2349`（main `29b144b`），**2026-11-09 已提交审核** |
-| 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261208000000_invite_limits.sql`） |
+| 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261209000000_coached_groups.sql`） |
 
 - 1.0.2 的 10 种语言更新说明、推广文本在 `Badie-iOS/docs/STORE_LISTING.md`。给用户时**直接贴内容**，不要只给路径。
 - 审核演示账号 `review@badie.rsvp`，**不能注销**。演示模式：设置 → 管理员 → 进入演示模式（只有管理员能看到）。
@@ -35,9 +35,11 @@
 - **App 里换语言**：设置 → App 语言，马上生效；和 iOS 系统设置里给 Badie 选的语言是同一个值。
 - **下拉刷新**：所有列表页下拉都刷新全部内容。
 
-## 在开发分支上、还没推 main 的
+## 教练带课的球群（2026-11-10 推到 main）
 
-- **教练带课的球群**（`Badie-iOS/docs/COACHING.md` 的小版本；完整方案在 `COACHING_LATER.md`，先不做）：
+网站和数据库已经上线；iPhone 要等下一个版本（还没上传 TestFlight）。
+
+- `Badie-iOS/docs/COACHING.md` 的小版本；完整方案在 `COACHING_LATER.md`，先不做：
   - 建群和编辑时可以勾“教练带课”：每场 1–40 人（普通群还是 4–40），水平范围只作提示，谁都能加入或申请。
   - 收费备注 120 字，教练写价格和自己的收款方式，Badie 不经手钱。iPhone 上现在也能填、能看到。
   - 看效果：SQL 编辑器里跑 `select * from public.coached_group_stats();`。
