@@ -156,7 +156,7 @@ export function About() {
       </section>
       <p className={`sticker p-5 text-title3 ${fill.lime}`}>{t('Our goal: more people playing badminton in the US and Europe, more often.')}</p>
       <section aria-labelledby="moments" className="grid gap-3">
-        <h2 id="moments" className="text-title2">{t('Made for moments like these')}</h2>
+        <h2 id="moments" className="text-title2">{t('When Badie helps')}</h2>
         <Reasons />
       </section>
       <section aria-labelledby="promises" className="grid gap-3">

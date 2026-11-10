@@ -191,7 +191,7 @@ function ReviewBanner({ game }: { game: Game }) {
       <Avatar id={others[0].id} name={others[0].nickname} size={40} />
       <span className="min-w-0 flex-1">
         <span className="block text-headline">{t('Rate your game with {name}', { name: others.length > 1 ? t('{n} players', { n: others.length }) : others[0].nickname })}</span>
-        <span className="block text-footnote">{t('Anonymous and combined, so the community stays reliable')}</span>
+        <span className="block text-footnote">{t('Anonymous and combined')}</span>
       </span>
       <Icon name="chevronRight" className="size-4" />
     </Link>

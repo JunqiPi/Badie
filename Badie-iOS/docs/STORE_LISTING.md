@@ -24,8 +24,11 @@
 
 - 描述：
 
-  > Find badminton players at your level, for the time you're free, at a court near you. Badie is free.
+  > Too shy to ask strangers at the court for a game? Badie finds players for you.
   >
+  > Tell Badie when you're free and which courts you can get to, and it finds players at your level. If your usual partner can't make it tonight, find someone who's free at the same time. If you've just moved, see the courts nearby and join a group that plays every week.
+  >
+  > • See who's free: tap a day and swipe through nearby players at your level who want a game that day. Swipe right to invite.
   > • Players who show up: no-shows and late cancellations are tracked, and both sides confirm results.
   > • Levels that stay accurate: a 2-minute quiz places you on a 1–9 scale, and players you meet help calibrate it. Men's and women's levels are rated separately.
   > • Last-minute games: booked a court but short on players? Post it and nearby players can join.
@@ -52,6 +55,7 @@
   >
   > 告诉 Badie 你哪天有空、能去哪几家球馆，它会帮你找水平差不多的人。固定搭子今晚来不了，就找个同一时间有空的；刚搬到新城市，先看看附近有哪些球馆，再加入一个每周固定打的球群。
   >
+  > • 看哪天谁有空：点一天，附近水平对得上、那天也想打的人一张张翻，右滑就约。
   > • 水平对得上：2 分钟做完定级问卷，从 1 到 9 级。打过几场后，球友的评价会帮你校准等级。男女分开定级。
   > • 不怕被放鸽子：爽约和临时取消都会记下来，180 天内爽约三次就不能再约球。比分要双方都确认才算。
   > • 场地缺人：订了场还差一两个人，发个球局，附近的人可以直接加入。
@@ -80,6 +84,7 @@
   >
   > 告訴 Badie 你哪天有空、能去哪幾間球館，它會幫你找程度差不多的人。固定球友今晚來不了，就找個同一時間有空的；剛搬到新城市，先看看附近有哪些球館，再加入一個每週固定打的球群。
   >
+  > • 看哪天誰有空：點一天，附近程度對得上、那天也想打的人一張張翻，右滑就約。
   > • 程度對得上：2 分鐘做完分級問卷，從 1 到 9 級。打過幾場後，球友的評價會幫你校準等級。男女分開分級。
   > • 不怕被放鴿子：爽約和臨時取消都會記下來，180 天內爽約三次就不能再約球。比賽結果要雙方都確認才算。
   > • 場地缺人：訂了場還差一兩個人，發個球局，附近的人可以直接加入。
@@ -108,6 +113,7 @@
   >
   > 空いている日時と行ける体育館を伝えると、レベルの近い相手を探します。いつものペアが来られない夜は同じ時間に空いている人を、引っ越したばかりなら近くの体育館と毎週の定期グループを見つけられます。
   >
+  > • 空いている人を見る：日付を選ぶと、その日に相手を探している、レベルの近い近くの人が 1 人ずつ表示されます。右にスワイプすると誘えます。
   > • レベルが合う：2 分の質問で 1〜9 のレベルを判定します。一緒に打った人の評価で、だんだん正確になります。男女は別々に判定します。
   > • ドタキャンされにくい：ドタキャンと直前のキャンセルは記録され、180 日以内に 3 回ドタキャンすると試合に参加できなくなります。試合結果は両チームが確認したものだけ反映されます。
   > • あと一人足りないとき：コートを取ったのに人数が足りなければ募集を出せます。近くの人がそのまま参加できます。
@@ -136,6 +142,7 @@
   >
   > 시간 되는 날과 갈 수 있는 체육관을 알려 주면 실력이 비슷한 사람을 찾아 줘요. 늘 같이 치던 파트너가 오늘 못 오면 같은 시간에 비는 사람을, 이사 온 지 얼마 안 됐다면 근처 체육관과 매주 모이는 모임을 찾을 수 있어요.
   >
+  > • 그날 시간 되는 사람 보기: 날짜를 누르면 그날 상대를 찾고 있는, 실력이 비슷한 근처 사람이 한 명씩 나와요. 오른쪽으로 밀면 초대해요.
   > • 실력이 맞아요: 2분짜리 질문으로 1~9 레벨을 정해요. 같이 쳐 본 사람들의 평가로 점점 정확해져요. 남녀 레벨은 따로 매겨요.
   > • 노쇼 걱정이 적어요: 노쇼와 직전 취소는 기록되고, 180일 안에 노쇼가 세 번이면 더 이상 게임에 참여할 수 없어요. 경기 결과는 양쪽이 모두 확인해야 반영돼요.
   > • 한 명이 모자랄 때: 코트는 잡았는데 사람이 모자라면 모집 글을 올리세요. 근처 사람이 바로 들어올 수 있어요.
@@ -164,6 +171,7 @@
   >
   > Beri tahu kapan kamu kosong dan GOR mana saja yang bisa kamu datangi, Badie akan mencarikan pemain yang levelnya mirip. Pasangan mainmu berhalangan malam ini? Cari orang lain yang kosong di jam yang sama. Baru pindah kota? Lihat GOR terdekat dan bergabung dengan grup yang main setiap minggu.
   >
+  > • Lihat siapa yang kosong: ketuk satu hari, lalu geser kartu pemain di sekitarmu yang selevel dan sedang mencari lawan hari itu. Geser ke kanan untuk mengajak.
   > • Level yang pas: kuis 2 menit menempatkanmu di level 1–9, lalu penilaian dari pemain yang pernah main denganmu membuatnya makin akurat. Level putra dan putri dihitung terpisah.
   > • Lebih sedikit yang mangkir: ketidakhadiran dan pembatalan mendadak dicatat. Tiga kali tidak hadir dalam 180 hari, kamu tidak bisa ikut main lagi. Hasil pertandingan baru dihitung setelah dikonfirmasi kedua tim.
   > • Kurang orang: sudah pesan lapangan tapi kurang satu atau dua pemain? Umumkan, pemain di sekitar bisa langsung bergabung.
@@ -192,6 +200,7 @@
   >
   > Beritahu bila anda lapang dan gelanggang mana yang boleh anda pergi, Badie akan carikan pemain yang tahapnya hampir sama. Pasangan biasa anda tidak dapat datang malam ini? Cari orang lain yang lapang pada masa yang sama. Baru berpindah ke bandar baharu? Lihat gelanggang berdekatan dan sertai kumpulan yang bermain setiap minggu.
   >
+  > • Lihat siapa yang lapang: ketik satu hari, kemudian leret kad pemain berdekatan yang setahap dan sedang mencari permainan pada hari itu. Leret ke kanan untuk mengajak.
   > • Tahap yang sesuai: kuiz 2 minit meletakkan anda pada tahap 1–9, dan penilaian daripada pemain yang pernah bermain dengan anda menjadikannya semakin tepat. Tahap lelaki dan wanita dikira berasingan.
   > • Kurang yang tidak hadir: ketidakhadiran dan pembatalan saat akhir direkodkan. Tiga kali tidak hadir dalam 180 hari, anda tidak boleh menyertai permainan lagi. Keputusan perlawanan hanya dikira selepas disahkan oleh kedua-dua pasukan.
   > • Tidak cukup orang: sudah tempah court tetapi kurang seorang dua? Siarkan, pemain berdekatan boleh terus menyertai.
@@ -220,6 +229,7 @@
   >
   > บอก Badie ว่าว่างวันไหน ไปสนามไหนได้บ้าง แล้ว Badie จะหาคนฝีมือใกล้กันให้ คู่ตีประจำมาไม่ได้คืนนี้ก็หาคนที่ว่างเวลาเดียวกัน เพิ่งย้ายมาเมืองใหม่ก็ดูสนามใกล้ ๆ แล้วเข้าก๊วนที่ตีกันทุกสัปดาห์
   >
+  > • ดูว่าใครว่าง: แตะวันที่ แล้วปัดดูคนแถวนั้นที่ฝีมือใกล้กันและกำลังหาคนตีในวันนั้น ปัดขวาเพื่อชวน
   > • ฝีมือตรงกัน: ทำแบบสอบถาม 2 นาทีเพื่อจัดระดับ 1–9 แล้วคะแนนจากคนที่เคยตีด้วยจะช่วยให้แม่นขึ้นเรื่อย ๆ ระดับชายและหญิงคิดแยกกัน
   > • ลดการเบี้ยวนัด: การเบี้ยวนัดและการยกเลิกกะทันหันจะถูกบันทึก ถ้าเบี้ยวนัด 3 ครั้งใน 180 วันจะเข้าร่วมเกมไม่ได้อีก ผลการแข่งขันนับเมื่อทั้งสองฝ่ายยืนยันแล้วเท่านั้น
   > • คนไม่ครบ: จองคอร์ทแล้วแต่ยังขาดหนึ่งสองคน ประกาศหาได้ คนแถวนั้นเข้าร่วมได้ทันที
@@ -248,6 +258,7 @@
   >
   > Cho Badie biết bạn rảnh hôm nào, đến được những sân nào, Badie sẽ tìm người có trình độ gần với bạn. Bạn đánh quen tối nay bận thì tìm người rảnh cùng giờ. Mới chuyển đến thành phố mới thì xem các sân gần đây và vào một nhóm đánh cố định hằng tuần.
   >
+  > • Xem ai rảnh: chạm vào một ngày rồi lướt qua những người ở gần, cùng trình độ, đang tìm người đánh hôm đó. Vuốt phải để rủ.
   > • Đúng trình độ: bài trắc nghiệm 2 phút xếp bạn vào mức 1–9, sau đó đánh giá của những người từng đánh cùng sẽ giúp mức này ngày càng chính xác. Trình độ nam và nữ được tính riêng.
   > • Bớt bùng kèo: bùng kèo và hủy sát giờ đều được ghi lại. Bùng kèo 3 lần trong 180 ngày sẽ không được tham gia trận nữa. Kết quả trận chỉ được tính khi cả hai bên xác nhận.
   > • Thiếu người: đặt sân rồi mà còn thiếu một hai người thì đăng lên, người ở gần có thể vào ngay.
@@ -276,6 +287,7 @@
   >
   > बताइए आप किस दिन फ़्री हैं और किन कोर्ट तक जा सकते हैं, Badie आपके जैसे लेवल वाले खिलाड़ी ढूँढेगा। आपका रोज़ का पार्टनर आज नहीं आ सकता, तो उसी समय फ़्री किसी और के साथ खेलिए। नए शहर में आए हैं, तो पास के कोर्ट देखिए और हर हफ़्ते खेलने वाले ग्रुप से जुड़िए।
   >
+  > • देखें कौन फ़्री है: कोई दिन चुनिए और पास के उन खिलाड़ियों के कार्ड देखिए जो आपके लेवल के हैं और उस दिन खेलना चाहते हैं। बुलाने के लिए दाईं ओर स्वाइप कीजिए।
   > • सही लेवल: 2 मिनट की प्रश्नावली आपको 1–9 के लेवल पर रखती है, फिर साथ खेले लोगों की रेटिंग से यह और सटीक होता जाता है। पुरुष और महिला लेवल अलग गिने जाते हैं।
   > • कम नो-शो: नो-शो और आख़िरी समय पर कैंसल करना दर्ज होता है। 180 दिनों में 3 बार नो-शो हुआ तो आप आगे गेम में शामिल नहीं हो पाएँगे। मैच का नतीजा तभी गिना जाता है जब दोनों टीमें पुष्टि करें।
   > • खिलाड़ी कम हैं: कोर्ट बुक है पर एक-दो लोग कम हैं, तो गेम पोस्ट कीजिए, पास के खिलाड़ी सीधे जुड़ सकते हैं।
