@@ -1,0 +1,42 @@
+name: Attach TestFlight build
+
+# TestFlight 上传完以后：等苹果把构建处理完，挂到 App Store Connect 的版本上，这样就只差点“提交审核”。
+# mode = list 只看不改；attach 才挂。这个文件有改动时在开发分支上自动跑一次（按下面的默认值），也可以手动运行。
+# 动的是苹果账号：改成 attach 之前先问用户
+# 上次运行：还没跑过
+on:
+  push:
+    branches: [ "claude/**" ]
+    paths: [ ".github/workflows/asc-build.yml" ]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: list = 只看；attach = 等构建处理完并挂到版本上
+        default: list
+      version:
+        description: 版本号
+        default: "1.0.3"
+
+permissions:
+  contents: read
+
+env:
+  MODE: ${{ inputs.mode || 'list' }}
+  VERSION: ${{ inputs.version || '1.0.3' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: ${{ env.MODE }}
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          (umask 077; printf '%s\n' "$ASC_PRIVATE_KEY" > "$RUNNER_TEMP/AuthKey.p8")
+          trap 'rm -f "$RUNNER_TEMP/AuthKey.p8"' EXIT
+          cd Badie-iOS/scripts
+          ASC_KEY_PATH="$RUNNER_TEMP/AuthKey.p8" python3 asc_build.py "$MODE" "$VERSION"
