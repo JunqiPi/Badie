@@ -32,7 +32,7 @@ jobs:
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO > build.log 2>&1 || { grep -E "error:" build.log | sort -u | head -50; exit 1; }
 
       - name: Capture and frame screenshots
-        # 10 种语言 × 8 张
+        # 10 种语言 × 9 张
         timeout-minutes: 45
         run: STORE=1 bash scripts/ci_screenshots.sh "${{ steps.sim.outputs.udid }}" build/Build/Products/Debug-iphonesimulator/Badie.app store-screenshots/${{ matrix.size }}
 

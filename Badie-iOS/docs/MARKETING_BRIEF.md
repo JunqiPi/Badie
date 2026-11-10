@@ -83,7 +83,7 @@
   - 分享卡片图（1200×630，已换成新 logo）：`web/public/og.png`，网址 https://badie.rsvp/og.png
   - 网站图标：`web/public/icon-512.png`
   - App Store 截图：在 GitHub Actions 运行 “App Store screenshots”，下载 `app-store-screenshots-6.9-inch` / `-6.3-inch`。
-    10 种语言、每种 8 张，每张上方有一行标题，重点词用荧光绿标出，可以直接当宣传图用。截图里是 App 界面，不含 App 图标；要和新 logo 放在一起时，用 11-02 以后跑出来的版本。
+    10 种语言、每种 9 张，每张上方有一行标题，重点词用荧光绿标出，可以直接当宣传图用。截图里是 App 界面，不含 App 图标；要和新 logo 放在一起时，用 11-02 以后跑出来的版本。
   - **商店页文案（10 种语言）**：`Badie-iOS/docs/STORE_LISTING.md`。每种语言都按当地球友的说法写，里面有各地的常用词，写帖子时可以参考：
     印尼的 GOR、mabar，泰国的 ก๊วนแบด，越南的 giao lưu、ghép kèo，韩国的 동호회、게스트、급수，日本的 社会人、練習相手。
 - **适合做内容的网站页面**：

@@ -34,7 +34,7 @@
    - 同一页还有**爽约申诉**：选“撤销”或“维持”。7 天没处理会自动维持，所以要按时看。
 4. **商店信息**：10 种语言的最终文案在 `STORE_LISTING.md`（名称、副标题、关键词、推广文本、描述）。
    - 截图：GitHub → Actions → **App Store screenshots** → Run workflow，跑完下载 `app-store-screenshots-6.9-inch` 和 `app-store-screenshots-6.3-inch`。
-     每个尺寸下按语言分文件夹（en、zh-Hans、zh-Hant、ja、ko、id、ms、th、vi、hi），每种 8 张，文件名开头的 1–8 是上传顺序。
+     每个尺寸下按语言分文件夹（en、zh-Hans、zh-Hant、ja、ko、id、ms、th、vi、hi），每种 9 张，文件名开头的 1–9 是上传顺序。
      每张上方有一行标题（文字在 `Badie-iOS/scripts/store_captions.json`，`*重点*` 用柠檬绿标出，中日文太长要手动加 `\n` 断行）。
 
 ## 1. 注册 Apple Developer Program
