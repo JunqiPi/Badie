@@ -10912,10 +10912,16 @@
             "value" : "Người này chỉ nhận thách đấu từ người cùng trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TA 只接受实力相近的挑战"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "對方只接受水平相近的挑戰"
+            "value" : "對方只接受實力相近的挑戰"
           }
         }
       }
@@ -11376,10 +11382,16 @@
             "value" : "Trình độ thực tế của họ so với mức %@ đã ghi?"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TA 的真实实力和标注的 %@ 比？"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "對方的實際水平和標示的 %@ 比起來？"
+            "value" : "對方的真實實力和標示的 %@ 比起來？"
           }
         }
       }
@@ -16095,10 +16107,16 @@
             "value" : "Mọi trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不限实力"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "不限水平"
+            "value" : "不限實力"
           }
         }
       }
@@ -16153,10 +16171,16 @@
             "value" : "Không giới hạn chênh lệch"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不限实力差"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "不限水平差"
+            "value" : "不限實力差"
           }
         }
       }
@@ -16385,10 +16409,16 @@
             "value" : "Khai trình độ quá cao"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "严重虚报实力"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "嚴重虛報水平"
+            "value" : "嚴重虛報實力"
           }
         }
       }
@@ -23605,10 +23635,16 @@
             "value" : "Trình độ của bạn nằm ngoài khoảng họ chấp nhận."
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的实力不在 TA 接受的范围内。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你的水平不在對方接受的範圍內。"
+            "value" : "你的實力不在對方接受的範圍內。"
           }
         }
       }
@@ -23723,14 +23759,14 @@
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "你的等级 %1$@，将匹配 %2$@ 的球友，水平越接近排得越前"
+            "state" : "translated",
+            "value" : "你的等级 %1$@，将匹配 %2$@ 的球友，实力越接近排得越前"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你的等級 %@，將配對 %@ 的球友，水平越接近排越前面"
+            "value" : "你的等級 %@，將配對 %@ 的球友，實力越接近排越前面"
           }
         }
       }
@@ -23785,10 +23821,16 @@
             "value" : "Trình độ của bạn là %@. Bạn sẽ được ghép với người chơi mọi trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的等级 %@，将匹配任何实力的球友"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你的等級 %@，將配對所有水平的球友"
+            "value" : "你的等級 %@，將配對任何實力的球友"
           }
         }
       }
@@ -37476,10 +37518,16 @@
             "value" : "Chỉ trình độ của tôi"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只看我的实力段"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只看我的水平段"
+            "value" : "只看我的實力段"
           }
         }
       }
@@ -38248,10 +38296,16 @@
             "value" : "Chênh lệch trình độ chấp nhận"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可接受的实力差"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "可接受的水平差"
+            "value" : "可接受的實力差"
           }
         }
       }
@@ -38770,10 +38824,16 @@
             "value" : "Cùng trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力相当"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "同水平"
+            "value" : "實力相當"
           }
         }
       }
@@ -40801,10 +40861,16 @@
             "value" : "Quay lại chơi? Hãy tự đánh giá theo phong độ hiện tại; đánh giá của người chơi sẽ giúp bạn nhanh trở lại trình độ cũ."
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回归球友：按现在的状态定级，球友评价会帮你更快回到原来的实力。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "回歸球友：按現在的狀態定級，球友評價會幫你更快回到原來的水平。"
+            "value" : "回歸球友：按現在的狀態定級，球友評價會幫你更快回到原來的實力。"
           }
         }
       }
@@ -46039,10 +46105,16 @@
             "value" : "Đối thủ ngang trình độ với bạn"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对手和你实力相当"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "對手和你水平相當"
+            "value" : "對手和你實力相當"
           }
         }
       }
@@ -51237,10 +51309,16 @@
             "value" : "Đã chia đội cân bằng theo trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已按实力平衡分队"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已依水平平衡分隊"
+            "value" : "已依實力平衡分隊"
           }
         }
       }
@@ -59323,10 +59401,16 @@
             "value" : "Trình độ của tôi ±1"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我的实力 ±1"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "我的水平 ±1"
+            "value" : "我的實力 ±1"
           }
         }
       }
@@ -62131,10 +62215,16 @@
             "value" : "Mọi trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不限实力"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "所有水平"
+            "value" : "不限實力"
           }
         }
       }
@@ -64813,14 +64903,14 @@
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "按本月在这家球馆打的确认过的场数排名（同一对手最多计 %1$lld 场、每天最多 %2$lld 场）；每个水平段单独排"
+            "state" : "translated",
+            "value" : "按本月在这家球馆打的确认过的场数排名（同一对手最多计 %1$lld 场、每天最多 %2$lld 场）；每个实力段单独排"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "依本月在這家球館打的已確認場數排名（同一對手最多計 %lld 場、每天最多 %lld 場）；每個水平段分開排名"
+            "value" : "依本月在這家球館打的已確認場數排名（同一對手最多計 %lld 場、每天最多 %lld 場）；每個實力段分開排名"
           }
         }
       }
@@ -64875,10 +64965,16 @@
             "value" : "Tự tìm bạn đánh theo trình độ, giờ và khoảng cách"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按实力、时间和距离自动找搭子"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "依水平、時間和距離自動找搭子"
+            "value" : "依實力、時間和距離自動找搭子"
           }
         }
       }
@@ -64933,10 +65029,16 @@
             "value" : "Tự tìm bạn đánh cho bạn\ntheo trình độ và giờ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按实力和时间\n自动帮你找搭子"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "依水平和時間\n自動幫你找搭子"
+            "value" : "依實力和時間\n自動幫你找搭子"
           }
         }
       }
@@ -65745,10 +65847,16 @@
             "value" : "Trình độ chấp nhận"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力范围"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "接受的水平"
+            "value" : "實力範圍"
           }
         }
       }
@@ -69115,10 +69223,16 @@
             "value" : "Người chơi mới, chưa đủ 5 đánh giá; trình độ chưa được hiệu chỉnh"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新球友，评价不足 5 次，实力待校准"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新球友，評價不足 5 次，水平待校準"
+            "value" : "新球友，評價不足 5 次，實力待校準"
           }
         }
       }
@@ -72034,10 +72148,16 @@
             "value" : "Cấp thấp nhất không thể cao hơn cấp cao nhất."
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最低等级不能高于最高等级。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最低水平不能高於最高水平。"
+            "value" : "最低等級不能高於最高等級。"
           }
         }
       }
@@ -74448,10 +74568,16 @@
             "value" : "Người chơi nhiều trận nhất ở đây tháng này, xếp riêng theo nhóm trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本月在这里打得最多的球友，每个实力段单独排"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "本月在這裡打最多場的球友，每個水平段分開排名"
+            "value" : "本月在這裡打最多場的球友，每個實力段分開排名"
           }
         }
       }
@@ -78470,10 +78596,16 @@
             "value" : "Có thể mở từ 1 người. Trình độ chỉ để tham khảo."
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每场最少 1 人。实力范围只作参考。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每場最少 1 人。水平範圍僅供參考。"
+            "value" : "每場最少 1 人。實力範圍僅供參考。"
           }
         }
       }
@@ -79514,10 +79646,16 @@
             "value" : "Trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "水平"
+            "value" : "實力"
           }
         }
       }
@@ -79572,10 +79710,16 @@
             "value" : "Trình độ ±%lld"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力 ±%lld"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "水平 ±%lld"
+            "value" : "實力 ±%lld"
           }
         }
       }
@@ -79630,10 +79774,16 @@
             "value" : "Trình độ ±%lld"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力 ±%lld 级"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "水平 ±%lld 級"
+            "value" : "實力 ±%lld 級"
           }
         }
       }
@@ -79690,14 +79840,14 @@
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "水平校准中 %1$lld/%2$lld"
+            "state" : "translated",
+            "value" : "实力校准中 %1$lld/%2$lld"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "水平校準中 %lld/%lld"
+            "value" : "實力校準中 %lld/%lld"
           }
         }
       }
@@ -79752,10 +79902,16 @@
             "value" : "Chênh lệch trong ±%lld cấp"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力相差 ±%lld 级以内"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "水平相差 ±%lld 級以內"
+            "value" : "實力相差 ±%lld 級以內"
           }
         }
       }
@@ -79810,10 +79966,16 @@
             "value" : "Người cùng trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力相近的人"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "水平相近的人"
+            "value" : "實力相近的人"
           }
         }
       }
@@ -79868,10 +80030,16 @@
             "value" : "Hợp trình độ là vào thẳng được, sau đó đăng ký các buổi hằng tuần."
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "实力符合就能直接加入，加入后就能报名每周的场次。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "水平符合就能直接加入，加入後就能報名每週的場次。"
+            "value" : "實力符合就能直接加入，加入後就能報名每週的場次。"
           }
         }
       }
@@ -82090,10 +82258,16 @@
             "value" : "Kiểm tra trình độ"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测一下你的实力"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "測一下你的水平"
+            "value" : "測一下你的實力"
           }
         }
       }
@@ -101152,10 +101326,16 @@
             "value" : "Đánh giá đã được tính ẩn danh vào nhận xét chung và trình độ tổng của bạn."
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "评价已匿名计入你的口碑与综合实力。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "評價已匿名計入你的口碑與綜合水平。"
+            "value" : "評價已匿名計入你的口碑與綜合實力。"
           }
         }
       }
@@ -108616,10 +108796,16 @@
             "value" : "Trận này yêu cầu %@, không hợp trình độ của bạn"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个局要求 %@，与你的实力不符"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這個局要求 %@，與你的水平不符"
+            "value" : "這個局要求 %@，與你的實力不符"
           }
         }
       }
@@ -111528,10 +111714,16 @@
             "value" : "Hợp trình độ của tôi"
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "适合我的实力"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "適合我的水平"
+            "value" : "適合我的實力"
           }
         }
       }
@@ -116192,10 +116384,16 @@
             "value" : "Người chơi gần bạn hợp trình độ có thể thấy và đăng ký. Khi hết chỗ, người khác có thể vào danh sách chờ và tự được thêm vào khi có người rút."
           }
         },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近实力符合的球友都能看到并报名，满员后可候补，有人退出自动递补。"
+          }
+        },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "附近符合水平的球友都能看到並報名，額滿後可候補，有人退出自動遞補。"
+            "value" : "附近實力符合的球友都能看到並報名，額滿後可候補，有人退出自動遞補。"
           }
         }
       }
