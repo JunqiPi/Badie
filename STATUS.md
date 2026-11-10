@@ -9,7 +9,8 @@
 | 网站 https://badie.rsvp | 和 main 同步，推 main 后自动部署 |
 | iPhone 1.0 | 已上架：https://apps.apple.com/app/id6825569793 （App ID `6825569793`，bundle `com.badie.app`） |
 | iPhone 1.0.1 | Build `20261106.0636`，已提交过 |
-| iPhone 1.0.2 | Build `20261108.2349`（main `29b144b`），**2026-11-09 已提交审核** |
+| iPhone 1.0.2 | Build `20261108.2349`（main `29b144b`），**已上架**（2026-11-10 查到状态是 READY_FOR_DISTRIBUTION） |
+| iPhone 1.0.3 | 2026-11-10 在 App Store Connect 新建，状态“准备提交”。新截图已传好（10 种语言 × 2 个尺寸 × 9 张）。**还没有构建版本**：工程里的版本号还是 1.0.2，更新说明也还没写 |
 | 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261209000000_coached_groups.sql`） |
 
 - 1.0.2 的 10 种语言更新说明、推广文本在 `Badie-iOS/docs/STORE_LISTING.md`。给用户时**直接贴内容**，不要只给路径。
@@ -48,7 +49,7 @@
 ## 商店截图（2026-11-10 重做，在开发分支上）
 
 - 文案和版式都换了：9 张、海报式，细节见 `Badie-iOS/docs/APP_STORE.md` 第 0 步的“截图”和 `VOICE.md` 的“商店截图上的标题”。
-- 最新一套成品：Actions → App Store screenshots 第 13 次运行的产物（30 天后过期，过期了重跑）。还没上传到 App Store Connect。
+- 最新一套成品：Actions → App Store screenshots 第 13 次运行的产物（30 天后过期，过期了重跑）。**已经传到 App Store Connect 的 1.0.3 上**（用 Upload App Store screenshots 工作流）。
 - 新加了演示页面 `playerNoShow`（资料页显示“近 180 天爽约 1 次”），“按天看人”的演示卡片改成柠檬色。
 
 ## 已知、没修的

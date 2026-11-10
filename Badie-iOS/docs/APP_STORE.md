@@ -37,6 +37,7 @@
      每个尺寸下按语言分文件夹（en、zh-Hans、zh-Hant、ja、ko、id、ms、th、vi、hi），每种 9 张，文件名开头的 1–9 是上传顺序。
      海报式：第 1 张是一句定位加整部手机，第 2–8 张各放大一页的关键部分，第 9 张只有字和 logo；底色只用柠檬、墨、米三色。
      文字在 `Badie-iOS/scripts/store_captions.json`：`*标出的部分*` 单独一行、带色块，其余的另一行；写法见 `VOICE.md` 的“商店截图上的标题”。版式在 `Badie-iOS/scripts/store_frame.swift`。
+     **上传**：不用手动拖。Actions → **Upload App Store screenshots**（`asc-screenshots.yml`，脚本 `scripts/asc_screenshots.py`）把某次截图运行的产物传到指定版本上，替换各语言原有的截图；版本不存在会先新建。`mode` 填 `list` 只看不改，`upload` 才传。动的是苹果账号，传之前先问用户。
      只在 6.9 英寸的模拟器上截，6.3 英寸那组由成品等比缩小（两种屏幕长宽比相同）。试版式时可以在 Run workflow 里只填几种语言（如 `en:en_US zh-Hans:zh_CN`），约 15 分钟；全部 10 种约 25 分钟。
 
 ## 1. 注册 Apple Developer Program

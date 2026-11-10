@@ -24,7 +24,7 @@ permissions:
   actions: read
 
 env:
-  MODE: ${{ inputs.mode || 'upload' }}
+  MODE: ${{ inputs.mode || 'list' }}
   VERSION: ${{ inputs.version || '1.0.3' }}
   RUN_ID: ${{ inputs.run_id || '42878332686' }}
 
