@@ -32,6 +32,9 @@ export function GroupPage({ id }: { id: string }) {
   const member = g.my_role === 'owner' || g.my_role === 'organizer' || g.my_role === 'member';
   const organizer = g.my_role === 'owner' || g.my_role === 'organizer';
   const tz = g.venue.tz;
+  const withFee = g.schedules.filter((sc) => sc.fee);
+  const sameFee = withFee.length === g.schedules.length && new Set(withFee.map((sc) => sc.fee)).size === 1;
+  const fees = sameFee ? withFee.slice(0, 1) : withFee;
 
   async function join() {
     const status = await act('join', 'join_group', { p_group: g!.id });
@@ -80,12 +83,20 @@ export function GroupPage({ id }: { id: string }) {
             </div>
             {g.summary && <p className="text-subhead">{g.summary}</p>}
             <ul className="flex flex-wrap gap-1.5">
+              {g.coached && <li><Tag icon="user" tint="sky">{t('Coach-led')}</Tag></li>}
               <li><Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag></li>
               {g.gender && <li><Tag icon="users" tint="lavender">{audienceLabel(g.gender)}</Tag></li>}
               <li><Tag icon={g.join_policy === 'approval' ? 'lock' : 'userPlus'}>{g.join_policy === 'approval' ? t('Organizer approves') : t('Join directly')}</Tag></li>
-              {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}`}><Tag icon="calendar" tint="butter">{scheduleText(sc)}{sc.fee ? ` · ${sc.fee}` : ''}</Tag></li>)}
+              {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}`}><Tag icon="calendar" tint="butter">{scheduleText(sc)}</Tag></li>)}
               {member && g.invite_code && <li><Tag icon="hash">{t('Group code {code}', { code: g.invite_code })}</Tag></li>}
             </ul>
+            {/* 收费备注最长 120 字，放不进标签：单独一行；各场一样就只写一次 */}
+            {fees.map((sc) => (
+              <p key={`${sc.weekday}-${sc.start}`} className="flex gap-1.5 text-subhead [overflow-wrap:anywhere]">
+                <Icon name="coins" className="mt-0.5 size-4 shrink-0" />
+                <span>{sameFee ? sc.fee : `${scheduleText(sc)}: ${sc.fee}`}</span>
+              </p>
+            ))}
             <p className="flex items-center gap-1.5 text-footnote text-ink-secondary"><Icon name="bolt" className="size-3.5" />{activityText(g.activity)}</p>
             {member && <Link to={`/messages/group/${g.id}/`} className="button button-quiet w-full"><Icon name="chats" className="size-5" />{t('Group chat')}</Link>}
           </section>

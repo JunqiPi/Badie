@@ -33,6 +33,9 @@ struct GroupCard: View {
                     TagPill(text: "\(schedule.weekdayTitle) \(schedule.timeText)", icon: "calendar", fill: AppTheme.Colors.surfaceMuted,
                             foreground: AppTheme.Colors.ink)
                 }
+                if group.isCoached {
+                    TagPill(text: String(localized: "教练带课"), icon: "graduationcap.fill", fill: AppTheme.Colors.sky)
+                }
                 TagPill(text: group.levelText, icon: "chart.bar.fill", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.ink)
                 if let audience = group.audience {
                     TagPill(text: audience.onlyLabel, fill: AppTheme.Colors.peach)
@@ -251,6 +254,9 @@ struct GroupDetailView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             FlowLayout(spacing: 6) {
+                if group.isCoached {
+                    TagPill(text: String(localized: "教练带课"), icon: "graduationcap.fill", fill: AppTheme.Colors.sky)
+                }
                 TagPill(text: group.levelText, icon: "chart.bar.fill", fill: AppTheme.Colors.lime)
                 if let audience = group.audience {
                     TagPill(text: audience.onlyLabel, fill: AppTheme.Colors.peach)
@@ -259,6 +265,12 @@ struct GroupDetailView: View {
                         foreground: AppTheme.Colors.ink)
                 TagPill(text: String(localized: "群号 \(group.inviteCode)"), icon: "number", fill: AppTheme.Colors.surfaceMuted,
                         foreground: AppTheme.Colors.ink)
+            }
+            ForEach(group.feeLines, id: \.self) { line in
+                Label(line, systemImage: "banknote")
+                    .font(AppTheme.Typography.subheadline)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Label(groupManager.activity(of: group.id).text, systemImage: "waveform.path.ecg")
                 .font(AppTheme.Typography.footnoteBold)
@@ -286,7 +298,9 @@ struct GroupDetailView: View {
                     .font(AppTheme.Typography.bodyBold)
                     .foregroundStyle(AppTheme.Colors.onAccent)
             } else {
-                Text(group.joinPolicy == .open ? String(localized: "水平符合就能直接加入，加入后就能报名每周的场次。") : String(localized: "这个群需要组织者同意。"))
+                Text(group.joinPolicy == .approval ? String(localized: "这个群需要组织者同意。")
+                     : group.isCoached ? String(localized: "加入后就能报名每周的场次。")
+                     : String(localized: "水平符合就能直接加入，加入后就能报名每周的场次。"))
                     .font(AppTheme.Typography.subheadline)
                     .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
                 Button {
@@ -574,6 +588,8 @@ struct CreateGroupView: View {
     @State private var upperLevel = 9
     @State private var joinPolicy: PlayGroup.JoinPolicy = .open
     @State private var audience: Gender?
+    /// 教练带课：每场 1–40 人，水平范围只作提示
+    @State private var coached = false
     @State private var showVenuePicker = false
     @State private var didSetup = false
     @State private var isSaving = false
@@ -610,6 +626,19 @@ struct CreateGroupView: View {
                         BrutalTextField(label: String(localized: "球群名称"), placeholder: String(localized: "例：周四晚双打群"), text: $name, characterLimit: 20)
                         BrutalTextField(label: String(localized: "介绍（可选）"), placeholder: String(localized: "例：轮换上场，新手友好；费用按人头在前台付"),
                                         text: $summary, characterLimit: 120, axis: .vertical)
+                    }
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                        Toggle(isOn: $coached.animation(AppTheme.Motion.standard)) {
+                            Text("教练带课")
+                                .font(AppTheme.Typography.bodyBold)
+                                .foregroundStyle(AppTheme.Colors.ink)
+                        }
+                        .tint(AppTheme.Colors.success)
+                        if coached {
+                            Text("每场最少 1 人。水平范围只作参考。")
+                                .font(AppTheme.Typography.caption)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        }
                     }
                     if !isEditing {
                         section(String(localized: "固定球馆")) { venueButton }
@@ -672,6 +701,13 @@ struct CreateGroupView: View {
                 .presentationDragIndicator(.visible)
         }
         .onAppear(perform: setup)
+        // 关掉“教练带课”以后回到普通群的 4–40 人（步长 2）
+        .onChange(of: coached) { _, coached in
+            guard !coached else { return }
+            for index in schedules.indices {
+                schedules[index].capacity = max(4, schedules[index].capacity + schedules[index].capacity % 2)
+            }
+        }
         // 换了谁能来，自己的等级可能跟着换算：范围重新围着自己
         .onChange(of: audience) { _, audience in
             guard !isEditing else { return }
@@ -719,11 +755,15 @@ struct CreateGroupView: View {
                 TimeStepper(title: String(localized: "开始"), minutes: schedule.startMinutes, range: (6 * 60)...(23 * 60))
                 TimeStepper(title: String(localized: "结束"), minutes: schedule.endMinutes, range: (7 * 60)...(24 * 60))
             }
-            Stepper(value: schedule.capacity, in: GroupSchedule.capacityRange, step: 2) {
+            Stepper(value: schedule.capacity, in: GroupSchedule.capacityRange(coached: coached), step: coached ? 1 : 2) {
                 Text("每场 \(schedule.wrappedValue.capacity) 个名额，满了自动候补")
                     .font(AppTheme.Typography.bodyBold)
                     .foregroundStyle(AppTheme.Colors.ink)
             }
+            BrutalTextField(label: String(localized: "费用说明（选填）"), placeholder: "",
+                            text: Binding(get: { schedule.wrappedValue.feeNote ?? "" },
+                                          set: { schedule.wrappedValue.feeNote = $0.isEmpty ? nil : $0 }),
+                            characterLimit: GroupSchedule.feeNoteLimit, axis: .vertical)
             if schedules.count > 1 {
                 Button("删掉这个场次", role: .destructive) {
                     schedules.removeAll { $0.id == schedule.wrappedValue.id }
@@ -755,6 +795,7 @@ struct CreateGroupView: View {
             lowerLevel = group.levelRange.lowerBound
             upperLevel = group.levelRange.upperBound
             joinPolicy = group.joinPolicy
+            coached = group.isCoached
             return
         }
         venueId = initialVenueId ?? locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil }
@@ -770,7 +811,7 @@ struct CreateGroupView: View {
             do {
                 if let editingGroupId {
                     try await groupManager.update(editingGroupId, name: name, schedules: schedules, levelRange: lowerLevel...upperLevel,
-                                                  joinPolicy: joinPolicy, summary: summary)
+                                                  joinPolicy: joinPolicy, summary: summary, coached: coached)
                     appState.showToast(String(localized: "已保存"), style: .success)
                     router.pop()
                     return
@@ -778,7 +819,7 @@ struct CreateGroupView: View {
                 guard let venueId else { return }
                 let group = try await groupManager.create(name: name, venueId: venueId, schedules: schedules,
                                                           levelRange: lowerLevel...upperLevel, joinPolicy: joinPolicy, summary: summary,
-                                                          audience: audience)
+                                                          audience: audience, coached: coached)
                 Haptics.success()
                 appState.showToast(String(localized: "已建群，群号 \(group.inviteCode)，可以分享到微信"), style: .success)
                 router.pop()
