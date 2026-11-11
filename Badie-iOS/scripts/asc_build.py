@@ -2,7 +2,8 @@
 
 用法：
   python3 asc_build.py list <版本号>     只看：这个版本的构建、挂上了哪个、审核备注有没有填。不改任何东西
-  python3 asc_build.py attach <版本号>   等最新的构建处理完（最多等 25 分钟），挂到这个版本上
+  python3 asc_build.py attach <版本号>   等最新的构建处理完（最多等 25 分钟），挂到这个版本上。
+                                         还没有这个版本就先建（描述等文字苹果会从上一版带过来），审核信息没填就从上一版复制
 环境变量同 asc_signing.py。日志只打印版本号、构建号和状态（仓库是公开的）
 """
 import sys
@@ -19,6 +20,27 @@ def builds_of(app_id, number):
     return asc.api("GET", f"/builds?{query}")["data"]
 
 
+REVIEW_FIELDS = ("contactFirstName", "contactLastName", "contactPhone", "contactEmail",
+                 "demoAccountName", "demoAccountPassword", "demoAccountRequired", "notes")
+
+
+def copy_review_detail(version, versions):
+    """新版本的审核信息（联系人、演示账号、备注）从最近一个填过的版本复制过来。不打印内容"""
+    for other in versions:
+        if other["id"] == version["id"]:
+            continue
+        source = (asc.api("GET", f"/appStoreVersions/{other['id']}/appStoreReviewDetail", missing_ok=True) or {}).get("data")
+        if not source:
+            continue
+        attributes = {key: source["attributes"].get(key) for key in REVIEW_FIELDS if source["attributes"].get(key) is not None}
+        created = asc.api("POST", "/appStoreReviewDetails", {"data": {
+            "type": "appStoreReviewDetails", "attributes": attributes,
+            "relationships": {"appStoreVersion": {"data": {"type": "appStoreVersions", "id": version["id"]}}}}})["data"]
+        print(f"审核信息从版本 {other['attributes']['versionString']} 复制过来了")
+        return created
+    return None
+
+
 def main():
     if len(sys.argv) != 3 or sys.argv[1] not in ("list", "attach"):
         sys.exit(__doc__)
@@ -26,6 +48,11 @@ def main():
     shots.refresh_token()
     app_id, versions = shots.find_versions()
     version = next((v for v in versions if v["attributes"]["versionString"] == number), None)
+    if version is None and mode == "attach":
+        version = asc.api("POST", "/appStoreVersions", {"data": {
+            "type": "appStoreVersions", "attributes": {"platform": "IOS", "versionString": number},
+            "relationships": {"app": {"data": {"type": "apps", "id": app_id}}}}})["data"]
+        print(f"新建了版本 {number}")
     if version is None:
         sys.exit(f"还没有版本 {number}")
 
@@ -55,6 +82,8 @@ def main():
     attached = (asc.api("GET", f"/appStoreVersions/{version['id']}/build", missing_ok=True) or {}).get("data")
     print(f"挂在版本 {number} 上的构建：{attached['attributes']['version'] if attached else '没有'}")
     review = (asc.api("GET", f"/appStoreVersions/{version['id']}/appStoreReviewDetail", missing_ok=True) or {}).get("data")
+    if review is None and mode == "attach":
+        review = copy_review_detail(version, versions)
     if review:
         attributes = review["attributes"]
         print(f"审核信息：备注 {len(attributes.get('notes') or '')} 字，演示账号{'已填' if attributes.get('demoAccountName') else '没填'}")
