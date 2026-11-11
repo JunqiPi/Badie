@@ -33,7 +33,7 @@ final class SkillTierTests: XCTestCase {
         let four = SkillTier(level: 4)
         XCTAssertEqual(four.offset(by: 2), SkillTier(level: 4, modifier: .plus).offset(by: 1))
         XCTAssertEqual(four.steps(to: SkillTier(level: 5, modifier: .plus)), 4)
-        XCTAssertEqual(SkillTier.differenceText(0), "同水平")
+        XCTAssertEqual(SkillTier.differenceText(0), "实力相当")
         XCTAssertEqual(SkillTier.differenceText(1), "高 1 档")
         XCTAssertEqual(SkillTier.differenceText(-3), "低 1 级")
         XCTAssertEqual(SkillTier.differenceText(4), "高 1 级 1 档")
