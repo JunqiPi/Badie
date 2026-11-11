@@ -145,15 +145,19 @@ struct PlayerProfileSheet: View {
     /// 别人只看到正面印象和“靠谱”徽章；评分数字只在内部用于匹配排序
     private func reputationCard(_ user: User) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            Text("球友印象")
-                .font(AppTheme.Typography.headline)
-                .foregroundStyle(AppTheme.Colors.ink)
-            PraiseTagsView(tags: user.reputation.publicTags, emptyText: String(localized: "评价的球友还不到 5 位，暂不显示印象"))
-            Text(user.isNewPlayer
-                 ? String(localized: "评价不足 5 次，等级为问卷定级 \(SkillTier(rating: user.selfRating).text)，仅供参考")
-                 : String(localized: "等级由问卷与球友评价综合得出"))
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
+            HStack(spacing: 0) {
+                Text("球友印象")
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                RulesButton(title: String(localized: "球友印象"), points: [
+                    String(localized: "评价的球友满 5 位才显示印象"),
+                    user.isNewPlayer
+                        ? String(localized: "评价不足 5 次，等级为问卷定级 \(SkillTier(rating: user.selfRating).text)，仅供参考")
+                        : String(localized: "等级由问卷与球友评价综合得出"),
+                ])
+                .padding(.vertical, -8)
+            }
+            PraiseTagsView(tags: user.reputation.publicTags, emptyText: String(localized: "暂无印象"))
         }
         .card()
     }
@@ -352,7 +356,7 @@ struct NotificationsView: View {
             ScrollView {
                 VStack(spacing: AppTheme.Spacing.sm) {
                     if inboxManager.items.isEmpty {
-                        EmptyStateView(icon: "bell.slash", title: String(localized: "暂无通知"), message: String(localized: "好友申请、房间邀请、球局提醒都会出现在这里。"))
+                        EmptyStateView(icon: "bell.slash", title: String(localized: "暂无通知"))
                     }
                     ForEach(inboxManager.items) { item in
                         Button {

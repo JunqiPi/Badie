@@ -70,16 +70,10 @@ struct SettingsView: View {
 
                     // 主要靠推送；邮件是给想要的人自己打开的（演示模式没有邮件）
                     if appState.isRemote {
-                        section(String(localized: "邮件")) {
+                        section(String(localized: "邮件"),
+                                rules: [String(localized: "匹配、确认和取消的消息也会发到你的登录邮箱")]) {
                             Toggle(isOn: privacyBinding(\.emailAlerts)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("约球消息也发邮件")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("匹配、确认和取消的消息也会发到你的登录邮箱")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                }
+                                toggleTitle(String(localized: "约球消息也发邮件"))
                             }
                             .tint(AppTheme.Colors.success)
                             .card(AppTheme.Colors.surface, shadow: .zero)
@@ -101,90 +95,50 @@ struct SettingsView: View {
                         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
                     }
 
-                    section(String(localized: "谁能看到我、联系我")) {
+                    section(String(localized: "谁能看到我、联系我"), rules: visibilityRules) {
                         VStack(spacing: AppTheme.Spacing.md) {
                             Toggle(isOn: privacyBinding(\.showsWhenSearching)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("找球友时，让附近的人在首页看到我")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("显示昵称、头像、等级和你想打的时间、球馆，不显示联系方式")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                }
+                                toggleTitle(String(localized: "在首页显示我"))
                             }
                             InsetDivider()
                             Toggle(isOn: privacyBinding(\.showsAsRegular)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("在常去球馆的“同馆常客”里显示我")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("只显示昵称、等级和球馆，不显示时间和位置")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                }
+                                toggleTitle(String(localized: "在同馆常客里显示我"))
                             }
                             InsetDivider()
                             Toggle(isOn: privacyBinding(\.allowsMessageRequests)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("允许同球群的人给我发消息请求")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("关闭后只有球友能私信你；球局群聊不受影响")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                }
+                                toggleTitle(String(localized: "接收消息请求"))
                             }
                             InsetDivider()
                             Toggle(isOn: privacyBinding(\.findableByNickname)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("可以按昵称找到我")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("对方能看到你的昵称和等级，可以发好友申请")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                }
+                                toggleTitle(String(localized: "可以按昵称找到我"))
                             }
                             InsetDivider()
                             challengePolicyRow
                             InsetDivider()
                             Toggle(isOn: privacyBinding(\.showsOnLeaderboards)) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("出现在排行榜上")
-                                        .font(AppTheme.Typography.bodyBold)
-                                        .foregroundStyle(AppTheme.Colors.ink)
-                                    Text("关闭后你仍能看榜，但不会上榜")
-                                        .font(AppTheme.Typography.caption)
-                                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                }
+                                toggleTitle(String(localized: "出现在排行榜上"))
                             }
                         }
                         .tint(AppTheme.Colors.success)
                         .card(AppTheme.Colors.surface, shadow: .zero)
                     }
 
-                    section(String(localized: "隐私与安全")) {
-                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                            privacyLine(appState.isRemote ? String(localized: "邮箱只用于登录与安全验证，不会展示给任何球友")
-                                                          : String(localized: "手机号只用于登录与安全验证，不会展示给任何球友"))
-                            privacyLine(String(localized: "位置只用于计算距离，球友看到的是大概范围（如“5 英里内”），不是精确距离"))
-                            privacyLine(String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"))
-                            privacyLine(String(localized: "评价匿名汇总，不展示单条评价与评价人"))
-                            privacyLine(String(localized: "屏蔽对方不会通知对方"))
-                            LegalLinks()
-                                .padding(.top, AppTheme.Spacing.xs)
-                        }
-                        .card(AppTheme.Colors.surface, shadow: .zero)
+                    section(String(localized: "隐私与安全"), rules: [
+                        appState.isRemote ? String(localized: "邮箱只用于登录与安全验证，不会展示给任何球友")
+                                          : String(localized: "手机号只用于登录与安全验证，不会展示给任何球友"),
+                        String(localized: "位置只用于计算距离，球友看到的是大概范围（如“5 英里内”），不是精确距离"),
+                        String(localized: "陌生人不能直接私信你：好友可以聊，同一场球局用球局群聊，同球群只能发一条消息请求"),
+                        String(localized: "评价匿名汇总，不展示单条评价与评价人"),
+                        String(localized: "屏蔽对方不会通知对方"),
+                    ]) {
+                        LegalLinks()
+                            .card(AppTheme.Colors.surface, shadow: .zero)
                     }
 
                     if !appState.isRemote {
-                        section(String(localized: "演示模式")) {
+                        section(String(localized: "演示模式"),
+                                rules: [String(localized: "附近球友、公开球局都是本机模拟数据，会自动回复消息、加入球局和互评。服务器上的数据不受影响。")]) {
                             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                                Text("附近球友、公开球局都是本机模拟数据，会自动回复消息、加入球局和互评。服务器上的数据不受影响。")
-                                    .font(AppTheme.Typography.footnote)
-                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                    .fixedSize(horizontal: false, vertical: true)
                                 HStack(spacing: AppTheme.Spacing.sm) {
                                     if DemoMode.isEnabled {
                                         Button("退出演示模式") { host.setDemoMode(false) }
@@ -198,12 +152,9 @@ struct SettingsView: View {
                         }
                     } else if appState.isAdmin {
                         // 只有服务器上的管理员看得到：用来给别人演示还没接入服务器的功能
-                        section(String(localized: "管理员")) {
+                        section(String(localized: "管理员"),
+                                rules: [String(localized: "演示模式用本机模拟的球友和球局，房间、公开球局、同馆常客等功能都能体验。不会改动服务器上的数据，其他用户看不到这个开关。")]) {
                             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                                Text("演示模式用本机模拟的球友和球局，房间、公开球局、同馆常客等功能都能体验。不会改动服务器上的数据，其他用户看不到这个开关。")
-                                    .font(AppTheme.Typography.footnote)
-                                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                    .fixedSize(horizontal: false, vertical: true)
                                 Button("进入演示模式") { host.setDemoMode(true) }
                                     .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
                             }
@@ -329,16 +280,7 @@ struct SettingsView: View {
             }
         } label: {
             HStack(alignment: .firstTextBaseline, spacing: AppTheme.Spacing.md) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("谁可以向我发起挑战")
-                        .font(AppTheme.Typography.bodyBold)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    Text(challengePolicy.wrappedValue.detail)
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                toggleTitle(String(localized: "谁能挑战我"))
                 Spacer(minLength: AppTheme.Spacing.sm)
                 HStack(spacing: 4) {
                     Text(challengePolicy.wrappedValue.title)
@@ -361,26 +303,45 @@ struct SettingsView: View {
         })
     }
 
-    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    /// 分区标题；有规则说明时标题旁放一个“?”
+    private func section<Content: View>(_ title: String, rules: [String] = [],
+                                        @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Text(title)
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .accessibilityAddTraits(.isHeader)
+            HStack(spacing: 0) {
+                Text(title)
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .accessibilityAddTraits(.isHeader)
+                if !rules.isEmpty {
+                    RulesButton(title: title, points: rules)
+                        .padding(.vertical, -8)
+                }
+            }
             content()
         }
     }
 
-    private func privacyLine(_ text: String) -> some View {
-        Label {
-            Text(text)
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.ink)
-                .fixedSize(horizontal: false, vertical: true)
-        } icon: {
-            Image(systemName: "checkmark.shield.fill")
-                .foregroundStyle(AppTheme.Colors.success)
+    /// 开关、菜单的标题：只有一行字，说明都在分区的“?”里
+    private func toggleTitle(_ text: String) -> some View {
+        Text(text)
+            .font(AppTheme.Typography.bodyBold)
+            .foregroundStyle(AppTheme.Colors.ink)
+            .multilineTextAlignment(.leading)
+    }
+
+    /// 原来写在每个开关下面的说明
+    private var visibilityRules: [String] {
+        var rules: [String] = [
+            String(localized: "找球友时，附近的人在首页能看到你的昵称、头像、等级和想打的时间、球馆，看不到联系方式"),
+            String(localized: "同馆常客只显示昵称、等级和球馆，不显示时间和位置"),
+            String(localized: "消息请求来自同球群的人；关闭后只有球友能私信你，球局群聊不受影响"),
+            String(localized: "按昵称找到你的人能看到你的昵称和等级，可以发好友申请"),
+        ]
+        for policy in ChallengePolicy.allCases {
+            rules.append(String(localized: "挑战 · \(policy.title)：\(policy.detail)"))
         }
+        rules.append(String(localized: "关闭上榜后你仍能看榜，但不会上榜"))
+        return rules
     }
 
     private var notificationText: String {
@@ -428,6 +389,10 @@ struct RecurringSlotsView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "常用时间")) {
+                RulesButton(title: String(localized: "常用时间"), points: [
+                    String(localized: "快速匹配会优先用最近的常用时间"),
+                    String(localized: "最多保存 \(TimeSlotConstants.maximumRecurringSlots) 个，还可添加 \(slots.remainingSlots) 个"),
+                ])
                 if slots.canAddMore {
                     IconButton(systemName: "plus", accessibilityLabel: String(localized: "添加常用时间"), accent: AppTheme.Colors.lime) {
                         showEditor = true
@@ -436,10 +401,6 @@ struct RecurringSlotsView: View {
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    Text("快速匹配会优先使用最近的常用时间。最多保存 \(TimeSlotConstants.maximumRecurringSlots) 个，还可添加 \(slots.remainingSlots) 个。")
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
                     if slots.isEmpty {
                         EmptyStateView(icon: "calendar.badge.plus", title: String(localized: "还没有常用时间"), tint: AppTheme.Colors.peach,
                                        actionTitle: String(localized: "添加")) { showEditor = true }

@@ -12,14 +12,18 @@ struct StrikesSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                 if let strikes = appState.strikes {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    HStack(spacing: AppTheme.Spacing.xs) {
                         Text(strikes.suspendedUntil?.suspensionText ?? String(localized: "近 180 天爽约 \(strikes.recent) 次"))
                             .font(AppTheme.Typography.title2)
                             .foregroundStyle(AppTheme.Colors.ink)
-                        Text("180 天内第二次：7 天不能约球。第三次：以后不能约球。180 天内没再爽约就重新计数。")
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        RulesButton(title: String(localized: "爽约规则"), points: [
+                            String(localized: "180 天内第二次：7 天不能约球"),
+                            String(localized: "第三次：以后不能约球"),
+                            String(localized: "180 天内没再爽约就重新计数"),
+                            String(localized: "爽约后 48 小时内可以申诉"),
+                        ])
+                        Spacer(minLength: 0)
                     }
                     ForEach(strikes.strikes) { strike in
                         row(strike)

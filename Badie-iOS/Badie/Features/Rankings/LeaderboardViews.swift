@@ -34,7 +34,7 @@ struct WeeklyStanding {
         if let rank { return String(localized: "第 \(rank) 名 · \(points) 分") }
         if isQualified { return String(localized: "\(points) 分 · 暂未进前 \(Rankings.boardSize) 名") }
         if !isCurrentWeek { return String(localized: "上周没有上榜") }
-        return String(localized: "本周再打 \(gamesNeeded) 场确认过的比赛上榜（至少 \(Rankings.weeklyMinimumOpponents) 位不同对手）")
+        return String(localized: "还差 \(gamesNeeded) 场上榜")
     }
 }
 
@@ -56,7 +56,6 @@ struct WeeklyLeaderboardView: View {
     @State private var entries: [Rankings.Entry] = []
     @State private var isLoading = false
     @State private var standing: WeeklyStanding?
-    @State private var showsRules = false
     @State private var reportTarget: String?
     /// 选了球馆：看这家球馆的月榜
     @State private var venueId: String?
@@ -87,9 +86,9 @@ struct WeeklyLeaderboardView: View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "排行榜")) {
                 if venueId == nil {
-                    IconButton(systemName: "questionmark", accessibilityLabel: String(localized: "积分怎么算")) {
-                        showsRules = true
-                    }
+                    RulesButton(title: String(localized: "积分怎么算"), points: Self.weeklyRules)
+                } else {
+                    RulesButton(title: String(localized: "馆榜怎么排"), points: Self.venueRules)
                 }
             }
             ScrollView {
@@ -102,9 +101,6 @@ struct WeeklyLeaderboardView: View {
                         filters
                         if let standing { myStandingCard(standing) }
                         board
-                        Button("积分怎么算") { showsRules = true }
-                            .buttonStyle(TextActionStyle())
-                            .frame(maxWidth: .infinity)
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -123,11 +119,6 @@ struct WeeklyLeaderboardView: View {
         .onChange(of: onlyMyBracket) { _, _ in reload() }
         .onChange(of: matchManager.games) { _, _ in reload() }
         .onChange(of: matchManager.rankingsRevision) { _, _ in reload() }
-        .sheet(isPresented: $showsRules) {
-            WeeklyRulesSheet()
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
-        }
         .confirmationDialog("举报这位球友？", isPresented: Binding(
             get: { reportTarget != nil },
             set: { if !$0 { reportTarget = nil } }
@@ -207,9 +198,6 @@ struct WeeklyLeaderboardView: View {
                 .tint(AppTheme.Colors.lime)
                 .padding(.vertical, AppTheme.Spacing.xs)
             }
-            Text("每周一 0 点（UTC）重新开始")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
         }
         .padding(.top, AppTheme.Spacing.xs)
     }
@@ -245,7 +233,6 @@ struct WeeklyLeaderboardView: View {
             BoardPlaceholder()
         } else if entries.isEmpty {
             EmptyStateView(icon: "trophy", title: String(localized: "还没有人上榜"),
-                           message: String(localized: "打满 \(Rankings.weeklyMinimumGames) 场双方确认过的比赛就能上榜"),
                            tint: AppTheme.Colors.butter)
                 .card()
         } else {
@@ -260,7 +247,7 @@ struct WeeklyLeaderboardView: View {
                                     Button(role: .destructive) {
                                         reportTarget = entry.userId
                                     } label: {
-                                        Label("举报（刷榜、广告等）", systemImage: "exclamationmark.bubble")
+                                        Label("举报", systemImage: "exclamationmark.bubble")
                                     }
                                 }
                             }
@@ -307,48 +294,34 @@ struct WeeklyLeaderboardView: View {
     }
 }
 
-// MARK: - 积分规则
+// MARK: - 规则（“?”里）
 
-private struct WeeklyRulesSheet: View {
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                Text("积分怎么算")
-                    .font(AppTheme.Typography.title2)
-                    .foregroundStyle(AppTheme.Colors.ink)
-                    .padding(.top, AppTheme.Spacing.xl)
-                VStack(alignment: .leading, spacing: 0) {
-                    InfoRow(icon: "plus.circle.fill", tint: AppTheme.Colors.lime,
-                            title: String(localized: "每场确认过的比赛：输 10 分、赢 15 分"),
-                            subtitle: String(localized: "输了也有分，多打就多得"))
-                    InsetDivider()
-                    InfoRow(icon: "chart.bar.fill", tint: AppTheme.Colors.sky,
-                            title: String(localized: "看对手强弱"),
-                            subtitle: String(localized: "对手比你强最多 ×1.5，比你弱最少 ×0.5"))
-                    InsetDivider()
-                    InfoRow(icon: "person.2.fill", tint: AppTheme.Colors.peach,
-                            title: String(localized: "同一对手第 2 场减半、第 3 场起不计分"),
-                            subtitle: String(localized: "多和不同的人打"))
-                    InsetDivider()
-                    InfoRow(icon: "number", tint: AppTheme.Colors.butter,
-                            title: String(localized: "每周最多计 \(Rankings.weeklyGameCap) 场"),
-                            subtitle: String(localized: "至少 \(Rankings.weeklyMinimumGames) 场、\(Rankings.weeklyMinimumOpponents) 位不同对手才上榜"))
-                    InsetDivider()
-                    InfoRow(icon: "checkmark.seal.fill", tint: AppTheme.Colors.mint,
-                            title: String(localized: "双方确认的比赛才算"),
-                            subtitle: String(localized: "有分歧或没确认的不计分"))
-                    InsetDivider()
-                    InfoRow(icon: "calendar", tint: AppTheme.Colors.lavender,
-                            title: String(localized: "注册满 \(Rankings.minimumAccountAgeDays) 天才上榜"),
-                            subtitle: String(localized: "可在设置里关闭上榜"))
-                }
-                .padding(.horizontal, AppTheme.Spacing.lg)
-                .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
-            }
-            .padding(.horizontal, AppTheme.Spacing.screen)
-            .padding(.bottom, AppTheme.Spacing.xl)
-        }
-        .background(AppTheme.Colors.canvas.ignoresSafeArea())
+extension WeeklyLeaderboardView {
+    /// 周榜积分规则
+    static var weeklyRules: [String] {
+        [
+            String(localized: "每场确认过的比赛：输 10 分、赢 15 分"),
+            String(localized: "输了也有分，多打就多得"),
+            String(localized: "对手比你强最多 ×1.5，比你弱最少 ×0.5"),
+            String(localized: "同一对手第 2 场减半、第 3 场起不计分"),
+            String(localized: "每周最多计 \(Rankings.weeklyGameCap) 场"),
+            String(localized: "至少 \(Rankings.weeklyMinimumGames) 场、\(Rankings.weeklyMinimumOpponents) 位不同对手才上榜"),
+            String(localized: "双方确认的比赛才算"),
+            String(localized: "有分歧或没确认的不计分"),
+            String(localized: "注册满 \(Rankings.minimumAccountAgeDays) 天才上榜"),
+            String(localized: "可在设置里关闭上榜"),
+            String(localized: "每周一 0 点（UTC）重新开始"),
+        ]
+    }
+
+    /// 场馆月榜排名规则
+    static var venueRules: [String] {
+        [
+            String(localized: "按本月在这家球馆打的、双方确认过的场数排名"),
+            String(localized: "同一对手最多计 \(Rankings.venueSameOpponentCap) 场，每天最多 \(Rankings.venueDailyCap) 场"),
+            String(localized: "至少 \(Rankings.venueMinimumGames) 场、\(Rankings.venueMinimumOpponents) 位不同对手才上榜"),
+            String(localized: "每个水平段单独排"),
+        ]
     }
 }
 
@@ -385,10 +358,6 @@ private struct VenueBoard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-            Text("按本月在这家球馆打的确认过的场数排名（同一对手最多计 \(Rankings.venueSameOpponentCap) 场、每天最多 \(Rankings.venueDailyCap) 场）；每个水平段单独排")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
             SegmentedSticker(options: [MonthChoice.this, .last], selection: $monthChoice) { option in
                 option == .this ? String(localized: "本月") : String(localized: "上月")
             }

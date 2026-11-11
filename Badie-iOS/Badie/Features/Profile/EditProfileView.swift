@@ -129,9 +129,6 @@ struct EditProfileView: View {
             } else {
                 AvatarPaletteEditor(avatar: $avatar)
             }
-            Text("上传的照片会显示给其他球友")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
         }
     }
 
@@ -149,7 +146,15 @@ struct EditProfileView: View {
 
     private var cardSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            fieldLabel(String(localized: "卡片背景"))
+            HStack(spacing: 0) {
+                fieldLabel(String(localized: "卡片背景"))
+                RulesButton(title: String(localized: "卡片背景"), points: [
+                    String(localized: "别人在首页刷到你时，看到的就是这张卡片"),
+                    String(localized: "上传的照片会显示给其他球友"),
+                    String(localized: "不传照片时用这个颜色"),
+                ])
+                .padding(.vertical, -8)
+            }
             if let user = previewUser {
                 let cover = AvatarPhotos.cardImage(userId: user.id, avatar: user.avatar)
                 VStack(alignment: .leading, spacing: 0) {
@@ -203,9 +208,6 @@ struct EditProfileView: View {
                     Button("移除背景照片") { appState.backend.removeCardPhoto() }
                         .buttonStyle(TextActionStyle())
                 } else {
-                    Text("不传照片时用这个颜色")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
                     HStack(spacing: 0) {
                         ForEach(CardColor.allCases) { color in
                             let selected = color == user.cardColor
@@ -258,24 +260,19 @@ struct EditProfileView: View {
 
     private func levelSection(_ user: User) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            fieldLabel(String(localized: "等级"))
+            HStack(spacing: 0) {
+                fieldLabel(String(localized: "等级"))
+                RulesButton(title: String(localized: "等级"), points: levelRules(user))
+                    .padding(.vertical, -8)
+            }
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     LevelBadge(tier: user.displayTier)
                     VerifiedBadge(status: user.verificationStatus)
-                    Text(SkillLevel.descriptor(for: user.displayLevel))
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .lineLimit(2)
+                    if user.needsAssessment {
+                        TagPill(text: String(localized: "未定级"), fill: AppTheme.Colors.butter)
+                    }
                 }
-                Text(user.needsAssessment
-                     ? String(localized: "你跳过了定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配。花一分钟做完定级，匹配会准很多。")
-                     : user.isNewPlayer
-                     ? String(localized: "等级来自定级问卷；打满 5 场并获得评价后会按球友评价自动校准。")
-                     : String(localized: "你已有 \(user.reputation.evaluationCount) 次球友评价，等级主要由球友评价决定。"))
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: AppTheme.Spacing.sm) {
                     Button {
                         showGuide = true
@@ -303,14 +300,8 @@ struct EditProfileView: View {
                 } label: {
                     HStack(spacing: AppTheme.Spacing.sm) {
                         Image(systemName: "checkmark.seal.fill")
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(verificationTitle(user))
-                                .font(AppTheme.Typography.subheadlineBold)
-                            Text("问卷最高 6+。打过州 / 地区公开赛最高组、有全国排名、运动员等级证书或 BWF 世界排名，可以凭证据认证 7− 到 9+")
-                                .font(AppTheme.Typography.caption)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
+                        Text(verificationTitle(user))
+                            .font(AppTheme.Typography.subheadlineBold)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .bold))
@@ -322,6 +313,19 @@ struct EditProfileView: View {
             }
             .card(AppTheme.Colors.surface, shadow: .zero)
         }
+    }
+
+    /// 原来写在等级卡片上的说明
+    private func levelRules(_ user: User) -> [String] {
+        [
+            SkillLevel.descriptor(for: user.displayLevel),
+            user.needsAssessment
+                ? String(localized: "你跳过了定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配。花一分钟做完定级，匹配会准很多。")
+                : user.isNewPlayer
+                ? String(localized: "等级来自定级问卷；打满 5 场并获得评价后会按球友评价自动校准。")
+                : String(localized: "你已有 \(user.reputation.evaluationCount) 次球友评价，等级主要由球友评价决定。"),
+            String(localized: "问卷最高 6+。打过州 / 地区公开赛最高组、有全国排名、运动员等级证书或 BWF 世界排名，可以凭证据认证 7− 到 9+"),
+        ]
     }
 
     private func verificationTitle(_ user: User) -> String {

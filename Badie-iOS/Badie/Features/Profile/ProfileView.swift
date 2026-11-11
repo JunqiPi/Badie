@@ -13,6 +13,7 @@ struct ProfileView: View {
     @State private var showHelp = false
     @State private var showTips = false
     @State private var showsSupport = false
+    @State private var showReputation = false
 
     var body: some View {
         ScrollView {
@@ -24,27 +25,11 @@ struct ProfileView: View {
                 }
                 if let user = appState.currentUser {
                     Group {
-                        if user.needsAssessment {
-                            NoticeBanner(icon: "checklist",
-                                         text: String(localized: "还没定级，现在暂按 Lv.\(SkillAssessment.provisionalLevel) 匹配"),
-                                         actionTitle: String(localized: "去定级")) { router.open(.editProfile) }
-                        }
-                        if let strikes = appState.strikes, strikes.recent > 0 || strikes.suspendedUntil != nil {
-                            NoticeBanner(icon: "exclamationmark.triangle.fill",
-                                         text: strikes.suspendedUntil?.suspensionText ?? String(localized: "近 180 天爽约 \(strikes.recent) 次"),
-                                         tint: AppTheme.Colors.pink, actionTitle: String(localized: "去看看")) {
-                                appState.showsStrikes = true
-                            }
-                        }
+                        todoPills(user)
                         identityCard(user)
-                        HStack(spacing: AppTheme.Spacing.sm) {
-                            StatTile(value: "\(user.totalGames)", label: String(localized: "场次"))
-                            StatTile(value: "\(user.attendance.reliabilityPercentage)%", label: String(localized: "履约率"))
-                        }
-                        monthlyWinRateCard(user)
-                        reputationCard(user)
-                        attendanceCard(user)
+                        statsRow(user)
                         menuCard(user)
+                        moreCard
                         supportCard
                     }
                     .padding(.horizontal, AppTheme.Spacing.screen)
@@ -75,99 +60,126 @@ struct ProfileView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
         }
+        .sheet(isPresented: $showReputation) {
+            ReputationSheet()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    // MARK: 待处理（没定级、爽约）
+
+    @ViewBuilder
+    private func todoPills(_ user: User) -> some View {
+        let strikes: MyStrikes? = appState.strikes.flatMap { ($0.recent > 0 || $0.suspendedUntil != nil) ? $0 : nil }
+        if user.needsAssessment || strikes != nil {
+            FlowLayout(spacing: AppTheme.Spacing.sm) {
+                if user.needsAssessment {
+                    CountPill(icon: "checklist", title: String(localized: "去定级"), count: 0) {
+                        router.open(.editProfile)
+                    }
+                }
+                if let strikes {
+                    CountPill(icon: "exclamationmark.triangle.fill",
+                              title: strikes.suspendedUntil?.suspensionText ?? String(localized: "爽约"),
+                              count: strikes.suspendedUntil == nil ? strikes.recent : 0) {
+                        appState.showsStrikes = true
+                    }
+                }
+            }
+        }
     }
 
     // MARK: Identity
 
+    /// 整张卡点进编辑资料
     private func identityCard(_ user: User) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+        Button { router.open(.editProfile) } label: {
             HStack(spacing: AppTheme.Spacing.lg) {
-                Button { router.open(.editProfile) } label: {
-                    MyAvatarView(size: 76)
-                        .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
-                        .overlay(alignment: .bottomTrailing) {
-                            if user.avatar.photoVersion == nil { CameraBadge().scaleEffect(0.8) }
-                        }
-                }
-                .buttonStyle(PressableStyle())
-                .accessibilityLabel("更换头像")
+                MyAvatarView(size: 64)
+                    .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
+                    .overlay(alignment: .bottomTrailing) {
+                        if user.avatar.photoVersion == nil { CameraBadge().scaleEffect(0.7) }
+                    }
                 VStack(alignment: .leading, spacing: 6) {
                     NicknameText(user: user)
                         .font(AppTheme.Typography.title2)
-                    Text("加入 \(daysSince(user.joinDate)) 天")
-                        .font(AppTheme.Typography.footnoteBold)
-                        .opacity(0.7)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     FlowLayout(spacing: 6) {
                         LevelBadge(tier: user.displayTier)
                         if user.isReliable { ReliableBadge() }
                         if user.isNewPlayer { NewPlayerBadge() }
                         VerifiedBadge(status: user.verificationStatus)
-                        if let mode = user.preferredMode {
-                            TagPill(text: String(localized: "偏好\(mode.title)"), fill: .white)
-                        }
                     }
                 }
                 Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 15, weight: .bold))
+                    .accessibilityHidden(true)
             }
-            if !user.bio.isEmpty {
-                Text(user.bio)
-                    .font(AppTheme.Typography.subheadline)
-            }
-            Button("编辑资料") { router.open(.editProfile) }
-                .buttonStyle(BrutalButtonStyle(kind: .accent(.white), size: .medium))
+            .foregroundStyle(AppTheme.Colors.onAccent)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .card(AppTheme.Colors.lavender, padding: AppTheme.Spacing.lg)
+            .contentShape(Rectangle())
         }
-        .foregroundStyle(AppTheme.Colors.onAccent)
-        .card(AppTheme.Colors.lavender, padding: AppTheme.Spacing.xl)
+        .buttonStyle(PressableStyle())
+        .accessibilityHint(Text("编辑资料"))
     }
 
-    // MARK: Monthly win rate
+    // MARK: 三个数字：场次 / 到场 / 胜率
 
-    /// 只统计双方确认过的对局，每个自然月重新计算；场数不够时只显示进度
-    private func monthlyWinRateCard(_ user: User) -> some View {
+    private func statsRow(_ user: User) -> some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            StatTile(value: "\(user.totalGames)", label: String(localized: "场次"))
+            StatTile(value: "\(user.attendance.reliabilityPercentage)%", label: String(localized: "到场"))
+            winRateTile(user)
+        }
+    }
+
+    /// 本月胜率：场数不够时显示“–”；怎么算、赢输几局都在“?”里
+    private func winRateTile(_ user: User) -> some View {
         let month = Rankings.month(containing: Date())
         let rate = appState.backend.winRate(for: user.id, month: month)
         let previous = appState.backend.winRate(for: user.id, month: Rankings.month(containing: month.start.addingTimeInterval(-86400)))
-        let minimum = Rankings.winRateMinimumGames
-        return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            HStack(alignment: .firstTextBaseline) {
-                Text("本月胜率")
-                    .font(AppTheme.Typography.headline)
-                Spacer()
-                if previous.isPublic {
-                    Text("上月 \(previous.percentage)%")
-                        .font(AppTheme.Typography.footnoteBold)
-                        .foregroundStyle(AppTheme.Colors.inkTertiary)
-                }
-            }
-            if rate.isPublic {
-                HStack(alignment: .lastTextBaseline, spacing: AppTheme.Spacing.sm) {
-                    Text("\(rate.percentage)%")
-                        .scaledFont(size: 40, relativeTo: .largeTitle)
-                        .monospacedDigit()
-                    Text("赢 \(rate.wonRounds) 局 · 输 \(rate.playedRounds - rate.wonRounds) 局")
-                        .font(AppTheme.Typography.footnoteBold)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                }
-            } else {
-                Text("本月已确认 \(rate.games) 场，满 \(minimum) 场显示胜率")
-                    .font(AppTheme.Typography.subheadlineBold)
-                    .fixedSize(horizontal: false, vertical: true)
-                ProgressBar(progress: Double(rate.games) / Double(minimum))
-            }
-            if rate.games > 0 {
-                Text("\(rate.games) 场 · \(rate.opponents) 位不同对手 · \(opponentStrengthText(rate.averageGap))")
-                    .font(AppTheme.Typography.footnoteBold)
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(verbatim: rate.isPublic ? "\(rate.percentage)%" : "–")
+                .scaledFont(size: 24, relativeTo: .title2)
+                .foregroundStyle(AppTheme.Colors.ink)
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            HStack(spacing: 0) {
+                Text("胜率")
+                    .font(AppTheme.Typography.caption)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1)
+                RulesButton(title: String(localized: "本月胜率"), points: winRatePoints(rate, previous: previous))
+                    .padding(.vertical, -8)
+                    .padding(.horizontal, -4)
             }
-            Label("只算双方都确认的比赛，每月 1 日重新计算；同一对手每月最多计入 \(Rankings.monthlySameOpponentCap) 场",
-                  systemImage: "info.circle")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                .fixedSize(horizontal: false, vertical: true)
         }
-        .foregroundStyle(AppTheme.Colors.ink)
-        .card()
+        .padding(.horizontal, AppTheme.Spacing.md)
+        .padding(.vertical, AppTheme.Spacing.md)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
+    }
+
+    private func winRatePoints(_ rate: Rankings.WinRate, previous: Rankings.WinRate) -> [String] {
+        var points: [String] = []
+        if rate.isPublic {
+            points.append(String(localized: "赢 \(rate.wonRounds) 局 · 输 \(rate.playedRounds - rate.wonRounds) 局"))
+        } else {
+            points.append(String(localized: "本月已确认 \(rate.games) 场，满 \(Rankings.winRateMinimumGames) 场显示胜率"))
+        }
+        if rate.games > 0 {
+            points.append(String(localized: "\(rate.games) 场 · \(rate.opponents) 位不同对手 · \(opponentStrengthText(rate.averageGap))"))
+        }
+        if previous.isPublic {
+            points.append(String(localized: "上月 \(previous.percentage)%"))
+        }
+        points.append(String(localized: "只算双方都确认的比赛，每月 1 日重新计算；同一对手每月最多计入 \(Rankings.monthlySameOpponentCap) 场"))
+        return points
     }
 
     private func opponentStrengthText(_ gap: Double) -> String {
@@ -177,111 +189,19 @@ struct ProfileView: View {
         return String(localized: "对手和你水平相当")
     }
 
-    // MARK: Reputation
-
-    /// 本人看到客观记录（准时、水平校准）和别人看到的印象；球品分对任何人都不显示
-    private func reputationCard(_ user: User) -> some View {
-        let reputation = user.reputation
-        return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            HStack {
-                Text("我的口碑")
-                    .font(AppTheme.Typography.headline)
-                Spacer()
-                Text(reputation.evaluationCount == 0 ? String(localized: "还没有评价") : String(localized: "\(reputation.evaluationCount) 次匿名评价"))
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-            }
-            if reputation.evaluationCount > 0 {
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    StatTile(value: reputation.punctualityText, label: String(localized: "准时到场"))
-                    StatTile(value: reputation.deviationText, label: String(localized: "等级偏差"))
-                }
-            }
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                Text("球友眼中的你")
-                    .font(AppTheme.Typography.subheadlineBold)
-                PraiseTagsView(tags: reputation.publicTags, emptyText: String(localized: "5 位以上球友评价后显示，每月更新一次"))
-            }
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                if user.isNewPlayer {
-                    Text("水平校准中 \(reputation.evaluationCount)/\(ReputationScore.newPlayerThreshold)")
-                        .font(AppTheme.Typography.subheadlineBold)
-                    ProgressBar(progress: Double(reputation.evaluationCount) / Double(ReputationScore.newPlayerThreshold))
-                    Text(String(localized: "再打 \(ReputationScore.newPlayerThreshold - reputation.evaluationCount) 场并获得评价后，等级将按“问卷 \(selfPercent(user))% + 球友评价 \(100 - selfPercent(user))%”计算")
-                         + (user.peerWeight > User.peerEvaluationWeight ? String(localized: "（你的等级待校准，球友评价占比更高）") : ""))
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                } else {
-                    Text("综合等级 \(user.displayTier.text)")
-                        .font(AppTheme.Typography.subheadlineBold)
-                    ProgressBar(progress: Double(user.displayTier.index + 1) / Double(SkillTier.count))
-                    Text(String(localized: "\(user.verifiedRating == nil ? String(localized: "问卷") : String(localized: "认证")) \(SkillTier(rating: user.baseRating).text) × \(selfPercent(user))% + 球友评价 \(SkillTier(rating: reputation.peerLevelAverage).text) × \(100 - selfPercent(user))%")
-                         + (user.verifiedRating == nil ? "" : String(localized: "，不超过认证档位")))
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                }
-            }
-            Label("球品评分只用于匹配排序，任何人（包括你自己）都看不到分数", systemImage: "eye.slash.fill")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-        .foregroundStyle(AppTheme.Colors.ink)
-        .card()
-    }
-
-    private func selfPercent(_ user: User) -> Int {
-        Int(((1 - user.peerWeight) * 100).rounded())
-    }
-
-    private func attendanceCard(_ user: User) -> some View {
-        let record = user.attendance
-        let standing = record.standing
-        return HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
-            IconTile(systemName: standing == .good ? "checkmark.shield.fill" : "exclamationmark.shield.fill",
-                     fill: standing == .good ? AppTheme.Colors.mint : AppTheme.Colors.pink, size: 44)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("履约记录 · \(standing.title)")
-                    .font(AppTheme.Typography.headline)
-                    .foregroundStyle(AppTheme.Colors.ink)
-                Text("完成 \(record.gamesPlayed) 场 · 爽约 \(record.noShows) 次 · 临时取消 \(record.lateCancellations) 次")
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                Text(standing.message)
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-        }
-        .card()
-        .accessibilityElement(children: .combine)
-    }
-
     // MARK: Menu
 
     private func menuCard(_ user: User) -> some View {
-        VStack(spacing: 0) {
-            MenuRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender, title: String(localized: "我的球友"),
+        let evaluations = user.reputation.evaluationCount
+        return VStack(spacing: 0) {
+            MenuRow(icon: "star.fill", tint: AppTheme.Colors.lime, title: String(localized: "口碑"),
+                    value: evaluations == 0 ? nil : String(localized: "\(evaluations) 次评价")) {
+                showReputation = true
+            }
+            InsetDivider()
+            MenuRow(icon: "person.2.fill", tint: AppTheme.Colors.sky, title: String(localized: "我的球友"),
                     value: "\(friendManager.friends.count)", badge: friendManager.incomingRequests.count) {
                 router.open(.friends)
-            }
-            if user.friendLink != nil {
-                InsetDivider()
-                MenuRow(icon: "qrcode", tint: AppTheme.Colors.lime, title: String(localized: "我的加球友链接")) {
-                    showFriendLink = true
-                }
-            }
-            InsetDivider()
-            MenuRow(icon: "list.number", tint: AppTheme.Colors.lime, title: String(localized: "等级对照表"),
-                    value: user.displayTier.text) {
-                router.open(.levelGuide)
-            }
-            InsetDivider()
-            MenuRow(icon: "clock.arrow.circlepath", tint: AppTheme.Colors.peach, title: String(localized: "历史球局"),
-                    value: "\(matchManager.pastGames.count)") {
-                router.open(.gameHistory)
             }
             InsetDivider()
             MenuRow(icon: "trophy.fill", tint: AppTheme.Colors.butter, title: String(localized: "排行榜")) {
@@ -294,6 +214,23 @@ struct ProfileView: View {
                         badge: incomingChallenges) {
                     router.open(.challenges)
                 }
+            }
+            if user.friendLink != nil {
+                InsetDivider()
+                MenuRow(icon: "qrcode", tint: AppTheme.Colors.peach, title: String(localized: "加球友链接")) {
+                    showFriendLink = true
+                }
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+    }
+
+    private var moreCard: some View {
+        VStack(spacing: 0) {
+            MenuRow(icon: "clock.arrow.circlepath", tint: AppTheme.Colors.peach, title: String(localized: "历史球局"),
+                    value: "\(matchManager.pastGames.count)") {
+                router.open(.gameHistory)
             }
             InsetDivider()
             MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.butter, title: String(localized: "常用时间"),
@@ -311,6 +248,10 @@ struct ProfileView: View {
                 router.open(.courts)
             }
             InsetDivider()
+            MenuRow(icon: "list.number", tint: AppTheme.Colors.lime, title: String(localized: "等级对照表")) {
+                router.open(.levelGuide)
+            }
+            InsetDivider()
             MenuRow(icon: "hand.raised.fill", tint: AppTheme.Colors.surfaceMuted, title: String(localized: "屏蔽名单"),
                     value: "\(messageManager.blockedUsers.count)") {
                 router.open(.blockedUsers)
@@ -322,12 +263,12 @@ struct ProfileView: View {
 
     private var supportCard: some View {
         VStack(spacing: 0) {
-            MenuRow(icon: "questionmark.bubble.fill", tint: AppTheme.Colors.sky, title: String(localized: "帮助与反馈")) {
+            MenuRow(icon: "questionmark.bubble.fill", tint: AppTheme.Colors.mint, title: String(localized: "帮助与反馈")) {
                 showHelp = true
             }
             if showsSupport {
                 InsetDivider()
-                MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.peach, title: String(localized: "支持 Badie")) {
+                MenuRow(icon: "cup.and.saucer.fill", tint: AppTheme.Colors.pink, title: String(localized: "支持 Badie")) {
                     showTips = true
                 }
             }
@@ -335,9 +276,97 @@ struct ProfileView: View {
         .padding(.horizontal, AppTheme.Spacing.lg)
         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
     }
+}
 
-    private func daysSince(_ date: Date) -> Int {
-        max(1, Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 1)
+// MARK: - 我的口碑（“我的”页的一行点进来）
+
+/// 本人看到客观记录（准时、水平校准、履约）和别人看到的印象；球品分对任何人都不显示
+private struct ReputationSheet: View {
+    @EnvironmentObject private var appState: AppState
+
+    var body: some View {
+        ScrollView {
+            if let user = appState.currentUser {
+                content(user)
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                    .padding(.top, AppTheme.Spacing.xl)
+                    .padding(.bottom, AppTheme.Spacing.xl)
+            }
+        }
+        .background(AppTheme.Colors.canvas.ignoresSafeArea())
+    }
+
+    private func content(_ user: User) -> some View {
+        let reputation = user.reputation
+        let record = user.attendance
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
+            HStack(spacing: AppTheme.Spacing.xs) {
+                Text("我的口碑")
+                    .font(AppTheme.Typography.title2)
+                    .accessibilityAddTraits(.isHeader)
+                RulesButton(title: String(localized: "口碑怎么算"), points: points(user))
+                Spacer(minLength: 0)
+                Text(reputation.evaluationCount == 0 ? String(localized: "还没有评价") : String(localized: "\(reputation.evaluationCount) 次匿名评价"))
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+            }
+            if reputation.evaluationCount > 0 {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    StatTile(value: reputation.punctualityText, label: String(localized: "准时到场"))
+                    StatTile(value: reputation.deviationText, label: String(localized: "等级偏差"))
+                }
+            }
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                Text("球友眼中的你")
+                    .font(AppTheme.Typography.subheadlineBold)
+                PraiseTagsView(tags: reputation.publicTags, emptyText: String(localized: "暂无印象"))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .card(shadow: .zero)
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                if user.isNewPlayer {
+                    Text("水平校准中 \(reputation.evaluationCount)/\(ReputationScore.newPlayerThreshold)")
+                        .font(AppTheme.Typography.subheadlineBold)
+                    ProgressBar(progress: Double(reputation.evaluationCount) / Double(ReputationScore.newPlayerThreshold))
+                } else {
+                    Text("综合等级 \(user.displayTier.text)")
+                        .font(AppTheme.Typography.subheadlineBold)
+                    ProgressBar(progress: Double(user.displayTier.index + 1) / Double(SkillTier.count))
+                }
+            }
+            .card(shadow: .zero)
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                Text("履约记录 · \(record.standing.title)")
+                    .font(AppTheme.Typography.subheadlineBold)
+                Text("完成 \(record.gamesPlayed) 场 · 爽约 \(record.noShows) 次 · 临时取消 \(record.lateCancellations) 次")
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .card(shadow: .zero)
+            .accessibilityElement(children: .combine)
+        }
+        .foregroundStyle(AppTheme.Colors.ink)
+    }
+
+    /// 原来写在卡片上的说明都收到这里
+    private func points(_ user: User) -> [String] {
+        let reputation = user.reputation
+        var points: [String] = [String(localized: "球友印象在 5 位以上球友评价后显示，每月更新一次")]
+        if user.isNewPlayer {
+            points.append(String(localized: "再打 \(ReputationScore.newPlayerThreshold - reputation.evaluationCount) 场并获得评价后，等级将按“问卷 \(selfPercent(user))% + 球友评价 \(100 - selfPercent(user))%”计算")
+                          + (user.peerWeight > User.peerEvaluationWeight ? String(localized: "（你的等级待校准，球友评价占比更高）") : ""))
+        } else {
+            points.append(String(localized: "\(user.verifiedRating == nil ? String(localized: "问卷") : String(localized: "认证")) \(SkillTier(rating: user.baseRating).text) × \(selfPercent(user))% + 球友评价 \(SkillTier(rating: reputation.peerLevelAverage).text) × \(100 - selfPercent(user))%")
+                          + (user.verifiedRating == nil ? "" : String(localized: "，不超过认证档位")))
+        }
+        points.append(user.attendance.standing.message)
+        points.append(String(localized: "球品评分只用于匹配排序，任何人（包括你自己）都看不到分数"))
+        return points
+    }
+
+    private func selfPercent(_ user: User) -> Int {
+        Int(((1 - user.peerWeight) * 100).rounded())
     }
 }
 

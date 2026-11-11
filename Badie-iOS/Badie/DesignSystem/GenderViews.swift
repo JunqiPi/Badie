@@ -6,14 +6,15 @@ struct GenderPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Text("定级用的性别")
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
+            HStack(spacing: 0) {
+                Text("定级用的性别")
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                RulesButton(title: String(localized: "定级用的性别"), points: [
+                    String(localized: "羽毛球男女的等级分开算，这里只用来给你定级和公平匹配，不代表你的性别认同，随时可以在设置里改。"),
+                ])
+            }
             SegmentedSticker(options: Gender.choices, selection: $selection, title: { $0.label })
-            Text("羽毛球男女的等级分开算，这里只用来给你定级和公平匹配，不代表你的性别认同，随时可以在设置里改。")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -31,12 +32,11 @@ struct AudiencePicker: View {
                 ForEach(options) { gender in
                     ChoiceChip(title: gender.onlyLabel, isSelected: selection == gender) { selection = gender }
                 }
+                RulesButton(title: String(localized: "谁能来"), points: [
+                    String(localized: "男女一起打时，女子等级按低约 1.5 级来算，这样比赛势均力敌。"),
+                    String(localized: "只有符合条件的人能看到和加入。"),
+                ])
             }
-            Text(selection == nil ? String(localized: "男女一起打时，女子等级按低约 1.5 级来算，这样比赛势均力敌。")
-                                  : String(localized: "只有符合条件的人能看到和加入。"))
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -59,11 +59,8 @@ struct EventPicker: View {
                         selection = event
                     }
                 }
+                RulesButton(title: String(localized: "项目"), points: choices.map { PlayEvent.caption($0) })
             }
-            Text(PlayEvent.caption(selection))
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .onChange(of: mode) { _, _ in
             if !choices.contains(selection) { selection = nil }

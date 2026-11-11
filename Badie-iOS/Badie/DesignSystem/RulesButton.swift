@@ -96,6 +96,6 @@ struct CountPill: View {
             .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
         }
         .buttonStyle(PressableStyle())
-        .accessibilityLabel(Text(verbatim: "\(title) \(count)"))
+        .accessibilityLabel(Text(verbatim: count > 0 ? "\(title) \(count)" : title))
     }
 }

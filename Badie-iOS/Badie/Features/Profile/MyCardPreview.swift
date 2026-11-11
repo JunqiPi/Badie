@@ -11,14 +11,10 @@ struct MyCardPreview: View {
     var body: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("我的卡片")
-                        .font(AppTheme.Typography.title)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    Text("别人刷到你时就是这样")
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                }
+                Text("我的卡片")
+                    .font(AppTheme.Typography.title)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
                 IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }

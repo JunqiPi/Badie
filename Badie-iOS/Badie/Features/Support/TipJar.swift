@@ -136,7 +136,7 @@ struct TipJarSheet: View {
                     Text("在 Ko-fi 上打赏")
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
-                    Text("用银行卡付，金额随意。")
+                    Text("银行卡 · 金额随意")
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }

@@ -27,7 +27,6 @@ struct ChallengesView: View {
                     if all.isEmpty {
                         EmptyStateView(icon: "flag.2.crossed.fill",
                                        title: String(localized: "还没有挑战"),
-                                       message: String(localized: "点任意球友头像就能发起挑战。"),
                                        tint: AppTheme.Colors.peach)
                             .card()
                     } else {
@@ -315,6 +314,7 @@ struct ChallengeComposer: View {
                     .font(AppTheme.Typography.title3)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
+                RulesButton(title: String(localized: "挑战规则"), points: rules)
                 Spacer()
                 IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
@@ -351,10 +351,9 @@ struct ChallengeComposer: View {
                             }
                         }
                         if let court {
-                            Text("\(court.address) · \(court.formattedDistance(from: locationManager.coordinate))")
+                            Text(court.formattedDistance(from: locationManager.coordinate))
                                 .font(AppTheme.Typography.footnote)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
 
@@ -380,17 +379,6 @@ struct ChallengeComposer: View {
                                 message = String(newValue.prefix(Challenge.messageLimit))
                             }
                         }
-
-                    Group {
-                        if mode == .doubles {
-                            Text("对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。对方接受时会选自己的搭档；四人都确认赛果后计入排行。")
-                        } else {
-                            Text("对方 48 小时内可以接受；没回应会自动过期。被拒绝也只会显示“未成行”。接受后生成一场单打，双方确认赛果后计入排行。")
-                        }
-                    }
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xl)
@@ -401,11 +389,7 @@ struct ChallengeComposer: View {
             } label: {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     if isSending { LoadingDots() }
-                    if mode == .doubles {
-                        Text("发起双打挑战")
-                    } else {
-                        Text("发起单打挑战")
-                    }
+                    Text("发起挑战")
                 }
             }
             .buttonStyle(.brutalPrimary)
@@ -422,6 +406,21 @@ struct ChallengeComposer: View {
                 .presentationDragIndicator(.visible)
         }
         .onAppear(perform: setup)
+    }
+
+    /// 原来写在页面底部的说明
+    private var rules: [String] {
+        var points = [
+            String(localized: "对方 48 小时内可以接受，没回应会自动过期"),
+            String(localized: "被拒绝也只会显示“未成行”"),
+        ]
+        if mode == .doubles {
+            points.append(String(localized: "对方接受时会选自己的搭档"))
+            points.append(String(localized: "四人都确认赛果后计入排行"))
+        } else {
+            points.append(String(localized: "接受后生成一场单打，双方确认赛果后计入排行"))
+        }
+        return points
     }
 
     private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
@@ -526,6 +525,7 @@ private struct AcceptDoublesSheet: View {
                     .font(AppTheme.Typography.title3)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
+                RulesButton(title: String(localized: "挑战规则"), points: [String(localized: "四人都确认赛果后计入排行")])
                 Spacer()
                 IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
@@ -534,10 +534,6 @@ private struct AcceptDoublesSheet: View {
             } else {
                 PartnerPicker(friends: options, selection: $partnerId)
             }
-            Text("四人都确认赛果后计入排行。")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
             Button("接受挑战") {
                 guard let partnerId else { return }
