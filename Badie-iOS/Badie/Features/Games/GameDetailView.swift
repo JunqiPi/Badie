@@ -109,9 +109,14 @@ struct GameDetailView: View {
                 GameTicketCard(game: game, players: players(game), currentUserId: me)
 
                 if game.status == .cancelled {
-                    NoticeBanner(icon: "xmark.octagon.fill",
-                                 text: cancelledText(game),
-                                 tint: AppTheme.Colors.surfaceMuted)
+                    HStack(spacing: AppTheme.Spacing.xs) {
+                        TagPill(text: cancelledText(game), icon: "xmark.octagon.fill",
+                                fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.ink)
+                        if game.cancelledLate {
+                            RulesButton(title: String(localized: "临时取消"),
+                                        points: [String(localized: "开赛前 2 小时内取消，计为临时取消")])
+                        }
+                    }
                 }
 
                 if game.status == .confirmed {
@@ -173,7 +178,7 @@ struct GameDetailView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if let zone = venue.timeZoneAbbreviation {
-                    Label("时间为球馆当地时间（\(zone)）", systemImage: "globe")
+                    Label("当地时间 \(zone)", systemImage: "globe")
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkTertiary)
                 }
@@ -247,9 +252,10 @@ struct GameDetailView: View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             let now = context.date
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                HStack {
+                HStack(spacing: AppTheme.Spacing.xs) {
                     Text("到场签到")
                         .font(AppTheme.Typography.headline)
+                    RulesButton(title: String(localized: "签到和履约"), points: Self.attendanceRules)
                     Spacer()
                     Text("\(game.checkIns.count)/\(game.playerIds.count) 已到")
                         .font(AppTheme.Typography.footnoteBold)
@@ -275,16 +281,20 @@ struct GameDetailView: View {
                     .accessibilityElement(children: .combine)
                 }
                 if let me, !game.hasCheckedIn(me) {
-                    Button {
-                        Task { await checkIn(game) }
-                    } label: {
-                        Label(game.canCheckIn(now: now) ? String(localized: "我已到场 · 签到") : String(localized: "开赛前 30 分钟开放签到"), systemImage: "mappin.circle.fill")
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        Button {
+                            Task { await checkIn(game) }
+                        } label: {
+                            Label("签到", systemImage: "mappin.circle.fill")
+                        }
+                        .buttonStyle(.brutal(.primary, size: .medium))
+                        .disabled(!game.canCheckIn(now: now) || isWorking)
+                        if !game.canCheckIn(now: now), now < game.slot.startTime {
+                            // 还没到签到时间：标出几点开放
+                            TagPill(text: String(localized: "\(DateText.time(game.slot.startTime.addingTimeInterval(-Game.checkInWindow))) 开放"),
+                                    icon: "clock", fill: AppTheme.Colors.surfaceMuted, foreground: AppTheme.Colors.inkSecondary)
+                        }
                     }
-                    .buttonStyle(.brutal(.primary, size: .medium))
-                    .disabled(!game.canCheckIn(now: now) || isWorking)
-                    Text("签到记录会计入履约率，爽约和临时取消会被记录")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.inkTertiary)
                 }
             }
             .card()
@@ -341,6 +351,7 @@ struct GameDetailView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text("AA 费用")
                     .font(AppTheme.Typography.headline)
+                RulesButton(title: String(localized: "费用怎么算"), points: costRules(game))
                 Spacer()
                 if let perPerson = game.cost.perPerson {
                     Text(game.cost.money(perPerson))
@@ -355,15 +366,6 @@ struct GameDetailView: View {
                 }
             }
             .foregroundStyle(AppTheme.Colors.ink)
-            Text("\(game.cost.breakdownText) · 平台不收服务费")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-            if game.court.status == .unconfirmed || !game.court.pricing.isKnown {
-                Text("价格以球馆实际收费为准")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
-            }
             InsetDivider()
             ForEach(players(game)) { player in
                 let paid = game.hasPaid(player.id)
@@ -402,17 +404,19 @@ struct GameDetailView: View {
     private func completeSection(_ game: Game) -> some View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
             let canComplete = game.canComplete(now: context.date)
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack(spacing: AppTheme.Spacing.xs) {
                 Button {
                     resultSheet = .complete
                 } label: {
-                    Label("结束球局并记录结果", systemImage: "flag.checkered")
+                    Label("结束球局", systemImage: "flag.checkered")
                 }
                 .buttonStyle(.brutal(.inverse, size: .medium))
                 .disabled(!canComplete)
-                Text(canComplete ? String(localized: "结束后可以给球友匿名评价，互评都提交后才会计入口碑") : String(localized: "球局开始后才能结束 · \(DateText.countdown(to: game.slot.startTime, now: context.date))"))
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                RulesButton(title: String(localized: "结束球局"), points: [
+                    String(localized: "球局开始后才能结束"),
+                    String(localized: "结束后可以给球友匿名评价"),
+                    String(localized: "互评都提交后才会计入口碑")
+                ])
             }
         }
     }
@@ -466,9 +470,12 @@ struct GameDetailView: View {
         let canReport = hasReports && isPlayer && game.acceptsResultReports()
         let claims = otherClaims(game)
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            HStack {
+            HStack(spacing: AppTheme.Spacing.xs) {
                 Text(resultHeadline(status: status, outcome: outcome))
                     .font(AppTheme.Typography.headline)
+                if hasReports {
+                    RulesButton(title: String(localized: "赛果怎么算"), points: ResultRules.points)
+                }
                 Spacer()
                 // 确认过的局数（我方 : 对方），没有就显示比分
                 if let rounds = confirmedRounds(game, status: status) {
@@ -483,8 +490,15 @@ struct GameDetailView: View {
             }
             .foregroundStyle(AppTheme.Colors.ink)
             if hasReports {
-                NoticeBanner(icon: resultIcon(status), text: resultStatusText(game, status: status, hasReported: hasReported),
-                             tint: resultTint(status))
+                FlowLayout(spacing: AppTheme.Spacing.xs) {
+                    TagPill(text: resultStatusText(status, hasReported: hasReported), icon: resultIcon(status),
+                            fill: resultTint(status),
+                            foreground: status == .unsure || status == .expired ? AppTheme.Colors.ink : nil)
+                    if status == .awaiting || (status == .disputed && game.acceptsResultReports()) {
+                        TagPill(text: confirmationTimeLeft(game), icon: "hourglass",
+                                fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
+                    }
+                }
             }
             if (canReport || status == .disputed), !claims.isEmpty {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
@@ -519,31 +533,21 @@ struct GameDetailView: View {
         if status == .friendly { return String(localized: "友谊局") }
         if status == .draw { return String(localized: "平局") }
         switch outcome {
-        case true?: return String(localized: "赢下了这场")
-        case false?: return String(localized: "惜败，下次再来")
+        case true?: return String(localized: "赢了")
+        case false?: return String(localized: "输了")
         case nil: return String(localized: "球局已完成")
         }
     }
 
-    private func resultStatusText(_ game: Game, status: ResultStatus, hasReported: Bool) -> String {
+    /// 赛果状态词；怎么算写在“?”里
+    private func resultStatusText(_ status: ResultStatus, hasReported: Bool) -> String {
         switch status {
-        case .awaiting:
-            let left = confirmationTimeLeft(game)
-            return hasReported ? String(localized: "已提交，等对方确认（\(left)）") : String(localized: "等你确认赛果（\(left)）")
-        case .verified:
-            return String(localized: "赛果已确认 · 计入本月胜率")
-        case .disputed where game.acceptsResultReports():
-            return String(localized: "双方说法不一致：任何一方改成一致就照常计入（\(confirmationTimeLeft(game))）")
-        case .disputed:
-            return String(localized: "双方说法不一致，本场不计入胜率")
-        case .friendly:
-            return String(localized: "友谊局，不计胜负")
-        case .draw:
-            return String(localized: "平局 · 局数计入本月胜率")
-        case .unsure:
-            return String(localized: "有一方记不清，本场不计入胜率")
-        case .expired:
-            return String(localized: "没有在 7 天内确认，本场不计入")
+        case .awaiting: return hasReported ? String(localized: "等对方确认") : String(localized: "等你确认")
+        case .verified, .draw: return String(localized: "已确认")
+        case .disputed: return String(localized: "有分歧")
+        case .friendly: return String(localized: "不计胜负")
+        case .unsure: return String(localized: "记不清 · 不计入")
+        case .expired: return String(localized: "已过期 · 不计入")
         }
     }
 
@@ -599,20 +603,39 @@ struct GameDetailView: View {
 
     private func cancelledText(_ game: Game) -> String {
         let who = game.cancelledBy == me ? String(localized: "你") : (game.cancelledBy.flatMap { friendManager.user(id: $0)?.nickname } ?? String(localized: "球友"))
-        return String(localized: "\(who)已取消这场球局") + (game.cancelledLate ? String(localized: "（开赛前 2 小时内，计为临时取消）") : "")
+        return String(localized: "\(who)取消了")
     }
 
     private var cancelTitle: String {
-        guard let game else { return String(localized: "取消球局？") }
-        return game.isLateCancellation() ? String(localized: "现在取消会记为临时取消") : String(localized: "确定取消球局吗？")
+        String(localized: "取消球局？")
     }
 
     private var cancelMessage: String {
         guard let game else { return "" }
         if game.isLateCancellation() {
-            return String(localized: "距开赛不到 2 小时，取消会计入你的履约记录，并通知其他球友。多次临时取消后，约球需要先付 AA。")
+            return String(localized: "离开赛不到 2 小时，会记为临时取消。")
         }
-        return String(localized: "会通知其他球友。开赛 2 小时前取消不影响履约记录。")
+        return String(localized: "会通知其他球友。")
+    }
+
+    /// 签到、取消和履约的规则（“?”里）
+    static var attendanceRules: [String] {
+        [
+            String(localized: "开赛前 30 分钟开放签到"),
+            String(localized: "签到记录会计入履约率"),
+            String(localized: "开赛 2 小时前取消，不影响履约记录"),
+            String(localized: "开赛前 2 小时内取消，计为临时取消"),
+            String(localized: "爽约和临时取消会被记录"),
+            String(localized: "多次临时取消后，约球需要先付 AA")
+        ]
+    }
+
+    private func costRules(_ game: Game) -> [String] {
+        var points = [game.cost.breakdownText, String(localized: "平台不收服务费")]
+        if game.court.status == .unconfirmed || !game.court.pricing.isKnown {
+            points.append(String(localized: "价格以球馆实际收费为准"))
+        }
+        return points
     }
 
     private func cancel() async {
@@ -678,6 +701,21 @@ struct GameDetailView: View {
     }
 }
 
+/// 赛果的规则（详情页赛果卡和填赛果页的“?”共用）
+private enum ResultRules {
+    static var points: [String] {
+        [
+            String(localized: "打了几局都行，记个大概"),
+            String(localized: "双方填的一致才算数"),
+            String(localized: "胜率按局算：赢的局数 ÷ 打的局数"),
+            String(localized: "确认后计入本月胜率，平局也计局数"),
+            String(localized: "双方说法不一致时，任何一方改成一致就照常计入"),
+            String(localized: "比赛结束后 7 天内没有确认，本场不计入"),
+            String(localized: "友谊局不计胜负，有一方记不清的不计入胜率")
+        ]
+    }
+}
+
 private enum ResultSheetPurpose: String, Identifiable {
     case complete, confirm
 
@@ -736,13 +774,12 @@ struct CompleteGameSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
+                HStack(spacing: AppTheme.Spacing.xs) {
                     Text(isConfirming ? String(localized: "确认赛果") : String(localized: "这场打得怎么样"))
                         .font(AppTheme.Typography.title)
                         .foregroundStyle(AppTheme.Colors.ink)
-                    Text("打了几局都行，记个大概")
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    RulesButton(title: String(localized: "赛果怎么算"), points: ResultRules.points)
+                    Spacer(minLength: 0)
                 }
                 .padding(.top, AppTheme.Spacing.xl)
 
@@ -788,16 +825,11 @@ struct CompleteGameSheet: View {
                     optionRow(.practice, title: String(localized: "没计分，就是练球"), icon: "hand.wave.fill")
                     optionRow(.unsure, title: String(localized: "记不清了"), icon: "questionmark.circle")
                 }
-
-                Label("双方填的一致才算数。胜率按局算：赢的局数 ÷ 打的局数。", systemImage: "checkmark.shield")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
         }
         .safeAreaInset(edge: .bottom) {
-            Button(isConfirming ? String(localized: "提交赛果") : String(localized: "完成并去评价")) {
+            Button(isConfirming ? String(localized: "提交赛果") : String(localized: "完成")) {
                 guard let choice else { return }
                 onComplete(Submission(choice: choice, mine: mine, theirs: theirs, score: choice == .counted ? score : ""))
             }

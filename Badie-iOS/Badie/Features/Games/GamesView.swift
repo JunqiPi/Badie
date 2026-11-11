@@ -27,7 +27,7 @@ struct GamesView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                LargeTitleHeader(title: String(localized: "球局"), subtitle: String(localized: "我的约球与房间")) {
+                LargeTitleHeader(title: String(localized: "球局")) {
                     HStack(spacing: AppTheme.Spacing.sm) {
                         IconButton(systemName: "flag.2.crossed", accessibilityLabel: String(localized: "挑战")) {
                             router.open(.challenges)
@@ -38,36 +38,30 @@ struct GamesView: View {
                     }
                 }
 
-                if pendingChallengeCount > 0 {
-                    Button {
-                        router.open(.challenges)
-                    } label: {
-                        NoticeBanner(icon: "flag.2.crossed.fill",
-                                     text: String(localized: "\(pendingChallengeCount) 个挑战待回应"),
-                                     tint: AppTheme.Colors.peach)
+                if pendingChallengeCount > 0 || !surveyManager.pendingSurveys.isEmpty {
+                    // 待办：带数字的小标签
+                    FlowLayout(spacing: AppTheme.Spacing.sm) {
+                        if pendingChallengeCount > 0 {
+                            CountPill(icon: "flag.2.crossed.fill", title: String(localized: "挑战"), count: pendingChallengeCount) {
+                                router.open(.challenges)
+                            }
+                        }
+                        if !surveyManager.pendingSurveys.isEmpty {
+                            CountPill(icon: "star.bubble.fill", title: String(localized: "待评价"), count: surveyManager.pendingSurveys.count) {
+                                router.open(.surveys)
+                            }
+                            RulesButton(title: String(localized: "待评价"), points: [String(localized: "打完 48 小时内可以评价")])
+                        }
                     }
-                    .buttonStyle(PressableStyle(scale: 0.98))
                     .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
                 quickActions
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
-                if !surveyManager.pendingSurveys.isEmpty {
-                    Button {
-                        router.open(.surveys)
-                    } label: {
-                        NoticeBanner(icon: "star.bubble.fill",
-                                     text: String(localized: "有 \(surveyManager.pendingSurveys.count) 位球友等你评价，48 小时内有效"),
-                                     tint: AppTheme.Colors.pink)
-                    }
-                    .buttonStyle(PressableStyle(scale: 0.98))
-                    .padding(.horizontal, AppTheme.Spacing.screen)
-                }
-
                 if !matchManager.openTickets.isEmpty {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SectionTitle(title: String(localized: "等待匹配"), detail: String(localized: "所有人确认后会出现在下面"))
+                        SectionTitle(title: String(localized: "等待匹配"))
                         ForEach(matchManager.openTickets) { ticket in
                             Button {
                                 matchManager.openTicket(ticket.id)
@@ -97,7 +91,15 @@ struct GamesView: View {
 
                 if !groupManager.mySessions.isEmpty {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SectionTitle(title: String(localized: "我报名的固定局"), detail: String(localized: "开场前 2 小时内退出算临时取消"))
+                        HStack(spacing: AppTheme.Spacing.xs) {
+                            Text("我报名的固定局")
+                                .font(AppTheme.Typography.title3)
+                                .foregroundStyle(AppTheme.Colors.ink)
+                                .accessibilityAddTraits(.isHeader)
+                            RulesButton(title: String(localized: "我报名的固定局"),
+                                        points: [String(localized: "开场前 2 小时内退出算临时取消")])
+                            Spacer(minLength: 0)
+                        }
                         ForEach(groupManager.mySessions) { session in
                             if let group = groupManager.group(id: session.groupId) {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -164,28 +166,26 @@ struct GamesView: View {
 
     private var quickActions: some View {
         HStack(spacing: AppTheme.Spacing.md) {
-            quickAction(icon: "sportscourt.fill", title: String(localized: "发起球局"), subtitle: String(localized: "有场地缺人"), tint: AppTheme.Colors.peach) {
+            quickAction(icon: "sportscourt.fill", title: String(localized: "发起球局"), tint: AppTheme.Colors.peach) {
                 router.open(.createRoom(nil, invitee: nil))
             }
-            quickAction(icon: "person.3.fill", title: String(localized: "球群"), subtitle: String(localized: "每周固定的局"), tint: AppTheme.Colors.sky) {
+            quickAction(icon: "person.3.fill", title: String(localized: "球群"), tint: AppTheme.Colors.sky) {
                 router.open(.groups)
             }
-            quickAction(icon: "number", title: String(localized: "房间码"), subtitle: String(localized: "房间码或群号"), tint: AppTheme.Colors.lavender) {
+            quickAction(icon: "number", title: String(localized: "房间码"), tint: AppTheme.Colors.lavender) {
                 router.open(.joinRoom(code: nil))
             }
         }
     }
 
-    private func quickAction(icon: String, title: String, subtitle: String, tint: Color, action: @escaping () -> Void) -> some View {
+    private func quickAction(icon: String, title: String, tint: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: .bold))
                 Text(title)
                     .font(AppTheme.Typography.headline)
-                Text(subtitle)
-                    .font(AppTheme.Typography.caption)
-                    .opacity(0.75)
+                    .lineLimit(1)
             }
             .foregroundStyle(AppTheme.Colors.onAccent)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -204,7 +204,6 @@ struct GamesView: View {
             EmptyStateView(
                 icon: segment == .upcoming ? "calendar.badge.plus" : "clock",
                 title: segment == .upcoming ? String(localized: "还没有约好的球局") : String(localized: "还没有打过的球局"),
-                message: segment == .upcoming ? String(localized: "快速匹配一个搭子，或者发起球局招募附近球友。") : String(localized: "打完的球局和结果会出现在这里。"),
                 tint: AppTheme.Colors.sky,
                 actionTitle: segment == .upcoming ? String(localized: "快速匹配") : nil,
                 action: segment == .upcoming ? { router.isMatchSetupPresented = true } : nil

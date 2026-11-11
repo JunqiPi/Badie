@@ -41,8 +41,7 @@ struct ChatView: View {
                     LazyVStack(spacing: AppTheme.Spacing.sm) {
                         let receiptId = lastMineId
                         if messages.isEmpty {
-                            EmptyStateView(icon: "hand.wave.fill", title: String(localized: "还没有消息"),
-                                           message: String(localized: "约时间、约球馆、约 AA，都可以在这里说。"), tint: AppTheme.Colors.butter)
+                            EmptyStateView(icon: "hand.wave.fill", title: String(localized: "还没有消息"), tint: AppTheme.Colors.butter)
                         }
                         ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
                             if showsTimestamp(at: index) {
@@ -169,7 +168,7 @@ struct ChatView: View {
         VStack(spacing: AppTheme.Spacing.sm) {
             if showsContactWarning {
                 NoticeBanner(icon: "exclamationmark.shield.fill",
-                             text: String(localized: "对方提到了站外联系方式或转账。见面打球前不需要转账、代付或提供验证码，遇到这类要求请举报。"),
+                             text: String(localized: "打球前不用转账、代付或给验证码，遇到这类要求请举报"),
                              tint: AppTheme.Colors.pink)
             }
             if isIncomingRequest {
@@ -177,14 +176,14 @@ struct ChatView: View {
             }
             switch permission {
             case .blocked:
-                NoticeBanner(icon: "hand.raised.fill", text: String(localized: "你已屏蔽对方，解除后才能继续聊天"), tint: AppTheme.Colors.surfaceMuted,
+                NoticeBanner(icon: "hand.raised.fill", text: String(localized: "已屏蔽"), tint: AppTheme.Colors.surfaceMuted,
                              actionTitle: String(localized: "解除")) {
                     messageManager.unblock(userId)
                 }
             case .pendingRequest:
-                NoticeBanner(icon: "paperplane.fill", text: String(localized: "已发出消息请求，对方接受后才能继续聊"), tint: AppTheme.Colors.sky)
+                NoticeBanner(icon: "paperplane.fill", text: String(localized: "等对方接受"), tint: AppTheme.Colors.sky)
             case .gameChat(let gameId):
-                NoticeBanner(icon: "person.3.fill", text: String(localized: "你们在同一场球局里，在球局群聊里沟通就行（赛后 48 小时关闭）"),
+                NoticeBanner(icon: "person.3.fill", text: String(localized: "球局群聊，赛后 48 小时关闭"),
                              tint: AppTheme.Colors.lime, actionTitle: String(localized: "去群聊")) {
                     if let threadId = messageManager.gameChatId(for: gameId) {
                         router.open(.groupChat(threadId: threadId))
@@ -192,15 +191,21 @@ struct ChatView: View {
                 }
             case .friendsOnly:
                 VStack(spacing: AppTheme.Spacing.sm) {
-                    NoticeBanner(icon: "person.crop.circle.badge.plus",
-                                 text: String(localized: "加为球友后才能私信。陌生人不能直接发消息，是为了少一点骚扰和骗局。"),
-                                 tint: AppTheme.Colors.surfaceMuted)
+                    HStack(spacing: AppTheme.Spacing.xs) {
+                        NoticeBanner(icon: "person.crop.circle.badge.plus",
+                                     text: String(localized: "加为球友后才能私信"),
+                                     tint: AppTheme.Colors.surfaceMuted)
+                        RulesButton(title: String(localized: "私信"), points: messageRules)
+                    }
                     FriendActionButton(userId: userId)
                 }
             case .newAccount:
-                NoticeBanner(icon: "hourglass",
-                             text: String(localized: "打满 \(User.gamesBeforeMessageRequests) 场后才能给球群里的人发消息请求；可以先在球群群聊里打招呼"),
-                             tint: AppTheme.Colors.surfaceMuted)
+                HStack(spacing: AppTheme.Spacing.xs) {
+                    NoticeBanner(icon: "hourglass",
+                                 text: String(localized: "打满 \(User.gamesBeforeMessageRequests) 场后才能发消息请求"),
+                                 tint: AppTheme.Colors.surfaceMuted)
+                    RulesButton(title: String(localized: "私信"), points: messageRules)
+                }
             case .allowed, .request:
                 composer
             }
@@ -215,13 +220,13 @@ struct ChatView: View {
     /// 对方发来的消息请求：接受 / 忽略（忽略对方不会知道）
     private var requestCard: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Label("\(other?.nickname ?? String(localized: "TA")) 想和你聊天", systemImage: "envelope.badge.fill")
-                .font(AppTheme.Typography.headline)
-                .foregroundStyle(AppTheme.Colors.onAccent)
-            Text("你们在同一个球群。接受后才能互相发消息；忽略的话对方不会知道。")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: AppTheme.Spacing.xs) {
+                Label("\(other?.nickname ?? String(localized: "TA")) 想和你聊天", systemImage: "envelope.badge.fill")
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.onAccent)
+                RulesButton(title: String(localized: "消息请求"), points: messageRules)
+                Spacer(minLength: 0)
+            }
             HStack(spacing: AppTheme.Spacing.sm) {
                 Button("忽略") {
                     messageManager.declineRequest(from: userId)
@@ -242,11 +247,14 @@ struct ChatView: View {
     @ViewBuilder
     private var composer: some View {
         if case .request(let groupName) = permission {
-            Text("你们同在「\(groupName)」。可以先发一条消息请求：纯文字，不能留链接或联系方式，对方接受后再聊。")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: AppTheme.Spacing.xs) {
+                Label("同在「\(groupName)」", systemImage: "person.3.fill")
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    .lineLimit(1)
+                RulesButton(title: String(localized: "消息请求"), points: messageRules)
+                Spacer(minLength: 0)
+            }
         }
         VStack(spacing: AppTheme.Spacing.sm) {
             if messages.count < 6, permission == .allowed {
@@ -292,6 +300,15 @@ struct ChatView: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
+    }
+
+    /// 私信和消息请求的规则（“?”里）
+    private var messageRules: [String] {
+        [String(localized: "球友之间可以直接私信。"),
+         String(localized: "陌生人不能直接发消息，是为了少一点骚扰和骗局。"),
+         String(localized: "同一个球群的人可以先发一条消息请求：纯文字，不能留链接或联系方式。"),
+         String(localized: "对方接受后才能互相发消息；忽略的话对方不会知道。"),
+         String(localized: "打满 \(User.gamesBeforeMessageRequests) 场后才能发消息请求，之前可以先在球群群聊里打招呼。")]
     }
 
     private var canSend: Bool {
@@ -421,17 +438,17 @@ struct ReportSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-                HStack {
+                HStack(spacing: AppTheme.Spacing.xs) {
                     Text("举报 \(nickname)")
                         .font(AppTheme.Typography.title)
                         .foregroundStyle(AppTheme.Colors.ink)
+                    RulesButton(title: String(localized: "举报"),
+                                points: [String(localized: "举报信息只有平台能看到。"),
+                                         String(localized: "我们会在 24 小时内处理。")])
                     Spacer()
                     IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
                 }
                 .padding(.top, AppTheme.Spacing.xl)
-                Text("举报信息仅平台可见，我们会在 24 小时内处理。")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
                 VStack(spacing: AppTheme.Spacing.sm) {
                     ForEach(ReportReason.allCases) { option in
                         Button {

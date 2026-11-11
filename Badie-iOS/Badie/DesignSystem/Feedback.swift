@@ -223,9 +223,14 @@ private struct DateChip: View {
                     .scaledFont(size: 20, relativeTo: .title3)
                     .monospacedDigit()
                 if let count {
-                    Text("\(count)人")
-                        .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .opacity(0.8)
+                    HStack(spacing: 2) {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 8, weight: .bold))
+                        Text(verbatim: "\(count)")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                    }
+                    .opacity(0.8)
                 }
             }
             .foregroundStyle(isSelected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)

@@ -19,17 +19,10 @@ struct JoinRoomView: View {
             ScreenHeader(title: String(localized: "房间码 / 群号"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        Text("输入好友发来的\n6 位房间码或群号")
-                            .font(AppTheme.Typography.title)
-                            .foregroundStyle(AppTheme.Colors.ink)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if !appState.isRemote {
-                            Text("房间码由字母和数字组成，不含 0、O、1、I、L")
-                                .font(AppTheme.Typography.footnote)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        }
-                    }
+                    Text("输入房间码或群号")
+                        .font(AppTheme.Typography.title)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .fixedSize(horizontal: false, vertical: true)
                     ZStack {
                         TextField("", text: $code)
                             .textInputAutocapitalization(.characters)
@@ -177,7 +170,7 @@ struct PublicGamesView: View {
                     VStack(spacing: AppTheme.Spacing.md) {
                         if rooms.isEmpty {
                             EmptyStateView(icon: "sportscourt", title: String(localized: "没有符合条件的球局"),
-                                           message: String(localized: "换个筛选条件，或者自己发起一个。"), tint: AppTheme.Colors.peach,
+                                           tint: AppTheme.Colors.peach,
                                            actionTitle: String(localized: "发起球局")) {
                                 router.open(.createRoom(modeFilter, invitee: nil), in: .games)
                             }
@@ -231,15 +224,14 @@ struct FriendPickerSheet: View {
             }
             .padding(.top, AppTheme.Spacing.xl)
             SearchField(text: $query, placeholder: String(localized: "搜索球友昵称"))
-            Text("最多可邀请 \(maxSelection) 人 · 已选 \(selection.count)")
+            Text("已选 \(selection.count)/\(maxSelection)")
                 .font(AppTheme.Typography.footnoteBold)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             ScrollView {
                 VStack(spacing: 0) {
                     if friends.isEmpty {
-                        EmptyStateView(icon: "person.2", title: String(localized: "没有可邀请的球友"),
-                                       message: String(localized: "先在“消息 - 球友”里添加球友。"))
+                        EmptyStateView(icon: "person.2", title: String(localized: "没有可邀请的球友"))
                     }
                     ForEach(friends) { friend in
                         let selected = selection.contains(friend.id)

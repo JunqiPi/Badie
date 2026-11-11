@@ -276,14 +276,10 @@ struct CreateMenuSheet: View {
                 .font(AppTheme.Typography.title)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .padding(.top, AppTheme.Spacing.xl)
-            option(icon: "bolt.fill", tint: AppTheme.Colors.lime, title: String(localized: "快速匹配"),
-                   subtitle: String(localized: "按水平、时间和距离自动找搭子"), action: .quickMatch)
-            option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: String(localized: "发起球局"),
-                   subtitle: String(localized: "我有场地缺人 / 约好友组局，可公开招募"), action: .createRoom)
-            option(icon: "person.3.fill", tint: AppTheme.Colors.sky, title: String(localized: "固定局 · 球群"),
-                   subtitle: String(localized: "每周固定时间和球馆，一键报名、自动候补"), action: .groups)
-            option(icon: "number", tint: AppTheme.Colors.lavender, title: String(localized: "输入房间码 / 群号"),
-                   subtitle: String(localized: "好友发来的 6 位房间码或群号"), action: .joinRoom)
+            option(icon: "bolt.fill", tint: AppTheme.Colors.lime, title: String(localized: "快速匹配"), action: .quickMatch)
+            option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: String(localized: "发起球局"), action: .createRoom)
+            option(icon: "person.3.fill", tint: AppTheme.Colors.sky, title: String(localized: "固定局 · 球群"), action: .groups)
+            option(icon: "number", tint: AppTheme.Colors.lavender, title: String(localized: "输入房间码 / 群号"), action: .joinRoom)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, AppTheme.Spacing.screen)
@@ -291,22 +287,16 @@ struct CreateMenuSheet: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
 
-    private func option(icon: String, tint: Color, title: String, subtitle: String, action: CreateAction) -> some View {
+    private func option(icon: String, tint: Color, title: String, action: CreateAction) -> some View {
         Button {
             Haptics.tap()
             onSelect(action)
         } label: {
             HStack(spacing: AppTheme.Spacing.lg) {
                 IconTile(systemName: icon, fill: tint, size: 52)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(AppTheme.Typography.headline)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    Text(subtitle)
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
+                Text(title)
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .bold))

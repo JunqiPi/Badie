@@ -55,23 +55,17 @@ struct CreateRoomView: View {
                     group(String(localized: "模式")) {
                         HStack(spacing: AppTheme.Spacing.sm) {
                             ForEach(GameMode.allCases) { option in
-                                ChoiceChip(title: "\(option.title) \(option.versusText)", icon: option.icon, isSelected: mode == option) {
+                                ChoiceChip(title: option.title, icon: option.icon, isSelected: mode == option) {
                                     mode = option
                                 }
                             }
                         }
                     }
                     if eventChoices.count > 1 { eventGroup }
-                    group(String(localized: "招募方式")) {
+                    group(String(localized: "招募方式"), rules: visibilityRules) {
                         SegmentedSticker(options: [RoomVisibility.privateRoom, .publicListing], selection: $visibility) {
-                            $0 == .privateRoom ? String(localized: "仅邀请（私密）") : String(localized: "公开到附近")
+                            $0 == .privateRoom ? String(localized: "仅邀请") : String(localized: "公开到附近")
                         }
-                        Text(visibility == .privateRoom
-                             ? String(localized: "生成 6 位房间码，分享给好友加入；还没定时间的房间 30 分钟无活动会自动关闭。")
-                             : String(localized: "附近符合水平的球友都能看到并报名，满员后可候补，有人退出自动递补。"))
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                     scheduleGroup
                     courtGroup
@@ -84,10 +78,13 @@ struct CreateRoomView: View {
                                         characterLimit: 80, axis: .vertical)
                     }
                     if let cost = costPreview {
-                        InfoRow(icon: Money.icon(for: cost.currencyCode), tint: AppTheme.Colors.butter,
-                                title: cost.perPerson == nil ? String(localized: "费用待定") : String(localized: "预计 AA \(cost.perPersonText)"), subtitle: cost.breakdownText)
-                            .padding(.horizontal, AppTheme.Spacing.md)
-                            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
+                        HStack(spacing: AppTheme.Spacing.xs) {
+                            InfoRow(icon: Money.icon(for: cost.currencyCode), tint: AppTheme.Colors.butter,
+                                    title: cost.perPerson == nil ? String(localized: "费用待定") : String(localized: "预计 AA \(cost.perPersonText)"))
+                            RulesButton(title: String(localized: "费用怎么算"), points: [cost.breakdownText])
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.md)
+                        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -130,10 +127,6 @@ struct CreateRoomView: View {
                         .font(AppTheme.Typography.footnoteBold)
                         .foregroundStyle(AppTheme.Colors.danger)
                 }
-            } else {
-                Text("建好房间后，房主可以在房间里再设置时间和球馆。")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
         }
     }
@@ -150,17 +143,10 @@ struct CreateRoomView: View {
                             .font(AppTheme.Typography.bodyBold)
                             .foregroundStyle(AppTheme.Colors.ink)
                         if let court {
-                            Text(court.address)
-                                .font(AppTheme.Typography.footnote)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
                             Text("\(court.formattedDistance(from: locationManager.coordinate)) · \(court.pricingText)")
-                                .font(AppTheme.Typography.caption)
-                                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                        } else {
-                            Text("搜索球馆名、简称或地址")
                                 .font(AppTheme.Typography.footnote)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
                         }
                     }
                     Spacer()
@@ -256,12 +242,26 @@ struct CreateRoomView: View {
         return CostSplit.estimate(court: court, slot: slot, mode: mode)
     }
 
-    private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    /// 招募方式的“?”：两种方式各自怎么用
+    private var visibilityRules: [String] {
+        [String(localized: "仅邀请：生成 6 位房间码，分享给好友加入。"),
+         String(localized: "没定时间的房间，30 分钟没有动静会自动关闭。"),
+         String(localized: "建好房间后，房主可以在房间里再定时间和球馆。"),
+         String(localized: "公开到附近：附近水平符合的球友都能看到并报名。"),
+         String(localized: "满员后可以候补，有人退出自动递补。")]
+    }
+
+    private func group<Content: View>(_ title: String, rules: [String]? = nil, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            Text(title)
-                .font(AppTheme.Typography.headline)
-                .foregroundStyle(AppTheme.Colors.ink)
-                .accessibilityAddTraits(.isHeader)
+            HStack(spacing: AppTheme.Spacing.xs) {
+                Text(title)
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .accessibilityAddTraits(.isHeader)
+                if let rules {
+                    RulesButton(title: title, points: rules)
+                }
+            }
             content()
         }
     }

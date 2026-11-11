@@ -26,22 +26,27 @@ struct VerificationView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "高水平认证"))
+            ScreenHeader(title: String(localized: "高水平认证")) {
+                RulesButton(title: String(localized: "高水平认证"), points: [
+                    String(localized: "问卷最高 6+，球友评价最多到 7−。7 起（州级以上）只看能公开查到的证据：赛事成绩、全国排名或运动员等级证书、BWF 世界排名。"),
+                    String(localized: "认证后以认证档位为准；球友评价最多往下调 1 档（比如伤病、状态下滑）。"),
+                    String(localized: "链接和姓名只给审核人员看，不会公开；审核时会核对证件。冒用他人成绩会被封号。")
+                ])
+            }
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    intro
+                    badges
                     if let request, request.status == .pending {
                         pendingCard(request)
                     } else {
                         if let request, request.status == .rejected {
                             NoticeBanner(icon: "exclamationmark.circle.fill",
-                                         text: String(localized: "上次申请没有通过：\(request.reviewNote ?? String(localized: "证据无法核实"))。可以补充材料后重新申请。"),
+                                         text: String(localized: "上次没通过：\(request.reviewNote ?? String(localized: "证据无法核实"))"),
                                          tint: AppTheme.Colors.peach)
                         }
                         kindPicker
                         tierPicker
                         evidenceFields
-                        privacyNote
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -69,31 +74,24 @@ struct VerificationView: View {
 
     // MARK: Sections
 
-    private var intro: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            if let user = appState.currentUser {
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    LevelBadge(tier: user.displayTier)
-                    VerifiedBadge(status: user.verificationStatus)
-                    Spacer(minLength: 0)
-                }
+    /// 现在的等级和认证状态
+    @ViewBuilder
+    private var badges: some View {
+        if let user = appState.currentUser {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                LevelBadge(tier: user.displayTier)
+                VerifiedBadge(status: user.verificationStatus)
+                Spacer(minLength: 0)
             }
-            Text("问卷最高 6+，球友评价最多到 7−。7 起（州级以上）只看能公开查到的证据：赛事成绩、全国排名或运动员等级证书、BWF 世界排名。")
-                .font(AppTheme.Typography.subheadline)
-                .foregroundStyle(AppTheme.Colors.ink)
-                .fixedSize(horizontal: false, vertical: true)
-            Text("认证后以认证档位为准；球友评价最多往下调 1 档（比如伤病、状态下滑）。")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
-        .card(AppTheme.Colors.surface, shadow: .zero)
     }
 
     private func pendingCard(_ request: VerificationRequest) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack {
                 TagPill(text: String(localized: "审核中"), icon: "hourglass", fill: AppTheme.Colors.butter)
+                RulesButton(title: String(localized: "审核中"),
+                            points: [String(localized: "一般 \(VerificationRequest.reviewDays) 个工作日内审核完，结果会发到通知里。")])
                 Spacer()
                 Text("提交于 \(DateText.shortDay(request.submittedAt))")
                     .font(AppTheme.Typography.caption)
@@ -104,9 +102,6 @@ struct VerificationView: View {
             InfoRow(icon: "link", title: String(localized: "证据"), subtitle: request.evidenceURL)
             InfoRow(icon: "person.text.rectangle", tint: AppTheme.Colors.peach, title: String(localized: "证据上的姓名"),
                     subtitle: request.nameOnRecord)
-            Text("一般 \(VerificationRequest.reviewDays) 个工作日内审核完，结果会发到通知里。")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
             Button(role: .destructive) {
                 appState.backend.cancelVerificationRequest()
                 appState.showToast(String(localized: "已撤回申请"))
@@ -120,7 +115,8 @@ struct VerificationView: View {
 
     private var kindPicker: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "证据类型"))
+            sectionHeader(String(localized: "证据类型"),
+                          rules: [VerificationStatus.tournament, .national, .bwf].map { SkillLevel.evidenceSummary(for: $0) })
             ForEach([VerificationStatus.tournament, .national, .bwf]) { option in
                 Button {
                     Haptics.selection()
@@ -140,10 +136,11 @@ struct VerificationView: View {
                                     .font(AppTheme.Typography.footnoteBold)
                                     .monospacedDigit()
                             }
-                            Text(SkillLevel.evidenceSummary(for: option))
+                            Text(evidenceLine(for: option))
                                 .font(AppTheme.Typography.footnote)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.85)
                         }
                     }
                     .foregroundStyle(AppTheme.Colors.ink)
@@ -160,13 +157,9 @@ struct VerificationView: View {
 
     private var tierPicker: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "申请的档位"))
-            HStack {
-                Text("按证据能证明的最高一档填，审核时可能下调")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer()
+            HStack(spacing: 0) {
+                sectionHeader(String(localized: "申请的档位"),
+                              rules: [String(localized: "按证据能证明的最高一档填，审核时可能下调")])
                 TierStepper(tier: $tier, range: kind.minTier...kind.maxTier)
                     .frame(width: 170)
             }
@@ -196,12 +189,26 @@ struct VerificationView: View {
         }
     }
 
-    private var privacyNote: some View {
-        Label("链接和姓名只给审核人员看，不会公开；审核时会核对证件。冒用他人成绩会被封号。",
-              systemImage: "lock.fill")
-            .font(AppTheme.Typography.caption)
-            .foregroundStyle(AppTheme.Colors.inkSecondary)
-            .fixedSize(horizontal: false, vertical: true)
+    /// 区块标题 + “?”
+    private func sectionHeader(_ title: String, rules: [String]) -> some View {
+        HStack(spacing: 0) {
+            Text(title)
+                .font(AppTheme.Typography.title3)
+                .foregroundStyle(AppTheme.Colors.ink)
+                .accessibilityAddTraits(.isHeader)
+            RulesButton(title: title, points: rules)
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// 每类证据一行；具体怎么换算档位在“?”里
+    private func evidenceLine(for kind: VerificationStatus) -> String {
+        switch kind {
+        case .unverified: return ""
+        case .tournament: return String(localized: "tournamentsoftware.com 上的签表和成绩")
+        case .national: return String(localized: "USAB 全国排名或运动员技术等级证书")
+        case .bwf: return String(localized: "bwfbadminton.com 上本人的球员页")
+        }
     }
 
     // MARK: Actions

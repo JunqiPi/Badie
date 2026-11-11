@@ -40,17 +40,23 @@ struct DayCandidatesView: View {
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
-            HStack {
+            HStack(spacing: AppTheme.Spacing.xs) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(day.formatted(.dateTime.month().day().weekday(.wide)))
                         .font(AppTheme.Typography.title)
                         .foregroundStyle(AppTheme.Colors.ink)
                     if !visible.isEmpty {
-                        Text("右滑约 TA，左滑跳过 · \(visible.count) 人")
-                            .font(AppTheme.Typography.footnote)
+                        Text("\(visible.count) 人")
+                            .font(AppTheme.Typography.footnoteBold)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .monospacedDigit()
                     }
                 }
+                RulesButton(title: String(localized: "怎么约"), points: [
+                    String(localized: "右滑约 TA，左滑跳过"),
+                    String(localized: "单打：发约球邀请，TA 确认就成局"),
+                    String(localized: "双打：替你开一个公开双打局并邀请 TA，附近的人可以加入补齐")
+                ])
                 Spacer()
                 IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
@@ -62,7 +68,6 @@ struct DayCandidatesView: View {
             if needsLocation {
                 Spacer()
                 EmptyStateView(icon: "location", title: String(localized: "开启定位"),
-                               message: String(localized: "用来找附近的球馆和球友。"),
                                actionTitle: String(localized: "开启定位")) { enableLocation() }
                 Spacer()
             } else if isLoading {
@@ -101,14 +106,12 @@ struct DayCandidatesView: View {
             } else if !cards.isEmpty {
                 Spacer()
                 EmptyStateView(icon: "line.3.horizontal.decrease.circle", title: String(localized: "没有符合筛选的人"),
-                               message: String(localized: "放宽一点条件试试。"),
                                actionTitle: String(localized: "清除筛选")) { setFilter(DayCardFilter()) }
                 Spacer()
             } else {
                 Spacer()
                 EmptyStateView(icon: "person.2", title: String(localized: "这天附近没有能约的球友了"),
-                               message: String(localized: "发个约球请求，有人对得上会通知你。"),
-                               actionTitle: String(localized: "发个约球请求")) { request() }
+                               actionTitle: String(localized: "约球")) { request() }
                 Spacer()
             }
         }

@@ -112,19 +112,8 @@ struct HomeView: View {
     // MARK: Header
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack(spacing: AppTheme.Spacing.md) {
-                Text("\(greeting)，\(appState.currentUser?.nickname ?? String(localized: "球友"))")
-                    .font(AppTheme.Typography.subheadlineBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .lineLimit(1)
-                Spacer()
-                IconButton(systemName: "trophy.fill", accessibilityLabel: String(localized: "排行榜")) {
-                    router.open(.leaderboard)
-                }
-                IconButton(systemName: "bell.fill", accessibilityLabel: String(localized: "通知"), badge: inboxManager.unreadCount) {
-                    router.open(.notifications)
-                }
                 Button {
                     router.select(.profile)
                 } label: {
@@ -132,21 +121,19 @@ struct HomeView: View {
                 }
                 .buttonStyle(PressableStyle())
                 .accessibilityLabel("我的资料")
+                Spacer()
+                IconButton(systemName: "trophy.fill", accessibilityLabel: String(localized: "排行榜")) {
+                    router.open(.leaderboard)
+                }
+                IconButton(systemName: "bell.fill", accessibilityLabel: String(localized: "通知"), badge: inboxManager.unreadCount) {
+                    router.open(.notifications)
+                }
             }
             Text(marking: String(localized: "今晚，\n打*一场*？"))
                 .font(AppTheme.Typography.display)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .accessibilityLabel("今晚，打一场？")
                 .accessibilityAddTraits(.isHeader)
-        }
-    }
-
-    private var greeting: String {
-        switch Calendar.current.component(.hour, from: Date()) {
-        case 5..<11: return String(localized: "早上好")
-        case 11..<13: return String(localized: "中午好")
-        case 13..<18: return String(localized: "下午好")
-        default: return String(localized: "晚上好")
         }
     }
 
@@ -177,17 +164,14 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack {
                 Text("快速约球")
-                    .font(AppTheme.Typography.overline)
-                    .tracking(0.8)
+                    .font(AppTheme.Typography.title2)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
                 Button("调整") { router.isMatchSetupPresented = true }
                     .font(AppTheme.Typography.footnoteBold)
                     .frame(minHeight: 32)
                     .accessibilityHint("修改模式、时间和球馆")
             }
-            Text("按水平和时间\n自动帮你找搭子")
-                .font(AppTheme.Typography.title2)
-                .fixedSize(horizontal: false, vertical: true)
             Button {
                 router.isMatchSetupPresented = true
             } label: {
@@ -251,24 +235,20 @@ struct HomeView: View {
     // MARK: Date strip
 
     private var dateSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "哪天有空？"), detail: String(localized: "点日期看谁也有空"))
-                .padding(.horizontal, AppTheme.Spacing.screen)
-            DateStrip(
-                days: days,
-                selection: Binding(
-                    get: { matchManager.draft.day },
-                    set: { day in
-                        matchManager.draft.day = day
-                        if !matchManager.draft.validation.isValid, Calendar.current.isDateInToday(day) {
-                            matchManager.draft.apply(TimeSlot.suggestedDefault())
-                        }
+        DateStrip(
+            days: days,
+            selection: Binding(
+                get: { matchManager.draft.day },
+                set: { day in
+                    matchManager.draft.day = day
+                    if !matchManager.draft.validation.isValid, Calendar.current.isDateInToday(day) {
+                        matchManager.draft.apply(TimeSlot.suggestedDefault())
                     }
-                ),
-                counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) },
-                onTap: { _ in appState.showsDayCards = true }
-            )
-        }
+                }
+            ),
+            counts: { matchManager.availableCount(on: $0, radiusKm: locationManager.preferences.travelRadiusKm) },
+            onTap: { _ in appState.showsDayCards = true }
+        )
     }
 
     // MARK: Survey reminder
@@ -281,9 +261,9 @@ struct HomeView: View {
                 AvatarView(avatar: survey.opponentAvatar, userId: survey.opponentId, text: survey.opponentAvatarText, size: 40)
                     .opensProfile(survey.opponentId, allowsInvite: false)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("给 \(survey.opponentNickname) 的球局打个分")
+                    Text("评价 \(survey.opponentNickname)")
                         .font(AppTheme.Typography.headline)
-                    Text("\(DateText.remaining(until: survey.expiresAt)) · 匿名汇总，帮社区更靠谱")
+                    Text(DateText.remaining(until: survey.expiresAt))
                         .font(AppTheme.Typography.footnote)
                         .opacity(0.8)
                 }
@@ -306,29 +286,56 @@ struct HomeView: View {
                        appState: appState, matchManager: matchManager)
     }
 
-    /// 没看过的约球消息（取消、邀请、挑战、约成……）放在最上面，最多 3 条
-    private var actionableUpdates: [InboxItem] {
-        Array(inboxManager.items.filter { !$0.isRead && $0.kind.isActionable && $0.kind != .challenge }.prefix(3))
+    /// 没看过的约球消息（取消、邀请、约成……）按种类归在一起，最早出现的种类排前面
+    private var actionableUpdates: [(kind: InboxItem.Kind, items: [InboxItem])] {
+        let unread = inboxManager.items.filter { !$0.isRead && $0.kind.isActionable && $0.kind != .challenge }
+        var order: [InboxItem.Kind] = []
+        var grouped: [InboxItem.Kind: [InboxItem]] = [:]
+        for item in unread {
+            if grouped[item.kind] == nil { order.append(item.kind) }
+            grouped[item.kind, default: []].append(item)
+        }
+        return order.map { (kind: $0, items: grouped[$0] ?? []) }
     }
 
+    /// 待办：一排带数字的小标签（挑战 1、好友申请 1……）。只有一条就直接打开，多条去通知中心
     @ViewBuilder
     private var updates: some View {
-        let items = actionableUpdates
-        if pendingChallenges > 0 || !items.isEmpty {
-            VStack(spacing: AppTheme.Spacing.sm) {
+        let groups = actionableUpdates
+        if pendingChallenges > 0 || !groups.isEmpty {
+            FlowLayout(spacing: AppTheme.Spacing.sm) {
                 if pendingChallenges > 0 {
-                    NoticeBanner(icon: "flag.2.crossed.fill", text: String(localized: "\(pendingChallenges) 个挑战待回应"),
-                                 tint: AppTheme.Colors.peach, actionTitle: String(localized: "去看看")) {
+                    CountPill(icon: "flag.2.crossed.fill", title: String(localized: "挑战"), count: pendingChallenges) {
                         router.open(.challenges)
                     }
                 }
-                ForEach(items) { item in
-                    NoticeBanner(icon: item.kind.icon, text: item.title, tint: item.kind.tint,
-                                 actionTitle: String(localized: "去看看")) {
-                        navigator.open(item)
+                ForEach(groups, id: \.kind) { group in
+                    CountPill(icon: group.kind.icon, title: pillTitle(group.kind), count: group.items.count) {
+                        if group.items.count == 1, let item = group.items.first {
+                            navigator.open(item)
+                        } else {
+                            router.open(.notifications)
+                        }
                     }
                 }
             }
+        }
+    }
+
+    private func pillTitle(_ kind: InboxItem.Kind) -> String {
+        switch kind {
+        case .friendRequest: return String(localized: "好友申请")
+        case .matchOffer: return String(localized: "待确认")
+        case .gameConfirmed: return String(localized: "已约成")
+        case .roomInvite: return String(localized: "邀请")
+        case .roomJoined: return String(localized: "有人加入")
+        case .waitlistPromoted: return String(localized: "候补转正")
+        case .messageRequest: return String(localized: "消息请求")
+        case .gameCancelled: return String(localized: "已取消")
+        case .kicked: return String(localized: "被移出")
+        case .roomClosed: return String(localized: "球局关闭")
+        case .challenge: return String(localized: "挑战")
+        default: return String(localized: "通知")
         }
     }
 
@@ -344,7 +351,7 @@ struct HomeView: View {
                     Text("本周排行")
                         .font(AppTheme.Typography.overline)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    Text(standing.summary)
+                    Text(weeklyText(standing))
                         .font(AppTheme.Typography.headline)
                         .foregroundStyle(AppTheme.Colors.ink)
                         .fixedSize(horizontal: false, vertical: true)
@@ -361,17 +368,24 @@ struct HomeView: View {
         .accessibilityHint("查看本周排行")
     }
 
+    /// 还没达到上榜门槛：只说差几场，门槛写在排行榜的规则里
+    private func weeklyText(_ standing: WeeklyStanding) -> String {
+        if standing.absenceReason == nil, standing.rank == nil, !standing.isQualified, standing.isCurrentWeek {
+            return String(localized: "差 \(standing.gamesNeeded) 场上榜")
+        }
+        return standing.summary
+    }
+
     // MARK: Public games
 
     private var publicGamesSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "附近球局"), detail: String(localized: "有场地缺人"), actionTitle: String(localized: "全部")) {
+            SectionTitle(title: String(localized: "附近球局"), actionTitle: String(localized: "全部")) {
                 router.open(.publicGames)
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             if roomManager.publicRooms.isEmpty {
                 EmptyStateView(icon: "sportscourt", title: String(localized: "附近暂时没有公开球局"),
-                               message: String(localized: "订好场地却缺人？发起一个，附近球友会看到。"),
                                tint: AppTheme.Colors.peach, actionTitle: String(localized: "发起球局")) {
                     router.open(.createRoom(nil, invitee: nil), in: .games)
                 }
@@ -403,16 +417,34 @@ struct HomeView: View {
     @ViewBuilder
     private var playersSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "同馆常客"), detail: regulars.isEmpty ? nil : String(localized: "\(regulars.count) 人"))
-                .padding(.horizontal, AppTheme.Spacing.screen)
-            if locationManager.favoriteCourtIds.isEmpty {
-                NoticeBanner(icon: "heart.fill", text: String(localized: "设置常去球馆后，这里会显示也常去那里的球友（对方开启了才会出现）。"),
-                             tint: AppTheme.Colors.surfaceMuted, actionTitle: String(localized: "去设置")) {
-                    router.open(.courts)
+            HStack(alignment: .center, spacing: AppTheme.Spacing.xs) {
+                Text("同馆常客")
+                    .font(AppTheme.Typography.title3)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .accessibilityAddTraits(.isHeader)
+                if !regulars.isEmpty {
+                    Text("\(regulars.count) 人")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
+                RulesButton(title: String(localized: "同馆常客"), points: [
+                    String(localized: "设置常去球馆后，这里显示也常去那里的球友"),
+                    String(localized: "对方开启了展示才会出现"),
+                    String(localized: "不按距离排，也不显示在线状态")
+                ])
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
+            if locationManager.favoriteCourtIds.isEmpty {
+                Button {
+                    router.open(.courts)
+                } label: {
+                    Label("设置常去球馆", systemImage: "heart.fill")
+                }
+                .buttonStyle(.brutal(.secondary, size: .small, fullWidth: false))
                 .padding(.horizontal, AppTheme.Spacing.screen)
             } else if regulars.isEmpty {
-                Text("还没有球友公开自己是这些球馆的常客")
+                Text("暂时没有常客")
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .padding(.horizontal, AppTheme.Spacing.screen)
@@ -454,7 +486,7 @@ struct HomeView: View {
     /// 我的固定局（已报名 / 候补）+ 找球群入口
     private var groupsSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "固定局"), detail: groupManager.myGroups.isEmpty ? String(localized: "不用再在群里接龙") : String(localized: "\(groupManager.myGroups.count) 个球群"),
+            SectionTitle(title: String(localized: "固定局"), detail: groupManager.myGroups.isEmpty ? nil : String(localized: "\(groupManager.myGroups.count) 个球群"),
                          actionTitle: String(localized: "全部")) {
                 router.open(.groups)
             }
@@ -464,14 +496,9 @@ struct HomeView: View {
                 } label: {
                     HStack(spacing: AppTheme.Spacing.md) {
                         IconTile(systemName: "person.3.fill", fill: AppTheme.Colors.lavender, size: 44)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("找个固定局")
-                                .font(AppTheme.Typography.headline)
-                                .foregroundStyle(AppTheme.Colors.ink)
-                            Text("每周固定时间和球馆，一键报名，满了自动候补")
-                                .font(AppTheme.Typography.footnote)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        }
+                        Text("找个固定局")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundStyle(AppTheme.Colors.ink)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.right")
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
@@ -516,7 +543,7 @@ struct HomeView: View {
     private func sessionStatus(_ session: GroupSession) -> String {
         switch session.status(of: appState.currentUser?.id ?? "") {
         case .signedUp: return String(localized: "已报名 · \(session.signedUp.count)/\(session.capacity) 人")
-        case .waitlisted(let position): return String(localized: "候补第 \(position) 位 · 有人退出自动递补")
+        case .waitlisted(let position): return String(localized: "候补第 \(position) 位")
         case .none: return String(localized: "\(session.signedUp.count)/\(session.capacity) 人")
         }
     }

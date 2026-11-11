@@ -28,13 +28,14 @@ struct FriendLinkSheet: View {
     var body: some View {
         VStack(spacing: AppTheme.Spacing.xl) {
             if let user = appState.currentUser, let link = user.friendLink {
-                VStack(spacing: AppTheme.Spacing.sm) {
+                HStack(spacing: AppTheme.Spacing.xs) {
                     NicknameText(user: user)
                         .font(AppTheme.Typography.title2)
                         .foregroundStyle(AppTheme.Colors.ink)
-                    Text("拿到这个链接的人都能加你")
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                    RulesButton(title: String(localized: "加球友链接"),
+                                points: [String(localized: "拿到这个链接的人都能加你。"),
+                                         String(localized: "当面扫码，或者发给对方。"),
+                                         String(localized: "重置后，旧链接和二维码会失效。")])
                 }
                 .padding(.top, AppTheme.Spacing.xl)
 

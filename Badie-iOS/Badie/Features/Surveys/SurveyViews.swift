@@ -9,14 +9,16 @@ struct SurveyListView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "待评价"))
+            ScreenHeader(title: String(localized: "待评价")) {
+                RulesButton(title: String(localized: "评价规则"), points: [
+                    String(localized: "评价匿名，只展示汇总结果；双方都提交后（或 48 小时后）才会计入，避免“互相客气”和报复性差评。"),
+                    String(localized: "评价需要在球局结束后 48 小时内完成。")
+                ])
+            }
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                    NoticeBanner(icon: "lock.shield.fill",
-                                 text: String(localized: "评价匿名，只展示汇总结果；双方都提交后（或 48 小时后）才会计入，避免“互相客气”和报复性差评。"),
-                                 tint: AppTheme.Colors.sky)
                     if surveyManager.pendingSurveys.isEmpty {
-                        EmptyStateView(icon: "checkmark.seal.fill", title: String(localized: "都评价完了"), message: String(localized: "谢谢你让社区更靠谱。"), tint: AppTheme.Colors.mint)
+                        EmptyStateView(icon: "checkmark.seal.fill", title: String(localized: "都评价完了"), tint: AppTheme.Colors.mint)
                     }
                     ForEach(surveyManager.pendingSurveys) { survey in
                         Button {
@@ -77,7 +79,12 @@ struct SurveyFormView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "赛后评价"))
+            ScreenHeader(title: String(localized: "赛后评价")) {
+                RulesButton(title: String(localized: "评价规则"), points: [
+                    String(localized: "评价匿名，只展示汇总；双方都提交后（或 48 小时后）才会计入。"),
+                    String(localized: "评价需要在球局结束后 48 小时内完成。")
+                ])
+            }
             if let survey {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
@@ -88,9 +95,6 @@ struct SurveyFormView: View {
                         tagsQuestion
                         issuesQuestion
                         rematchQuestion
-                        Text("评价匿名，只展示汇总；双方都提交后（或 48 小时后）才会计入。")
-                            .font(AppTheme.Typography.caption)
-                            .foregroundStyle(AppTheme.Colors.inkTertiary)
                     }
                     .padding(.horizontal, AppTheme.Spacing.screen)
                     .padding(.bottom, AppTheme.Spacing.xl)
@@ -110,8 +114,7 @@ struct SurveyFormView: View {
                 .background(AppTheme.Colors.canvas.ignoresSafeArea(edges: .bottom))
             } else {
                 Spacer()
-                EmptyStateView(icon: "hourglass.bottomhalf.filled", title: String(localized: "这份评价已提交或已过期"),
-                               message: String(localized: "评价需要在球局结束后 48 小时内完成。"))
+                EmptyStateView(icon: "hourglass.bottomhalf.filled", title: String(localized: "这份评价已提交或已过期"))
                 Spacer()
             }
         }
@@ -146,7 +149,7 @@ struct SurveyFormView: View {
     }
 
     private var attendanceQuestion: some View {
-        question(String(localized: "TA 准时到场了吗？"), hint: String(localized: "到场情况会计入对方的履约记录")) {
+        question(String(localized: "TA 准时到场了吗？"), rules: [String(localized: "到场情况会计入对方的履约记录")]) {
             HStack(spacing: AppTheme.Spacing.sm) {
                 ForEach(AttendanceAnswer.allCases) { answer in
                     optionCard(
@@ -163,7 +166,7 @@ struct SurveyFormView: View {
     }
 
     private func levelQuestion(_ survey: PendingSurvey) -> some View {
-        question(String(localized: "TA 的实际水平和标注的 \(survey.opponentTier.text) 比？"), hint: String(localized: "高低各一档（1/3 级）；差得多就精确调，越如实越好")) {
+        question(String(localized: "TA 的实际水平和标注的 \(survey.opponentTier.text) 比？"), rules: [String(localized: "高低各一档（1/3 级）；差得多就精确调，越如实越好")]) {
             HStack(spacing: AppTheme.Spacing.sm) {
                 ForEach(LevelCalibration.allCases) { option in
                     optionCard(
@@ -196,13 +199,18 @@ struct SurveyFormView: View {
     }
 
     private var characterQuestion: some View {
-        question(String(localized: "球品如何？"), hint: String(localized: "\(characterHint) · 只用于匹配排序，不会显示分数")) {
-            RatingPicker(rating: $characterRating)
+        question(String(localized: "球品如何？"), rules: [String(localized: "只用于匹配排序，不会显示分数。")]) {
+            VStack(alignment: .leading, spacing: 4) {
+                RatingPicker(rating: $characterRating)
+                Text(characterHint)
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+            }
         }
     }
 
     private var tagsQuestion: some View {
-        question(String(localized: "TA 的优点（可选）"), hint: String(localized: "5 位以上球友评价后，大家给得最多的会显示在 TA 的主页")) {
+        question(String(localized: "TA 的优点（可选）"), rules: [String(localized: "5 位以上球友评价后，大家给得最多的会显示在 TA 的主页")]) {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(SurveyTag.allCases) { tag in
                     ChoiceChip(title: tag.title, isSelected: tags.contains(tag), tint: AppTheme.Colors.mint) {
@@ -214,7 +222,7 @@ struct SurveyFormView: View {
     }
 
     private var issuesQuestion: some View {
-        question(String(localized: "有什么需要 TA 注意的？（可选）"), hint: String(localized: "不公开、不扣分；多位球友都提到时，我们会私下提醒 TA，不说是谁")) {
+        question(String(localized: "有什么需要 TA 注意的？（可选）"), rules: [String(localized: "不公开、不扣分；多位球友都提到时，我们会私下提醒 TA，不说是谁")]) {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(SurveyIssue.allCases) { issue in
                     ChoiceChip(title: issue.title, isSelected: issues.contains(issue), tint: AppTheme.Colors.peach) {
@@ -226,17 +234,17 @@ struct SurveyFormView: View {
     }
 
     private var rematchQuestion: some View {
-        Toggle(isOn: $wantsRematch) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("下次还想和 TA 打")
-                    .font(AppTheme.Typography.headline)
-                    .foregroundStyle(AppTheme.Colors.ink)
-                Text("只有你们都选了才会告诉双方；只有一方选，谁也不会知道")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-            }
+        HStack(spacing: 0) {
+            Text("下次还想和 TA 打")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.ink)
+            RulesButton(title: String(localized: "下次还想和 TA 打"),
+                        points: [String(localized: "只有你们都选了才会告诉双方；只有一方选，谁也不会知道")])
+            Spacer(minLength: AppTheme.Spacing.sm)
+            Toggle(String(localized: "下次还想和 TA 打"), isOn: $wantsRematch)
+                .labelsHidden()
+                .tint(AppTheme.Colors.success)
         }
-        .tint(AppTheme.Colors.success)
     }
 
     private var characterHint: String {
@@ -251,16 +259,17 @@ struct SurveyFormView: View {
 
     // MARK: Building blocks
 
-    private func question<Content: View>(_ title: String, hint: String, @ViewBuilder content: () -> Content) -> some View {
+    /// 一句问题 + “?”（为什么问、结果怎么用）
+    private func question<Content: View>(_ title: String, rules: [String], @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 0) {
                 Text(title)
                     .font(AppTheme.Typography.headline)
                     .foregroundStyle(AppTheme.Colors.ink)
+                    .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
-                Text(hint)
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                RulesButton(title: title, points: rules)
+                Spacer(minLength: 0)
             }
             content()
         }

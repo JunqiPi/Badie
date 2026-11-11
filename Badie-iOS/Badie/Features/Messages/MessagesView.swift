@@ -23,8 +23,17 @@ struct MessagesView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
                 LargeTitleHeader(title: String(localized: "消息")) {
-                    IconButton(systemName: "person.badge.plus", accessibilityLabel: String(localized: "添加球友")) {
-                        router.open(.addFriend)
+                    HStack(spacing: AppTheme.Spacing.xs) {
+                        if segment == .chats {
+                            RulesButton(title: String(localized: "聊天"),
+                                        points: [String(localized: "长按会话可以删除或屏蔽。"),
+                                                 String(localized: "删除只对你隐藏，不影响对方。"),
+                                                 String(localized: "同球群的人可以给你发消息请求。"),
+                                                 String(localized: "忽略消息请求，对方不会知道。")])
+                        }
+                        IconButton(systemName: "person.badge.plus", accessibilityLabel: String(localized: "添加球友")) {
+                            router.open(.addFriend)
+                        }
                     }
                 }
                 SegmentedSticker(options: Segment.allCases, selection: $segment, title: { $0.title }) { option in
@@ -50,7 +59,7 @@ struct MessagesView: View {
     private var chats: some View {
         if !messageManager.incomingRequests.isEmpty {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                SectionTitle(title: String(localized: "消息请求"), detail: String(localized: "同球群的人想和你聊 · 忽略对方不会知道"))
+                SectionTitle(title: String(localized: "消息请求"), detail: "\(messageManager.incomingRequests.count)")
                 VStack(spacing: 0) {
                     ForEach(Array(messageManager.incomingRequests.enumerated()), id: \.element.id) { index, thread in
                         if index > 0 { InsetDivider().padding(.leading, 72) }
@@ -64,7 +73,6 @@ struct MessagesView: View {
         }
         if messageManager.conversations.isEmpty {
             EmptyStateView(icon: "bubble.left.and.bubble.right", title: String(localized: "还没有聊天"),
-                           message: String(localized: "匹配成功或添加球友后，就可以在这里约时间、约球馆。"),
                            actionTitle: String(localized: "添加球友")) { router.open(.addFriend) }
                 .card()
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -98,10 +106,6 @@ struct MessagesView: View {
             .padding(.horizontal, AppTheme.Spacing.lg)
             .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
             .padding(.horizontal, AppTheme.Spacing.screen)
-            Text("长按会话可删除或屏蔽；删除只对你隐藏，不影响对方")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                .padding(.horizontal, AppTheme.Spacing.screen)
         }
     }
 }
@@ -176,7 +180,7 @@ private struct ThreadRow: View {
 
     private var preview: String {
         // 没聊过的私信只有新球友
-        guard let message = thread.lastMessage else { return thread.isGroup ? "" : String(localized: "你们已经是球友了，打个招呼吧") }
+        guard let message = thread.lastMessage else { return thread.isGroup ? "" : String(localized: "已是球友") }
         if thread.isGroup, message.kind != .system, message.senderId != messageManager.currentUserId,
            let sender = messageManager.user(id: message.senderId) {
             return String(localized: "\(sender.nickname)：\(message.content)")
@@ -220,8 +224,7 @@ struct FriendsContent: View {
                 }
                 let list = friendManager.searchFriends(query: query)
                 if list.isEmpty {
-                    EmptyStateView(icon: "person.2", title: query.isEmpty ? String(localized: "还没有球友") : String(localized: "没有找到"),
-                                   message: query.isEmpty ? String(localized: "一起打过球后互加好友，下次约球更方便。") : String(localized: "换个关键词试试"))
+                    EmptyStateView(icon: "person.2", title: query.isEmpty ? String(localized: "还没有球友") : String(localized: "没有找到"))
                         .card()
                 } else {
                     VStack(spacing: 0) {
@@ -381,19 +384,13 @@ struct AddFriendView: View {
             ScreenHeader(title: String(localized: "添加球友"))
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        SearchField(text: $query, placeholder: String(localized: "昵称或 昵称#1234"))
-                        Text("加上 #1234 可以精确找到一个人")
-                            .font(AppTheme.Typography.footnoteBold)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    }
+                    SearchField(text: $query, placeholder: String(localized: "昵称或 昵称#1234"))
                     if appState.currentUser?.friendLink != nil {
                         Button {
                             Haptics.tap()
                             showsFriendLink = true
                         } label: {
-                            InfoRow(icon: "qrcode", tint: AppTheme.Colors.lime, title: String(localized: "我的加球友链接"),
-                                    subtitle: String(localized: "当面扫码，或者发给对方")) {
+                            InfoRow(icon: "qrcode", tint: AppTheme.Colors.lime, title: String(localized: "我的加球友链接")) {
                                 Image(systemName: "chevron.right")
                                     .foregroundStyle(AppTheme.Colors.inkTertiary)
                             }
@@ -409,8 +406,9 @@ struct AddFriendView: View {
                     } else if !query.isEmpty {
                         section(title: String(localized: "搜索结果"), users: results, emptyText: String(localized: "没有找到“\(query)”"))
                     }
-                    section(title: String(localized: "一起打过球的人"), users: coPlayers, emptyText: String(localized: "打完球后，这里会出现一起打过的人"))
-                    section(title: String(localized: "同馆常客"), users: regulars, emptyText: String(localized: "设置常去球馆后，这里会显示公开了自己是常客的球友"))
+                    section(title: String(localized: "一起打过球的人"), users: coPlayers, emptyText: String(localized: "还没有"))
+                    section(title: String(localized: "同馆常客"), users: regulars, emptyText: String(localized: "还没有"),
+                            rules: [String(localized: "设了常去球馆，这里会显示公开了自己是常客的球友。")])
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
                 .padding(.bottom, AppTheme.Spacing.xxl)
@@ -445,9 +443,16 @@ struct AddFriendView: View {
         }
     }
 
-    private func section(title: String, users: [User], emptyText: String) -> some View {
+    private func section(title: String, users: [User], emptyText: String, rules: [String]? = nil) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: title)
+            HStack(spacing: AppTheme.Spacing.xs) {
+                SectionTitle(title: title)
+                    .fixedSize()
+                if let rules {
+                    RulesButton(title: title, points: rules)
+                }
+                Spacer(minLength: 0)
+            }
             if users.isEmpty {
                 Text(emptyText)
                     .font(AppTheme.Typography.subheadline)

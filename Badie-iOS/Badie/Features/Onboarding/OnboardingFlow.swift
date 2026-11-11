@@ -223,7 +223,7 @@ struct OnboardingFlow: View {
 
     private var phoneStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle(String(localized: "先用手机号\n登录或注册"), subtitle: String(localized: "未注册的手机号验证后会自动创建账号"))
+            stepTitle(String(localized: "先用手机号\n登录或注册"))
             HStack(spacing: AppTheme.Spacing.sm) {
                 Menu {
                     Picker("国家/地区", selection: $form.phoneCountry) {
@@ -294,9 +294,7 @@ struct OnboardingFlow: View {
     private var emailStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                stepTitle(form.newAccount ? String(localized: "注册 Badie") : String(localized: "用邮箱登录"),
-                          subtitle: form.newAccount ? String(localized: "用邮箱和密码注册，我们会发一个验证码确认邮箱。")
-                                                    : String(localized: "用注册时的邮箱和密码登录。"))
+                stepTitle(form.newAccount ? String(localized: "注册 Badie") : String(localized: "用邮箱登录"))
                 Button(form.newAccount ? String(localized: "已有账号？去登录") : String(localized: "还没有账号？注册一个")) {
                     form.newAccount.toggle()
                     errorText = nil
@@ -319,15 +317,12 @@ struct OnboardingFlow: View {
                              stroke: errorText == nil ? AppTheme.Colors.stroke : AppTheme.Colors.danger)
                     .onChange(of: form.email) { _, _ in errorText = nil }
                     .accessibilityLabel("邮箱")
-                PasswordField(text: $form.password, isNew: form.newAccount, invalid: errorText != nil) {
+                PasswordField(text: $form.password,
+                              placeholder: form.newAccount ? String(localized: "密码（至少 8 位）") : String(localized: "密码"),
+                              isNew: form.newAccount, invalid: errorText != nil) {
                     if canContinue { primaryAction() }
                 }
                 .onChange(of: form.password) { _, _ in errorText = nil }
-                if form.newAccount {
-                    Text("至少 8 位，用一句好记的话最方便。")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.inkTertiary)
-                }
             }
             if let errorText {
                 Text(errorText)
@@ -406,15 +401,10 @@ struct OnboardingFlow: View {
             .onTapGesture { codeFocused = true }
 
             if appState.isRemote && form.codePurpose == .recovery {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                    PasswordField(text: $form.password, placeholder: String(localized: "新密码"), isNew: true, invalid: errorText != nil) {
-                        if canContinue { primaryAction() }
-                    }
-                    .onChange(of: form.password) { _, _ in errorText = nil }
-                    Text("至少 8 位，用一句好记的话最方便。")
-                        .font(AppTheme.Typography.caption)
-                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                PasswordField(text: $form.password, placeholder: String(localized: "新密码（至少 8 位）"), isNew: true, invalid: errorText != nil) {
+                    if canContinue { primaryAction() }
                 }
+                .onChange(of: form.password) { _, _ in errorText = nil }
             }
 
             if let errorText {
@@ -424,7 +414,7 @@ struct OnboardingFlow: View {
             }
 
             if let issued = form.issuedCode {
-                NoticeBanner(icon: "message.badge.filled.fill", text: String(localized: "演示环境不发真实短信，验证码：\(issued)"),
+                NoticeBanner(icon: "message.badge.filled.fill", text: String(localized: "演示验证码：\(issued)"),
                              tint: AppTheme.Colors.sky, actionTitle: String(localized: "填入")) {
                     form.code = issued
                 }
@@ -445,7 +435,7 @@ struct OnboardingFlow: View {
 
     private var profileStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle(String(localized: "怎么称呼你？"), subtitle: String(localized: "昵称和头像会展示给球友，手机号不会"))
+            stepTitle(String(localized: "怎么称呼你？"))
             PhotosPicker(selection: $photoItem, matching: .images) {
                 AvatarView(text: form.avatar.symbol.isEmpty ? (form.nickname.first.map { String($0) } ?? "🏸") : form.avatar.symbol,
                            paletteIndex: form.avatar.paletteIndex, size: 96, image: form.photo.flatMap(UIImage.init(data:)))
@@ -470,7 +460,7 @@ struct OnboardingFlow: View {
                 AvatarCropSheet(image: item.image) { jpeg in form.photo = jpeg }
             }
             if form.photo != nil {
-                Button("移除照片，使用文字头像") { form.photo = nil }
+                Button("移除照片") { form.photo = nil }
                     .buttonStyle(TextActionStyle())
                     .frame(maxWidth: .infinity)
             } else {
@@ -488,14 +478,19 @@ struct OnboardingFlow: View {
 
     private var levelStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-            stepTitle(String(localized: "测一下你的水平"), subtitle: String(localized: "\(SkillAssessment.questions.count) 道题，按你能稳定做到的选，自动算出你的等级（细分到 −、本级、+）"))
+            stepTitle(String(localized: "测一下你的水平"), subtitle: String(localized: "\(SkillAssessment.questions.count) 道题"),
+                      rulesTitle: String(localized: "怎么定级"),
+                      rules: [String(localized: "按你能稳定做到的选，不按偶尔打出来的球。"),
+                              String(localized: "答完自动算出等级，细分到 −、本级、+。"),
+                              String(localized: "问卷最高到 6+（俱乐部顶尖）；7 起是州级以上，凭赛果、全国排名、运动员等级证书或 BWF 世界排名认证。打满 5 场后会按球友评价自动校准。"),
+                              String(localized: "跳过的话先按 Lv.\(SkillAssessment.provisionalLevel) 匹配，之后可以在资料页完成定级。")])
             SkillAssessmentView(answers: $form.assessmentAnswers)
             if form.assessmentResult == nil {
                 Button {
                     form.skippedAssessment = true
                     advance(to: .preferences)
                 } label: {
-                    Text("暂时跳过，先按 Lv.\(SkillAssessment.provisionalLevel) 匹配")
+                    Text("先跳过")
                         .font(AppTheme.Typography.footnoteBold)
                         .underline()
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -504,10 +499,6 @@ struct OnboardingFlow: View {
                 .buttonStyle(.plain)
                 .accessibilityHint("之后可以在资料页完成定级")
             }
-            Text("问卷最高到 6+（俱乐部顶尖）；7 起是州级以上，凭赛果、全国排名、运动员等级证书或 BWF 世界排名认证。打满 5 场后会按球友评价自动校准。")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -515,7 +506,7 @@ struct OnboardingFlow: View {
 
     private var preferencesStep: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-            stepTitle(String(localized: "最后一步"), subtitle: String(localized: "这些偏好用于默认匹配设置，之后都能改"))
+            stepTitle(String(localized: "最后一步"))
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Text("常打")
                     .font(AppTheme.Typography.footnoteBold)
@@ -533,7 +524,7 @@ struct OnboardingFlow: View {
                 }
             }
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                Text("一般什么时候有空")
+                Text("空闲时间")
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 FlowLayout(spacing: AppTheme.Spacing.sm) {
@@ -561,38 +552,48 @@ struct OnboardingFlow: View {
     /// 常去球馆：选一次，以后快速匹配默认就是它们（选同一家的人才会被匹配到一起）
     private var favoriteVenuesCard: some View {
         let venues = locationManager.courts(ids: form.favoriteVenueIds)
-        return Button {
-            showVenuePicker = true
-        } label: {
-            HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
-                IconTile(systemName: "figure.badminton", fill: AppTheme.Colors.lime, size: 48)
-                VStack(alignment: .leading, spacing: 2) {
-                    (venues.isEmpty ? Text("常去哪几个球馆？（选填）") : Text("常去球馆"))
-                        .font(AppTheme.Typography.headline)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    if venues.isEmpty {
-                        Text("比如 LABC、Elite Rally。选好后快速匹配会默认用它们")
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } else {
-                        ForEach(venues) { venue in
-                            Text("\(venue.name) · \(venue.postalAddress.city)")
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            HStack(spacing: 0) {
+                Text("常去球馆")
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
+                RulesButton(title: String(localized: "常去球馆"),
+                            points: [String(localized: "选好后，快速匹配默认用这几家。"),
+                                     String(localized: "选了同一家球馆的人才会被匹配到一起。")])
+                Spacer(minLength: 0)
+            }
+            Button {
+                showVenuePicker = true
+            } label: {
+                HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                    IconTile(systemName: "figure.badminton", fill: AppTheme.Colors.lime, size: 48)
+                    VStack(alignment: .leading, spacing: 2) {
+                        if venues.isEmpty {
+                            Text("添加球馆")
+                                .font(AppTheme.Typography.headline)
+                                .foregroundStyle(AppTheme.Colors.ink)
+                            Text("选填")
                                 .font(AppTheme.Typography.footnote)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
-                                .lineLimit(1)
+                        } else {
+                            ForEach(venues) { venue in
+                                Text(venue.name)
+                                    .font(AppTheme.Typography.headline)
+                                    .foregroundStyle(AppTheme.Colors.ink)
+                                    .lineLimit(1)
+                            }
                         }
                     }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                        .padding(.top, 4)
                 }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
-                    .padding(.top, 4)
+                .card()
             }
-            .card()
+            .buttonStyle(PressableStyle(scale: 0.98))
         }
-        .buttonStyle(PressableStyle(scale: 0.98))
     }
 
     private var locationCard: some View {
@@ -602,11 +603,8 @@ struct OnboardingFlow: View {
                 (locationManager.isAuthorized ? Text("已开启定位") : Text("开启定位"))
                     .font(AppTheme.Typography.headline)
                     .foregroundStyle(AppTheme.Colors.ink)
-                Text("用于找附近的球馆和球友，只在使用 App 时获取")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
+            RulesButton(title: String(localized: "定位"), points: [String(localized: "用于找附近的球馆和球友，只在使用 App 时获取")])
             Spacer(minLength: 0)
             if !locationManager.isAuthorized && !locationManager.isDenied {
                 Button("允许") { locationManager.requestAuthorization() }
@@ -740,7 +738,7 @@ struct OnboardingFlow: View {
         case .code:
             return appState.isRemote && form.codePurpose == .recovery ? String(localized: "保存新密码并登录") : String(localized: "验证")
         case .profile, .level: return String(localized: "下一步")
-        case .preferences: return String(localized: "完成，开始约球")
+        case .preferences: return String(localized: "开始约球")
         }
     }
 
@@ -1011,17 +1009,28 @@ struct OnboardingFlow: View {
         withAnimation(AppTheme.Motion.standard) { step = previous }
     }
 
-    private func stepTitle(_ title: String, subtitle: String) -> some View {
+    /// 标题 + 可选的一行副标题；说明放进旁边的“?”
+    private func stepTitle(_ title: String, subtitle: String? = nil, rulesTitle: String? = nil, rules: [String] = []) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Text(title)
                 .font(AppTheme.Typography.title)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-            Text(subtitle)
-                .font(AppTheme.Typography.subheadline)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            if subtitle != nil || !rules.isEmpty {
+                HStack(spacing: 0) {
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(AppTheme.Typography.subheadline)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if !rules.isEmpty {
+                        RulesButton(title: rulesTitle ?? title, points: rules)
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
         }
     }
 }

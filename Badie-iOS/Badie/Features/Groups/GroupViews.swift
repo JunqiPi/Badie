@@ -62,15 +62,15 @@ struct GroupsView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScreenHeader(title: String(localized: "球群 · 固定局")) {
-                IconButton(systemName: "plus", accessibilityLabel: String(localized: "建一个球群")) {
-                    router.open(.createGroup(venueId: nil))
+                HStack(spacing: AppTheme.Spacing.xs) {
+                    RulesButton(title: String(localized: "球群怎么用"), points: GroupRules.points)
+                    IconButton(systemName: "plus", accessibilityLabel: String(localized: "建一个球群")) {
+                        router.open(.createGroup(venueId: nil))
+                    }
                 }
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
-                    NoticeBanner(icon: "list.bullet.clipboard.fill",
-                                 text: String(localized: "固定时间、固定球馆的局：一键报名，满了自动候补，有人退出自动递补。"),
-                                 tint: AppTheme.Colors.sky)
                     if !groupManager.myGroups.isEmpty {
                         section(String(localized: "我加入的"), groups: groupManager.myGroups)
                     }
@@ -78,8 +78,7 @@ struct GroupsView: View {
                         .filter { group in !groupManager.myGroups.contains { $0.id == group.id } }
                     if nearby.isEmpty {
                         EmptyStateView(icon: "person.3", title: String(localized: "附近还没有球群"),
-                                       message: String(localized: "你常和固定的人打球的话，建一个群，把报名从微信群搬过来。"),
-                                       tint: AppTheme.Colors.lavender, actionTitle: String(localized: "建一个球群")) {
+                                       tint: AppTheme.Colors.lavender, actionTitle: String(localized: "建群")) {
                             router.open(.createGroup(venueId: nil))
                         }
                     } else {
@@ -294,30 +293,28 @@ struct GroupDetailView: View {
     private func joinCard(_ group: PlayGroup) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             if let me, group.isPending(me) {
-                Label("已申请加入，等组织者同意", systemImage: "hourglass")
+                Label("等组织者同意", systemImage: "hourglass")
                     .font(AppTheme.Typography.bodyBold)
                     .foregroundStyle(AppTheme.Colors.onAccent)
             } else {
-                Text(group.joinPolicy == .approval ? String(localized: "这个群需要组织者同意。")
-                     : group.isCoached ? String(localized: "加入后就能报名每周的场次。")
-                     : String(localized: "水平符合就能直接加入，加入后就能报名每周的场次。"))
-                    .font(AppTheme.Typography.subheadline)
-                    .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
-                Button {
-                    Task {
-                        do {
-                            let joined = try await groupManager.join(group.id)
-                            Haptics.success()
-                            appState.showToast(joined.isMember(me ?? "") ? String(localized: "已加入「\(joined.name)」") : String(localized: "已提交申请，组织者同意后通知你"),
-                                               style: .success)
-                        } catch {
-                            appState.showError(error)
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Button {
+                        Task {
+                            do {
+                                let joined = try await groupManager.join(group.id)
+                                Haptics.success()
+                                appState.showToast(joined.isMember(me ?? "") ? String(localized: "已加入「\(joined.name)」") : String(localized: "已提交申请，组织者同意后通知你"),
+                                                   style: .success)
+                            } catch {
+                                appState.showError(error)
+                            }
                         }
+                    } label: {
+                        Text(group.joinPolicy == .open ? String(localized: "加入球群") : String(localized: "申请加入"))
                     }
-                } label: {
-                    Text(group.joinPolicy == .open ? String(localized: "加入球群") : String(localized: "申请加入"))
+                    .buttonStyle(.brutalPrimary)
+                    RulesButton(title: String(localized: "怎么加入"), points: GroupRules.joinPoints(group))
                 }
-                .buttonStyle(.brutalPrimary)
             }
             if !group.schedules.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
@@ -337,7 +334,14 @@ struct GroupDetailView: View {
     private func sessionsSection(_ group: PlayGroup) -> some View {
         let sessions = groupManager.sessions(groupId: group.id)
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "接下来的场次"), detail: String(localized: "开场前 2 小时内退出算临时取消"))
+            HStack(spacing: AppTheme.Spacing.xs) {
+                Text("接下来的场次")
+                    .font(AppTheme.Typography.title3)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .accessibilityAddTraits(.isHeader)
+                RulesButton(title: String(localized: "报名和候补"), points: GroupRules.points)
+                Spacer(minLength: 0)
+            }
             if sessions.isEmpty {
                 Text("未来两周没有场次")
                     .font(AppTheme.Typography.footnote)
@@ -356,7 +360,7 @@ struct GroupDetailView: View {
     private func membersSection(_ group: PlayGroup) -> some View {
         let members = group.memberIds.compactMap { groupManager.user($0) }
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: String(localized: "组织者与常来的人"), detail: nil)
+            SectionTitle(title: String(localized: "成员"), detail: String(localized: "\(members.count) 人"))
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
                     ForEach(members.prefix(16)) { member in
@@ -516,7 +520,7 @@ struct SessionSheet: View {
                     .padding(.top, AppTheme.Spacing.xl)
                     roster(title: String(localized: "已报名 \(session.signedUp.count)/\(session.capacity)"), ids: session.signedUp)
                     if !session.waitlist.isEmpty {
-                        roster(title: String(localized: "候补（有人退出按顺序递补）"), ids: session.waitlist)
+                        roster(title: String(localized: "候补 \(session.waitlist.count)"), ids: session.waitlist)
                     }
                     if let me = appState.currentUser?.id, group.isOrganizer(me), !session.isCancelled {
                         Button("取消这一场") {
@@ -627,18 +631,17 @@ struct CreateGroupView: View {
                         BrutalTextField(label: String(localized: "介绍（可选）"), placeholder: String(localized: "例：轮换上场，新手友好；费用按人头在前台付"),
                                         text: $summary, characterLimit: 120, axis: .vertical)
                     }
-                    VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                        Toggle(isOn: $coached.animation(AppTheme.Motion.standard)) {
-                            Text("教练带课")
-                                .font(AppTheme.Typography.bodyBold)
-                                .foregroundStyle(AppTheme.Colors.ink)
-                        }
-                        .tint(AppTheme.Colors.success)
-                        if coached {
-                            Text("每场最少 1 人。水平范围只作参考。")
-                                .font(AppTheme.Typography.caption)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        }
+                    HStack(spacing: AppTheme.Spacing.xs) {
+                        Text("教练带课")
+                            .font(AppTheme.Typography.bodyBold)
+                            .foregroundStyle(AppTheme.Colors.ink)
+                        RulesButton(title: String(localized: "教练带课"),
+                                    points: [String(localized: "每场最少 1 人，最多 40 人。"),
+                                             String(localized: "水平范围只作参考。")])
+                        Spacer(minLength: 0)
+                        Toggle(String(localized: "教练带课"), isOn: $coached.animation(AppTheme.Motion.standard))
+                            .labelsHidden()
+                            .tint(AppTheme.Colors.success)
                     }
                     if !isEditing {
                         section(String(localized: "固定球馆")) { venueButton }
@@ -679,7 +682,7 @@ struct CreateGroupView: View {
                 .padding(.bottom, AppTheme.Spacing.xxl)
             }
             VStack(spacing: AppTheme.Spacing.xs) {
-                if let message = validationMessage {
+                if let message = validationMessage, isEditing || !name.isEmpty {
                     Text(message)
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.danger)
@@ -727,10 +730,12 @@ struct CreateGroupView: View {
                     Text(venue?.name ?? String(localized: "选择球馆"))
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
-                    Text(venue?.address ?? String(localized: "搜索球馆名、简称或地址"))
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    if let address = venue?.address {
+                        Text(address)
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .lineLimit(1)
+                    }
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
@@ -756,7 +761,7 @@ struct CreateGroupView: View {
                 TimeStepper(title: String(localized: "结束"), minutes: schedule.endMinutes, range: (7 * 60)...(24 * 60))
             }
             Stepper(value: schedule.capacity, in: GroupSchedule.capacityRange(coached: coached), step: coached ? 1 : 2) {
-                Text("每场 \(schedule.wrappedValue.capacity) 个名额，满了自动候补")
+                Text("每场 \(schedule.wrappedValue.capacity) 个名额")
                     .font(AppTheme.Typography.bodyBold)
                     .foregroundStyle(AppTheme.Colors.ink)
             }
@@ -828,5 +833,27 @@ struct CreateGroupView: View {
                 appState.showError(error)
             }
         }
+    }
+}
+
+// MARK: - 球群规则（“?”里的要点）
+
+enum GroupRules {
+    static var points: [String] {
+        [String(localized: "固定时间、固定球馆的局。"),
+         String(localized: "一键报名，满了自动候补。"),
+         String(localized: "有人退出，候补按顺序递补，并通知你。"),
+         String(localized: "开场前 2 小时内退出，算临时取消。")]
+    }
+
+    static func joinPoints(_ group: PlayGroup) -> [String] {
+        var points: [String] = []
+        if group.joinPolicy == .approval {
+            points.append(String(localized: "这个群需要组织者同意。"))
+        } else if !group.isCoached {
+            points.append(String(localized: "水平符合就能直接加入。"))
+        }
+        points.append(String(localized: "加入后就能报名每周的场次。"))
+        return points + Self.points
     }
 }

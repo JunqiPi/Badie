@@ -17,9 +17,7 @@ struct GameTicketCard: View {
     private func content(now: Date) -> some View {
         VStack(alignment: .leading, spacing: compact ? AppTheme.Spacing.sm : AppTheme.Spacing.md) {
             HStack {
-                Text("\(game.mode.title) · \(game.statusText)")
-                    .font(AppTheme.Typography.overline)
-                    .tracking(0.8)
+                chip("\(game.mode.title) · \(game.statusText)", fill: Color.white)
                 Spacer()
                 statusChip(now: now)
             }
@@ -30,26 +28,35 @@ struct GameTicketCard: View {
                     .scaledFont(size: compact ? 18 : 22, relativeTo: .title3)
             }
             .monospacedDigit()
-            Text(game.slot.formattedDate)
-                .font(AppTheme.Typography.bodyBold)
-            DashedDivider()
-                .padding(.vertical, compact ? 2 : AppTheme.Spacing.xs)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(game.court.name)
-                    .font(AppTheme.Typography.headline)
+            if compact {
+                // 首页：“今天 · 球馆名”一行，地址在详情里
+                Text("\(dayText) · \(game.court.name)")
+                    .font(AppTheme.Typography.bodyBold)
                     .lineLimit(1)
-                Text(game.court.address)
-                    .font(AppTheme.Typography.footnote)
-                    .opacity(0.75)
-                    .lineLimit(1)
+            } else {
+                Text(game.slot.formattedDate)
+                    .font(AppTheme.Typography.bodyBold)
+                DashedDivider()
+                    .padding(.vertical, AppTheme.Spacing.xs)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(game.court.name)
+                        .font(AppTheme.Typography.headline)
+                        .lineLimit(1)
+                    Text(game.court.address)
+                        .font(AppTheme.Typography.footnote)
+                        .opacity(0.75)
+                        .lineLimit(1)
+                }
             }
             HStack(spacing: AppTheme.Spacing.sm) {
                 AvatarStack(users: players, size: compact ? 30 : 36)
-                Text(playersText)
-                    .font(AppTheme.Typography.footnoteBold)
-                    .lineLimit(1)
+                if !hasOthers {
+                    Text("等待球友加入")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .lineLimit(1)
+                }
                 Spacer(minLength: 0)
-                if !compact, game.cost.perPerson != nil {
+                if game.cost.perPerson != nil {
                     Text(game.cost.perPersonText)
                         .font(AppTheme.Typography.headline)
                         .monospacedDigit()
@@ -59,19 +66,26 @@ struct GameTicketCard: View {
         .foregroundStyle(AppTheme.Colors.onAccent)
         .padding(compact ? AppTheme.Spacing.lg : AppTheme.Spacing.xl)
         .background {
-            let shape = TicketShape(notchPosition: compact ? 0.52 : 0.55)
-            ZStack {
-                shape
-                    .fill(AppTheme.Colors.shadow)
-                    .offset(x: 3, y: 4)
-                shape
-                    .fill(tint)
-                shape
-                    .strokeBorder(AppTheme.Colors.stroke, lineWidth: 2)
+            if compact {
+                backing(RoundedRectangle(cornerRadius: 22, style: .continuous))
+            } else {
+                backing(TicketShape(notchPosition: 0.55))
             }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(game.mode.title)球局，\(game.slot.formattedFull)，\(game.court.name)，\(playersText)")
+    }
+
+    private func backing<S: InsettableShape>(_ shape: S) -> some View {
+        ZStack {
+            shape
+                .fill(AppTheme.Colors.shadow)
+                .offset(x: 3, y: 4)
+            shape
+                .fill(tint)
+            shape
+                .strokeBorder(AppTheme.Colors.stroke, lineWidth: 2)
+        }
     }
 
     private var tint: Color {
@@ -82,6 +96,19 @@ struct GameTicketCard: View {
         }
     }
 
+    /// “今天”“明天”，再往后是日期
+    private var dayText: String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(game.slot.date) { return String(localized: "今天") }
+        if calendar.isDateInTomorrow(game.slot.date) { return String(localized: "明天") }
+        return DateText.shortDay(game.slot.date)
+    }
+
+    private var hasOthers: Bool {
+        players.contains { $0.id != currentUserId }
+    }
+
+    /// 读屏用的一句话（界面上只放头像）
     private var playersText: String {
         let others = players.filter { $0.id != currentUserId }.map(\.nickname)
         guard !others.isEmpty else { return String(localized: "等待球友加入") }

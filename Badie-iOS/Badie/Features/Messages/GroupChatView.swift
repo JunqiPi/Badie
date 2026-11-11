@@ -161,9 +161,9 @@ struct GroupChatView: View {
 
     private var closedText: String {
         switch thread?.context {
-        case .game: return String(localized: "球局群聊在赛后 48 小时关闭了。想再约的话，先加为球友。")
+        case .game: return String(localized: "群聊已关闭，想再约先加为球友")
         case .group: return String(localized: "加入球群后才能在群里发言")
-        case nil: return String(localized: "这个群聊已经结束了")
+        case nil: return String(localized: "群聊已结束")
         }
     }
 
