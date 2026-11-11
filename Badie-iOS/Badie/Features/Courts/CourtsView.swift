@@ -56,7 +56,6 @@ struct CourtsView: View {
                     SectionTitle(title: String(localized: "\(locationManager.nearbyCourts.count) 家球馆"), detail: locationManager.radiusText)
                     if locationManager.nearbyCourts.isEmpty {
                         EmptyStateView(icon: "mappin.slash", title: String(localized: "\(locationManager.radiusText)还没有收录的球馆"),
-                                       message: String(localized: "搜索球馆名或地址，也可以自己添加常去的球馆。"),
                                        actionTitle: String(localized: "搜索球馆")) { showSearch = true }
                     } else {
                         VStack(spacing: 0) {
@@ -83,7 +82,7 @@ struct CourtsView: View {
                     Button {
                         addDraft = AddVenueDraft(name: "", coordinate: locationManager.coordinate)
                     } label: {
-                        Label("找不到？添加球馆", systemImage: "plus.circle.fill")
+                        Label("添加球馆", systemImage: "plus.circle.fill")
                     }
                     .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium, fullWidth: true))
                     .padding(.top, AppTheme.Spacing.sm)
@@ -191,25 +190,26 @@ struct CourtDetailSheet: View {
                 VStack(alignment: .leading, spacing: 0) {
                     InfoRow(icon: Money.icon(for: venue.currencyCode), tint: AppTheme.Colors.butter,
                             title: venue.pricingText,
-                            subtitle: venue.pricingNote ?? (venue.pricing.isKnown ? String(localized: "以球馆实际收费为准") : String(localized: "去过的球友可以告诉大家")))
+                            subtitle: venue.pricingNote ?? (venue.pricing.isKnown ? String(localized: "以球馆实际收费为准") : nil))
                     InsetDivider()
                     if let playTimes = venue.playTimes {
                         InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
                                 title: String(localized: "羽毛球开放时段"),
-                                subtitle: playTimes + "\n" + String(localized: "时段常有变动，出发前先看官网"))
+                                subtitle: playTimes)
                     } else {
                         InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
                                 title: venue.hoursText,
-                                subtitle: venue.operatingHours.map { $0.formattedDaysOpen + timeZoneSuffix } ?? String(localized: "出发前建议先电话确认"))
+                                subtitle: venue.operatingHours.map { $0.formattedDaysOpen + timeZoneSuffix })
                     }
                     if let phone = venue.phone {
                         InsetDivider()
                         Button {
                             Task { _ = await MapsLauncher.call(phone) }
                         } label: {
-                            InfoRow(icon: "phone.fill", tint: AppTheme.Colors.mint, title: phone, subtitle: String(localized: "致电球馆预订场地"))
+                            InfoRow(icon: "phone.fill", tint: AppTheme.Colors.mint, title: phone)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityHint("致电球馆预订场地")
                     }
                     if let website = venue.website, let url = URL(string: website) {
                         InsetDivider()
@@ -231,7 +231,7 @@ struct CourtDetailSheet: View {
                 } label: {
                     InfoRow(icon: "trophy.fill", tint: AppTheme.Colors.butter,
                             title: String(localized: "本馆排行"),
-                            subtitle: String(localized: "本月在这里打得最多的球友，每个水平段单独排")) {
+                            subtitle: String(localized: "本月场次最多 · 分水平段")) {
                         Image(systemName: "chevron.right")
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                     }
@@ -256,14 +256,15 @@ struct CourtDetailSheet: View {
                         Haptics.selection()
                     }
                 } label: {
-                    Label(selected ? String(localized: "已加入快速匹配（点按移除）") : String(localized: "加入快速匹配的球馆"), systemImage: selected ? "checkmark.circle.fill" : "plus.circle.fill")
+                    Label(selected ? String(localized: "移出匹配") : String(localized: "加入匹配"), systemImage: selected ? "checkmark.circle.fill" : "plus.circle.fill")
                 }
+                .accessibilityAddTraits(selected ? [.isSelected] : [])
                 .buttonStyle(.brutal(selected ? .secondary : .primary, size: .medium))
 
                 Button {
                     showNavigation = true
                 } label: {
-                    Label("导航到这里", systemImage: "location.north.line.fill")
+                    Label("导航", systemImage: "location.north.line.fill")
                 }
                 .buttonStyle(.brutal(.inverse, size: .medium))
             }
@@ -315,10 +316,9 @@ struct CourtDetailSheet: View {
                 navigate(to: .createGroup(venueId: venue.id))
             }
             if groups.isEmpty {
-                Text("还没有人在这里建球群。常和固定的人打的话，建一个，报名不用再在群里接龙。")
+                Text("还没有球群")
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
             }
             ForEach(groups) { group in
                 Button {
@@ -370,7 +370,7 @@ struct CourtDetailSheet: View {
                             }
                         }
                     } label: {
-                        Label(hasConfirmed ? String(localized: "你已确认过") : String(localized: "我去过，地址正确"), systemImage: "checkmark.circle.fill")
+                        Label(hasConfirmed ? String(localized: "已确认") : String(localized: "确认地址"), systemImage: "checkmark.circle.fill")
                     }
                     .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: true))
                     .disabled(hasConfirmed)
@@ -447,10 +447,17 @@ struct TravelRadiusSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
-            Text("附近范围")
-                .font(AppTheme.Typography.title)
-                .foregroundStyle(AppTheme.Colors.ink)
-                .padding(.top, AppTheme.Spacing.xl)
+            HStack(spacing: 0) {
+                Text("附近范围")
+                    .font(AppTheme.Typography.title)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .accessibilityAddTraits(.isHeader)
+                RulesButton(title: String(localized: "附近范围"), points: [
+                    String(localized: "附近的球馆、球局和球群按这个范围显示。"),
+                    String(localized: "匹配只看你选的球馆，搜索也不受范围限制。")
+                ])
+            }
+            .padding(.top, AppTheme.Spacing.xl)
             HStack(alignment: .lastTextBaseline, spacing: 4) {
                 Text("\(Int(value))")
                     .scaledFont(size: 48)
@@ -463,9 +470,6 @@ struct TravelRadiusSheet: View {
                 .tint(AppTheme.Colors.ink)
                 .accessibilityLabel("附近范围")
                 .accessibilityValue("\(Int(value)) \(unit.title)")
-            Text("附近的球馆、球局和球群按这个范围显示。匹配只看你选的球馆，搜索也不受范围限制。")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
             Button("完成") {
                 let km = min(UserPreferences.maximumTravelRadius, max(UserPreferences.minimumTravelRadius, unit.km(from: value)))
                 locationManager.updateTravelRadius(km)

@@ -184,9 +184,6 @@ struct MapResultRow: View {
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Apple 地图 · 选中后核对位置再加入")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
             }
             Spacer(minLength: 0)
             if isLoading {

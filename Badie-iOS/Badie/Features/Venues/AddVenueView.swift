@@ -54,16 +54,17 @@ struct AddVenueView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("添加球馆")
-                        .font(AppTheme.Typography.title)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                        .accessibilityAddTraits(.isHeader)
-                    Text("放好图钉、核对地址，其他球友才能找到同一个地方")
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
-                }
+            HStack(spacing: 0) {
+                Text("添加球馆")
+                    .font(AppTheme.Typography.title)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .accessibilityAddTraits(.isHeader)
+                RulesButton(title: String(localized: "添加球馆"), points: [
+                    String(localized: "放好图钉、核对地址，其他球友才能找到同一个地方。"),
+                    String(localized: "移动地图，让图钉对准球馆入口，工业区、学校里的场馆尤其要对准。"),
+                    String(localized: "添加时会检查附近有没有同一家。"),
+                    String(localized: "添加后显示“待确认”，3 位球友确认后显示“球友确认”。")
+                ])
                 Spacer()
                 IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
@@ -180,9 +181,6 @@ struct AddVenueView: View {
             .overlay(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
                 .strokeBorder(AppTheme.Colors.stroke, lineWidth: 2))
             .accessibilityLabel("地图，移动地图让图钉对准球馆入口")
-            Text("移动地图，让图钉对准球馆入口（工业区、学校里的场馆尤其要对准）")
-                .font(AppTheme.Typography.caption)
-                .foregroundStyle(AppTheme.Colors.inkTertiary)
         }
     }
 
@@ -195,7 +193,7 @@ struct AddVenueView: View {
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 Spacer()
-                Button(editsAddress ? String(localized: "收起") : String(localized: "地址不对？修改")) {
+                Button(editsAddress ? String(localized: "收起") : String(localized: "修改")) {
                     withAnimation(AppTheme.Motion.standard) { editsAddress.toggle() }
                 }
                 .buttonStyle(TextActionStyle())
@@ -270,7 +268,7 @@ struct AddVenueView: View {
             Button {
                 submit()
             } label: {
-                Text(isBlocked ? String(localized: "请选择上面已有的球馆") : (checkedDuplicates && !duplicates.isEmpty ? String(localized: "都不是，添加为新球馆") : String(localized: "检查并添加")))
+                Text(isBlocked ? String(localized: "请选择上面已有的球馆") : (checkedDuplicates && !duplicates.isEmpty ? String(localized: "加新球馆") : String(localized: "添加")))
             }
             .buttonStyle(.brutalPrimary)
             .disabled(!canSubmit || isBlocked)
@@ -297,10 +295,12 @@ struct AddVenueView: View {
     /// 名称和位置都和已有球馆太接近：只能选已有的
     private var isBlocked: Bool { duplicates.contains { $0.kind.blocksAdding } }
 
+    /// 只在出问题时出一句：名称还没填时不提示
     private var submitHint: String? {
         if isBlocked { return String(localized: "如果确实是另一家，请改用能区分的名称（如分店名）") }
+        if trimmedName.isEmpty { return nil }
         if trimmedName.count < 2 { return String(localized: "填写球馆名称") }
-        if !(composedAddress?.isComplete ?? false) { return String(localized: "需要街道和城市，方便别人确认位置") }
+        if !isGeocoding && !(composedAddress?.isComplete ?? false) { return String(localized: "需要街道和城市，方便别人确认位置") }
         return nil
     }
 

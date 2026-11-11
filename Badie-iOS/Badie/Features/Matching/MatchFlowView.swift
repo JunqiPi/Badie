@@ -93,7 +93,7 @@ struct SearchingView: View {
         VStack(spacing: AppTheme.Spacing.xl) {
             HStack {
                 Spacer()
-                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) {
+                IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭（请求会继续）")) {
                     matchManager.closeFlow()
                 }
             }
@@ -146,11 +146,6 @@ struct SearchingView: View {
             .accessibilityElement(children: .combine)
 
             Spacer(minLength: 0)
-
-            Text("关掉也没关系，请求会在后台继续")
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.7))
-                .padding(.bottom, AppTheme.Spacing.xl)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.Colors.lime.ignoresSafeArea())
@@ -186,6 +181,7 @@ struct OfferView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var collided = false
     @State private var showDetails = false
@@ -376,8 +372,8 @@ struct OfferView: View {
                 InfoRow(icon: "clock.fill", tint: AppTheme.Colors.peach,
                         title: offer.slot.formattedFull,
                         subtitle: offer.commonOverlap.duration > offer.slot.duration
-                            ? String(localized: "你们共同有空 \(offer.commonOverlap.formattedTimeRange)，已安排 \(offer.slot.formattedDuration)")
-                            : String(localized: "你们都有空的 \(offer.slot.formattedDuration)"))
+                            ? String(localized: "共同有空 \(offer.commonOverlap.formattedTimeRange)")
+                            : nil)
                 InsetDivider()
                 InfoRow(icon: "mappin.and.ellipse", tint: AppTheme.Colors.sky,
                         title: offer.court.name,
@@ -388,9 +384,12 @@ struct OfferView: View {
                         subtitle: offer.cost.breakdownText)
                 if offer.mode == .doubles {
                     InsetDivider()
-                    InfoRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender,
-                            title: String(localized: "已按水平平衡分队"),
-                            subtitle: String(localized: "两队平均等级差不超过 1 级"))
+                    HStack(spacing: 0) {
+                        InfoRow(icon: "person.2.fill", tint: AppTheme.Colors.lavender,
+                                title: String(localized: "已按水平分队"))
+                        RulesButton(title: String(localized: "已按水平分队"),
+                                    points: [String(localized: "两队平均等级差不超过 1 级。")])
+                    }
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.lg)
@@ -406,9 +405,12 @@ struct OfferView: View {
     private var confirmationCard: some View {
         TimelineView(.periodic(from: .now, by: 30)) { context in
             VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-                HStack {
+                HStack(spacing: 0) {
                     Text("确认进度")
                         .font(AppTheme.Typography.headline)
+                    RulesButton(title: String(localized: "约成规则"), points: confirmationPoints)
+                        // 黄底上的“?”用浅色模式的灰，深色模式下也看得清
+                        .environment(\.colorScheme, awaitsMe ? .light : colorScheme)
                     Spacer()
                     Text("\(offer.acceptedCount)/\(offer.seats.count) 已确认")
                         .font(AppTheme.Typography.footnoteBold)
@@ -430,9 +432,20 @@ struct OfferView: View {
 
     private func deadlineText(now: Date) -> String {
         if awaitsMe, let seat = mySeat {
-            return String(localized: "请在\(DateText.deadline(seat.respondBy, now: now))前确认（\(MatchTiming.remainingText(until: seat.respondBy, now: now))）")
+            return String(localized: "\(DateText.deadline(seat.respondBy, now: now))前确认") + " · "
+                + MatchTiming.remainingText(until: seat.respondBy, now: now)
         }
-        return String(localized: "最晚\(DateText.deadline(offer.lockAt, now: now))前全部确认，否则自动取消，不计入任何记录")
+        return String(localized: "\(DateText.deadline(offer.lockAt, now: now))前确认")
+    }
+
+    /// 原来写在确认卡和按钮下面的规则
+    private var confirmationPoints: [String] {
+        [
+            String(localized: "所有人都确认才成局，谁没确认不会告诉其他人。"),
+            String(localized: "最晚\(DateText.deadline(offer.lockAt))前全部确认，否则自动取消，不计入任何记录。"),
+            String(localized: "选“这次不行”不扣分，会继续帮你找其他人。"),
+            String(localized: "确认后，开赛前 2 小时内取消会计入履约记录。")
+        ]
     }
 
     @ViewBuilder
@@ -444,7 +457,7 @@ struct OfferView: View {
                     .foregroundStyle(AppTheme.Colors.ink)
                     .frame(width: 32, height: 32)
                     .background(Circle().fill(AppTheme.Colors.surfaceMuted))
-                Text("一位球友这次来不了")
+                Text("空位")
                     .font(AppTheme.Typography.subheadlineBold)
                     .foregroundStyle(cardSecondary)
                 Spacer()
@@ -525,11 +538,12 @@ struct OfferView: View {
                 }
                 .buttonStyle(.brutalPrimary)
                 if let opponent = others.first {
-                    Button("给 \(opponent.nickname) 发消息") {
+                    Button("发消息") {
                         matchManager.closeFlow()
                         router.show(.chat(userId: opponent.id), in: .messages)
                     }
                     .buttonStyle(TextActionStyle())
+                    .accessibilityLabel("给 \(opponent.nickname) 发消息")
                 }
             } else if awaitsMe {
                 HStack(spacing: AppTheme.Spacing.md) {
@@ -553,16 +567,12 @@ struct OfferView: View {
                     .buttonStyle(.brutalPrimary)
                     .disabled(matchManager.isResponding)
                 }
-                Text("所有人都确认才成局，谁没确认不会告诉其他人。确认后，开赛前 2 小时内取消会计入履约记录。")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
             } else {
-                Button("好的，有消息通知我") { matchManager.closeFlow() }
+                Button("好") { matchManager.closeFlow() }
                     .buttonStyle(.brutalPrimary)
-                Button("取消请求") { confirmsCancel = true }
+                Button("取消") { confirmsCancel = true }
                     .buttonStyle(TextActionStyle())
+                    .accessibilityLabel("取消请求")
             }
         }
         .padding(.horizontal, AppTheme.Spacing.screen)

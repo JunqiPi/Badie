@@ -56,7 +56,7 @@ struct VenuePickerView: View {
                     if allowsAdding {
                         addVenueFooter
                     } else {
-                        Text("没找到？注册完成后可以在“附近球馆”里添加。")
+                        Text("注册后可以添加球馆")
                             .font(AppTheme.Typography.footnote)
                             .foregroundStyle(AppTheme.Colors.inkTertiary)
                     }
@@ -111,7 +111,7 @@ struct VenuePickerView: View {
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
                 if case .multiple(let max) = mode {
-                    Text("已选 \(selection.count)/\(max) · 选同一个球馆的人才会被匹配到一起")
+                    Text("已选 \(selection.count)/\(max)")
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                 }
@@ -192,8 +192,9 @@ struct VenuePickerView: View {
         if !nearby.isEmpty {
             section(String(localized: "附近"), detail: locationManager.radiusText, venues: nearby)
         } else if favorites.isEmpty {
-            NoticeBanner(icon: "mappin.slash",
-                         text: String(localized: "\(locationManager.radiusText)还没有收录的球馆。搜索名称或地址，或从下面 Apple 地图的结果里选。"))
+            Label(String(localized: "\(locationManager.radiusText)还没有收录的球馆"), systemImage: "mappin.slash")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
         }
         if allowsAdding && !suggestions.isEmpty {
             mapSection(title: String(localized: "Apple 地图上的附近结果"),
@@ -208,8 +209,7 @@ struct VenuePickerView: View {
     @ViewBuilder
     private var searchContent: some View {
         if hits.isEmpty && visibleCompletions.isEmpty {
-            EmptyStateView(icon: "magnifyingglass", title: String(localized: "没有找到“\(query)”"),
-                           message: String(localized: "试试球馆的英文名、简称或街道地址；也可以粘贴 Google / Apple 地图链接。"))
+            EmptyStateView(icon: "magnifyingglass", title: String(localized: "没有找到“\(query)”"))
         }
         if !hits.isEmpty {
             section(String(localized: "Badie 球馆库"), detail: String(localized: "\(hits.count) 个"), venues: hits.map(\.venue))
@@ -274,7 +274,7 @@ struct VenuePickerView: View {
 
     private func mapSection(title: String, rows: [MapRowItem], onTap: @escaping (String) -> Void) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SectionTitle(title: title, detail: String(localized: "选中后核对位置"))
+            SectionTitle(title: title)
             VStack(spacing: 0) {
                 ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                     if index > 0 { InsetDivider() }
@@ -293,21 +293,20 @@ struct VenuePickerView: View {
         }
     }
 
+    /// 找不到时自己加；怎么加、加了以后怎样收进“?”
     private var addVenueFooter: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Text("找不到你常去的球馆？")
-                .font(AppTheme.Typography.headline)
-                .foregroundStyle(AppTheme.Colors.ink)
-            Text("放个图钉、核对地址就能添加。添加后其他球友也能搜到，3 位球友确认后显示“球友确认”。")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+        HStack(spacing: AppTheme.Spacing.xs) {
             Button {
                 addDraft = AddVenueDraft(name: query.trimmingCharacters(in: .whitespaces), coordinate: locationManager.coordinate)
             } label: {
                 Label("添加球馆", systemImage: "plus.circle.fill")
             }
             .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium, fullWidth: true))
+            RulesButton(title: String(localized: "添加球馆"), points: [
+                String(localized: "找不到常去的球馆，可以放个图钉、核对地址自己添加。"),
+                String(localized: "添加后其他球友也能搜到。"),
+                String(localized: "3 位球友确认后显示“球友确认”。")
+            ])
         }
         .padding(.top, AppTheme.Spacing.sm)
     }

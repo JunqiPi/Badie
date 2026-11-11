@@ -18,11 +18,16 @@ struct VenueCandidateSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack {
+            HStack(spacing: 0) {
                 Text("核对位置")
                     .font(AppTheme.Typography.title)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
+                RulesButton(title: String(localized: "核对位置"), points: [
+                    String(localized: "加入前先看地图和完整地址，确认是这一家。"),
+                    String(localized: "加入后显示“待确认”。"),
+                    String(localized: "3 位球友确认（或在这里签到打球）后显示“球友确认”。")
+                ])
                 Spacer()
                 IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
             }
@@ -59,8 +64,10 @@ struct VenueCandidateSheet: View {
                     .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
 
                     if !candidate.address.isComplete {
-                        NoticeBanner(icon: "exclamationmark.triangle.fill",
-                                     text: String(localized: "这个地点缺少街道地址，别人很难确认位置。请改用“添加球馆”放图钉并补全地址。"))
+                        Label("缺少街道地址，请改用“添加球馆”", systemImage: "exclamationmark.triangle.fill")
+                            .font(AppTheme.Typography.footnoteBold)
+                            .foregroundStyle(AppTheme.Colors.danger)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
 
                     BrutalTextField(label: String(localized: "常用简称（选填）"), placeholder: String(localized: "例：LABC、洛羽"), text: $alias, characterLimit: 20)
@@ -80,15 +87,11 @@ struct VenueCandidateSheet: View {
                     } else if isBlocked {
                         Text("请选择上面已有的球馆")
                     } else {
-                        Text(duplicates.isEmpty ? String(localized: "就是这里，加入并选择") : String(localized: "都不是，加入为新球馆"))
+                        Text(duplicates.isEmpty ? String(localized: "加入") : String(localized: "加新球馆"))
                     }
                 }
                 .buttonStyle(.brutalPrimary)
                 .disabled(isSaving || isBlocked || !candidate.address.isComplete)
-                Text("加入后显示“待确认”，3 位球友确认（或在这里签到打球）后显示“球友确认”。")
-                    .font(AppTheme.Typography.caption)
-                    .foregroundStyle(AppTheme.Colors.inkTertiary)
-                    .multilineTextAlignment(.center)
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.vertical, AppTheme.Spacing.md)

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// 快速匹配设置：模式 · 日期 · 时间段 · 球馆（最多 3 个）· 水平差
+/// 快速匹配设置：项目 · 日期 · 时间 · 球馆（最多 3 个）· 实力差
+/// 页面上只放字段名和选项；规则收进各字段旁的“?”
 struct MatchSetupView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
@@ -39,14 +40,9 @@ struct MatchSetupView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xxl) {
                         if matchManager.draft.replacingTicketId != nil {
-                            NoticeBanner(icon: "pencil", text: String(localized: "正在修改约球请求，保存后换掉原来的"),
-                                         actionTitle: String(localized: "不改了")) {
-                                matchManager.draft.replacingTicketId = nil
-                            }
-                            .padding(.horizontal, AppTheme.Spacing.screen)
+                            editingTag
+                                .padding(.horizontal, AppTheme.Spacing.screen)
                         }
-                        modeSection
-                            .padding(.horizontal, AppTheme.Spacing.screen)
                         eventSection
                             .padding(.horizontal, AppTheme.Spacing.screen)
                         dateSection
@@ -86,35 +82,77 @@ struct MatchSetupView: View {
         }
     }
 
-    // MARK: Mode
+    // MARK: 正在修改一个请求（保存时换掉原来的）
 
-    private var modeSection: some View {
+    private var editingTag: some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            TagPill(text: String(localized: "修改中"), icon: "pencil", fill: AppTheme.Colors.butter)
+            Spacer(minLength: 0)
+            Button("不改了") {
+                matchManager.draft.replacingTicketId = nil
+            }
+            .buttonStyle(TextActionStyle())
+        }
+    }
+
+    // MARK: 项目：单打 / 双打 / 混双；不是混双时还能只限同性别（男单、女双……）
+
+    private enum EventChoice: Hashable { case singles, doubles, mixed }
+
+    private var gender: Gender { appState.currentUser?.gender ?? .unspecified }
+
+    /// 混双要知道自己的性别（男女都要有）
+    private var eventChoices: [EventChoice] {
+        PlayEvent.choices(mode: .doubles, gender: gender).contains(.mixed) ? [.singles, .doubles, .mixed] : [.singles, .doubles]
+    }
+
+    private var eventChoice: Binding<EventChoice> {
+        Binding(
+            get: {
+                if matchManager.draft.event == .mixed { return .mixed }
+                return matchManager.draft.mode == .singles ? .singles : .doubles
+            },
+            set: { choice in
+                switch choice {
+                case .singles, .doubles:
+                    matchManager.draft.mode = choice == .singles ? .singles : .doubles
+                    if matchManager.draft.event == .mixed { matchManager.draft.event = nil }
+                case .mixed:
+                    matchManager.draft.mode = .doubles
+                    matchManager.draft.event = .mixed
+                }
+            }
+        )
+    }
+
+    /// 不限，或只限自己的性别（混双时不显示）
+    private var audienceChoices: [PlayEvent?] {
+        PlayEvent.choices(mode: matchManager.draft.mode, gender: gender).filter { $0 != .mixed }
+    }
+
+    private var eventSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label(String(localized: "模式"))
-            HStack(spacing: AppTheme.Spacing.md) {
-                ForEach(GameMode.allCases) { mode in
-                    let selected = matchManager.draft.mode == mode
-                    Button {
-                        Haptics.selection()
-                        withAnimation(AppTheme.Motion.standard) { matchManager.draft.mode = mode }
-                    } label: {
-                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                            Image(systemName: mode.icon)
-                                .font(.system(size: 22, weight: .bold))
-                            Text(mode.title)
-                                .font(AppTheme.Typography.title3)
-                            Text(mode.versusText)
-                                .font(AppTheme.Typography.footnoteBold)
-                                .opacity(0.7)
+            HStack(spacing: 0) {
+                label(String(localized: "项目"))
+                Spacer()
+                RulesButton(title: String(localized: "项目"),
+                            points: PlayEvent.choices(mode: .doubles, gender: gender).map { PlayEvent.caption($0) })
+            }
+            SegmentedSticker(options: eventChoices, selection: eventChoice, title: { choice in
+                switch choice {
+                case .singles: return GameMode.singles.title
+                case .doubles: return GameMode.doubles.title
+                case .mixed: return PlayEvent.mixed.title(mode: .doubles)
+                }
+            })
+            if matchManager.draft.event != .mixed && audienceChoices.count > 1 {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    ForEach(audienceChoices, id: \.self) { event in
+                        ChoiceChip(title: event?.title(mode: matchManager.draft.mode) ?? String(localized: "不限"),
+                                   isSelected: matchManager.draft.event == event) {
+                            matchManager.draft.event = event
                         }
-                        .foregroundStyle(selected ? AppTheme.Colors.onAccent : AppTheme.Colors.ink)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(AppTheme.Spacing.lg)
-                        .sticker(selected ? AppTheme.Colors.lime : AppTheme.Colors.surface, radius: AppTheme.Radius.lg,
-                                 shadow: selected ? AppTheme.Elevation.card : .zero)
                     }
-                    .buttonStyle(PressableStyle())
-                    .accessibilityAddTraits(selected ? [.isSelected, .isButton] : .isButton)
                 }
             }
         }
@@ -138,7 +176,14 @@ struct MatchSetupView: View {
 
     private var timeSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            label(String(localized: "时间段"))
+            HStack(spacing: 0) {
+                label(String(localized: "时间"))
+                Spacer()
+                RulesButton(title: String(localized: "时间"), points: [
+                    String(localized: "匹配时，你和对方的时间至少要重叠 30 分钟。"),
+                    String(localized: "离开赛不到 30 分钟就不能发起了。")
+                ])
+            }
             HStack(spacing: AppTheme.Spacing.md) {
                 TimeStepper(title: String(localized: "开始"), minutes: $matchManager.draft.startMinutes, range: (6 * 60)...(23 * 60))
                 Image(systemName: "arrow.right")
@@ -150,10 +195,6 @@ struct MatchSetupView: View {
                 Label(message, systemImage: "exclamationmark.circle.fill")
                     .font(AppTheme.Typography.footnoteBold)
                     .foregroundStyle(AppTheme.Colors.danger)
-            } else if let slot = matchManager.draft.slot {
-                Text("共 \(slot.formattedDuration)，匹配时至少需要与对方重叠 30 分钟")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: AppTheme.Spacing.sm) {
@@ -179,65 +220,44 @@ struct MatchSetupView: View {
     }
 
     private static let presets: [(String, Int, Int)] = [
-        (String(localized: "早场 7–9"), 7 * 60, 9 * 60), (String(localized: "午间 12–14"), 12 * 60, 14 * 60),
-        (String(localized: "下午 14–17"), 14 * 60, 17 * 60),
-        (String(localized: "晚上 19–21"), 19 * 60, 21 * 60), (String(localized: "夜场 21–23"), 21 * 60, 23 * 60)
+        (String(localized: "早上"), 7 * 60, 9 * 60), (String(localized: "中午"), 12 * 60, 14 * 60),
+        (String(localized: "下午"), 14 * 60, 17 * 60),
+        (String(localized: "晚上"), 19 * 60, 21 * 60), (String(localized: "夜里"), 21 * 60, 23 * 60)
     ]
 
-    // MARK: Courts
+    // MARK: Courts（每行只有名字和距离）
 
     private var courtsSection: some View {
         let selected = locationManager.courts(ids: matchManager.draft.courtIds)
         return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            HStack {
-                label(String(localized: "球馆（最多 \(MatchDraft.maxCourts) 个）"))
+            HStack(spacing: 0) {
+                label(String(localized: "球馆"))
+                RulesButton(title: String(localized: "球馆"), points: [
+                    String(localized: "只和也能去这些球馆（或 150 米内同一处）的球友匹配。"),
+                    String(localized: "最多选 \(MatchDraft.maxCourts) 个。"),
+                    String(localized: "按钮上的费用按所选球馆里最便宜的一家估算，到场后按实际费用 AA。"),
+                    String(localized: "平台不收服务费。")
+                ])
                 Spacer()
                 Text("\(selected.count)/\(MatchDraft.maxCourts)")
                     .font(AppTheme.Typography.footnoteBold)
                     .monospacedDigit()
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
-            Text("只和选了同一个球馆的球友匹配")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
             VStack(spacing: 0) {
                 ForEach(Array(selected.enumerated()), id: \.element.id) { index, court in
                     if index > 0 { InsetDivider() }
-                    HStack(spacing: AppTheme.Spacing.sm) {
-                        VenueRow(
-                            venue: court,
-                            distance: court.formattedDistance(from: locationManager.coordinate),
-                            regulars: appState.backend.regularsCount(for: court.id),
-                            isFavorite: locationManager.isFavorite(court.id),
-                            accessory: .none,
-                            isClosedForSlot: matchManager.draft.slot.map { !court.isOpen(for: $0) } ?? false
-                        )
-                        Button {
-                            Haptics.selection()
-                            _ = matchManager.draft.toggleCourt(court.id)
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(AppTheme.Colors.inkTertiary)
-                                .frame(width: 44, height: 44)
-                        }
-                        .accessibilityLabel("移除\(court.name)")
-                    }
+                    courtRow(court)
                 }
                 if !selected.isEmpty { InsetDivider() }
                 Button {
                     showVenuePicker = true
                 } label: {
                     HStack(spacing: AppTheme.Spacing.md) {
-                        IconTile(systemName: selected.isEmpty ? "magnifyingglass" : "plus", fill: AppTheme.Colors.lime, size: 42)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(selected.isEmpty ? String(localized: "选择球馆") : String(localized: "添加或更换球馆"))
-                                .font(AppTheme.Typography.headline)
-                                .foregroundStyle(AppTheme.Colors.ink)
-                            Text("搜索名称、简称（如 LABC）或地址")
-                                .font(AppTheme.Typography.footnote)
-                                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                        }
+                        IconTile(systemName: selected.isEmpty ? "magnifyingglass" : "plus", fill: AppTheme.Colors.lime, size: 36)
+                        Text("选择球馆")
+                            .font(AppTheme.Typography.headline)
+                            .foregroundStyle(AppTheme.Colors.ink)
                         Spacer(minLength: 0)
                         Image(systemName: "chevron.right")
                             .font(.system(size: 13, weight: .bold))
@@ -253,11 +273,49 @@ struct MatchSetupView: View {
         }
     }
 
+    private func courtRow(_ court: BadmintonCourt) -> some View {
+        let isClosed = matchManager.draft.slot.map { !court.isOpen(for: $0) } ?? false
+        return HStack(spacing: AppTheme.Spacing.sm) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(court.name)
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .lineLimit(2)
+                if isClosed {
+                    Label("所选时段不营业", systemImage: "moon.zzz.fill")
+                        .font(AppTheme.Typography.caption.weight(.bold))
+                        .foregroundStyle(AppTheme.Colors.danger)
+                }
+            }
+            Spacer(minLength: AppTheme.Spacing.sm)
+            Text(court.formattedDistance(from: locationManager.coordinate))
+                .font(AppTheme.Typography.footnoteBold)
+                .monospacedDigit()
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .fixedSize()
+            Button {
+                Haptics.selection()
+                _ = matchManager.draft.toggleCourt(court.id)
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("移除\(court.name)")
+        }
+        .padding(.vertical, AppTheme.Spacing.xs)
+    }
+
     // MARK: Skill tolerance
 
     private var skillSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label(String(localized: "可接受的水平差"))
+            HStack(spacing: 0) {
+                label(String(localized: "实力差"))
+                Spacer()
+                RulesButton(title: String(localized: "实力差"), points: skillPoints)
+            }
             HStack(spacing: AppTheme.Spacing.sm) {
                 ChoiceChip(title: String(localized: "±1 级"), isSelected: matchManager.draft.skillTolerance == 1) { matchManager.draft.skillTolerance = 1 }
                 ChoiceChip(title: String(localized: "±2 级"), isSelected: matchManager.draft.skillTolerance == 2) { matchManager.draft.skillTolerance = 2 }
@@ -265,50 +323,49 @@ struct MatchSetupView: View {
                     matchManager.draft.skillTolerance = MatchRequest.anySkill
                 }
             }
-            Text(toleranceExplanation)
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
         }
     }
 
-    // MARK: 项目（男单女单男双女双只能选自己的性别；混双两男两女）
-
-    private var eventSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label(String(localized: "项目"))
-            EventPicker(mode: matchManager.draft.mode, gender: appState.currentUser?.gender ?? .unspecified,
-                        selection: $matchManager.draft.event)
-        }
-    }
-
-    private var toleranceExplanation: String {
-        let tolerance = matchManager.draft.skillTolerance
-        guard tolerance < MatchRequest.anySkill else { return String(localized: "你的等级 \(userTier.text)，将匹配所有水平的球友") }
-        let low = userTier.offset(by: -tolerance * 3)
-        let high = userTier.offset(by: tolerance * 3)
-        return String(localized: "你的等级 \(userTier.text)，将匹配 \(SkillTier.rangeText(low, high)) 的球友，水平越接近排得越前")
+    /// 每档会匹配到的等级范围（一级 = 3 个小档）
+    private var skillPoints: [String] {
+        let one = SkillTier.rangeText(userTier.offset(by: -3), userTier.offset(by: 3))
+        let two = SkillTier.rangeText(userTier.offset(by: -6), userTier.offset(by: 6))
+        return [
+            String(localized: "你的等级是 \(userTier.text)。"),
+            String(localized: "±1 级：匹配 \(one) 的球友。"),
+            String(localized: "±2 级：匹配 \(two) 的球友。"),
+            String(localized: "不限：匹配所有水平的球友。"),
+            String(localized: "水平越接近，排得越靠前。")
+        ]
     }
 
     // MARK: Confirmation
 
     private var confirmSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            label(String(localized: "找到人以后"))
-            Toggle(isOn: $matchManager.draft.autoAccept) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("符合条件就直接替我接受")
-                        .font(AppTheme.Typography.bodyBold)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    Text("其他人确认后就约成，不用再点一次")
-                        .font(AppTheme.Typography.footnote)
-                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+            HStack(spacing: 0) {
+                Text("找到就直接接受")
+                    .font(AppTheme.Typography.bodyBold)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                RulesButton(title: String(localized: "找到就直接接受"), points: confirmPoints)
+                Spacer(minLength: AppTheme.Spacing.sm)
+                Toggle(String(localized: "找到就直接接受"), isOn: $matchManager.draft.autoAccept)
+                    .labelsHidden()
+                    .tint(AppTheme.Colors.success)
+            }
+            if isLastMinute && canRequest {
+                HStack(spacing: 0) {
+                    TagPill(text: String(localized: "临时局"), icon: "bolt.fill", fill: AppTheme.Colors.butter)
+                    RulesButton(title: String(localized: "临时局"), points: [
+                        String(localized: "离开赛不远时发起的是临时局，只匹配此刻也在找人的球友。"),
+                        String(localized: "找到后要在 5–10 分钟内确认，建议打开“找到就直接接受”。")
+                    ])
                 }
             }
-            .tint(AppTheme.Colors.success)
-            if let text = timingText {
-                Label(text, systemImage: isLastMinute ? "bolt.fill" : "clock.badge.checkmark.fill")
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(canRequest ? AppTheme.Colors.inkSecondary : AppTheme.Colors.danger)
+            if let error = timingError {
+                Label(error, systemImage: "exclamationmark.circle.fill")
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.danger)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -324,32 +381,43 @@ struct MatchSetupView: View {
         return MatchTiming.isLastMinute(start: slot.startTime)
     }
 
-    private var timingText: String? {
-        guard let slot = matchManager.draft.slot, slot.endTime > Date() else { return nil }
-        if !canRequest { return String(localized: "离开赛不到 30 分钟，来不及凑人了，换个时间试试") }
-        if isLastMinute {
-            return String(localized: "临时局：只匹配此刻也在找人的球友，找到后要在 5–10 分钟内确认，建议打开上面的开关。")
+    /// 只在来不及的时候出一句
+    private var timingError: String? {
+        guard let slot = matchManager.draft.slot, slot.endTime > Date(), !canRequest else { return nil }
+        return String(localized: "离开赛不到 30 分钟，来不及凑人了，换个时间试试")
+    }
+
+    private var confirmPoints: [String] {
+        var points = [
+            String(localized: "打开后，条件合适就替你接受，其他人确认后就约成，不用再点一次。"),
+            String(localized: "所有人都确认才成局，谁没确认不会告诉其他人。")
+        ]
+        if let slot = matchManager.draft.slot, !isLastMinute {
+            let lock = MatchTiming.lock(start: slot.startTime, lastMinute: false)
+            points.append(String(localized: "最晚 \(DateText.relativeDay(lock)) \(DateText.time(lock))（开赛前 2 小时）前确认完，否则自动取消，不计入记录。"))
         }
-        let lock = MatchTiming.lock(start: slot.startTime, lastMinute: false)
-        return String(localized: "所有人都确认才成局，最晚 \(DateText.relativeDay(lock)) \(DateText.time(lock))（开赛前 2 小时）前确认完，否则自动取消，不计入记录。")
+        return points
     }
 
     // MARK: Footer
 
     private var footer: some View {
-        VStack(spacing: AppTheme.Spacing.sm) {
-            if let estimate = estimatedCostText {
-                Text(estimate)
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-            }
+        VStack(spacing: AppTheme.Spacing.xs) {
             Button {
                 start()
             } label: {
-                if matchManager.draft.replacingTicketId != nil {
-                    Label("保存修改", systemImage: "checkmark")
-                } else {
-                    Label("开始匹配", systemImage: "bolt.fill")
+                VStack(spacing: 2) {
+                    if matchManager.draft.replacingTicketId != nil {
+                        Label("保存修改", systemImage: "checkmark")
+                    } else {
+                        Label("开始匹配", systemImage: "bolt.fill")
+                    }
+                    if let estimate = estimatedCostText {
+                        Text(estimate)
+                            .font(AppTheme.Typography.caption.weight(.bold))
+                            .monospacedDigit()
+                            .opacity(0.75)
+                    }
                 }
             }
             .buttonStyle(.brutalPrimary)
@@ -357,21 +425,21 @@ struct MatchSetupView: View {
         }
         .padding(.horizontal, AppTheme.Spacing.screen)
         .padding(.top, AppTheme.Spacing.md)
-        .padding(.bottom, AppTheme.Spacing.lg)
+        .padding(.bottom, AppTheme.Spacing.sm)
         .background(AppTheme.Colors.canvas.ignoresSafeArea(edges: .bottom))
         .overlay(alignment: .top) { InsetDivider() }
     }
 
-    /// 所选球馆中最便宜的预计 AA；都未知价格时提示到场 AA
+    /// 所选球馆中最便宜的预计 AA：“约 $12/人”；都不知道价格时“费用待定”
     private var estimatedCostText: String? {
         guard let slot = matchManager.draft.slot, slot.isValidDuration else { return nil }
         let courts = locationManager.courts(ids: matchManager.draft.courtIds)
         guard !courts.isEmpty else { return nil }
         let estimates = courts.map { CostSplit.estimate(court: $0, slot: slot.trimmedForGame(), mode: matchManager.draft.mode) }
         guard let cheapest = estimates.filter({ $0.perPerson != nil }).min(by: { $0.perPerson! < $1.perPerson! }) else {
-            return String(localized: "球馆价格未知，到场后按实际费用 AA · 平台不收服务费")
+            return String(localized: "费用待定")
         }
-        return String(localized: "预计 \(cheapest.perPersonText) · 平台不收服务费")
+        return String(localized: "约 \(cheapest.perPersonText)")
     }
 
     private func start() {
