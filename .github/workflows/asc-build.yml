@@ -3,7 +3,7 @@ name: Attach TestFlight build
 # TestFlight 上传完以后：等苹果把构建处理完，挂到 App Store Connect 的版本上，这样就只差点“提交审核”。
 # mode = list 只看不改；attach 才挂。这个文件有改动时在开发分支上自动跑一次（按下面的默认值），也可以手动运行。
 # 动的是苹果账号：改成 attach 之前先问用户
-# 上次运行：2026-11-11，把构建 20261111.21 挂到了 1.0.3（在 main 上手动运行，mode = attach）
+# 上次运行：2026-11-11，新建 1.0.4 并挂上构建 20261111.2236（在 main 上手动运行，mode = attach）
 on:
   push:
     branches: [ "claude/**" ]
