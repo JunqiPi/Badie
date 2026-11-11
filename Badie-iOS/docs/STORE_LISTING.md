@@ -533,7 +533,7 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
 
 ## 1.0.3 更新说明（What's New in This Version）
 
-1.0.2 之后 iPhone 上的改动只有教练带课的球群和费用说明。写法见 `VOICE.md` 的“更新说明”。更新说明和描述同时放在 `Badie-iOS/scripts/store_text.json`，用 Actions → Update App Store text 写进 App Store Connect；改了这里的文字要同步改那个文件。
+1.0.2 之后 iPhone 上的改动：教练带课的球群和费用说明；全 App 少字改版（规则收进“?”）。写法见 `VOICE.md` 的“更新说明”。更新说明和描述同时放在 `Badie-iOS/scripts/store_text.json`，用 Actions → Update App Store text 写进 App Store Connect；改了这里的文字要同步改那个文件。
 
 - English (U.S.)：
   ```
@@ -542,6 +542,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Sessions can have as few as 1 spot, so private lessons and small classes fit.
   • Levels are only a guide. Anyone can join or ask to join.
   • Add a fee note to each session when you set up a group. It shows on the group page.
+
+  Screens have less text. Rules and details are behind the ? next to each section.
   ```
 - 简体中文：
   ```
@@ -550,6 +552,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 每场最少 1 个名额，私教和小班都能开。
   • 实力范围只作参考，谁都能加入或申请。
   • 建群时可以给每个场次写费用说明，球群页上看得到。
+
+  界面上的字少了。规则和说明收进了各处的“?”，想看再点开。
   ```
 - 繁體中文：
   ```
@@ -558,6 +562,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 每場最少 1 個名額，私人課和小班都能開。
   • 實力範圍只作參考，誰都能加入或申請。
   • 建群時可以替每個場次寫費用說明，球群頁上看得到。
+
+  介面上的字變少了。規則和說明收進了各處的「?」，想看再點開。
   ```
 - 日本語：
   ```
@@ -566,6 +572,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 1 回の枠は 1 人から。個人レッスンも少人数クラスも開けます。
   • レベルの範囲は目安です。誰でも参加・申請できます。
   • グループを作るとき、各回に料金メモを書けます。グループのページに表示されます。
+
+  画面の文字を減らしました。ルールや説明は各所の「?」から見られます。
   ```
 - 한국어：
   ```
@@ -574,6 +582,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • 일정마다 자리는 1개부터 정할 수 있어요. 개인 레슨도, 소규모 수업도 열 수 있어요.
   • 레벨 범위는 참고용이에요. 누구나 참여하거나 신청할 수 있어요.
   • 그룹을 만들 때 일정마다 비용 안내를 적을 수 있어요. 그룹 페이지에 표시돼요.
+
+  화면의 글자를 줄였어요. 규칙과 설명은 곳곳의 ‘?’를 눌러 볼 수 있어요.
   ```
 - Bahasa Indonesia：
   ```
@@ -582,6 +592,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Tiap sesi bisa mulai dari 1 slot, jadi les privat dan kelas kecil bisa dibuka.
   • Rentang level hanya panduan. Siapa pun bisa bergabung atau mengajukan diri.
   • Saat membuat grup, kamu bisa menulis catatan biaya untuk tiap sesi. Catatan itu tampil di halaman grup.
+
+  Tampilan kini lebih sedikit teks. Aturan dan penjelasan ada di tombol ? di tiap bagian.
   ```
 - Bahasa Melayu：
   ```
@@ -590,6 +602,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Setiap sesi boleh bermula dengan 1 tempat, jadi kelas persendirian dan kelas kecil boleh dibuka.
   • Julat tahap hanya panduan. Sesiapa sahaja boleh sertai atau memohon.
   • Semasa mencipta kumpulan, anda boleh menulis nota bayaran untuk setiap sesi. Nota itu dipaparkan di halaman kumpulan.
+
+  Paparan kini kurang teks. Peraturan dan penerangan ada di butang ? pada setiap bahagian.
   ```
 - ไทย：
   ```
@@ -598,6 +612,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • แต่ละรอบเปิดได้ตั้งแต่ 1 ที่ จะสอนตัวต่อตัวหรือกลุ่มเล็กก็ได้
   • ช่วงระดับเป็นเพียงแนวทาง ใครก็เข้าร่วมหรือขอเข้าร่วมได้
   • ตอนสร้างกลุ่ม เขียนหมายเหตุค่าใช้จ่ายของแต่ละรอบได้ และจะแสดงในหน้ากลุ่ม
+
+  หน้าจอมีตัวหนังสือน้อยลง กฎและคำอธิบายอยู่ที่ปุ่ม ? ของแต่ละส่วน
   ```
 - Tiếng Việt：
   ```
@@ -606,6 +622,8 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • Mỗi buổi có thể mở từ 1 chỗ, nên dạy kèm hay lớp nhỏ đều được.
   • Khoảng trình độ chỉ để tham khảo. Ai cũng có thể tham gia hoặc xin vào.
   • Khi tạo nhóm, bạn có thể ghi chú phí cho từng buổi. Ghi chú hiện trên trang nhóm.
+
+  Màn hình bớt chữ hơn. Quy định và giải thích nằm ở nút ? cạnh từng mục.
   ```
 - हिन्दी：
   ```
@@ -614,4 +632,6 @@ App Store Connect → 1.0.1 版本页 → 每种语言的 **What's New in This V
   • हर सेशन में 1 जगह से शुरुआत हो सकती है, इसलिए प्राइवेट लेसन और छोटी क्लास दोनों चल सकती हैं।
   • लेवल की सीमा सिर्फ़ अंदाज़े के लिए है। कोई भी जुड़ सकता है या जुड़ने का अनुरोध कर सकता है।
   • ग्रुप बनाते समय हर सेशन के लिए फ़ीस की जानकारी लिख सकते हैं। यह ग्रुप के पेज पर दिखती है।
+
+  स्क्रीन पर अब कम शब्द हैं। नियम और जानकारी हर हिस्से के पास ? बटन में है।
   ```
