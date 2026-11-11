@@ -17,7 +17,7 @@ on:
         default: "1.0.3"
       run_id:
         description: 截图来自 “App Store screenshots” 的哪一次运行（运行页面网址里的数字）
-        default: "42878332686"
+        default: "42930646977"
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ permissions:
 env:
   MODE: ${{ inputs.mode || 'list' }}
   VERSION: ${{ inputs.version || '1.0.3' }}
-  RUN_ID: ${{ inputs.run_id || '42878332686' }}
+  RUN_ID: ${{ inputs.run_id || '42930646977' }}
 
 jobs:
   screenshots:
