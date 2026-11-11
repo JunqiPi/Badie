@@ -176,6 +176,7 @@ struct GamesView: View {
                 router.open(.joinRoom(code: nil))
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private func quickAction(icon: String, title: String, tint: Color, action: @escaping () -> Void) -> some View {
@@ -183,13 +184,17 @@ struct GamesView: View {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 Image(systemName: icon)
                     .font(.system(size: 20, weight: .bold))
+                // 英文等长一点的语言排两行；三块按最高的那块对齐
                 Text(title)
                     .font(AppTheme.Typography.headline)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.leading)
             }
             .foregroundStyle(AppTheme.Colors.onAccent)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(AppTheme.Spacing.lg)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.horizontal, AppTheme.Spacing.md)
+            .padding(.vertical, AppTheme.Spacing.lg)
             .sticker(tint, radius: AppTheme.Radius.lg)
         }
         .buttonStyle(PressableStyle())
