@@ -1,8 +1,11 @@
 ---
-// 中文首页：和英文首页一样只有口号、一行说明、一个按钮和三步。英文首页是网页 App，这一页是静态的，给搜索引擎和 AI 读
+// 其他 9 种语言的首页（/zh/、/ja/……）：和英文首页一样只有口号、一行说明、一个按钮、测级入口和三步。
+// 英文首页是网页 App，这一页是静态的，给搜索引擎和 AI 读
 import Base from '../../layouts/Base.astro';
 import { signInFirst } from '../../app/Shell';
-import { translator } from '../../lib/static-i18n';
+import { prefixes, translator } from '../../lib/static-i18n';
+
+export const getStaticPaths = () => prefixes.map((lang) => ({ params: { lang } }));
 
 const t = translator(Astro.url.pathname);
 const slogan = t('Badminton buddy?\nFind one *today*.').split('*');
@@ -17,6 +20,11 @@ const steps = [['bg-lavender', 'Set your level'], ['bg-lime', 'Get matched'], ['
       </h1>
       <p class="max-w-xl text-[1.0625rem] leading-relaxed text-ink-secondary lg:text-[1.1875rem]">{t('Badie finds players at your level near you. Free.')}</p>
       <a href={signInFirst('/play/')} class="button button-lg">{t('Start matching')}</a>
+      <a href="/level-quiz/" class="sticker lift grid gap-0.5 bg-lime p-4 text-on-accent">
+        <span class="text-headline">{t('What level are you?')}</span>
+        <span class="text-footnote font-bold">{t('Find your level · 2 min, no sign-up')}</span>
+      </a>
+      <a href="/levels/" class="link text-subhead font-bold">{t('Level chart')}</a>
     </header>
 
     <section aria-labelledby="how" class="grid gap-8">

@@ -366,7 +366,7 @@ function SetTime({ game: g, onChange }: { game: Game; onChange: () => Promise<vo
     setBusy(true);
     const { error } = await supabase!.rpc('set_game_time', { p_game: g.id, p_starts_at: picked });
     setBusy(false);
-    if (error) return toast(problem(error), 'error');
+    if (error) return toast(error.message === 'invalid_slot' ? t('That start time is too soon now. Pick another.') : problem(error), 'error');
     setOpen(false);
     toast(t('Time set. {name} has been told.', { name: other?.nickname ?? '' }));
     await onChange();

@@ -82,6 +82,12 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
             <Divider />
             <Row icon="list" tint="lime" title={t('Level guide')} value={`Lv.${tier(profile.rating).label}`} to="/levels/" />
             <Divider />
+            {profile.assessment && (
+              <>
+                <Row icon="share" tint="sky" title={t('Share level card')} to="/level-quiz/result/" />
+                <Divider />
+              </>
+            )}
             <Row icon="history" tint="peach" title={t('Past games')} to="/games/?tab=ended" />
             <Divider />
             <Row icon="trophy" tint="butter" title={t('Leaderboard')} to="/rankings/" />
@@ -371,7 +377,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
   );
 }
 
-/** 空闲时间：星期几 + 时间段，可以多段。显示在卡片和资料上，别人点一下就能约 */
+/** 空闲时间：星期几 + 时间段，最多 5 段，每段 1–8 小时（和 iOS、服务器一致）。显示在卡片和资料上，别人点一下就能约 */
 function FreeTimes({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
   const [rows, setRows] = useState<UsualTime[]>(() => sortUsual(profile.usual_times));
   const [busy, setBusy] = useState(false);
@@ -401,18 +407,18 @@ function FreeTimes({ profile, onChange }: { profile: Profile; onChange: (p: Prof
               {[2, 3, 4, 5, 6, 7, 1].map((w) => <option key={w} value={w}>{weekdayShort(w)}</option>)}
             </select>
             <select className="field w-auto" aria-label={t('From')} value={toMinutes(row.start)}
-                    onChange={(e) => { const from = Number(e.target.value); set(i, { start: toHHMM(from), end: toHHMM(Math.max(toMinutes(row.end), from + 30)) }); }}>
-              {halfHours(360, 1410).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
+                    onChange={(e) => { const from = Number(e.target.value); set(i, { start: toHHMM(from), end: toHHMM(Math.min(Math.max(toMinutes(row.end), from + 60), from + 480, 1440)) }); }}>
+              {halfHours(360, 1380).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
             </select>
             <span aria-hidden="true">–</span>
             <select className="field w-auto" aria-label={t('To')} value={toMinutes(row.end)} onChange={(e) => set(i, { end: toHHMM(Number(e.target.value)) })}>
-              {halfHours(toMinutes(row.start) + 30, 1440).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
+              {halfHours(toMinutes(row.start) + 60, Math.min(toMinutes(row.start) + 480, 1440)).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
             </select>
             <IconButton icon="trash" label={t('Delete')} onClick={() => setRows((list) => list.filter((_, j) => j !== i))} />
           </div>
         ))}
         <div className="flex flex-wrap gap-2">
-          {rows.length < 14 && (
+          {rows.length < 5 && (
             <Button className="button-sm" variant="quiet" onClick={() => setRows((list) => [...list, { weekday: 7, start: '14:00', end: '18:00' }])}>
               <Icon name="plus" className="size-4" />{t('Add a time')}
             </Button>

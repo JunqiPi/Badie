@@ -49,14 +49,15 @@ export function matches(f: DayFilter, card: DayCandidate) {
   return true;
 }
 
-/** 附近的人：球馆看 TA 常去的；项目看 TA 偏好的（没填的都算，混双算双打）；时间看 TA 的空闲时间（没填的不算） */
+/** 附近的人：球馆看 TA 常去的；项目看 TA 偏好的（没填的都算，混双算双打）；时间看 TA 的空闲时间（没填的都算，和 iOS 一样） */
 export function matchesNearby(f: DayFilter, card: NearbyPlayer) {
   const mode = card.user.preferred_mode;
   if (mode && f.event !== 'any' && mode !== (f.event === 'singles' ? 'singles' : 'doubles')) return false;
   if (f.venues.length && !(card.venues ?? []).some((v) => f.venues.includes(v.id))) return false;
   const level = tier(card.user.rating).level;
   if (level < f.minLevel || level > f.maxLevel) return false;
-  if (f.times.length && !(card.user.usual_times ?? []).some((u) => f.times.includes(partOf(u)))) return false;
+  const usual = card.user.usual_times ?? [];
+  if (f.times.length && usual.length && !usual.some((u) => f.times.includes(partOf(u)))) return false;
   if (f.gender && card.user.gender !== f.gender) return false;
   if (f.reliableOnly && (card.user.recent_no_shows ?? 0) > 0) return false;
   return true;

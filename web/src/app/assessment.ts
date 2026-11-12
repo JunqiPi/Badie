@@ -131,7 +131,14 @@ const mean = (values: number[]) => values.reduce((sum, v) => sum + v, 0) / value
 /** 一组题的水平：取平均，但不能比最弱的一项高出 1 级以上（短板限制等级） */
 const pillar = (values: number[]) => Math.min(mean(values), Math.min(...values) + 1);
 
-export type Assessment = { rating: number; needsCalibration: boolean; isReturning: boolean; limitingGate?: string };
+/** next：离下一级还差的那一项（最弱的一项：题目 id 和英文原题目，显示时翻译）；只在结果里写着“要补什么”时才有 */
+export type Assessment = {
+  rating: number;
+  needsCalibration: boolean;
+  isReturning: boolean;
+  limitingGate?: string;
+  next?: { level: number; skill: string; id: string };
+};
 
 /** answers：题目 id → 选项序号。没答完返回 undefined */
 export function evaluate(answers: Record<string, number>): Assessment | undefined {
@@ -146,7 +153,7 @@ export function evaluate(answers: Record<string, number>): Assessment | undefine
   }
 
   // 1. 技术和比赛能力：各自取平均、受最弱一项限制；两者以弱的为准，强的那边最多加 2/3 级
-  const scored = (kind: Kind) => questions.filter((x) => x.kind === kind).map((x) => ({ name: x.title, level: value(x.id)! }));
+  const scored = (kind: Kind) => questions.filter((x) => x.kind === kind).map((x) => ({ id: x.id, name: x.title, level: value(x.id)! }));
   const technique = scored('technique');
   const game = scored('game');
   const [low, high] = [pillar(technique.map((d) => d.level)), pillar(game.map((d) => d.level))].sort((a, b) => a - b);
@@ -157,6 +164,7 @@ export function evaluate(answers: Record<string, number>): Assessment | undefine
   const target = rating - Math.floor(rating) > 0.5 ? Math.ceil(rating) : Math.floor(rating) + 1;
   const weakest = [...technique, ...game].filter((d) => d.level < target).sort((a, b) => a.level - b.level).slice(0, 3);
   let gate = weakest.length ? t('To reach level {level}, work on: {skills}', { level: target, skills: list(weakest.map((d) => d.name)) }) : undefined;
+  let next = weakest.length ? { level: target, skill: weakest[0].name, id: weakest[0].id } : undefined;
 
   // 3. 6 级看俱乐部里的位置：没到“崭露头角”最高 5+；6+ 还要有比赛或青训经历
   if (rating >= 6 - third - 0.01) {
@@ -164,12 +172,15 @@ export function evaluate(answers: Record<string, number>): Assessment | undefine
     if (standing === undefined) {
       rating = 5 + third;
       gate = t('To reach 6−: be among the strongest players in your club');
+      next = undefined;
     } else {
       rating = Math.min(standing, rating + third);
       gate = undefined;
+      next = undefined;
       if (rating >= 6 + third - 0.01 && option('experience') < 3) {
         rating = 6;
         gate = t('To reach 6+: you need tournament or junior training experience');
+        next = undefined;
       }
     }
   }
@@ -181,7 +192,75 @@ export function evaluate(answers: Record<string, number>): Assessment | undefine
     needsCalibration: floor - rating >= 2 - 0.01,
     isReturning,
     limitingGate: floor > rating ? undefined : gate,
+    next: floor > rating ? undefined : next,
   };
+}
+
+// MARK: 打法（等级卡片上的“打法”、六项能力和雷达图）。和 iOS SkillAssessment.swift 一字不差：
+// 六项能力取各题选项对应的等级。总等级 1–2 级是“新星”（不看六项）；最高和最低差不超过半级是“六边形战士”；
+// 否则看最高的一项（同分按 进攻、网前、防守、速度、步法、战术 的顺序）
+
+export type Axis = 'attack' | 'net' | 'defense' | 'speed' | 'footwork' | 'tactics';
+export const axes: Axis[] = ['attack', 'net', 'defense', 'speed', 'footwork', 'tactics'];
+/** 六项能力的名字（英文原文就是翻译的 key） */
+export const axisNames: Record<Axis, string> = { attack: 'Attack', net: 'Net play', defense: 'Defense', speed: 'Speed', footwork: 'Footwork', tactics: 'Tactics' };
+
+export type Archetype = 'cannon' | 'net' | 'wall' | 'quick' | 'engine' | 'captain' | 'allround' | 'rookie';
+export const archetypes: Archetype[] = ['cannon', 'net', 'wall', 'quick', 'engine', 'captain', 'allround', 'rookie'];
+const archetypeOf: Record<Axis, Archetype> = { attack: 'cannon', net: 'net', defense: 'wall', speed: 'quick', footwork: 'engine', tactics: 'captain' };
+
+/** 打法的名字、一句话、最佳搭档（六边形战士和新星的搭档是“谁都行”）、卡片底色和上面的字色、拟声字 */
+export const archetypeInfo: Record<Archetype, { name: string; line: string; partner?: Archetype; color: string; ink: string; sound: string }> = {
+  cannon: { name: 'Cannon', line: 'One shot from the back decides it. You smash when you get the chance.', partner: 'net', color: '#d4f33f', ink: '#17140f', sound: 'ドン!' },
+  net: { name: 'Net magician', line: 'One net spin and they have to lift.', partner: 'cannon', color: '#8b7cf6', ink: '#ffffff', sound: 'ふわっ' },
+  wall: { name: 'Iron wall', line: 'They can’t put you away.', partner: 'quick', color: '#4f8cff', ink: '#ffffff', sound: 'ガッ' },
+  quick: { name: 'Quick draw', line: 'The faster the midcourt, the more at home you are.', partner: 'wall', color: '#ff9a3c', ink: '#17140f', sound: 'シュッ' },
+  engine: { name: 'Engine', line: 'You run the whole court and get to every shot.', partner: 'captain', color: '#2ec4b6', ink: '#17140f', sound: 'ダッ' },
+  captain: { name: 'Captain', line: 'You move everyone around the court.', partner: 'engine', color: '#ff5a5f', ink: '#ffffff', sound: 'ピタッ' },
+  allround: { name: 'All-rounder', line: 'No weak spots.', color: '#17140f', ink: '#d9b44a', sound: 'キラッ' },
+  rookie: { name: 'Rookie', line: 'Just starting out, when you improve fastest.', color: '#6ec1ff', ink: '#17140f', sound: 'ピョン' },
+};
+
+export type PlayStyle = {
+  /** 六项能力（等级，可以是 2.75 这样的小数） */
+  scores: Record<Axis, number>;
+  archetype: Archetype;
+  /** 最强一拍：等级最高的技术题（同分按题目顺序）的 id */
+  bestShot: string;
+};
+
+/** 题目 id → 英文原题目（显示时再翻译） */
+export const questionTitle = (id: string) => questions.find((x) => x.id === id)?.title ?? id;
+
+/** 卡片上的能力数字：四舍五入到整级，1–9 */
+export const axisLevel = (score: number) => Math.min(9, Math.max(1, Math.round(score)));
+
+/** answers：题目 id → 选项序号。没答完返回 undefined */
+export function playStyle(answers: Record<string, number>): PlayStyle | undefined {
+  const value = (id: string) => questions.find((x) => x.id === id)!.options[answers[id]]?.value;
+  const ids = questions.filter((x) => x.kind === 'technique' || x.kind === 'game').map((x) => x.id);
+  if (ids.some((id) => value(id) === undefined)) return;
+  const v = (id: string) => value(id)!;
+  const scores: Record<Axis, number> = {
+    attack: v('smash'),
+    net: (v('net') + v('drop')) / 2,
+    defense: (v('passive') + v('stability')) / 2,
+    speed: v('drive'),
+    footwork: v('footwork'),
+    tactics: (v('tactics') + v('doubles')) / 2,
+  };
+  const list = axes.map((a) => scores[a]);
+  const max = Math.max(...list);
+  // 新星看问卷定出的等级（算上经历保底），所以要答完全部题目
+  const result = evaluate(answers);
+  if (!result) return;
+  const archetype: Archetype =
+    tier(result.rating).level <= 2 ? 'rookie'
+    : max - Math.min(...list) <= 0.5 ? 'allround'
+    : archetypeOf[axes.find((a) => scores[a] === max)!];
+  const technique = questions.filter((x) => x.kind === 'technique');
+  const best = technique.reduce((top, x) => (v(x.id) > v(top.id) ? x : top));
+  return { scores, archetype, bestShot: best.id };
 }
 
 const names = ['Newbie', 'Beginner', 'Novice', 'Intermediate', 'Upper intermediate', 'Club expert', 'State level', 'National level', 'International level'];
@@ -200,6 +279,14 @@ export function tier(rating: number) {
   const level = Math.round(step / 3);
   const modifier = step - level * 3;
   return { level, label: `${level}${modifier < 0 ? '−' : modifier > 0 ? '+' : ''}`, name: t(names[level - 1]), summary: t(summaries[level - 1] ?? '') };
+}
+
+/** 每一档页面的地址：4− → 4-minus，4 → 4，4+ → 4-plus */
+export function tierSlug(rating: number) {
+  const step = Math.round(rating * 3);
+  const level = Math.round(step / 3);
+  const modifier = step - level * 3;
+  return `${level}${modifier < 0 ? '-minus' : modifier > 0 ? '-plus' : ''}`;
 }
 
 /** 对手平均强弱：“opponents 0.3 levels stronger on average” */

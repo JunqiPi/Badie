@@ -2,18 +2,20 @@
 // 球馆目录（国家 / 城市 / 球馆）这些静态页面：外壳和 App 是同一套（顶栏、标签栏、语言切换），内容是构建时生成的
 import '../styles/global.css';
 import { SiteShell } from '../app/Shell';
-import { alternates, englishPath, pageLocale } from '../lib/static-i18n';
+import { alternates, englishPath, ogLocale, pageLocale } from '../lib/static-i18n';
 
 interface Props {
   title: string;
   description: string;
   noindex?: boolean;
   jsonLd?: object;
+  /** 分享预览图（1200×630），默认是全站的 og.png */
+  image?: string;
 }
 
-const { title, description, noindex = false, jsonLd } = Astro.props;
+const { title, description, noindex = false, jsonLd, image = '/og.png' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
-// 中文版页面（/zh/…）固定用中文；有中文版的页面互相标出另一种语言的地址
+// 其他语言的页面（/zh/…、/ja/…）固定用这种语言；有多种语言的页面互相标出其他语言的地址
 const locale = pageLocale(Astro.url.pathname);
 const languages = alternates(Astro.url.pathname, Astro.site ?? new URL('http://localhost'));
 ---
@@ -34,11 +36,11 @@ const languages = alternates(Astro.url.pathname, Astro.site ?? new URL('http://l
     <meta name="apple-itunes-app" content="app-id=6825569793" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Badie" />
-    <meta property="og:locale" content={locale === 'en' ? 'en_US' : 'zh_CN'} />
+    <meta property="og:locale" content={ogLocale[locale]} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={new URL('/og.png', Astro.site)} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />

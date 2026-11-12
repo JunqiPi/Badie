@@ -17,6 +17,11 @@ export const languages = [
 ] as const;
 export type Locale = (typeof languages)[number][0];
 
+/** 静态页面（首页、等级表、每一档的页面）各语言的地址前缀：英文没有前缀，简体中文是 /zh/ */
+export const pathPrefixes: Record<Locale, string> = {
+  en: '', 'zh-Hans': '/zh', 'zh-Hant': '/zh-hant', ja: '/ja', ko: '/ko', id: '/id', ms: '/ms', th: '/th', vi: '/vi', hi: '/hi',
+};
+
 const storageKey = 'badie-language';
 let locale: Locale = 'en';
 let messages: Record<string, string> = {};

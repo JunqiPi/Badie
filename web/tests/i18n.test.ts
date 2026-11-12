@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { questions } from '../src/app/assessment.ts';
+import { archetypeInfo, axisNames, questions } from '../src/app/assessment.ts';
 import { faq } from '../src/app/faq.ts';
 import { languages, t } from '../src/app/i18n.ts';
 
@@ -16,6 +16,9 @@ const keys = new Set([
   ...sources(app, /\.tsx?$/).flatMap((code) => [...code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)].map((m) => unescape(m[1]))),
   // 定级题的题目和选项写在数组里，翻译时才传给 t()，上面扫不到
   ...questions.flatMap((q) => [q.title, q.hint, ...q.options.map((o) => o.text)]),
+  // 打法的名字、一句话和六项能力的名字（等级卡片上用）
+  ...Object.values(archetypeInfo).flatMap((a) => [a.name, a.line]),
+  ...Object.values(axisNames),
   // 关于页的常见问题
   ...faq.flatMap((f) => [f.q, f.a]),
   // 服务器错误的提示也一样（supabase.ts 里的 problems）
@@ -23,6 +26,12 @@ const keys = new Set([
     .map((m) => unescape(m[1])),
   // 静态页面（球馆目录）在浏览器里按 data-t 翻译
   ...pages.flatMap((code) => [...code.matchAll(/\bdata-t(?:-placeholder|-label)?="([^"]+)"/g)].map((m) => m[1])),
+  // 首页、等级表、每一档的页面和分享预览图有 10 种语言，构建时用 t('…') 翻译
+  ...['[lang]/index.astro', '[lang]/levels/index.astro', '[...lang]/levels/[tier].astro', 'og/levels/[lang]/[tier].png.ts']
+    .map((file) => readFileSync(new URL(`../src/pages/${file}`, import.meta.url), 'utf8'))
+    .flatMap((code) => [...code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)].map((m) => unescape(m[1]))),
+  // 每一档页面上 −、基础、+ 的意思
+  'Just reached this level; some strokes aren’t consistent yet', 'Consistently does everything at this level', 'Solid at this level, with some next-level skills',
 ]);
 const placeholders = (text: string) => [...new Set(text.match(/\{\w+\}/g) ?? [])].sort();
 

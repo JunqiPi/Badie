@@ -4,6 +4,7 @@
 /signin/* / 200
 /play/* / 200
 /day/* / 200
+/nearby/* / 200
 /games/* / 200
 /rooms/* / 200
 /groups/* / 200

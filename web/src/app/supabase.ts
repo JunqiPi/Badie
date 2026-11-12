@@ -51,6 +51,11 @@ export interface Profile {
   /** 3.67 = 4−；没做问卷是 3 */
   rating: number;
   assessed_at: string | null;
+  /** 定级问卷的答案（题目 id → 选项序号），用来重新算打法 */
+  assessment?: Record<string, number> | null;
+  /** 注册时从哪个链接来的（?ref=card）、自己选的“从哪里知道 Badie” */
+  ref?: string | null;
+  heard_from?: HeardFrom | null;
   show_on_boards: boolean;
   challenge_policy: 'everyone' | 'similar' | 'friends' | 'nobody';
   /** 别人可以按昵称搜到我 */
@@ -80,6 +85,10 @@ export interface Profile {
   /** 只用来定级和匹配（男女等级分开算）；老用户没填时打开 App 会先问 */
   gender: Gender | null;
 }
+
+/** 注册时“你从哪里知道 Badie 的”（可以不选）；和数据库的约束一致 */
+export const heardFromOptions = ['friend', 'level_card', 'social', 'search', 'app_store', 'club', 'other'] as const;
+export type HeardFrom = (typeof heardFromOptions)[number];
 
 /** 认证用的证据：赛事成绩、全国排名 / 运动员等级证书、BWF 世界排名 */
 export type VerificationKind = 'tournament' | 'national' | 'bwf';
@@ -194,8 +203,11 @@ export interface InviteSuggestion {
 export interface RoomInvite {
   from: InviteUser;
   to: InviteUser;
-  awaiting_id: string;
+  /** 说好、不了、过期以后是 null */
+  awaiting_id: string | null;
   awaiting_me: boolean;
+  /** 谁说的不了（没人说不了是 null） */
+  declined_by?: string | null;
   /** 换过几次时间 */
   rounds: number;
   /** 过了这个时间没回，邀请就关了 */

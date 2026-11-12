@@ -22,6 +22,9 @@ export function inviteProblem(error: { message: string }) {
   switch (error.message) {
     case 'not_available': return t('They can’t be added right now.');
     case 'overlapping': return t('You already have a game at that time.');
+    case 'too_late': return t('Too late now. Try another time.');
+    case 'invalid_slot': return t('That start time is too soon now. Pick another.');
+    case 'invalid_venues': return t('That court can’t be used right now. Pick another.');
     default: return problem(error);
   }
 }
@@ -391,7 +394,8 @@ export function InviteRoom({ room, onChange }: { room: Invite; onChange: () => v
   }
 
   const closed = {
-    declined: t('{name} can’t make it this time', { name: other.nickname }),
+    declined: room.invite.declined_by && room.invite.declined_by !== other.id ? t('You can’t make it this time')
+      : t('{name} can’t make it this time', { name: other.nickname }),
     expired: t('No answer in time, so the invite closed.'),
     owner_closed: t('Invite withdrawn'),
     start_time_passed: t('No answer in time, so the invite closed.'),

@@ -22,7 +22,8 @@ export default defineConfig({
   site: process.env.SITE_URL || 'http://localhost:4321',
   trailingSlash: 'always',
   devToolbar: { enabled: false },
-  integrations: [react(), sitemap({ filter: (page) => !hidden.has(decodeURIComponent(new URL(page).pathname).replace(/^\/zh(?=\/)/, '')) })],
+  // 站点地图不收 noindex 的球馆页（各语言前缀和 src/app/i18n.ts 的 pathPrefixes 一致）
+  integrations: [react(), sitemap({ filter: (page) => !hidden.has(decodeURIComponent(new URL(page).pathname).replace(/^\/(?:zh-hant|zh|ja|ko|id|ms|th|vi|hi)(?=\/)/, '')) })],
   vite: { plugins: [tailwindcss()] },
   // 内容安全策略：Astro 给页面里的每段脚本和样式算哈希，其他来源一律不许加载，XSS 注入的脚本跑不起来
   security: {

@@ -1,9 +1,21 @@
 import { useState, type SubmitEvent } from 'react';
 import { GenderField, type Gender } from './gender';
 import { currentLocale, t } from './i18n';
-import { problem as explain, supabase, type Profile } from './supabase';
+import { loadRef } from './quizStore';
+import { heardFromOptions, problem as explain, supabase, type HeardFrom, type Profile } from './supabase';
 import { CardFan } from './kit';
 import { Button, Field } from './ui';
+
+/** “你从哪里知道 Badie 的” 的选项（和数据库的约束一致） */
+const heardFromLabel = (option: HeardFrom) => ({
+  friend: t('A friend'),
+  level_card: t('Someone’s level card'),
+  social: t('Social media'),
+  search: t('Search engine'),
+  app_store: t('App Store'),
+  club: t('My club or group'),
+  other: t('Somewhere else'),
+})[option];
 
 const codes = ['US', 'CA', 'GB', 'AU', 'NZ', 'SG', 'MY', 'HK', 'TW', 'JP', 'KR', 'IN', 'ID', 'TH', 'VN', 'PH', 'DE', 'FR', 'DK', 'CN'];
 
@@ -38,6 +50,7 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   const [gender, setGender] = useState<Gender | null>(null);
   // 在附近的人里显示我（新账号默认开）
   const [visible, setVisible] = useState(true);
+  const [heardFrom, setHeardFrom] = useState<HeardFrom | ''>('');
   // 点了“继续”才提示没选性别（离开昵称框就提示会让页面跳动，点不准）
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -52,7 +65,8 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
     setBusy(true);
     const { data, error } = await supabase!
       .from('profiles')
-      .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender })
+      // 来源：从哪个链接来的（?ref=card，不含个人信息）和自己选的，都可以没有
+      .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender, ...(loadRef() && { ref: loadRef() }), ...(heardFrom && { heard_from: heardFrom }) })
       .select()
       .single();
     // 新账号默认显示；关掉的再改一下（新建资料时不能直接写这一项）
@@ -95,6 +109,14 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
           )}
         </Field>
         <GenderField value={gender} onChange={setGender} error={tried && !gender ? t('Choose one to continue.') : undefined} />
+        <Field label={`${t('Where did you hear about Badie?')} ${t('(optional)')}`}>
+          {(props) => (
+            <select {...props} value={heardFrom} onChange={(e) => setHeardFrom(e.target.value as HeardFrom | '')} className="field">
+              <option value="">—</option>
+              {heardFromOptions.map((option) => <option key={option} value={option}>{heardFromLabel(option)}</option>)}
+            </select>
+          )}
+        </Field>
         <label className="flex cursor-pointer items-center gap-3 text-subhead font-bold">
           <span className="flex-1">{t('Show me in People nearby')}</span>
           <input type="checkbox" role="switch" checked={visible} onChange={(e) => setVisible(e.target.checked)}

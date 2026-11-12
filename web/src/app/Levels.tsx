@@ -26,7 +26,7 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
           <Notice icon="list" tint="lime" action={{ label: t('Take the quiz'), to: '/level-quiz/' }}>{t('Not sure? The 2-minute quiz places you.')}</Notice>
         )
       ) : (
-        <Notice icon="list" tint="lime" action={{ label: t('Take the quiz'), to: signInFirst('/level-quiz/') }}>{t('Not sure? The 2-minute quiz places you.')}</Notice>
+        <QuizEntry />
       )}
 
       <dl className="tile grid gap-1.5 bg-surface-muted p-4 text-footnote">
@@ -95,6 +95,20 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
         {t('Breakdowns follow the level descriptions shared on the Zhongyu Online forum, USTA NTRP and public tournament results.')}
       </p>
     </div>
+  );
+}
+
+/** 没登录时的测级入口：首页和等级表上都有 */
+export function QuizEntry() {
+  return (
+    <Link to="/level-quiz/" className="sticker lift flex items-center gap-3 bg-lime p-4 text-on-accent">
+      <IconTile icon="level" tint="surface" size="sm" />
+      <span className="min-w-0 flex-1">
+        <span className="block text-headline">{t('What level are you?')}</span>
+        <span className="block text-footnote font-bold">{t('Find your level · 2 min, no sign-up')}</span>
+      </span>
+      <Icon name="arrowRight" className="size-5 shrink-0" />
+    </Link>
   );
 }
 

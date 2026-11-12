@@ -1,0 +1,119 @@
+---
+// 每一档自己的页面（/levels/4-plus/、/zh/levels/4-plus/……，10 种语言）：这一档的标准、和上下两档的区别、“测测你几级”。
+// 分享卡片上的链接带 ?ref=card，打开时标题换成“你的朋友是 4+。你呢？”。7–9 级是说明页（要证据审核，不出卡片）
+import Base from '../../../layouts/Base.astro';
+import { tier } from '../../../app/assessment';
+import { levels } from '../../../app/levels';
+import { allLanguages, fitTitle, translator } from '../../../lib/static-i18n';
+import { tierPages, type TierPage } from '../../../lib/tiers';
+
+export const getStaticPaths = () =>
+  allLanguages.flatMap((lang) => tierPages.map((page) => ({ params: { lang, tier: page.slug }, props: { page } })));
+
+const { page } = Astro.props as { page: TierPage };
+const { lang } = Astro.params;
+const t = translator(Astro.url.pathname);
+const info = levels[page.level - 1];
+const index = tierPages.findIndex((p) => p.slug === page.slug);
+const neighbours = [tierPages[index - 1], tierPages[index + 1]].filter(Boolean);
+const meanings = ['Just reached this level; some strokes aren’t consistent yet', 'Consistently does everything at this level', 'Solid at this level, with some next-level skills'];
+/** −、基础、+ 分别是什么意思 */
+const meaning = (p: TierPage) => (p.selfAssessed ? t(meanings[Math.round(p.rating * 3) - p.level * 3 + 1]) : t('Requires evidence for review'));
+const summary = page.selfAssessed ? t(tier(page.rating).summary) : undefined;
+// 再往上一级时多了什么（4+ → 5 级，6+ → 7 级）
+const nextLevel = page.selfAssessed && Math.round(page.rating * 3) % 3 !== 2 ? levels[page.level] : undefined;
+const name = t(info.name);
+const title = fitTitle(
+  t('What is level {level} in badminton? — Badie', { level: page.label }),
+  t('Badminton level {level} — Badie', { level: page.label }),
+);
+const description = t('What badminton level {level} ({name}) looks like on court, how it differs from the tiers next to it, and a 2-minute level quiz with no sign-up.', { level: page.label, name });
+const image = page.selfAssessed ? `/og/levels/${lang ?? 'en'}/${page.slug}.png` : undefined;
+---
+
+<Base title={title} description={description} image={image}>
+  <div class="mx-auto grid max-w-3xl gap-6">
+    <nav aria-label={t('Level chart')} class="flex items-center gap-2 text-footnote font-bold text-ink-secondary">
+      <a class="link" href="/levels/">{t('Level chart')}</a>
+      <span aria-hidden="true">›</span>
+      <span>Lv.{page.label}</span>
+    </nav>
+
+    <header class="sticker grid justify-items-start gap-3 bg-lime p-6 text-on-accent sm:p-8">
+      <p class="kicker">{t('Badie levels 1–9')}</p>
+      <h1 class="text-display lg:text-[2.75rem]">
+        <span data-ref-swap>Lv.{page.label} {name}</span>
+        {page.selfAssessed && <span data-ref-swap hidden>{t('Your friend is {level}. What about you?', { level: page.label })}</span>}
+      </h1>
+      <p class="text-headline">{meaning(page)}</p>
+      {summary && <p class="max-w-prose text-subhead font-semibold">{summary}</p>}
+      <p class="text-footnote font-bold">{[info.usFlight && `≈ ${t(info.usFlight)}`, t(info.experience)].filter(Boolean).join(' · ')}</p>
+      {
+        page.selfAssessed ? (
+          <a href="/level-quiz/" class="button button-lg button-inverse mt-2">{t('Find your level · 2 min, no sign-up')}</a>
+        ) : (
+          <p class="max-w-prose text-subhead">{t('From level 7 up, the gaps are big, so each tier has its own name and is set by evidence.')}</p>
+        )
+      }
+    </header>
+
+    <section aria-labelledby="can-do" class="sticker grid gap-3 p-5">
+      <h2 id="can-do" class="text-title3">{t('What level {n} players can do', { n: page.level })}</h2>
+      <ul class="list-disc pl-5 text-subhead">{info.anchors.map((a) => <li>{t(a)}</li>)}</ul>
+      {
+        info.notes.length > 0 && (
+          <dl class="grid gap-2 rounded-[12px] bg-surface-muted p-3 text-footnote">
+            {info.notes.map(([label, text]) => (
+              <div class="grid gap-x-3 sm:grid-cols-[7rem_1fr]">
+                <dt class="font-bold">{t(label)}</dt>
+                <dd>{t(text)}</dd>
+              </div>
+            ))}
+          </dl>
+        )
+      }
+    </section>
+
+    {
+      nextLevel && (
+        <section aria-labelledby="next" class="sticker grid gap-3 p-5">
+          <h2 id="next" class="text-title3">{t('What changes at level {n}', { n: nextLevel.level })}</h2>
+          <ul class="list-disc pl-5 text-subhead">{nextLevel.anchors.slice(0, 2).map((a) => <li>{t(a)}</li>)}</ul>
+        </section>
+      )
+    }
+
+    <section aria-labelledby="around" class="grid gap-3">
+      <h2 id="around" class="text-title3">{t('The tiers next to it')}</h2>
+      <ul class="grid gap-3 sm:grid-cols-2">
+        {
+          neighbours.map((p) => (
+            <li>
+              <a href={`/levels/${p.slug}/`} class="sticker lift grid h-full gap-1 p-4">
+                <span class="text-headline">Lv.{p.label} {t(levels[p.level - 1].name)}</span>
+                <span class="text-footnote text-ink-secondary">{meaning(p)}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {
+      !page.selfAssessed && (
+        <a href="/verification/" class="button justify-self-start">{t('Apply for verification')}</a>
+      )
+    }
+    <p class="text-footnote font-bold"><a class="link" href="/levels/">{t('See all levels')}</a></p>
+  </div>
+</Base>
+
+<script>
+  import { rememberRef } from '../../../app/quizStore';
+
+  // 从分享卡片来的：标题换成“你的朋友是 4+。你呢？”，并记下来源（注册时写进资料）
+  rememberRef(location.search);
+  if (new URLSearchParams(location.search).get('ref') === 'card') {
+    for (const element of document.querySelectorAll<HTMLElement>('[data-ref-swap]')) element.hidden = !element.hidden;
+  }
+</script>

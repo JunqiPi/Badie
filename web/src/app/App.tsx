@@ -12,6 +12,8 @@ import { type IconName } from './icons';
 import { Empty, LargeTitle, type Tint } from './kit';
 import { About, LevelGuide } from './Levels';
 import { LevelQuiz } from './LevelQuiz';
+import { QuizResult } from './QuizResult';
+import { clearPending, loadPending, rememberRef, saveArgs } from './quizStore';
 import { Me, Settings } from './Me';
 import { EditGroup, NewGroup } from './NewGroup';
 import { NewRoom } from './NewRoom';
@@ -44,6 +46,8 @@ export default function App() {
   const locale = useLocale();
 
   useEffect(() => {
+    // 从分享卡片之类的链接来的（?ref=card）：记下来，注册时写进资料
+    rememberRef(location.search);
     startLocale().finally(() => setReady(true));
     // 给搜索引擎和不开脚本的人看的静态内容：App 接管后删掉，页面里只留一个 h1
     document.getElementById('static-page')?.remove();
@@ -87,27 +91,25 @@ export default function App() {
     return shell(
       <Onboarding
         userId={session.user.id}
-        onDone={(created) => {
-          setProfile(created);
-          navigate('/level-quiz/', true);
+        onDone={async (created) => {
+          // 注册前测过级：用同一份答案直接保存，不用再答一遍
+          const pending = loadPending();
+          const { data: saved } = pending ? await supabase!.rpc('save_assessment', saveArgs(pending)!) : { data: null };
+          if (saved) clearPending();
+          setProfile((saved as Profile | null) ?? created);
+          navigate(pending ? '/level-quiz/result/' : '/level-quiz/', true);
         }}
       />,
     );
   }
   if (profile && !profile.gender) return shell(<GenderPrompt profile={profile} onDone={setProfile} />);
-  if (path.startsWith('/level-quiz/') && profile) {
-    return shell(
-      <LevelQuiz
-        onDone={(saved) => {
-          if (saved) setProfile(saved);
-          navigate('/', true);
-        }}
-      />,
-    );
-  }
   if (path.startsWith('/signin/')) return shell(<SignIn />);
 
   // 不用登录也能看的页面
+  if (path.startsWith('/level-quiz/result/')) return shell(<QuizResult profile={profile ?? null} onProfile={setProfile} />);
+  if (path.startsWith('/level-quiz/')) {
+    return shell(<LevelQuiz key={path} signedIn={Boolean(profile)} onSkip={() => navigate(profile ? '/' : '/levels/', true)} />);
+  }
   if (path === '/') return shell(<Home profile={profile ?? null} />);
   if (path.startsWith('/levels/')) return shell(<LevelGuide profile={profile ?? null} />);
   if (path.startsWith('/about/')) return shell(<About />);

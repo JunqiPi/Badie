@@ -9,6 +9,7 @@ import { Icon, type IconName } from './icons';
 import { ArrowLabel, Avatar, CardFan, Empty, IconTile, Notice, SectionTitle, StatTile, fill, type Tint } from './kit';
 import type { Centre } from './pickers';
 import { InvitePill } from './Invites';
+import { QuizEntry } from './Levels';
 import { Link } from './router';
 import { signInFirst } from './Shell';
 import { supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
@@ -370,6 +371,7 @@ function Welcome() {
             <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
             <a href={APP_STORE_URL} className="button button-lg button-quiet">{t('Get the iPhone app')}</a>
           </div>
+          <QuizEntry />
         </div>
         <div className="max-sm:-my-4 lg:px-12"><CardFan className="max-sm:scale-[0.8] lg:scale-125" /></div>
       </header>
