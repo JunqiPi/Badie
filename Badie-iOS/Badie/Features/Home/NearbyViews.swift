@@ -203,27 +203,6 @@ struct NearbyChip: View {
     }
 }
 
-/// 这天的卡片刷完了，接着是附近的人（虚线框）
-struct NearbyDivider: View {
-    var body: some View {
-        VStack(spacing: 4) {
-            Text("这天的刷完了")
-                .font(AppTheme.Typography.headline)
-                .foregroundStyle(AppTheme.Colors.ink)
-            Text("接着看附近的人")
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, AppTheme.Spacing.lg)
-        .padding(.horizontal, AppTheme.Spacing.md)
-        .background(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous).fill(AppTheme.Colors.surface))
-        .overlay(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-            .strokeBorder(AppTheme.Colors.stroke, style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
-        .accessibilityElement(children: .combine)
-    }
-}
-
 // MARK: - 第一次约人前：让附近的人也能看到你 / 加一张照片
 
 struct InvitePromptSheet: View {

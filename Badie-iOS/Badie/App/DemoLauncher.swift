@@ -115,24 +115,24 @@ enum DemoLauncher {
                 environment.messageManager.reload()
                 router.show(.groupChat(threadId: thread.id), in: .messages)
             }
-        case "dayCards":
-            // 首页点明天：附近有空的球友卡片
+        case "home", "nearbyCards":
+            // 发现页（打开 App 就是这页）：附近的人，卡片上有常去的球馆和常有空的时间；上面一排待办小标签（挑战、好友申请）
             router.selectedTab = .home
-            environment.matchManager.draft.day = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
+            environment.appState.discoverDay = nil
+        case "dayCards":
+            // 发现页选明天：这天附近在找人的球友卡片
+            router.selectedTab = .home
+            let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
+            environment.matchManager.draft.day = tomorrow
+            environment.appState.discoverDay = tomorrow
             // 卡片用柠檬色（商店截图里和标题的色块同色）
             for id in backend.db.bots.keys {
                 backend.db.users[id]?.avatar.cardColor = .lime
             }
-            environment.appState.showsDayCards = true
-        case "nearbyCards":
-            // 首页“附近的人”：常去附近球馆的人，卡片上有常有空的时间
-            router.selectedTab = .home
-            environment.appState.showsLobby = true
         case "nearbyInvite":
             // 点了卡片上的空闲时间：约 TA 的半屏，时间已经填好
             router.selectedTab = .home
             DayCandidatesView.demoOpensInvite = true
-            environment.appState.showsLobby = true
         case "inviteAnswer":
             // 收到附近的人的邀请：不了 / 换个时间 / 好
             router.selectedTab = .home
@@ -148,9 +148,10 @@ enum DemoLauncher {
             backend.remoteNoShows["bot-2"] = (recent: 1, suspendedUntil: nil)
             environment.appState.presentedPlayer = PlayerSheetItem(id: "bot-2")
         case "homeTicket":
-            // 首页“约球请求”卡片：找到了，等我确认
+            // 球局页最上面的“约球请求”卡片：找到了，等我确认
             _ = seedDemoTicket(environment, mode: .singles, tolerance: 2, autoAccept: false, state: .offered)
             environment.matchManager.reloadTickets()
+            router.selectedTab = .games
         case "ticket":
             router.show(.game(id: upcoming.id), in: .games)
         case "games":

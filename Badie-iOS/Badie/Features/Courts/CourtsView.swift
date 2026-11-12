@@ -484,3 +484,42 @@ struct TravelRadiusSheet: View {
         }
     }
 }
+
+// MARK: - 小地图（不可交互，点击进入球馆页）
+
+struct CourtsMiniMap: View {
+    let courts: [BadmintonCourt]
+    let center: Coordinate
+    var selectedIds: Set<String> = []
+
+    var body: some View {
+        Map(initialPosition: .region(MKCoordinateRegion(center: center.clCoordinate, latitudinalMeters: 14_000, longitudinalMeters: 14_000)),
+            interactionModes: []) {
+            ForEach(courts) { court in
+                Annotation(court.name, coordinate: court.location.clCoordinate, anchor: .bottom) {
+                    CourtPin(isSelected: selectedIds.contains(court.id))
+                }
+                .annotationTitles(.hidden)
+            }
+            UserAnnotation()
+        }
+        .mapStyle(.standard(pointsOfInterest: .excludingAll))
+        .allowsHitTesting(false)
+    }
+}
+
+struct CourtPin: View {
+    var isSelected = false
+    var size: CGFloat = 30
+
+    var body: some View {
+        Image(systemName: "figure.badminton")
+            .font(.system(size: size * 0.5, weight: .bold))
+            .foregroundStyle(AppTheme.Colors.onAccent)
+            .frame(width: size, height: size)
+            .background(Circle().fill(isSelected ? AppTheme.Colors.lime : AppTheme.Colors.sky))
+            .overlay(Circle().strokeBorder(Color(hex: 0x17140F), lineWidth: 2))
+            .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 1.5, y: 2))
+            .scaleEffect(isSelected ? 1.15 : 1)
+    }
+}

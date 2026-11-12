@@ -7,7 +7,7 @@ UDID="$1"
 APP="$2"
 OUT="$3"
 BUNDLE="com.badie.app"
-SCREENS="${SCREENS:-welcome login levelQuiz levelResult levelGuide levelCard levelGuideElite verification home createMenu matchSetup matchSetupVenues nearbyCards nearbyInvite inviteAnswer venuePicker venueSearch venueDetail addVenue courts matching matchFound ticketWaiting offerWaiting homeTicket ticket games groups groupDetail groupChat playerProfile messages chat friends room joinRoom survey profile editProfile settings notifications leaderboard venueLeaderboard challenges gameResult}"
+SCREENS="${SCREENS:-welcome login levelQuiz levelResult levelGuide levelCard levelGuideElite verification home createMenu matchSetup matchSetupVenues dayCards nearbyInvite inviteAnswer venuePicker venueSearch venueDetail addVenue courts matching matchFound ticketWaiting offerWaiting homeTicket ticket games groups groupDetail groupChat playerProfile messages chat friends room joinRoom survey profile editProfile settings notifications leaderboard venueLeaderboard challenges gameResult}"
 # 深色模式只截关键页面（CI 模拟器较慢，全部截两遍会超时）
 DARK_SCREENS="${DARK_SCREENS:-home matchFound offerWaiting groupDetail playerProfile chat profile}"
 # 英文界面抽查
@@ -57,7 +57,7 @@ if [ -n "${STORE:-}" ]; then
   STORE_SCREENS="${STORE_SCREENS:-$(python3 -c 'import json,sys; print(" ".join(s for s in json.load(open(sys.argv[1]))["order"] if s != "free"))' "$(dirname "$0")/store_captions.json")}"
   LOGO="$(dirname "$0")/../Badie/Assets.xcassets/Logo.imageset/Logo.png"
   SMALL="$(dirname "$OUT")/6.3-inch"
-  # 预热“按天看人”：第一次打开时卡片还没画出来就截图，会截到空白页
+  # 预热发现页的卡片：第一次打开时卡片还没画出来就截图，会截到空白页
   xcrun simctl launch "$UDID" "$BUNDLE" -BBDemoScreen dayCards >/dev/null || true
   sleep 8
   xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true

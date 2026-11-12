@@ -3,6 +3,7 @@ import Combine
 
 // MARK: - 标签页
 
+/// home 是第一个标签“发现”（刷卡找人）；名字没改，演示截图和推送都在用
 enum MainTab: String, CaseIterable, Identifiable {
     case home, games, messages, profile
 
@@ -10,7 +11,7 @@ enum MainTab: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .home: return String(localized: "首页")
+        case .home: return String(localized: "发现")
         case .games: return String(localized: "球局")
         case .messages: return String(localized: "消息")
         case .profile: return String(localized: "我的")
@@ -19,7 +20,7 @@ enum MainTab: String, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
-        case .home: return "house"
+        case .home: return "heart"
         case .games: return "ticket"
         case .messages: return "bubble.left.and.bubble.right"
         case .profile: return "person.crop.circle"
@@ -28,7 +29,7 @@ enum MainTab: String, CaseIterable, Identifiable {
 
     var selectedIcon: String {
         switch self {
-        case .home: return "house.fill"
+        case .home: return "heart.fill"
         case .games: return "ticket.fill"
         case .messages: return "bubble.left.and.bubble.right.fill"
         case .profile: return "person.crop.circle.fill"
@@ -95,7 +96,7 @@ struct VenuePrefill: Hashable {
 @MainActor
 final class Router: ObservableObject {
     @Published var selectedTab: MainTab = .home
-    /// 每跳一次页面加一：全屏页（按天看人、匹配流程）看到它变了就自己关掉，不然新页面在它后面看不见
+    /// 每跳一次页面加一：全屏页（匹配流程）看到它变了就自己关掉，不然新页面在它后面看不见
     @Published private(set) var navigations = 0
     @Published var paths: [MainTab: [Route]] = [:]
     /// 中间“+”按钮的创建菜单
@@ -138,6 +139,13 @@ final class Router: ObservableObject {
             path.append(route)
         }
         paths[target] = path
+    }
+
+    /// 回到某个标签页的根页面（发现页的卡片、球局列表）
+    func showRoot(_ tab: MainTab) {
+        navigations += 1
+        selectedTab = tab
+        paths[tab] = []
     }
 
     /// 切换到某个标签页并重置为指定页面

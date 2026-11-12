@@ -34980,55 +34980,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "This is the card people see when they come across you on Home"
+            "value" : "This is the card people see when they come across you in Discover"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "होम पर जब लोग आपको देखते हैं, तो उन्हें यही कार्ड दिखता है"
+            "value" : "“खोजें” में जब लोग आपको देखते हैं, तो उन्हें यही कार्ड दिखता है"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kartu inilah yang dilihat orang saat menemukanmu di Beranda"
+            "value" : "Kartu inilah yang dilihat orang saat menemukanmu di Jelajahi"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ほかの人がホームであなたを見かけたとき、このカードが表示されます"
+            "value" : "ほかの人が「見つける」であなたを見かけたとき、このカードが表示されます"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "다른 사람이 홈에서 나를 보면 이 카드가 보여요"
+            "value" : "다른 사람이 둘러보기에서 나를 보면 이 카드가 보여요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inilah kad yang orang lihat apabila mereka menjumpai anda di Utama"
+            "value" : "Inilah kad yang orang lihat apabila mereka menjumpai anda di Teroka"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "นี่คือการ์ดที่คนอื่นเห็นเมื่อเจอคุณที่หน้าแรก"
+            "value" : "นี่คือการ์ดที่คนอื่นเห็นเมื่อเจอคุณที่หน้าสำรวจ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đây là thẻ người khác thấy khi bắt gặp bạn ở Trang chủ"
+            "value" : "Đây là thẻ người khác thấy khi bắt gặp bạn ở Khám phá"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "别人在发现页刷到你时，看到的就是这张卡片"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "別人在首頁滑到你時，看到的就是這張卡片"
+            "value" : "別人在發現頁滑到你時，看到的就是這張卡片"
           }
         }
       }
@@ -41497,6 +41503,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "傳送訊息請求"
+          }
+        }
+      }
+    },
+    "发现" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discover"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खोजें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jelajahi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見つける"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘러보기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teroka"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "สำรวจ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khám phá"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發現"
           }
         }
       }
@@ -49391,55 +49455,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Show me on Home"
+            "value" : "Show me in Discover"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "होम पर मुझे दिखाएँ"
+            "value" : "“खोजें” में मुझे दिखाएँ"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tampilkan aku di Beranda"
+            "value" : "Tampilkan aku di Jelajahi"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ホームに自分を表示"
+            "value" : "「見つける」に自分を表示"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "홈에 나를 표시"
+            "value" : "둘러보기에 나를 표시"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Paparkan saya di Utama"
+            "value" : "Paparkan saya di Teroka"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "แสดงฉันที่หน้าแรก"
+            "value" : "แสดงฉันที่หน้าสำรวจ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hiện tôi ở Trang chủ"
+            "value" : "Hiện tôi ở Khám phá"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在发现页显示我"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在首頁顯示我"
+            "value" : "在發現頁顯示我"
           }
         }
       }
@@ -74970,6 +75040,64 @@
         }
       }
     },
+    "扩大范围" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widen range"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "दूरी बढ़ाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perluas jarak"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "範囲を広げる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "범위 넓히기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luaskan jarak"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ขยายระยะ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở rộng phạm vi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "擴大範圍"
+          }
+        }
+      }
+    },
     "找不到你常去的球馆？" : {
       "localizations" : {
         "en" : {
@@ -76019,55 +76147,61 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "While you're looking, nearby players see your nickname, photo, level, and the times and venues you want on Home. They don't see your contact details"
+            "value" : "While you're looking, nearby players see your nickname, photo, level, and the times and venues you want in Discover. They don't see your contact details"
           }
         },
         "hi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "जब आप खिलाड़ी ढूँढ रहे हों, तो आसपास के लोग होम पर आपका निकनेम, फ़ोटो, लेवल और खेलने का समय और वेन्यू देख सकते हैं, आपकी संपर्क जानकारी नहीं"
+            "value" : "जब आप खिलाड़ी ढूँढ रहे हों, तो आसपास के लोग “खोजें” में आपका निकनेम, फ़ोटो, लेवल और खेलने का समय और वेन्यू देख सकते हैं, आपकी संपर्क जानकारी नहीं"
           }
         },
         "id" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Saat kamu mencari teman main, orang di sekitar bisa melihat nama panggilan, foto, level, serta waktu dan GOR yang kamu mau di Beranda. Kontakmu tidak terlihat"
+            "value" : "Saat kamu mencari teman main, orang di sekitar bisa melihat nama panggilan, foto, level, serta waktu dan GOR yang kamu mau di Jelajahi. Kontakmu tidak terlihat"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "相手を探している間、近くの人はホームであなたのニックネーム、写真、レベル、希望の時間と会場を見られます。連絡先は見えません"
+            "value" : "相手を探している間、近くの人は「見つける」であなたのニックネーム、写真、レベル、希望の時間と会場を見られます。連絡先は見えません"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "파트너를 찾는 동안 근처 사람들은 홈에서 내 닉네임, 사진, 레벨, 원하는 시간과 체육관을 볼 수 있어요. 연락처는 볼 수 없어요"
+            "value" : "파트너를 찾는 동안 근처 사람들은 둘러보기에서 내 닉네임, 사진, 레벨, 원하는 시간과 체육관을 볼 수 있어요. 연락처는 볼 수 없어요"
           }
         },
         "ms" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Semasa anda mencari pemain, orang berdekatan boleh melihat nama panggilan, foto, tahap, serta masa dan gelanggang pilihan anda di Utama. Maklumat hubungan anda tidak kelihatan"
+            "value" : "Semasa anda mencari pemain, orang berdekatan boleh melihat nama panggilan, foto, tahap, serta masa dan gelanggang pilihan anda di Teroka. Maklumat hubungan anda tidak kelihatan"
           }
         },
         "th" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ตอนหาคนตี คนใกล้ๆ จะเห็นชื่อเล่น รูป ระดับ เวลาและสนามที่คุณอยากตีที่หน้าแรก แต่ไม่เห็นช่องทางติดต่อ"
+            "value" : "ตอนหาคนตี คนใกล้ๆ จะเห็นชื่อเล่น รูป ระดับ เวลาและสนามที่คุณอยากตีที่หน้าสำรวจ แต่ไม่เห็นช่องทางติดต่อ"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Khi bạn đang tìm người chơi, người ở gần sẽ thấy biệt danh, ảnh, trình độ, giờ và sân bạn muốn chơi ở Trang chủ, nhưng không thấy thông tin liên hệ"
+            "value" : "Khi bạn đang tìm người chơi, người ở gần sẽ thấy biệt danh, ảnh, trình độ, giờ và sân bạn muốn chơi ở Khám phá, nhưng không thấy thông tin liên hệ"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找球友时，附近的人在发现页能看到你的昵称、头像、等级和想打的时间、球馆，看不到联系方式"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "找球友時，附近的人在首頁能看到你的暱稱、頭像、等級和想打的時間、球館，看不到聯絡方式"
+            "value" : "找球友時，附近的人在發現頁能看到你的暱稱、頭像、等級和想打的時間、球館，看不到聯絡方式"
           }
         }
       }
@@ -129801,6 +129935,64 @@
         }
       }
     },
+    "这天还没人约" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No one's looking for a game this day yet"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "इस दिन अभी कोई खेलने वाला नहीं ढूँढ रहा"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belum ada yang cari teman main di hari itu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日はまだ誰も募集していません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이날은 아직 찾는 사람이 없어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Belum ada yang cari kawan bermain pada hari itu"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "วันนั้นยังไม่มีใครหาคนเล่น"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngày này chưa có ai tìm người chơi"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這天還沒人約"
+          }
+        }
+      }
+    },
     "这天附近没有能约的球友了" : {
       "localizations" : {
         "en" : {
@@ -137019,6 +137211,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "附近的人能看到你打開的常用時間，按它約你"
+          }
+        }
+      }
+    },
+    "附近的人都看完了" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You've seen everyone nearby"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "आस-पास के सब लोग देख लिए"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semua orang di sekitar sudah dilihat"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "近くの人は全部見ました"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "근처 사람은 다 봤어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semua orang berdekatan sudah dilihat"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดูคนใกล้ๆ ครบแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xem hết người ở gần"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附近的人都看完了"
           }
         }
       }

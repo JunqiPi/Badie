@@ -46,7 +46,7 @@ extension InboxItem.Kind {
 }
 
 extension InboxItem.Kind {
-    /// 和约球有关、要你处理或知道的：首页最上面列出来
+    /// 和约球有关、要你处理或知道的：发现页最上面列出来
     var isActionable: Bool {
         switch self {
         case .gameCancelled, .kicked, .roomClosed, .challenge, .roomInvite, .roomJoined, .waitlistPromoted,
@@ -63,7 +63,7 @@ extension InboxItem.Kind {
     }
 }
 
-/// 点开一条通知：标为已读，再打开对应的页面（通知中心、首页动态和重要通知弹窗共用）
+/// 点开一条通知：标为已读，再打开对应的页面（通知中心、发现页的待办和重要通知弹窗共用）
 @MainActor
 struct InboxNavigator {
     let router: Router
@@ -120,9 +120,9 @@ struct InboxNavigator {
             // 对方想换个时间：打开邀请（不了 / 换个时间 / 好）
             if let id = item.relatedId { router.open(.room(id: id)) }
         case .inviteDeclined:
-            // 这次来不了：回到附近的人，再约别人
-            router.select(.home)
-            appState.showsLobby = true
+            // 这次来不了：回到发现页的附近的人，再约别人
+            appState.discoverDay = nil
+            router.showRoot(.home)
         case .gameTimeSet:
             if let id = item.relatedId { router.open(.game(id: id)) }
         case .kicked, .roomClosed, .system:

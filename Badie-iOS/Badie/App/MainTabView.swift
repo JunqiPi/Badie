@@ -135,7 +135,7 @@ struct MainTabView: View {
     @ViewBuilder
     private func rootView(for tab: MainTab) -> some View {
         switch tab {
-        case .home: HomeView()
+        case .home: DiscoverView()
         case .games: GamesView()
         case .messages: MessagesView()
         case .profile: ProfileView()
