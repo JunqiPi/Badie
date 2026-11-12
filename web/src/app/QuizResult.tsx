@@ -38,9 +38,12 @@ export function QuizResult({ profile, onProfile }: { profile: Profile | null; on
     const { data, error } = await supabase!.rpc('save_assessment', saveArgs(answers!)!);
     setBusy(false);
     if (error) return setError(problem(error));
+    // 第一次定级（新注册的人）存完回首页，和以前一样；重测的人留在这页，可以接着分享卡片
+    const firstTime = !profile?.assessment;
     clearPending();
     onProfile(data as Profile);
     toast(t('Level saved.'));
+    if (firstTime) navigate('/');
   }
 
   return (
