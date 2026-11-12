@@ -3,9 +3,11 @@ import SwiftUI
 // MARK: - 定级问卷：一次一题，答完自动出等级
 
 struct SkillAssessmentView: View {
+    @EnvironmentObject private var appState: AppState
     @Binding var answers: [String: Int]
     @State private var index = 0
     @State private var showGuide = false
+    @State private var cardData: LevelCardData?
 
     private var questions: [AssessmentQuestion] { SkillAssessment.questions }
     private var result: SkillAssessmentResult? { SkillAssessment.evaluate(answers) }
@@ -33,6 +35,12 @@ struct SkillAssessmentView: View {
                     .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small))
                     RulesButton(title: String(localized: "怎么定级"), points: AssessmentResultCard.rules(for: result))
                 }
+                Button {
+                    cardData = LevelCardData.make(result: result, appState: appState)
+                } label: {
+                    Label("分享等级卡片", systemImage: "square.and.arrow.up")
+                }
+                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
             } else {
                 questionCard(questions[min(index, questions.count - 1)])
                     .id(index)
@@ -46,6 +54,10 @@ struct SkillAssessmentView: View {
         }
         .sheet(isPresented: $showGuide) {
             SkillLevelGuideView(highlight: result?.tier)
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(item: $cardData) { data in
+            LevelCardSheet(data: data)
                 .presentationDragIndicator(.visible)
         }
     }
@@ -152,6 +164,9 @@ struct AssessmentResultCard: View {
             if !result.dimensions.isEmpty {
                 dimensionProfile
             }
+            if let play = result.play {
+                playSection(play)
+            }
             if !tags.isEmpty {
                 FlowLayout(spacing: 6) {
                     ForEach(tags, id: \.self) { tag in
@@ -198,6 +213,26 @@ struct AssessmentResultCard: View {
         }
         points.append(String(localized: "打满 5 场并获得评价后，等级会按球友评价自动校准。"))
         return points
+    }
+
+    /// 打法：类型、一句话、六个维度
+    private func playSection(_ play: PlayProfile) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("打法")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.onAccent.opacity(0.75))
+            Text(play.style.title)
+                .font(AppTheme.Typography.title2)
+                .foregroundStyle(AppTheme.Colors.onAccent)
+            Text(play.style.line)
+                .font(AppTheme.Typography.subheadline)
+                .foregroundStyle(AppTheme.Colors.onAccent)
+                .fixedSize(horizontal: false, vertical: true)
+            PlayRadar(profile: play)
+            Text("最佳搭档：\(play.style.partnerText)")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.onAccent)
+        }
     }
 
     /// 技术分项：每项几级，最强的标出来（技术特点）

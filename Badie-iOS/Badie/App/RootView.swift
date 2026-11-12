@@ -58,8 +58,22 @@ struct RootView: View {
             if parts.first == "add", parts.count > 1 {
                 return openFriendLink(parts[1])
             }
+            // 等级页：/levels/<档>/（中文等语言前面带 /zh/ 这类前缀）。没定级就直接测级，定过级打开等级对照表
+            if let index = parts.firstIndex(of: "levels"), index <= 1 {
+                return openLevels()
+            }
             let target = PushRegistry.route(for: url.absoluteString)
             router.show(target.route, in: target.tab)
+        }
+    }
+
+    private func openLevels() {
+        guard appState.phase == .main, let user = appState.currentUser else { return }
+        if user.assessment == nil && user.verifiedRating == nil {
+            appState.opensAssessment = true
+            router.show(.editProfile, in: .profile)
+        } else {
+            router.show(.levelGuide, in: .profile)
         }
     }
 

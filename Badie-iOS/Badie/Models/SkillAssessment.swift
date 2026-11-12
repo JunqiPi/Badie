@@ -56,12 +56,144 @@ struct SkillAssessmentResult: Equatable {
     let limitingGate: String?
     /// 各技术分项的等级
     var dimensions: [AssessmentDimension] = []
+    /// 打法（六个维度 + 打法类型）；答案不全时为 nil
+    var play: PlayProfile?
+    /// “离 5 级还差：反手后场”：下一级和最弱的一项（就是 limitingGate 里列出的第一项）；没有时为 nil
+    var nextGap: AssessmentGap?
 
     /// 技术特点：最强的分项（比整体高时才算）
     var strengths: [AssessmentDimension] {
         guard let top = dimensions.map(\.rating).max(), let low = dimensions.map(\.rating).min(), top > low else { return [] }
         return dimensions.filter { $0.rating == top }
     }
+}
+
+// MARK: - 打法：六个维度 + 七种打法（网页 web/src/app/assessment.ts 是同一套，测试用同样的用例）
+
+enum PlayAxis: String, CaseIterable, Identifiable, Hashable {
+    case attack, net, defense, speed, footwork, tactics
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .attack: return String(localized: "进攻")
+        case .net: return String(localized: "网前")
+        case .defense: return String(localized: "防守")
+        case .speed: return String(localized: "速度")
+        case .footwork: return String(localized: "步法")
+        case .tactics: return String(localized: "战术")
+        }
+    }
+}
+
+enum PlayStyle: String, CaseIterable, Identifiable, Hashable {
+    case cannon, net, wall, quick, engine, captain, allround
+    /// 新星：问卷结果 1–2 级时不看六项，都是新星
+    case rookie
+
+    var id: String { rawValue }
+
+    /// 最高的一项是哪个维度
+    init(axis: PlayAxis) {
+        switch axis {
+        case .attack: self = .cannon
+        case .net: self = .net
+        case .defense: self = .wall
+        case .speed: self = .quick
+        case .footwork: self = .engine
+        case .tactics: self = .captain
+        }
+    }
+
+    var title: String {
+        switch self {
+        case .cannon: return String(localized: "重炮手")
+        case .net: return String(localized: "网前魔术师")
+        case .wall: return String(localized: "铁壁")
+        case .quick: return String(localized: "快枪手")
+        case .engine: return String(localized: "永动机")
+        case .captain: return String(localized: "指挥官")
+        case .allround: return String(localized: "六边形战士")
+        case .rookie: return String(localized: "新星")
+        }
+    }
+
+    /// 一句话
+    var line: String {
+        switch self {
+        case .cannon: return String(localized: "后场一板定输赢。有机会就杀。")
+        case .net: return String(localized: "一个搓球让对面起高球。")
+        case .wall: return String(localized: "怎么打都打不死。")
+        case .quick: return String(localized: "中场越快越舒服。")
+        case .engine: return String(localized: "满场跑，球球都到位。")
+        case .captain: return String(localized: "你在调动全场。")
+        case .allround: return String(localized: "没有短板。")
+        case .rookie: return String(localized: "刚起步，进步最快的时候。")
+        }
+    }
+
+    /// 最佳搭档；六边形战士和新星和谁都行（nil）
+    var partner: PlayStyle? {
+        switch self {
+        case .cannon: return .net
+        case .net: return .cannon
+        case .wall: return .quick
+        case .quick: return .wall
+        case .engine: return .captain
+        case .captain: return .engine
+        case .allround, .rookie: return nil
+        }
+    }
+
+    var partnerText: String { partner?.title ?? String(localized: "谁都行") }
+
+    /// 卡片画面里重复的大字（装饰，不翻译）
+    var ghostWord: String { rawValue == "allround" ? "ALL-ROUND" : rawValue.uppercased() }
+
+    /// 拟声字（装饰，不翻译）
+    var onomatopoeia: String {
+        switch self {
+        case .cannon: return "ドン!"
+        case .net: return "ふわっ"
+        case .wall: return "ガッ"
+        case .quick: return "シュッ"
+        case .engine: return "ダッ"
+        case .captain: return "ピタッ"
+        case .allround: return "キラッ"
+        case .rookie: return "ピョン"
+        }
+    }
+
+    /// 人物插画（Assets.xcassets 里每种打法一张，换图只换文件）
+    var artName: String { "Play-\(rawValue)" }
+}
+
+struct PlayProfile: Hashable {
+    /// 六个维度的等级（可以是 3.5 这样的半级）
+    let axes: [PlayAxis: Double]
+    let style: PlayStyle
+    /// 最强一拍：技术题里等级最高的一项
+    let bestShot: AssessmentDimension?
+
+    func value(_ axis: PlayAxis) -> Double { axes[axis] ?? 0 }
+
+    /// 卡片上的数字：四舍五入到整级（1–9）
+    func displayValue(_ axis: PlayAxis) -> Int { min(9, max(1, Int(value(axis).rounded()))) }
+
+    /// 从高到低的维度（一样高时按维度顺序）
+    var rankedAxes: [PlayAxis] {
+        PlayAxis.allCases.enumerated()
+            .sorted { (-value($0.element), $0.offset) < (-value($1.element), $1.offset) }
+            .map { $0.element }
+    }
+}
+
+/// 离下一级还差的一项
+struct AssessmentGap: Hashable {
+    /// 下一级（整数）
+    let level: Int
+    let dimension: AssessmentDimension
 }
 
 /// 定级结果的摘要（存到用户资料里）
@@ -72,6 +204,11 @@ struct SkillAssessmentSummary: Codable, Hashable {
     var assessedAt: Date
     /// 细分档位分值；为空时按整数等级
     var rating: Double?
+    /// 问卷答案（题目 ID → 选项序号）：算打法用。服务器上本来就存着（profiles.assessment），没有时不显示打法
+    var answers: [String: Int]?
+
+    /// 打法：有答案时才有
+    var play: PlayProfile? { answers.flatMap(SkillAssessment.playProfile) }
 
     var tier: SkillTier { SkillTier(rating: rating ?? Double(level)) }
 
@@ -265,7 +402,8 @@ enum SkillAssessment {
             let untouched = option("net") == 0 && option("doubles") == 0
             return SkillAssessmentResult(tier: SkillTier(level: 1, modifier: untouched ? .minus : .base),
                                          needsCalibration: false, isReturning: isReturning,
-                                         suggestsVerification: false, limitingGate: nil, dimensions: technique)
+                                         suggestsVerification: false, limitingGate: nil, dimensions: technique,
+                                         play: profile(answers, level: 1))
         }
 
         // 1. 技术和比赛能力：各自取平均、受最弱一项限制；两者以弱的为准，强的那边最多加 2/3 级
@@ -274,12 +412,19 @@ enum SkillAssessment {
 
         // 2. 下一档要补什么：最弱的几项（最多 3 项）。3− 的下一档是 3，3 和 3+ 的下一档是 4
         let target = rating - rating.rounded(.down) > 0.5 ? Int(rating.rounded(.up)) : Int(rating.rounded(.down)) + 1
-        let weakest = (technique + game).filter { $0.rating < Double(target) }.sorted { $0.rating < $1.rating }.prefix(3)
+        // 稳定排序：一样弱的按题目顺序（和网页的 Array.sort 一致）
+        let weakest = (technique + game).enumerated()
+            .filter { $0.element.rating < Double(target) }
+            .sorted { ($0.element.rating, $0.offset) < ($1.element.rating, $1.offset) }
+            .map { $0.element }
+            .prefix(3)
         var limitingGate: String? = weakest.isEmpty ? nil
             : String(localized: "想到 \(target) 级先补短板：\(weakest.map(\.name).formatted(.list(type: .and)))")
+        var nextGap: AssessmentGap? = weakest.first.map { AssessmentGap(level: target, dimension: $0) }
 
         // 3. 6 级看俱乐部里的位置：没到“崭露头角”最高 5+；6+ 还要有比赛或青训经历
         if rating >= 6 - third - 0.01, let standingQuestion = question("standing") {
+            nextGap = nil
             if let standing = value(standingQuestion) {
                 rating = min(standing, rating + third)
                 limitingGate = nil
@@ -299,9 +444,54 @@ enum SkillAssessment {
         let final = toThirds(min(max(rating, floor, 1 - third), maxTier.rating))
         let needsCalibration = floor - rating >= 2 - 0.01
 
-        return SkillAssessmentResult(tier: min(SkillTier(rating: final), maxTier), needsCalibration: needsCalibration,
+        let tier = min(SkillTier(rating: final), maxTier)
+        return SkillAssessmentResult(tier: tier, needsCalibration: needsCalibration,
                                      isReturning: isReturning, suggestsVerification: suggestsVerification,
-                                     limitingGate: floor > rating ? nil : limitingGate, dimensions: technique)
+                                     limitingGate: floor > rating ? nil : limitingGate, dimensions: technique,
+                                     play: profile(answers, level: tier.level), nextGap: floor > rating ? nil : nextGap)
+    }
+
+    // MARK: 打法
+
+    /// 打法：要答完全部题目（新星要看问卷定出的等级）
+    static func playProfile(_ answers: [String: Int]) -> PlayProfile? { evaluate(answers)?.play }
+
+    /// 六个维度和打法类型，六项只看技术题和比赛能力题的答案（网页 web/src/app/assessment.ts 是同一套）。
+    /// 进攻 = 杀球；网前 = 网前、吊球的平均；防守 = 被动球、稳定性的平均；速度 = 平抽挡；步法 = 步法；战术 = 战术、双打的平均。
+    /// 问卷定出 1–2 级：新星。否则最高和最低差不超过半级：六边形战士；再否则看最高的一项（一样高时按进攻、网前、防守、速度、步法、战术的顺序）。
+    private static func profile(_ answers: [String: Int], level: Int) -> PlayProfile? {
+        var levels: [String: Double] = [:]
+        for question in questions where question.kind == .technique || question.kind == .game {
+            guard let option = answers[question.id], question.options.indices.contains(option),
+                  let value = question.options[option].value else { return nil }
+            levels[question.id] = value
+        }
+        func answer(_ id: String) -> Double { levels[id] ?? 0 }
+        let axes: [PlayAxis: Double] = [
+            .attack: answer("smash"),
+            .net: (answer("net") + answer("drop")) / 2,
+            .defense: (answer("passive") + answer("stability")) / 2,
+            .speed: answer("drive"),
+            .footwork: answer("footwork"),
+            .tactics: (answer("tactics") + answer("doubles")) / 2
+        ]
+        let values = PlayAxis.allCases.map { axes[$0] ?? 0 }
+        guard let top = values.max(), let low = values.min() else { return nil }
+        let style: PlayStyle
+        if level <= 2 {
+            style = .rookie
+        } else if top - low <= 0.5 {
+            style = .allround
+        } else {
+            let axis = PlayAxis.allCases.first { axes[$0] == top } ?? .attack
+            style = PlayStyle(axis: axis)
+        }
+        // 最强一拍：技术题里等级最高的一项（一样高时按题目顺序）
+        let techniques = questions.filter { $0.kind == .technique }
+        let bestLevel = techniques.map { answer($0.id) }.max() ?? 0
+        let best = techniques.first { answer($0.id) == bestLevel }
+        return PlayProfile(axes: axes, style: style,
+                           bestShot: best.map { AssessmentDimension(id: $0.id, name: $0.title, rating: bestLevel) })
     }
 
     #if DEBUG
@@ -310,5 +500,8 @@ enum SkillAssessment {
         "clear": 4, "smash": 4, "drop": 4, "backhand": 2, "net": 3, "drive": 3, "footwork": 4,
         "passive": 2, "doubles": 2, "stability": 3, "tactics": 2, "standing": 1, "experience": 2, "recency": 0
     ]
+
+    /// 演示：等级卡片截图用，杀球最好（重炮手），等级还是 4
+    static let levelCardDemoAnswers: [String: Int] = demoAnswers.merging(["smash": 5]) { $1 }
     #endif
 }

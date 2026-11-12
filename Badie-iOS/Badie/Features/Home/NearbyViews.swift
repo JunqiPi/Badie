@@ -710,6 +710,7 @@ enum InviteText {
         case "invalid_window", "invalid_slot": return String(localized: "这个时间来不及了")
         case "not_your_turn": return String(localized: "在等对方回复")
         case "invite_expired": return String(localized: "这个邀请已经过期了")
+        case "too_late": return String(localized: "来不及了，换个时间吧")
         case "time_already_set": return String(localized: "时间已经定好了")
         default: return error.localizedDescription
         }
@@ -976,6 +977,11 @@ struct InviteRoomView: View {
             Button("撤回") { withdraw(room) }
                 .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .large, fullWidth: true))
                 .disabled(isWorking)
+        case .open where invite.toId == me:
+            // 换了时间在等对方回：受邀的人也能直接说不了
+            Button("不了") { withdraw(room) }
+                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .large, fullWidth: true))
+                .disabled(isWorking)
         case .started(let gameId):
             Button("看球局") { router.open(.game(id: gameId), in: .games) }
                 .buttonStyle(BrutalButtonStyle(kind: .primary, size: .large, fullWidth: true))
@@ -1007,7 +1013,7 @@ struct InviteRoomView: View {
             do {
                 try await appState.backend.withdrawInvite(room.id)
                 roomManager.reload()
-                appState.showToast(String(localized: "已撤回"))
+                if room.ownerId == me { appState.showToast(String(localized: "已撤回")) } else { Haptics.selection() }
             } catch {
                 errorText = InviteText.error(error)
             }

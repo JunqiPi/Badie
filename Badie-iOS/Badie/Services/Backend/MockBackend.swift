@@ -335,7 +335,7 @@ final class MockBackend {
 
     /// 重新测评：更新问卷等级（每 90 天一次）
     @discardableResult
-    func updateAssessment(_ result: SkillAssessmentResult, now: Date = Date()) throws -> User {
+    func updateAssessment(_ result: SkillAssessmentResult, answers: [String: Int]? = nil, now: Date = Date()) throws -> User {
         guard var user = currentUser else { throw BackendError.notSignedIn }
         if let previous = user.assessment, !previous.canRetake(now: now) {
             throw BackendError.assessmentTooSoon(previous.nextRetakeDate())
@@ -344,7 +344,8 @@ final class MockBackend {
         user.selfReportedLevel = tier.level
         user.selfReportedRating = tier.rating
         user.assessment = SkillAssessmentSummary(level: tier.level, needsCalibration: result.needsCalibration,
-                                                 isReturning: result.isReturning, assessedAt: now, rating: tier.rating)
+                                                 isReturning: result.isReturning, assessedAt: now, rating: tier.rating,
+                                                 answers: answers)
         db.users[user.id] = user
         scheduleSave()
         emit(.userUpdated(user))

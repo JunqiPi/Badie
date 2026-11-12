@@ -239,16 +239,19 @@ struct GameDetailView: View {
                     router.open(.groupChat(threadId: threadId))
                 }
             }
-            actionTile(icon: game.reminderEnabled ? "bell.badge.fill" : "bell.fill",
-                       title: game.reminderEnabled ? String(localized: "已提醒") : String(localized: "提醒"),
-                       tint: game.reminderEnabled ? AppTheme.Colors.lime : AppTheme.Colors.butter) {
-                Task {
-                    let target = !game.reminderEnabled
-                    let ok = await matchManager.setReminder(game, enabled: target)
-                    if ok {
-                        appState.showToast(target ? String(localized: "将在开赛前 1 天、2 小时、15 分钟提醒你") : String(localized: "已关闭提醒"), style: .success)
-                    } else {
-                        appState.showToast(String(localized: "请在系统设置中允许通知"), style: .error)
+            // 还没定具体几点：没有开赛时间可提醒，定好以后再出现
+            if game.isTimeSet {
+                actionTile(icon: game.reminderEnabled ? "bell.badge.fill" : "bell.fill",
+                           title: game.reminderEnabled ? String(localized: "已提醒") : String(localized: "提醒"),
+                           tint: game.reminderEnabled ? AppTheme.Colors.lime : AppTheme.Colors.butter) {
+                    Task {
+                        let target = !game.reminderEnabled
+                        let ok = await matchManager.setReminder(game, enabled: target)
+                        if ok {
+                            appState.showToast(target ? String(localized: "将在开赛前 1 天、2 小时、15 分钟提醒你") : String(localized: "已关闭提醒"), style: .success)
+                        } else {
+                            appState.showToast(String(localized: "请在系统设置中允许通知"), style: .error)
+                        }
                     }
                 }
             }

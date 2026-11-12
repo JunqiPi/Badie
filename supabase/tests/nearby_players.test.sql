@@ -94,8 +94,8 @@ select throws_ok($$ update public.profiles set usual_times = '[{"weekday": 1, "s
 select throws_ok($$ update public.profiles set usual_times = '[{"weekday": 1, "start": "9:00", "end": "14:00"}]' where id = pg_temp.u(1) $$,
                  '23514', null, '时间写成 HH:MM');
 select throws_ok($$ update public.profiles set usual_times = (select jsonb_agg(jsonb_build_object('weekday', 1, 'start', '08:00', 'end', '09:00'))
-                                                             from generate_series(1, 15)) where id = pg_temp.u(1) $$,
-                 '23514', null, '最多 14 段');
+                                                             from generate_series(1, 6)) where id = pg_temp.u(1) $$,
+                 '23514', null, '最多 5 段');
 select is((select x -> 'user' -> 'usual_times' -> 0 ->> 'start' from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) x
            where x -> 'user' ->> 'id' = pg_temp.u(2)::text), null, '别人没设就没有');
 

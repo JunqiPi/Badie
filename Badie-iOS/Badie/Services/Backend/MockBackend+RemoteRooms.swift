@@ -49,7 +49,8 @@ extension MockBackend {
     struct RemoteInvite: Decodable {
         let from: RemoteLobbyUser
         let to: RemoteLobbyUser
-        let awaitingId: String
+        /// 说好、不了、过期以后是 null
+        let awaitingId: String?
         let rounds: Int
         let answerBy: Date
     }
@@ -65,8 +66,12 @@ extension MockBackend {
             !ids.contains(room.id) && room.status.isOpen
                 && (room.contains(me) || room.isWaitlisted(me) || room.invitedUserIds.contains(me))
         }
-        for id in ids.union(stale.map(\.id)) {
+        for id in ids {
             try await loadRemoteRoom(id)
+        }
+        // 旧房间一个个拉：一个出错不影响别的，也不让以后的刷新卡住
+        for room in stale where !ids.contains(room.id) {
+            try? await loadRemoteRoom(room.id)
         }
     }
 

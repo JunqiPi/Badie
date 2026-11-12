@@ -982,7 +982,8 @@ struct OnboardingFlow: View {
                 location: locationManager.currentLocation.map { Coordinate($0.coordinate) },
                 assessment: result.map {
                     SkillAssessmentSummary(level: level, needsCalibration: $0.needsCalibration,
-                                           isReturning: $0.isReturning, assessedAt: Date(), rating: $0.tier.rating)
+                                           isReturning: $0.isReturning, assessedAt: Date(), rating: $0.tier.rating,
+                                           answers: form.assessmentAnswers)
                 }
             )
             applyLobbyVisibility()

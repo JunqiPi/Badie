@@ -157,7 +157,12 @@ final class MatchManager: ObservableObject {
     func game(id: String) -> Game? { games.first { $0.id == id } ?? backend.game(id: id) }
 
     func reloadGames() {
+        let before = games
         games = backend.games()
+        // 没定时间的球局定好了时间（自己定的或对方定的）：开着的提醒按新的开始时间重排
+        for game in games where game.isTimeSet && before.contains(where: { $0.id == game.id && !$0.isTimeSet }) {
+            Task { await ReminderService.rescheduleIfPending(for: game) }
+        }
     }
 
     func user(id: String) -> User? { backend.user(id: id) }

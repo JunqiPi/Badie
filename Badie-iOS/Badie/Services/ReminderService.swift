@@ -54,6 +54,14 @@ enum ReminderService {
         return count
     }
 
+    /// 开始时间变了（没定时间的球局定好了）：之前开着提醒的按新时间重排；没开过的不动，也不弹授权
+    static func rescheduleIfPending(for game: Game) async {
+        let ids = Set(offsets.map { identifier(game.id, $0.id) })
+        let pending = await UNUserNotificationCenter.current().pendingNotificationRequests()
+        guard pending.contains(where: { ids.contains($0.identifier) }) else { return }
+        await schedule(for: game)
+    }
+
     static func cancel(gameId: String) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
             withIdentifiers: offsets.map { identifier(gameId, $0.id) }

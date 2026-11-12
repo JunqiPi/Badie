@@ -91,6 +91,7 @@ struct VenueDetailPage: View {
 
 struct LevelGuidePage: View {
     @EnvironmentObject private var appState: AppState
+    @State private var cardData: LevelCardData?
 
     private var guideScrollLevel: Int? {
         #if DEBUG
@@ -102,11 +103,31 @@ struct LevelGuidePage: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            ScreenHeader(title: String(localized: "等级"))
+            ScreenHeader(title: String(localized: "等级")) {
+                // 定过级才有卡片可分享
+                if let user = appState.currentUser, user.assessment != nil || user.verifiedRating != nil {
+                    IconButton(systemName: "square.and.arrow.up", accessibilityLabel: String(localized: "分享等级卡片")) {
+                        cardData = LevelCardData.make(user: user, appState: appState)
+                    }
+                }
+            }
             SkillLevelGuideView(highlight: appState.currentUser?.displayTier, showsCloseButton: false,
                                 scrollLevel: guideScrollLevel)
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
+        .sheet(item: $cardData) { data in
+            LevelCardSheet(data: data)
+                .presentationDragIndicator(.visible)
+        }
+        .onAppear {
+            #if DEBUG
+            // 截图：直接打开等级卡片
+            if appState.opensLevelCardDemo, let user = appState.currentUser {
+                appState.opensLevelCardDemo = false
+                cardData = LevelCardData.make(user: user, appState: appState)
+            }
+            #endif
+        }
     }
 }
 

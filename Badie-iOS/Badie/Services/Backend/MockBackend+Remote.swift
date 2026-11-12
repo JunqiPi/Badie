@@ -33,6 +33,17 @@ extension MockBackend {
         let preferredMode: String?
         /// 空闲时间（附近的人能看到）
         let usualTimes: [ServerUsualTime]?
+        /// 问卷答案（题目 ID → 选项序号），算打法用；格式不对时当作没有
+        let assessment: AssessmentAnswers?
+    }
+
+    /// 问卷答案：解析不了就是 nil，不让整份资料读不出来
+    struct AssessmentAnswers: Decodable {
+        let value: [String: Int]?
+
+        init(from decoder: Decoder) throws {
+            value = try? decoder.singleValueContainer().decode([String: Int].self)
+        }
     }
 
     private struct FavoriteRow: Decodable {
@@ -238,6 +249,7 @@ extension MockBackend {
                 user.assessment = SkillAssessmentSummary(level: tier.level, needsCalibration: false, isReturning: false,
                                                          assessedAt: assessedAt, rating: profile.rating)
             }
+            user.assessment?.answers = profile.assessment?.value
         } else {
             user.assessment = nil
             user.assessmentSkippedAt = user.assessmentSkippedAt ?? Date()
@@ -270,7 +282,7 @@ extension MockBackend {
     /// 定级（注册后补测或 90 天后重测）
     @discardableResult
     func saveAssessment(_ result: SkillAssessmentResult, answers: [String: Int]) async throws -> User {
-        guard let remote else { return try updateAssessment(result) }
+        guard let remote else { return try updateAssessment(result, answers: answers) }
         let tier = min(result.tier, SkillAssessment.maxTier)
         try await remote.call("save_assessment", ["p_rating": tier.rating, "p_answers": answers])
         guard var user = try await refreshRemoteProfile() else { throw RemoteError.notSignedIn }

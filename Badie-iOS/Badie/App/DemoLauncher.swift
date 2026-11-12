@@ -83,6 +83,13 @@ enum DemoLauncher {
             }
         case "levelGuide":
             router.show(.levelGuide, in: .profile)
+        case "levelCard":
+            // 等级卡片：重炮手、4 级，常去 LABC、周三晚上有空
+            if let result = SkillAssessment.evaluate(SkillAssessment.levelCardDemoAnswers) {
+                _ = try? backend.updateAssessment(result, answers: SkillAssessment.levelCardDemoAnswers)
+            }
+            environment.appState.opensLevelCardDemo = true
+            router.show(.levelGuide, in: .profile)
         case "levelGuideElite":
             // 对照表滚到 6、7 级：俱乐部高手 → 州级
             environment.appState.guideScrollLevel = 6

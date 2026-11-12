@@ -260,11 +260,13 @@ extension MockBackend {
         try? await loadRemoteRoom(roomId)
     }
 
-    /// 发出的邀请撤回（对方不会收到通知）
+    /// 发出的邀请撤回（对方不会收到通知）；受邀的人在等对方回时退出 = 不了
     func withdrawInvite(_ roomId: String) async throws {
         guard let remote else {
-            guard var room = db.rooms[roomId], room.status.isOpen, room.ownerId == currentUserId else { return }
-            room.status = .closed(.ownerClosed)
+            guard var room = db.rooms[roomId], room.status.isOpen, let me = currentUserId,
+                  room.ownerId == me || room.invite?.toId == me else { return }
+            room.status = .closed(room.ownerId == me ? .ownerClosed : .declined)
+            room.invite?.awaitingId = nil
             db.rooms[roomId] = room
             scheduleSave()
             emit(.roomsChanged)

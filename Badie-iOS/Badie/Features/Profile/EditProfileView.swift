@@ -67,6 +67,13 @@ struct EditProfileView: View {
             .padding(.vertical, AppTheme.Spacing.md)
         }
         .onAppear(perform: load)
+        .onAppear {
+            // 从等级页的链接进来、还没定级：直接开始测级
+            if appState.opensAssessment {
+                appState.opensAssessment = false
+                showReassess = true
+            }
+        }
         .sheet(isPresented: $showReassess) {
             ReassessSheet()
                 .presentationDragIndicator(.visible)

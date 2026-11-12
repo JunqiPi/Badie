@@ -78,8 +78,27 @@ struct PlayWindow: Codable, Hashable {
     var displayDaypart: Daypart? {
         if let daypart { return daypart }
         guard isSingleDay else { return nil }
-        let day = Calendar.current.startOfDay(for: start)
-        return Daypart.containing(start: Int(start.timeIntervalSince(day) / 60), end: Int(end.timeIntervalSince(day) / 60))
+        let calendar = Calendar.current
+        // 结束在第二天 0 点算 24:00
+        let endMinute = calendar.isDate(start, inSameDayAs: end)
+            ? Self.clockMinutes(end, calendar: calendar) : 24 * 60 + Self.clockMinutes(end, calendar: calendar)
+        return Daypart.containing(start: Self.clockMinutes(start, calendar: calendar), end: endMinute)
+    }
+
+    /// 当天的钟点（从 0 点算的分钟）：按钟面算，夏令时切换那天也对
+    static func clockMinutes(_ date: Date, calendar: Calendar) -> Int {
+        let parts = calendar.dateComponents([.hour, .minute], from: date)
+        return (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+    }
+
+    /// 某天的某个钟点（分钟，24:00 = 第二天 0 点）：按钟面设置，夏令时切换那天也对
+    static func time(on date: Date, minutes: Int, calendar: Calendar) -> Date? {
+        guard minutes >= 24 * 60 else {
+            return calendar.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: date)
+        }
+        guard let next = calendar.date(byAdding: .day, value: minutes / (24 * 60), to: calendar.startOfDay(for: date)) else { return nil }
+        let rest = minutes % (24 * 60)
+        return calendar.date(bySettingHour: rest / 60, minute: rest % 60, second: 0, of: next)
     }
 
     /// 最早能开始的时间：现在过 30 分钟后的下一个整半点（和服务器一致）
@@ -107,8 +126,7 @@ struct PlayWindow: Codable, Hashable {
     func isPossible(now: Date = Date()) -> Bool { !possibleStarts(now: now).isEmpty }
 
     private func fits(_ begin: Date, calendar: Calendar) -> Bool {
-        let day = calendar.startOfDay(for: begin)
-        let startMinute = Int(begin.timeIntervalSince(day) / 60)
+        let startMinute = Self.clockMinutes(begin, calendar: calendar)
         let endMinute = startMinute + durationMinutes
         if let daypart { return startMinute >= daypart.minutes.start && endMinute <= daypart.minutes.end }
         return startMinute >= 6 * 60 && endMinute <= 24 * 60
@@ -119,10 +137,9 @@ struct PlayWindow: Codable, Hashable {
     /// 某一天里从 startMinutes 到 endMinutes（分钟）
     static func on(_ date: Date, startMinutes: Int, endMinutes: Int, daypart: Daypart? = nil) -> PlayWindow? {
         let calendar = Calendar.current
-        let base = calendar.startOfDay(for: date)
         guard endMinutes > startMinutes,
-              let start = calendar.date(byAdding: .minute, value: startMinutes, to: base),
-              let end = calendar.date(byAdding: .minute, value: endMinutes, to: base) else { return nil }
+              let start = time(on: date, minutes: startMinutes, calendar: calendar),
+              let end = time(on: date, minutes: endMinutes, calendar: calendar), end > start else { return nil }
         return PlayWindow(start: start, end: end, daypart: daypart)
     }
 
@@ -219,8 +236,8 @@ struct PlayWindow: Codable, Hashable {
 struct LobbyInvite: Codable, Hashable {
     var fromId: String
     var toId: String
-    /// 轮到谁回
-    var awaitingId: String
+    /// 轮到谁回；说好、不了、过期以后没人要回（服务器给 null）
+    var awaitingId: String?
     /// 换过几次时间
     var rounds: Int
     /// 过了这个时间没人回就失效

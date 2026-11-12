@@ -83,7 +83,11 @@ final class AppState: ObservableObject {
     var verificationDemo: (kind: VerificationStatus, tier: SkillTier, link: String, name: String, note: String)?
     /// 演示/截图：等级对照表打开时滚到哪一级
     var guideScrollLevel: Int?
+    /// 演示/截图：打开“等级”页时直接弹出等级卡片
+    var opensLevelCardDemo = false
     #endif
+    /// 点开等级页的链接、但还没定级：打开编辑资料时直接开始测级
+    var opensAssessment = false
 
     private static let appearanceKey = "appearance"
     private var toastTask: Task<Void, Never>?
