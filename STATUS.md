@@ -12,7 +12,7 @@
 | iPhone 1.0.2 | Build `20261108.2349`（main `29b144b`），**已上架**（2026-11-10 查到状态是 READY_FOR_DISTRIBUTION） |
 | iPhone 1.0.3 | 苹果已批准（教练带课的球群、费用说明，Build `20261111.21`） |
 | iPhone 1.0.4 | 已上线（全 App 少字改版，Build `20261111.2236`） |
-| iPhone 1.0.5 | 常在附近打的人（按天看人的卡片后面接着刷，右滑=想一起打）。Build `20261112.0634`（main `223999d`）已在 TestFlight；数据库和网站已上线。**1.0.4 还在审核，App Store Connect 不让新建 1.0.5**：1.0.4 过审后，在 main 上手动运行 Attach TestFlight build（mode=attach, version=1.0.5，会自动新建版本并复制审核信息）、Update App Store text（upload, 1.0.5）；商店截图用 App Store screenshots 运行 `43169030622` 上传 |
+| iPhone 1.0.5 | 2026-11-12 建好，准备提交：附近的人（大厅、右滑发邀请局、粗略时间、换个时间、定时间、空闲时间上资料）、首页改成“发现”刷卡页（原首页内容并进球局）、等级卡片和打法分析（8 种，插画是占位，用户会提供正式插画，换 web/public/cards/<打法>.svg 和 iOS Assets 里的 Play-<打法>）、不用注册测级。Build `20261112.1955`（main `43fbb84`）已挂上；更新说明、中文副标题“羽你一起进步”、商店截图（App Store screenshots 运行 `43296270914`）已写入。**只差用户点“提交审核”** |
 | 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261209000000_coached_groups.sql`） |
 
 - 1.0.2 的 10 种语言更新说明、推广文本在 `Badie-iOS/docs/STORE_LISTING.md`。给用户时**直接贴内容**，不要只给路径。
