@@ -96,7 +96,109 @@ struct LogoPattern: View {
     }
 }
 
-/// 一张铺满的卡片：上面是背景照片或颜色，下面是等级、时间、球馆
+/// 发现页的大卡片：封面（照片，或颜色 + 大头像）铺满，左上角一个白色小标签，底部压暗写名字、等级、一行信息
+struct CoverCard<Footer: View>: View {
+    let user: User?
+    /// 左上角：“3.2 公里 · 常去 X” / “周六 14:00–17:00 · 单打”
+    let pill: String?
+    /// 名字下面一行：“双打 · 靠谱”
+    let line: String
+    var onProfile: (() -> Void)?
+    @ViewBuilder var footer: () -> Footer
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
+        ZStack(alignment: .bottomLeading) {
+            if let user {
+                CardCover(color: user.cardColor, photo: AvatarPhotos.cardImage(userId: user.id, avatar: user.avatar)) {
+                    // 没照片：大头像往上挪，让开底部的名字
+                    AvatarView(user: user, size: 120)
+                        .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
+                        .padding(.bottom, 100)
+                }
+            } else {
+                AppTheme.Colors.surfaceMuted
+            }
+            info
+        }
+        .overlay(alignment: .topLeading) {
+            if let pill, !pill.isEmpty {
+                Text(pill)
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.onAccent)
+                    .lineLimit(1)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Color.white))
+                    .overlay(Capsule().strokeBorder(AppTheme.Colors.onAccent, lineWidth: 1.5))
+                    .padding(AppTheme.Spacing.md)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // 小屏（iPhone SE）也放得下底部的名字和空闲时间
+        .frame(minHeight: 240)
+        .contentShape(shape)
+        .onTapGesture { onProfile?() }
+        .clipShape(shape)
+        .overlay(shape.strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+        .accessibilityElement(children: .contain)
+        .accessibilityAction(named: Text("看资料")) { onProfile?() }
+    }
+
+    private var info: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            if let user {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    NicknameText(user: user)
+                        .font(AppTheme.Typography.title2)
+                    LevelBadge(tier: user.displayTier)
+                        .fixedSize()
+                }
+            }
+            if !line.isEmpty {
+                Text(line)
+                    .font(AppTheme.Typography.subheadlineBold)
+                    .lineLimit(1)
+            }
+            footer()
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(AppTheme.Spacing.lg)
+        .padding(.top, AppTheme.Spacing.xxxl)
+        .background(LinearGradient(colors: [.black.opacity(0), .black.opacity(0.72)], startPoint: .top, endPoint: .bottom))
+    }
+}
+
+/// 卡片下面的圆按钮（✕ ♥ ★），带贴纸投影
+struct RoundActionLabel: View {
+    let icon: String
+    let tint: Color
+    var foreground: Color = AppTheme.Colors.onAccent
+    var size: CGFloat = 64
+
+    var body: some View {
+        Image(systemName: icon)
+            .font(.system(size: size * 0.36, weight: .heavy))
+            .foregroundStyle(foreground)
+            .frame(width: size, height: size)
+            .background(Circle().fill(tint))
+            .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
+            .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
+    }
+}
+
+/// 近 180 天爽约过：卡片底部一个粉色小标签
+struct NoShowPill: View {
+    let count: Int
+
+    var body: some View {
+        TagPill(text: String(localized: "近 180 天爽约 \(count) 次"), icon: "exclamationmark.triangle.fill", fill: AppTheme.Colors.pink)
+    }
+}
+
+/// 某天的约球请求：时间、单打双打写在左上角，下面一行是约在哪家
 struct DayCardView: View {
     struct Details {
         var mode: String
@@ -111,68 +213,19 @@ struct DayCardView: View {
     var onProfile: (() -> Void)?
 
     var body: some View {
-        let photo = user.flatMap { AvatarPhotos.cardImage(userId: $0.id, avatar: $0.avatar) }
-        VStack(alignment: .leading, spacing: 0) {
-            Group {
-                if let user {
-                    CardCover(color: user.cardColor, photo: photo) {
-                        AvatarView(user: user, size: 140)
-                            .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
-                    }
-                } else {
-                    AppTheme.Colors.surfaceMuted
-                }
-            }
-            .overlay(alignment: .bottomLeading) {
-                if let user, photo != nil {
-                    // 有背景照片：头像小一点，压在照片左下角
-                    AvatarView(user: user, size: 64)
-                        .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 2, y: 3))
-                        .padding(.leading, AppTheme.Spacing.lg)
-                        .offset(y: 32)
-                }
-            }
-            .zIndex(1)
-            info
-                .padding(.top, photo != nil ? 36 : 0)
+        CoverCard(user: user, pill: pill, line: line, onProfile: onProfile) {
+            if details.recentNoShows > 0 { NoShowPill(count: details.recentNoShows) }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppTheme.Colors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous))
-        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
     }
 
-    private var info: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            if let user {
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    NicknameText(user: user)
-                        .font(AppTheme.Typography.title2)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                    LevelBadge(tier: user.displayTier)
-                }
-            }
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                Label(details.mode, systemImage: "figure.badminton")
-                Label("\(details.startsAt.formatted(date: .omitted, time: .shortened))–\(details.endsAt.formatted(date: .omitted, time: .shortened))",
-                      systemImage: "clock")
-                ForEach(details.venues, id: \.self) { venue in
-                    Label(venue, systemImage: "mappin.and.ellipse").lineLimit(1)
-                }
-                if details.recentNoShows > 0 {
-                    Label(String(localized: "近 180 天爽约 \(details.recentNoShows) 次"), systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(AppTheme.Colors.danger)
-                }
-            }
-            .font(AppTheme.Typography.bodyBold)
-            .foregroundStyle(AppTheme.Colors.ink)
-            if let onProfile {
-                Button("看资料", action: onProfile)
-                    .buttonStyle(TextActionStyle())
-            }
-        }
-        .padding(AppTheme.Spacing.lg)
+    /// “周六 14:00–17:00 · 单打”
+    private var pill: String {
+        "\(DateText.weekday(details.startsAt)) \(DateText.time(details.startsAt))–\(DateText.time(details.endsAt)) · \(details.mode)"
+    }
+
+    private var line: String {
+        [details.venues.first, details.recentNoShows == 0 ? String(localized: "靠谱") : nil]
+            .compactMap { $0 }
+            .joined(separator: " · ")
     }
 }

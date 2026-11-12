@@ -116,7 +116,7 @@ enum DemoLauncher {
                 router.show(.groupChat(threadId: thread.id), in: .messages)
             }
         case "home", "nearbyCards":
-            // 发现页（打开 App 就是这页）：附近的人，卡片上有常去的球馆和常有空的时间；上面一排待办小标签（挑战、好友申请）
+            // 发现页（打开 App 就是这页）：附近的人的大卡片（常去的球馆、常有空的时间）；上面一排圆头像：两个约你、一个挑战、一个加你（示例数据自带）
             router.selectedTab = .home
             environment.appState.discoverDay = nil
         case "dayCards":

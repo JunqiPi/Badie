@@ -46,24 +46,13 @@ extension InboxItem.Kind {
 }
 
 extension InboxItem.Kind {
-    /// 和约球有关、要你处理或知道的：发现页最上面列出来
-    var isActionable: Bool {
-        switch self {
-        case .gameCancelled, .kicked, .roomClosed, .challenge, .roomInvite, .roomJoined, .waitlistPromoted,
-             .matchOffer, .gameConfirmed, .friendRequest, .messageRequest, .gameTimeSet:
-            return true
-        default:
-            return false
-        }
-    }
-
     /// 球局没了：打开 App 时直接弹窗告诉，点“知道了”才算看过
     var isUrgent: Bool {
         self == .gameCancelled || self == .kicked || self == .roomClosed
     }
 }
 
-/// 点开一条通知：标为已读，再打开对应的页面（通知中心、发现页的待办和重要通知弹窗共用）
+/// 点开一条通知：标为已读，再打开对应的页面（通知中心、发现页的圆头像和重要通知弹窗共用）
 @MainActor
 struct InboxNavigator {
     let router: Router

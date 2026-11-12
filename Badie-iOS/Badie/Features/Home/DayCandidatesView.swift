@@ -1,7 +1,7 @@
 import PhotosUI
 import SwiftUI
 
-/// 发现页中间的一叠卡片，左右滑（日期、筛选按钮、规则在 DiscoverView 的头部）。
+/// 发现页中间的一叠卡片，左右滑，下面 ✕ ♥ ★ 三个按钮（选哪天、筛选按钮在 DiscoverView 的头部）。
 /// - 选了某天（day 不为 nil）：这天附近在找人、和我水平对得上的球友。卡片就是对方的约球请求（项目、时间都定好了）。
 ///   右滑和点爱心一样，直接约：单打发约球邀请，TA 确认就成局；双打替我开一个公开的双打局并邀请 TA，附近的人可以加入补齐。
 /// - “附近的人”（day 为 nil）：常在附近打的人，不分日期。右滑是约 TA，选个大概的时间和球馆发一个邀请。
@@ -123,9 +123,14 @@ struct DayCandidatesView: View {
                 }
                 .frame(maxHeight: .infinity)
                 .padding(.horizontal, AppTheme.Spacing.screen)
-                HStack(spacing: AppTheme.Spacing.xxl) {
-                    roundButton("xmark", tint: AppTheme.Colors.surface, label: String(localized: "跳过")) { skip(card) }
-                    roundButton("heart.fill", tint: AppTheme.Colors.lime, label: likeTitle) { like(card) }
+                // ✕ 跳过 / ♥ 约 TA / ★ 加球友（★ 不翻页）
+                HStack(spacing: AppTheme.Spacing.xl) {
+                    roundButton("xmark", tint: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink,
+                                label: String(localized: "跳过")) { skip(card) }
+                    roundButton("heart.fill", tint: AppTheme.Colors.lime, size: 80, label: likeTitle) { like(card) }
+                    starButton(card)
+                        // 换一张卡，★ 的状态（已申请）跟着重置
+                        .id(card.id)
                 }
                 .disabled(leaving)
             } else if (lobbyOnly ? !nearby.isEmpty : !cards.isEmpty) {
@@ -272,17 +277,21 @@ struct DayCandidatesView: View {
         return [first] + card.venues.filter { $0.id != first.id }
     }
 
-    private func roundButton(_ icon: String, tint: Color, label: String, action: @escaping () -> Void) -> some View {
+    private func roundButton(_ icon: String, tint: Color, foreground: Color = AppTheme.Colors.onAccent, size: CGFloat = 64,
+                             label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: icon)
-                .font(.system(size: 26, weight: .heavy))
-                .foregroundStyle(AppTheme.Colors.ink)
-                .frame(width: 72, height: 72)
-                .background(Circle().fill(tint))
-                .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
+            RoundActionLabel(icon: icon, tint: tint, foreground: foreground, size: size)
         }
         .buttonStyle(PressableStyle())
         .accessibilityLabel(label)
+    }
+
+    @ViewBuilder
+    private func starButton(_ card: DeckCard) -> some View {
+        switch card {
+        case .day(let candidate): FriendStarButton(userId: candidate.userId)
+        case .nearby(let player): FriendStarButton(userId: player.userId, isFriend: player.isFriend, request: player.friendRequest)
+        }
     }
 
     // MARK: Actions

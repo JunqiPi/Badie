@@ -3,131 +3,73 @@ import SwiftUI
 
 // MARK: - 附近的人：卡片
 
-/// 附近的人：和按天的卡片同一个样子，只是不写时间，写 TA 常去的球馆、常有空的时间
+/// 附近的人：和按天的卡片同一个样子，只是不写时间，左上角写 TA 常去的球馆，底部是常有空的时间
 struct NearbyCardView: View {
     let user: User?
     let card: MockBackend.NearbyPlayer
-    /// 第一行显示的球馆（选了球馆筛选时是选的那家）
+    /// 左上角显示的球馆（选了球馆筛选时是选的那家）
     var venue: MockBackend.DayCandidate.Venue?
     var onProfile: (() -> Void)?
     /// 点了 TA 的某段空闲时间：约 TA 这一段最近的一次
     var onInvite: ((RecurringTimeSlot) -> Void)?
 
     var body: some View {
-        let photo = user.flatMap { AvatarPhotos.cardImage(userId: $0.id, avatar: $0.avatar) }
-        VStack(alignment: .leading, spacing: 0) {
-            Group {
-                if let user {
-                    CardCover(color: user.cardColor, photo: photo) {
-                        AvatarView(user: user, size: 140)
-                            .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
-                    }
-                } else {
-                    AppTheme.Colors.surfaceMuted
-                }
-            }
-            .overlay(alignment: .topLeading) {
-                NearbyChip().padding(AppTheme.Spacing.md)
-            }
-            .overlay(alignment: .bottomLeading) {
-                if let user, photo != nil {
-                    AvatarView(user: user, size: 64)
-                        .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 2, y: 3))
-                        .padding(.leading, AppTheme.Spacing.lg)
-                        .offset(y: 32)
-                }
-            }
-            .zIndex(1)
-            info
-                .padding(.top, photo != nil ? 36 : 0)
+        CoverCard(user: user, pill: pill, line: line, onProfile: onProfile) {
+            if card.recentNoShows > 0 { NoShowPill(count: card.recentNoShows) }
+            if !card.usualTimes.isEmpty { UsualTimeChips(slots: card.usualTimes, onTap: onInvite) }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppTheme.Colors.surface)
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous))
-        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
     }
 
-    private var info: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            if let user {
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    NicknameText(user: user)
-                        .font(AppTheme.Typography.title2)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                    LevelBadge(tier: user.displayTier)
-                    if card.recentNoShows == 0 { ReliableBadge() }
-                }
-            }
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                if let name = (venue ?? card.venues.first)?.name {
-                    Label(String(localized: "常去 \(name)"), systemImage: "mappin.and.ellipse").lineLimit(1)
-                }
-                if let mode = card.preferredMode {
-                    Label(mode.title, systemImage: "figure.badminton")
-                }
-                if card.recentNoShows > 0 {
-                    Label(String(localized: "近 180 天爽约 \(card.recentNoShows) 次"), systemImage: "exclamationmark.triangle.fill")
-                        .foregroundStyle(AppTheme.Colors.danger)
-                }
-            }
-            .font(AppTheme.Typography.bodyBold)
-            .foregroundStyle(AppTheme.Colors.ink)
-            if !card.usualTimes.isEmpty {
-                UsualTimeChips(slots: card.usualTimes, onTap: onInvite)
-            }
-            HStack(spacing: AppTheme.Spacing.md) {
-                if let onProfile {
-                    Button("看资料", action: onProfile)
-                        .buttonStyle(TextActionStyle())
-                }
-                Spacer(minLength: 0)
-                FriendQuickButton(userId: card.userId, isFriend: card.isFriend, request: card.friendRequest)
-            }
-        }
-        .padding(AppTheme.Spacing.lg)
+    /// “3.2 公里 · 常去 X”（不知道距离就只写球馆）
+    private var pill: String? {
+        guard let place = venue ?? card.venues.first else { return nil }
+        return [place.km.map { DistanceFormatter.string(km: $0) }, String(localized: "常去 \(place.name)")]
+            .compactMap { $0 }
+            .joined(separator: " · ")
+    }
+
+    /// “双打 · 靠谱”
+    private var line: String {
+        [card.preferredMode?.title, card.recentNoShows == 0 ? String(localized: "靠谱") : nil]
+            .compactMap { $0 }
+            .joined(separator: " · ")
     }
 }
 
-/// “常有空”：TA 的空闲时间，一段一个小标签（最多 4 个，多了“+N”）。点一个就约这一段
+/// TA 的空闲时间：最近的两段做成小胶囊，多了“+N”。点一个就约这一段
 struct UsualTimeChips: View {
     let slots: [RecurringTimeSlot]
     var onTap: ((RecurringTimeSlot) -> Void)?
 
     var body: some View {
         let sorted = UsualTimeText.sortedByNext(slots)
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-            Text("常有空")
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-            FlowLayout(spacing: 6) {
-                ForEach(sorted.prefix(4)) { slot in
-                    Button {
-                        onTap?(slot)
-                    } label: {
-                        Text(UsualTimeText.chip(slot))
-                            .font(AppTheme.Typography.footnoteBold)
-                            .foregroundStyle(AppTheme.Colors.onAccent)
-                            .padding(.horizontal, 10)
-                            .frame(minHeight: 32)
-                            .background(Capsule().fill(AppTheme.Colors.lime))
-                            .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
-                    }
-                    .buttonStyle(PressableStyle())
-                    .disabled(onTap == nil)
-                    .accessibilityLabel(Text("约 \(UsualTimeText.chip(slot))"))
+        HStack(spacing: 6) {
+            ForEach(sorted.prefix(2)) { slot in
+                Button {
+                    onTap?(slot)
+                } label: {
+                    Text(UsualTimeText.chip(slot))
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.onAccent)
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .frame(minHeight: 32)
+                        .background(Capsule().fill(AppTheme.Colors.lime))
+                        .overlay(Capsule().strokeBorder(AppTheme.Colors.onAccent, lineWidth: 1.5))
                 }
-                if sorted.count > 4 {
-                    TagPill(text: "+\(sorted.count - 4)", fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.inkSecondary)
-                }
+                .buttonStyle(PressableStyle())
+                .disabled(onTap == nil)
+                .accessibilityLabel(Text("约 \(UsualTimeText.chip(slot))"))
+            }
+            if sorted.count > 2 {
+                TagPill(text: "+\(sorted.count - 2)", fill: AppTheme.Colors.lime)
             }
         }
     }
 }
 
-/// 加球友 / 已申请 / 同意 / 发消息（加球友不占每天约人的名额）
-struct FriendQuickButton: View {
+/// ★ 加球友：不占每天约人的名额，也不翻到下一张。已是球友就发消息，TA 申请过我就同意，已申请就说一声
+struct FriendStarButton: View {
     let userId: String
     /// 服务器给的关系（缓存里还没有时用）
     var isFriend = false
@@ -140,36 +82,48 @@ struct FriendQuickButton: View {
     @State private var becameFriends = false
     @State private var isWorking = false
 
-    var body: some View {
-        Group {
-            if isFriend || becameFriends || friendManager.isFriend(userId) {
-                Button {
-                    router.open(.chat(userId: userId), in: .messages)
-                } label: {
-                    Label("发消息", systemImage: "bubble.left.fill")
-                }
-                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
-            } else if requested || request == .sent || friendManager.hasPendingRequest(to: userId) {
-                Button("已申请") {}
-                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
-                    .disabled(true)
-            } else if request == .received || friendManager.incomingRequest(from: userId) != nil {
-                Button("同意") { add() }
-                    .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
-            } else {
-                Button {
-                    add()
-                } label: {
-                    Label("加球友", systemImage: "person.badge.plus")
-                }
-                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
-            }
-        }
-        .disabled(isWorking)
+    private enum Status { case friend, sent, received, none }
+
+    private var status: Status {
+        if isFriend || becameFriends || friendManager.isFriend(userId) { return .friend }
+        if requested || request == .sent || friendManager.hasPendingRequest(to: userId) { return .sent }
+        if request == .received || friendManager.incomingRequest(from: userId) != nil { return .received }
+        return .none
     }
 
-    /// 对方也申请过我：同意（服务器上再申请一次就是同意）；否则发申请
+    var body: some View {
+        let current = status
+        Button {
+            tap(current)
+        } label: {
+            RoundActionLabel(icon: current == .friend ? "bubble.left.fill" : "star.fill", tint: AppTheme.Colors.butter)
+                .opacity(current == .sent ? 0.45 : 1)
+        }
+        .buttonStyle(PressableStyle())
+        .disabled(isWorking)
+        .accessibilityLabel(label(current))
+    }
+
+    private func label(_ status: Status) -> String {
+        switch status {
+        case .friend: return String(localized: "发消息")
+        case .sent: return String(localized: "已申请")
+        case .received: return String(localized: "通过好友申请")
+        case .none: return String(localized: "加球友")
+        }
+    }
+
+    private func tap(_ status: Status) {
+        switch status {
+        case .friend: router.open(.chat(userId: userId), in: .messages)
+        case .sent: appState.showToast(String(localized: "已申请，等待通过"))
+        case .received, .none: add()
+        }
+    }
+
+    /// TA 也申请过我：同意（服务器上再申请一次就是同意）；否则发申请
     private func add() {
+        guard !isWorking else { return }
         isWorking = true
         Task {
             defer { isWorking = false }
@@ -193,13 +147,6 @@ struct FriendQuickButton: View {
                 appState.showError(error)
             }
         }
-    }
-}
-
-/// 卡片左上角的小标签
-struct NearbyChip: View {
-    var body: some View {
-        TagPill(text: String(localized: "常在附近"), fill: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
     }
 }
 

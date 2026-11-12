@@ -25,16 +25,11 @@ struct MyCardPreview: View {
                 .frame(maxHeight: .infinity)
                 .padding(.horizontal, AppTheme.Spacing.screen)
 
-            // 和真卡片一样的两个按钮，预览里按不了
-            HStack(spacing: AppTheme.Spacing.xxl) {
-                ForEach([("xmark", AppTheme.Colors.surface), ("heart.fill", AppTheme.Colors.lime)], id: \.0) { icon, tint in
-                    Image(systemName: icon)
-                        .font(.system(size: 26, weight: .heavy))
-                        .foregroundStyle(AppTheme.Colors.ink)
-                        .frame(width: 72, height: 72)
-                        .background(Circle().fill(tint))
-                        .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: AppTheme.Stroke.width))
-                }
+            // 和真卡片一样的三个按钮，预览里按不了
+            HStack(spacing: AppTheme.Spacing.xl) {
+                RoundActionLabel(icon: "xmark", tint: AppTheme.Colors.surface, foreground: AppTheme.Colors.ink)
+                RoundActionLabel(icon: "heart.fill", tint: AppTheme.Colors.lime, size: 80)
+                RoundActionLabel(icon: "star.fill", tint: AppTheme.Colors.butter)
             }
             .opacity(0.35)
             .accessibilityHidden(true)
