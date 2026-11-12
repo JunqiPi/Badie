@@ -9,11 +9,9 @@ struct RouteDestination: View {
         case .game(let id):
             GameDetailView(gameId: id)
         case .room(let id):
-            RoomLobbyView(roomId: id)
+            RoomRouteView(roomId: id)
         case .createRoom(let mode, let invitee):
             CreateRoomView(initialMode: mode, inviteeId: invitee)
-        case .createRoomWith(let invitee, let venueId, let startsAt, let endsAt):
-            CreateRoomView(inviteeId: invitee, initialVenueId: venueId, initialStart: startsAt, initialEnd: endsAt)
         case .joinRoom(let code):
             JoinRoomView(initialCode: code ?? "")
         case .publicGames:

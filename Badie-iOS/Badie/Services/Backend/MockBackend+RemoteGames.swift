@@ -98,6 +98,12 @@ extension MockBackend {
         let rounds: Rounds?
         let reviewUntil: Date
         let players: [RemotePlayer]?
+        /// 附近的人里约的球局还没定具体几点：time_set = false，starts_at / ends_at 就是窗口
+        let timeSet: Bool?
+        let windowStart: Date?
+        let windowEnd: Date?
+        let durationMinutes: Int?
+        let daypart: String?
     }
 
     // MARK: 刷新
@@ -370,7 +376,9 @@ extension MockBackend {
             result: mine.map { report in
                 GameResult(didWin: report.unsure ? nil : report.winningTeam.map { $0 == myTeam }, score: remote.score ?? "")
             },
-            cancelledBy: nil, cancelledLate: false, reminderEnabled: cached?.reminderEnabled ?? true, resultReports: reports
+            cancelledBy: nil, cancelledLate: false, reminderEnabled: cached?.reminderEnabled ?? true, resultReports: reports,
+            window: Self.window(timeSet: remote.timeSet, start: remote.windowStart, end: remote.windowEnd,
+                                daypart: remote.daypart, duration: remote.durationMinutes)
         )
     }
 

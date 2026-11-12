@@ -31,6 +31,8 @@ extension MockBackend {
         let friendCode: String?
         /// 常打单打还是双打（null = 都行）；常在附近的卡片和筛选用
         let preferredMode: String?
+        /// 空闲时间（附近的人能看到）
+        let usualTimes: [ServerUsualTime]?
     }
 
     private struct FavoriteRow: Decodable {
@@ -216,6 +218,7 @@ extension MockBackend {
         if profile.preferredMode == nil, let mode = user.preferredMode {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["preferred_mode": mode.serverValue])
         }
+        syncUsualTimes(profile.usualTimes ?? [], userId: profile.id, client: client)
         if profile.locale != Self.serverLocale {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["locale": Self.serverLocale])
         }

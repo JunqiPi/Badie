@@ -3,6 +3,7 @@ import { eventLabel, eventOf, type Gender } from './gender';
 import { t } from './i18n';
 import { SlotFields, slotTimes, type Slot } from './NewRoom';
 import { Icon } from './icons';
+import { InviteRoom, isInvite } from './Invites';
 import { Avatar, Divider, Empty, IconButton, IconTile, LevelBadge, Notice, Row, ScreenHeader, Tag } from './kit';
 import { Link, navigate } from './router';
 import { roomWhen, tagText } from './Rooms';
@@ -15,6 +16,7 @@ const closedText = (reason: NonNullable<RoomDetail['closed_reason']>) =>
     owner_closed: t('The host cancelled this game.'),
     start_time_passed: t('It didn’t fill up before the start time.'),
     expired: t('It closed after 30 minutes without activity.'),
+    declined: t('Declined'),
   })[reason];
 
 /** gender：看的人自己的性别，混双局用来判断自己这边满没满 */
@@ -42,6 +44,9 @@ export function RoomPage({ id, gender }: { id: string; gender: Gender | null }) 
       </Empty>
     );
   }
+
+  // 附近的人发来的邀请局：回复、换个时间、撤回
+  if (isInvite(r)) return <InviteRoom room={r} onChange={refresh} />;
 
   const inside = r.my_status === 'owner' || r.my_status === 'member';
   const open = r.status === 'open';

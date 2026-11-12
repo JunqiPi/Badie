@@ -2,6 +2,7 @@ import { tier } from './assessment';
 import { t } from './i18n';
 import type { Gender } from './gender';
 import type { DayCandidate, NearbyPlayer } from './supabase';
+import { partOf } from './usual';
 
 /** 按天看人的筛选（iOS 的 DayCardFilter）：项目、球馆、等级、时间、对方性别、只看没爽约过的。记在本机 */
 export interface DayFilter {
@@ -48,13 +49,14 @@ export function matches(f: DayFilter, card: DayCandidate) {
   return true;
 }
 
-/** 常在附近的人：球馆看 TA 常去的；项目看 TA 偏好的（没填的都算，混双算双打）；不看时间 */
+/** 附近的人：球馆看 TA 常去的；项目看 TA 偏好的（没填的都算，混双算双打）；时间看 TA 的空闲时间（没填的不算） */
 export function matchesNearby(f: DayFilter, card: NearbyPlayer) {
   const mode = card.user.preferred_mode;
   if (mode && f.event !== 'any' && mode !== (f.event === 'singles' ? 'singles' : 'doubles')) return false;
   if (f.venues.length && !(card.venues ?? []).some((v) => f.venues.includes(v.id))) return false;
   const level = tier(card.user.rating).level;
   if (level < f.minLevel || level > f.maxLevel) return false;
+  if (f.times.length && !(card.user.usual_times ?? []).some((u) => f.times.includes(partOf(u)))) return false;
   if (f.gender && card.user.gender !== f.gender) return false;
   if (f.reliableOnly && (card.user.recent_no_shows ?? 0) > 0) return false;
   return true;

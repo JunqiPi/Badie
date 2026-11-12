@@ -42,8 +42,6 @@ enum Route: Hashable {
     case game(id: String)
     case room(id: String)
     case createRoom(GameMode?, invitee: String?)
-    /// 约某人：预填球馆和时间（“你们都想一起打”）
-    case createRoomWith(invitee: String, venueId: String?, startsAt: Date?, endsAt: Date?)
     case joinRoom(code: String?)
     case publicGames
     case chat(userId: String)

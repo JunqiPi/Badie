@@ -45,9 +45,12 @@ enum RoomCloseReason: String, Codable, Hashable {
     case expired
     case ownerClosed
     case startTimePassed
+    /// 附近的人里的邀请：对方说这次来不了
+    case declined
 
     var message: String {
         switch self {
+        case .declined: return String(localized: "这次来不了")
         case .expired: return String(localized: "房间 30 分钟无活动，已自动关闭")
         case .ownerClosed: return String(localized: "房主已解散房间")
         case .startTimePassed: return String(localized: "已过开始时间，房间已关闭")
@@ -113,6 +116,10 @@ struct Room: Identifiable, Codable, Hashable {
     var event: PlayEvent? = nil
     /// 混双局男女各有几个人（不算候补）
     var mixedGoing: MixedGoing? = nil
+    /// 附近的人里发的邀请局：还没定具体几点时的时间窗口（slot 就是整个窗口）；定好了或普通房间是 nil
+    var window: PlayWindow? = nil
+    /// 附近的人里发的邀请（谁约谁、轮到谁回）；普通房间是 nil
+    var invite: LobbyInvite? = nil
 
     struct MixedGoing: Codable, Hashable {
         let male: Int
@@ -136,7 +143,9 @@ struct Room: Identifiable, Codable, Hashable {
     func isExpired(now: Date = Date()) -> Bool { now >= expiresAt() }
 
     func expiresAt() -> Date {
-        slot?.startTime ?? lastActivityAt.addingTimeInterval(Self.expirationDuration)
+        // 邀请局：到最晚回复的时间（窗口结束前 2 小时）
+        if let invite { return invite.answerBy }
+        return slot?.startTime ?? lastActivityAt.addingTimeInterval(Self.expirationDuration)
     }
 
     func contains(_ userId: String) -> Bool {

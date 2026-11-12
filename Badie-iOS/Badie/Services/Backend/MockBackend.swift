@@ -64,11 +64,12 @@ final class MockBackend {
     var remoteIsAdmin = false
     /// 上次按位置拉取球馆的地点、半径和时间
     var remoteVenuesLoaded: (center: Coordinate, radiusKm: Double, at: Date)?
-    /// 常在附近（只在演示模式用，正式后端都记在服务器上）：跳过的人、发出的“想一起打”、收到的、已经回过的
+    /// 附近的人（只在演示模式用，正式后端都记在服务器上）：跳过的人、发邀请的时间（每天 10 个）、
+    /// 拒绝过的人（30 天内互相不再出现）、示例邀请放过没有
     var demoNearbySkipped: Set<String> = []
-    var demoWishesSent: [String: Date] = [:]
-    var demoWishesIncoming: [String]?
-    var demoWishesClosed: Set<String> = []
+    var demoInvitesSent: [Date] = []
+    var demoDeclined: Set<String> = []
+    var demoInvitesSeeded = false
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?
@@ -507,6 +508,11 @@ final class MockBackend {
         guard slots.allSatisfy(\.isValidDuration) else { throw BackendError.invalidSlot(String(localized: "每个时间段需要 1-8 小时")) }
         db.recurringSlots[id] = slots
         scheduleSave()
+        // 空闲时间放在资料里，附近的人能看到（只传打开的）
+        if let remote {
+            let times = slots.filter(\.isActive).map(\.serverJSON)
+            Task { try? await remote.update("profiles", query: "id=eq.\(id)", ["usual_times": times]) }
+        }
     }
 
     func favoriteCourtIds() -> [String] {

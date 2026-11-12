@@ -60,8 +60,10 @@ final class AppState: ObservableObject {
     @Published var showsStrikes = false
     /// 首页点日期打开的球友卡片（演示截图也从这里打开）
     @Published var showsDayCards = false
-    /// 首页弹出“想一起打”（别人想和我打球，不了 / 好）
-    @Published var showsPlayWishes = false
+    /// 首页弹出收到的邀请（不了 / 换个时间 / 好）
+    @Published var showsInvites = false
+    /// 首页“附近的人”：只看附近的人的卡片
+    @Published var showsLobby = false
     @Published var appearance: AppAppearance {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: Self.appearanceKey) }
     }

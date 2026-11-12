@@ -8,7 +8,7 @@ import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { ArrowLabel, Avatar, CardFan, Empty, IconTile, Notice, SectionTitle, StatTile, fill, type Tint } from './kit';
 import type { Centre } from './pickers';
-import { PlayWishPill } from './Nearby';
+import { InvitePill } from './Invites';
 import { Link } from './router';
 import { signInFirst } from './Shell';
 import { supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
@@ -63,7 +63,7 @@ function Dashboard({ me }: { me: Profile }) {
           <Headline text={t('Up for *a game* tonight?')}>
             <p className="text-subhead font-bold text-ink-secondary">{t('{greeting}, {name}', { greeting: greeting(), name: me.nickname })}</p>
           </Headline>
-          <PlayWishPill me={me} />
+          <InvitePill />
         </div>
         <div className="grid grid-cols-3 gap-2.5 lg:w-[30rem]">
           <Link to="/levels/" className="press rounded-[14px]"><StatTile stacked tint="lavender" icon="level" value={`Lv.${level.label}`} label={level.name} /></Link>
@@ -152,6 +152,12 @@ function DayStrip() {
           );
         })}
       </ul>
+      {/* 附近的人：不分日期，常在附近打、可以直接约的人 */}
+      <Link to="/nearby/" className="sticker lift mt-2 flex items-center gap-3 p-3">
+        <IconTile icon="users" tint="sky" size="sm" />
+        <span className="min-w-0 flex-1 text-headline">{t('People nearby')}</span>
+        <Icon name="chevronRight" className="size-4 text-ink-tertiary" />
+      </Link>
     </section>
   );
 }

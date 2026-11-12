@@ -1,23 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, IconButton, LevelBadge, Tag } from './kit';
-import { navigate } from './router';
-import { problem, supabase, tagText, useLive, type CandidateUser, type PlaySuggestion, type PlayWish, type Profile } from './supabase';
-import { dayName, timeOf } from './time';
+import { Link } from './router';
+import { problem, supabase, tagText, type InviteUser, type NearbyPlayer } from './supabase';
 import { Button, toast } from './ui';
+import { freeSummary, slotLabel, toMinutes, type UsualTime } from './usual';
 
-// 常在附近打的人：右滑 = 想一起打。对方同意（或也想和你打）就加为球友
-
-/** 想一起打出错时给人看的话 */
-export function wishProblem(error: { message: string }) {
-  switch (error.message) {
-    case 'wish_limit': return t('You’ve used today’s 10. Try again tomorrow.');
-    case 'not_available': return t('They can’t be added right now.');
-    default: return problem(error);
-  }
-}
+// 附近的人：卡片上的空闲时间、加球友，和几个页面共用的半屏、规则按钮
 
 /** 底部弹出的半屏（手机）/ 居中的小窗（桌面）。onClose：Esc、点外面、程序关掉都会调 */
 export function Sheet({ open, onClose, labelledBy, children }: { open: boolean; onClose: () => void; labelledBy: string; children: ReactNode }) {
@@ -64,161 +54,93 @@ export function RulesButton({ points }: { points: string[] }) {
   );
 }
 
-/** 约这个时间：开一个球局，带上对方、球馆和时间 */
-function planLink(other: CandidateUser & { preferred_mode?: string | null }, suggestion: PlaySuggestion) {
-  const q = new URLSearchParams({ mode: other.preferred_mode === 'singles' ? 'singles' : 'doubles', invite: other.id, name: other.nickname });
-  if (other.gender) q.set('gender', other.gender);
-  q.set('venue', suggestion.venue_id);
-  q.set('venue_name', suggestion.venue_name);
-  if (suggestion.starts_at && suggestion.ends_at) {
-    q.set('starts', suggestion.starts_at);
-    q.set('ends', suggestion.ends_at);
-  }
-  return `/rooms/new/?${q}`;
-}
+/** 空闲时间按星期（周一在前）和开始时间排 */
+export const sortUsual = (times: UsualTime[] | null | undefined) =>
+  [...(times ?? [])].sort((a, b) => (a.weekday + 5) % 7 - (b.weekday + 5) % 7 || toMinutes(a.start) - toMinutes(b.start));
 
-/** 你们都想一起打：已加为球友，推荐一个两人都常去、都有空的时间 */
-export function Mutual({ me, other, suggestion, onClose }: {
-  me: Profile;
-  other: CandidateUser & { preferred_mode?: string | null };
-  suggestion: PlaySuggestion | null;
-  onClose: () => void;
-}) {
-  const title = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
-    title.current?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      event.preventDefault();
-      onClose();
-    };
-    document.addEventListener('keydown', onKey, true);
-    return () => document.removeEventListener('keydown', onKey, true);
-  }, []);
-  const timed = suggestion?.starts_at && suggestion.ends_at;
-  return createPortal(
-    <div role="dialog" aria-modal="true" aria-labelledby="mutual-title" className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-lime text-on-accent">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-[var(--gutter)] pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
-        <div><IconButton icon="x" label={t('Close')} onClick={onClose} /></div>
-        <div className="grid justify-items-center gap-2 pt-6 text-center">
-          <div className="flex">
-            <Avatar id={me.id} name={me.nickname} photo={me.avatar_path} size={104} />
-            <Avatar id={other.id} name={other.nickname} photo={other.avatar} size={104} className="-ml-4" />
-          </div>
-          <h1 id="mutual-title" ref={title} tabIndex={-1} className="mt-4 text-title outline-none">{t('You both want to play')}</h1>
-          <p className="text-headline">{t('Added as friends')}</p>
-        </div>
-        {suggestion && (
-          <div className="sticker grid gap-0.5 p-4 text-ink">
-            <p className="text-headline">{timed ? `${dayName(suggestion.starts_at!)} ${timeOf(suggestion.starts_at!)}–${timeOf(suggestion.ends_at!)}` : suggestion.venue_name}</p>
-            <p className="text-footnote font-bold text-ink-secondary">
-              {timed ? `${suggestion.venue_name} · ${t('You both play here and are free then')}` : t('You both often play here')}
-            </p>
-          </div>
-        )}
-        <div className="mt-auto grid gap-3">
-          {suggestion && (
-            <Button className="button-lg button-inverse w-full" onClick={() => { onClose(); navigate(planLink(other, suggestion)); }}>{t('Invite for this time')}</Button>
-          )}
-          <Button className="button-lg w-full" variant="quiet" onClick={() => { onClose(); navigate(`/messages/dm/${other.id}/`); }}>{t('Send a message')}</Button>
-        </div>
-      </div>
-    </div>,
-    document.body,
+/** 卡片上 TA 的空闲时间：最多 4 个可点的小标签，多了 +N。点一个就约那段时间 */
+export function UsualChips({ times, onPick }: { times: UsualTime[] | null | undefined; onPick: (slot: UsualTime) => void }) {
+  const sorted = sortUsual(times);
+  if (!sorted.length) return null;
+  const more = sorted.length - 4;
+  return (
+    <ul className="flex flex-wrap items-center gap-1.5" aria-label={t('Usually free')}>
+      <li aria-hidden="true"><Icon name="calendar" className="size-4 text-ink-secondary" /></li>
+      {sorted.slice(0, 4).map((slot) => (
+        <li key={`${slot.weekday}-${slot.start}`}>
+          <button type="button" onClick={() => onPick(slot)} aria-label={t('Invite for {time}', { time: slotLabel(slot) })}
+                  className="press min-h-9 rounded-full border-2 border-stroke bg-surface px-3 text-footnote font-bold hover:bg-lime">
+            {slotLabel(slot)}
+          </button>
+        </li>
+      ))}
+      {more > 0 && <li className="text-footnote font-bold text-ink-secondary">+{more}</li>}
+    </ul>
   );
 }
 
-/** 小卡片：头像、名字、等级、靠谱、也常去哪家 */
-function MiniCard({ wish }: { wish: PlayWish }) {
-  const user = wish.from;
+/** 资料上的一行：“常有空：工作日晚上 · 周末下午” */
+export function FreeLine({ times }: { times: UsualTime[] | null | undefined }) {
+  const summary = freeSummary(times);
+  if (!summary) return null;
   return (
-    <div className="sticker flex items-center gap-3 p-3">
+    <p className="flex items-center gap-2 text-subhead font-bold">
+      <Icon name="calendar" className="size-4 shrink-0" />
+      {t('Usually free: {times}', { times: summary })}
+    </p>
+  );
+}
+
+type FriendState = Pick<NearbyPlayer, 'is_friend' | 'friend_request'>;
+
+/** 加球友 / 已申请 / 接受 / 发消息（用现有的好友申请，不占每天 10 个邀请） */
+export function FriendButton({ id, state, onChange }: { id: string; state: FriendState; onChange: (state: FriendState) => void }) {
+  const [busy, setBusy] = useState(false);
+  if (state.is_friend) {
+    return <Link to={`/messages/dm/${id}/`} className="button button-sm button-quiet"><Icon name="chat" className="size-4" />{t('Send a message')}</Link>;
+  }
+  if (state.friend_request === 'sent') {
+    return <span className="flex min-h-11 items-center gap-1.5 text-footnote font-bold text-ink-secondary"><Icon name="check" className="size-4" />{t('Requested')}</span>;
+  }
+  async function add() {
+    setBusy(true);
+    const accept = state.friend_request === 'received';
+    const { data, error } = accept
+      ? await supabase!.rpc('respond_friend_request', { p_user: id, p_accept: true })
+      : await supabase!.rpc('send_friend_request', { p_user: id });
+    setBusy(false);
+    if (error) return toast(problem(error), 'error');
+    if (accept || data === 'friends') {
+      onChange({ is_friend: true, friend_request: null });
+      toast(t('You’re now friends'));
+    } else {
+      onChange({ is_friend: false, friend_request: 'sent' });
+      toast(t('Friend request sent'));
+    }
+  }
+  return (
+    <Button className="button-sm" variant="quiet" busy={busy} onClick={add}>
+      <Icon name="userPlus" className="size-4" />{state.friend_request === 'received' ? t('Accept') : t('Add friend')}
+    </Button>
+  );
+}
+
+/** 小卡片：头像、名字、等级、靠谱 */
+export function MiniCard({ user }: { user: InviteUser }) {
+  return (
+    <Link to={`/players/${user.id}/`} className="sticker press flex items-center gap-3 p-3">
       <Avatar id={user.id} name={user.nickname} photo={user.avatar} size={48} />
-      <div className="grid min-w-0 flex-1 gap-1">
-        <p className="flex min-w-0 font-bold">
+      <span className="grid min-w-0 flex-1 gap-1">
+        <span className="flex min-w-0 font-bold">
           <span className="truncate">{user.nickname}</span>
           {user.tag != null && <span className="shrink-0 text-ink-tertiary">&nbsp;{tagText(user.tag)}</span>}
-        </p>
+        </span>
         <span className="flex flex-wrap gap-1.5">
           <LevelBadge rating={user.rating} compact />
           {(user.recent_no_shows ?? 0) === 0 && <Tag icon="reliable" tint="mint">{t('Reliable')}</Tag>}
         </span>
-        {wish.shared_venue && <p className="truncate text-footnote text-ink-secondary">{t('Also plays at {venue}', { venue: wish.shared_venue })}</p>}
-      </div>
-    </div>
-  );
-}
-
-type Answer = { other: PlayWish['from']; suggestion: PlaySuggestion | null };
-
-/** 别人发来的“想一起打”：不了 / 好。好 → 加为球友，onAccepted 里打开“你们都想一起打” */
-export function PlayWishList({ wishes, onAnswered, onAccepted }: { wishes: PlayWish[]; onAnswered: () => void; onAccepted: (answer: Answer) => void }) {
-  const [busy, setBusy] = useState<string>();
-  const [gone, setGone] = useState<string[]>([]);
-
-  async function respond(wish: PlayWish, accept: boolean) {
-    setBusy(wish.from.id);
-    const { data, error } = await supabase!.rpc('respond_play_wish', { p_from: wish.from.id, p_accept: accept });
-    setBusy(undefined);
-    if (error) return toast(wishProblem(error), 'error');
-    setGone((list) => [...list, wish.from.id]);
-    if (accept) onAccepted({ other: wish.from, suggestion: (data as { suggestion?: PlaySuggestion | null } | null)?.suggestion ?? null });
-    onAnswered();
-  }
-
-  return wishes.filter((w) => !gone.includes(w.from.id)).map((wish) => (
-    <section key={wish.from.id} aria-labelledby={`wish-${wish.from.id}`} className="grid gap-3">
-      <h2 id={`wish-${wish.from.id}`} className="text-title3">{t('{name} wants to play with you', { name: wish.from.nickname })}</h2>
-      <MiniCard wish={wish} />
-      <div className="grid grid-cols-[1fr_2fr] gap-3">
-        <Button variant="quiet" disabled={busy === wish.from.id} onClick={() => respond(wish, false)}>{t('No thanks')}</Button>
-        <Button busy={busy === wish.from.id} onClick={() => respond(wish, true)}>{t('Sure')}</Button>
-      </div>
-    </section>
-  ));
-}
-
-/** 通知页最上面：还没回的“想一起打” */
-export function PlayWishInbox({ me }: { me: Profile }) {
-  const { data, refresh } = useLive<PlayWish[]>('pending_play_wishes', { every: 60_000 });
-  const [mutual, setMutual] = useState<Answer>();
-  return (
-    <>
-      {Boolean(data?.length) && (
-        <div className="sticker grid gap-6 bg-butter/40 p-4">
-          <PlayWishList wishes={data!} onAnswered={() => void refresh()} onAccepted={setMutual} />
-        </div>
-      )}
-      {mutual && <Mutual me={me} other={mutual.other} suggestion={mutual.suggestion} onClose={() => setMutual(undefined)} />}
-    </>
-  );
-}
-
-/** 首页：有人想和我打时，标题下面一个小标签“想一起打 N”，点开回复 */
-export function PlayWishPill({ me }: { me: Profile }) {
-  const { data, refresh } = useLive<PlayWish[]>('pending_play_wishes', { every: 60_000 });
-  const [open, setOpen] = useState(false);
-  const [mutual, setMutual] = useState<Answer>();
-  const count = data?.length ?? 0;
-  return (
-    <>
-      {count > 0 && (
-        <button type="button" onClick={() => setOpen(true)}
-                className="press mt-3 flex min-h-9 items-center gap-1.5 rounded-full border-2 border-stroke bg-surface px-3 text-footnote font-bold">
-          <Icon name="heart" className="size-4" />
-          {t('Want to play')}
-          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-danger-fill px-1 text-[11px] font-black text-white tabular-nums">{count}</span>
-        </button>
-      )}
-      <Sheet open={open && count > 0} onClose={() => setOpen(false)} labelledBy="wishes-title">
-        <div className="flex items-center gap-3">
-          <p id="wishes-title" className="kicker flex-1 text-ink-secondary">{t('Want to play')}</p>
-          <IconButton icon="x" label={t('Close')} onClick={() => setOpen(false)} />
-        </div>
-        <PlayWishList wishes={data ?? []} onAnswered={() => void refresh()}
-                      onAccepted={(answer) => { setOpen(false); setMutual(answer); }} />
-      </Sheet>
-      {mutual && <Mutual me={me} other={mutual.other} suggestion={mutual.suggestion} onClose={() => setMutual(undefined)} />}
-    </>
+      </span>
+      <Icon name="chevronRight" className="size-4 text-ink-tertiary" />
+    </Link>
   );
 }

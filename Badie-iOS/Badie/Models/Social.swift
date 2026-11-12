@@ -112,10 +112,17 @@ struct InboxItem: Identifiable, Codable, Hashable {
         case challenge
         /// 赛果确认、有分歧
         case resultUpdate
-        /// 常在附近：有人想和你打球 / 对方同意一起打球
-        case playWish
-        case playWishAccepted
+        /// 附近的人：对方想换个时间 / 这次来不了；球局定好了具体时间
+        case inviteCounter
+        case inviteDeclined
+        case gameTimeSet
         case system
+
+        /// 不认识的种类（旧版本存下的）读成系统通知，不让整个缓存读不出来
+        init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = Kind(rawValue: raw) ?? .system
+        }
     }
 
     let id: String

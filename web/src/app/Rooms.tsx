@@ -11,6 +11,7 @@ import { Link } from './router';
 import { supabase, useLive, type RoomSummary, type RoomTag } from './supabase';
 import { day, hours } from './time';
 import { Skeleton } from './ui';
+import { unset, windowDetail, windowTitle } from './usual';
 
 export const tagText = (tag: RoomTag) =>
   ({
@@ -23,7 +24,8 @@ export const tagText = (tag: RoomTag) =>
 
 /** 时间按球馆当地时间；私密局可以还没定 */
 export const roomWhen = (r: RoomSummary) =>
-  r.starts_at && r.ends_at ? `${day(r.starts_at, r.venue?.tz)} · ${hours(r.starts_at, r.ends_at, r.venue?.tz)}` : t('Time not set yet');
+  unset(r) ? `${windowTitle(r, r.venue?.tz)} · ${windowDetail(r, r.venue?.tz)}`
+  : r.starts_at && r.ends_at ? `${day(r.starts_at, r.venue?.tz)} · ${hours(r.starts_at, r.ends_at, r.venue?.tz)}` : t('Time not set yet');
 
 export function RoomChips({ room: r }: { room: RoomSummary }) {
   const event = eventLabel(r.mode, eventOf(r.gender, r.mixed));

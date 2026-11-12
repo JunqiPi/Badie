@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } f
 import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches, matchesNearby, saveFilter, timeLabels, type DayFilter, type TimeOfDay } from './dayFilter';
 import { AvatarCrop, decode } from './AvatarCrop';
 import { uploadCardPhoto } from './CardBackground';
-import { Mutual, RulesButton, Sheet, wishProblem } from './Nearby';
+import { InviteSheet, inviteProblem as nearbyProblem } from './Invites';
+import { FriendButton, RulesButton, Sheet, UsualChips } from './Nearby';
 import { createPortal } from 'react-dom';
 import { NEARBY_KM, useArea } from './area';
 import { eventLabel, eventOf } from './gender';
@@ -12,9 +13,10 @@ import { Icon, type IconName } from './icons';
 import { Avatar, Empty, IconButton } from './kit';
 import { DayCard, type CardPerson } from './PlayerCard';
 import { Link, navigate } from './router';
-import { problem, supabase, type DayCandidate, type NearbyPlayer, type PlaySuggestion, type Profile, type WishResult } from './supabase';
+import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type Profile } from './supabase';
 import { dateChip, timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
+import type { UsualTime } from './usual';
 
 /** 从 TA 的开始时间约；来不及的话至少半小时后、按半小时对齐（和 iOS 一样） */
 export function inviteStart(card: DayCandidate, now = Date.now()) {
@@ -31,12 +33,12 @@ function bounds(date: string) {
 
 const SWIPE = 110;
 
-/** 一叠卡片里的一张：这天在找人的请求，或常在附近打的人（接在这天的后面） */
+/** 一叠卡片里的一张：这天在找人的请求，或附近的人（接在这天的后面） */
 type Item = { kind: 'day'; key: string; card: DayCandidate } | { kind: 'nearby'; key: string; card: NearbyPlayer };
 const dayItem = (card: DayCandidate): Item => ({ kind: 'day', key: card.ticket, card });
 const nearbyItem = (card: NearbyPlayer): Item => ({ kind: 'nearby', key: `n:${card.user.id}`, card });
 
-/** 第一次右滑常在附近的人之前，没有卡片照片的提醒一次（记在本机） */
+/** 第一次约附近的人之前，没有卡片照片的提醒一次（记在本机） */
 const PHOTO_ASKED = 'badie.nearbyPhotoAsked';
 function photoAsked() {
   try {
@@ -51,18 +53,22 @@ function rememberPhotoAsked() {
   } catch {}
 }
 
-/** 首页点某一天：这天附近在找人、和我水平对得上的球友，一张张卡片左右滑（iOS 的 DayCandidatesView）。
- *  卡片就是对方的约球请求（项目、时间都定好了）。右滑和点爱心一样，直接约：
- *  单打发约球邀请，TA 确认就成局；双打替我开一个公开的双打局并邀请 TA，附近的人可以加入补齐 */
-export function DayCards({ date, profile, onProfile }: { date: string; profile: Profile; onProfile: (p: Profile) => void }) {
+/** 约附近的人：TA 是谁，点的是 TA 哪段空闲时间 */
+type Composing = { card: NearbyPlayer; slot?: UsualTime };
+
+/** 首页点某一天：这天附近在找人、和我水平对得上的球友，一张张卡片左右滑（iOS 的 DayCandidatesView），刷完接着看附近的人。
+ *  不给 date 就是“附近的人”：只有附近的人的卡片。
+ *  这天的卡片就是对方的约球请求（项目、时间都定好了），右滑直接约：单打发约球邀请，双打替我开一个公开的双打局并邀请 TA。
+ *  附近的人右滑打开约 TA 的半屏（哪天、什么时候、球馆），发出一个只有两个人的邀请局 */
+export function DayCards({ date, profile, onProfile }: { date?: string; profile: Profile; onProfile: (p: Profile) => void }) {
   const area = useArea();
+  const lobby = !date;
   const [cards, setCards] = useState<DayCandidate[]>();
-  // 这天的卡片刷完后接着看的：常在附近打的人
   const [nearby, setNearby] = useState<NearbyPlayer[]>();
-  // 右滑常在附近的人之前要先问的（让附近的人看到你 / 加一张照片）
-  const [asking, setAsking] = useState<{ kind: 'visible' | 'photo'; card: NearbyPlayer }>();
-  const [cropping, setCropping] = useState<{ image: ImageBitmap; card: NearbyPlayer }>();
-  const [mutual, setMutual] = useState<{ other: NearbyPlayer['user']; suggestion: PlaySuggestion | null }>();
+  // 约附近的人之前要先问的（让附近的人看到你 / 加一张照片）
+  const [asking, setAsking] = useState<{ kind: 'visible' | 'photo' } & Composing>();
+  const [cropping, setCropping] = useState<{ image: ImageBitmap } & Composing>();
+  const [composing, setComposing] = useState<Composing>();
   const me = useRef(profile);
   me.current = profile;
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
@@ -85,7 +91,7 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
   // 正在看的那张：自动刷新时不能让它突然消失
   const currentTop = useRef<string>(undefined);
   currentTop.current = top?.key;
-  // 常在附近的人里滑过几个：一个都没滑时，第一张上面写“这天的刷完了”
+  // 附近的人里滑过几个：一个都没滑时，第一张上面写“这天的刷完了”
   const [nearbySeen, setNearbySeen] = useState(0);
 
   const setFilter = (next: DayFilter) => {
@@ -93,15 +99,16 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
     saveFilter(next);
   };
 
-  // 打开期间每 30 秒拉一次：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉
+  // 打开期间每 30 秒拉一次这天的请求：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉
   useEffect(() => {
     if (!area) return;
-    setCards(undefined);
+    setCards(lobby ? [] : undefined);
     setNearby(undefined);
     seen.current.clear();
     supabase!
       .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: NEARBY_KM })
       .then(({ data, error }) => setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
+    if (!date) return;
     const { from, to } = bounds(date);
     let first = true;
     const load = () =>
@@ -119,7 +126,7 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
             if (!current) return fresh;
             const ids = new Set(fresh.map((c) => c.ticket));
             const kept = current.filter((c) => ids.has(c.ticket) || c.ticket === currentTop.current);
-            // 已经在看常在附近的人了：新来的请求不再插到前面
+            // 已经在看附近的人了：新来的请求不再插到前面
             if (currentTop.current?.startsWith('n:')) return kept;
             const known = new Set(kept.map((c) => c.ticket));
             return [...kept, ...fresh.filter((c) => !known.has(c.ticket) && !seen.current.has(c.ticket))];
@@ -144,10 +151,10 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
     else dialog.current?.close();
   }, [editing]);
 
-  // 键盘：左右方向键跳过 / 约 TA，Esc 关闭（邀请框开着时不管）
+  // 键盘：左右方向键跳过 / 约 TA，Esc 关闭（半屏开着时不管）
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || mutual || document.querySelector('dialog[open]') || (event.target as HTMLElement).closest?.('input, textarea, select')) return;
+      if (event.defaultPrevented || document.querySelector('dialog[open]') || (event.target as HTMLElement).closest?.('input, textarea, select')) return;
       if (event.key === 'Escape') navigate('/');
       else if (top && !leaving && event.key === 'ArrowLeft') skip(top);
       else if (top && !leaving && event.key === 'ArrowRight') like(top);
@@ -180,72 +187,64 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
   function like(item: Item) {
     if (leaving) return;
     if (item.kind === 'day') void invite(item.card);
-    else wish(item.card);
+    else compose({ card: item.card });
   }
 
   /** 卡片回到原位（没滑出去） */
   const settle = () => setDrag({ x: 0, y: 0, active: false });
 
-  /** 想一起打：先确认附近的人能看到我；没有卡片照片的，第一次提醒一下 */
-  function wish(card: NearbyPlayer) {
+  /** 约附近的人：先确认附近的人能看到我；没有卡片照片的，第一次提醒一下；然后打开约 TA 的半屏 */
+  function compose(c: Composing) {
     settle();
-    if (!me.current.show_as_regular) return setAsking({ kind: 'visible', card });
+    if (!me.current.show_as_regular) return setAsking({ kind: 'visible', ...c });
     if (!me.current.card_photo_path && !photoAsked()) {
       rememberPhotoAsked();
-      return setAsking({ kind: 'photo', card });
+      return setAsking({ kind: 'photo', ...c });
     }
-    void sendWish(card);
+    setComposing(c);
   }
 
-  async function sendWish(card: NearbyPlayer) {
-    const item = nearbyItem(card);
-    next(item, 'right');
-    const { data, error } = await supabase!.rpc('wish_to_play', { p_user: card.user.id });
-    if (error) {
-      if (error.message === 'not_visible') {
-        onProfile({ ...me.current, show_as_regular: false });
-      } else toast(wishProblem(error), 'error');
-      // 没发出去（到上限、网络）：卡片放回最前面；TA 已经约不了的就不放回
-      if (error.message !== 'not_available') {
-        seen.current.delete(item.key);
-        setTimeout(() => {
-          setNearby((list) => [card, ...(list ?? []).filter((c) => c.user.id !== card.user.id)]);
-          setNearbySeen((n) => Math.max(0, n - 1));
-        }, 300);
-      }
-      return;
-    }
-    const result = data as WishResult;
-    if (result.mutual) setMutual({ other: card.user, suggestion: result.suggestion });
-    else toast(`${t('Told {name}. Once they say yes, you can chat.', { name: card.user.nickname })}\n${t('{n} left today', { n: result.remaining })}`);
+  /** 发出去了：卡片飞走，提示还能约几个 */
+  function sent(card: NearbyPlayer, remaining: number | null, label: string) {
+    setComposing(undefined);
+    next(nearbyItem(card), 'right');
+    const done = t('Invited {name} · {when}', { name: card.user.nickname, when: label });
+    toast(remaining === null ? done : `${done}\n${t('{n} left today', { n: remaining })}`);
   }
 
-  /** 让附近的人也能看到我：打开“在同馆常客里显示我”，然后接着发 */
-  async function becomeVisible(card: NearbyPlayer) {
+  function failed(card: NearbyPlayer, error: { message: string }) {
+    setComposing(undefined);
+    if (error.message === 'not_visible') {
+      onProfile({ ...me.current, show_as_regular: false });
+      return setAsking({ kind: 'visible', card });
+    }
+    toast(nearbyProblem(error), 'error');
+    // TA 已经约不了（或者已经有一个邀请了）：拿掉这张
+    if (error.message === 'not_available' || error.message === 'already_invited') next(nearbyItem(card), 'left');
+  }
+
+  /** 让附近的人也能看到我：打开“在同馆常客里显示我”，然后接着约 */
+  async function becomeVisible(c: Composing) {
     setAsking(undefined);
     const { data, error } = await supabase!.from('profiles').update({ show_as_regular: true }).eq('id', me.current.id).select().single();
     if (error) return toast(t('Couldn’t save. Try again.'), 'error');
     me.current = data as Profile;
     onProfile(data as Profile);
-    if (!me.current.card_photo_path && !photoAsked()) {
-      rememberPhotoAsked();
-      return setAsking({ kind: 'photo', card });
-    }
-    void sendWish(card);
+    compose(c);
   }
 
-  async function pickPhoto(file: File, card: NearbyPlayer) {
+  async function pickPhoto(file: File, c: Composing) {
     setAsking(undefined);
     try {
-      setCropping({ image: await decode(file), card });
+      setCropping({ image: await decode(file), ...c });
     } catch {
       toast(t('Couldn’t upload the photo. Try another one.'), 'error');
     }
   }
 
   async function uploadPhoto(jpeg: Blob) {
-    const card = cropping!.card;
-    cropping?.image.close();
+    const { image, ...c } = cropping!;
+    image.close();
     setCropping(undefined);
     try {
       const path = await uploadCardPhoto(me.current, jpeg);
@@ -254,10 +253,15 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
     } catch {
       return toast(t('Couldn’t upload the photo. Try another one.'), 'error');
     }
-    void sendWish(card);
+    setComposing(c);
   }
 
-  /** 右滑和点爱心一样：直接约，不再让人选 */
+  /** 加了球友（或申请了）：卡片上的按钮跟着变 */
+  function befriend(id: string, state: Pick<NearbyPlayer, 'is_friend' | 'friend_request'>) {
+    setNearby((list) => list?.map((c) => (c.user.id === id ? { ...c, ...state } : c)));
+  }
+
+  /** 这天的请求：右滑和点爱心一样，直接约，不再让人选 */
   async function invite(card: DayCandidate) {
     const venue = inviteVenue(filter, card);
     if (!venue || leaving) return;
@@ -304,27 +308,32 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
   }
 
   const x = leaving === 'left' ? -1.2 * innerWidth : leaving === 'right' ? 1.2 * innerWidth : drag.x;
-  const day = dateChip(date, 0).full;
+  const heading = date ? dateChip(date, 0).full : t('People nearby');
   const inNearby = top?.kind === 'nearby';
-  // 这天的卡片刷完了、第一次看到常在附近的人：上面一条虚线框
-  const divider = inNearby && nearbySeen === 0;
+  // 这天的卡片刷完了、第一次看到附近的人：上面一条虚线框
+  const divider = !lobby && inNearby && nearbySeen === 0;
   const second = deck?.[1];
+  const actions = {
+    onSlot: (card: NearbyPlayer, slot: UsualTime) => compose({ card, slot }),
+    onFriend: befriend,
+  };
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-labelledby="day-title" className="fixed inset-0 z-40 flex flex-col bg-canvas text-ink">
       <header className="mx-auto flex w-full max-w-xl items-start gap-3 px-[var(--gutter)] pt-[calc(1rem+env(safe-area-inset-top))]">
         <div className="min-w-0 flex-1">
-          <h1 id="day-title" ref={title} tabIndex={-1} className="text-title2 outline-none">{day}</h1>
+          <h1 id="day-title" ref={title} tabIndex={-1} className="text-title2 outline-none">{heading}</h1>
           {top && (
             <p className="text-footnote font-bold text-ink-secondary">
-              {inNearby ? `${t('Plays nearby')} · ${t('{n} player|{n} players', { n: visibleNearby.length })}` : t('{n} player|{n} players', { n: visibleDay.length })}
+              {lobby ? t('{n} player|{n} players', { n: visibleNearby.length })
+                : inNearby ? `${t('Plays nearby')} · ${t('{n} player|{n} players', { n: visibleNearby.length })}` : t('{n} player|{n} players', { n: visibleDay.length })}
             </p>
           )}
         </div>
         <RulesButton points={[
           t('Swipe right to invite, left to skip'),
-          t('Plays nearby: players who turned on “Show me as a regular at my courts” and often play at courts near you.'),
-          t('Want to play: once they say yes, or want to play with you too, you become friends.'),
+          t('People nearby have a level, often play at courts near you and chose to show up here.'),
+          t('An invite is a game for two. They can say yes, suggest another time or say no.'),
           t('Up to 10 a day.'),
           t('People you skip or say no to won’t show up again for 30 days.'),
         ]} />
@@ -359,6 +368,12 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
               {t('Try loosening them a little.')}
             </Empty>
           </div>
+        ) : !top && lobby ? (
+          <div className="grid h-full content-center">
+            <Empty icon="users" tint="sky" title={t('No one nearby yet')} action={{ label: t('Venues & favorites'), to: '/courts/' }}>
+              {t('Star the courts you play at to see players there.')}
+            </Empty>
+          </div>
         ) : !top ? (
           <div className="grid h-full content-center">
             <Empty icon="users" tint="sky" title={t('No one nearby to invite that day')} action={{ label: t('Send a match request'), to: `/play/?date=${date}` }}>
@@ -375,7 +390,7 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
             )}
             <div className="relative min-h-0 flex-1">
               {second && (
-                <div aria-hidden="true" className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
+                <div aria-hidden="true" inert className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
                   <Card item={second} filter={filter} />
                 </div>
               )}
@@ -391,7 +406,7 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
                 }}
                 className="absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
               >
-                <Card item={top} filter={filter} hint={leaving ?? (drag.x > 40 ? 'right' : drag.x < -40 ? 'left' : undefined)} />
+                <Card item={top} filter={filter} hint={leaving ?? (drag.x > 40 ? 'right' : drag.x < -40 ? 'left' : undefined)} actions={actions} />
               </div>
             </div>
           </div>
@@ -401,7 +416,7 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
       {top && (
         <div className="flex justify-center gap-10 px-[var(--gutter)] pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
           <Round icon="x" label={t('Skip')} className="bg-surface text-ink" disabled={Boolean(leaving)} onClick={() => skip(top)} />
-          <Round icon="heart" label={inNearby ? t('Want to play') : t('Invite')} className="bg-lime text-on-accent" disabled={Boolean(leaving)} onClick={() => like(top)} />
+          <Round icon="heart" label={t('Invite')} className="bg-lime text-on-accent" disabled={Boolean(leaving)} onClick={() => like(top)} />
         </div>
       )}
 
@@ -419,12 +434,18 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
         )}
       </dialog>
 
-      {/* 第一次想一起打之前：先让附近的人能看到你；没有照片的提醒一次 */}
+      {/* 约附近的人：哪天、什么时候、球馆 */}
+      <InviteSheet open={Boolean(composing)} onClose={() => setComposing(undefined)}
+                   other={composing?.card.user ?? ({} as InviteUser)} venues={composing?.card.venues} slot={composing?.slot} date={date}
+                   onSent={({ remaining, label }) => composing && sent(composing.card, remaining, label)}
+                   onError={(error) => composing && failed(composing.card, error)} />
+
+      {/* 第一次约附近的人之前：先让附近的人能看到你；没有照片的提醒一次 */}
       <Sheet open={asking?.kind === 'visible'} onClose={() => setAsking((a) => (a?.kind === 'visible' ? undefined : a))} labelledBy="visible-title">
         <h2 id="visible-title" className="text-title3">{t('Let players nearby see you too')}</h2>
         <div className="grid grid-cols-[1fr_2fr] gap-3">
           <Button variant="quiet" onClick={() => setAsking(undefined)}>{t('No thanks')}</Button>
-          <Button onClick={() => asking && void becomeVisible(asking.card)}>{t('Turn on')}</Button>
+          <Button onClick={() => asking && void becomeVisible(asking)}>{t('Turn on')}</Button>
         </div>
       </Sheet>
       <Sheet open={asking?.kind === 'photo'} onClose={() => setAsking((a) => (a?.kind === 'photo' ? undefined : a))} labelledBy="photo-title">
@@ -436,20 +457,24 @@ export function DayCards({ date, profile, onProfile }: { date: string; profile: 
         <label className="button button-lg w-full cursor-pointer">
           {t('Choose photo')}
           <input type="file" accept="image/*" className="sr-only"
-                 onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file && asking) void pickPhoto(file, asking.card); }} />
+                 onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file && asking) void pickPhoto(file, asking); }} />
         </label>
-        <Button className="button-lg w-full" variant="quiet" onClick={() => { const card = asking?.card; setAsking(undefined); if (card) void sendWish(card); }}>{t('Add later')}</Button>
+        <Button className="button-lg w-full" variant="quiet" onClick={() => { const c = asking; setAsking(undefined); if (c) setComposing(c); }}>{t('Add later')}</Button>
       </Sheet>
       {cropping && <AvatarCrop image={cropping.image} card onDone={uploadPhoto} onCancel={() => { cropping.image.close(); setCropping(undefined); }} />}
-      {mutual && <Mutual me={profile} other={mutual.other} suggestion={mutual.suggestion} onClose={() => setMutual(undefined)} />}
     </div>,
     document.body,
   );
 }
 
-/** 一张铺满的卡片：这天的请求，或常在附近打的人 */
-function Card({ item, filter, hint }: { item: Item; filter: DayFilter; hint?: 'left' | 'right' }) {
-  return item.kind === 'day' ? <DayRequestCard card={item.card} filter={filter} hint={hint} /> : <NearbyCard card={item.card} filter={filter} hint={hint} />;
+type CardActions = {
+  onSlot: (card: NearbyPlayer, slot: UsualTime) => void;
+  onFriend: (id: string, state: Pick<NearbyPlayer, 'is_friend' | 'friend_request'>) => void;
+};
+
+/** 一张铺满的卡片：这天的请求，或附近的人。actions：最上面那张才能点 */
+function Card({ item, filter, hint, actions }: { item: Item; filter: DayFilter; hint?: 'left' | 'right'; actions?: CardActions }) {
+  return item.kind === 'day' ? <DayRequestCard card={item.card} filter={filter} hint={hint} /> : <NearbyCard card={item.card} filter={filter} hint={hint} actions={actions} />;
 }
 
 /** 左滑右滑时盖在照片上的字 */
@@ -464,8 +489,8 @@ function Stamp({ hint, like }: { hint?: 'left' | 'right'; like: string }) {
 
 const profileLink = (id: string) => <Link to={`/players/${id}/`} className="link -my-2 flex min-h-11 items-center justify-self-start text-footnote font-bold">{t('View profile')}</Link>;
 
-/** 常在附近打的人：常去哪家（选了球馆就是选的那家）、偏好单打还是双打。不显示具体位置 */
-function NearbyCard({ card, filter, hint }: { card: NearbyPlayer; filter: DayFilter; hint?: 'left' | 'right' }) {
+/** 附近的人：常去哪家（选了球馆就是选的那家）、偏好单打还是双打、空闲时间（点一个就约）、加球友。不显示具体位置 */
+function NearbyCard({ card, filter, hint, actions }: { card: NearbyPlayer; filter: DayFilter; hint?: 'left' | 'right'; actions?: CardActions }) {
   const venue = inviteVenue(filter, card);
   const mode = card.user.preferred_mode;
   return (
@@ -475,9 +500,17 @@ function NearbyCard({ card, filter, hint }: { card: NearbyPlayer; filter: DayFil
       extra={mode ? [[mode === 'doubles' ? 'users' : 'user', mode === 'doubles' ? t('Doubles') : t('Singles')]] : []}
       label={t('Plays nearby')}
       reliable={(card.user.recent_no_shows ?? 0) === 0}
-      footer={profileLink(card.user.id)}
+      footer={
+        <>
+          <UsualChips times={card.user.usual_times} onPick={(slot) => actions?.onSlot(card, slot)} />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {profileLink(card.user.id)}
+            <FriendButton id={card.user.id} state={card} onChange={(state) => actions?.onFriend(card.user.id, state)} />
+          </div>
+        </>
+      }
     >
-      <Stamp hint={hint} like={t('Want to play')} />
+      <Stamp hint={hint} like={t('Invite')} />
     </DayCard>
   );
 }

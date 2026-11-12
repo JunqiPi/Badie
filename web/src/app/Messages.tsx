@@ -2,11 +2,12 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type S
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, CountBadge, Divider, Empty, IconButton, IconTile, LargeTitle, LevelBadge, ScreenHeader, Segmented, type Tint } from './kit';
-import { PlayWishInbox } from './Nearby';
+import { InviteInbox } from './Invites';
 import { Link, navigate } from './router';
 import { problem, supabase, tagText, useLive, type FoundPlayer, type Friend, type Profile, type Regular, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
 import { day, hours, relative } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
+import { windowDetail, windowTitle } from './usual';
 
 type Tab = 'chats' | 'friends';
 
@@ -85,7 +86,7 @@ function ChatList({ threads, open }: { threads?: ThreadSummary[]; open?: { id: s
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline gap-2">
                   <span className="min-w-0 flex-1 truncate font-bold">
-                    {th.kind === 'game' ? `${day(th.starts_at!, th.tz)} · ${th.venue}` : th.name}
+                    {th.kind === 'game' ? `${th.time_set === false && th.window_end ? windowTitle({ ...th, window_start: th.starts_at!, window_end: th.window_end }, th.tz) : day(th.starts_at!, th.tz)} · ${th.venue}` : th.name}
                   </span>
                   {th.last && <span className="shrink-0 text-caption text-ink-tertiary">{relative(th.last.created_at)}</span>}
                 </span>
@@ -320,9 +321,12 @@ function Chat({ kind, id }: { kind: ThreadKind; id: string }) {
   const other = thread.members.find((m) => !m.me);
   const names = Object.fromEntries(thread.members.map((m) => [m.id, m.nickname]));
   const warn = !thread.friend && thread.messages.some((m) => !m.mine && risky.test(m.body));
-  const title = thread.game ? `${day(thread.game.starts_at, thread.game.tz)} · ${thread.game.venue}` : thread.group ? thread.group.name : other?.nickname ?? '';
-  const subtitle = thread.game
-    ? `${hours(thread.game.starts_at, thread.game.ends_at, thread.game.tz)} · ${thread.members.filter((m) => !m.me).map((m) => m.nickname).join(', ')}`
+  // 还没定具体时间的球局：标题写“周六 · 下午”，下面写“14:00–18:00 之间”
+  const game = thread.game;
+  const loose = game && game.time_set === false ? { ...game, window_start: game.window_start ?? game.starts_at, window_end: game.window_end ?? game.ends_at } : null;
+  const title = game ? `${loose ? windowTitle(loose, game.tz) : day(game.starts_at, game.tz)} · ${game.venue}` : thread.group ? thread.group.name : other?.nickname ?? '';
+  const subtitle = game
+    ? `${loose ? windowDetail(loose, game.tz) : hours(game.starts_at, game.ends_at, game.tz)} · ${thread.members.filter((m) => !m.me).map((m) => m.nickname).join(', ')}`
     : thread.group ? `${thread.group.venue} · ${t('{n} member|{n} members', { n: thread.members.length })}` : undefined;
   const titleLink = thread.game ? `/games/${id}/` : thread.group ? `/groups/${id}/` : `/players/${other?.id}/`;
 
@@ -454,8 +458,9 @@ const updateIcons: Record<string, [IconName, Tint]> = {
   verification: ['verified', 'lime'],
   report: ['shield', 'butter'],
   nudge: ['bell', 'butter'],
-  play_wish: ['heart', 'lime'],
-  play_wish_accepted: ['handshake', 'lime'],
+  invite_counter: ['swap', 'lime'],
+  invite_declined: ['mail', 'muted'],
+  game_time_set: ['clock', 'mint'],
 };
 
 export function Notifications({ profile }: { profile: Profile }) {
@@ -476,7 +481,7 @@ export function Notifications({ profile }: { profile: Profile }) {
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
       <ScreenHeader title={t('Notifications')} back="/" />
-      <PlayWishInbox me={profile} />
+      <InviteInbox />
       {!updates ? (
         <div className="grid gap-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}</div>
       ) : !updates.length ? (

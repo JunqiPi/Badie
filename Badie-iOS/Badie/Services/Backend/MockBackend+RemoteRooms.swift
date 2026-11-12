@@ -37,6 +37,21 @@ extension MockBackend {
         /// 只有房间里的人和受邀的人拿得到
         let code: String?
         let members: [Person]?
+        /// 附近的人里发的邀请局：还没定具体几点时 time_set = false，starts_at / ends_at 就是窗口
+        let timeSet: Bool?
+        let windowStart: Date?
+        let windowEnd: Date?
+        let durationMinutes: Int?
+        let daypart: String?
+        let invite: RemoteInvite?
+    }
+
+    struct RemoteInvite: Decodable {
+        let from: RemoteLobbyUser
+        let to: RemoteLobbyUser
+        let awaitingId: String
+        let rounds: Int
+        let answerBy: Date
     }
 
     // MARK: 刷新
@@ -178,8 +193,21 @@ extension MockBackend {
 
     // MARK: 服务器数据 → 本地模型
 
+    /// 别处拉到的房间（附近的人里的邀请）也写进缓存
+    func cacheRemoteRooms(_ rooms: [RemoteRoom]) {
+        guard let me = currentUserId else { return }
+        for room in rooms { cacheRoom(room, me: me) }
+        remoteRoomLoadedAt.merge(rooms.map { ($0.id, Date()) }) { $1 }
+        scheduleSave()
+        emit(.roomsChanged)
+    }
+
     private func cacheRoom(_ info: RemoteRoom, me: String) {
         let existing = db.rooms[info.id]
+        if let invite = info.invite {
+            cacheLobbyUser(invite.from)
+            cacheLobbyUser(invite.to)
+        }
         let participant = { (person: RemoteRoom.Person) -> RoomParticipant in
             self.cacheRemoteUser(id: person.id, nickname: person.nickname, rating: person.rating)
             let joinedAt = existing.flatMap { room in (room.participants + room.waitlist).first { $0.userId == person.id }?.joinedAt }
@@ -212,8 +240,19 @@ extension MockBackend {
             tags: info.tags.compactMap(RoomTag.init(server:)), note: info.note,
             createdAt: existing?.createdAt ?? lastActivity, lastActivityAt: lastActivity, status: status,
             event: PlayEvent(gender: info.gender.flatMap(Gender.init(rawValue:)), mixed: info.mixed ?? false),
-            mixedGoing: info.mixedGoing
+            mixedGoing: info.mixedGoing,
+            window: Self.window(timeSet: info.timeSet, start: info.windowStart, end: info.windowEnd,
+                                daypart: info.daypart, duration: info.durationMinutes),
+            invite: info.invite.map {
+                LobbyInvite(fromId: $0.from.id, toId: $0.to.id, awaitingId: $0.awaitingId, rounds: $0.rounds, answerBy: $0.answerBy)
+            }
         )
+    }
+
+    /// 还没定具体几点（time_set = false）的时间窗口；定好了是 nil
+    static func window(timeSet: Bool?, start: Date?, end: Date?, daypart: String?, duration: Int?) -> PlayWindow? {
+        guard timeSet == false, let start, let end else { return nil }
+        return PlayWindow(start: start, end: end, daypart: daypart.flatMap(Daypart.init(rawValue:)), durationMinutes: duration ?? 120)
     }
 }
 
@@ -248,6 +287,7 @@ extension RoomCloseReason {
         switch value {
         case "owner_closed": self = .ownerClosed
         case "start_time_passed": self = .startTimePassed
+        case "declined": self = .declined
         default: self = .expired
         }
     }

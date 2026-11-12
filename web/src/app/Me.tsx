@@ -12,7 +12,9 @@ import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
 import { cleanPhotoFolder, friendLink, problem, supabase, winPercent, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
-import { day } from './time';
+import { clock, day } from './time';
+import { sortUsual } from './Nearby';
+import { toHHMM, toMinutes, weekdayShort, type UsualTime } from './usual';
 import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
 
@@ -307,6 +309,8 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         </div>
       </Group>
 
+      <FreeTimes profile={profile} onChange={onChange} />
+
       <Group title={t('Notifications')}>
         <PushSettings />
         <Switch checked={profile.email_alerts} onChange={(v) => save({ email_alerts: v })} title={t('Email me about matches')}
@@ -321,7 +325,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
                 text={t('They see your nickname and level, and can send a friend request.')} />
         <Divider />
         <Switch checked={profile.show_as_regular} onChange={(v) => save({ show_as_regular: v })} title={t('Show me as a regular at my courts')}
-                text={t('Players who starred the same court see your nickname, level and the court. Never when you play or where you are.')} />
+                text={t('Shows your card, level and free times in People nearby and to players who starred the same court. Never where you are.')} />
         <Divider />
         <Switch checked={profile.allow_message_requests} onChange={(v) => save({ allow_message_requests: v })} title={t('Allow message requests from my groups')}
                 text={t('When off, only friends can message you. Game and group chats still work.')} />
@@ -364,6 +368,59 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Link to="/terms/" className="link">{t('Terms of Service')}</Link>
       </p>
     </div>
+  );
+}
+
+/** 空闲时间：星期几 + 时间段，可以多段。显示在卡片和资料上，别人点一下就能约 */
+function FreeTimes({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
+  const [rows, setRows] = useState<UsualTime[]>(() => sortUsual(profile.usual_times));
+  const [busy, setBusy] = useState(false);
+  const saved = JSON.stringify(sortUsual(profile.usual_times));
+  const dirty = JSON.stringify(sortUsual(rows)) !== saved;
+  const halfHours = (from: number, to: number) => Array.from({ length: (to - from) / 30 + 1 }, (_, i) => from + i * 30);
+  const set = (i: number, patch: Partial<UsualTime>) => setRows((list) => list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+
+  async function save() {
+    setBusy(true);
+    const usual_times = sortUsual(rows);
+    const { data, error } = await supabase!.from('profiles').update({ usual_times }).eq('id', profile.id).select().single();
+    setBusy(false);
+    if (error) return toast(t('Couldn’t save. Try again.'), 'error');
+    onChange(data as Profile);
+    setRows(usual_times);
+    toast(t('Saved'));
+  }
+
+  return (
+    <Group title={t('Free times')}>
+      <div className="grid gap-3 py-3.5">
+        <p className="text-footnote text-ink-secondary">{t('Shown on your card. Players can tap one to invite you.')}</p>
+        {rows.map((row, i) => (
+          <div key={i} className="flex flex-wrap items-center gap-2">
+            <select className="field w-auto" aria-label={t('Day')} value={row.weekday} onChange={(e) => set(i, { weekday: Number(e.target.value) })}>
+              {[2, 3, 4, 5, 6, 7, 1].map((w) => <option key={w} value={w}>{weekdayShort(w)}</option>)}
+            </select>
+            <select className="field w-auto" aria-label={t('From')} value={toMinutes(row.start)}
+                    onChange={(e) => { const from = Number(e.target.value); set(i, { start: toHHMM(from), end: toHHMM(Math.max(toMinutes(row.end), from + 30)) }); }}>
+              {halfHours(360, 1410).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
+            </select>
+            <span aria-hidden="true">–</span>
+            <select className="field w-auto" aria-label={t('To')} value={toMinutes(row.end)} onChange={(e) => set(i, { end: toHHMM(Number(e.target.value)) })}>
+              {halfHours(toMinutes(row.start) + 30, 1440).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
+            </select>
+            <IconButton icon="trash" label={t('Delete')} onClick={() => setRows((list) => list.filter((_, j) => j !== i))} />
+          </div>
+        ))}
+        <div className="flex flex-wrap gap-2">
+          {rows.length < 14 && (
+            <Button className="button-sm" variant="quiet" onClick={() => setRows((list) => [...list, { weekday: 7, start: '14:00', end: '18:00' }])}>
+              <Icon name="plus" className="size-4" />{t('Add a time')}
+            </Button>
+          )}
+          {dirty && <Button className="button-sm" busy={busy} onClick={save}>{t('Save')}</Button>}
+        </div>
+      </div>
+    </Group>
   );
 }
 

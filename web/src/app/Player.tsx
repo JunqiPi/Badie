@@ -9,6 +9,7 @@ import { problem, supabase, suspendedText, tagText, useLive, winPercent, type Fr
 import { day, nextDays, zoned } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 import { kindLabel } from './Verification';
+import { FreeLine } from './Nearby';
 
 export const tagLabels: Record<string, string> = {
   friendly: 'Friendly',
@@ -63,6 +64,7 @@ export function PlayerPage({ id }: { id: string }) {
               </div>
             </div>
             <p className="text-subhead">{level.summary}</p>
+            <FreeLine times={card.usual_times} />
             {card.tags.length > 0 && (
               <ul className="flex flex-wrap gap-1.5" aria-label={t('Player impressions')}>
                 {card.tags.map((tag) => <li key={tag}><Tag icon="handshake" tint="lime">{t(tagLabels[tag] ?? tag)}</Tag></li>)}

@@ -7,6 +7,7 @@ import { AvatarStack, Dashed, IconTile, Tag, type Tint } from './kit';
 import { Link } from './router';
 import type { Game, RoomSummary, Ticket } from './supabase';
 import { dayName, relative, timeOf } from './time';
+import { unset, windowDetail, windowTitle } from './usual';
 
 const modeName = (mode: Game['mode']) => (mode === 'doubles' ? t('Doubles') : t('Singles'));
 
@@ -29,6 +30,7 @@ export function GameTicket({ game: g, compact = false }: { game: Game; compact?:
   // 票据底色固定是浅色，上面的小标签也用固定颜色（深色模式下不会变成深底深字）
   const [chip, chipClass] = cancelled
     ? [t('Cancelled'), 'border-[1.5px] border-[#17140f] bg-white']
+    : unset(g) ? [t('Time not set yet'), 'bg-[#17140f] text-lime']
     : now >= start && now < end ? [t('In progress'), 'border-[1.5px] border-[#17140f] bg-lime']
     : now >= end ? [g.result.status === 'verified' ? t('Done') : t('Result to report'), 'border-[1.5px] border-[#17140f] bg-[#ffe36e]']
     : [relative(g.starts_at), 'bg-[#17140f] text-lime'];
@@ -41,11 +43,21 @@ export function GameTicket({ game: g, compact = false }: { game: Game; compact?:
             {chip}
           </span>
         </div>
-        <p className="flex items-baseline gap-1 font-black tabular-nums">
-          <span className={compact ? 'text-[2.125rem] leading-none' : 'text-[2.75rem] leading-none'}>{timeOf(g.starts_at, tz)}</span>
-          <span className={compact ? 'text-headline' : 'text-title3'}>–{timeOf(g.ends_at, tz)}</span>
-        </p>
-        <p className="font-bold">{dayName(g.starts_at, tz)}</p>
+        {unset(g) ? (
+          // 还没定具体时间：大字“周六 · 下午”，下面“14:00–18:00 之间”
+          <>
+            <p className={`font-black ${compact ? 'text-[1.75rem] leading-tight' : 'text-[2.25rem] leading-tight'}`}>{windowTitle(g, tz)}</p>
+            <p className="font-bold">{windowDetail(g, tz)}</p>
+          </>
+        ) : (
+          <>
+            <p className="flex items-baseline gap-1 font-black tabular-nums">
+              <span className={compact ? 'text-[2.125rem] leading-none' : 'text-[2.75rem] leading-none'}>{timeOf(g.starts_at, tz)}</span>
+              <span className={compact ? 'text-headline' : 'text-title3'}>–{timeOf(g.ends_at, tz)}</span>
+            </p>
+            <p className="font-bold">{dayName(g.starts_at, tz)}</p>
+          </>
+        )}
         <div className="py-1"><Dashed /></div>
         <div className="min-w-0">
           <p className="truncate text-headline">{g.venue.name}</p>
@@ -109,14 +121,20 @@ export function RoomCard({ room: r, distance, wide = false }: { room: RoomSummar
         <Tag icon={r.mode === 'doubles' ? 'users' : 'user'} tint="lavender">{eventLabel(r.mode, eventOf(r.gender, r.mixed)) ?? modeName(r.mode)}</Tag>
         <Tag>{t('Lv.{min}–{max}', { min: r.level_min, max: r.level_max })}</Tag>
         <span className="ml-auto">
-          {r.my_status === 'owner' ? <Tag tint="butter">{t('Hosting')}</Tag>
+          {r.invite ? <Tag tint={r.invite.awaiting_me ? 'lime' : 'butter'}>{r.invite.awaiting_me ? t('Your turn') : t('Invite sent')}</Tag>
+            : r.my_status === 'owner' ? <Tag tint="butter">{t('Hosting')}</Tag>
             : r.my_status === 'member' ? <Tag icon="check" tint="lime">{t('Joined')}</Tag>
             : r.my_status === 'waitlisted' ? <Tag tint="butter">{t('Waitlist')}</Tag>
             : open === 0 ? <Tag tint="muted">{t('Full · waitlist')}</Tag>
             : <Tag tint="pink">{t('{n} spot left|{n} spots left', { n: open })}</Tag>}
         </span>
       </span>
-      {r.starts_at && r.ends_at ? (
+      {unset(r) ? (
+        <>
+          <span className="text-footnote font-bold text-ink-secondary">{windowDetail(r, tz)}</span>
+          <span className="text-[1.5rem] leading-tight font-black">{windowTitle(r, tz)}</span>
+        </>
+      ) : r.starts_at && r.ends_at ? (
         <>
           <span className="text-footnote font-bold text-ink-secondary">{dayName(r.starts_at, tz)}</span>
           <span className="text-[1.5rem] leading-tight font-black tabular-nums">{timeOf(r.starts_at, tz)}–{timeOf(r.ends_at, tz)}</span>
@@ -124,7 +142,9 @@ export function RoomCard({ room: r, distance, wide = false }: { room: RoomSummar
       ) : (
         <span className="text-headline">{t('Time not set yet')}</span>
       )}
-      <span className="truncate text-caption text-ink-secondary">{t('Hosted by {name}', { name: r.owner.nickname })}</span>
+      <span className="truncate text-caption text-ink-secondary">
+        {r.invite ? (r.my_status === 'owner' ? r.invite.to.nickname : r.invite.from.nickname) : t('Hosted by {name}', { name: r.owner.nickname })}
+      </span>
       <span className="flex min-w-0 items-center gap-1 text-footnote text-ink-secondary">
         <Icon name="pin" className="size-3.5" />
         <span className="truncate">{r.venue?.name ?? t('Court not set yet')}</span>

@@ -280,6 +280,14 @@ extension MockBackend {
     /// 定期检查：私密房间 30 分钟无活动关闭，公开局过开始时间关闭
     func expireRooms(now: Date = Date()) {
         for var room in db.rooms.values where room.status.isOpen && room.isExpired(now: now) {
+            if room.invite != nil {
+                // 附近的人里的邀请：到时间没人回就悄悄结束，不发通知
+                room.status = .closed(.expired)
+                db.rooms[room.id] = room
+                scheduleSave()
+                emit(.roomsChanged)
+                continue
+            }
             closeRoom(&room, reason: room.slot == nil ? .expired : .startTimePassed)
         }
         refreshPublicRooms(force: false)

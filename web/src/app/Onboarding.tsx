@@ -36,6 +36,8 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   const [touched, setTouched] = useState(false);
   const [country, setCountry] = useState(guessCountry);
   const [gender, setGender] = useState<Gender | null>(null);
+  // 在附近的人里显示我（新账号默认开）
+  const [visible, setVisible] = useState(true);
   // 点了“继续”才提示没选性别（离开昵称框就提示会让页面跳动，点不准）
   const [tried, setTried] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -50,7 +52,7 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
     setBusy(true);
     const { data, error } = await supabase!
       .from('profiles')
-      .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender })
+      .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender, show_as_regular: visible })
       .select()
       .single();
     setBusy(false);
@@ -91,6 +93,11 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
           )}
         </Field>
         <GenderField value={gender} onChange={setGender} error={tried && !gender ? t('Choose one to continue.') : undefined} />
+        <label className="flex cursor-pointer items-center gap-3 text-subhead font-bold">
+          <span className="flex-1">{t('Show me in People nearby')}</span>
+          <input type="checkbox" role="switch" checked={visible} onChange={(e) => setVisible(e.target.checked)}
+                 className="relative h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
+        </label>
         <Button className="button-lg button-inverse" busy={busy}>{t('Continue')}</Button>
       </form>
     </div>

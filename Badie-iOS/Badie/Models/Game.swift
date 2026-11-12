@@ -181,6 +181,11 @@ struct Game: Identifiable, Codable, Hashable {
     var reminderEnabled: Bool
     /// 每位球员各自申报的赛果（见 `resultStatus`）
     var resultReports: [ResultReport] = []
+    /// 附近的人里约的球局还没定具体几点：时间窗口（slot 就是整个窗口）；定好了是 nil
+    var window: PlayWindow? = nil
+
+    /// 具体几点定了没有
+    var isTimeSet: Bool { window == nil }
 
     /// 开赛前多少时间内取消算临时取消
     static let freeCancellationWindow: TimeInterval = 2 * 3600
@@ -192,7 +197,7 @@ struct Game: Identifiable, Codable, Hashable {
     }
 
     func isInProgress(now: Date = Date()) -> Bool {
-        status == .confirmed && slot.contains(now)
+        status == .confirmed && isTimeSet && slot.contains(now)
     }
 
     /// 可签到：开赛前 30 分钟到结束
@@ -202,12 +207,14 @@ struct Game: Identifiable, Codable, Hashable {
 
     /// 可标记完成：开赛后
     func canComplete(now: Date = Date()) -> Bool {
-        status == .confirmed && now >= slot.startTime && now <= slot.endTime.addingTimeInterval(7 * 86400)
+        status == .confirmed && isTimeSet && now >= slot.startTime && now <= slot.endTime.addingTimeInterval(7 * 86400)
     }
 
     /// 现在取消是否属于临时取消
     func isLateCancellation(now: Date = Date()) -> Bool {
-        slot.startTime.timeIntervalSince(now) < Self.freeCancellationWindow
+        // 还没定时间的不算临时取消
+        guard isTimeSet else { return false }
+        return slot.startTime.timeIntervalSince(now) < Self.freeCancellationWindow
     }
 
     func hasCheckedIn(_ userId: String) -> Bool { checkIns[userId] != nil }

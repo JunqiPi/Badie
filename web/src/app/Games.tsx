@@ -12,6 +12,8 @@ import { Link } from './router';
 import { gamesFromScore, problem, supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type PlayRecord, type RoomSummary, type Ticket } from './supabase';
 import { day, dayName, hours, timeOf } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
+import { Sheet } from './Nearby';
+import { startOptions, unset, windowTitle } from './usual';
 
 const live = (g: Game) => g.status === 'scheduled' && new Date(g.ends_at).getTime() > Date.now();
 
@@ -183,7 +185,7 @@ function GameRow({ game: g }: { game: Game }) {
       </span>
       <span className="grid min-w-0 flex-1 gap-1">
         <span className="flex items-center gap-1.5">
-          <span className="truncate text-headline tabular-nums">{g.mode === 'doubles' ? t('Doubles') : t('Singles')} · {timeOf(g.starts_at, tz)}–{timeOf(g.ends_at, tz)}</span>
+          <span className="truncate text-headline tabular-nums">{g.mode === 'doubles' ? t('Doubles') : t('Singles')} · {unset(g) ? windowTitle(g, tz) : `${timeOf(g.starts_at, tz)}–${timeOf(g.ends_at, tz)}`}</span>
           {g.status === 'cancelled' && <Tag tint="muted">{t('Cancelled')}</Tag>}
         </span>
         <span className="truncate text-footnote text-ink-secondary">{g.venue.name}</span>
@@ -249,10 +251,12 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => Promise<v
   const start = new Date(g.starts_at).getTime();
   const end = new Date(g.ends_at).getTime();
   const scheduled = g.status === 'scheduled';
+  // 还没定具体时间：签到按整个窗口；定时间的截止前都能取消，不算临时取消；不能填比分
+  const loose = unset(g);
   const canCheckIn = scheduled && !g.checked_in && now >= start - 30 * 60000 && now <= end;
-  const canCancel = scheduled && now < start;
-  const late = start - now < 2 * 3600000;
-  const canReport = scheduled && now >= start && now <= end + 7 * 86400000 && g.result.status !== 'verified';
+  const canCancel = scheduled && (loose ? !g.set_time_by || now < new Date(g.set_time_by).getTime() : now < start);
+  const late = !loose && start - now < 2 * 3600000;
+  const canReport = scheduled && !loose && now >= start && now <= end + 7 * 86400000 && g.result.status !== 'verified';
 
   async function act(name: string, fn: string, args: Record<string, unknown>, done: string) {
     setBusy(name);
@@ -279,7 +283,8 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => Promise<v
             <Lineup players={g.players} mode={g.mode} />
           </section>
 
-          {scheduled && now >= start && <Result game={g} canReport={canReport} busy={busy} act={act} />}
+          {scheduled && loose && <SetTime game={g} onChange={onChange} />}
+          {scheduled && !loose && now >= start && <Result game={g} canReport={canReport} busy={busy} act={act} />}
           {toReview(g) && <Reviews game={g} onDone={onChange} />}
         </div>
 
@@ -329,7 +334,7 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => Promise<v
               {confirmCancel ? (
                 <div className="sticker grid gap-3 bg-pink p-4 text-on-accent">
                   <p className="font-bold" role="alert">
-                    {late ? t('The game starts in under 2 hours, so this counts as a late cancellation.') : t('The other players will be put back in the queue first.')}
+                    {late ? t('The game starts in under 2 hours, so this counts as a late cancellation.') : loose ? t('The other player will be told.') : t('The other players will be put back in the queue first.')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button variant="danger" busy={busy === 'cancel'} onClick={() => act('cancel', 'cancel_game', { p_game: g.id }, t('Game cancelled'))}>{t('Cancel game')}</Button>
@@ -344,6 +349,64 @@ function GameView({ game: g, onChange }: { game: Game; onChange: () => Promise<v
         </aside>
       </div>
     </div>
+  );
+}
+
+/** 具体几点？还没定时间的球局（附近的人约成的），两个人在群聊里商量好，任何一方点“定时间”，从窗口里选开始时刻 */
+function SetTime({ game: g, onChange }: { game: Game; onChange: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [picked, setPicked] = useState<string>();
+  const [busy, setBusy] = useState(false);
+  const tz = g.venue.tz ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const days = open && unset(g) ? startOptions(g, tz) : [];
+  const other = g.players.find((p) => !p.me);
+
+  async function save() {
+    if (!picked) return;
+    setBusy(true);
+    const { error } = await supabase!.rpc('set_game_time', { p_game: g.id, p_starts_at: picked });
+    setBusy(false);
+    if (error) return toast(problem(error), 'error');
+    setOpen(false);
+    toast(t('Time set. {name} has been told.', { name: other?.nickname ?? '' }));
+    await onChange();
+  }
+
+  return (
+    <section aria-labelledby="set-time" className="sticker grid gap-3 p-5">
+      <div>
+        <h2 id="set-time" className="text-headline">{t('What time exactly?')}</h2>
+        <p className="text-footnote text-ink-secondary">{t('Agree in the chat, then tap Set time.')}</p>
+        {g.set_time_by && (
+          <p className="mt-1 text-footnote font-bold text-ink-secondary">{t('If no time is set by {time}, the game is cancelled.', { time: `${dayName(g.set_time_by, g.venue.tz)} ${timeOf(g.set_time_by, g.venue.tz)}` })}</p>
+        )}
+      </div>
+      <Button onClick={() => { setPicked(undefined); setOpen(true); }}>{t('Set time')}</Button>
+      <Sheet open={open} onClose={() => setOpen(false)} labelledBy="set-time-title">
+        <div className="flex items-center gap-3">
+          <h2 id="set-time-title" className="flex-1 text-title3">{t('Set time')}</h2>
+          <IconButton icon="x" label={t('Close')} onClick={() => setOpen(false)} />
+        </div>
+        {days.length === 0 ? (
+          <p className="font-bold">{t('Too late for that. Pick a later time.')}</p>
+        ) : (
+          days.map(({ date, starts }) => (
+            <div key={date} className="grid gap-2" role="group" aria-label={dayName(starts[0].toISOString(), g.venue.tz)}>
+              <span className="text-footnote font-bold text-ink-secondary">{dayName(starts[0].toISOString(), g.venue.tz)}</span>
+              <div className="flex flex-wrap gap-2">
+                {starts.map((s) => (
+                  <button key={s.toISOString()} type="button" className="toggle tabular-nums" aria-pressed={picked === s.toISOString()} onClick={() => setPicked(s.toISOString())}>
+                    {timeOf(s.toISOString(), g.venue.tz)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))
+        )}
+        <p className="text-footnote font-bold text-ink-secondary">{t('2 hours')}</p>
+        <Button className="button-lg w-full" busy={busy} disabled={!picked} onClick={save}>{t('Save')}</Button>
+      </Sheet>
+    </section>
   );
 }
 

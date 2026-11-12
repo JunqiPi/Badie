@@ -126,6 +126,7 @@ export default function App() {
   const day = path.match(/^\/day\/(\d{4}-\d{2}-\d{2})\//)?.[1];
   return shell(
     day ? <DayCards key={day} date={day} profile={profile} onProfile={setProfile} />
+    : path.startsWith('/nearby/') ? <DayCards key="nearby" profile={profile} onProfile={setProfile} />
     : editing ? <EditGroup key={editing} id={editing} profile={profile} />
     : player ? <PlayerPage key={player} id={player} />
     : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />

@@ -19,7 +19,9 @@ extension InboxItem.Kind {
         case .system: return "megaphone.fill"
         case .challenge: return "flag.2.crossed.fill"
         case .resultUpdate: return "checkmark.seal.fill"
-        case .playWish, .playWishAccepted: return "heart.fill"
+        case .inviteCounter: return "clock.arrow.circlepath"
+        case .inviteDeclined: return "hand.raised.fill"
+        case .gameTimeSet: return "clock.badge.checkmark"
         }
     }
 
@@ -36,7 +38,9 @@ extension InboxItem.Kind {
         case .system: return AppTheme.Colors.sky
         case .challenge: return AppTheme.Colors.peach
         case .resultUpdate: return AppTheme.Colors.mint
-        case .playWish, .playWishAccepted: return AppTheme.Colors.lime
+        case .inviteCounter: return AppTheme.Colors.peach
+        case .inviteDeclined: return AppTheme.Colors.surfaceMuted
+        case .gameTimeSet: return AppTheme.Colors.lime
         }
     }
 }
@@ -46,7 +50,7 @@ extension InboxItem.Kind {
     var isActionable: Bool {
         switch self {
         case .gameCancelled, .kicked, .roomClosed, .challenge, .roomInvite, .roomJoined, .waitlistPromoted,
-             .matchOffer, .gameConfirmed, .friendRequest, .messageRequest:
+             .matchOffer, .gameConfirmed, .friendRequest, .messageRequest, .gameTimeSet:
             return true
         default:
             return false
@@ -112,13 +116,15 @@ struct InboxNavigator {
             }
         case .resultUpdate:
             if let id = item.relatedId { router.open(.game(id: id)) }
-        case .playWish:
-            // 首页弹出“想一起打”的卡片（不了 / 好）
+        case .inviteCounter:
+            // 对方想换个时间：打开邀请（不了 / 换个时间 / 好）
+            if let id = item.relatedId { router.open(.room(id: id)) }
+        case .inviteDeclined:
+            // 这次来不了：回到附近的人，再约别人
             router.select(.home)
-            appState.showsPlayWishes = true
-        case .playWishAccepted:
-            // 已经是球友了：直接去聊天
-            if let id = item.relatedId { router.open(.chat(userId: id), in: .messages) }
+            appState.showsLobby = true
+        case .gameTimeSet:
+            if let id = item.relatedId { router.open(.game(id: id)) }
         case .kicked, .roomClosed, .system:
             break
         }

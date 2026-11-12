@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { t, type Locale } from './i18n';
 import type { Gender } from './gender';
 import { day } from './time';
+import type { Daypart, UsualTime, Windowed } from './usual';
 
 const url = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
 // 只用 publishable key（sb_publishable_…）；secret key 绝不进前端
@@ -74,6 +75,8 @@ export interface Profile {
   locale: Locale;
   /** 偏好单打还是双打（常在附近的卡片上显示）；null = 都行 */
   preferred_mode?: Mode | null;
+  /** 空闲时间：卡片和资料上显示，别人点一下就能约 */
+  usual_times?: UsualTime[] | null;
   /** 只用来定级和匹配（男女等级分开算）；老用户没填时打开 App 会先问 */
   gender: Gender | null;
 }
@@ -163,41 +166,45 @@ export interface DayCandidate {
 /** 卡片上的人（day_candidates、nearby_players 里的 user） */
 export type CandidateUser = DayCandidate['user'];
 
-/** 常在附近打的人（nearby_players）：打开了“在同馆常客里显示我”、常去附近球馆的人，不分日期 */
+/** 附近的人（nearby_players）：定了级、常去我附近球馆、愿意被看到的人，不分日期 */
 export interface NearbyPlayer {
-  user: CandidateUser & { preferred_mode: Mode | null };
+  user: InviteUser;
   /** TA 常去的、在我附近的球馆，近的在前 */
   venues: { id: string; name: string; km?: number }[] | null;
   /** 和我常去的球馆有几家一样 */
   shared_venues: number;
+  is_friend: boolean;
+  /** sent = 我申请了，received = TA 申请了我 */
+  friend_request: 'sent' | 'received' | null;
 }
 
-/** 两人都常去的球馆（服务器现在不给时间，只给球馆；以后给了时间也能显示） */
-export interface PlaySuggestion {
-  venue_id: string;
-  venue_name: string;
-  starts_at?: string | null;
-  ends_at?: string | null;
+/** 卡片和邀请里的人：多了偏好的项目和空闲时间 */
+export type InviteUser = CandidateUser & { preferred_mode?: Mode | null; usual_times?: UsualTime[] | null };
+
+/** 服务器按两人的空闲时间建议的窗口（suggest_invite_window） */
+export interface InviteSuggestion {
+  window_start: string;
+  window_end: string;
+  daypart: Daypart | null;
+  venue_id: string | null;
+  venue_name: string | null;
 }
 
-/** 想一起打（wish_to_play）：mutual = 对方也想和我打，已加为球友 */
-export interface WishResult {
-  mutual: boolean;
-  remaining: number;
-  suggestion: PlaySuggestion | null;
-}
-
-/** 别人发给我、还没回的“想一起打”（pending_play_wishes） */
-export interface PlayWish {
-  from: CandidateUser & { preferred_mode?: Mode | null };
-  /** 两人都常去的球馆 */
-  shared_venue: string | null;
-  created_at: string;
+/** 邀请局（房间）上的邀请：谁约谁、轮到谁回 */
+export interface RoomInvite {
+  from: InviteUser;
+  to: InviteUser;
+  awaiting_id: string;
+  awaiting_me: boolean;
+  /** 换过几次时间 */
+  rounds: number;
+  /** 过了这个时间没回，邀请就关了 */
+  answer_by: string;
 }
 
 export type Outcome = 'team1' | 'team2' | 'friendly';
 
-export interface Game {
+export interface Game extends Windowed {
   id: string;
   mode: Mode;
   starts_at: string;
@@ -216,6 +223,8 @@ export interface Game {
   result: { status: 'awaiting' | 'verified' | 'disputed' | 'unsure' | 'expired'; outcome: Outcome | null };
   review_until: string;
   players: Player[];
+  /** 没定时间时：过了这个时间还没定，这场自动取消 */
+  set_time_by?: string | null;
 }
 
 /** 本月胜率：只算双方确认、分出胜负的比赛；满 5 场才对别人公开 */
@@ -269,6 +278,7 @@ export interface PlayerCard {
   gender: Gender | null;
   card_color: string | null;
   card_photo: string | null;
+  usual_times?: UsualTime[] | null;
 }
 
 /** 收藏了同一家球馆、愿意被看到的常客 */
@@ -318,7 +328,7 @@ export interface MyChallenges {
 
 export type ThreadKind = 'game' | 'group' | 'dm';
 
-export interface ThreadSummary {
+export interface ThreadSummary extends Windowed {
   kind: ThreadKind;
   id: string;
   starts_at: string | null;
@@ -342,7 +352,7 @@ export interface Thread {
   request: 'incoming' | 'outgoing' | null;
   /** 可以发请求时：你们共同的球群 */
   group_name: string | null;
-  game: { starts_at: string; ends_at: string; venue: string; tz: string | null } | null;
+  game: ({ starts_at: string; ends_at: string; venue: string; tz: string | null } & Windowed) | null;
   group: { name: string; venue: string } | null;
   members: { id: string; nickname: string; me: boolean }[];
   messages: { id: number; body: string; created_at: string; sender: string; mine: boolean }[];
@@ -398,12 +408,12 @@ export interface MyGroups {
 
 export type RoomTag = 'beginner_friendly' | 'casual' | 'competitive' | 'women_friendly' | 'coaching';
 
-export interface RoomSummary {
+export interface RoomSummary extends Windowed {
   id: string;
   mode: Mode;
   visibility: 'public' | 'private';
   status: 'open' | 'started' | 'closed';
-  closed_reason: 'expired' | 'owner_closed' | 'start_time_passed' | null;
+  closed_reason: 'expired' | 'owner_closed' | 'start_time_passed' | 'declined' | null;
   game_id: string | null;
   /** 私密局可以先不定时间和球馆 */
   starts_at: string | null;
@@ -424,6 +434,8 @@ export interface RoomSummary {
   owner: { id: string; nickname: string; rating: number };
   venue: { id: string; name: string; city: string; street: string; tz: string | null } | null;
   my_status: 'owner' | 'member' | 'waitlisted' | 'invited' | null;
+  /** 附近的人发来的邀请局才有 */
+  invite?: RoomInvite | null;
 }
 
 export interface RoomDetail extends RoomSummary {
@@ -549,6 +561,13 @@ const problems: Record<string, string> = {
   too_many_searches: 'You’re searching too fast. Try again in a few minutes.',
   invalid_score: 'Scores can only have numbers, like 21:18 19:21.',
   invalid_games: 'Enter how many games each side won.',
+  invite_limit: 'You’ve used today’s 10. Try again tomorrow.',
+  already_invited: 'You already have an open invite with them.',
+  not_your_turn: 'Waiting for the other player to answer.',
+  invite_expired: 'This invite has expired.',
+  time_already_set: 'The time is already set.',
+  invalid_window: 'That time doesn’t leave 2 hours to play. Pick another.',
+  not_visible: 'Let players nearby see you too',
 };
 /** 一次爽约：第 1 次警告、第 2 次 7 天不能约球、第 3 次永久；48 小时内可以申诉 */
 export interface Strike {

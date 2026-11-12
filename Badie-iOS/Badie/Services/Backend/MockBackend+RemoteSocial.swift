@@ -86,6 +86,8 @@ extension MockBackend {
         let cardColor: String?
         let cardPhoto: String?
         let avatar: String?
+        /// 空闲时间（资料页上显示“常有空”）
+        let usualTimes: [ServerUsualTime]?
     }
 
     // MARK: 刷新
@@ -190,8 +192,7 @@ extension MockBackend {
             return db.tickets.values.first { $0.offerId != nil }?.id
         }
         // 消息请求的链接是 /app/messages/dm/<对方 id>/
-        // 想一起打：链接最后一段是对方 id（/app/players/<id>/ 或 /app/messages/dm/<id>/）
-        if ["message_request", "play_wish", "play_wish_accepted"].contains(note.kind) {
+        if note.kind == "message_request" {
             return note.link?.split(separator: "/").last.map(String.init)
         }
         let parts = (note.link ?? "").split(separator: "/")
@@ -214,8 +215,9 @@ extension MockBackend {
         case "room_closed": return .roomClosed
         case "challenge": return .challenge
         case "message_request": return .messageRequest
-        case "play_wish": return .playWish
-        case "play_wish_accepted": return .playWishAccepted
+        case "invite_counter": return .inviteCounter
+        case "invite_declined": return .inviteDeclined
+        case "game_time_set": return .gameTimeSet
         default: return .system
         }
     }
@@ -420,6 +422,7 @@ extension MockBackend {
         remoteNoShows[card.id] = (card.recentNoShows ?? 0, Self.suspension(card.suspendedUntil))
         remoteMessageOptions[card.id] = card.message
         applyCardColor(card.cardColor, to: card.id)
+        if let times = card.usualTimes { cacheUsualTimes(times, for: card.id) }
         await applyAvatar(card.avatar, to: card.id)
         await applyCardPhoto(card.cardPhoto, to: card.id)
         if let rate = card.winRate {
