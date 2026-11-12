@@ -1,7 +1,7 @@
--- 常在附近打的人：谁出现、跳过 30 天、想一起打（每天 10 个、互相想打直接成球友、同意 / 不了）、权限
+-- 附近的人（大厅）：谁出现（球友也出现、没定级的不出现）、加球友状态、跳过 30 天、常用时间、推荐时间、新用户默认显示
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(36);
+select plan(26);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000041' || lpad(n::text, 2, '0'))::uuid, 'np' || n || '@test.local' from generate_series(1, 20) n;
@@ -20,105 +20,106 @@ create function pg_temp.near(lat double precision default 37.514849, lon double 
   select coalesce(array_agg((x -> 'user' ->> 'id')::uuid order by n), '{}')
   from jsonb_array_elements(public.nearby_players(lat, lon, 20)) with ordinality t(x, n)
 $$;
-create function pg_temp.kinds(n int, k text) returns int language sql security definer as $$
-  select count(*)::int from public.notifications where user_id = pg_temp.u(n) and kind = k
-$$;
 create temp table r (k text primary key, v jsonb);
 grant all on r to authenticated, anon;
+-- 球馆当地后天是星期几（1 = 周日 … 7 = 周六）和日期
+create function pg_temp.day2() returns date language sql as $$
+  select (now() at time zone 'America/Los_Angeles')::date + 2
+$$;
+create function pg_temp.wd2() returns int language sql as $$
+  select extract(dow from pg_temp.day2())::int + 1
+$$;
 
--- 1 我；2 同馆（21BC）；3、8 常去 5 公里外的 Synergy；4 没打开常客显示；5 拉黑了我；6 已是球友；7 在圣地亚哥；9–20 没收藏球馆
-update public.profiles set show_as_regular = (id <> pg_temp.u(4)) where id in (select pg_temp.u(n) from generate_series(1, 20) n);
+-- 1 我；2 同馆（21BC）；3、8、10 常去 5 公里外的 Synergy；4 没打开显示；5 拉黑了我；6 已是球友（同馆）；7 在圣地亚哥；
+-- 9 同馆但没定级；10 给我发过好友申请；11–20 没收藏球馆
+update public.profiles set show_as_regular = (id <> pg_temp.u(4)), assessed_at = case when id <> pg_temp.u(9) then now() end
+  where id in (select pg_temp.u(n) from generate_series(1, 20) n);
 update public.profiles set preferred_mode = 'doubles' where id = pg_temp.u(2);
 insert into public.favorite_venues (user_id, venue_id) values
   (pg_temp.u(1), 'v-us-ca-21-badminton-club-21bc'), (pg_temp.u(2), 'v-us-ca-21-badminton-club-21bc'),
   (pg_temp.u(3), 'v-us-ca-synergy-badminton-academy-fremont-missio'), (pg_temp.u(4), 'v-us-ca-21-badminton-club-21bc'),
   (pg_temp.u(5), 'v-us-ca-21-badminton-club-21bc'), (pg_temp.u(6), 'v-us-ca-21-badminton-club-21bc'),
-  (pg_temp.u(7), 'v-us-ca-east-valley-community-center'), (pg_temp.u(8), 'v-us-ca-synergy-badminton-academy-fremont-missio');
+  (pg_temp.u(7), 'v-us-ca-east-valley-community-center'), (pg_temp.u(8), 'v-us-ca-synergy-badminton-academy-fremont-missio'),
+  (pg_temp.u(9), 'v-us-ca-21-badminton-club-21bc'), (pg_temp.u(10), 'v-us-ca-synergy-badminton-academy-fremont-missio');
 insert into public.blocks (blocker, blocked) values (pg_temp.u(5), pg_temp.u(1));
 insert into public.friendships (user_a, user_b) values (least(pg_temp.u(1), pg_temp.u(6)), greatest(pg_temp.u(1), pg_temp.u(6)));
+insert into public.friend_requests (from_id, to_id) values (pg_temp.u(10), pg_temp.u(1));
 
 -- 谁出现 -------------------------------------------------------------------------
 select pg_temp.login(1);
-select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(3), pg_temp.u(8)],
-          '只出现开了常客显示、没拉黑、不是球友、收藏的球馆在附近的人；同馆的在前');
+select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(3), pg_temp.u(8), pg_temp.u(10)],
+          '开了显示、定过级、没拉黑、收藏的球馆在附近的人；球友也出现；同馆的在前');
 insert into r select 'list', public.nearby_players(37.514849, -121.986485, 20);
 select is((select (v -> 0 ->> 'shared_venues')::int from r where k = 'list'), 1, '共同球馆个数');
 select is((select v -> 0 -> 'venues' -> 0 ->> 'id' from r where k = 'list'), 'v-us-ca-21-badminton-club-21bc', 'TA 在附近的球馆');
 select is((select v -> 0 -> 'user' ->> 'preferred_mode' from r where k = 'list'), 'doubles', '带上喜欢的打法');
-select ok((select (v -> 1 -> 'user') ? 'preferred_mode' and v -> 1 -> 'user' -> 'preferred_mode' = 'null'::jsonb from r where k = 'list'),
-          '没设打法是 null');
-select is((select (v -> 1 -> 'venues' -> 0 ->> 'km')::numeric between 4 and 7 from r where k = 'list'), true, '距离按公里');
+select is((select v -> 2 -> 'venues' -> 0 ->> 'km' from r where k = 'list')::numeric between 4 and 7, true, '距离按公里');
+select is((select v -> 0 -> 'user' -> 'usual_times' from r where k = 'list'), '[]'::jsonb, '带上常用时间（没设是空的）');
+select is((select array_agg(x ->> 'is_friend' order by n) from r, jsonb_array_elements(v) with ordinality t(x, n) where k = 'list'),
+          array['false', 'true', 'false', 'false', 'false'], '是不是球友');
+select is((select array_agg(coalesce(x ->> 'friend_request', '-') order by n) from r, jsonb_array_elements(v) with ordinality t(x, n) where k = 'list'),
+          array['-', '-', '-', '-', 'received'], 'TA 申请过加我');
+
+-- 加球友：不同馆的人也能申请（大厅里的人都能看资料）
+select is(public.send_friend_request(pg_temp.u(3)), 'requested', '大厅里的人能申请加球友');
+select ok(public.player_card(pg_temp.u(8)) is not null, '大厅里的人能看资料');
+select is((select x ->> 'friend_request' from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) x
+           where x -> 'user' ->> 'id' = pg_temp.u(3)::text), 'sent', '我申请过显示 sent');
+reset role;
+update public.profiles set discoverable = false where id = pg_temp.u(12);
+select pg_temp.login(1);
+select throws_ok($$ select public.send_friend_request(pg_temp.u(12)) $$, '42501', 'not_allowed', '没收藏球馆的不在大厅里，不能随便申请');
 
 -- 跳过 30 天
 select public.skip_nearby(pg_temp.u(8));
-select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(3)], '跳过的人不再出现');
+select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(3), pg_temp.u(10)], '跳过的人不再出现');
 reset role;
 update public.nearby_skips set created_at = now() - interval '31 days' where user_id = pg_temp.u(1);
 select pg_temp.login(1);
-select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(3), pg_temp.u(8)], '30 天后又出现');
+select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(3), pg_temp.u(8), pg_temp.u(10)], '30 天后又出现');
 
--- 不能约的人
-select throws_ok($$ select public.wish_to_play(pg_temp.u(4)) $$, 'P0002', 'not_available', '没开常客显示的不能约');
-select throws_ok($$ select public.wish_to_play(pg_temp.u(5)) $$, 'P0002', 'not_available', '拉黑了的不能约');
-select throws_ok($$ select public.wish_to_play(pg_temp.u(6)) $$, 'P0002', 'not_available', '已经是球友的不用约');
-select throws_ok($$ select public.wish_to_play(pg_temp.u(1)) $$, 'P0002', 'not_available', '不能约自己');
-select pg_temp.login(4);
-select throws_ok($$ select public.wish_to_play(pg_temp.u(2)) $$, '22023', 'not_visible', '自己没开常客显示先要打开');
-
--- 想一起打：等对方回复 -------------------------------------------------------------
-select pg_temp.login(1);
-select is(public.wish_to_play(pg_temp.u(2)), '{"mutual": false, "remaining": 9, "suggestion": null}'::jsonb, '发出去，今天还能约 9 个');
-select is(public.wish_to_play(pg_temp.u(2)), '{"mutual": false, "remaining": 9, "suggestion": null}'::jsonb, '再右滑一次什么都不变');
-select is(pg_temp.near(), array[pg_temp.u(3), pg_temp.u(8)], '在等回复的人不再出现');
+-- 定级以后出现
 reset role;
-select is(pg_temp.kinds(2, 'play_wish'), 1, '对方收到一条想一起打的通知');
-select is((select title from public.notifications where user_id = pg_temp.u(2) and kind = 'play_wish'), 'Near1 wants to play with you',
-          '通知写着谁想打');
+update public.profiles set assessed_at = now() where id = pg_temp.u(9);
+select pg_temp.login(1);
+select ok(pg_temp.u(9) = any (pg_temp.near()), '定级以后出现在大厅里');
 
-select pg_temp.login(2);
-insert into r select 'pending', public.pending_play_wishes();
-select is((select jsonb_array_length(v) from r where k = 'pending'), 1, '收到的想一起打');
-select is((select v -> 0 -> 'from' ->> 'id' from r where k = 'pending'), pg_temp.u(1)::text, '是谁');
-select is((select v -> 0 ->> 'shared_venue' from r where k = 'pending'), '21 Badminton Club (21BC)', '也常去哪家');
+-- 常用时间 ---------------------------------------------------------------------------
+select lives_ok(format($$ update public.profiles set usual_times = '[{"weekday": %s, "start": "14:00", "end": "18:00"}]' where id = %L $$,
+                       pg_temp.wd2(), pg_temp.u(1)), '自己改常用时间');
+select throws_ok($$ update public.profiles set usual_times = '[{"weekday": 8, "start": "14:00", "end": "18:00"}]' where id = pg_temp.u(1) $$,
+                 '23514', null, '星期只能 1–7');
+select throws_ok($$ update public.profiles set usual_times = '[{"weekday": 1, "start": "18:00", "end": "14:00"}]' where id = pg_temp.u(1) $$,
+                 '23514', null, '结束要晚于开始');
+select throws_ok($$ update public.profiles set usual_times = '[{"weekday": 1, "start": "9:00", "end": "14:00"}]' where id = pg_temp.u(1) $$,
+                 '23514', null, '时间写成 HH:MM');
+select throws_ok($$ update public.profiles set usual_times = (select jsonb_agg(jsonb_build_object('weekday', 1, 'start', '08:00', 'end', '09:00'))
+                                                             from generate_series(1, 15)) where id = pg_temp.u(1) $$,
+                 '23514', null, '最多 14 段');
+select is((select x -> 'user' -> 'usual_times' -> 0 ->> 'start' from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) x
+           where x -> 'user' ->> 'id' = pg_temp.u(2)::text), null, '别人没设就没有');
 
--- 同意：成为球友、告诉对方、推荐共同球馆
-select is(public.respond_play_wish(pg_temp.u(1), true) -> 'suggestion' ->> 'venue_id', 'v-us-ca-21-badminton-club-21bc', '同意后推荐两人都常去的球馆');
-select is(public.pending_play_wishes(), '[]'::jsonb, '回复过就不在列表里');
+-- 推荐时间：两人常用时间的重叠
+select is(public.suggest_invite_window(pg_temp.u(2)), null, '没有重叠就是 null');
 reset role;
-select ok(public.are_friends(pg_temp.u(1), pg_temp.u(2)), '同意后成为球友');
-select is(pg_temp.kinds(1, 'play_wish_accepted'), 1, '对方收到同意的通知');
-
--- 互相想打：直接成为球友，两边都收到通知
-select pg_temp.login(3);
-select public.wish_to_play(pg_temp.u(1));
+update public.profiles set usual_times = jsonb_build_array(jsonb_build_object('weekday', pg_temp.wd2(), 'start', '15:00', 'end', '20:00'),
+                                                           jsonb_build_object('weekday', pg_temp.wd2(), 'start', '06:00', 'end', '07:00'))
+  where id = pg_temp.u(2);
 select pg_temp.login(1);
-select is(public.wish_to_play(pg_temp.u(3)), '{"mutual": true, "remaining": 8, "suggestion": null}'::jsonb,
-          '对方也想和我打：互相想打；没有共同球馆就不推荐');
+insert into r select 'suggest', public.suggest_invite_window(pg_temp.u(2));
+select is((select (v ->> 'window_start')::timestamptz from r where k = 'suggest'),
+          (pg_temp.day2() + time '15:00') at time zone 'America/Los_Angeles', '从两人都有空的时候开始');
+select is((select (v ->> 'window_end')::timestamptz from r where k = 'suggest'),
+          (pg_temp.day2() + time '18:00') at time zone 'America/Los_Angeles', '到先结束的那个');
+select is((select v ->> 'daypart' || ' ' || (v ->> 'venue_id') from r where k = 'suggest'), 'afternoon v-us-ca-21-badminton-club-21bc',
+          '整段在下午，球馆是两人都常去的');
+
+-- 新用户默认在附近的人里显示 ---------------------------------------------------------
 reset role;
-select ok(public.are_friends(pg_temp.u(1), pg_temp.u(3)) and pg_temp.kinds(3, 'play_wish_accepted') = 1
-          and pg_temp.kinds(1, 'play_wish_accepted') = 2, '互相想打的成为球友，两边都收到通知');
-
--- 不了：不告诉对方，30 天内两边都不再出现
-select pg_temp.login(8);
-select public.wish_to_play(pg_temp.u(1));
-select pg_temp.login(1);
-select is(public.respond_play_wish(pg_temp.u(8), false), '{"suggestion": null}'::jsonb, '不了');
-select is(pg_temp.kinds(8, 'play_wish_accepted'), 0, '拒绝不通知对方');
-select is(pg_temp.near(), '{}'::uuid[], '拒绝过的人不再出现');
-select pg_temp.login(8);
-select ok(not pg_temp.u(1) = any (pg_temp.near(37.494296, -121.932259)), '被拒绝的一方也看不到对方');
-select throws_ok($$ select public.wish_to_play(pg_temp.u(1)) $$, 'P0002', 'not_available', '30 天内不能再约');
-
--- 每天 10 个：已经发了 2 个（给 2 号、3 号），再发 8 个到上限
-select pg_temp.login(1);
-select is((select (array_agg((public.wish_to_play(pg_temp.u(n)) ->> 'remaining')::int order by n))[8] from generate_series(9, 16) n), 0,
-          '第 10 个发完还剩 0 个');
-select throws_ok($$ select public.wish_to_play(pg_temp.u(17)) $$, '54000', 'wish_limit', '24 小时最多 10 个');
-
--- 权限
-select throws_ok($$ select * from public.play_wishes $$, '42501', null, '不能直接读想一起打的表');
-set local role anon;
-select throws_ok($$ select public.nearby_players(37.5, -122.0, 20) $$, '42501', null, '没登录不能看附近的人');
+insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000004199', 'np99@test.local');
+select pg_temp.login(99);
+insert into public.profiles (id, nickname) values (auth.uid(), 'Newbie');
+select is((select show_as_regular from public.profiles where id = auth.uid()), true, '新用户默认显示');
 
 select * from finish();
 rollback;
