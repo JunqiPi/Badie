@@ -118,11 +118,18 @@ enum DemoLauncher {
             }
             environment.appState.showsDayCards = true
         case "nearbyCards":
-            // 按天看人刷完了：接着是常在附近打的人
+            // 首页“附近的人”：常去附近球馆的人，卡片上有常有空的时间
             router.selectedTab = .home
-            environment.matchManager.draft.day = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
-            DayCandidatesView.demoStartsAtNearby = true
-            environment.appState.showsDayCards = true
+            environment.appState.showsLobby = true
+        case "nearbyInvite":
+            // 点了卡片上的空闲时间：约 TA 的半屏，时间已经填好
+            router.selectedTab = .home
+            DayCandidatesView.demoOpensInvite = true
+            environment.appState.showsLobby = true
+        case "inviteAnswer":
+            // 收到附近的人的邀请：不了 / 换个时间 / 好
+            router.selectedTab = .home
+            environment.appState.showsInvites = true
         case "playerProfile":
             // 昨天一起打过单打的球友：资料页显示“你们的交集”
             router.selectedTab = .home

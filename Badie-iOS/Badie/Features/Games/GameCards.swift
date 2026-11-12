@@ -21,14 +21,35 @@ struct GameTicketCard: View {
                 Spacer()
                 statusChip(now: now)
             }
-            HStack(alignment: .lastTextBaseline, spacing: 2) {
-                Text(DateText.time(game.slot.startTime))
-                    .scaledFont(size: compact ? 34 : 44)
-                Text("–\(DateText.time(game.slot.endTime))")
-                    .scaledFont(size: compact ? 18 : 22, relativeTo: .title3)
+            if let window = game.window {
+                // 还没定具体几点：大字写“周六 下午”，小字写“14:00–18:00 之间 · 球馆”
+                Text(WindowText.headline(window, now: now))
+                    .scaledFont(size: compact ? 30 : 40)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Text("\(WindowText.between(window)) · \(game.court.name)")
+                    .font(AppTheme.Typography.bodyBold)
+                    .monospacedDigit()
+                    .lineLimit(2)
+            } else {
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text(DateText.time(game.slot.startTime))
+                        .scaledFont(size: compact ? 34 : 44)
+                    Text("–\(DateText.time(game.slot.endTime))")
+                        .scaledFont(size: compact ? 18 : 22, relativeTo: .title3)
+                }
+                .monospacedDigit()
             }
-            .monospacedDigit()
-            if compact {
+            if game.window != nil {
+                if !compact {
+                    DashedDivider()
+                        .padding(.vertical, AppTheme.Spacing.xs)
+                    Text(game.court.address)
+                        .font(AppTheme.Typography.footnote)
+                        .opacity(0.75)
+                        .lineLimit(1)
+                }
+            } else if compact {
                 // 首页：“今天 · 球馆名”一行，地址在详情里
                 Text("\(dayText) · \(game.court.name)")
                     .font(AppTheme.Typography.bodyBold)
@@ -73,7 +94,7 @@ struct GameTicketCard: View {
             }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(game.mode.title)球局，\(game.slot.formattedFull)，\(game.court.name)，\(playersText)")
+        .accessibilityLabel("\(game.mode.title)球局，\(timeText)，\(game.court.name)，\(playersText)")
     }
 
     private func backing<S: InsettableShape>(_ shape: S) -> some View {
@@ -94,6 +115,10 @@ struct GameTicketCard: View {
         case .completed: return AppTheme.Colors.mint
         case .cancelled: return AppTheme.Colors.surfaceMuted
         }
+    }
+
+    private var timeText: String {
+        game.window.map { "\(WindowText.headline($0)) \(WindowText.between($0))" } ?? game.slot.formattedFull
     }
 
     /// “今天”“明天”，再往后是日期
@@ -121,7 +146,9 @@ struct GameTicketCard: View {
     private func statusChip(now: Date) -> some View {
         switch game.status {
         case .confirmed:
-            if game.isInProgress(now: now) {
+            if !game.isTimeSet {
+                chip(String(localized: "待定时间"), fill: AppTheme.Colors.butter)
+            } else if game.isInProgress(now: now) {
                 chip(String(localized: "进行中"), fill: AppTheme.Colors.lime)
             } else if game.slot.endTime <= now {
                 chip(String(localized: "待完成"), fill: AppTheme.Colors.butter)
@@ -176,7 +203,7 @@ struct GameRowCard: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
-                    Text("\(game.mode.title) · \(game.slot.formattedTimeRange)")
+                    Text("\(game.mode.title) · \(game.window.map { WindowText.headline($0) } ?? game.slot.formattedTimeRange)")
                         .font(AppTheme.Typography.headline)
                         .foregroundStyle(AppTheme.Colors.ink)
                         .monospacedDigit()

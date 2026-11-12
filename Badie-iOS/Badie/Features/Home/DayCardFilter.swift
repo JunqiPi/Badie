@@ -26,6 +26,17 @@ struct DayCardFilter: Codable, Equatable {
             }
         }
 
+        /// 一段空闲时间有没有落在这个时段里（上午 0–12 点、下午 12–18 点、晚上 18 点以后，和按开始时间分的一致）
+        func overlaps(_ slot: RecurringTimeSlot) -> Bool {
+            let range: (Int, Int)
+            switch self {
+            case .morning: range = (0, 12 * 60)
+            case .afternoon: range = (12 * 60, 18 * 60)
+            case .evening: range = (18 * 60, 24 * 60)
+            }
+            return min(slot.endMinutes, range.1) - max(slot.startMinutes, range.0) > 0
+        }
+
         /// 按开始时间：12 点前上午，18 点前下午，之后晚上
         init(_ date: Date) {
             let hour = Calendar.current.component(.hour, from: date)
@@ -87,8 +98,11 @@ struct DayCardFilter: Codable, Equatable {
         return true
     }
 
-    /// 常在附近的人：不看时间；项目按 TA 常打的（没填的都算），混双算双打；球馆按 TA 常去的
+    /// 附近的人：时间按 TA 的空闲时间（有一段落在选的时段里就算，没填的都算）；
+    /// 项目按 TA 常打的（没填的都算），混双算双打；球馆按 TA 常去的
     func matches(_ card: MockBackend.NearbyPlayer, user: User?) -> Bool {
+        if !times.isEmpty, !card.usualTimes.isEmpty,
+           !card.usualTimes.contains(where: { slot in times.contains { $0.overlaps(slot) } }) { return false }
         if let mode = card.preferredMode {
             switch event {
             case .any: break

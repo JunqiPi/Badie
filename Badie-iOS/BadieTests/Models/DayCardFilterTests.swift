@@ -1,7 +1,7 @@
 import XCTest
 @testable import Badie
 
-/// 按天看人的筛选也用在“常在附近”的卡片上：不看时间，项目按 TA 常打的（没填的都算），混双算双打
+/// 按天看人的筛选也用在附近的人的卡片上：时间按 TA 的空闲时间，项目按 TA 常打的（没填的都算），混双算双打
 final class DayCardFilterTests: XCTestCase {
 
     private func player(mode: GameMode?, venues: [String] = ["v1"], noShows: Int = 0) -> MockBackend.NearbyPlayer {
@@ -40,9 +40,18 @@ final class DayCardFilterTests: XCTestCase {
         XCTAssertTrue(filter.matches(player(mode: nil), user: nil))
     }
 
-    func testTimesAreIgnoredForNearby() {
+    func testTimesUseUsualTimesForNearby() {
         var filter = DayCardFilter()
         filter.times = [.morning]
-        XCTAssertTrue(filter.matches(player(mode: nil), user: nil))
+        XCTAssertTrue(filter.matches(player(mode: nil), user: nil), "没填空闲时间的都算")
+        var evenings = player(mode: nil)
+        evenings.usualTimes = [RecurringTimeSlot(dayOfWeek: 3, startHour: 19, endHour: 21)]
+        XCTAssertFalse(filter.matches(evenings, user: nil))
+        filter.times = [.morning, .evening]
+        XCTAssertTrue(filter.matches(evenings, user: nil))
+        var weekend = player(mode: nil)
+        weekend.usualTimes = [RecurringTimeSlot(dayOfWeek: 7, startHour: 10, endHour: 14)]
+        filter.times = [.afternoon]
+        XCTAssertTrue(filter.matches(weekend, user: nil), "10:00–14:00 也算下午")
     }
 }

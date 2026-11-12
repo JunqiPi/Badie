@@ -41,6 +41,8 @@ struct OnboardingForm {
     var timePresets: Set<TimePreset> = []
     /// 常去球馆（注册后设为收藏，快速匹配默认选中）
     var favoriteVenueIds: [String] = []
+    /// 在附近的人里显示我（默认打开；就是设置里的“在同馆常客里显示我”）
+    var showsInLobby = true
 }
 
 /// 邮件里的 6 位码用来做什么：确认注册的邮箱、验证码登录、重设密码（就是 Supabase 校验时的 type）
@@ -542,6 +544,14 @@ struct OnboardingFlow: View {
             }
             favoriteVenuesCard
             locationCard
+            Toggle(isOn: $form.showsInLobby) {
+                Text("在附近的人里显示我")
+                    .font(AppTheme.Typography.bodyBold)
+                    .foregroundStyle(AppTheme.Colors.ink)
+            }
+            .tint(AppTheme.Colors.success)
+            .padding(AppTheme.Spacing.md)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
         }
         .sheet(isPresented: $showVenuePicker) {
             VenuePickerView(mode: .multiple(max: 3), selection: $form.favoriteVenueIds, allowsAdding: false)
@@ -953,6 +963,7 @@ struct OnboardingFlow: View {
                     answers: form.assessmentAnswers
                 )
                 try? appState.backend.saveRecurringSlots(slots)
+                applyLobbyVisibility()
                 await uploadPhoto()
                 if result == nil { appState.backend.markAssessmentSkipped() }
                 for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
@@ -974,6 +985,7 @@ struct OnboardingFlow: View {
                                            isReturning: $0.isReturning, assessedAt: Date(), rating: $0.tier.rating)
                 }
             )
+            applyLobbyVisibility()
             await uploadPhoto()
             if result == nil { appState.backend.markAssessmentSkipped() }
             for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
@@ -982,6 +994,13 @@ struct OnboardingFlow: View {
         } catch {
             appState.showError(error)
         }
+    }
+
+    /// 最后一步的“在附近的人里显示我”：和默认不一样才存
+    private func applyLobbyVisibility() {
+        guard var privacy = appState.currentUser?.privacy, privacy.showsAsRegular != form.showsInLobby else { return }
+        privacy.showsAsRegular = form.showsInLobby
+        appState.backend.updatePrivacy(privacy)
     }
 
     /// 注册时选了照片：账号建好后再传；没传上去不影响注册，之后可以在编辑资料里再传

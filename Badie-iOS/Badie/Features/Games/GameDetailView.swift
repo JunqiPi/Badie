@@ -15,6 +15,7 @@ struct GameDetailView: View {
     @State private var showCancelConfirm = false
     @State private var resultSheet: ResultSheetPurpose?
     @State private var isWorking = false
+    @State private var showsSetTime = false
 
     private var game: Game? { matchManager.game(id: gameId) }
     private var me: String? { appState.currentUser?.id }
@@ -27,12 +28,14 @@ struct GameDetailView: View {
                         ShareLink(item: game.shareText) {
                             Label("分享球局", systemImage: "square.and.arrow.up")
                         }
-                        if game.isUpcoming() {
+                        if game.isUpcoming(), game.isTimeSet {
                             Button {
                                 showCalendar = true
                             } label: {
                                 Label("加入日历", systemImage: "calendar.badge.plus")
                             }
+                        }
+                        if game.isUpcoming() {
                             Button(role: .destructive) {
                                 showCancelConfirm = true
                             } label: {
@@ -61,6 +64,13 @@ struct GameDetailView: View {
             if let game {
                 CalendarEventEditor(game: game) { showCalendar = false }
                     .ignoresSafeArea()
+            }
+        }
+        .sheet(isPresented: $showsSetTime) {
+            if let game {
+                SetGameTimeSheet(game: game)
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
             }
         }
         .sheet(item: $resultSheet) { purpose in
@@ -119,6 +129,10 @@ struct GameDetailView: View {
                     }
                 }
 
+                if game.status == .confirmed, let window = game.window {
+                    setTimeCard(window)
+                }
+
                 if game.status == .confirmed {
                     actionGrid(game)
                 }
@@ -147,6 +161,27 @@ struct GameDetailView: View {
             .padding(.bottom, AppTheme.Spacing.xxxl)
         }
         .refreshesEverything()
+    }
+
+    // MARK: 定时间
+
+    /// 约成了还没定具体几点：谁都可以定；到最晚时间还没定会自动取消，不算谁的
+    private func setTimeCard(_ window: PlayWindow) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(spacing: AppTheme.Spacing.xs) {
+                Text("具体几点？")
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                RulesButton(title: String(localized: "定时间"), points: [
+                    String(localized: "在群聊里商量好，谁都可以点“定时间”"),
+                    String(localized: "\(DateText.deadline(window.deadline)) 前还没定，球局自动取消，不算谁爽约"),
+                ])
+                Spacer(minLength: 0)
+            }
+            Button("定时间") { showsSetTime = true }
+                .buttonStyle(BrutalButtonStyle(kind: .primary, size: .medium))
+        }
+        .card()
     }
 
     // MARK: Venue

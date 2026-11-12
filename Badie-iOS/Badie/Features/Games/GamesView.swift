@@ -128,15 +128,20 @@ struct GamesView: View {
                             Button {
                                 router.open(.room(id: room.id))
                             } label: {
-                                PublicRoomCard(room: room,
-                                               distanceText: room.court.map { $0.formattedDistance(from: locationManager.coordinate) },
-                                               currentUserId: appState.currentUser?.id, width: nil)
-                                    .overlay(alignment: .topTrailing) {
-                                        if room.visibility == .privateRoom {
-                                            TagPill(text: String(localized: "私密 · \(room.code)"), icon: "lock.fill", fill: AppTheme.Colors.butter)
-                                                .offset(x: -12, y: -10)
+                                if room.invite != nil {
+                                    // 附近的人里的邀请：和谁、大概什么时候、轮到谁
+                                    InviteRoomCard(room: room, currentUserId: appState.currentUser?.id)
+                                } else {
+                                    PublicRoomCard(room: room,
+                                                   distanceText: room.court.map { $0.formattedDistance(from: locationManager.coordinate) },
+                                                   currentUserId: appState.currentUser?.id, width: nil)
+                                        .overlay(alignment: .topTrailing) {
+                                            if room.visibility == .privateRoom {
+                                                TagPill(text: String(localized: "私密 · \(room.code)"), icon: "lock.fill", fill: AppTheme.Colors.butter)
+                                                    .offset(x: -12, y: -10)
+                                            }
                                         }
-                                    }
+                                }
                             }
                             .buttonStyle(PressableStyle(scale: 0.98))
                         }

@@ -15,10 +15,13 @@ struct HomeView: View {
     @State private var regulars: [VenueRegular] = []
     @State private var weeklyStanding: WeeklyStanding?
     @State private var pendingChallenges = 0
-    /// 别人想和我打球（还没回），和点了“好”之后要弹的“你们都想一起打”
-    @State private var playWishes: [MockBackend.PlayWish] = []
-    @State private var acceptedWish: PlayMatch?
-    @State private var playMatch: PlayMatch?
+    /// 附近的人里的邀请（我发的、收到的，还没结束的），和点了“好”之后要打开的球局
+    @State private var invites: [Room] = []
+    @State private var acceptedGameId: String?
+
+    private var invitesForMe: [Room] {
+        invites.filter { $0.invite?.awaitingId == appState.currentUser?.id && $0.status.isOpen }
+    }
 
     private var days: [Date] {
         let calendar = Calendar.current
@@ -35,6 +38,9 @@ struct HomeView: View {
                 dateSection
 
                 updates
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+
+                nearbyEntry
                     .padding(.horizontal, AppTheme.Spacing.screen)
 
                 if locationManager.isDenied {
@@ -86,33 +92,37 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $appState.showsDayCards) {
             DayCandidatesView(day: matchManager.draft.day)
         }
-        .sheet(isPresented: $appState.showsPlayWishes, onDismiss: {
-            // 点了好：半屏收起后再弹“你们都想一起打”
-            if let accepted = acceptedWish {
-                acceptedWish = nil
-                playMatch = accepted
+        .fullScreenCover(isPresented: $appState.showsLobby) {
+            DayCandidatesView(day: matchManager.draft.day, lobbyOnly: true)
+        }
+        .sheet(isPresented: $appState.showsInvites, onDismiss: {
+            // 点了好：半屏收起后打开球局
+            if let id = acceptedGameId {
+                acceptedGameId = nil
+                router.open(.game(id: id), in: .games)
             }
+            Task { await loadInvites() }
         }) {
-            PlayWishSheet(wishes: playWishes) { wish, accepted, suggestion in
-                answered(wish, accepted: accepted, suggestion: suggestion)
+            InviteAnswerSheet(invites: invitesForMe) { room, gameId in
+                answered(room, gameId: gameId)
             }
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(28)
         }
-        .fullScreenCover(item: $playMatch) { match in
-            PlayMatchView(match: match)
-        }
         .task {
             await friendManager.refreshRegulars()
             reloadPlayers()
-            await loadPlayWishes()
+            await loadInvites()
         }
-        .onChange(of: appState.showsPlayWishes) { _, showing in
-            if showing { Task { await loadPlayWishes(closesIfEmpty: true) } }
+        .onChange(of: appState.showsInvites) { _, showing in
+            if showing { Task { await loadInvites(closesIfEmpty: true) } }
         }
         .onChange(of: appState.showsDayCards) { _, showing in
-            if !showing { Task { await loadPlayWishes() } }
+            if !showing { Task { await loadInvites() } }
+        }
+        .onChange(of: appState.showsLobby) { _, showing in
+            if !showing { Task { await loadInvites() } }
         }
         .onAppear {
             reloadPlayers()
@@ -127,7 +137,7 @@ struct HomeView: View {
         }
         .onChange(of: inboxManager.unreadCount) { _, _ in
             reloadRankings()
-            Task { await loadPlayWishes() }
+            Task { await loadInvites() }
         }
         .onChange(of: locationManager.nearbyCourts) { _, _ in
             prepareDraft()
@@ -317,7 +327,11 @@ struct HomeView: View {
 
     /// 没看过的约球消息（取消、邀请、约成……）按种类归在一起，最早出现的种类排前面
     private var actionableUpdates: [(kind: InboxItem.Kind, items: [InboxItem])] {
-        let unread = inboxManager.items.filter { !$0.isRead && $0.kind.isActionable && $0.kind != .challenge }
+        // 附近的人里的邀请有自己的“邀请 N”，这里不重复
+        let inviteRooms = Set(invites.map(\.id))
+        let unread = inboxManager.items.filter {
+            !$0.isRead && $0.kind.isActionable && $0.kind != .challenge && !inviteRooms.contains($0.relatedId ?? "")
+        }
         var order: [InboxItem.Kind] = []
         var grouped: [InboxItem.Kind: [InboxItem]] = [:]
         for item in unread {
@@ -331,11 +345,12 @@ struct HomeView: View {
     @ViewBuilder
     private var updates: some View {
         let groups = actionableUpdates
-        if pendingChallenges > 0 || !groups.isEmpty || !playWishes.isEmpty {
+        let forMe = invitesForMe
+        if pendingChallenges > 0 || !groups.isEmpty || !forMe.isEmpty {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
-                if !playWishes.isEmpty {
-                    CountPill(icon: "heart.fill", title: String(localized: "想一起打"), count: playWishes.count) {
-                        appState.showsPlayWishes = true
+                if !forMe.isEmpty {
+                    CountPill(icon: "envelope.fill", title: String(localized: "邀请"), count: forMe.count) {
+                        appState.showsInvites = true
                     }
                 }
                 if pendingChallenges > 0 {
@@ -356,21 +371,40 @@ struct HomeView: View {
         }
     }
 
-    // MARK: 想一起打
+    // MARK: 附近的人
 
-    private func loadPlayWishes(closesIfEmpty: Bool = false) async {
-        guard appState.currentUser != nil, let wishes = try? await appState.backend.pendingPlayWishes() else { return }
-        playWishes = wishes
-        if closesIfEmpty && wishes.isEmpty { appState.showsPlayWishes = false }
+    /// 首页“附近的人”：打开只有附近的人的卡片
+    private var nearbyEntry: some View {
+        Button {
+            appState.showsLobby = true
+        } label: {
+            HStack(spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "person.2.wave.2.fill", fill: AppTheme.Colors.peach, size: 44)
+                Text("附近的人")
+                    .font(AppTheme.Typography.headline)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+            }
+            .padding(AppTheme.Spacing.lg)
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg)
+        }
+        .buttonStyle(PressableStyle(scale: 0.98))
     }
 
-    private func answered(_ wish: MockBackend.PlayWish, accepted: Bool, suggestion: MockBackend.PlaySuggestion?) {
-        playWishes.removeAll { $0.id == wish.id }
-        // 这个人的“想和你打球”通知也算看过了
-        for item in inboxManager.items where item.kind == .playWish && item.relatedId == wish.userId && !item.isRead {
+    private func loadInvites(closesIfEmpty: Bool = false) async {
+        guard appState.currentUser != nil, let rooms = try? await appState.backend.nearbyInvites() else { return }
+        invites = rooms
+        if closesIfEmpty && invitesForMe.isEmpty { appState.showsInvites = false }
+    }
+
+    private func answered(_ room: Room, gameId: String?) {
+        // 这个邀请的通知也算看过了
+        for item in inboxManager.items where item.relatedId == room.id && !item.isRead {
             inboxManager.markRead(item)
         }
-        if accepted { acceptedWish = PlayMatch(userId: wish.userId, suggestion: suggestion) }
+        if let gameId { acceptedGameId = gameId }
     }
 
     private func pillTitle(_ kind: InboxItem.Kind) -> String {
@@ -386,6 +420,7 @@ struct HomeView: View {
         case .kicked: return String(localized: "被移出")
         case .roomClosed: return String(localized: "球局关闭")
         case .challenge: return String(localized: "挑战")
+        case .gameTimeSet: return String(localized: "定了时间")
         default: return String(localized: "通知")
         }
     }

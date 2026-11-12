@@ -28,6 +28,7 @@ struct PlayerProfileSheet: View {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.lg) {
                     header(user)
                     statsRow(user)
+                    usualTimesLine(user)
                     winRateLine(user)
                     reputationCard(user)
                     connectionCard(user)
@@ -105,6 +106,16 @@ struct PlayerProfileSheet: View {
         HStack(spacing: AppTheme.Spacing.sm) {
             StatTile(value: user.gamesBand, label: String(localized: "打过"))
             StatTile(value: user.preferredMode?.title ?? String(localized: "都可以"), label: String(localized: "偏好"))
+        }
+    }
+
+    /// 空闲时间归纳成一行：“常有空：工作日晚上 · 周末下午”
+    @ViewBuilder
+    private func usualTimesLine(_ user: User) -> some View {
+        if let summary = UsualTimeText.summary(appState.backend.usualTimes(of: user.id)) {
+            Label(String(localized: "常有空：\(summary)"), systemImage: "calendar")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
         }
     }
 

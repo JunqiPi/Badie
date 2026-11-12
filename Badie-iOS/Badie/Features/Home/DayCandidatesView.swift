@@ -4,12 +4,15 @@ import SwiftUI
 /// 首页点某一天：这天附近在找人、和我水平对得上的球友，一张张卡片左右滑。
 /// 卡片就是对方的约球请求（项目、时间都定好了）。右滑和点爱心一样，直接约：
 /// 单打发约球邀请，TA 确认就成局；双打替我开一个公开的双打局并邀请 TA，附近的人可以加入补齐。
-/// 这天的刷完了，接着是“常在附近”的人（不分日期）：右滑是“想一起打”，对方同意（或也想）就加为球友
+/// 这天的刷完了，接着是附近的人（不分日期）：右滑是约 TA，选个大概的时间和球馆发一个邀请。
+/// 首页“附近的人”打开的是只有附近的人的这一叠（lobbyOnly）
 struct DayCandidatesView: View {
-    /// 演示截图：直接从“常在附近”开始（不拉这天的卡片）
-    static var demoStartsAtNearby = false
+    /// 演示截图：打开后直接弹出约第一张卡的半屏
+    static var demoOpensInvite = false
 
     let day: Date
+    /// 只看附近的人（首页“附近的人”）
+    var lobbyOnly = false
 
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
@@ -36,12 +39,21 @@ struct DayCandidatesView: View {
     @State private var dayUsers: Set<String> = []
     /// 滑过几张常在附近的卡：第一张上面显示“这天的刷完了”
     @State private var nearbySwiped = 0
-    /// 第一次右滑前的提醒（打开可见 / 加照片），以及是为哪张卡
-    @State private var prompt: WishPromptSheet.Kind?
+    /// 第一次约人前的提醒（打开可见 / 加照片），以及是为哪张卡、点的哪段空闲时间
+    @State private var prompt: InvitePromptSheet.Kind?
     @State private var promptCard: MockBackend.NearbyPlayer?
+    @State private var promptSlot: RecurringTimeSlot?
     @State private var cardCropItem: AvatarCropSheet.Item?
-    /// 双方都想一起打
-    @State private var match: PlayMatch?
+    /// 正在约的人（半屏“约<昵称>”）
+    @State private var composeTarget: ComposeTarget?
+
+    private struct ComposeTarget: Identifiable {
+        let player: MockBackend.NearbyPlayer
+        /// 点了卡片上的哪段空闲时间
+        let slot: RecurringTimeSlot?
+
+        var id: String { player.id }
+    }
 
     /// 没开定位：不能按默认城市找人（会约到别的城市）
     private var needsLocation: Bool {
@@ -80,17 +92,24 @@ struct DayCandidatesView: View {
     }
 
     private var deck: [DeckCard] {
-        visible.map { DeckCard.day($0) } + visibleNearby.map { DeckCard.nearby($0) }
+        (lobbyOnly ? [] : visible.map { DeckCard.day($0) }) + visibleNearby.map { DeckCard.nearby($0) }
     }
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.md) {
             HStack(spacing: AppTheme.Spacing.xs) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(day.formatted(.dateTime.month().day().weekday(.wide)))
+                    Text(lobbyOnly ? String(localized: "附近的人") : day.formatted(.dateTime.month().day().weekday(.wide)))
                         .font(AppTheme.Typography.title)
                         .foregroundStyle(AppTheme.Colors.ink)
-                    if !visible.isEmpty {
+                    if lobbyOnly {
+                        if !visibleNearby.isEmpty {
+                            Text("\(visibleNearby.count) 人")
+                                .font(AppTheme.Typography.footnoteBold)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .monospacedDigit()
+                        }
+                    } else if !visible.isEmpty {
                         Text("\(visible.count) 人")
                             .font(AppTheme.Typography.footnoteBold)
                             .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -106,9 +125,9 @@ struct DayCandidatesView: View {
                     String(localized: "右滑约 TA，左滑跳过"),
                     String(localized: "单打：发约球邀请，TA 确认就成局"),
                     String(localized: "双打：替你开一个公开双打局并邀请 TA，附近的人可以加入补齐"),
-                    String(localized: "常在附近：打开了“在同馆常客里显示我”、常去附近球馆的人"),
-                    String(localized: "想一起打：对方同意（或也想和你打）就加为球友"),
-                    String(localized: "每天最多 10 个"),
+                    String(localized: "附近的人：定了级、常去附近球馆、打开了“在同馆常客里显示我”的人"),
+                    String(localized: "约附近的人：选个大概的时间和球馆，TA 说好就成局，具体几点在群聊里定"),
+                    String(localized: "每天最多约 10 个，加球友不算"),
                     String(localized: "跳过或拒绝的人 30 天内不会再出现")
                 ])
                 Spacer()
@@ -129,7 +148,7 @@ struct DayCandidatesView: View {
                 ProgressView()
                 Spacer()
             } else if let card = deck.first {
-                if card.isNearby && nearbySwiped == 0 {
+                if card.isNearby && nearbySwiped == 0 && !lobbyOnly {
                     NearbyDivider()
                         .padding(.horizontal, AppTheme.Spacing.screen)
                 }
@@ -161,10 +180,14 @@ struct DayCandidatesView: View {
                 }
                 .disabled(leaving)
                 .padding(.bottom, AppTheme.Spacing.lg)
-            } else if !cards.isEmpty || !nearby.isEmpty {
+            } else if (!lobbyOnly && !cards.isEmpty) || !nearby.isEmpty {
                 Spacer()
                 EmptyStateView(icon: "line.3.horizontal.decrease.circle", title: String(localized: "没有符合筛选的人"),
                                actionTitle: String(localized: "清除筛选")) { setFilter(DayCardFilter()) }
+                Spacer()
+            } else if lobbyOnly {
+                Spacer()
+                EmptyStateView(icon: "person.2", title: String(localized: "附近暂时没有人"))
                 Spacer()
             } else {
                 Spacer()
@@ -193,21 +216,22 @@ struct DayCandidatesView: View {
                 .presentationDragIndicator(.visible)
         }
         .sheet(item: $prompt) { kind in
-            WishPromptSheet(kind: kind, onConfirm: { confirmPrompt(kind) }, onCancel: { cancelPrompt() },
-                            onPhoto: { item in pickedPhoto(item) })
+            InvitePromptSheet(kind: kind, onConfirm: { confirmPrompt(kind) }, onCancel: { cancelPrompt() },
+                              onPhoto: { item in pickedPhoto(item) })
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(28)
         }
         .sheet(item: $cardCropItem) { item in
-            AvatarCropSheet(image: item.image, shape: .card) { jpeg in Task { await uploadCardThenWish(jpeg) } }
+            AvatarCropSheet(image: item.image, shape: .card) { jpeg in Task { await uploadCardThenInvite(jpeg) } }
         }
-        .fullScreenCover(item: $match) { match in
-            PlayMatchView(match: match) { route, tab in
-                // 关掉整个卡片页（连同这一页），再打开约球或聊天
-                appState.showsDayCards = false
-                router.open(route, in: tab)
+        .sheet(item: $composeTarget) { target in
+            InviteComposeSheet(userId: target.player.userId, partnerTimes: target.player.usualTimes,
+                               theirVenues: target.player.venues, prefill: target.slot) { result, window in
+                sent(target.player, result: result, window: window)
             }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
     }
 
@@ -301,7 +325,7 @@ struct DayCandidatesView: View {
     }
 
     private func likeTitle(_ card: DeckCard) -> String {
-        card.isNearby ? String(localized: "想一起打") : String(localized: "约 TA")
+        String(localized: "约 TA")
     }
 
     @ViewBuilder
@@ -328,7 +352,8 @@ struct DayCandidatesView: View {
         case .nearby(let player):
             NearbyCardView(user: friendManager.user(id: player.userId), card: player,
                            venue: player.venues.first { filter.venueIds.contains($0.id) },
-                           onProfile: { profile = PlayerSheetItem(id: player.userId) })
+                           onProfile: { profile = PlayerSheetItem(id: player.userId) },
+                           onInvite: { slot in invite(player, slot: slot) })
         }
     }
 
@@ -384,7 +409,7 @@ struct DayCandidatesView: View {
         defer { isLoading = false }
         do {
             var fresh: [MockBackend.DayCandidate] = []
-            if !Self.demoStartsAtNearby {
+            if !lobbyOnly {
                 fresh = try await appState.backend.dayCandidates(on: day, center: locationManager.coordinate,
                                                                  radiusKm: locationManager.preferences.travelRadiusKm)
             }
@@ -411,6 +436,10 @@ struct DayCandidatesView: View {
         let known = Set(merged.map(\.id))
         merged += fresh.filter { !known.contains($0.id) && !nearbySeen.contains($0.id) }
         nearby = merged
+        if Self.demoOpensInvite, composeTarget == nil, let first = visibleNearby.first {
+            Self.demoOpensInvite = false
+            composeTarget = ComposeTarget(player: first, slot: UsualTimeText.sortedByNext(first.usualTimes).first)
+        }
     }
 
     /// 卡片飞走，动画放完再从叠里拿掉
@@ -469,7 +498,7 @@ struct DayCandidatesView: View {
     private func like(_ card: DeckCard) {
         switch card {
         case .day(let candidate): like(candidate)
-        case .nearby(let player): wish(player)
+        case .nearby(let player): invite(player, slot: nil)
         }
     }
 
@@ -517,37 +546,50 @@ struct DayCandidatesView: View {
     /// 选照片的提醒每台设备只出一次
     private static let photoAskedKey = "BadieNearbyPhotoAsked"
 
-    /// 右滑：想一起打。没打开“在同馆常客里显示我”先问；没卡片照片提醒一次
-    private func wish(_ player: MockBackend.NearbyPlayer) {
+    /// 右滑、点卡片上的空闲时间：约 TA。没打开“在同馆常客里显示我”先问；没卡片照片提醒一次
+    private func invite(_ player: MockBackend.NearbyPlayer, slot: RecurringTimeSlot?) {
         guard !leaving, let me = appState.currentUser else { return }
         if !me.privacy.showsAsRegular {
-            ask(.visibility, for: player)
+            ask(.visibility, for: player, slot: slot)
         } else if me.avatar.cardPhotoVersion == nil && !UserDefaults.standard.bool(forKey: Self.photoAskedKey) {
             UserDefaults.standard.set(true, forKey: Self.photoAskedKey)
-            ask(.photo, for: player)
+            ask(.photo, for: player, slot: slot)
         } else {
-            sendWish(player)
+            openCompose(player, slot: slot)
         }
     }
 
-    private func ask(_ kind: WishPromptSheet.Kind, for player: MockBackend.NearbyPlayer) {
+    private func ask(_ kind: InvitePromptSheet.Kind, for player: MockBackend.NearbyPlayer, slot: RecurringTimeSlot?) {
         withAnimation(AppTheme.Motion.standard) { drag = .zero }
         promptCard = player
+        promptSlot = slot
         prompt = kind
     }
 
-    private func confirmPrompt(_ kind: WishPromptSheet.Kind) {
+    /// 卡片回到中间，弹出“约<昵称>”；发出去了卡片才飞走
+    private func openCompose(_ player: MockBackend.NearbyPlayer, slot: RecurringTimeSlot?, after delay: UInt64 = 0) {
+        withAnimation(AppTheme.Motion.standard) { drag = .zero }
+        Task { @MainActor in
+            // 等上一个半屏收起来，下一个才弹得出来
+            if delay > 0 { try? await Task.sleep(nanoseconds: delay) }
+            composeTarget = ComposeTarget(player: player, slot: slot)
+        }
+    }
+
+    private func confirmPrompt(_ kind: InvitePromptSheet.Kind) {
         prompt = nil
         guard let player = promptCard else { return }
+        let slot = promptSlot
         promptCard = nil
+        promptSlot = nil
         switch kind {
         case .photo:
-            sendWish(player)
+            openCompose(player, slot: slot, after: 450_000_000)
         case .visibility:
             Task {
                 do {
                     try await appState.backend.enableShowsAsRegular()
-                    sendWish(player)
+                    openCompose(player, slot: slot, after: 450_000_000)
                 } catch {
                     appState.showError(error)
                 }
@@ -558,9 +600,10 @@ struct DayCandidatesView: View {
     private func cancelPrompt() {
         prompt = nil
         promptCard = nil
+        promptSlot = nil
     }
 
-    /// 选了照片：先关提醒，再裁剪；裁好上传后接着发“想一起打”
+    /// 选了照片：先关提醒，再裁剪；裁好上传后接着约
     private func pickedPhoto(_ item: PhotosPickerItem) {
         prompt = nil
         Task { @MainActor in
@@ -575,60 +618,27 @@ struct DayCandidatesView: View {
         }
     }
 
-    private func uploadCardThenWish(_ jpeg: Data) async {
+    private func uploadCardThenInvite(_ jpeg: Data) async {
         do {
             try await appState.backend.uploadCardPhoto(jpeg)
         } catch {
             appState.showError(error)
         }
         if let player = promptCard {
+            let slot = promptSlot
             promptCard = nil
-            sendWish(player)
+            promptSlot = nil
+            openCompose(player, slot: slot, after: 450_000_000)
         }
     }
 
-    private func sendWish(_ player: MockBackend.NearbyPlayer) {
-        guard !leaving else { return }
-        Haptics.tap()
+    /// 邀请发出去了：卡片飞走，说一声还能约几个
+    private func sent(_ player: MockBackend.NearbyPlayer, result: MockBackend.InviteResult?, window: PlayWindow) {
         next(player, toRight: true)
         let name = friendManager.user(id: player.userId)?.nickname ?? ""
-        Task {
-            do {
-                let result = try await appState.backend.wishToPlay(player.userId)
-                if result.mutual {
-                    Haptics.success()
-                    match = PlayMatch(userId: player.userId, suggestion: result.suggestion)
-                } else {
-                    appState.showToast(String(localized: "已告诉\(name)，同意了就能聊") + "\n" + String(localized: "今天还能约 \(result.remaining) 个"),
-                                       style: .success)
-                }
-            } catch {
-                if case RemoteError.server("not_available")? = error as? RemoteError { return }
-                putBack(player)
-                if case RemoteError.server("not_visible")? = error as? RemoteError {
-                    ask(.visibility, for: player)
-                } else {
-                    appState.showToast(Self.wishError(error), style: .error)
-                }
-            }
-        }
-    }
-
-    /// 没发出去（网络、到上限）：卡片放回最前面
-    private func putBack(_ player: MockBackend.NearbyPlayer) {
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            nearbySeen.remove(player.id)
-            nearby.removeAll { $0.id == player.id }
-            nearby.insert(player, at: 0)
-        }
-    }
-
-    static func wishError(_ error: Error) -> String {
-        if case RemoteError.server("wish_limit")? = error as? RemoteError {
-            return String(localized: "今天的 10 个用完了，明天再来")
-        }
-        return error.localizedDescription
+        var text = String(localized: "已邀请\(name) · \(WindowText.headline(window))")
+        if let result { text += "\n" + String(localized: "今天还能约 \(result.remaining) 个") }
+        appState.showToast(text, style: .success)
     }
 
     /// 卡片页上没有让人选时间，有些通用的错误说法会让人看不懂，换成这里的说法
