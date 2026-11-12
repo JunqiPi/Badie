@@ -128,13 +128,13 @@ struct PlayWindow: Codable, Hashable {
 
     /// 某一天的某个时段；nil = 都行（08–22）
     static func on(_ date: Date, daypart: Daypart?) -> PlayWindow? {
-        let minutes = daypart?.minutes ?? (8 * 60, 22 * 60)
+        let minutes: (start: Int, end: Int) = daypart?.minutes ?? (start: 8 * 60, end: 22 * 60)
         return on(date, startMinutes: minutes.start, endMinutes: minutes.end, daypart: daypart)
     }
 
     /// 从 firstDay 那天的时段开始到 lastDay 那天的时段结束（nil = 08–22）
     private static func span(from firstDay: Date, to lastDay: Date, daypart: Daypart?) -> PlayWindow? {
-        let minutes = daypart?.minutes ?? (8 * 60, 22 * 60)
+        let minutes: (start: Int, end: Int) = daypart?.minutes ?? (start: 8 * 60, end: 22 * 60)
         guard let first = on(firstDay, startMinutes: minutes.start, endMinutes: minutes.end),
               let last = on(lastDay, startMinutes: minutes.start, endMinutes: minutes.end) else { return nil }
         return PlayWindow(start: first.start, end: last.end, daypart: daypart)
