@@ -14,7 +14,7 @@ const blake = await open({ width: 390, height: 844 });
 for (const [page, name, gender] of [[alex, 'Alex', 'Male'], [blake, 'Blake', 'Female']]) {
   await signUp(page, `${name.toLowerCase()}${stamp}@rooms.local`, name, gender);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+  await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
   await page.goto(`${base}/rooms/`);
   await page.getByRole('heading', { name: 'Nearby games', level: 1 }).waitFor();
 }

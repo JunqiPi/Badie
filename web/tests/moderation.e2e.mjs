@@ -15,7 +15,7 @@ const blake = await open({ width: 390, height: 844 });
 for (const [page, name] of [[alex, 'Alex'], [blake, 'Blake']]) {
   await signUp(page, `${name.toLowerCase()}${stamp}@mod.local`, name);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+  await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 }
 // 昵称带脏话存不了，并告诉你原因
 await blake.goto(`${base}/settings/`);

@@ -63,7 +63,7 @@ export function wallClock(iso: string, tz: string) {
 }
 
 const localZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
-const capitalize = (text: string) => text.charAt(0).toLocaleUpperCase(currentLocale()) + text.slice(1);
+export const capitalize = (text: string) => text.charAt(0).toLocaleUpperCase(currentLocale()) + text.slice(1);
 
 /** “7:30 PM” / “19:30” */
 export const timeOf = (iso: string, tz?: string | null) => format(tz, { hour: 'numeric', minute: '2-digit' }).format(new Date(iso));

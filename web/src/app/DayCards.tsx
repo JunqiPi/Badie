@@ -1,20 +1,20 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches, matchesNearby, saveFilter, timeLabels, type DayFilter, type TimeOfDay } from './dayFilter';
 import { AvatarCrop, decode } from './AvatarCrop';
 import { uploadCardPhoto } from './CardBackground';
 import { InviteSheet, inviteProblem as nearbyProblem } from './Invites';
 import { FriendButton, RulesButton, Sheet, UsualChips } from './Nearby';
-import { createPortal } from 'react-dom';
-import { NEARBY_KM, useArea } from './area';
+import { RANGES, setNearbyKm, useArea, useNearbyKm } from './area';
+import { km as distance } from './Courts';
 import { eventLabel, eventOf } from './gender';
 import { AreaPrompt } from './Home';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
-import { Avatar, Empty, IconButton } from './kit';
+import { Avatar, Empty, IconButton, IconTile } from './kit';
 import { DayCard, type CardPerson } from './PlayerCard';
-import { Link, navigate } from './router';
+import { Link } from './router';
 import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type Profile } from './supabase';
-import { dateChip, timeOf } from './time';
+import { timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
 import type { UsualTime } from './usual';
 
@@ -56,12 +56,14 @@ function rememberPhotoAsked() {
 /** 约附近的人：TA 是谁，点的是 TA 哪段空闲时间 */
 type Composing = { card: NearbyPlayer; slot?: UsualTime };
 
-/** 首页点某一天：这天附近在找人、和我水平对得上的球友，一张张卡片左右滑（iOS 的 DayCandidatesView），刷完接着看附近的人。
- *  不给 date 就是“附近的人”：只有附近的人的卡片。
+/** 发现页（第一个 tab）的一叠卡片，一张张左右滑（iOS 的 DayCandidatesView）。
+ *  选了某一天：这天附近在找人、和我水平对得上的球友，刷完接着看附近的人；不给 date 就是“附近的人”：只有附近的人的卡片。
  *  这天的卡片就是对方的约球请求（项目、时间都定好了），右滑直接约：单打发约球邀请，双打替我开一个公开的双打局并邀请 TA。
- *  附近的人右滑打开约 TA 的半屏（哪天、什么时候、球馆），发出一个只有两个人的邀请局 */
-export function DayCards({ date, profile, onProfile }: { date?: string; profile: Profile; onProfile: (p: Profile) => void }) {
+ *  附近的人右滑打开约 TA 的半屏（哪天、什么时候、球馆），发出一个只有两个人的邀请局。
+ *  children：标题下面、卡片上面的东西（日期标签、待办） */
+export function Deck({ date, profile, onProfile, children }: { date?: string; profile: Profile; onProfile: (p: Profile) => void; children?: ReactNode }) {
   const area = useArea();
+  const km = useNearbyKm();
   const lobby = !date;
   const [cards, setCards] = useState<DayCandidate[]>();
   const [nearby, setNearby] = useState<NearbyPlayer[]>();
@@ -77,7 +79,6 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
   const [editing, setEditing] = useState(false);
   const start = useRef<{ x: number; y: number; id: number }>(null);
   const dialog = useRef<HTMLDialogElement>(null);
-  const title = useRef<HTMLHeadingElement>(null);
   // 已经滑过的，自动刷新时不再加回来
   const seen = useRef(new Set<string>());
   const loaded = cards !== undefined && nearby !== undefined;
@@ -99,21 +100,22 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
     saveFilter(next);
   };
 
-  // 打开期间每 30 秒拉一次这天的请求：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉
+  // 换天、换范围时重新拉；选了某一天时每 30 秒拉一次这天的请求：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉
   useEffect(() => {
     if (!area) return;
     setCards(lobby ? [] : undefined);
     setNearby(undefined);
+    setNearbySeen(0);
     seen.current.clear();
     supabase!
-      .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: NEARBY_KM })
+      .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
       .then(({ data, error }) => setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
     if (!date) return;
     const { from, to } = bounds(date);
     let first = true;
     const load = () =>
       supabase!
-        .rpc('day_candidates', { p_from: from.toISOString(), p_to: to.toISOString(), p_lat: area.lat, p_lon: area.lon, p_radius_km: NEARBY_KM })
+        .rpc('day_candidates', { p_from: from.toISOString(), p_to: to.toISOString(), p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
         .then(({ data, error }) => {
           if (error && first) {
             toast(problem(error), 'error');
@@ -135,28 +137,18 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
     void load();
     const timer = setInterval(() => document.visibilityState === 'visible' && void load(), 30_000);
     return () => clearInterval(timer);
-  }, [date, area?.lat, area?.lon]);
-
-  // 全屏：底下的页面不滚动，焦点放到标题上
-  useEffect(() => {
-    const root = document.documentElement;
-    const before = root.style.overflow;
-    root.style.overflow = 'hidden';
-    title.current?.focus();
-    return () => void (root.style.overflow = before);
-  }, []);
+  }, [date, area?.lat, area?.lon, km]);
 
   useEffect(() => {
     if (editing) dialog.current?.showModal();
     else dialog.current?.close();
   }, [editing]);
 
-  // 键盘：左右方向键跳过 / 约 TA，Esc 关闭（半屏开着时不管）
+  // 键盘：左右方向键跳过 / 约 TA（半屏开着、在输入框或日期标签上时不管）
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || document.querySelector('dialog[open]') || (event.target as HTMLElement).closest?.('input, textarea, select')) return;
-      if (event.key === 'Escape') navigate('/');
-      else if (top && !leaving && event.key === 'ArrowLeft') skip(top);
+      if (event.defaultPrevented || document.querySelector('dialog[open]') || (event.target as HTMLElement).closest?.('input, textarea, select, .rail')) return;
+      if (top && !leaving && event.key === 'ArrowLeft') skip(top);
       else if (top && !leaving && event.key === 'ArrowRight') like(top);
     };
     document.addEventListener('keydown', onKey);
@@ -308,7 +300,6 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
   }
 
   const x = leaving === 'left' ? -1.2 * innerWidth : leaving === 'right' ? 1.2 * innerWidth : drag.x;
-  const heading = date ? dateChip(date, 0).full : t('People nearby');
   const inNearby = top?.kind === 'nearby';
   // 这天的卡片刷完了、第一次看到附近的人：上面一条虚线框
   const divider = !lobby && inNearby && nearbySeen === 0;
@@ -317,19 +308,18 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
     onSlot: (card: NearbyPlayer, slot: UsualTime) => compose({ card, slot }),
     onFriend: befriend,
   };
+  // 这天有过请求（滑过的也算）：刷完了说“都看完了”，一个都没有说“这天还没人约”
+  const dayHadCards = (cards?.length ?? 0) > 0 || [...seen.current].some((key) => !key.startsWith('n:'));
+  const filters = activeCount(filter);
 
-  return createPortal(
-    <div role="dialog" aria-modal="true" aria-labelledby="day-title" className="fixed inset-0 z-40 flex flex-col bg-canvas text-ink">
-      <header className="mx-auto flex w-full max-w-xl items-start gap-3 px-[var(--gutter)] pt-[calc(1rem+env(safe-area-inset-top))]">
-        <div className="min-w-0 flex-1">
-          <h1 id="day-title" ref={title} tabIndex={-1} className="text-title2 outline-none">{heading}</h1>
-          {top && (
-            <p className="text-footnote font-bold text-ink-secondary">
-              {lobby ? t('{n} player|{n} players', { n: visibleNearby.length })
-                : inNearby ? `${t('Plays nearby')} · ${t('{n} player|{n} players', { n: visibleNearby.length })}` : t('{n} player|{n} players', { n: visibleDay.length })}
-            </p>
-          )}
-        </div>
+  return (
+    // 标题、日期标签、待办在上面，卡片占满剩下的高度，按钮在标签栏上面
+    <div className="mx-auto flex min-h-[calc(100dvh-4rem-1.25rem-var(--tabbar)-1.5rem)] w-full max-w-md flex-col gap-3 lg:min-h-[calc(100dvh-4rem-2rem-4rem)]">
+      <header className="flex items-center gap-2.5">
+        <Link to="/me/" aria-label={t('My profile')} className="press shrink-0 rounded-full lg:hidden">
+          <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={44} />
+        </Link>
+        <h1 className="min-w-0 flex-1 truncate text-title lg:text-display">{t('Discover')}</h1>
         <RulesButton points={[
           t('Swipe right to invite, left to skip'),
           t('People nearby have a level, often play at courts near you and chose to show up here.'),
@@ -337,58 +327,51 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
           t('Up to 10 a day.'),
           t('People you skip or say no to won’t show up again for 30 days.'),
         ]} />
-        <IconButton icon="x" label={t('Close')} onClick={() => navigate('/')} />
+        <IconButton icon="filter" label={filters ? t('Filters · {n}', { n: filters }) : t('Filters')} badge={filters} onClick={() => setEditing(true)} />
       </header>
 
-      {/* 筛选按钮 + 选了的条件（点 ✕ 去掉） */}
-      {loaded && total > 0 && (
-        <div className="mx-auto flex w-full max-w-md gap-2 overflow-x-auto px-[var(--gutter)] pt-3 [scrollbar-width:none]">
-          <button type="button" onClick={() => setEditing(true)}
-                  className="press flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-[#17140f] px-3 text-footnote font-bold text-lime">
-            <Icon name="filter" className="size-4" />
-            {activeCount(filter) ? t('Filters · {n}', { n: activeCount(filter) }) : t('Filters')}
-          </button>
+      {children}
+
+      {/* 选了的条件（点 ✕ 去掉） */}
+      {filters > 0 && (
+        <div className="rail gap-2! py-0!">
           {chips(filter, places(cards, nearby)).map(([label, clear]) => (
             <button key={label} type="button" onClick={() => setFilter(clear(filter))} aria-label={t('Remove {name}', { name: label })}
-                    className="press flex min-h-9 shrink-0 items-center gap-1 rounded-full border-2 border-stroke bg-lime px-3 text-footnote font-bold text-on-accent">
+                    className="press flex min-h-9 items-center gap-1 rounded-full border-2 border-stroke bg-lime px-3 text-footnote font-bold text-on-accent">
               {label} <Icon name="x" className="size-3" />
             </button>
           ))}
         </div>
       )}
 
-      <div className="relative mx-auto min-h-0 w-full max-w-md flex-1 px-[var(--gutter)] py-4">
+      <div className="relative flex min-h-[24rem] flex-1 flex-col">
         {!area ? (
-          <div className="grid h-full content-center"><AreaPrompt /></div>
+          <div className="grid flex-1 content-center"><AreaPrompt /></div>
         ) : !loaded ? (
-          <Skeleton className="h-full rounded-[var(--radius-card)]" />
+          <Skeleton className="flex-1 rounded-[var(--radius-card)]" />
         ) : !top && total > 0 ? (
-          <div className="grid h-full content-center">
-            <Empty icon="filter" tint="butter" title={t('No one matches your filters')} action={{ label: t('Clear filters'), onClick: () => setFilter(emptyFilter) }}>
-              {t('Try loosening them a little.')}
-            </Empty>
-          </div>
-        ) : !top && lobby ? (
-          <div className="grid h-full content-center">
-            <Empty icon="users" tint="sky" title={t('No one nearby yet')} action={{ label: t('Venues & favorites'), to: '/courts/' }}>
-              {t('Star the courts you play at to see players there.')}
-            </Empty>
+          <div className="grid flex-1 content-center">
+            <Empty icon="filter" tint="butter" title={t('No one matches your filters')} action={{ label: t('Clear filters'), onClick: () => setFilter(emptyFilter) }} />
           </div>
         ) : !top ? (
-          <div className="grid h-full content-center">
-            <Empty icon="users" tint="sky" title={t('No one nearby to invite that day')} action={{ label: t('Send a match request'), to: `/play/?date=${date}` }}>
-              {t('Send a match request and we’ll let you know when someone fits.')}
-            </Empty>
+          // 都看完了 / 这天还没人约：发个约球请求，或者扩大范围
+          <div className="sticker grid flex-1 content-center justify-items-center gap-3 p-6 text-center">
+            <IconTile icon="users" tint="sky" size="xl" className="-rotate-6" />
+            <p className="text-title3">{date && !dayHadCards ? t('No one’s posted for this day yet') : t('You’ve seen everyone nearby')}</p>
+            <div className="mt-1 flex flex-wrap justify-center gap-2">
+              <Link to={date ? `/play/?date=${date}` : '/play/'} className="button">{t('Send a match request')}</Link>
+              <button type="button" onClick={() => setEditing(true)} className="button button-quiet">{t('Widen search')}</button>
+            </div>
           </div>
         ) : (
-          <div className="flex h-full flex-col gap-3">
+          <div className="flex flex-1 flex-col gap-3">
             {divider && (
               <div className="grid shrink-0 justify-items-center gap-0.5 rounded-[var(--radius-card)] border-2 border-dashed border-stroke bg-butter/40 px-4 py-3 text-center">
                 <p className="text-headline">{t('That’s everyone for this day')}</p>
                 <p className="text-footnote font-bold text-ink-secondary">{t('Next: players who often play nearby')}</p>
               </div>
             )}
-            <div className="relative min-h-0 flex-1">
+            <div className="relative min-h-[22rem] flex-1">
               {second && (
                 <div aria-hidden="true" inert className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
                   <Card item={second} filter={filter} />
@@ -414,13 +397,13 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
       </div>
 
       {top && (
-        <div className="flex justify-center gap-10 px-[var(--gutter)] pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+        <div className="flex justify-center gap-10 pt-1">
           <Round icon="x" label={t('Skip')} className="bg-surface text-ink" disabled={Boolean(leaving)} onClick={() => skip(top)} />
           <Round icon="heart" label={t('Invite')} className="bg-lime text-on-accent" disabled={Boolean(leaving)} onClick={() => like(top)} />
         </div>
       )}
 
-      {/* 筛选：项目、球馆、等级、时间、对方性别、只看没爽约过的 */}
+      {/* 筛选：附近范围、项目、球馆、等级、时间、对方性别、只看没爽约过的 */}
       <dialog
         ref={dialog}
         aria-labelledby="filter-title"
@@ -428,9 +411,9 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
         onClick={(event) => event.target === event.currentTarget && event.currentTarget.close()}
         className="m-0 mt-auto max-h-[90dvh] w-full max-w-none bg-transparent p-0 text-ink open:animate-sheet sm:m-auto sm:max-w-md sm:open:animate-pop"
       >
-        {editing && cards && (
-          <FilterSheet initial={filter} cards={cards} nearby={nearby?.filter((c) => !dayPeople.has(c.user.id)) ?? []}
-                       onDone={(next) => { setFilter(next); setEditing(false); }} onCancel={() => setEditing(false)} />
+        {editing && (
+          <FilterSheet initial={filter} km={km} cards={cards ?? []} nearby={nearby?.filter((c) => !dayPeople.has(c.user.id)) ?? []}
+                       onDone={(next, range) => { setFilter(next); if (range !== km) setNearbyKm(range); setEditing(false); }} onCancel={() => setEditing(false)} />
         )}
       </dialog>
 
@@ -462,8 +445,7 @@ export function DayCards({ date, profile, onProfile }: { date?: string; profile:
         <Button className="button-lg w-full" variant="quiet" onClick={() => { const c = asking; setAsking(undefined); if (c) setComposing(c); }}>{t('Add later')}</Button>
       </Sheet>
       {cropping && <AvatarCrop image={cropping.image} card onDone={uploadPhoto} onCancel={() => { cropping.image.close(); setCropping(undefined); }} />}
-    </div>,
-    document.body,
+    </div>
   );
 }
 
@@ -573,8 +555,16 @@ function chips(f: DayFilter, cards: Places): [string, (f: DayFilter) => DayFilte
   return list;
 }
 
-function FilterSheet({ initial, cards, nearby, onDone, onCancel }: { initial: DayFilter; cards: DayCandidate[]; nearby: NearbyPlayer[]; onDone: (f: DayFilter) => void; onCancel: () => void }) {
+function FilterSheet({ initial, km, cards, nearby, onDone, onCancel }: {
+  initial: DayFilter;
+  km: number;
+  cards: DayCandidate[];
+  nearby: NearbyPlayer[];
+  onDone: (f: DayFilter, km: number) => void;
+  onCancel: () => void;
+}) {
   const [draft, setDraft] = useState(initial);
+  const [range, setRange] = useState(km);
   const set = (patch: Partial<DayFilter>) => setDraft((d) => ({ ...d, ...patch }));
   // 常在附近的人也算进去
   const count = cards.filter((c) => matches(draft, c)).length + nearby.filter((c) => matchesNearby(draft, c)).length;
@@ -584,7 +574,7 @@ function FilterSheet({ initial, cards, nearby, onDone, onCancel }: { initial: Da
   const label = 'text-footnote font-bold text-ink-secondary';
   const chip = (on: boolean) => `toggle ${on ? '' : ''}`;
   return (
-    <form method="dialog" onSubmit={(e) => { e.preventDefault(); onDone(draft); }}
+    <form method="dialog" onSubmit={(e) => { e.preventDefault(); onDone(draft, range); }}
           className="grid max-h-[90dvh] grid-rows-[auto_1fr_auto] rounded-t-[28px] border-2 border-b-0 border-stroke bg-canvas sm:rounded-[28px] sm:border-b-2 sm:shadow-card">
       <div className="flex items-center gap-3 px-5 pt-5">
         <h2 id="filter-title" className="flex-1 text-title3">{t('Filters')}</h2>
@@ -592,6 +582,14 @@ function FilterSheet({ initial, cards, nearby, onDone, onCancel }: { initial: Da
         <IconButton icon="x" label={t('Close')} onClick={onCancel} />
       </div>
       <div className="grid content-start gap-5 overflow-y-auto px-5 py-4">
+        <div className={section} role="group" aria-labelledby="f-range">
+          <span id="f-range" className={label}>{t('Nearby range')}</span>
+          <div className="flex flex-wrap gap-2">
+            {RANGES.map((n) => (
+              <button key={n} type="button" className="toggle" aria-pressed={range === n} onClick={() => setRange(n)}>{distance(n * 1000)}</button>
+            ))}
+          </div>
+        </div>
         <div className={section} role="group" aria-labelledby="f-event">
           <span id="f-event" className={label}>{t('Event')}</span>
           <div className="flex flex-wrap gap-2">
@@ -651,7 +649,8 @@ function FilterSheet({ initial, cards, nearby, onDone, onCancel }: { initial: Da
         </label>
       </div>
       <div className="border-t-2 border-stroke px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        <Button className="w-full">{t('Show {n} player|Show {n} players', { n: count })}</Button>
+        {/* 换了范围要重新查，数不出有几个人 */}
+        <Button className="w-full">{range === km ? t('Show {n} player|Show {n} players', { n: count }) : t('Done')}</Button>
       </div>
     </form>
   );

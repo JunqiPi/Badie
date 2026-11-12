@@ -35,7 +35,7 @@ const page = await context.newPage();
 
 await signUp(page, email, 'Pia');
 await page.getByRole('button', { name: 'Skip for now' }).click();
-await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 
 // 设置里打开、关掉
 await page.goto(`${base}/settings/`);
@@ -50,8 +50,8 @@ await switched(false);
 assert.equal(devices(), 0, 'device removed');
 assert.equal(await page.getByRole('switch', { name: 'Email me about matches' }).isChecked(), false, 'match emails are off by default');
 
-// 发出约球请求后提示一次；点了就打开
-await page.goto(`${base}/`);
+// 发出约球请求后提示一次；点了就打开（快速约球在球局页）
+await page.goto(`${base}/games/`);
 await page.getByRole('link', { name: 'Start matching' }).click();
 await page.getByRole('button', { name: 'Singles' }).click();
 await page.getByRole('radiogroup', { name: 'Date', exact: true }).getByRole('radio').nth(1).click();

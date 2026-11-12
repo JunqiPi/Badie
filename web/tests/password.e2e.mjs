@@ -24,7 +24,7 @@ const signIn = async (pass) => {
   await page.getByLabel('Password', { exact: true }).fill(pass);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 };
-const signedIn = () => page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+const signedIn = () => page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 
 // 密码错了：提示，不说邮箱有没有注册
 await signOut();

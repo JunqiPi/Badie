@@ -24,14 +24,18 @@ for (let i = 1; i <= 14; i++) {
 }
 await alex.getByRole('heading', { name: '2+' }).waitFor();
 await alex.getByRole('button', { name: 'Save my level' }).click();
-await alex.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+await alex.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 
 await signUp(blake, `blake${stamp}@test.local`, 'Blake');
 await blake.getByRole('button', { name: 'Skip for now' }).click();
+await blake.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
+// 没定级的提醒在球局页
+await blake.goto(`${base}/games/`);
 await blake.getByText('You’re starting at level 3').waitFor();
 
-// 快速匹配：首页的“开始匹配”进设置页
+// 快速匹配：球局页的“开始匹配”进设置页
 async function request(page) {
+  await page.goto(`${base}/games/`);
   await page.getByRole('link', { name: 'Start matching' }).click();
   await page.getByRole('button', { name: 'Singles' }).click();
   // 选明天：今晚的局离现在不到 2 小时就算临时局，测试结果不能看运行的时间

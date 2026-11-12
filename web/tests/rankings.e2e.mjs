@@ -18,7 +18,7 @@ const casey = `casey${stamp}@test.local`;
 for (const [page, name] of [[alex, 'Alex'], [blake, 'Blake']]) {
   await signUp(page, `${name.toLowerCase()}${stamp}@test.local`, name);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+  await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 }
 
 // 第三个人只在库里；三人注册满 7 天；Alex 本周赢了 Blake 两场、赢了 Casey 一场（都已双方确认）

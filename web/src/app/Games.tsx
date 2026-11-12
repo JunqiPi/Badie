@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useArea } from './area';
 import { GameTicket, RequestCard, RoomCard } from './cards';
 import { GroupCard } from './Groups';
 import { money } from './Courts';
-import { toReview } from './Home';
+import { AreaPrompt, toReview } from './Home';
 import { currentLocale, t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { ArrowLabel, Avatar, AvatarStack, Empty, IconButton, IconTile, LargeTitle, LevelBadge, Notice, ScreenHeader, SectionTitle, Segmented, Starburst, StatTile, Tag, fill, type Tint } from './kit';
 import { PartnerSelect } from './Player';
 import { Reviews } from './Review';
 import { Link } from './router';
-import { gamesFromScore, problem, supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type PlayRecord, type RoomSummary, type Ticket } from './supabase';
+import { gamesFromScore, problem, supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
 import { day, dayName, hours, timeOf } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 import { Sheet } from './Nearby';
@@ -19,8 +20,9 @@ const live = (g: Game) => g.status === 'scheduled' && new Date(g.ends_at).getTim
 
 type Segment = 'upcoming' | 'ended';
 
-/** 球局 tab（iOS 的 GamesView）：三个入口、待评价、我的固定局和房间、即将开始 / 已结束 */
-export function Games() {
+/** 球局 tab（iOS 的 GamesView）：原来首页上的东西都在这里。最上面是下一场和在等的约球请求，然后快速约球、三个入口、
+ *  我的球局（即将开始 / 已结束）、附近球局；右栏是本周排行、球群、固定局、房间和本月战绩 */
+export function Games({ profile }: { profile: Profile }) {
   const { data: games, failed } = useLive<Game[]>('my_games');
   const { data: requests } = useLive<Ticket[]>('my_matchmaking');
   const { data: challenges } = useLive<MyChallenges>('my_challenges', { every: 60_000 });
@@ -28,38 +30,31 @@ export function Games() {
   const { data: rooms } = useLive<RoomSummary[]>('my_rooms', { every: 60_000 });
   const [segment, setSegment] = useState<Segment>(new URLSearchParams(location.search).get('tab') === 'ended' ? 'ended' : 'upcoming');
   const upcoming = games?.filter(live).reverse() ?? [];
+  // 最近的一场放在最上面的票据里，“即将开始”里只列后面的
+  const [next, ...later] = upcoming;
   const past = games?.filter((g) => !live(g)) ?? [];
   const reviews = games?.filter(toReview) ?? [];
   const open = requests?.filter((r) => ['searching', 'offered', 'paused'].includes(r.status)) ?? [];
   const incoming = challenges?.incoming.length ?? 0;
-  const list = segment === 'upcoming' ? upcoming : past;
+  const list = segment === 'upcoming' ? later : past;
 
   return (
     <div className="grid gap-6">
-      <LargeTitle title={t('Games')} subtitle={t('My games and rooms')}>
+      <LargeTitle title={t('Games')}>
         <IconButton icon="challenge" label={t('Challenges')} badge={incoming} to="/challenges/" />
         <IconButton icon="trophy" label={t('Leaderboard')} to="/rankings/" />
       </LargeTitle>
 
+      {!profile.assessed_at && (
+        <Notice icon="sparkle" tint="lavender" action={{ label: t('Take the quiz'), to: '/level-quiz/' }}>
+          {t('You’re starting at level 3. Take the 2-minute level quiz so you’re matched with the right players.')}
+        </Notice>
+      )}
       {incoming > 0 && (
         <Notice icon="challenge" tint="peach" action={{ label: t('View challenges'), to: '/challenges/' }}>
           {t('{n} challenge awaiting reply|{n} challenges awaiting reply', { n: incoming })}
         </Notice>
       )}
-
-      {/* 手机上三个并排时每格只剩 50–70px，长一点的词（Permainan、Regular）放不下：改成一行一个，图标在左 */}
-      <ul className="grid gap-3 sm:grid-cols-3">
-        {shortcuts.map((s) => (
-          <li key={s.to}>
-            <Link to={s.to} className={`sticker lift grid h-full content-start gap-2 p-4 max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-x-3 max-sm:gap-y-0.5 max-sm:py-3 ${fill[s.tint]}`}>
-              <Icon name={s.icon} className="size-6 max-sm:row-span-2 max-sm:self-center" />
-              <span className="text-headline">{t(s.title)}</span>
-              <span className="text-caption opacity-80">{t(s.subtitle)}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-
       {reviews.length > 0 && (
         <Link to={`/games/${reviews[0].id}/`} className="sticker lift flex items-center gap-3 bg-pink p-4 text-on-accent">
           <Icon name="star" className="size-5" />
@@ -69,48 +64,83 @@ export function Games() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
-        <section aria-labelledby="mine" className="grid min-w-0 gap-3">
-          <h2 id="mine" className="sr-only">{t('My games')}</h2>
-          <Segmented
-            label={t('My games')}
-            value={segment}
-            onChange={(next) => {
-              setSegment(next);
-              history.replaceState(null, '', next === 'ended' ? '/games/?tab=ended' : '/games/');
-            }}
-            options={[
-              { value: 'upcoming', label: t('Upcoming'), badge: upcoming.length },
-              { value: 'ended', label: t('Ended') },
-            ]}
-          />
-          {games === undefined && !failed && [0, 1].map((i) => <Skeleton key={i} className="h-24" />)}
-          {failed && games === undefined && <Empty icon="warning" tint="peach" title={t('Couldn’t load your games')}>{t('Check your connection and try again.')}</Empty>}
-          {games && list.length === 0 && (
-            segment === 'upcoming' ? (
-              <Empty icon="calendar" tint="sky" title={t('No games coming up')} action={{ label: t('Quick Match'), to: '/play/' }}>
-                {t('Find a buddy with Quick Match, or start a game for nearby players to join.')}
-              </Empty>
-            ) : (
-              <Empty icon="clock" tint="sky" title={t('No past games yet')}>{t('Finished games and their results show up here.')}</Empty>
-            )
-          )}
-          <div key={segment} className="animate-enter grid gap-3">
-            {list.map((g) => <GameRow key={g.id} game={g} />)}
+        <div className="grid min-w-0 gap-6">
+          <div className={`grid gap-6 ${next ? 'xl:grid-cols-2' : ''}`}>
+            {next && (
+              <section aria-labelledby="next" className="grid content-start gap-2">
+                <h2 id="next" className="text-title3">{t('Next game')}</h2>
+                <Link to={`/games/${next.id}/`} className="press block rounded-[22px]"><GameTicket game={next} compact /></Link>
+              </section>
+            )}
+            <QuickMatch last={requests?.[0]} />
           </div>
-        </section>
 
-        <aside className="grid min-w-0 gap-6" aria-label={t('More')}>
           {open.length > 0 && (
             <section aria-labelledby="waiting" className="grid gap-2">
-              <SectionTitle id="waiting" title={t('Waiting for a match')} detail={t('Shows below once everyone confirms')} />
-              {open.map((r) => <RequestCard key={r.id} request={r} />)}
+              <SectionTitle id="waiting" title={t('Game requests')} detail={t('{n} active', { n: open.length })} action={{ label: t('See all'), to: '/play/' }} />
+              <div className="grid gap-3 xl:grid-cols-2">{open.map((r) => <RequestCard key={r.id} request={r} />)}</div>
             </section>
           )}
-          {groups && groups.groups.length > 0 && (
+
+          {/* 手机上三个并排时每格只剩 50–70px，长一点的词（Permainan、Regular）放不下：改成一行一个，图标在左 */}
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {shortcuts.map((s) => (
+              <li key={s.to}>
+                <Link to={s.to} className={`sticker lift grid h-full content-start gap-2 p-4 max-sm:grid-cols-[auto_minmax(0,1fr)] max-sm:gap-x-3 max-sm:gap-y-0.5 max-sm:py-3 ${fill[s.tint]}`}>
+                  <Icon name={s.icon} className="size-6 max-sm:row-span-2 max-sm:self-center" />
+                  <span className="text-headline">{t(s.title)}</span>
+                  <span className="text-caption opacity-80">{t(s.subtitle)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <section aria-labelledby="mine" className="grid min-w-0 gap-3">
+            <h2 id="mine" className="sr-only">{t('My games')}</h2>
+            <Segmented
+              label={t('My games')}
+              value={segment}
+              onChange={(value) => {
+                setSegment(value);
+                history.replaceState(null, '', value === 'ended' ? '/games/?tab=ended' : '/games/');
+              }}
+              options={[
+                { value: 'upcoming', label: t('Upcoming'), badge: later.length },
+                { value: 'ended', label: t('Ended') },
+              ]}
+            />
+            {games === undefined && !failed && [0, 1].map((i) => <Skeleton key={i} className="h-24" />)}
+            {failed && games === undefined && <Empty icon="warning" tint="peach" title={t('Couldn’t load your games')}>{t('Check your connection and try again.')}</Empty>}
+            {games && list.length === 0 && (
+              segment === 'ended' ? (
+                <Empty icon="clock" tint="sky" title={t('No past games yet')}>{t('Finished games and their results show up here.')}</Empty>
+              ) : !next && (
+                <Empty icon="calendar" tint="sky" title={t('No games coming up')} action={{ label: t('Quick Match'), to: '/play/' }}>
+                  {t('Find a buddy with Quick Match, or start a game for nearby players to join.')}
+                </Empty>
+              )
+            )}
+            <div key={segment} className="animate-enter grid gap-3">
+              {list.map((g) => <GameRow key={g.id} game={g} />)}
+            </div>
+          </section>
+
+          <PublicGames />
+        </div>
+
+        <aside className="grid min-w-0 gap-6" aria-label={t('More')}>
+          <WeeklyCard />
+          {groups && groups.groups.length > 0 ? (
             <section aria-labelledby="my-groups" className="grid gap-2">
               <SectionTitle id="my-groups" title={t('My groups')} detail={String(groups.groups.length)} action={{ label: t('See all'), to: '/groups/' }} />
               {groups.groups.map((g) => <GroupCard key={g.id} group={g} />)}
             </section>
+          ) : groups && (
+            <Link to="/groups/" className="sticker lift flex items-center gap-3 bg-sky p-4 text-on-accent">
+              <IconTile icon="group" tint="surface" />
+              <span className="min-w-0 flex-1 text-headline">{t('Find a weekly session')}</span>
+              <Icon name="chevronRight" className="size-4" />
+            </Link>
           )}
           {groups && groups.sessions.length > 0 && (
             <section aria-labelledby="sessions" className="grid gap-2">
@@ -134,6 +164,83 @@ export function Games() {
         </aside>
       </div>
     </div>
+  );
+}
+
+/** 快速约球：按上次的设置（没有就是默认）一键开始，点了进设置页 */
+function QuickMatch({ last }: { last?: Ticket }) {
+  const tz = last?.venues[0]?.tz;
+  const chips: [IconName, string][] = [
+    [last?.mode === 'singles' ? 'user' : 'users', last?.mode === 'singles' ? t('Singles') : t('Doubles')],
+    ['clock', last ? `${timeOf(last.starts_at, tz)}–${timeOf(last.ends_at, tz)}` : t('Tonight')],
+    ['pin', last ? t('{n} venue|{n} venues', { n: last.venues.length }) : t('Courts near you')],
+    ['level', !last || last.skill_tolerance === 1 ? t('Level ±1') : last.skill_tolerance === 8 ? t('Any level') : t('Level ±{n}', { n: last.skill_tolerance })],
+  ];
+  return (
+    <section aria-labelledby="quick" className="sticker grid content-start gap-3 bg-lime p-5 text-on-accent">
+      <div className="flex items-center justify-between">
+        <h2 id="quick" className="kicker">{t('Quick play')}</h2>
+        <Link to="/play/" className="-my-2 flex min-h-11 items-center text-footnote font-bold underline-offset-4 hover:underline">{t('Adjust')}</Link>
+      </div>
+      <ul className="flex flex-wrap gap-1.5" aria-label={t('Settings')}>
+        {chips.map(([icon, text]) => (
+          <li key={icon} className="flex items-center gap-1 rounded-full border-[1.5px] border-[#17140f] bg-white px-2.5 py-1 text-footnote font-bold">
+            <Icon name={icon} className="size-3" />
+            {text}
+          </li>
+        ))}
+      </ul>
+      <Link to="/play/" className="button button-lg button-inverse mt-1 w-full">
+        <ArrowLabel>{t('Start matching')}</ArrowLabel>
+      </Link>
+    </section>
+  );
+}
+
+/** 手机上横向滑动；桌面在主栏里排三张，更多的去“全部”看 */
+const gamesRail = 'rail lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0';
+
+/** 附近公开的球局（有场地缺人），横向滑动 */
+function PublicGames() {
+  const area = useArea();
+  const [rooms, setRooms] = useState<RoomSummary[]>();
+  useEffect(() => {
+    if (!area) return;
+    supabase!.rpc('rooms_near', { lat: area.lat, lng: area.lon, radius_km: 30 }).then(({ data }) => setRooms((data ?? []) as RoomSummary[]));
+  }, [area?.lat, area?.lon]);
+
+  return (
+    <section aria-labelledby="public" className="grid gap-2">
+      <SectionTitle id="public" title={t('Nearby games')} action={{ label: t('See all'), to: '/rooms/' }} />
+      {!area ? (
+        <AreaPrompt />
+      ) : rooms === undefined ? (
+        <div className={gamesRail}>{[0, 1, 2].map((i) => <div key={i} className="skeleton h-44 w-[17rem] lg:w-auto" />)}</div>
+      ) : rooms.length === 0 ? (
+        <Empty icon="court" tint="peach" title={t('No open games nearby right now')} action={{ label: t('Start a game'), to: '/rooms/new/' }} />
+      ) : (
+        <ul className={gamesRail}>{rooms.map((r) => <li key={r.id} className="w-[17rem] lg:w-auto lg:nth-[n+4]:hidden"><RoomCard room={r} wide /></li>)}</ul>
+      )}
+    </section>
+  );
+}
+
+/** 本周排行：我的名次或还差多少能上榜 */
+function WeeklyCard() {
+  const { data: board } = useLive<WeeklyBoard>('weekly_board', { args: { p_scope: 'global', p_offset: 0 }, every: 300_000 });
+  const text = !board ? '…'
+    : board.me ? t('You’re #{rank} with {points} points.', { rank: board.me.rank, points: board.me.points })
+    : board.progress ? t('{points} points so far. You’ll appear after 3 games against 2 different opponents (now {games} and {opponents}).', { ...board.progress })
+    : t('Play 3 confirmed games against 2 different opponents this week to appear.');
+  return (
+    <Link to="/rankings/" className="sticker lift flex items-center gap-3 bg-butter p-4 text-on-accent">
+      <IconTile icon="trophy" tint="surface" />
+      <span className="min-w-0 flex-1">
+        <span className="kicker block">{t('This week’s leaderboard')}</span>
+        <span className="block text-headline">{text}</span>
+      </span>
+      <Icon name="chevronRight" className="size-4" />
+    </Link>
   );
 }
 

@@ -77,6 +77,17 @@ export function IconButton({ icon, label, badge = 0, tint = 'surface', ...action
   );
 }
 
+/** 待办小标签（iOS 的 CountPill）：图标 + 名字 + 红色数字，“邀请 2”“挑战 1” */
+export function CountPill({ icon, title, count, ...action }: Action & { icon: IconName; title: string; count: number }) {
+  return (
+    <Pressable {...action} className="press flex min-h-9 items-center gap-1.5 rounded-full border-2 border-stroke bg-surface px-3 text-footnote font-bold">
+      <Icon name={icon} className="size-4" />
+      {title}
+      <span className="grid h-5 min-w-5 place-items-center rounded-full bg-danger-fill px-1 text-[11px] font-black text-white tabular-nums">{count}</span>
+    </Pressable>
+  );
+}
+
 // MARK: 身份
 
 /** 头像：有照片显示照片，否则彩色底 + 名字首字 */

@@ -13,7 +13,7 @@ const dana = await open({ width: 390, height: 844 });
 for (const [page, name] of [[casey, 'Casey'], [dana, nickname]]) {
   await signUp(page, `${name.toLowerCase()}${stamp}@search.local`, name);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+  await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 }
 
 await casey.goto(`${base}/messages/?tab=friends`);

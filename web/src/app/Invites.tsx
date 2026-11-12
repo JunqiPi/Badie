@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { t } from './i18n';
 import { Icon } from './icons';
-import { IconButton, IconTile, Notice, ScreenHeader } from './kit';
+import { CountPill, IconButton, IconTile, Notice, ScreenHeader } from './kit';
 import { MiniCard, Sheet, sortUsual } from './Nearby';
 import { CourtSearch, type Court } from './pickers';
 import { navigate } from './router';
@@ -331,7 +331,7 @@ function useInvites() {
   return { waiting: (data ?? []).filter(isInvite).filter((r) => r.invite.awaiting_me), refresh };
 }
 
-/** 首页标题下面：有人约我时一个小标签“邀请 N”，点开回复 */
+/** 发现页的待办里：有人约我时一个小标签“邀请 N”，点开回复 */
 export function InvitePill() {
   const { waiting, refresh } = useInvites();
   const [open, setOpen] = useState(false);
@@ -339,14 +339,7 @@ export function InvitePill() {
   const count = waiting.length;
   return (
     <>
-      {count > 0 && (
-        <button type="button" onClick={() => setOpen(true)}
-                className="press mt-3 flex min-h-9 items-center gap-1.5 rounded-full border-2 border-stroke bg-surface px-3 text-footnote font-bold">
-          <Icon name="mail" className="size-4" />
-          {t('Invites')}
-          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-danger-fill px-1 text-[11px] font-black text-white tabular-nums">{count}</span>
-        </button>
-      )}
+      {count > 0 && <CountPill icon="mail" title={t('Invites')} count={count} onClick={() => setOpen(true)} />}
       <Sheet open={open && count > 0} onClose={() => setOpen(false)} labelledBy="invites-title">
         <div className="flex items-center gap-3">
           <p id="invites-title" className="kicker flex-1 text-ink-secondary">{t('Invites')}</p>

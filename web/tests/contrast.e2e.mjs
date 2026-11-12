@@ -116,7 +116,7 @@ async function check(colorScheme) {
   await signUp(page, `contrast-${colorScheme}${Date.now()}@test.local`, 'Casey');
   await audit(page, `${colorScheme} level quiz`);
   await page.getByRole('button', { name: 'Skip for now' }).click();
-  await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+  await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
   await audit(page, `${colorScheme} home`);
   for (const path of ['/play/', '/games/', '/rankings/', '/challenges/', '/messages/', '/notifications/', '/courts/', '/me/', '/settings/', '/levels/', '/about/', '/join/', '/rooms/', '/rooms/new/', '/groups/', '/groups/new/']) {
     await page.goto(`${base}${path}`);

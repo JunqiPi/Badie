@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { Admin, VerificationPage } from './Verification';
 import { Contact, Support } from './Contact';
-import { DayCards } from './DayCards';
+import { Discover } from './Discover';
 import { Challenges, GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
 import { startLocale, t, useLocale } from './i18n';
@@ -110,7 +110,8 @@ export default function App() {
   if (path.startsWith('/level-quiz/')) {
     return shell(<LevelQuiz key={path} signedIn={Boolean(profile)} onSkip={() => navigate(profile ? '/' : '/levels/', true)} />);
   }
-  if (path === '/') return shell(<Home profile={profile ?? null} />);
+  // 登录后的首页是发现页（一叠卡片），没登录是介绍 Badie 的首页
+  if (path === '/') return shell(profile ? <Discover profile={profile} onProfile={setProfile} /> : <Home />);
   if (path.startsWith('/levels/')) return shell(<LevelGuide profile={profile ?? null} />);
   if (path.startsWith('/about/')) return shell(<About />);
   if (path.startsWith('/contact/')) return shell(<Contact signedIn={Boolean(profile)} />);
@@ -127,8 +128,9 @@ export default function App() {
   const editing = path.match(/^\/groups\/([0-9a-f-]{36})\/edit\//)?.[1];
   const day = path.match(/^\/day\/(\d{4}-\d{2}-\d{2})\//)?.[1];
   return shell(
-    day ? <DayCards key={day} date={day} profile={profile} onProfile={setProfile} />
-    : path.startsWith('/nearby/') ? <DayCards key="nearby" profile={profile} onProfile={setProfile} />
+    // 按天看人、附近的人都在发现页里了：旧地址跳过去，选好那一天
+    day ? <Redirect to={`/?day=${day}`} />
+    : path.startsWith('/nearby/') ? <Redirect to="/" />
     : editing ? <EditGroup key={editing} id={editing} profile={profile} />
     : player ? <PlayerPage key={player} id={player} />
     : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />
@@ -143,7 +145,7 @@ export default function App() {
     : path.startsWith('/groups/') ? <Groups />
     : path.startsWith('/rankings/') ? <Rankings />
     : path.startsWith('/challenges/') ? <Challenges />
-    : path.startsWith('/games/') ? <Games />
+    : path.startsWith('/games/') ? <Games profile={profile} />
     : path.startsWith('/play/') ? <Play profile={profile} />
     : path.startsWith('/messages/') ? <Messages />
     : path.startsWith('/notifications/') ? <Notifications profile={profile} />
@@ -187,6 +189,12 @@ function SignInPage({ path }: { path: string }) {
       </Empty>
     </div>
   );
+}
+
+/** 旧地址：换成新地址（不留在历史记录里） */
+function Redirect({ to }: { to: string }) {
+  useEffect(() => navigate(to, true), [to]);
+  return <Loading />;
 }
 
 function NotFound() {

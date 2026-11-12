@@ -6,10 +6,10 @@ import { Link, navigate } from './router';
 import { supabase, type InboxCounts, type Profile } from './supabase';
 import { Toasts } from './ui';
 
-/** 顶层的几个 tab：每个都是真正的页面。球馆只在桌面顶栏里，手机上和 iOS 一样从首页进 */
+/** 顶层的几个 tab：每个都是真正的页面。第一个是发现（登录后的首页，一叠卡片）。球馆只在桌面顶栏里 */
 const tabs: { to: string; label: string; icon: IconName; active: IconName; match: RegExp; desktopOnly?: boolean }[] = [
-  { to: '/', label: 'Home', icon: 'homeOutline', active: 'home', match: /^\/(play\/|notifications\/)?$/ },
-  { to: '/games/', label: 'Games', icon: 'ticketOutline', active: 'games', match: /^\/(games|rooms|groups|join|challenges|rankings)\// },
+  { to: '/', label: 'Discover', icon: 'heartOutline', active: 'heart', match: /^\/(notifications\/|nearby\/|day\/.*)?$/ },
+  { to: '/games/', label: 'Games', icon: 'ticketOutline', active: 'games', match: /^\/(games|play|rooms|groups|join|challenges|rankings)\// },
   { to: '/courts/', label: 'Courts', icon: 'pin', active: 'pin', match: /^\/courts\//, desktopOnly: true },
   { to: '/messages/', label: 'Messages', icon: 'chatsOutline', active: 'chats', match: /^\/messages\// },
   { to: '/me/', label: 'Me', icon: 'meOutline', active: 'me', match: /^\/(me|settings|verification|levels|level-quiz|admin)\// },
@@ -144,7 +144,7 @@ function translateStatic() {
 /** 页脚：真正的页面链接（不是本页的锚点） */
 function Footer() {
   const columns: [string, [string, string][]][] = [
-    ['Play', [['Home', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Groups', '/groups/']]],
+    ['Play', [['Discover', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Groups', '/groups/']]],
     ['Courts', [['Nearby venues', '/courts/'], ['Level chart', '/levels/'], ['Leaderboard', '/rankings/']]],
     ['Badie', [['About Badie', '/about/'], ['Contact us', '/contact/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
   ];

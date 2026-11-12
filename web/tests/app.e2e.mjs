@@ -29,7 +29,7 @@ const page = await context.newPage();
 
 await signUp(page, email, 'Alex');
 await page.getByRole('button', { name: 'Skip for now' }).click();
-await page.getByRole('heading', { name: 'Up for a game tonight?' }).waitFor();
+await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 // 顶栏的 tab 都是真正的页面：球馆是静态页面，整页打开
 await page.getByRole('link', { name: 'Courts' }).first().click();
 await page.waitForURL('**/courts/');
