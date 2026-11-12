@@ -11,7 +11,8 @@
 | iPhone 1.0.1 | Build `20261106.0636`，已提交过 |
 | iPhone 1.0.2 | Build `20261108.2349`（main `29b144b`），**已上架**（2026-11-10 查到状态是 READY_FOR_DISTRIBUTION） |
 | iPhone 1.0.3 | 苹果已批准（教练带课的球群、费用说明，Build `20261111.21`） |
-| iPhone 1.0.4 | 2026-11-11 用脚本新建：全 App 少字改版。Build `20261111.2236`（main `c9f775e`）已挂上；更新说明、10 种语言截图（App Store screenshots 运行 `43113111511`）都已写入，审核信息沿用上一版。**只差用户点“提交审核”** |
+| iPhone 1.0.4 | 2026-11-11 用脚本新建：全 App 少字改版。Build `20261111.2236`（main `c9f775e`）已挂上；更新说明、10 种语言截图（App Store screenshots 运行 `43113111511`）都已写入，审核信息沿用上一版。2026-11-12 已提交，等待审核 |
+| iPhone 1.0.5 | 常在附近打的人（按天看人的卡片后面接着刷，右滑=想一起打）。Build `20261112.0634`（main `223999d`）已在 TestFlight；数据库和网站已上线。**1.0.4 还在审核，App Store Connect 不让新建 1.0.5**：1.0.4 过审后，在 main 上手动运行 Attach TestFlight build（mode=attach, version=1.0.5，会自动新建版本并复制审核信息）、Update App Store text（upload, 1.0.5）；商店截图用 App Store screenshots 运行 `43169030622` 上传 |
 | 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261209000000_coached_groups.sql`） |
 
 - 1.0.2 的 10 种语言更新说明、推广文本在 `Badie-iOS/docs/STORE_LISTING.md`。给用户时**直接贴内容**，不要只给路径。
