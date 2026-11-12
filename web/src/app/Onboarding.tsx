@@ -52,13 +52,15 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
     setBusy(true);
     const { data, error } = await supabase!
       .from('profiles')
-      .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender, show_as_regular: visible })
+      .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender })
       .select()
       .single();
+    // 新账号默认显示；关掉的再改一下（新建资料时不能直接写这一项）
+    if (!error && !visible) await supabase!.from('profiles').update({ show_as_regular: false }).eq('id', userId);
     setBusy(false);
     // 昵称有不当用语时说清楚原因，其他情况多半是重名之类，换一个就好
     if (error) setError(error.message === 'objectionable_content' ? explain(error) : t('Couldn’t save. Try a different nickname.'));
-    else onDone(data as Profile);
+    else onDone({ ...(data as Profile), show_as_regular: visible && (data as Profile).show_as_regular });
   }
 
   return (
