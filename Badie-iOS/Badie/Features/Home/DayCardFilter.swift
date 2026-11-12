@@ -87,6 +87,25 @@ struct DayCardFilter: Codable, Equatable {
         return true
     }
 
+    /// 常在附近的人：不看时间；项目按 TA 常打的（没填的都算），混双算双打；球馆按 TA 常去的
+    func matches(_ card: MockBackend.NearbyPlayer, user: User?) -> Bool {
+        if let mode = card.preferredMode {
+            switch event {
+            case .any: break
+            case .singles: if mode != .singles { return false }
+            case .doubles, .mixed: if mode != .doubles { return false }
+            }
+        }
+        if !venueIds.isEmpty, !card.venues.contains(where: { venueIds.contains($0.id) }) { return false }
+        if let user {
+            let level = user.displayLevel
+            if level < minLevel || level > maxLevel { return false }
+            if let gender, user.gender != gender { return false }
+        }
+        if reliableOnly, card.recentNoShows > 0 { return false }
+        return true
+    }
+
     /// 约在哪家：选了球馆就用选的那家，否则离我最近的
     func venue(for card: MockBackend.DayCandidate) -> MockBackend.DayCandidate.Venue? {
         let sorted = card.venues.sorted { ($0.km ?? .infinity) < ($1.km ?? .infinity) }

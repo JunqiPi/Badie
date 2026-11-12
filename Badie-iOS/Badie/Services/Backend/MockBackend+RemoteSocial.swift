@@ -190,7 +190,10 @@ extension MockBackend {
             return db.tickets.values.first { $0.offerId != nil }?.id
         }
         // 消息请求的链接是 /app/messages/dm/<对方 id>/
-        if note.kind == "message_request" { return note.link?.split(separator: "/").last.map(String.init) }
+        // 想一起打：链接最后一段是对方 id（/app/players/<id>/ 或 /app/messages/dm/<id>/）
+        if ["message_request", "play_wish", "play_wish_accepted"].contains(note.kind) {
+            return note.link?.split(separator: "/").last.map(String.init)
+        }
         let parts = (note.link ?? "").split(separator: "/")
         return parts.count >= 3 ? String(parts[2]) : nil
     }
@@ -211,6 +214,8 @@ extension MockBackend {
         case "room_closed": return .roomClosed
         case "challenge": return .challenge
         case "message_request": return .messageRequest
+        case "play_wish": return .playWish
+        case "play_wish_accepted": return .playWishAccepted
         default: return .system
         }
     }

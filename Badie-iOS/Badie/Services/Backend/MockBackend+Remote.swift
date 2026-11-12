@@ -29,6 +29,8 @@ extension MockBackend {
         let createdAt: Date?
         let tag: Int?
         let friendCode: String?
+        /// 常打单打还是双打（null = 都行）；常在附近的卡片和筛选用
+        let preferredMode: String?
     }
 
     private struct FavoriteRow: Decodable {
@@ -210,6 +212,10 @@ extension MockBackend {
         remoteCardPhotoPath = profile.cardPhotoPath
         await applyCardPhoto(profile.cardPhotoPath, to: profile.id)
         user = db.users[profile.id] ?? user
+        // 常打的项目：服务器有就用服务器的；只在本机填过的，补传一次
+        if profile.preferredMode == nil, let mode = user.preferredMode {
+            try? await client.update("profiles", query: "id=eq.\(profile.id)", ["preferred_mode": mode.serverValue])
+        }
         if profile.locale != Self.serverLocale {
             try? await client.update("profiles", query: "id=eq.\(profile.id)", ["locale": Self.serverLocale])
         }
@@ -242,6 +248,7 @@ extension MockBackend {
         user.privacy.emailAlerts = profile.emailAlerts ?? false
         user.privacy.showsWhenSearching = profile.showSearching ?? true
         user.gender = Gender(server: profile.gender)
+        if let mode = profile.preferredMode { user.preferredMode = GameMode(server: mode) }
         user.avatar.cardColor = profile.cardColor.flatMap(CardColor.init(rawValue:))
         if let kind = profile.verifiedKind.flatMap(VerificationStatus.init(server:)), let rating = profile.verifiedRating {
             user.applyVerification(kind, tier: SkillTier(rating: rating))

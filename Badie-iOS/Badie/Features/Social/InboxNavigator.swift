@@ -19,6 +19,7 @@ extension InboxItem.Kind {
         case .system: return "megaphone.fill"
         case .challenge: return "flag.2.crossed.fill"
         case .resultUpdate: return "checkmark.seal.fill"
+        case .playWish, .playWishAccepted: return "heart.fill"
         }
     }
 
@@ -35,6 +36,7 @@ extension InboxItem.Kind {
         case .system: return AppTheme.Colors.sky
         case .challenge: return AppTheme.Colors.peach
         case .resultUpdate: return AppTheme.Colors.mint
+        case .playWish, .playWishAccepted: return AppTheme.Colors.lime
         }
     }
 }
@@ -110,6 +112,13 @@ struct InboxNavigator {
             }
         case .resultUpdate:
             if let id = item.relatedId { router.open(.game(id: id)) }
+        case .playWish:
+            // 首页弹出“想一起打”的卡片（不了 / 好）
+            router.select(.home)
+            appState.showsPlayWishes = true
+        case .playWishAccepted:
+            // 已经是球友了：直接去聊天
+            if let id = item.relatedId { router.open(.chat(userId: id), in: .messages) }
         case .kicked, .roomClosed, .system:
             break
         }

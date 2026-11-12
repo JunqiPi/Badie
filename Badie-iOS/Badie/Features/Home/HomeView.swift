@@ -15,6 +15,10 @@ struct HomeView: View {
     @State private var regulars: [VenueRegular] = []
     @State private var weeklyStanding: WeeklyStanding?
     @State private var pendingChallenges = 0
+    /// 别人想和我打球（还没回），和点了“好”之后要弹的“你们都想一起打”
+    @State private var playWishes: [MockBackend.PlayWish] = []
+    @State private var acceptedWish: PlayMatch?
+    @State private var playMatch: PlayMatch?
 
     private var days: [Date] {
         let calendar = Calendar.current
@@ -82,9 +86,33 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $appState.showsDayCards) {
             DayCandidatesView(day: matchManager.draft.day)
         }
+        .sheet(isPresented: $appState.showsPlayWishes, onDismiss: {
+            // 点了好：半屏收起后再弹“你们都想一起打”
+            if let accepted = acceptedWish {
+                acceptedWish = nil
+                playMatch = accepted
+            }
+        }) {
+            PlayWishSheet(wishes: playWishes) { wish, accepted, suggestion in
+                answered(wish, accepted: accepted, suggestion: suggestion)
+            }
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+            .presentationCornerRadius(28)
+        }
+        .fullScreenCover(item: $playMatch) { match in
+            PlayMatchView(match: match)
+        }
         .task {
             await friendManager.refreshRegulars()
             reloadPlayers()
+            await loadPlayWishes()
+        }
+        .onChange(of: appState.showsPlayWishes) { _, showing in
+            if showing { Task { await loadPlayWishes(closesIfEmpty: true) } }
+        }
+        .onChange(of: appState.showsDayCards) { _, showing in
+            if !showing { Task { await loadPlayWishes() } }
         }
         .onAppear {
             reloadPlayers()
@@ -99,6 +127,7 @@ struct HomeView: View {
         }
         .onChange(of: inboxManager.unreadCount) { _, _ in
             reloadRankings()
+            Task { await loadPlayWishes() }
         }
         .onChange(of: locationManager.nearbyCourts) { _, _ in
             prepareDraft()
@@ -302,8 +331,13 @@ struct HomeView: View {
     @ViewBuilder
     private var updates: some View {
         let groups = actionableUpdates
-        if pendingChallenges > 0 || !groups.isEmpty {
+        if pendingChallenges > 0 || !groups.isEmpty || !playWishes.isEmpty {
             FlowLayout(spacing: AppTheme.Spacing.sm) {
+                if !playWishes.isEmpty {
+                    CountPill(icon: "heart.fill", title: String(localized: "想一起打"), count: playWishes.count) {
+                        appState.showsPlayWishes = true
+                    }
+                }
                 if pendingChallenges > 0 {
                     CountPill(icon: "flag.2.crossed.fill", title: String(localized: "挑战"), count: pendingChallenges) {
                         router.open(.challenges)
@@ -320,6 +354,23 @@ struct HomeView: View {
                 }
             }
         }
+    }
+
+    // MARK: 想一起打
+
+    private func loadPlayWishes(closesIfEmpty: Bool = false) async {
+        guard appState.currentUser != nil, let wishes = try? await appState.backend.pendingPlayWishes() else { return }
+        playWishes = wishes
+        if closesIfEmpty && wishes.isEmpty { appState.showsPlayWishes = false }
+    }
+
+    private func answered(_ wish: MockBackend.PlayWish, accepted: Bool, suggestion: MockBackend.PlaySuggestion?) {
+        playWishes.removeAll { $0.id == wish.id }
+        // 这个人的“想和你打球”通知也算看过了
+        for item in inboxManager.items where item.kind == .playWish && item.relatedId == wish.userId && !item.isRead {
+            inboxManager.markRead(item)
+        }
+        if accepted { acceptedWish = PlayMatch(userId: wish.userId, suggestion: suggestion) }
     }
 
     private func pillTitle(_ kind: InboxItem.Kind) -> String {

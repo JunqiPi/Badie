@@ -117,6 +117,12 @@ enum DemoLauncher {
                 backend.db.users[id]?.avatar.cardColor = .lime
             }
             environment.appState.showsDayCards = true
+        case "nearbyCards":
+            // 按天看人刷完了：接着是常在附近打的人
+            router.selectedTab = .home
+            environment.matchManager.draft.day = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date()))!
+            DayCandidatesView.demoStartsAtNearby = true
+            environment.appState.showsDayCards = true
         case "playerProfile":
             // 昨天一起打过单打的球友：资料页显示“你们的交集”
             router.selectedTab = .home

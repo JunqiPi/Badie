@@ -112,6 +112,9 @@ struct InboxItem: Identifiable, Codable, Hashable {
         case challenge
         /// 赛果确认、有分歧
         case resultUpdate
+        /// 常在附近：有人想和你打球 / 对方同意一起打球
+        case playWish
+        case playWishAccepted
         case system
     }
 

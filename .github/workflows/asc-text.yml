@@ -14,14 +14,14 @@ on:
         default: list
       version:
         description: 版本号
-        default: "1.0.4"
+        default: "1.0.5"
 
 permissions:
   contents: read
 
 env:
   MODE: ${{ inputs.mode || 'list' }}
-  VERSION: ${{ inputs.version || '1.0.4' }}
+  VERSION: ${{ inputs.version || '1.0.5' }}
 
 jobs:
   text:

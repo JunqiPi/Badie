@@ -4,6 +4,10 @@ import SwiftUI
 struct CreateRoomView: View {
     var initialMode: GameMode?
     var inviteeId: String?
+    /// 预填的球馆和时间（“你们都想一起打”里点“约这个时间”）
+    var initialVenueId: String?
+    var initialStart: Date?
+    var initialEnd: Date?
 
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
@@ -281,6 +285,15 @@ struct CreateRoomView: View {
         startMinutes = calendar.component(.hour, from: suggested.startTime) * 60 + calendar.component(.minute, from: suggested.startTime)
         endMinutes = min(24 * 60, startMinutes + 120)
         courtId = locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil } ?? locationManager.nearbyCourts.first?.id
+        if let initialStart {
+            // 按半小时对齐，放进能选的范围（6:00–24:00）
+            let minutes = calendar.component(.hour, from: initialStart) * 60 + calendar.component(.minute, from: initialStart)
+            let length = initialEnd.map { max(60, Int($0.timeIntervalSince(initialStart) / 60)) } ?? 120
+            day = calendar.startOfDay(for: initialStart)
+            startMinutes = min(23 * 60, max(6 * 60, minutes / 30 * 30))
+            endMinutes = min(24 * 60, startMinutes + length / 30 * 30)
+        }
+        if let initialVenueId, locationManager.court(id: initialVenueId) != nil { courtId = initialVenueId }
         if let level = appState.currentUser?.level(in: event) {
             lowerLevel = max(1, level - 2)
             upperLevel = min(9, level + 2)

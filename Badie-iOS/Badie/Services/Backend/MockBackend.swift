@@ -64,6 +64,11 @@ final class MockBackend {
     var remoteIsAdmin = false
     /// 上次按位置拉取球馆的地点、半径和时间
     var remoteVenuesLoaded: (center: Coordinate, radiusKm: Double, at: Date)?
+    /// 常在附近（只在演示模式用，正式后端都记在服务器上）：跳过的人、发出的“想一起打”、收到的、已经回过的
+    var demoNearbySkipped: Set<String> = []
+    var demoWishesSent: [String: Date] = [:]
+    var demoWishesIncoming: [String]?
+    var demoWishesClosed: Set<String> = []
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?
@@ -376,6 +381,10 @@ final class MockBackend {
         user.avatar.symbol = updated.avatar.symbol
         user.avatar.paletteIndex = updated.avatar.paletteIndex
         user.avatar.cardColor = updated.avatar.cardColor
+        if let remote, updated.preferredMode != user.preferredMode {
+            // 常在附近的卡片上显示、筛选也按它；没传上去不影响保存别的资料
+            try? await remote.update("profiles", query: "id=eq.\(user.id)", ["preferred_mode": updated.preferredMode?.serverValue ?? NSNull()])
+        }
         user.preferredMode = updated.preferredMode
         // 等级不能在这里直接改：只能通过定级问卷（每 90 天一次）或球友评价校准
         db.users[user.id] = user
