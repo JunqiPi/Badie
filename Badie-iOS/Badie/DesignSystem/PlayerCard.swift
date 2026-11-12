@@ -21,9 +21,6 @@ enum CardColor: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    /// 底纹颜色：深色底用浅色
-    var pattern: Color { self == .ink ? Color.white.opacity(0.12) : Color(hex: 0x17140F).opacity(0.1) }
-
     var name: String {
         switch self {
         case .lime: String(localized: "柠檬绿")
@@ -48,7 +45,7 @@ extension User {
     var cardColor: CardColor { avatar.cardColor ?? .default(for: id) }
 }
 
-/// 卡片上半部分：有背景照片就铺满照片；没有就是颜色 + Badie 底纹 + 中间的大头像
+/// 卡片上半部分：有背景照片就铺满照片；没有就是纯色 + 中间的大头像
 struct CardCover<Face: View>: View {
     let color: CardColor
     let photo: UIImage?
@@ -60,7 +57,6 @@ struct CardCover<Face: View>: View {
                 Color.clear.overlay { Image(uiImage: photo).resizable().scaledToFill() }
             } else {
                 color.fill
-                LogoPattern(tint: color.pattern)
                 face()
             }
         }
@@ -69,34 +65,8 @@ struct CardCover<Face: View>: View {
     }
 }
 
-/// 斜着排的 Badie 标志底纹
-struct LogoPattern: View {
-    let tint: Color
-    var tile: CGFloat = 44
-
-    var body: some View {
-        Canvas { context, size in
-            var mark = context.resolve(Image("LogoMark"))
-            mark.shading = .color(tint)
-            let step = tile * 1.35
-            var row = 0
-            var y: CGFloat = -tile / 2
-            while y < size.height {
-                var x: CGFloat = (row.isMultiple(of: 2) ? 0 : step / 2) - tile / 2
-                while x < size.width {
-                    context.draw(mark, in: CGRect(x: x, y: y, width: tile, height: tile * 514 / 456))
-                    x += step
-                }
-                y += step
-                row += 1
-            }
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
-    }
-}
-
-/// 发现页的大卡片：封面（照片，或颜色 + 大头像）铺满，左上角一个白色小标签，底部压暗写名字、等级、一行信息
+/// 发现页的大卡片，左上角一个白色小标签。
+/// 有照片：照片铺满，底部压暗写名字、等级、一行信息；没照片：上面约六成是纯色 + 大头像，下面一块白色信息区
 struct CoverCard<Footer: View>: View {
     let user: User?
     /// 左上角：“3.2 公里 · 常去 X” / “周六 14:00–17:00 · 单打”
@@ -108,18 +78,30 @@ struct CoverCard<Footer: View>: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-        ZStack(alignment: .bottomLeading) {
-            if let user {
-                CardCover(color: user.cardColor, photo: AvatarPhotos.cardImage(userId: user.id, avatar: user.avatar)) {
-                    // 没照片：大头像往上挪，让开底部的名字
-                    AvatarView(user: user, size: 120)
-                        .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
-                        .padding(.bottom, 100)
+        let photo = user.flatMap { AvatarPhotos.cardImage(userId: $0.id, avatar: $0.avatar) }
+        Group {
+            if let photo, let user {
+                ZStack(alignment: .bottomLeading) {
+                    CardCover(color: user.cardColor, photo: photo) { EmptyView() }
+                    info(onPhoto: true)
+                        .padding(.top, AppTheme.Spacing.xxxl)
+                        .background(LinearGradient(colors: [.black.opacity(0), .black.opacity(0.72)], startPoint: .top, endPoint: .bottom))
                 }
             } else {
-                AppTheme.Colors.surfaceMuted
+                GeometryReader { proxy in
+                    VStack(spacing: 0) {
+                        colorCover
+                            .frame(minHeight: 0, maxHeight: .infinity)
+                        Rectangle()
+                            .fill(AppTheme.Colors.stroke)
+                            .frame(height: 3)
+                        // 信息区至少占四成；字多（小屏、大字体）时上面的颜色让出来
+                        info(onPhoto: false)
+                            .frame(minHeight: proxy.size.height * 0.38, alignment: .top)
+                            .background(AppTheme.Colors.surface)
+                    }
+                }
             }
-            info
         }
         .overlay(alignment: .topLeading) {
             if let pill, !pill.isEmpty {
@@ -146,7 +128,28 @@ struct CoverCard<Footer: View>: View {
         .accessibilityAction(named: Text("看资料")) { onProfile?() }
     }
 
-    private var info: some View {
+    /// 没照片时的上半部分：卡片颜色 + 居中的大头像（放不下就换小一号，上下让开左上角的标签）
+    @ViewBuilder
+    private var colorCover: some View {
+        if let user {
+            CardCover(color: user.cardColor, photo: nil) {
+                ViewThatFits(in: .vertical) {
+                    face(user, size: 120)
+                    face(user, size: 72)
+                }
+                .padding(.vertical, 40)
+            }
+        } else {
+            AppTheme.Colors.surfaceMuted
+        }
+    }
+
+    private func face(_ user: User, size: CGFloat) -> some View {
+        AvatarView(user: user, size: size)
+            .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
+    }
+
+    private func info(onPhoto: Bool) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             if let user {
                 HStack(spacing: AppTheme.Spacing.sm) {
@@ -159,15 +162,14 @@ struct CoverCard<Footer: View>: View {
             if !line.isEmpty {
                 Text(line)
                     .font(AppTheme.Typography.subheadlineBold)
+                    .foregroundStyle(onPhoto ? Color.white : AppTheme.Colors.inkSecondary)
                     .lineLimit(1)
             }
             footer()
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(onPhoto ? Color.white : AppTheme.Colors.ink)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(AppTheme.Spacing.lg)
-        .padding(.top, AppTheme.Spacing.xxxl)
-        .background(LinearGradient(colors: [.black.opacity(0), .black.opacity(0.72)], startPoint: .top, endPoint: .bottom))
     }
 }
 
