@@ -124,7 +124,7 @@ export function Toasts() {
         <p
           key={t.id}
           role={t.tone === 'error' ? 'alert' : 'status'}
-          className={`animate-pop flex max-w-md items-center gap-2 rounded-[16px] border-2 border-stroke px-4 py-3 text-subhead font-bold text-on-accent shadow-low ${t.tone === 'error' ? 'bg-pink' : 'bg-lime'}`}
+          className={`animate-pop flex max-w-md items-center gap-2 whitespace-pre-line rounded-[16px] border-2 border-stroke px-4 py-3 text-subhead font-bold text-on-accent shadow-low ${t.tone === 'error' ? 'bg-pink' : 'bg-lime'}`}
         >
           <Icon name={t.tone === 'error' ? 'warning' : 'checkCircle'} className="size-5" />
           {t.text}

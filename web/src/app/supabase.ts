@@ -72,6 +72,8 @@ export interface Profile {
   verified_rating: number | null;
   /** 通知和邮件用的语言 */
   locale: Locale;
+  /** 偏好单打还是双打（常在附近的卡片上显示）；null = 都行 */
+  preferred_mode?: Mode | null;
   /** 只用来定级和匹配（男女等级分开算）；老用户没填时打开 App 会先问 */
   gender: Gender | null;
 }
@@ -156,6 +158,41 @@ export interface DayCandidate {
     avatar: string | null; card_color: string | null; card_photo: string | null;
   };
   venues: { id: string; name: string; km?: number }[] | null;
+}
+
+/** 卡片上的人（day_candidates、nearby_players 里的 user） */
+export type CandidateUser = DayCandidate['user'];
+
+/** 常在附近打的人（nearby_players）：打开了“在同馆常客里显示我”、常去附近球馆的人，不分日期 */
+export interface NearbyPlayer {
+  user: CandidateUser & { preferred_mode: Mode | null };
+  /** TA 常去的、在我附近的球馆，近的在前 */
+  venues: { id: string; name: string; km?: number }[] | null;
+  /** 和我常去的球馆有几家一样 */
+  shared_venues: number;
+}
+
+/** 两人都常去的球馆（服务器现在不给时间，只给球馆；以后给了时间也能显示） */
+export interface PlaySuggestion {
+  venue_id: string;
+  venue_name: string;
+  starts_at?: string | null;
+  ends_at?: string | null;
+}
+
+/** 想一起打（wish_to_play）：mutual = 对方也想和我打，已加为球友 */
+export interface WishResult {
+  mutual: boolean;
+  remaining: number;
+  suggestion: PlaySuggestion | null;
+}
+
+/** 别人发给我、还没回的“想一起打”（pending_play_wishes） */
+export interface PlayWish {
+  from: CandidateUser & { preferred_mode?: Mode | null };
+  /** 两人都常去的球馆 */
+  shared_venue: string | null;
+  created_at: string;
 }
 
 export type Outcome = 'team1' | 'team2' | 'friendly';

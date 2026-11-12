@@ -9,6 +9,21 @@ import { cleanPhotoFolder, supabase, tagText, useLive, type Profile, type Ticket
 import { timeOf } from './time';
 import { Button, toast } from './ui';
 
+/** 传一张卡片背景照片（已裁好的 JPEG）：先传新的、换上，再删旧的。返回新照片的位置，失败时抛错 */
+export async function uploadCardPhoto(profile: Profile, jpeg: Blob) {
+  await cleanPhotoFolder(profile.id, [profile.avatar_path, profile.card_photo_path]).catch(() => {});
+  const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
+  const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
+  if (uploadError) throw uploadError;
+  const { error } = await supabase!.rpc('set_card_photo', { p_path: path });
+  if (error) {
+    await supabase!.storage.from('avatars').remove([path]);
+    throw error;
+  }
+  if (profile.card_photo_path) await supabase!.storage.from('avatars').remove([profile.card_photo_path]);
+  return path;
+}
+
 /** 卡片背景（iOS 编辑资料里的同一块）：别人在首页刷到你时看到的卡片。
  *  背景照片和头像分开：裁成 600×800 的竖图，先传新的、换上，再删旧的；没传照片就用选的颜色 */
 export function CardBackground({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
@@ -38,17 +53,7 @@ export function CardBackground({ profile, onChange }: { profile: Profile; onChan
     close();
     setBusy(true);
     try {
-      await cleanPhotoFolder(profile.id, [profile.avatar_path, profile.card_photo_path]).catch(() => {});
-      const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
-      const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
-      if (uploadError) throw uploadError;
-      const { error } = await supabase!.rpc('set_card_photo', { p_path: path });
-      if (error) {
-        await supabase!.storage.from('avatars').remove([path]);
-        throw error;
-      }
-      if (profile.card_photo_path) await supabase!.storage.from('avatars').remove([profile.card_photo_path]);
-      onChange({ ...profile, card_photo_path: path });
+      onChange({ ...profile, card_photo_path: await uploadCardPhoto(profile, jpeg) });
       toast(t('Card background updated'));
     } catch {
       toast(t('Couldn’t upload the photo. Try another one.'), 'error');

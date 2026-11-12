@@ -8,6 +8,7 @@ import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { ArrowLabel, Avatar, CardFan, Empty, IconTile, Notice, SectionTitle, StatTile, fill, type Tint } from './kit';
 import type { Centre } from './pickers';
+import { PlayWishPill } from './Nearby';
 import { Link } from './router';
 import { signInFirst } from './Shell';
 import { supabase, useLive, winPercent, type Game, type MyChallenges, type MyGroups, type NearbyVenue, type PlayRecord, type Profile, type RoomSummary, type Ticket, type WeeklyBoard } from './supabase';
@@ -58,9 +59,12 @@ function Dashboard({ me }: { me: Profile }) {
   return (
     <div className="grid gap-8 lg:gap-10">
       <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <Headline text={t('Up for *a game* tonight?')}>
-          <p className="text-subhead font-bold text-ink-secondary">{t('{greeting}, {name}', { greeting: greeting(), name: me.nickname })}</p>
-        </Headline>
+        <div className="grid min-w-0 justify-items-start">
+          <Headline text={t('Up for *a game* tonight?')}>
+            <p className="text-subhead font-bold text-ink-secondary">{t('{greeting}, {name}', { greeting: greeting(), name: me.nickname })}</p>
+          </Headline>
+          <PlayWishPill me={me} />
+        </div>
         <div className="grid grid-cols-3 gap-2.5 lg:w-[30rem]">
           <Link to="/levels/" className="press rounded-[14px]"><StatTile stacked tint="lavender" icon="level" value={`Lv.${level.label}`} label={level.name} /></Link>
           <Link to="/games/" className="press rounded-[14px]"><StatTile stacked tint="peach" icon="games" value={record?.games_played ?? '–'} label={t('Games')} /></Link>

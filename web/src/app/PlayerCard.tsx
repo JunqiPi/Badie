@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
-import { Avatar, LevelBadge } from './kit';
+import { Avatar, LevelBadge, Tag } from './kit';
 import { avatarUrl, tagText } from './supabase';
 
 /** 卡片颜色：没传背景照片时，卡片上半部分用这个颜色（和服务器、iOS 同一套名字） */
@@ -71,21 +71,35 @@ export function CardCover({ person, avatarSize = 140, className = '', children }
 }
 
 /** 一张铺满的卡片（iOS 的 DayCardView）：上面是背景照片或颜色，下面是等级、项目、时间、球馆 */
-export function DayCard({ person, event, time, venues, footer, children }: {
+export function DayCard({ person, event, time, venues, extra = [], label, reliable = false, footer, children }: {
   person: CardPerson;
   /** 项目（单打、混双……） */
-  event: { icon: IconName; text: string };
-  time: string;
+  event?: { icon: IconName; text: string };
+  time?: string;
   venues: string[];
+  /** 球馆后面再加的几行（常在附近的人：偏好单打 / 双打） */
+  extra?: [IconName, string][];
+  /** 照片左上角的小标签（“常在附近”） */
+  label?: string;
+  /** 名字下面显示“靠谱” */
+  reliable?: boolean;
   footer?: ReactNode;
   /** 盖在照片上的东西（左滑右滑的提示） */
   children?: ReactNode;
 }) {
-  const rows: [IconName, string][] = [[event.icon, event.text], ['clock', time], ...venues.map((v): [IconName, string] => ['pin', v])];
+  const rows: [IconName, string][] = [
+    ...(event ? [[event.icon, event.text] as [IconName, string]] : []),
+    ...(time ? [['clock', time] as [IconName, string]] : []),
+    ...venues.map((v): [IconName, string] => ['pin', v]),
+    ...extra,
+  ];
   const photo = Boolean(person.card_photo);
   return (
     <article aria-label={person.nickname} className="sticker flex h-full flex-col overflow-hidden">
-      <CardCover person={person} className="min-h-0 flex-1">{children}</CardCover>
+      <CardCover person={person} className="min-h-0 flex-1">
+        {label && <span className="absolute top-3 left-3 rounded-full border-2 border-stroke bg-surface px-2.5 py-0.5 text-caption font-black text-ink">{label}</span>}
+        {children}
+      </CardCover>
       <div className="relative grid gap-3 border-t-2 border-stroke p-4 sm:p-5">
         {/* 有背景照片：头像小一点，压在照片左下角 */}
         {photo && (
@@ -98,6 +112,7 @@ export function DayCard({ person, event, time, venues, footer, children }: {
             {person.tag != null && <span className="shrink-0 text-ink-tertiary">{tagText(person.tag)}</span>}
           </p>
           <LevelBadge rating={person.rating} named={false} />
+          {reliable && <Tag icon="reliable" tint="mint">{t('Reliable')}</Tag>}
         </div>
         <ul className="grid gap-1 text-subhead font-bold">
           {rows.map(([icon, text], i) => (

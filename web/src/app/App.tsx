@@ -125,7 +125,7 @@ export default function App() {
   const editing = path.match(/^\/groups\/([0-9a-f-]{36})\/edit\//)?.[1];
   const day = path.match(/^\/day\/(\d{4}-\d{2}-\d{2})\//)?.[1];
   return shell(
-    day ? <DayCards key={day} date={day} />
+    day ? <DayCards key={day} date={day} profile={profile} onProfile={setProfile} />
     : editing ? <EditGroup key={editing} id={editing} profile={profile} />
     : player ? <PlayerPage key={player} id={player} />
     : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />
@@ -143,7 +143,7 @@ export default function App() {
     : path.startsWith('/games/') ? <Games />
     : path.startsWith('/play/') ? <Play profile={profile} />
     : path.startsWith('/messages/') ? <Messages />
-    : path.startsWith('/notifications/') ? <Notifications />
+    : path.startsWith('/notifications/') ? <Notifications profile={profile} />
     : path.startsWith('/admin/') ? <Admin />
     : path.startsWith('/verification/') ? <VerificationPage profile={profile} />
     : path.startsWith('/settings/') ? <Settings profile={profile} email={session!.user.email} onChange={setProfile} />

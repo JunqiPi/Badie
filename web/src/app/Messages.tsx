@@ -2,8 +2,9 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type S
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, CountBadge, Divider, Empty, IconButton, IconTile, LargeTitle, LevelBadge, ScreenHeader, Segmented, type Tint } from './kit';
+import { PlayWishInbox } from './Nearby';
 import { Link, navigate } from './router';
-import { problem, supabase, tagText, useLive, type FoundPlayer, type Friend, type Regular, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
+import { problem, supabase, tagText, useLive, type FoundPlayer, type Friend, type Profile, type Regular, type Thread, type ThreadKind, type ThreadSummary, type Update } from './supabase';
 import { day, hours, relative } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 
@@ -453,9 +454,11 @@ const updateIcons: Record<string, [IconName, Tint]> = {
   verification: ['verified', 'lime'],
   report: ['shield', 'butter'],
   nudge: ['bell', 'butter'],
+  play_wish: ['heart', 'lime'],
+  play_wish_accepted: ['handshake', 'lime'],
 };
 
-export function Notifications() {
+export function Notifications({ profile }: { profile: Profile }) {
   const [updates, setUpdates] = useState<Update[]>();
   useEffect(() => {
     supabase!
@@ -473,6 +476,7 @@ export function Notifications() {
   return (
     <div className="mx-auto grid max-w-2xl gap-5">
       <ScreenHeader title={t('Notifications')} back="/" />
+      <PlayWishInbox me={profile} />
       {!updates ? (
         <div className="grid gap-3">{[0, 1, 2].map((i) => <Skeleton key={i} className="h-20" />)}</div>
       ) : !updates.length ? (

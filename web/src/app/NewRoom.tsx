@@ -90,14 +90,24 @@ export function AudienceField({ profile, value, onChange }: { profile: Profile; 
   );
 }
 
-/** 地址里带的：?mode=doubles&invite=<球友 id>&gender=female&name=…（首页按天看人时右滑双打） */
+/** 地址里带的：?mode=doubles&invite=<球友 id>&gender=female&name=…（首页按天看人时右滑双打）。
+ *  “你们都想一起打”里约这个时间时还带球馆和时间：&venue=<id>&venue_name=…&starts=<ISO>&ends=<ISO> */
 function asked() {
   const q = new URLSearchParams(location.search);
   const id = q.get('invite')?.match(/^[0-9a-f-]{36}$/)?.[0];
   const gender = q.get('gender');
+  const venue = q.get('venue')?.match(/^[0-9a-f-]{36}$/)?.[0];
+  const court: Court | undefined = venue ? { id: venue, name: q.get('venue_name') ?? '', city: '', time_zone_id: null } : undefined;
+  const starts = new Date(q.get('starts') ?? '');
+  const ends = new Date(q.get('ends') ?? '');
+  const minutes = (d: Date) => d.getHours() * 60 + d.getMinutes();
+  const timed = !isNaN(starts.getTime()) && !isNaN(ends.getTime()) && ends > starts;
   return {
     mode: (q.get('mode') === 'singles' ? 'singles' : 'doubles') as Mode,
     invitee: id ? { id, name: q.get('name') ?? '', gender: (gender === 'male' || gender === 'female' ? gender : null) as Gender | null } : undefined,
+    slot: timed
+      ? { court, date: new Intl.DateTimeFormat('en-CA').format(starts), from: minutes(starts), to: starts.toDateString() === ends.toDateString() ? minutes(ends) : 24 * 60 - 30 }
+      : court ? { court, date: today(zone(), 1), from: 19 * 60, to: 21 * 60 } : undefined,
   };
 }
 
@@ -114,7 +124,7 @@ export function NewRoom({ profile }: { profile: Profile }) {
   const playEvent = options.includes(chosen) ? chosen : options[0];
   const level = eventLevel(profile, playEvent);
   const [isPublic, setPublic] = useState(true);
-  const [slot, setSlot] = useState<Slot>(() => ({ date: today(zone(), 1), from: 19 * 60, to: 21 * 60 }));
+  const [slot, setSlot] = useState<Slot>(() => start.slot ?? { date: today(zone(), 1), from: 19 * 60, to: 21 * 60 });
   const [min, setMin] = useState(Math.max(1, level - 1));
   const [max, setMax] = useState(Math.min(9, level + 1));
   const [picked, setPicked] = useState<RoomTag[]>([]);

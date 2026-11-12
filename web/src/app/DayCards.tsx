@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches, saveFilter, timeLabels, type DayFilter, type TimeOfDay } from './dayFilter';
+import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches, matchesNearby, saveFilter, timeLabels, type DayFilter, type TimeOfDay } from './dayFilter';
+import { AvatarCrop, decode } from './AvatarCrop';
+import { uploadCardPhoto } from './CardBackground';
+import { Mutual, RulesButton, Sheet, wishProblem } from './Nearby';
 import { createPortal } from 'react-dom';
 import { NEARBY_KM, useArea } from './area';
 import { eventLabel, eventOf } from './gender';
 import { AreaPrompt } from './Home';
 import { t } from './i18n';
 import { Icon, type IconName } from './icons';
-import { Empty, IconButton } from './kit';
-import { DayCard } from './PlayerCard';
+import { Avatar, Empty, IconButton } from './kit';
+import { DayCard, type CardPerson } from './PlayerCard';
 import { Link, navigate } from './router';
-import { problem, supabase, type DayCandidate } from './supabase';
+import { problem, supabase, type DayCandidate, type NearbyPlayer, type PlaySuggestion, type Profile, type WishResult } from './supabase';
 import { dateChip, timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
 
@@ -28,12 +31,40 @@ function bounds(date: string) {
 
 const SWIPE = 110;
 
+/** 一叠卡片里的一张：这天在找人的请求，或常在附近打的人（接在这天的后面） */
+type Item = { kind: 'day'; key: string; card: DayCandidate } | { kind: 'nearby'; key: string; card: NearbyPlayer };
+const dayItem = (card: DayCandidate): Item => ({ kind: 'day', key: card.ticket, card });
+const nearbyItem = (card: NearbyPlayer): Item => ({ kind: 'nearby', key: `n:${card.user.id}`, card });
+
+/** 第一次右滑常在附近的人之前，没有卡片照片的提醒一次（记在本机） */
+const PHOTO_ASKED = 'badie.nearbyPhotoAsked';
+function photoAsked() {
+  try {
+    return localStorage.getItem(PHOTO_ASKED) === '1';
+  } catch {
+    return true;
+  }
+}
+function rememberPhotoAsked() {
+  try {
+    localStorage.setItem(PHOTO_ASKED, '1');
+  } catch {}
+}
+
 /** 首页点某一天：这天附近在找人、和我水平对得上的球友，一张张卡片左右滑（iOS 的 DayCandidatesView）。
  *  卡片就是对方的约球请求（项目、时间都定好了）。右滑和点爱心一样，直接约：
  *  单打发约球邀请，TA 确认就成局；双打替我开一个公开的双打局并邀请 TA，附近的人可以加入补齐 */
-export function DayCards({ date }: { date: string }) {
+export function DayCards({ date, profile, onProfile }: { date: string; profile: Profile; onProfile: (p: Profile) => void }) {
   const area = useArea();
   const [cards, setCards] = useState<DayCandidate[]>();
+  // 这天的卡片刷完后接着看的：常在附近打的人
+  const [nearby, setNearby] = useState<NearbyPlayer[]>();
+  // 右滑常在附近的人之前要先问的（让附近的人看到你 / 加一张照片）
+  const [asking, setAsking] = useState<{ kind: 'visible' | 'photo'; card: NearbyPlayer }>();
+  const [cropping, setCropping] = useState<{ image: ImageBitmap; card: NearbyPlayer }>();
+  const [mutual, setMutual] = useState<{ other: NearbyPlayer['user']; suggestion: PlaySuggestion | null }>();
+  const me = useRef(profile);
+  me.current = profile;
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const [leaving, setLeaving] = useState<'left' | 'right'>();
   const [filter, setFilterState] = useState<DayFilter>(loadFilter);
@@ -43,11 +74,19 @@ export function DayCards({ date }: { date: string }) {
   const title = useRef<HTMLHeadingElement>(null);
   // 已经滑过的，自动刷新时不再加回来
   const seen = useRef(new Set<string>());
-  const visible = cards?.filter((c) => matches(filter, c));
-  const top = visible?.[0];
+  const loaded = cards !== undefined && nearby !== undefined;
+  // 和这天的卡片重复的人只出现一次
+  const dayPeople = new Set(cards?.map((c) => c.user.id));
+  const visibleDay = cards?.filter((c) => matches(filter, c)) ?? [];
+  const visibleNearby = nearby?.filter((c) => !dayPeople.has(c.user.id) && matchesNearby(filter, c)) ?? [];
+  const deck = loaded ? [...visibleDay.map(dayItem), ...visibleNearby.map(nearbyItem)] : undefined;
+  const total = (cards?.length ?? 0) + (nearby?.filter((c) => !dayPeople.has(c.user.id)).length ?? 0);
+  const top = deck?.[0];
   // 正在看的那张：自动刷新时不能让它突然消失
   const currentTop = useRef<string>(undefined);
-  currentTop.current = top?.ticket;
+  currentTop.current = top?.key;
+  // 常在附近的人里滑过几个：一个都没滑时，第一张上面写“这天的刷完了”
+  const [nearbySeen, setNearbySeen] = useState(0);
 
   const setFilter = (next: DayFilter) => {
     setFilterState(next);
@@ -58,7 +97,11 @@ export function DayCards({ date }: { date: string }) {
   useEffect(() => {
     if (!area) return;
     setCards(undefined);
+    setNearby(undefined);
     seen.current.clear();
+    supabase!
+      .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: NEARBY_KM })
+      .then(({ data, error }) => setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
     const { from, to } = bounds(date);
     let first = true;
     const load = () =>
@@ -76,6 +119,8 @@ export function DayCards({ date }: { date: string }) {
             if (!current) return fresh;
             const ids = new Set(fresh.map((c) => c.ticket));
             const kept = current.filter((c) => ids.has(c.ticket) || c.ticket === currentTop.current);
+            // 已经在看常在附近的人了：新来的请求不再插到前面
+            if (currentTop.current?.startsWith('n:')) return kept;
             const known = new Set(kept.map((c) => c.ticket));
             return [...kept, ...fresh.filter((c) => !known.has(c.ticket) && !seen.current.has(c.ticket))];
           });
@@ -102,7 +147,7 @@ export function DayCards({ date }: { date: string }) {
   // 键盘：左右方向键跳过 / 约 TA，Esc 关闭（邀请框开着时不管）
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || dialog.current?.open || (event.target as HTMLElement).closest?.('input, textarea, select')) return;
+      if (event.defaultPrevented || mutual || document.querySelector('dialog[open]') || (event.target as HTMLElement).closest?.('input, textarea, select')) return;
       if (event.key === 'Escape') navigate('/');
       else if (top && !leaving && event.key === 'ArrowLeft') skip(top);
       else if (top && !leaving && event.key === 'ArrowRight') like(top);
@@ -112,26 +157,111 @@ export function DayCards({ date }: { date: string }) {
   });
 
   /** 卡片飞出去，然后换下一张 */
-  function next(card: DayCandidate, side: 'left' | 'right') {
-    seen.current.add(card.ticket);
+  function next(item: Item, side: 'left' | 'right') {
+    seen.current.add(item.key);
     setLeaving(side);
     setTimeout(() => {
-      setCards((list) => list?.filter((c) => c.ticket !== card.ticket));
+      if (item.kind === 'day') setCards((list) => list?.filter((c) => c.ticket !== item.card.ticket));
+      else {
+        setNearby((list) => list?.filter((c) => c.user.id !== item.card.user.id));
+        setNearbySeen((n) => n + 1);
+      }
       setLeaving(undefined);
       setDrag({ x: 0, y: 0, active: false });
     }, 220);
   }
 
-  function skip(card: DayCandidate) {
-    next(card, 'left');
-    void supabase!.rpc('skip_candidate', { p_ticket: card.ticket });
+  function skip(item: Item) {
+    next(item, 'left');
+    if (item.kind === 'day') void supabase!.rpc('skip_candidate', { p_ticket: item.card.ticket });
+    else void supabase!.rpc('skip_nearby', { p_user: item.card.user.id });
+  }
+
+  function like(item: Item) {
+    if (leaving) return;
+    if (item.kind === 'day') void invite(item.card);
+    else wish(item.card);
+  }
+
+  /** 卡片回到原位（没滑出去） */
+  const settle = () => setDrag({ x: 0, y: 0, active: false });
+
+  /** 想一起打：先确认附近的人能看到我；没有卡片照片的，第一次提醒一下 */
+  function wish(card: NearbyPlayer) {
+    settle();
+    if (!me.current.show_as_regular) return setAsking({ kind: 'visible', card });
+    if (!me.current.card_photo_path && !photoAsked()) {
+      rememberPhotoAsked();
+      return setAsking({ kind: 'photo', card });
+    }
+    void sendWish(card);
+  }
+
+  async function sendWish(card: NearbyPlayer) {
+    const item = nearbyItem(card);
+    next(item, 'right');
+    const { data, error } = await supabase!.rpc('wish_to_play', { p_user: card.user.id });
+    if (error) {
+      if (error.message === 'not_visible') {
+        onProfile({ ...me.current, show_as_regular: false });
+      } else toast(wishProblem(error), 'error');
+      // 没发出去（到上限、网络）：卡片放回最前面；TA 已经约不了的就不放回
+      if (error.message !== 'not_available') {
+        seen.current.delete(item.key);
+        setTimeout(() => {
+          setNearby((list) => [card, ...(list ?? []).filter((c) => c.user.id !== card.user.id)]);
+          setNearbySeen((n) => Math.max(0, n - 1));
+        }, 300);
+      }
+      return;
+    }
+    const result = data as WishResult;
+    if (result.mutual) setMutual({ other: card.user, suggestion: result.suggestion });
+    else toast(`${t('Told {name}. Once they say yes, you can chat.', { name: card.user.nickname })}\n${t('{n} left today', { n: result.remaining })}`);
+  }
+
+  /** 让附近的人也能看到我：打开“在同馆常客里显示我”，然后接着发 */
+  async function becomeVisible(card: NearbyPlayer) {
+    setAsking(undefined);
+    const { data, error } = await supabase!.from('profiles').update({ show_as_regular: true }).eq('id', me.current.id).select().single();
+    if (error) return toast(t('Couldn’t save. Try again.'), 'error');
+    me.current = data as Profile;
+    onProfile(data as Profile);
+    if (!me.current.card_photo_path && !photoAsked()) {
+      rememberPhotoAsked();
+      return setAsking({ kind: 'photo', card });
+    }
+    void sendWish(card);
+  }
+
+  async function pickPhoto(file: File, card: NearbyPlayer) {
+    setAsking(undefined);
+    try {
+      setCropping({ image: await decode(file), card });
+    } catch {
+      toast(t('Couldn’t upload the photo. Try another one.'), 'error');
+    }
+  }
+
+  async function uploadPhoto(jpeg: Blob) {
+    const card = cropping!.card;
+    cropping?.image.close();
+    setCropping(undefined);
+    try {
+      const path = await uploadCardPhoto(me.current, jpeg);
+      me.current = { ...me.current, card_photo_path: path };
+      onProfile(me.current);
+    } catch {
+      return toast(t('Couldn’t upload the photo. Try another one.'), 'error');
+    }
+    void sendWish(card);
   }
 
   /** 右滑和点爱心一样：直接约，不再让人选 */
-  async function like(card: DayCandidate) {
+  async function invite(card: DayCandidate) {
     const venue = inviteVenue(filter, card);
     if (!venue || leaving) return;
-    next(card, 'right');
+    next(dayItem(card), 'right');
     const starts = inviteStart(card).toISOString();
     const singles = card.mode === 'singles' && !card.mixed;
     const { error } = await supabase!.rpc(singles ? 'invite_ticket' : 'invite_doubles', { p_ticket: card.ticket, p_venue: venue.id, p_starts_at: starts });
@@ -175,28 +305,41 @@ export function DayCards({ date }: { date: string }) {
 
   const x = leaving === 'left' ? -1.2 * innerWidth : leaving === 'right' ? 1.2 * innerWidth : drag.x;
   const day = dateChip(date, 0).full;
+  const inNearby = top?.kind === 'nearby';
+  // 这天的卡片刷完了、第一次看到常在附近的人：上面一条虚线框
+  const divider = inNearby && nearbySeen === 0;
+  const second = deck?.[1];
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-labelledby="day-title" className="fixed inset-0 z-40 flex flex-col bg-canvas text-ink">
       <header className="mx-auto flex w-full max-w-xl items-start gap-3 px-[var(--gutter)] pt-[calc(1rem+env(safe-area-inset-top))]">
         <div className="min-w-0 flex-1">
           <h1 id="day-title" ref={title} tabIndex={-1} className="text-title2 outline-none">{day}</h1>
-          {Boolean(visible?.length) && (
-            <p className="text-footnote font-bold text-ink-secondary">{t('Swipe right to invite, left to skip')} · {t('{n} player|{n} players', { n: visible!.length })}</p>
+          {top && (
+            <p className="text-footnote font-bold text-ink-secondary">
+              {inNearby ? `${t('Plays nearby')} · ${t('{n} player|{n} players', { n: visibleNearby.length })}` : t('{n} player|{n} players', { n: visibleDay.length })}
+            </p>
           )}
         </div>
+        <RulesButton points={[
+          t('Swipe right to invite, left to skip'),
+          t('Plays nearby: players who turned on “Show me as a regular at my courts” and often play at courts near you.'),
+          t('Want to play: once they say yes, or want to play with you too, you become friends.'),
+          t('Up to 10 a day.'),
+          t('People you skip or say no to won’t show up again for 30 days.'),
+        ]} />
         <IconButton icon="x" label={t('Close')} onClick={() => navigate('/')} />
       </header>
 
       {/* 筛选按钮 + 选了的条件（点 ✕ 去掉） */}
-      {cards !== undefined && cards.length > 0 && (
+      {loaded && total > 0 && (
         <div className="mx-auto flex w-full max-w-md gap-2 overflow-x-auto px-[var(--gutter)] pt-3 [scrollbar-width:none]">
           <button type="button" onClick={() => setEditing(true)}
                   className="press flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-[#17140f] px-3 text-footnote font-bold text-lime">
             <Icon name="filter" className="size-4" />
             {activeCount(filter) ? t('Filters · {n}', { n: activeCount(filter) }) : t('Filters')}
           </button>
-          {chips(filter, cards).map(([label, clear]) => (
+          {chips(filter, places(cards, nearby)).map(([label, clear]) => (
             <button key={label} type="button" onClick={() => setFilter(clear(filter))} aria-label={t('Remove {name}', { name: label })}
                     className="press flex min-h-9 shrink-0 items-center gap-1 rounded-full border-2 border-stroke bg-lime px-3 text-footnote font-bold text-on-accent">
               {label} <Icon name="x" className="size-3" />
@@ -208,9 +351,9 @@ export function DayCards({ date }: { date: string }) {
       <div className="relative mx-auto min-h-0 w-full max-w-md flex-1 px-[var(--gutter)] py-4">
         {!area ? (
           <div className="grid h-full content-center"><AreaPrompt /></div>
-        ) : cards === undefined ? (
+        ) : !loaded ? (
           <Skeleton className="h-full rounded-[var(--radius-card)]" />
-        ) : !top && cards.length > 0 ? (
+        ) : !top && total > 0 ? (
           <div className="grid h-full content-center">
             <Empty icon="filter" tint="butter" title={t('No one matches your filters')} action={{ label: t('Clear filters'), onClick: () => setFilter(emptyFilter) }}>
               {t('Try loosening them a little.')}
@@ -223,25 +366,33 @@ export function DayCards({ date }: { date: string }) {
             </Empty>
           </div>
         ) : (
-          <div className="relative h-full">
-            {visible![1] && (
-              <div aria-hidden="true" className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
-                <Card card={visible![1]} filter={filter} />
+          <div className="flex h-full flex-col gap-3">
+            {divider && (
+              <div className="grid shrink-0 justify-items-center gap-0.5 rounded-[var(--radius-card)] border-2 border-dashed border-stroke bg-butter/40 px-4 py-3 text-center">
+                <p className="text-headline">{t('That’s everyone for this day')}</p>
+                <p className="text-footnote font-bold text-ink-secondary">{t('Next: players who often play nearby')}</p>
               </div>
             )}
-            <div
-              key={top.ticket}
-              onPointerDown={down}
-              onPointerMove={move}
-              onPointerUp={up}
-              onPointerCancel={cancel}
-              style={{
-                transform: `translate(${x}px, ${drag.y * 0.2}px) rotate(${x / 25}deg)`,
-                transition: drag.active && !leaving ? 'none' : 'transform 220ms var(--ease-out)',
-              }}
-              className="absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
-            >
-              <Card card={top} filter={filter} hint={leaving ?? (drag.x > 40 ? 'right' : drag.x < -40 ? 'left' : undefined)} />
+            <div className="relative min-h-0 flex-1">
+              {second && (
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
+                  <Card item={second} filter={filter} />
+                </div>
+              )}
+              <div
+                key={top.key}
+                onPointerDown={down}
+                onPointerMove={move}
+                onPointerUp={up}
+                onPointerCancel={cancel}
+                style={{
+                  transform: `translate(${x}px, ${drag.y * 0.2}px) rotate(${x / 25}deg)`,
+                  transition: drag.active && !leaving ? 'none' : 'transform 220ms var(--ease-out)',
+                }}
+                className="absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
+              >
+                <Card item={top} filter={filter} hint={leaving ?? (drag.x > 40 ? 'right' : drag.x < -40 ? 'left' : undefined)} />
+              </div>
             </div>
           </div>
         )}
@@ -250,7 +401,7 @@ export function DayCards({ date }: { date: string }) {
       {top && (
         <div className="flex justify-center gap-10 px-[var(--gutter)] pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
           <Round icon="x" label={t('Skip')} className="bg-surface text-ink" disabled={Boolean(leaving)} onClick={() => skip(top)} />
-          <Round icon="heart" label={t('Invite')} className="bg-lime text-on-accent" disabled={Boolean(leaving)} onClick={() => like(top)} />
+          <Round icon="heart" label={inNearby ? t('Want to play') : t('Invite')} className="bg-lime text-on-accent" disabled={Boolean(leaving)} onClick={() => like(top)} />
         </div>
       )}
 
@@ -263,16 +414,76 @@ export function DayCards({ date }: { date: string }) {
         className="m-0 mt-auto max-h-[90dvh] w-full max-w-none bg-transparent p-0 text-ink open:animate-sheet sm:m-auto sm:max-w-md sm:open:animate-pop"
       >
         {editing && cards && (
-          <FilterSheet initial={filter} cards={cards} onDone={(next) => { setFilter(next); setEditing(false); }} onCancel={() => setEditing(false)} />
+          <FilterSheet initial={filter} cards={cards} nearby={nearby?.filter((c) => !dayPeople.has(c.user.id)) ?? []}
+                       onDone={(next) => { setFilter(next); setEditing(false); }} onCancel={() => setEditing(false)} />
         )}
       </dialog>
+
+      {/* 第一次想一起打之前：先让附近的人能看到你；没有照片的提醒一次 */}
+      <Sheet open={asking?.kind === 'visible'} onClose={() => setAsking((a) => (a?.kind === 'visible' ? undefined : a))} labelledBy="visible-title">
+        <h2 id="visible-title" className="text-title3">{t('Let players nearby see you too')}</h2>
+        <div className="grid grid-cols-[1fr_2fr] gap-3">
+          <Button variant="quiet" onClick={() => setAsking(undefined)}>{t('No thanks')}</Button>
+          <Button onClick={() => asking && void becomeVisible(asking.card)}>{t('Turn on')}</Button>
+        </div>
+      </Sheet>
+      <Sheet open={asking?.kind === 'photo'} onClose={() => setAsking((a) => (a?.kind === 'photo' ? undefined : a))} labelledBy="photo-title">
+        <h2 id="photo-title" className="text-title3">{t('Add a photo?')}</h2>
+        <div className="sticker flex items-center gap-3 p-3">
+          <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={44} />
+          <p className="text-subhead font-bold">{t('This card is what others see when they find you.')}</p>
+        </div>
+        <label className="button button-lg w-full cursor-pointer">
+          {t('Choose photo')}
+          <input type="file" accept="image/*" className="sr-only"
+                 onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file && asking) void pickPhoto(file, asking.card); }} />
+        </label>
+        <Button className="button-lg w-full" variant="quiet" onClick={() => { const card = asking?.card; setAsking(undefined); if (card) void sendWish(card); }}>{t('Add later')}</Button>
+      </Sheet>
+      {cropping && <AvatarCrop image={cropping.image} card onDone={uploadPhoto} onCancel={() => { cropping.image.close(); setCropping(undefined); }} />}
+      {mutual && <Mutual me={profile} other={mutual.other} suggestion={mutual.suggestion} onClose={() => setMutual(undefined)} />}
     </div>,
     document.body,
   );
 }
 
-/** 一张铺满的卡片：上面是背景照片或颜色，下面是等级、项目、时间、球馆（约在哪家的那家排第一） */
-function Card({ card, filter, hint }: { card: DayCandidate; filter: DayFilter; hint?: 'left' | 'right' }) {
+/** 一张铺满的卡片：这天的请求，或常在附近打的人 */
+function Card({ item, filter, hint }: { item: Item; filter: DayFilter; hint?: 'left' | 'right' }) {
+  return item.kind === 'day' ? <DayRequestCard card={item.card} filter={filter} hint={hint} /> : <NearbyCard card={item.card} filter={filter} hint={hint} />;
+}
+
+/** 左滑右滑时盖在照片上的字 */
+function Stamp({ hint, like }: { hint?: 'left' | 'right'; like: string }) {
+  if (!hint) return null;
+  return (
+    <span aria-hidden="true" className={`absolute top-4 rounded-[12px] border-2 border-stroke px-3 py-1 text-headline font-black ${hint === 'right' ? 'left-4 -rotate-6 bg-lime text-on-accent' : 'right-4 rotate-6 bg-surface text-ink'}`}>
+      {hint === 'right' ? like : t('Skip')}
+    </span>
+  );
+}
+
+const profileLink = (id: string) => <Link to={`/players/${id}/`} className="link -my-2 flex min-h-11 items-center justify-self-start text-footnote font-bold">{t('View profile')}</Link>;
+
+/** 常在附近打的人：常去哪家（选了球馆就是选的那家）、偏好单打还是双打。不显示具体位置 */
+function NearbyCard({ card, filter, hint }: { card: NearbyPlayer; filter: DayFilter; hint?: 'left' | 'right' }) {
+  const venue = inviteVenue(filter, card);
+  const mode = card.user.preferred_mode;
+  return (
+    <DayCard
+      person={card.user as CardPerson}
+      venues={venue ? [t('Often plays at {venue}', { venue: venue.name })] : []}
+      extra={mode ? [[mode === 'doubles' ? 'users' : 'user', mode === 'doubles' ? t('Doubles') : t('Singles')]] : []}
+      label={t('Plays nearby')}
+      reliable={(card.user.recent_no_shows ?? 0) === 0}
+      footer={profileLink(card.user.id)}
+    >
+      <Stamp hint={hint} like={t('Want to play')} />
+    </DayCard>
+  );
+}
+
+/** 这天的请求：上面是背景照片或颜色，下面是等级、项目、时间、球馆（约在哪家的那家排第一） */
+function DayRequestCard({ card, filter, hint }: { card: DayCandidate; filter: DayFilter; hint?: 'left' | 'right' }) {
   const event = eventLabel(card.mode, eventOf(card.play_with, card.mixed)) ?? (card.mode === 'doubles' ? t('Doubles') : t('Singles'));
   const first = inviteVenue(filter, card);
   const venues = first ? [first, ...(card.venues ?? []).filter((v) => v.id !== first.id)] : card.venues ?? [];
@@ -282,18 +493,13 @@ function Card({ card, filter, hint }: { card: DayCandidate; filter: DayFilter; h
       event={{ icon: card.mode === 'doubles' ? 'users' : 'user', text: event }}
       time={`${timeOf(card.starts_at)} – ${timeOf(card.ends_at)}`}
       venues={venues.map((v) => v.name)}
-      footer={<Link to={`/players/${card.user.id}/`} className="link -my-2 flex min-h-11 items-center justify-self-start text-footnote font-bold">{t('View profile')}</Link>}
+      footer={profileLink(card.user.id)}
     >
-      {hint && (
-        <span aria-hidden="true" className={`absolute top-4 rounded-[12px] border-2 border-stroke px-3 py-1 text-headline font-black ${hint === 'right' ? 'left-4 -rotate-6 bg-lime text-on-accent' : 'right-4 rotate-6 bg-surface text-ink'}`}>
-          {hint === 'right' ? t('Invite') : t('Skip')}
-        </span>
-      )}
+      <Stamp hint={hint} like={t('Invite')} />
     </DayCard>
   );
 }
 
-/** 这天卡片里出现的球馆，按人数排 */
 /** 卡片页上没有让人选时间，有些通用的错误说法会让人看不懂，换成这里的说法 */
 function inviteProblem(error: { message: string }) {
   switch (error.message) {
@@ -308,14 +514,19 @@ function inviteProblem(error: { message: string }) {
   }
 }
 
-function venueCounts(cards: DayCandidate[]) {
+type Places = { venues: DayCandidate['venues'] }[];
+/** 筛选里能选的球馆：这天的请求和常在附近的人去的 */
+const places = (cards: DayCandidate[] = [], nearby: NearbyPlayer[] = []): Places => [...cards, ...nearby];
+
+/** 卡片里出现的球馆，按人数排 */
+function venueCounts(cards: Places) {
   const counts = new Map<string, { id: string; name: string; count: number }>();
   for (const card of cards) for (const v of card.venues ?? []) counts.set(v.id, { id: v.id, name: v.name, count: (counts.get(v.id)?.count ?? 0) + 1 });
   return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
 /** 选了的条件：显示的字 + 去掉它 */
-function chips(f: DayFilter, cards: DayCandidate[]): [string, (f: DayFilter) => DayFilter][] {
+function chips(f: DayFilter, cards: Places): [string, (f: DayFilter) => DayFilter][] {
   const list: [string, (f: DayFilter) => DayFilter][] = [];
   if (f.event !== 'any') list.push([eventLabels()[f.event], (x) => ({ ...x, event: 'any' })]);
   if (f.venues.length) {
@@ -329,10 +540,12 @@ function chips(f: DayFilter, cards: DayCandidate[]): [string, (f: DayFilter) => 
   return list;
 }
 
-function FilterSheet({ initial, cards, onDone, onCancel }: { initial: DayFilter; cards: DayCandidate[]; onDone: (f: DayFilter) => void; onCancel: () => void }) {
+function FilterSheet({ initial, cards, nearby, onDone, onCancel }: { initial: DayFilter; cards: DayCandidate[]; nearby: NearbyPlayer[]; onDone: (f: DayFilter) => void; onCancel: () => void }) {
   const [draft, setDraft] = useState(initial);
   const set = (patch: Partial<DayFilter>) => setDraft((d) => ({ ...d, ...patch }));
-  const count = cards.filter((c) => matches(draft, c)).length;
+  // 常在附近的人也算进去
+  const count = cards.filter((c) => matches(draft, c)).length + nearby.filter((c) => matchesNearby(draft, c)).length;
+  const all = places(cards, nearby);
   const toggle = <T,>(list: T[], value: T) => (list.includes(value) ? list.filter((x) => x !== value) : [...list, value]);
   const section = 'grid gap-2';
   const label = 'text-footnote font-bold text-ink-secondary';
@@ -356,7 +569,7 @@ function FilterSheet({ initial, cards, onDone, onCancel }: { initial: DayFilter;
         </div>
         <div className={section} role="group" aria-labelledby="f-venues">
           <span id="f-venues" className={label}>{t('Courts')}</span>
-          {[...venueCounts(cards), ...initial.venues.filter((id) => !venueCounts(cards).some((v) => v.id === id))
+          {[...venueCounts(all), ...initial.venues.filter((id) => !venueCounts(all).some((v) => v.id === id))
               .map((id) => ({ id, name: initial.venueNames[id] ?? id, count: 0 }))].map((v) => (
             <button key={v.id} type="button" aria-pressed={draft.venues.includes(v.id)}
                     onClick={() => set({ venues: toggle(draft.venues, v.id), venueNames: { ...draft.venueNames, [v.id]: v.name } })}
