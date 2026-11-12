@@ -77,13 +77,26 @@ export function IconButton({ icon, label, badge = 0, tint = 'surface', ...action
   );
 }
 
-/** 待办小标签（iOS 的 CountPill）：图标 + 名字 + 红色数字，“邀请 2”“挑战 1” */
-export function CountPill({ icon, title, count, ...action }: Action & { icon: IconName; title: string; count: number }) {
+/** 发现页上面那排圆头像里的一个：一圈颜色 + 头像（没有人就是图标），右下角小图标说明是什么事，下面是名字。
+ *  label 是读屏念的整句（“阿杰约你打球”） */
+export function Story({ person, ring, icon, title, label, ...action }: Action & {
+  person?: { id: string; nickname: string; avatar?: string | null };
+  ring: Tint;
+  icon: IconName;
+  title: string;
+  label: string;
+}) {
   return (
-    <Pressable {...action} className="press flex min-h-9 items-center gap-1.5 rounded-full border-2 border-stroke bg-surface px-3 text-footnote font-bold">
-      <Icon name={icon} className="size-4" />
-      {title}
-      <span className="grid h-5 min-w-5 place-items-center rounded-full bg-danger-fill px-1 text-[11px] font-black text-white tabular-nums">{count}</span>
+    <Pressable {...action} label={label} className="press grid w-16 shrink-0 justify-items-center gap-1">
+      <span className={`relative grid size-16 place-items-center rounded-full border-2 border-stroke p-[3px] ${fill[ring]}`}>
+        {person ? <Avatar id={person.id} name={person.nickname} photo={person.avatar} size={52} /> : <Icon name={icon} className="size-6" />}
+        {person && (
+          <span className="absolute -right-1 -bottom-1 grid size-6 place-items-center rounded-full border-2 border-stroke bg-surface text-ink">
+            <Icon name={icon} className="size-3.5" />
+          </span>
+        )}
+      </span>
+      <span className="w-full truncate text-center text-caption font-bold">{title}</span>
     </Pressable>
   );
 }

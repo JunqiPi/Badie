@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { t } from './i18n';
-import { Icon, type IconName } from './icons';
-import { Avatar, LevelBadge, Tag } from './kit';
+import { Avatar, LevelBadge } from './kit';
+import { Link } from './router';
 import { avatarUrl, tagText } from './supabase';
 
 /** 卡片颜色：没传背景照片时，卡片上半部分用这个颜色（和服务器、iOS 同一套名字） */
@@ -70,66 +70,49 @@ export function CardCover({ person, avatarSize = 140, className = '', children }
   );
 }
 
-/** 一张铺满的卡片（iOS 的 DayCardView）：上面是背景照片或颜色，下面是等级、项目、时间、球馆 */
-export function DayCard({ person, event, time, venues, extra = [], label, reliable = false, footer, children }: {
+/** 一张铺满的卡片（iOS 的 DayCardView）：背景照片或颜色铺满整张，左上角一个白色小标签（多远 · 常去哪家，或时间 · 项目），
+ *  底部压一层深色渐变：名字、编号、等级，一行“双打 · 靠谱”，再下面是 footer（空闲时间） */
+export function DayCard({ person, label, details = [], reliable = false, profile = false, footer, children }: {
   person: CardPerson;
-  /** 项目（单打、混双……） */
-  event?: { icon: IconName; text: string };
-  time?: string;
-  venues: string[];
-  /** 球馆后面再加的几行（常在附近的人：偏好单打 / 双打） */
-  extra?: [IconName, string][];
-  /** 照片左上角的小标签（“常在附近”） */
+  /** 照片左上角的小标签 */
   label?: string;
-  /** 名字下面显示“靠谱” */
+  /** 名字下面那一行（没有的项传空），后面自动接“靠谱”或爽约次数 */
+  details?: (string | false | null | undefined)[];
   reliable?: boolean;
+  /** 名字链到 TA 的资料页 */
+  profile?: boolean;
   footer?: ReactNode;
   /** 盖在照片上的东西（左滑右滑的提示） */
   children?: ReactNode;
 }) {
-  const rows: [IconName, string][] = [
-    ...(event ? [[event.icon, event.text] as [IconName, string]] : []),
-    ...(time ? [['clock', time] as [IconName, string]] : []),
-    ...venues.map((v): [IconName, string] => ['pin', v]),
-    ...extra,
-  ];
-  const photo = Boolean(person.card_photo);
+  const misses = person.recent_no_shows ?? 0;
+  const line = [...details, reliable && t('Reliable'), misses > 0 && t('{n} missed game in 180 days|{n} missed games in 180 days', { n: misses })]
+    .filter(Boolean).join(' · ');
+  // 昵称太长时只截昵称，编号一直看得到
+  const name = (
+    <>
+      <span className="truncate">{person.nickname}</span>
+      {person.tag != null && <span className="shrink-0 text-white/70">{tagText(person.tag)}</span>}
+    </>
+  );
   return (
-    <article aria-label={person.nickname} className="sticker flex h-full flex-col overflow-hidden">
-      <CardCover person={person} className="min-h-0 flex-1">
-        {label && <span className="absolute top-3 left-3 rounded-full border-2 border-stroke bg-surface px-2.5 py-0.5 text-caption font-black text-ink">{label}</span>}
-        {children}
-      </CardCover>
-      <div className="relative grid gap-3 border-t-2 border-stroke p-4 sm:p-5">
-        {/* 有背景照片：头像小一点，压在照片左下角 */}
-        {photo && (
-          <Avatar id={person.id} name={person.nickname} photo={person.avatar} size={64} className="absolute -top-10 left-4 shadow-low sm:left-5" />
-        )}
-        <div className={`flex min-w-0 items-center gap-2 ${photo ? 'pt-5' : ''}`}>
-          {/* 昵称太长时只截昵称，编号一直看得到 */}
-          <p className="flex min-w-0 flex-1 text-title3">
-            <span className="truncate">{person.nickname}</span>
-            {person.tag != null && <span className="shrink-0 text-ink-tertiary">{tagText(person.tag)}</span>}
-          </p>
+    <article aria-label={person.nickname} className="sticker relative flex h-full flex-col overflow-hidden">
+      {/* 没有照片时大头像往上挪，不被底部的字挡住 */}
+      <CardCover person={person} className="min-h-0 flex-1 pb-28" />
+      {label && (
+        <span className="absolute top-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full border-2 border-stroke bg-surface px-2.5 py-0.5 text-caption font-black text-ink">
+          {label}
+        </span>
+      )}
+      <div className="absolute inset-x-0 bottom-0 grid gap-2 bg-linear-to-t from-black/85 via-black/60 to-transparent px-4 pt-14 pb-4 text-white sm:px-5">
+        <div className="flex min-w-0 items-center gap-2">
+          {profile ? <Link to={`/players/${person.id}/`} className="flex min-w-0 text-title3 hover:underline">{name}</Link> : <p className="flex min-w-0 text-title3">{name}</p>}
           <LevelBadge rating={person.rating} named={false} />
-          {reliable && <Tag icon="reliable" tint="mint">{t('Reliable')}</Tag>}
         </div>
-        <ul className="grid gap-1 text-subhead font-bold">
-          {rows.map(([icon, text], i) => (
-            <li key={i} className="flex min-w-0 items-center gap-2">
-              <Icon name={icon} className="size-4 shrink-0 text-ink-secondary" />
-              <span className="truncate">{text}</span>
-            </li>
-          ))}
-          {Boolean(person.recent_no_shows) && (
-            <li className="flex min-w-0 items-center gap-2 text-danger">
-              <Icon name="warning" className="size-4 shrink-0" />
-              <span>{t('{n} missed game in 180 days|{n} missed games in 180 days', { n: person.recent_no_shows! })}</span>
-            </li>
-          )}
-        </ul>
+        {line && <p className="truncate text-subhead font-bold text-white/90">{line}</p>}
         {footer}
       </div>
+      {children}
     </article>
   );
 }

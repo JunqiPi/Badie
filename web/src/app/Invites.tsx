@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { t } from './i18n';
 import { Icon } from './icons';
-import { CountPill, IconButton, IconTile, Notice, ScreenHeader } from './kit';
+import { IconButton, IconTile, Notice, ScreenHeader, Story } from './kit';
 import { MiniCard, Sheet, sortUsual } from './Nearby';
 import { CourtSearch, type Court } from './pickers';
 import { navigate } from './router';
@@ -331,23 +331,34 @@ function useInvites() {
   return { waiting: (data ?? []).filter(isInvite).filter((r) => r.invite.awaiting_me), refresh };
 }
 
-/** 发现页的待办里：有人约我时一个小标签“邀请 N”，点开回复 */
-export function InvitePill() {
+/** 发现页那排头像里：等我回的邀请，一人一个。点开只回这一个；已经回过、过期了的（别处回了、刚好过期），刷新后拿掉并提示 */
+export function InviteStories() {
   const { waiting, refresh } = useInvites();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<string>();
   const [counter, setCounter] = useState<Invite>();
-  const count = waiting.length;
+  const room = waiting.find((r) => r.id === open);
+  useEffect(() => {
+    if (open && !room) {
+      setOpen(undefined);
+      toast(t('This invite is no longer open.'));
+    }
+  }, [open, room]);
   return (
     <>
-      {count > 0 && <CountPill icon="mail" title={t('Invites')} count={count} onClick={() => setOpen(true)} />}
-      <Sheet open={open && count > 0} onClose={() => setOpen(false)} labelledBy="invites-title">
+      {waiting.map((r) => {
+        const other = otherOf(r);
+        const label = r.my_status !== 'owner' && r.invite.rounds === 0 ? t('{name} invited you to play', { name: other.nickname })
+          : t('{name} suggested another time', { name: other.nickname });
+        return <Story key={r.id} person={other} ring="lime" icon="mail" title={other.nickname} label={label} onClick={() => { setOpen(r.id); void refresh(); }} />;
+      })}
+      <Sheet open={Boolean(room)} onClose={() => setOpen(undefined)} labelledBy="invites-title">
         <div className="flex items-center gap-3">
           <p id="invites-title" className="kicker flex-1 text-ink-secondary">{t('Invites')}</p>
-          <IconButton icon="x" label={t('Close')} onClick={() => setOpen(false)} />
+          <IconButton icon="x" label={t('Close')} onClick={() => setOpen(undefined)} />
         </div>
-        {waiting.map((r) => (
-          <InviteAnswer key={r.id} room={r} onDone={() => void refresh()} onCounter={(room) => { setOpen(false); setCounter(room); }} />
-        ))}
+        {room && (
+          <InviteAnswer room={room} onDone={() => { setOpen(undefined); void refresh(); }} onCounter={(r) => { setOpen(undefined); setCounter(r); }} />
+        )}
       </Sheet>
       <CounterSheet room={counter} onClose={() => setCounter(undefined)} onSent={() => void refresh()} />
     </>

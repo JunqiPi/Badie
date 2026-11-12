@@ -171,15 +171,14 @@ function MyCardPreview({ person, onClose }: { person: CardPerson; onClose: () =>
       <div className="mx-auto min-h-0 w-full max-w-md flex-1 px-[var(--gutter)] py-4">
         <DayCard
           person={person}
-          event={{ icon: doubles ? 'users' : 'user', text: doubles ? t('Doubles') : t('Singles') }}
-          time={`${timeOf(starts)} – ${timeOf(ends)}`}
-          venues={next ? next.venues.slice(0, 2).map((v) => v.name) : [t('A court nearby')]}
+          label={`${timeOf(starts)}–${timeOf(ends)} · ${doubles ? t('Doubles') : t('Singles')}`}
+          details={next ? next.venues.slice(0, 2).map((v) => v.name) : [t('A court nearby')]}
         />
       </div>
-      {/* 和真卡片一样的两个按钮，预览里按不了 */}
-      <div aria-hidden="true" className="flex justify-center gap-10 px-[var(--gutter)] pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))] opacity-35">
-        {([['x', 'bg-surface text-ink'], ['heart', 'bg-lime text-on-accent']] as [IconName, string][]).map(([icon, colors]) => (
-          <span key={icon} className={`grid size-[4.5rem] place-items-center rounded-full border-2 border-stroke ${colors}`}>
+      {/* 和真卡片一样的三个按钮，预览里按不了 */}
+      <div aria-hidden="true" className="flex items-center justify-center gap-6 px-[var(--gutter)] pt-1 pb-[calc(1.25rem+env(safe-area-inset-bottom))] opacity-35">
+        {([['x', 'size-16 bg-surface text-ink'], ['heart', 'size-[4.5rem] bg-lime text-on-accent'], ['star', 'size-16 bg-butter text-on-accent']] as [IconName, string][]).map(([icon, colors]) => (
+          <span key={icon} className={`grid place-items-center rounded-full border-2 border-stroke ${colors}`}>
             <Icon name={icon} className="size-7" />
           </span>
         ))}

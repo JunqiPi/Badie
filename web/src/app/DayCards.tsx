@@ -3,16 +3,16 @@ import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches
 import { AvatarCrop, decode } from './AvatarCrop';
 import { uploadCardPhoto } from './CardBackground';
 import { InviteSheet, inviteProblem as nearbyProblem } from './Invites';
-import { FriendButton, RulesButton, Sheet, UsualChips } from './Nearby';
+import { Sheet, UsualChips } from './Nearby';
 import { RANGES, setNearbyKm, useArea, useNearbyKm } from './area';
 import { km as distance } from './Courts';
 import { eventLabel, eventOf } from './gender';
 import { AreaPrompt } from './Home';
-import { t } from './i18n';
+import { currentLocale, t } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, Empty, IconButton, IconTile } from './kit';
 import { DayCard, type CardPerson } from './PlayerCard';
-import { Link } from './router';
+import { Link, navigate } from './router';
 import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type Profile } from './supabase';
 import { timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
@@ -60,8 +60,14 @@ type Composing = { card: NearbyPlayer; slot?: UsualTime };
  *  选了某一天：这天附近在找人、和我水平对得上的球友，刷完接着看附近的人；不给 date 就是“附近的人”：只有附近的人的卡片。
  *  这天的卡片就是对方的约球请求（项目、时间都定好了），右滑直接约：单打发约球邀请，双打替我开一个公开的双打局并邀请 TA。
  *  附近的人右滑打开约 TA 的半屏（哪天、什么时候、球馆），发出一个只有两个人的邀请局。
- *  children：标题下面、卡片上面的东西（日期标签、待办） */
-export function Deck({ date, profile, onProfile, children }: { date?: string; profile: Profile; onProfile: (p: Profile) => void; children?: ReactNode }) {
+ *  place：左上角（在哪、什么时候），拿到附近有几个人；children：头部下面、卡片上面的东西（一排头像） */
+export function Deck({ date, profile, onProfile, place, children }: {
+  date?: string;
+  profile: Profile;
+  onProfile: (p: Profile) => void;
+  place: (people?: number) => ReactNode;
+  children?: ReactNode;
+}) {
   const area = useArea();
   const km = useNearbyKm();
   const lobby = !date;
@@ -94,29 +100,37 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
   currentTop.current = top?.key;
   // 附近的人里滑过几个：一个都没滑时，第一张上面写“这天的刷完了”
   const [nearbySeen, setNearbySeen] = useState(0);
+  // 加球友（★）之后的状态，按人记
+  const [friendship, setFriendship] = useState<Record<string, FriendState>>({});
+  const [befriending, setBefriending] = useState(false);
 
   const setFilter = (next: DayFilter) => {
     setFilterState(next);
     saveFilter(next);
   };
 
-  // 换天、换范围时重新拉；选了某一天时每 30 秒拉一次这天的请求：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉
+  // 换天、换范围时重新拉；选了某一天时每 30 秒拉一次这天的请求：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉。
+  // 连着换天时，上一天晚到的结果不要（stale）
   useEffect(() => {
     if (!area) return;
+    let stale = false;
     setCards(lobby ? [] : undefined);
     setNearby(undefined);
     setNearbySeen(0);
     seen.current.clear();
     supabase!
       .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
-      .then(({ data, error }) => setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
-    if (!date) return;
+      .then(({ data, error }) => !stale && setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
+    if (!date) return () => {
+      stale = true;
+    };
     const { from, to } = bounds(date);
     let first = true;
     const load = () =>
       supabase!
         .rpc('day_candidates', { p_from: from.toISOString(), p_to: to.toISOString(), p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
         .then(({ data, error }) => {
+          if (stale) return;
           if (error && first) {
             toast(problem(error), 'error');
             setCards((list) => list ?? []);
@@ -136,7 +150,10 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
         });
     void load();
     const timer = setInterval(() => document.visibilityState === 'visible' && void load(), 30_000);
-    return () => clearInterval(timer);
+    return () => {
+      stale = true;
+      clearInterval(timer);
+    };
   }, [date, area?.lat, area?.lon, km]);
 
   useEffect(() => {
@@ -248,9 +265,27 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
     setComposing(c);
   }
 
-  /** 加了球友（或申请了）：卡片上的按钮跟着变 */
-  function befriend(id: string, state: Pick<NearbyPlayer, 'is_friend' | 'friend_request'>) {
-    setNearby((list) => list?.map((c) => (c.user.id === id ? { ...c, ...state } : c)));
+  /** 和 TA 是不是球友：★ 之后记下的，没有就看附近的人里 TA 的（这天的卡片上没有这个） */
+  const friendOf = (item: Item): FriendState =>
+    friendship[item.card.user.id] ?? nearby?.find((c) => c.user.id === item.card.user.id) ?? { is_friend: false, friend_request: null };
+
+  /** ★ 加球友：不占每天 10 个邀请，也不翻到下一张。已经是球友就去聊天；申请过了提示一下；TA 申请过我就直接接受 */
+  async function star(item: Item) {
+    const id = item.card.user.id;
+    const state = friendOf(item);
+    if (state.is_friend) return navigate(`/messages/dm/${id}/`);
+    if (state.friend_request === 'sent') return toast(t('Requested'));
+    if (befriending) return;
+    setBefriending(true);
+    const accept = state.friend_request === 'received';
+    const { data, error } = accept
+      ? await supabase!.rpc('respond_friend_request', { p_user: id, p_accept: true })
+      : await supabase!.rpc('send_friend_request', { p_user: id });
+    setBefriending(false);
+    if (error) return toast(problem(error), 'error');
+    const friends = accept || data === 'friends';
+    setFriendship((all) => ({ ...all, [id]: friends ? { is_friend: true, friend_request: null } : { is_friend: false, friend_request: 'sent' } }));
+    toast(friends ? t('You’re now friends') : t('Friend request sent'));
   }
 
   /** 这天的请求：右滑和点爱心一样，直接约，不再让人选 */
@@ -276,7 +311,7 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
 
   // 拖动：从按钮、链接上开始的不算（还能点）
   function down(event: ReactPointerEvent<HTMLElement>) {
-    if (leaving || (event.target as HTMLElement).closest('a, button')) return;
+    if (leaving || event.button !== 0 || (event.target as HTMLElement).closest('a, button')) return;
     start.current = { x: event.clientX, y: event.clientY, id: event.pointerId };
     event.currentTarget.setPointerCapture(event.pointerId);
     setDrag({ x: 0, y: 0, active: true });
@@ -290,9 +325,14 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
     if (s?.id !== event.pointerId || !top) return;
     start.current = null;
     const dx = event.clientX - s.x;
+    const dy = event.clientY - s.y;
     if (dx > SWIPE) like(top);
     else if (dx < -SWIPE) skip(top);
-    else setDrag({ x: 0, y: 0, active: false });
+    else {
+      settle();
+      // 没怎么动：是点了一下卡片，打开 TA 的资料
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) navigate(`/players/${top.card.user.id}/`);
+    }
   }
   function cancel() {
     start.current = null;
@@ -304,29 +344,18 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
   // 这天的卡片刷完了、第一次看到附近的人：上面一条虚线框
   const divider = !lobby && inNearby && nearbySeen === 0;
   const second = deck?.[1];
-  const actions = {
-    onSlot: (card: NearbyPlayer, slot: UsualTime) => compose({ card, slot }),
-    onFriend: befriend,
-  };
+  const actions = { onSlot: (card: NearbyPlayer, slot: UsualTime) => compose({ card, slot }) };
+  const friend = top ? friendOf(top) : undefined;
   // 这天有过请求（滑过的也算）：刷完了说“都看完了”，一个都没有说“这天还没人约”
   const dayHadCards = (cards?.length ?? 0) > 0 || [...seen.current].some((key) => !key.startsWith('n:'));
   const filters = activeCount(filter);
 
   return (
-    // 标题、日期标签、待办在上面，卡片占满剩下的高度，按钮在标签栏上面
+    // 在哪 · 什么时候、一排头像在上面，卡片占满剩下的高度，三个按钮在标签栏上面
     <div className="mx-auto flex min-h-[calc(100dvh-4rem-1.25rem-var(--tabbar)-1.5rem)] w-full max-w-md flex-col gap-3 lg:min-h-[calc(100dvh-4rem-2rem-4rem)]">
       <header className="flex items-center gap-2.5">
-        <Link to="/me/" aria-label={t('My profile')} className="press shrink-0 rounded-full lg:hidden">
-          <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={44} />
-        </Link>
-        <h1 className="min-w-0 flex-1 truncate text-title lg:text-display">{t('Discover')}</h1>
-        <RulesButton points={[
-          t('Swipe right to invite, left to skip'),
-          t('People nearby have a level, often play at courts near you and chose to show up here.'),
-          t('An invite is a game for two. They can say yes, suggest another time or say no.'),
-          t('Up to 10 a day.'),
-          t('People you skip or say no to won’t show up again for 30 days.'),
-        ]} />
+        <h1 className="sr-only">{t('Discover')}</h1>
+        {place(nearby?.length)}
         <IconButton icon="filter" label={filters ? t('Filters · {n}', { n: filters }) : t('Filters')} badge={filters} onClick={() => setEditing(true)} />
       </header>
 
@@ -396,10 +425,15 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
         )}
       </div>
 
-      {top && (
-        <div className="flex justify-center gap-10 pt-1">
-          <Round icon="x" label={t('Skip')} className="bg-surface text-ink" disabled={Boolean(leaving)} onClick={() => skip(top)} />
-          <Round icon="heart" label={t('Invite')} className="bg-lime text-on-accent" disabled={Boolean(leaving)} onClick={() => like(top)} />
+      {top && friend && (
+        <div className="flex items-center justify-center gap-6 pt-1">
+          <Round icon="x" label={t('Skip')} className="size-16 bg-surface text-ink" disabled={Boolean(leaving)} onClick={() => skip(top)} />
+          <Round icon="heart" label={t('Invite')} className="size-[4.5rem] bg-lime text-on-accent" disabled={Boolean(leaving)} onClick={() => like(top)} />
+          {/* 申请过了：看着是灰的，点了提示“已申请” */}
+          <Round icon={friend.is_friend ? 'chat' : friend.friend_request === 'sent' ? 'check' : 'star'}
+                 label={friend.is_friend ? t('Send a message') : friend.friend_request === 'sent' ? t('Requested') : friend.friend_request === 'received' ? t('Accept') : t('Add friend')}
+                 className={`size-16 bg-butter text-on-accent ${friend.friend_request === 'sent' ? 'opacity-60' : ''}`}
+                 disabled={Boolean(leaving) || befriending} onClick={() => void star(top)} />
         </div>
       )}
 
@@ -449,10 +483,8 @@ export function Deck({ date, profile, onProfile, children }: { date?: string; pr
   );
 }
 
-type CardActions = {
-  onSlot: (card: NearbyPlayer, slot: UsualTime) => void;
-  onFriend: (id: string, state: Pick<NearbyPlayer, 'is_friend' | 'friend_request'>) => void;
-};
+type FriendState = Pick<NearbyPlayer, 'is_friend' | 'friend_request'>;
+type CardActions = { onSlot: (card: NearbyPlayer, slot: UsualTime) => void };
 
 /** 一张铺满的卡片：这天的请求，或附近的人。actions：最上面那张才能点 */
 function Card({ item, filter, hint, actions }: { item: Item; filter: DayFilter; hint?: 'left' | 'right'; actions?: CardActions }) {
@@ -469,46 +501,38 @@ function Stamp({ hint, like }: { hint?: 'left' | 'right'; like: string }) {
   );
 }
 
-const profileLink = (id: string) => <Link to={`/players/${id}/`} className="link -my-2 flex min-h-11 items-center justify-self-start text-footnote font-bold">{t('View profile')}</Link>;
-
-/** 附近的人：常去哪家（选了球馆就是选的那家）、偏好单打还是双打、空闲时间（点一个就约）、加球友。不显示具体位置 */
+/** 附近的人：左上角多远 · 常去哪家（选了球馆就是选的那家），下面偏好单打还是双打、空闲时间（点一个就约）。不显示具体位置 */
 function NearbyCard({ card, filter, hint, actions }: { card: NearbyPlayer; filter: DayFilter; hint?: 'left' | 'right'; actions?: CardActions }) {
   const venue = inviteVenue(filter, card);
   const mode = card.user.preferred_mode;
+  const where = venue ? [venue.km != null && distance(venue.km * 1000), t('Often plays at {venue}', { venue: venue.name })].filter(Boolean).join(' · ') : t('Plays nearby');
   return (
     <DayCard
       person={card.user as CardPerson}
-      venues={venue ? [t('Often plays at {venue}', { venue: venue.name })] : []}
-      extra={mode ? [[mode === 'doubles' ? 'users' : 'user', mode === 'doubles' ? t('Doubles') : t('Singles')]] : []}
-      label={t('Plays nearby')}
+      label={where}
+      details={[mode && (mode === 'doubles' ? t('Doubles') : t('Singles'))]}
       reliable={(card.user.recent_no_shows ?? 0) === 0}
-      footer={
-        <>
-          <UsualChips times={card.user.usual_times} onPick={(slot) => actions?.onSlot(card, slot)} />
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            {profileLink(card.user.id)}
-            <FriendButton id={card.user.id} state={card} onChange={(state) => actions?.onFriend(card.user.id, state)} />
-          </div>
-        </>
-      }
+      profile
+      footer={<UsualChips times={card.user.usual_times} onPick={(slot) => actions?.onSlot(card, slot)} />}
     >
       <Stamp hint={hint} like={t('Invite')} />
     </DayCard>
   );
 }
 
-/** 这天的请求：上面是背景照片或颜色，下面是等级、项目、时间、球馆（约在哪家的那家排第一） */
+/** 这天的请求：左上角星期几、时间、项目，下面是球馆（约在哪家的那家排第一） */
 function DayRequestCard({ card, filter, hint }: { card: DayCandidate; filter: DayFilter; hint?: 'left' | 'right' }) {
   const event = eventLabel(card.mode, eventOf(card.play_with, card.mixed)) ?? (card.mode === 'doubles' ? t('Doubles') : t('Singles'));
   const first = inviteVenue(filter, card);
   const venues = first ? [first, ...(card.venues ?? []).filter((v) => v.id !== first.id)] : card.venues ?? [];
+  const weekday = new Intl.DateTimeFormat(currentLocale(), { weekday: 'short' }).format(new Date(card.starts_at));
   return (
     <DayCard
       person={card.user}
-      event={{ icon: card.mode === 'doubles' ? 'users' : 'user', text: event }}
-      time={`${timeOf(card.starts_at)} – ${timeOf(card.ends_at)}`}
-      venues={venues.map((v) => v.name)}
-      footer={profileLink(card.user.id)}
+      label={`${weekday} ${timeOf(card.starts_at)}–${timeOf(card.ends_at)} · ${event}`}
+      details={venues.map((v) => v.name)}
+      reliable={(card.user.recent_no_shows ?? 0) === 0}
+      profile
     >
       <Stamp hint={hint} like={t('Invite')} />
     </DayCard>
@@ -659,7 +683,7 @@ function FilterSheet({ initial, km, cards, nearby, onDone, onCancel }: {
 function Round({ icon, label, className, disabled, onClick }: { icon: IconName; label: string; className: string; disabled: boolean; onClick: () => void }) {
   return (
     <button type="button" aria-label={label} title={label} disabled={disabled} onClick={onClick}
-            className={`press grid size-[4.5rem] place-items-center rounded-full border-2 border-stroke shadow-low disabled:opacity-60 ${className}`}>
+            className={`press grid place-items-center rounded-full border-2 border-stroke shadow-low disabled:opacity-60 ${className}`}>
       <Icon name={icon} className="size-7" />
     </button>
   );
