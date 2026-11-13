@@ -473,6 +473,41 @@
   }
 }
 
+/* 测级结果页（QuizResult）。
+   底纹：一片斜着排的羽毛球；星形周围的小贴纸停在 --x、--y 的位置。
+   动效只在没关动效时播：星形像盖章一样弹出来，小贴纸从它后面弹开，刻度上的圆点从 1 级滑到自己的位置，
+   打法的剪影从下面升上来，雷达图的形状从中心长出来 */
+.result-pattern {
+  background: url("/logo.svg") 0 0 / 46px 52px;
+  opacity: 0.06;
+  transform: rotate(-12deg);
+}
+.result-piece {
+  transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--turn));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .result-stamp { animation: stamp 620ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .result-piece { animation: burst 720ms var(--delay, 260ms) cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .result-marker { animation: marker 900ms 380ms var(--ease-out) both; }
+  .style-figure { animation: figure 520ms 160ms var(--ease-out) both; }
+  .radar-shape { animation: radar 700ms 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  @keyframes stamp {
+    from { opacity: 0; transform: scale(0.3) rotate(-24deg); }
+  }
+  @keyframes burst {
+    from { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.2); }
+  }
+  @keyframes marker {
+    from { left: 5.56%; }
+  }
+  @keyframes figure {
+    from { opacity: 0; transform: translateY(28px); }
+  }
+  @keyframes radar {
+    from { opacity: 0; transform: scale(0); }
+  }
+}
+
 /* 地图上的球馆图钉（iOS 的 CourtPin）：天蓝圆点、墨色描边、硬投影；选中的是柠檬绿、大一号。
    位置由 MapLibre 用 transform 设，所以这里只改大小不用 transform */
 .court-pin {
