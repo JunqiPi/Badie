@@ -14,6 +14,10 @@ struct ProfileView: View {
     @State private var showTips = false
     @State private var showsSupport = false
     @State private var showReputation = false
+    @State private var showsCardPreview = false
+    @State private var levelCard: LevelCardData?
+    /// 空闲时间：回到这页时重新读（在编辑资料里改了马上存）
+    @State private var slots: [RecurringTimeSlot] = []
 
     var body: some View {
         ScrollView {
@@ -26,7 +30,11 @@ struct ProfileView: View {
                 if let user = appState.currentUser {
                     Group {
                         todoPills(user)
-                        identityCard(user)
+                        VStack(spacing: AppTheme.Spacing.md) {
+                            myCard(user)
+                            actionButtons(user)
+                        }
+                        completenessRow(user)
                         statsRow(user)
                         menuCard(user)
                         moreCard
@@ -39,6 +47,16 @@ struct ProfileView: View {
             .padding(.bottom, AppTheme.Spacing.tabBarClearance)
         }
             .refreshesEverything()
+        .onAppear { slots = appState.backend.recurringSlots() }
+        .fullScreenCover(isPresented: $showsCardPreview) {
+            if let user = appState.currentUser {
+                MyCardPreview(user: user, slots: slots)
+            }
+        }
+        .sheet(item: $levelCard) { data in
+            LevelCardSheet(data: data)
+                .presentationDragIndicator(.visible)
+        }
         .sheet(isPresented: $showRadius) {
             TravelRadiusSheet()
                 .presentationDetents([.height(320)])
@@ -90,41 +108,59 @@ struct ProfileView: View {
         }
     }
 
-    // MARK: Identity
+    // MARK: 我的卡片（别人在发现页刷到的那张）
 
-    /// 整张卡点进编辑资料
-    private func identityCard(_ user: User) -> some View {
-        Button { router.open(.editProfile) } label: {
-            HStack(spacing: AppTheme.Spacing.lg) {
-                MyAvatarView(size: 64)
-                    .background(Circle().fill(Color(hex: 0x17140F)).offset(x: 3, y: 4))
-                    .overlay(alignment: .bottomTrailing) {
-                        if user.avatar.photoVersion == nil { CameraBadge().scaleEffect(0.7) }
-                    }
-                VStack(alignment: .leading, spacing: 6) {
-                    NicknameText(user: user)
-                        .font(AppTheme.Typography.title2)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                    FlowLayout(spacing: 6) {
-                        LevelBadge(tier: user.displayTier)
-                        if user.isReliable { ReliableBadge() }
-                        if user.isNewPlayer { NewPlayerBadge() }
-                        VerifiedBadge(status: user.verificationStatus)
-                    }
+    /// 和发现页同一张卡，宽度和下面的卡片一样；点了全屏看别人刷到的样子
+    private func myCard(_ user: User) -> some View {
+        MyCard(user: user, slots: slots) { showsCardPreview = true }
+            .aspectRatio(0.82, contentMode: .fit)
+            .accessibilityHint(Text("预览"))
+    }
+
+    /// 编辑资料 + 分享等级卡片（定过级才有卡片可分享）
+    private func actionButtons(_ user: User) -> some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            Button(String(localized: "编辑资料")) { router.open(.editProfile) }
+                .buttonStyle(.brutal(.primary, size: .medium))
+            if user.assessment != nil || user.verifiedRating != nil {
+                Button(String(localized: "分享等级卡片")) {
+                    levelCard = LevelCardData.make(user: user, appState: appState)
                 }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 15, weight: .bold))
-                    .accessibilityHidden(true)
+                .buttonStyle(.brutal(.secondary, size: .medium))
             }
-            .foregroundStyle(AppTheme.Colors.onAccent)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .card(AppTheme.Colors.lavender, padding: AppTheme.Spacing.lg)
-            .contentShape(Rectangle())
         }
-        .buttonStyle(PressableStyle())
-        .accessibilityHint(Text("编辑资料"))
+    }
+
+    /// “资料 3/4 · 填空闲时间，更容易被约”：点了去编辑资料里缺的那一项；四项都有就不显示
+    @ViewBuilder
+    private func completenessRow(_ user: User) -> some View {
+        let missing = ProfileField.missing(user: user, slots: slots, hasVenue: !locationManager.favoriteCourtIds.isEmpty)
+        if let next = missing.first {
+            let total = ProfileField.allCases.count
+            let shape = RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+            Button {
+                appState.editProfileFocus = next
+                router.open(.editProfile)
+            } label: {
+                HStack(spacing: AppTheme.Spacing.sm) {
+                    Text("资料 \(total - missing.count)/\(total) · \(next.hint)")
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                        .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                }
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .padding(.vertical, AppTheme.Spacing.md)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .background(shape.fill(AppTheme.Colors.surface))
+                .overlay(shape.strokeBorder(AppTheme.Colors.stroke, style: StrokeStyle(lineWidth: 2, dash: [6, 5])))
+                .contentShape(shape)
+            }
+            .buttonStyle(PressableStyle())
+        }
     }
 
     // MARK: 三个数字：场次 / 到场 / 胜率

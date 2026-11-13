@@ -86,6 +86,8 @@ final class AppState: ObservableObject {
     #endif
     /// 点开等级页的链接、但还没定级：打开编辑资料时直接开始测级
     var opensAssessment = false
+    /// “我的”页点了“资料 N/4”：打开编辑资料时跳到缺的那一项
+    var editProfileFocus: ProfileField?
 
     private static let appearanceKey = "appearance"
     private var toastTask: Task<Void, Never>?

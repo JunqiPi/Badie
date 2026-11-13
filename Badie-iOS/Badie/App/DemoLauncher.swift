@@ -38,6 +38,10 @@ enum DemoLauncher {
             location: Coordinate.fallbackCenter
         )
         seedPlayerPhotos(backend)
+        // “我的”最上面是我的卡片（有照片，头像还没传，下面显示“资料 3/4”）；编辑资料里卡片照片和头像都有
+        if screen == "profile" || screen == "editProfile" {
+            seedMyPhotos(backend, avatar: screen == "editProfile")
+        }
         environment = AppEnvironment(backend: backend)
         environment.appState.skipsSplash = true
         environment.locationManager.allowsMapSearch = false
@@ -237,6 +241,19 @@ enum DemoLauncher {
             }
         }
         backend.demoFeaturedIds = photoPlayers.map { $0.id }
+    }
+
+    /// 截图里我的卡片照片和头像（和示例球友用同一组图）
+    private static func seedMyPhotos(_ backend: MockBackend, avatar: Bool) {
+        guard let me = backend.currentUserId, var user = backend.db.users[me],
+              let card = UIImage(named: "DemoPlayerM1")?.jpegData(compressionQuality: 0.9) else { return }
+        backend.db.avatarPhotos[AvatarPhotos.cardKey(me)] = card
+        user.avatar.cardPhotoVersion = 2
+        if avatar, let photo = UIImage(named: "DemoPlayerM1Avatar")?.jpegData(compressionQuality: 0.9) {
+            backend.db.avatarPhotos[me] = photo
+            user.avatar.photoVersion = 2
+        }
+        backend.db.users[me] = user
     }
 
     private static func startSearch(_ environment: AppEnvironment) {
