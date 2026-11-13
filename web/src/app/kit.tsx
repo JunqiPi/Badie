@@ -258,12 +258,13 @@ export function Row({ icon, tint = 'lavender', title, subtitle, value, badge = 0
   const body = (
     <>
       <IconTile icon={icon} tint={tint} size="sm" />
-      <span className="min-w-0 flex-1">
-        <span className={`block font-bold max-[379px]:text-subhead ${danger ? 'text-danger' : ''}`}>{title}</span>
+      {/* 右边有值时标题不换行、不缩，值放不下就截断（“常去球馆”后面的球馆名） */}
+      <span className={`flex-1 ${value ? '' : 'min-w-0'}`}>
+        <span className={`block font-bold max-[379px]:text-subhead ${value ? 'whitespace-nowrap' : ''} ${danger ? 'text-danger' : ''}`}>{title}</span>
         {subtitle && <span className="block text-footnote text-ink-secondary">{subtitle}</span>}
       </span>
       <CountBadge count={badge} />
-      {value && <span className="shrink-0 truncate text-footnote font-bold text-ink-secondary max-[379px]:max-w-[25%]">{value}</span>}
+      {value && <span className="min-w-0 truncate text-footnote font-bold text-ink-secondary">{value}</span>}
       {children}
       {clickable && <Icon name="chevronRight" className="size-3.5 text-ink-tertiary" />}
     </>

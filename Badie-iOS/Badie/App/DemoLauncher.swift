@@ -27,6 +27,12 @@ enum DemoLauncher {
             return environment
         }
 
+        // 做过定级、存着答案（重炮手、4 级）：“我的”有“分享等级卡片”，卡片上有打法；四个月前测的，可以重测
+        let answers = SkillAssessment.levelCardDemoAnswers
+        let assessment = SkillAssessment.evaluate(answers).map {
+            SkillAssessmentSummary(level: $0.level, needsCalibration: $0.needsCalibration, isReturning: $0.isReturning,
+                                   assessedAt: Date().addingTimeInterval(-120 * 86400), rating: $0.tier.rating, answers: answers)
+        }
         backend.createAccount(
             phone: "+16265550123",
             nickname: MockBackend.demoNickname,
@@ -35,7 +41,8 @@ enum DemoLauncher {
             level: 4,
             preferredMode: .doubles,
             recurringSlots: [RecurringTimeSlot(dayOfWeek: 4, startHour: 19, endHour: 21)],
-            location: Coordinate.fallbackCenter
+            location: Coordinate.fallbackCenter,
+            assessment: assessment
         )
         seedPlayerPhotos(backend)
         // “我的”最上面是我的卡片（有照片，头像还没传，下面显示“资料 3/4”）；编辑资料里卡片照片和头像都有
@@ -89,10 +96,7 @@ enum DemoLauncher {
         case "levelGuide":
             router.show(.levelGuide, in: .profile)
         case "levelCard":
-            // 等级卡片：重炮手、4 级，常去 LABC、周三晚上有空
-            if let result = SkillAssessment.evaluate(SkillAssessment.levelCardDemoAnswers) {
-                _ = try? backend.updateAssessment(result, answers: SkillAssessment.levelCardDemoAnswers)
-            }
+            // 等级卡片：重炮手、4 级（上面建账号时已存答案），常去 LABC、周三晚上有空
             environment.appState.opensLevelCardDemo = true
             router.show(.levelGuide, in: .profile)
         case "levelGuideElite":

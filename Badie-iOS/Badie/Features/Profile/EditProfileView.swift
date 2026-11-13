@@ -205,17 +205,10 @@ struct EditProfileView: View {
                 .padding(.vertical, -8)
             }
             if let user = previewUser {
-                GeometryReader { geometry in
-                    let spacing = AppTheme.Spacing.sm
-                    let unit = max(0, geometry.size.width - spacing) / 3
-                    HStack(spacing: spacing) {
-                        cardSlot(user)
-                            .frame(width: unit * 2)
-                        avatarSlot(user)
-                            .frame(width: unit)
-                    }
+                PhotoSlotsLayout(spacing: AppTheme.Spacing.sm) {
+                    cardSlot(user)
+                    avatarSlot(user)
                 }
-                .frame(height: 200)
             }
         }
         .photosPicker(isPresented: $showsCardPicker, selection: $cardItem, matching: .images)
@@ -619,6 +612,26 @@ struct EditProfileView: View {
         if await appState.updateProfile(user) {
             router.pop()
         }
+    }
+}
+
+/// 编辑资料的两个照片格子：卡片 3:4 占三分之二宽；头像正方形，和卡片顶端对齐
+private struct PhotoSlotsLayout: Layout {
+    var spacing: CGFloat
+
+    private func unitWidth(_ width: CGFloat) -> CGFloat { max(0, width - spacing) / 3 }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.replacingUnspecifiedDimensions().width
+        return CGSize(width: width, height: unitWidth(width) * 8 / 3)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 2 else { return }
+        let unit = unitWidth(bounds.width)
+        subviews[0].place(at: bounds.origin, proposal: ProposedViewSize(width: unit * 2, height: unit * 8 / 3))
+        subviews[1].place(at: CGPoint(x: bounds.minX + unit * 2 + spacing, y: bounds.minY),
+                          proposal: ProposedViewSize(width: unit, height: unit))
     }
 }
 

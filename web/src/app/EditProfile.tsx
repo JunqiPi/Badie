@@ -154,7 +154,7 @@ async function save(profile: Profile, onChange: (p: Profile) => void, change: Pa
   onChange(data as Profile);
 }
 
-/** 两个照片格子：大的是卡片照片（600×800），小的是头像（320×320），两张图分开存。
+/** 两个照片格子：大的是卡片照片（600×800，3:4），小的是头像（320×320，正方形，和卡片顶端对齐），两张图分开存。
  *  一次只传一张：两张同时传时，清理文件夹会删掉另一张刚传上去的 */
 function Photos({ profile, patch }: { profile: Profile; patch: (p: Partial<Profile>) => void }) {
   const [busy, setBusy] = useState<'card' | 'avatar'>();
@@ -164,7 +164,7 @@ function Photos({ profile, patch }: { profile: Profile; patch: (p: Partial<Profi
         <h2 id="photos-title" className="text-footnote font-bold text-ink-secondary">{t('Photos')}</h2>
         <p className="text-caption text-ink-tertiary">{t('Card photo and profile photo are separate')}</p>
       </div>
-      <div className="grid grid-cols-[2fr_1fr] gap-3">
+      <div className="grid grid-cols-[2fr_1fr] items-start gap-3">
         <PhotoSlot kind="card" profile={profile} patch={patch} busy={busy} setBusy={setBusy} />
         <PhotoSlot kind="avatar" profile={profile} patch={patch} busy={busy} setBusy={setBusy} />
       </div>
@@ -237,7 +237,7 @@ function PhotoSlot({ kind, profile, patch, busy, setBusy }: {
     <>
       <button type="button" aria-label={name} aria-haspopup={path ? 'dialog' : undefined} disabled={Boolean(busy)}
               onClick={() => (path ? setMenu(true) : input.current?.click())}
-              className={`press relative grid h-full overflow-hidden rounded-[16px] border-2 border-stroke bg-surface-muted disabled:cursor-wait ${kind === 'card' ? 'aspect-[3/4]' : ''} ${busy === kind ? 'opacity-60' : ''}`}>
+              className={`press relative grid overflow-hidden rounded-[16px] border-2 border-stroke bg-surface-muted disabled:cursor-wait ${kind === 'card' ? 'aspect-[3/4]' : 'aspect-square'} ${busy === kind ? 'opacity-60' : ''}`}>
         {kind === 'card'
           ? <CardCover person={person} className={`${layer} size-full`} />
           : path && <img src={avatarUrl(path)} alt="" draggable={false} className={`${layer} size-full object-cover`} />}
