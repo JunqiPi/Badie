@@ -89,9 +89,6 @@ export function Verification({ profile }: { profile: Profile }) {
               {t('Your request from {date} wasn’t approved.', { date: day(request.created_at) })} {request.review_note}
             </p>
           )}
-          <p className="text-footnote text-ink-secondary">
-            {t('The quiz goes up to 6+. If you’ve played the top draw of a state open, have a national ranking or certificate, or a BWF ranking, you can show it to get 7− to 9+.')}
-          </p>
           {open ? <RequestForm onDone={() => { setOpen(false); refresh(); }} onCancel={() => setOpen(false)} />
             : <Button onClick={() => setOpen(true)} className="justify-self-start">{t('Verify a higher level')}</Button>}
         </>

@@ -83,9 +83,7 @@ export function AudienceField({ profile, value, onChange }: { profile: Profile; 
           </button>
         )}
       </div>
-      <p className="text-footnote text-ink-secondary">
-        {value ? t('Only they can see and join it.') : t('When men and women play together, a women’s level counts about 1.5 levels lower, so the game stays even.')}
-      </p>
+      {value && <p className="text-footnote text-ink-secondary">{t('Only they can see and join it.')}</p>}
     </fieldset>
   );
 }
@@ -159,9 +157,7 @@ export function NewRoom({ profile }: { profile: Profile }) {
   const levels = Array.from({ length: 9 }, (_, i) => i + 1);
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeader back="/games/" title={t('Start a game')}>
-        {t('You have the court; Badie helps fill it. You count as one of the players.')}
-      </PageHeader>
+      <PageHeader back="/games/" title={t('Start a game')} />
 
       <form onSubmit={submit} noValidate className="grid gap-6">
         {/* 好友收到邀请；不是好友的，公开到附近时也能看到、报名 */}
@@ -205,9 +201,7 @@ export function NewRoom({ profile }: { profile: Profile }) {
             <button type="button" onClick={() => setPublic(true)} aria-pressed={isPublic} className="toggle">{t('Players nearby')}</button>
             <button type="button" onClick={() => setPublic(false)} aria-pressed={!isPublic} className="toggle">{t('Only people with the code')}</button>
           </div>
-          <p className="text-footnote text-ink-secondary">
-            {isPublic ? t('When it’s full, up to 4 people can wait in line and move up if someone drops out.') : t('Share the room code or invite friends. It won’t show up nearby.')}
-          </p>
+          {!isPublic && <p className="text-footnote text-ink-secondary">{t('Share the room code or invite friends. It won’t show up nearby.')}</p>}
         </fieldset>
 
         <fieldset className="grid gap-2">

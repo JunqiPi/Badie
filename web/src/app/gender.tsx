@@ -73,12 +73,12 @@ export function EventField({ mode, gender, partner, value, onChange }: {
           </button>
         ))}
       </div>
-      <p className="text-footnote text-ink-secondary">
-        {value === 'mixed' ? t('Each side is one man and one woman. Men are compared with men and women with women, so levels aren’t converted.')
-          : value === 'female' ? t('Only women can join, on the women’s ladder.')
-          : value === 'male' ? t('Only men can join.')
-          : t('When men and women play together, a women’s level counts about 1.5 levels lower, so the game stays even.')}
-      </p>
+      {value !== 'any' && (
+        <p className="text-footnote text-ink-secondary">
+          {value === 'mixed' ? t('Each side is one man and one woman. Men are compared with men and women with women, so levels aren’t converted.')
+            : value === 'female' ? t('Only women can join, on the women’s ladder.') : t('Only men can join.')}
+        </p>
+      )}
     </fieldset>
   );
 }

@@ -24,9 +24,7 @@ export function Play({ profile }: { profile: Profile }) {
 
   return (
     <div>
-      <PageHeader back="/" title={t('Quick Match')}>
-        {t('Pick when you’re free and where you can play. You’ll get a notification when there’s a match at your level.')}
-      </PageHeader>
+      <PageHeader back="/" title={t('Quick Match')} />
 
       {!profile.assessed_at && (
         <div className="mb-6">

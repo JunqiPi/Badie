@@ -148,7 +148,6 @@ export function About() {
       <section aria-labelledby="story" className="grid gap-3">
         <h2 id="story" className="text-title2">{t('Why we built Badie')}</h2>
         <p className="max-w-prose text-[1.0625rem] leading-relaxed">{t('Badie began with its founder, who was too shy to walk up to strangers at the gym or ask for a game online. Even when a game came together, there was no telling whether the other side would be far better or just starting out.')}</p>
-        <p className="max-w-prose text-[1.0625rem] leading-relaxed">{t('Plenty of players feel the same, so they play less than they’d like. Others lose their game when a regular partner can’t make it, or move somewhere new and don’t know anyone. In the US and Europe, where badminton communities are still small, that keeps courts quieter than they should be.')}</p>
         <p className="max-w-prose text-[1.0625rem] leading-relaxed">{t('So Badie does the finding for you. Tell it when you’re free and which courts you can reach, and it matches you with players at your level.')}</p>
       </section>
       <p className={`sticker p-5 text-title3 ${fill.lime}`}>{t('Our goal: more people playing badminton in the US and Europe, more often.')}</p>
