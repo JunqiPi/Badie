@@ -531,12 +531,16 @@ struct InviteComposeSheet: View {
 // MARK: - 收到的邀请
 
 enum InviteText {
-    /// 半屏的标题：第一次是“<TA>约你打球”，换过时间的是“<TA>想换个时间”
+    /// 标题说现在这个时间是谁提的：第一次是“<TA>约你打球”或“你约了<TA>”，换过时间的是“<TA>想换个时间”或“你想换个时间”
     static func title(_ room: Room, me: String?, name: (String) -> String) -> String {
         guard let invite = room.invite else { return "" }
         let other = name(invite.other(than: me))
-        if invite.rounds == 0 && invite.toId == me { return String(localized: "\(other)约你打球") }
-        return String(localized: "\(other)想换个时间")
+        // 换时间是轮流的：偶数次是发邀请的人提的时间，奇数次是收到的人提的
+        let mine = (invite.rounds % 2 == 0 ? invite.fromId : invite.toId) == me
+        if invite.rounds == 0 {
+            return mine ? String(localized: "你约了\(other)") : String(localized: "\(other)约你打球")
+        }
+        return mine ? String(localized: "你想换个时间") : String(localized: "\(other)想换个时间")
     }
 
     /// 约人时的错误：说发生了什么

@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { archetypeInfo, axisNames, questions } from '../src/app/assessment.ts';
 import { faq } from '../src/app/faq.ts';
-import { languages, t } from '../src/app/i18n.ts';
+import { languages, pathInLanguage, t } from '../src/app/i18n.ts';
 
 const app = new URL('../src/app/', import.meta.url);
 const sources = (dir: URL, pattern: RegExp) =>
@@ -58,4 +58,14 @@ test('英文按数量选单复数，并填入参数', () => {
   assert.equal(t('{n} game|{n} games', { n: 3 }), '3 games');
   assert.equal(t('Courts near {place}', { place: 'Irvine' }), 'Courts near Irvine');
   assert.equal(t('Not translated yet'), 'Not translated yet');
+});
+
+test('静态页面上换语言：有那种语言的版本就去那一版，没有就回英文版', () => {
+  assert.equal(pathInLanguage('/ja/levels/4-plus/', 'ja', 'ko'), '/ko/levels/4-plus/');
+  assert.equal(pathInLanguage('/ja/', 'ja', 'en'), '/');
+  assert.equal(pathInLanguage('/zh/', 'zh-Hans', 'zh-Hant'), '/zh-hant/');
+  assert.equal(pathInLanguage('/zh-hant/levels/', 'zh-Hant', 'zh-Hans'), '/zh/levels/');
+  // 关于、球馆目录只有英文和简体中文
+  assert.equal(pathInLanguage('/zh/courts/us/', 'zh-Hans', 'ja'), '/courts/us/');
+  assert.equal(pathInLanguage('/zh/about/', 'zh-Hans', 'en'), '/about/');
 });

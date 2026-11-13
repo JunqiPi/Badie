@@ -2,7 +2,7 @@
 // 页面照常用英文写，要翻译的文字标 data-t（和浏览器里切语言用的是同一套标记和译文），构建时由 middleware 换成这种语言；
 // 标题、描述这类不在正文里的文字用 translator() 翻。
 // 首页、等级表和每一档的页面有 10 种语言；关于页和球馆目录只有英文和简体中文
-import { format, pathPrefixes, type Locale } from '../app/i18n';
+import { everyLanguage, format, pathPrefixes, type Locale } from '../app/i18n';
 import zhHans from '../app/locales/zh-Hans.json';
 import zhHant from '../app/locales/zh-Hant.json';
 import ja from '../app/locales/ja.json';
@@ -26,8 +26,6 @@ export const allLanguages = [undefined, ...prefixes];
 const localeOfPrefix = Object.fromEntries(Object.entries(pathPrefixes).map(([locale, prefix]) => [prefix.slice(1), locale as Locale]));
 const prefixPattern = new RegExp(`^/(${[...prefixes].sort((a, b) => b.length - a.length).join('|')})(?=/)`);
 
-/** 有 10 种语言的页面：首页、等级表、每一档的页面 */
-const everyLanguage = /^\/(?:$|levels\/)/;
 /** 只有英文和简体中文的页面：关于、球馆目录 */
 const chineseOnly = /^\/(?:about\/|courts\/)/;
 

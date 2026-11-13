@@ -111,7 +111,12 @@ struct DayCandidatesView: View {
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
-            if needsLocation {
+            if needsLocation && locationManager.isAuthorized {
+                // 已经允许定位，位置还没回来：等一下，不提示“开启定位”
+                Spacer()
+                ProgressView()
+                Spacer()
+            } else if needsLocation {
                 Spacer()
                 EmptyStateView(icon: "location", title: String(localized: "开启定位"),
                                actionTitle: String(localized: "开启定位")) { enableLocation() }
@@ -399,6 +404,8 @@ struct DayCandidatesView: View {
     }
 
     private func load(showsErrors: Bool) async {
+        // 位置还没回来：先不按默认城市找人，位置一到会再调一次
+        guard !needsLocation else { return }
         defer { isLoading = false }
         guard let day else {
             await loadNearby()

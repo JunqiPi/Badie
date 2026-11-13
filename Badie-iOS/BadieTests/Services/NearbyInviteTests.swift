@@ -113,6 +113,8 @@ final class NearbyInviteTests: XCTestCase {
         let invites = try await backend.nearbyInvites()
         let me = try XCTUnwrap(backend.currentUserId)
         let incoming = try XCTUnwrap(invites.first { $0.invite?.toId == me && $0.invite?.awaitingId == me })
+        XCTAssertEqual(InviteText.title(incoming, me: me) { _ in "阿杰" }, String(localized: "\("阿杰")约你打球"))
+        XCTAssertEqual(InviteText.title(incoming, me: incoming.ownerId) { _ in "小林" }, String(localized: "你约了\("小林")"), "发邀请的人看到的是自己约了谁")
         let window = try XCTUnwrap(PlayWindow.nextWeekdays(daypart: .evening))
         try await backend.counterInvite(incoming.id, venueId: nil, window: window)
         let countered = try XCTUnwrap(backend.db.rooms[incoming.id])
@@ -120,6 +122,7 @@ final class NearbyInviteTests: XCTestCase {
         XCTAssertEqual(countered.invite?.rounds, 1)
         XCTAssertEqual(countered.window, window)
         XCTAssertEqual(InviteText.title(countered, me: incoming.ownerId) { _ in "阿杰" }, String(localized: "\("阿杰")想换个时间"))
+        XCTAssertEqual(InviteText.title(countered, me: me) { _ in "阿杰" }, String(localized: "你想换个时间"))
         do {
             _ = try await backend.respondInvite(incoming.id, accept: true)
             XCTFail("轮到对方回")

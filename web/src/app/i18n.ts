@@ -22,6 +22,16 @@ export const pathPrefixes: Record<Locale, string> = {
   en: '', 'zh-Hans': '/zh', 'zh-Hant': '/zh-hant', ja: '/ja', ko: '/ko', id: '/id', ms: '/ms', th: '/th', vi: '/vi', hi: '/hi',
 };
 
+/** 有 10 种语言的静态页面：首页、等级表、每一档的页面（参数是去掉语言前缀后的路径） */
+export const everyLanguage = /^\/(?:$|levels\/)/;
+
+/** 在 from 语言的静态页面上换成 to：这页有那种语言的版本就去那一版，没有就去英文版（按记住的语言显示） */
+export function pathInLanguage(pathname: string, from: Locale, to: Locale) {
+  const prefix = pathPrefixes[from];
+  const english = prefix && pathname.startsWith(`${prefix}/`) ? pathname.slice(prefix.length) : pathname;
+  return (everyLanguage.test(english) ? pathPrefixes[to] : '') + english;
+}
+
 const storageKey = 'badie-language';
 let locale: Locale = 'en';
 let messages: Record<string, string> = {};
