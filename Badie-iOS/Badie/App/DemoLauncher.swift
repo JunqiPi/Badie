@@ -37,6 +37,7 @@ enum DemoLauncher {
             recurringSlots: [RecurringTimeSlot(dayOfWeek: 4, startHour: 19, endHour: 21)],
             location: Coordinate.fallbackCenter
         )
+        seedPlayerPhotos(backend)
         environment = AppEnvironment(backend: backend)
         environment.appState.skipsSplash = true
         environment.locationManager.allowsMapSearch = false
@@ -117,7 +118,7 @@ enum DemoLauncher {
             }
         case "home", "nearbyCards":
             // 发现页（打开 App 就是这页）：附近的人的大卡片（常去的球馆、常有空的时间）；上面一排圆头像是这叠卡里的人。
-            // 示例球友没有卡片照片，卡片是颜色 + 球场线（以后有照片素材再加）
+            // 最前面两位示例球友有照片（见 seedPlayerPhotos），其余是颜色 + 球场线
             router.selectedTab = .home
             environment.appState.discoverDay = nil
         case "dayCards":
@@ -214,6 +215,28 @@ enum DemoLauncher {
             break
         }
         return environment
+    }
+
+    /// 商店截图：两位示例球友用真人照片（卡片背景 + 圆头像，图片在 Assets 里），发现页排在最前面，女生在前
+    private static let photoPlayers: [(id: String, photo: String)] = [("bot-15", "DemoPlayerF1"), ("bot-9", "DemoPlayerM1")]
+
+    private static func seedPlayerPhotos(_ backend: MockBackend) {
+        for player in photoPlayers {
+            guard var user = backend.db.users[player.id],
+                  let card = UIImage(named: player.photo)?.jpegData(compressionQuality: 0.9),
+                  let avatar = UIImage(named: player.photo + "Avatar")?.jpegData(compressionQuality: 0.9) else { continue }
+            backend.db.avatarPhotos[player.id] = avatar
+            backend.db.avatarPhotos[AvatarPhotos.cardKey(player.id)] = card
+            user.avatar.photoVersion = 1
+            user.avatar.cardPhotoVersion = 1
+            backend.db.users[player.id] = user
+            // 也常去 LABC（和我一样）：一定在附近的人里
+            let venues = backend.db.favoriteCourtIds[player.id] ?? []
+            if !venues.contains(DemoVenue.labc) {
+                backend.db.favoriteCourtIds[player.id] = [DemoVenue.labc] + Array(venues.prefix(1))
+            }
+        }
+        backend.demoFeaturedIds = photoPlayers.map { $0.id }
     }
 
     private static func startSearch(_ environment: AppEnvironment) {

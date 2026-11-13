@@ -70,6 +70,8 @@ final class MockBackend {
     var demoInvitesSent: [Date] = []
     var demoDeclined: Set<String> = []
     var demoInvitesSeeded = false
+    /// 演示截图：排在附近的人最前面的示例球友（按顺序；平时为空）
+    var demoFeaturedIds: [String] = []
 
     private var listeners: [UUID: BackendEventHandler] = [:]
     private var saveTask: Task<Void, Never>?

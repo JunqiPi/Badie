@@ -385,7 +385,11 @@ extension MockBackend {
                                 isFriend: isFriend(id),
                                 friendRequest: outgoing.contains(id) ? .sent : incoming.contains(id) ? .received : nil)
         }
+        let featured = demoFeaturedIds
         let sorted = people.sorted { a, b in
+            let fa = featured.firstIndex(of: a.userId) ?? featured.count
+            let fb = featured.firstIndex(of: b.userId) ?? featured.count
+            if fa != fb { return fa < fb }
             if a.sharedVenues != b.sharedVenues { return a.sharedVenues > b.sharedVenues }
             let la = abs((db.users[a.userId]?.displayLevel ?? myLevel) - myLevel)
             let lb = abs((db.users[b.userId]?.displayLevel ?? myLevel) - myLevel)
