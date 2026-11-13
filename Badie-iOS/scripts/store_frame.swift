@@ -246,9 +246,12 @@ for (index, key) in config.order.enumerated() {
     case .phone:
         guard let shot else { break }
         let bottom = drawTitle(caption, theme: theme, top: 200 * unit, cap: 292 * unit, width: width)
-        let screenWidth = 1040 * unit, bezel = 22 * unit, radius = 130 * unit
-        let top = bottom + 70 * unit
-        let screen = rect((width - screenWidth) / 2, top + bezel, screenWidth, screenWidth * height / width)
+        // 整台手机都放进画面（看得到底部的按钮和标签栏），按标题下面剩的高度缩放
+        let bezel = 22 * unit, top = bottom + 70 * unit
+        let screenHeight = height - top - 2 * bezel - 110 * unit
+        let screenWidth = screenHeight * width / height
+        let radius = 130 * unit * screenWidth / (1040 * unit)
+        let screen = rect((width - screenWidth) / 2, top + bezel, screenWidth, screenHeight)
         // 机身：比屏幕大一圈，右下多出一点当投影
         context.setFillColor(ink.cgColor)
         context.addPath(roundedPath(screen.insetBy(dx: -bezel, dy: -bezel).offsetBy(dx: 16 * unit, dy: -22 * unit), radius + bezel))
