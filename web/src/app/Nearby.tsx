@@ -36,8 +36,8 @@ export function Sheet({ open, onClose, labelledBy, children }: { open: boolean; 
 export const sortUsual = (times: UsualTime[] | null | undefined) =>
   [...(times ?? [])].sort((a, b) => (a.weekday + 5) % 7 - (b.weekday + 5) % 7 || toMinutes(a.start) - toMinutes(b.start));
 
-/** 卡片上 TA 的空闲时间：最多 2 个柠檬绿小胶囊，多了 +N。点一个就约那段时间 */
-export function UsualChips({ times, onPick }: { times: UsualTime[] | null | undefined; onPick: (slot: UsualTime) => void }) {
+/** 卡片上 TA 的空闲时间：最多 2 个柠檬绿小胶囊，多了 +N。点一个就约那段时间；没有 onPick（自己的卡片）就只显示 */
+export function UsualChips({ times, onPick }: { times: UsualTime[] | null | undefined; onPick?: (slot: UsualTime) => void }) {
   const sorted = sortUsual(times);
   if (!sorted.length) return null;
   const more = sorted.length - 2;
@@ -46,9 +46,11 @@ export function UsualChips({ times, onPick }: { times: UsualTime[] | null | unde
     <ul className="flex flex-wrap items-center gap-1.5" aria-label={t('Usually free')}>
       {sorted.slice(0, 2).map((slot) => (
         <li key={`${slot.weekday}-${slot.start}`}>
-          <button type="button" onClick={() => onPick(slot)} aria-label={t('Invite for {time}', { time: slotLabel(slot) })} className={`press ${chip}`}>
-            {slotLabel(slot)}
-          </button>
+          {onPick ? (
+            <button type="button" onClick={() => onPick(slot)} aria-label={t('Invite for {time}', { time: slotLabel(slot) })} className={`press ${chip}`}>
+              {slotLabel(slot)}
+            </button>
+          ) : <span className={chip}>{slotLabel(slot)}</span>}
         </li>
       ))}
       {more > 0 && <li className={chip}>+{more}</li>}

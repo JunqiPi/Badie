@@ -72,7 +72,7 @@ await page.getByRole('link', { name: 'Courts' }).first().waitFor();
 
 // 最窄的手机（320 宽）上每个页面都不能左右滑动（长球馆名、不换行的标签、并排的控件都可能把页面撑宽）
 await page.setViewportSize({ width: 320, height: 720 });
-for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', '/settings/', '/rankings/', '/challenges/', '/notifications/', '/groups/new/', '/rooms/new/', '/levels/', '/privacy/', '/terms/', '/contact/']) {
+for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', '/me/edit/', '/me/edit/?tab=preview', '/settings/', '/rankings/', '/challenges/', '/notifications/', '/groups/new/', '/rooms/new/', '/levels/', '/privacy/', '/terms/', '/contact/']) {
   await page.goto(`${base}${path}`);
   await page.getByRole('main').waitFor();
   await page.waitForTimeout(300);
@@ -87,9 +87,17 @@ for (const path of ['/', '/play/', '/games/', '/courts/', '/messages/', '/me/', 
 }
 await page.setViewportSize({ width: 1280, height: 900 });
 
-// 设置：注册时选的性别（只用来定级和匹配）
-await page.goto(`${base}/settings/`);
+// 编辑资料：注册时选的性别（只用来定级和匹配）、常打（马上存）、预览；“我的”最上面是我的卡片和“资料 N/4”
+await page.goto(`${base}/me/edit/`);
 await page.getByRole('radio', { name: 'Male', exact: true, checked: true }).waitFor();
+await page.getByRole('radio', { name: 'Doubles', exact: true }).click();
+await page.getByRole('radio', { name: 'Doubles', exact: true, checked: true }).waitFor();
+await page.getByRole('button', { name: 'Preview', exact: true }).click();
+await page.getByText('This is the card others see on Discover').waitFor();
+await page.goto(`${base}/me/`);
+await page.getByRole('link', { name: 'My card' }).waitFor();
+await page.getByRole('link', { name: /^Profile \d\/4/ }).waitFor();
+await page.goto(`${base}/settings/`);
 
 // 帮助与反馈：设置里能找到；登录了可以直接写反馈，也能写邮件给客服
 await page.getByRole('main').getByRole('link', { name: /Help & feedback/ }).click();

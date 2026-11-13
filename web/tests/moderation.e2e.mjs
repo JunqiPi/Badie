@@ -18,9 +18,10 @@ for (const [page, name] of [[alex, 'Alex'], [blake, 'Blake']]) {
   await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
 }
 // 昵称带脏话存不了，并告诉你原因
-await blake.goto(`${base}/settings/`);
+await blake.goto(`${base}/me/edit/`);
+await blake.getByRole('button', { name: /^Nickname/ }).click();
 await blake.getByLabel('Nickname', { exact: true }).fill('Shit Show');
-await blake.getByRole('button', { name: 'Save', exact: true }).first().click();
+await blake.getByRole('button', { name: 'Save', exact: true }).click();
 await blake.getByText('Offensive words aren’t allowed. Try different words.').waitFor();
 
 const id = (name) => sql(`select id from auth.users where email = '${name}${stamp}@mod.local'`);

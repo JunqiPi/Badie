@@ -274,6 +274,16 @@ export function Row({ icon, tint = 'lavender', title, subtitle, value, badge = 0
   return <Pressable {...action} className={`${className} press rounded-[12px] transition-colors hover:bg-surface-muted/60 -mx-2 px-2 w-[calc(100%+1rem)]`}>{body}</Pressable>;
 }
 
+/** 设置、编辑资料里的一组：灰色小标题 + 白色贴纸 */
+export function Group({ title, id, children }: { title: string; id?: string; children: ReactNode }) {
+  return (
+    <section id={id} className="grid scroll-mt-4 gap-2">
+      <h2 className="px-1 text-footnote font-bold text-ink-secondary">{title}</h2>
+      <div className="sticker grid px-4">{children}</div>
+    </section>
+  );
+}
+
 /** 卡片里的分割线 */
 export const Divider = () => <hr className="h-[1.5px] border-0 bg-divider" />;
 

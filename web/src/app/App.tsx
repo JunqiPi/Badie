@@ -14,6 +14,7 @@ import { About, LevelGuide } from './Levels';
 import { LevelQuiz } from './LevelQuiz';
 import { QuizResult } from './QuizResult';
 import { clearPending, loadPending, rememberRef, saveArgs } from './quizStore';
+import { EditProfile } from './EditProfile';
 import { Me, Settings } from './Me';
 import { EditGroup, NewGroup } from './NewGroup';
 import { NewRoom } from './NewRoom';
@@ -152,6 +153,7 @@ export default function App() {
     : path.startsWith('/admin/') ? <Admin />
     : path.startsWith('/verification/') ? <VerificationPage profile={profile} />
     : path.startsWith('/settings/') ? <Settings profile={profile} email={session!.user.email} onChange={setProfile} />
+    : path.startsWith('/me/edit/') ? <EditProfile profile={profile} onChange={setProfile} />
     : path.startsWith('/me/') ? <Me profile={profile} onChange={setProfile} />
     : <NotFound />,
   );

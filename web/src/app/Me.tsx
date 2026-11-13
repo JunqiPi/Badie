@@ -1,30 +1,24 @@
-import { useEffect, useState, type ReactNode, type SubmitEvent } from 'react';
+import { useEffect, useState, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
-import { AvatarCrop, decode } from './AvatarCrop';
-import { CardBackground } from './CardBackground';
 import { DONATIONS_OPEN, SUPPORT_EMAIL } from './Contact';
-import { GenderField } from './gender';
+import { MyCard, ProfileProgress, useMyCourts } from './EditProfile';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
-import { Avatar, Divider, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile, Tag } from './kit';
-import { nicknameProblem } from './Onboarding';
+import { Divider, Group, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile } from './kit';
 import { passwordProblem } from './password';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
-import { cleanPhotoFolder, friendLink, problem, supabase, winPercent, suspendedText, tagText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
-import { clock, day } from './time';
-import { sortUsual } from './Nearby';
-import { toHHMM, toMinutes, weekdayShort, type UsualTime } from './usual';
+import { cleanPhotoFolder, friendLink, problem, supabase, winPercent, suspendedText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
+import { day } from './time';
 import { Button, Field, PasswordInput, toast } from './ui';
 import { AdminLink } from './Verification';
 
-const verifiedText = { tournament: 'Tournament verified', national: 'Ranking verified', bwf: 'BWF verified' } as const;
-
-/** 我的（iOS 的 ProfileView）：身份卡、场次和履约、本月胜率、菜单 */
+/** 我的（iOS 的 ProfileView）：我的卡片（和发现页同一张）、编辑资料、资料 N/5、场次和到场、本月胜率、菜单 */
 export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
   const { data: card } = useLive<PlayerCard | null>('player_card', { args: { p_user: profile.id }, every: 300_000 });
   const { data: record } = useLive<PlayRecord>('my_record', { every: 300_000 });
   const { data: friends } = useLive<{ friends: Friend[]; requests: Friend[] }>('my_friends', { every: 120_000 });
+  const courts = useMyCourts();
   const total = record ? record.games_played + record.no_shows + record.late_cancels : 0;
   const reliability = record && total ? Math.round((record.games_played / total) * 100) : 100;
 
@@ -44,25 +38,16 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
         <div className="grid min-w-0 gap-6">
-          <section aria-label={t('My profile')} className="sticker grid gap-4 bg-lavender p-5 text-on-accent sm:p-6">
-            {/* 很窄的屏幕上名字和标签换到头像下面 */}
-            <div className="flex flex-wrap items-center gap-4">
-              <span className="relative shrink-0">
-                <span aria-hidden="true" className="absolute inset-0 translate-x-[3px] translate-y-1 rounded-full bg-[#17140f]" />
-                <Avatar id={profile.id} name={profile.nickname} photo={profile.avatar_path} size={76} className="relative" />
-              </span>
-              <div className="grid min-w-0 flex-1 basis-40 gap-1.5">
-                <h2 className="flex text-title2"><span className="truncate">{profile.nickname}</span><span className="shrink-0 opacity-60">{tagText(profile.tag)}</span></h2>
-                <ul className="flex flex-wrap gap-1.5">
-                  <li><LevelBadge rating={profile.rating} /></li>
-                  {card?.reliable && <li><Tag icon="reliable" tint="mint">{t('Reliable')}</Tag></li>}
-                  {card?.new_player && <li><Tag icon="sparkle" tint="butter">{t('New player · calibrating')}</Tag></li>}
-                  {profile.verified_kind && <li><Tag icon="verified" tint="lime">{t(verifiedText[profile.verified_kind])}</Tag></li>}
-                </ul>
-              </div>
+          {/* 最上面是我的卡片（别人在发现页刷到的样子），点一下看预览 */}
+          <section aria-label={t('My profile')} className="grid gap-3">
+            <Link to="/me/edit/?tab=preview" aria-label={t('My card')} className="press grid aspect-[4/5] max-h-[32rem] rounded-[var(--radius-card)]">
+              <MyCard profile={profile} card={card} courts={courts} />
+            </Link>
+            <div className="flex flex-wrap gap-2.5">
+              <Link to="/me/edit/" className="button flex-1 basis-36">{t('Edit profile')}</Link>
+              {profile.assessment && <Link to="/level-quiz/result/" className="button button-quiet flex-1 basis-36">{t('Share level card')}</Link>}
             </div>
-            <p className="text-subhead">{profile.assessed_at ? tier(profile.rating).summary : t('Take the 2-minute level quiz so you’re matched with the right players.')}</p>
-            <Link to="/settings/" className="button bg-white! text-[#17140f]!">{t('Edit profile')}</Link>
+            {courts && <ProfileProgress profile={profile} courts={courts} />}
           </section>
 
           <div className="grid grid-cols-3 gap-2.5">
@@ -82,12 +67,6 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
             <Divider />
             <Row icon="list" tint="lime" title={t('Level guide')} value={`Lv.${tier(profile.rating).label}`} to="/levels/" />
             <Divider />
-            {profile.assessment && (
-              <>
-                <Row icon="share" tint="sky" title={t('Share level card')} to="/level-quiz/result/" />
-                <Divider />
-              </>
-            )}
             <Row icon="history" tint="peach" title={t('Past games')} to="/games/?tab=ended" />
             <Divider />
             <Row icon="trophy" tint="butter" title={t('Leaderboard')} to="/rankings/" />
@@ -306,16 +285,9 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
   return (
     <div className="mx-auto grid max-w-2xl gap-6">
       <ScreenHeader title={t('Settings')} back="/me/" />
-      <Nickname profile={profile} email={email} onChange={onChange} />
-      <CardBackground profile={profile} onChange={onChange} />
-
-      <Group title={t('Levels')}>
-        <div className="py-3">
-          <GenderField value={profile.gender} onChange={(gender) => gender !== profile.gender && save({ gender })} />
-        </div>
+      <Group title={t('Profile')}>
+        <Row icon="pencil" tint="lavender" title={t('Edit profile')} subtitle={email && <span className="wrap-anywhere">{email}</span>} to="/me/edit/" />
       </Group>
-
-      <FreeTimes profile={profile} onChange={onChange} />
 
       <Group title={t('Notifications')}>
         <PushSettings />
@@ -374,68 +346,6 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Link to="/terms/" className="link">{t('Terms of Service')}</Link>
       </p>
     </div>
-  );
-}
-
-/** 空闲时间：星期几 + 时间段，最多 5 段，每段 1–8 小时（和 iOS、服务器一致）。显示在卡片和资料上，别人点一下就能约 */
-function FreeTimes({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
-  const [rows, setRows] = useState<UsualTime[]>(() => sortUsual(profile.usual_times));
-  const [busy, setBusy] = useState(false);
-  const saved = JSON.stringify(sortUsual(profile.usual_times));
-  const dirty = JSON.stringify(sortUsual(rows)) !== saved;
-  const halfHours = (from: number, to: number) => Array.from({ length: (to - from) / 30 + 1 }, (_, i) => from + i * 30);
-  const set = (i: number, patch: Partial<UsualTime>) => setRows((list) => list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-
-  async function save() {
-    setBusy(true);
-    const usual_times = sortUsual(rows);
-    const { data, error } = await supabase!.from('profiles').update({ usual_times }).eq('id', profile.id).select().single();
-    setBusy(false);
-    if (error) return toast(t('Couldn’t save. Try again.'), 'error');
-    onChange(data as Profile);
-    setRows(usual_times);
-    toast(t('Saved'));
-  }
-
-  return (
-    <Group title={t('Free times')}>
-      <div className="grid gap-3 py-3.5">
-        <p className="text-footnote text-ink-secondary">{t('Shown on your card. Players can tap one to invite you.')}</p>
-        {rows.map((row, i) => (
-          <div key={i} className="flex flex-wrap items-center gap-2">
-            <select className="field w-auto" aria-label={t('Day')} value={row.weekday} onChange={(e) => set(i, { weekday: Number(e.target.value) })}>
-              {[2, 3, 4, 5, 6, 7, 1].map((w) => <option key={w} value={w}>{weekdayShort(w)}</option>)}
-            </select>
-            <select className="field w-auto" aria-label={t('From')} value={toMinutes(row.start)}
-                    onChange={(e) => { const from = Number(e.target.value); set(i, { start: toHHMM(from), end: toHHMM(Math.min(Math.max(toMinutes(row.end), from + 60), from + 480, 1440)) }); }}>
-              {halfHours(360, 1380).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
-            </select>
-            <span aria-hidden="true">–</span>
-            <select className="field w-auto" aria-label={t('To')} value={toMinutes(row.end)} onChange={(e) => set(i, { end: toHHMM(Number(e.target.value)) })}>
-              {halfHours(toMinutes(row.start) + 60, Math.min(toMinutes(row.start) + 480, 1440)).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
-            </select>
-            <IconButton icon="trash" label={t('Delete')} onClick={() => setRows((list) => list.filter((_, j) => j !== i))} />
-          </div>
-        ))}
-        <div className="flex flex-wrap gap-2">
-          {rows.length < 5 && (
-            <Button className="button-sm" variant="quiet" onClick={() => setRows((list) => [...list, { weekday: 7, start: '14:00', end: '18:00' }])}>
-              <Icon name="plus" className="size-4" />{t('Add a time')}
-            </Button>
-          )}
-          {dirty && <Button className="button-sm" busy={busy} onClick={save}>{t('Save')}</Button>}
-        </div>
-      </div>
-    </Group>
-  );
-}
-
-function Group({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="grid gap-2">
-      <h2 className="px-1 text-footnote font-bold text-ink-secondary">{title}</h2>
-      <div className="sticker grid px-4">{children}</div>
-    </section>
   );
 }
 
@@ -516,104 +426,6 @@ function Switch({ checked, onChange, title, text, disabled }: { checked: boolean
       <input type="checkbox" role="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)}
              className="relative mt-0.5 disabled:opacity-50 h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
     </label>
-  );
-}
-
-function Nickname({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
-  const [nickname, setNickname] = useState(profile.nickname);
-  const [busy, setBusy] = useState(false);
-  const issue = nicknameProblem(nickname);
-  const changed = nickname.trim() !== profile.nickname;
-
-  async function save(event: SubmitEvent) {
-    event.preventDefault();
-    if (issue || !changed) return;
-    setBusy(true);
-    const { data, error } = await supabase!.from('profiles').update({ nickname: nickname.trim() }).eq('id', profile.id).select().single();
-    setBusy(false);
-    if (error) return toast(error.message === 'objectionable_content' ? problem(error) : t('Couldn’t save your nickname. Try again.'), 'error');
-    onChange(data as Profile);
-    toast(t('Saved'));
-  }
-
-  return (
-    <form onSubmit={save} noValidate className="sticker grid gap-4 p-5">
-      <div className="flex items-center gap-3">
-        <Avatar id={profile.id} name={nickname || profile.nickname} photo={profile.avatar_path} size={56} />
-        <div className="min-w-0">
-          <p className="text-headline">{t('Profile')}</p>
-          {email && <p className="text-footnote text-ink-secondary wrap-anywhere">{email}</p>}
-        </div>
-      </div>
-      <Field label={t('Nickname')} hint={t('2–12 characters. No phone numbers or links.')} error={changed ? issue : undefined}>
-        {(props) => <input {...props} maxLength={12} value={nickname} onChange={(e) => setNickname(e.target.value)} className="field" />}
-      </Field>
-      <AvatarPhoto profile={profile} onChange={onChange} />
-      <Button busy={busy} disabled={!changed || Boolean(issue)} className="justify-self-start">{t('Save')}</Button>
-    </form>
-  );
-}
-
-/** 照片头像：先调整位置和大小，裁成 320×320 的 JPEG（和 iOS 一样），先传新的、换上，再删旧的 */
-function AvatarPhoto({ profile, onChange }: { profile: Profile; onChange: (p: Profile) => void }) {
-  const [busy, setBusy] = useState(false);
-  const [picked, setPicked] = useState<ImageBitmap>();
-
-  async function pick(file: File) {
-    try {
-      setPicked(await decode(file));
-    } catch {
-      toast(t('Couldn’t upload the photo. Try another one.'), 'error');
-    }
-  }
-
-  function close() {
-    picked?.close();
-    setPicked(undefined);
-  }
-
-  async function upload(jpeg: Blob) {
-    close();
-    setBusy(true);
-    try {
-      await cleanPhotoFolder(profile.id, [profile.avatar_path, profile.card_photo_path]).catch(() => {});
-      const path = `${profile.id}/${crypto.randomUUID()}.jpg`;
-      const { error: uploadError } = await supabase!.storage.from('avatars').upload(path, jpeg, { contentType: 'image/jpeg' });
-      if (uploadError) throw uploadError;
-      const { error } = await supabase!.rpc('set_avatar', { p_path: path });
-      if (error) {
-        await supabase!.storage.from('avatars').remove([path]);
-        throw error;
-      }
-      if (profile.avatar_path) await supabase!.storage.from('avatars').remove([profile.avatar_path]);
-      onChange({ ...profile, avatar_path: path });
-      toast(t('Photo updated'));
-    } catch {
-      toast(t('Couldn’t upload the photo. Try another one.'), 'error');
-    }
-    setBusy(false);
-  }
-
-  async function remove() {
-    setBusy(true);
-    const { error } = await supabase!.rpc('set_avatar', { p_path: null });
-    if (!error && profile.avatar_path) await supabase!.storage.from('avatars').remove([profile.avatar_path]);
-    setBusy(false);
-    if (error) return toast(problem(error), 'error');
-    onChange({ ...profile, avatar_path: null });
-  }
-
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <label className={`button button-sm cursor-pointer ${busy ? 'pointer-events-none opacity-60' : ''}`}>
-        {profile.avatar_path ? t('Change photo') : t('Upload photo')}
-        <input type="file" accept="image/*" className="sr-only" disabled={busy}
-               onChange={(e) => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void pick(file); }} />
-      </label>
-      {profile.avatar_path && <Button type="button" className="button-sm" variant="quiet" busy={busy} onClick={remove}>{t('Use text avatar')}</Button>}
-      <p className="basis-full text-caption text-ink-tertiary">{t('Other players see your photo.')}</p>
-      {picked && <AvatarCrop image={picked} onDone={upload} onCancel={close} />}
-    </div>
   );
 }
 
