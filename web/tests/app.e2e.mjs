@@ -30,7 +30,13 @@ const page = await context.newPage();
 await signUp(page, email, 'Alex');
 await page.getByRole('button', { name: 'Skip for now' }).click();
 await page.getByRole('heading', { name: 'Discover', level: 1 }).waitFor();
-// 顶栏的 tab 都是真正的页面：球馆是静态页面，整页打开
+// 发现页左上角是附近范围（默认 10 公里），点开能换
+await page.getByRole('button', { name: /Within 10 km/ }).click();
+await page.getByRole('button', { name: 'Within 20 km' }).click();
+await page.getByRole('button', { name: /Within 20 km/ }).waitFor();
+await page.getByRole('button', { name: /Within 20 km/ }).click();
+await page.getByRole('button', { name: 'Within 10 km' }).click();
+// 顶栏的 tab 都是真正的页面：球馆是静态页面，整页打开（发现页右上角的球馆按钮也去这里）
 await page.getByRole('link', { name: 'Courts' }).first().click();
 await page.waitForURL('**/courts/');
 

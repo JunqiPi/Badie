@@ -86,7 +86,7 @@ export function CardBackground({ profile, onChange }: { profile: Profile; onChan
 
       {/* 小卡片：改了马上看到 */}
       <div aria-hidden="true" className="overflow-hidden rounded-[16px] border-2 border-stroke bg-surface">
-        <CardCover person={person} avatarSize={64} className={`h-32 ${busy ? 'opacity-60' : ''}`} />
+        <CardCover person={person} className={`h-32 ${busy ? 'opacity-60' : ''}`} />
         <div className="relative flex min-w-0 items-center gap-2 px-3 py-2">
           {person.card_photo && <Avatar id={person.id} name={person.nickname} photo={person.avatar} size={40} className="absolute -top-6 left-3" />}
           <p className={`flex min-w-0 font-bold ${person.card_photo ? 'pt-4' : ''}`}>

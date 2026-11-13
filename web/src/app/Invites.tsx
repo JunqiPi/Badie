@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react';
 import { t } from './i18n';
 import { Icon } from './icons';
-import { IconButton, IconTile, Notice, ScreenHeader, Story } from './kit';
+import { IconButton, IconTile, Notice, ScreenHeader, Segmented } from './kit';
 import { MiniCard, Sheet, sortUsual } from './Nearby';
 import { CourtSearch, type Court } from './pickers';
 import { navigate } from './router';
-import { problem, supabase, useLive, type InviteSuggestion, type InviteUser, type NearbyPlayer, type RoomInvite, type RoomSummary } from './supabase';
-import { clock, dateChip, day, dayName, timeOf, today } from './time';
+import { problem, supabase, useLive, type InviteSuggestion, type InviteUser, type Mode, type NearbyPlayer, type RoomInvite, type RoomSummary } from './supabase';
+import { clock, dateChip, dayName, timeOf, today, wallClock, zoned } from './time';
 import { Button, Skeleton, toast } from './ui';
-import {
-  choiceCaption, choiceLabel, choiceOf, datesOf, fits, nextOccurrence, slotLabel, unset, windowDetail, windowOf, windowTitle,
-  type DayChoice, type TimeChoice, type UsualTime,
-} from './usual';
+import { nextOccurrence, slotLabel, unset, weekdayOf, weekdayShort, windowDetail, windowTitle, type UsualTime } from './usual';
 
-// 附近的人的邀请：右滑 = 约 TA 一个只有两个人的球局，时间可以先定个大概。对方可以好、换个时间或不了
+// 附近的人的邀请：右滑 = 约 TA 在某天几点到几点打单打或双打（旧版 App 发的可能只是个大概的时间）。对方可以好、换个时间或不了。
+// 双打说好以后变成公开的双打局，附近的人可以加入
 
 const localZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -23,7 +21,8 @@ export function inviteProblem(error: { message: string }) {
     case 'not_available': return t('They can’t be added right now.');
     case 'overlapping': return t('You already have a game at that time.');
     case 'too_late': return t('Too late now. Try another time.');
-    case 'invalid_slot': return t('That start time is too soon now. Pick another.');
+    case 'invalid_slot':
+    case 'invalid_window': return t('That start time is too soon now. Pick another.');
     case 'invalid_venues': return t('That court can’t be used right now. Pick another.');
     default: return problem(error);
   }
@@ -31,7 +30,7 @@ export function inviteProblem(error: { message: string }) {
 
 type Sent = { remaining: number | null; label: string };
 
-/** 约 TA 的半屏：哪天、什么时候、球馆。room 有值时是“换个时间” */
+/** 约 TA 的半屏：项目、哪天、几点到几点、球馆。room 有值时是“换个时间” */
 export function InviteSheet({ open, onClose, ...props }: ComposeProps & { open: boolean }) {
   return (
     <Sheet open={open} onClose={onClose} labelledBy="compose-title">
@@ -55,16 +54,30 @@ type ComposeProps = {
   onError?: (error: { message: string }) => void;
 };
 
+/** 约的是什么：项目、球馆当地的日期和开始、结束（从 0 点起的分钟，结束可以是 24:00） */
+type Plan = { mode: Mode; date: string; from: number; to: number };
+
+/** 最早能开始的时刻：现在 + 30 分钟，按半小时对齐（和服务器一样） */
+const earliest = () => Math.ceil((Date.now() + 30 * 60000) / 1800000) * 1800000;
+
+/** 从 from 开始打 2 小时；开始已经来不及的挪到最早能开始的半点 */
+function twoHours(date: string, from: number, tz: string) {
+  const soonest = wallClock(new Date(earliest()).toISOString(), tz);
+  const start = soonest.date === date ? Math.max(from, soonest.minutes) : from;
+  return { date, from: start, to: Math.min(1440, start + 120) };
+}
+
 function Compose({ other, venues, slot, date, room, onClose, onSent, onError }: ComposeProps) {
   const [court, setCourt] = useState<Court>();
   const [mine, setMine] = useState<Court[]>([]);
-  const [choice, setChoice] = useState<{ day: DayChoice; time: TimeChoice }>();
+  const [plan, setPlan] = useState<Plan>();
   const [picking, setPicking] = useState(false);
   const [moreDates, setMoreDates] = useState(false);
   const [busy, setBusy] = useState(false);
   const tz = court?.time_zone_id ?? localZone();
   const usual = sortUsual(other.usual_times);
 
+  // 默认：点的那段空闲时间，没点就是两人都有空的第一段，再没有就是 TA 的第一段空闲时间，都没有是晚上 7 点到 9 点
   useEffect(() => {
     void (async () => {
       const { data: favorites } = await supabase!.from('favorite_venues').select('venues(id, name, city, time_zone_id)');
@@ -75,9 +88,10 @@ function Compose({ other, venues, slot, date, room, onClose, onSent, onError }: 
         const c = v ? { id: v.id, name: v.name, city: v.city, time_zone_id: v.tz } : list[0];
         setCourt(c);
         const zone = c?.time_zone_id ?? localZone();
-        if (unset(room)) return setChoice(choiceOf(room, zone));
-        if (room.starts_at && room.ends_at) return setChoice(choiceOf({ window_start: room.starts_at, window_end: room.ends_at }, zone));
-        return setChoice({ day: { kind: 'weekend' }, time: { kind: 'any' } });
+        const start = room.window_start ?? room.starts_at;
+        const length = room.time_set && room.starts_at && room.ends_at ? (Date.parse(room.ends_at) - Date.parse(room.starts_at)) / 60000 : 120;
+        const at = start ? wallClock(start, zone) : { date: today(zone, 1), minutes: 19 * 60 };
+        return setPlan({ mode: room.mode, date: at.date, from: at.minutes, to: Math.min(1440, at.minutes + length) });
       }
       const { data } = await supabase!.rpc('suggest_invite_window', { p_user: other.id });
       const suggestion = data as InviteSuggestion | null;
@@ -87,14 +101,13 @@ function Compose({ other, venues, slot, date, room, onClose, onSent, onError }: 
       const c = list.find((m) => m.id === id) ?? (id ? await venue(id) : undefined);
       setCourt(c);
       const zone = c?.time_zone_id ?? localZone();
-      const next = slot && nextOccurrence(slot, zone);
-      if (next) {
-        const index = usual.findIndex((u) => u.weekday === slot!.weekday && u.start === slot!.start && u.end === slot!.end);
-        return setChoice({ day: { kind: 'date', date: next.date }, time: { kind: 'custom', from: next.from, to: next.to, usual: index } });
-      }
-      if (suggestion) return setChoice(choiceOf(suggestion, zone));
-      if (date) return setChoice({ day: { kind: 'date', date }, time: { kind: 'any' } });
-      setChoice({ day: { kind: 'weekend' }, time: { kind: 'any' } });
+      const mode = other.preferred_mode ?? 'singles';
+      const free = (slot && nextOccurrence(slot, zone))
+        ?? (suggestion && (({ date, minutes }) => ({ date, from: minutes }))(wallClock(suggestion.window_start, zone)))
+        ?? (usual[0] && nextOccurrence(usual[0], zone));
+      if (free) return setPlan({ mode, ...twoHours(free.date, free.from, zone) });
+      const evening = twoHours(date ?? today(zone, 0), 19 * 60, zone);
+      setPlan({ mode, ...(evening.to - evening.from === 120 ? evening : twoHours(today(zone, 1), 19 * 60, zone)) });
     })();
   }, []);
 
@@ -115,35 +128,30 @@ function Compose({ other, venues, slot, date, room, onClose, onSent, onError }: 
       <IconButton icon="x" label={t('Close')} onClick={onClose} />
     </div>
   );
-  if (!choice) return <>{header}<Skeleton className="h-72" /></>;
+  if (!plan) return <>{header}<Skeleton className="h-72" /></>;
 
-  const { day: dayChoice, time } = choice;
-  const days = Array.from({ length: 7 }, (_, i) => today(tz, i));
-  const multi = datesOf(dayChoice, tz).length > 1;
-  const pickDay = (next: DayChoice) =>
-    setChoice({ day: next, time: time.kind === 'custom' ? (next.kind === 'date' ? { kind: 'custom', from: time.from, to: time.to } : { kind: 'any' }) : time });
-  const pickTime = (next: TimeChoice) =>
-    setChoice({ day: next.kind === 'custom' && multi ? { kind: 'date', date: datesOf(dayChoice, tz)[0] } : dayChoice, time: next });
-  const pickUsual = (u: UsualTime, index: number) => {
-    const next = nextOccurrence(u, tz);
-    if (next) setChoice({ day: { kind: 'date', date: next.date }, time: { kind: 'custom', from: next.from, to: next.to, usual: index } });
-  };
-  const ok = fits(dayChoice, time, tz);
+  const days = Array.from({ length: 14 }, (_, i) => today(tz, i));
+  const set = (patch: Partial<Plan>) => setPlan({ ...plan, ...patch });
+  // 改开始时间：打多久不变，最晚到 24:00
+  const setFrom = (from: number) => set({ from, to: Math.min(1440, from + plan.to - plan.from) });
+  const ok = zoned(plan.date, plan.from, tz).getTime() >= earliest() && plan.to - plan.from >= 60;
+  const freeThen = usual.find((u) => u.weekday === weekdayOf(plan.date));
   const shared = court && venues?.some((v) => v.id === court.id) && mine.some((m) => m.id === court.id);
-  const isDate = (d: string) => dayChoice.kind === 'date' && dayChoice.date === d;
   const options = [...mine, ...(venues ?? []).filter((v) => !mine.some((m) => m.id === v.id)).map((v) => ({ id: v.id, name: v.name, city: '', time_zone_id: null }))]
     .filter((c) => c.id !== court?.id);
-  const halfHours = (from: number, to: number) => Array.from({ length: (to - from) / 30 + 1 }, (_, i) => from + i * 30);
+  const label = 'text-footnote font-bold text-ink-secondary';
 
   async function send() {
-    if (!court || !ok) return;
+    if (!court || !ok || !plan || busy) return;
     setBusy(true);
-    const w = windowOf(dayChoice, time, tz);
+    // 定好的时间：窗口就是开始到结束，打满整段
     const args = {
       p_venue: court.id,
-      p_window_start: w.start.toISOString(),
-      p_window_end: w.end.toISOString(),
-      p_daypart: w.daypart ?? (time.kind === 'any' ? 'any' : null),
+      p_window_start: zoned(plan.date, plan.from, tz).toISOString(),
+      p_window_end: zoned(plan.date, plan.to, tz).toISOString(),
+      p_daypart: null,
+      p_duration: plan.to - plan.from,
+      p_mode: plan.mode,
     };
     const { data, error } = room
       ? await supabase!.rpc('counter_invite', { p_room: room.id, ...args })
@@ -154,77 +162,59 @@ function Compose({ other, venues, slot, date, room, onClose, onSent, onError }: 
       else toast(inviteProblem(error), 'error');
       return;
     }
-    onSent({ remaining: (data as { remaining?: number } | null)?.remaining ?? null, label: choiceLabel(dayChoice, time) });
+    onSent({
+      remaining: (data as { remaining?: number } | null)?.remaining ?? null,
+      label: `${weekdayShort(weekdayOf(plan.date))} ${clock(plan.from)}–${clock(plan.to)}`,
+    });
   }
 
   return (
     <>
       {header}
+      <div className="grid gap-2">
+        <span className={label}>{t('Event')}</span>
+        <Segmented label={t('Event')} value={plan.mode} onChange={(mode) => set({ mode })}
+                   options={[{ value: 'singles', label: t('Singles') }, { value: 'doubles', label: t('Doubles') }]} />
+      </div>
+
       <div className="grid gap-2" role="group" aria-labelledby="compose-day">
-        <span id="compose-day" className="text-footnote font-bold text-ink-secondary">{t('Which day')}</span>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" className="toggle" aria-pressed={dayChoice.kind === 'weekend'} onClick={() => pickDay({ kind: 'weekend' })}>{t('This weekend')}</button>
-          <button type="button" className="toggle" aria-pressed={dayChoice.kind === 'weekdays'} onClick={() => pickDay({ kind: 'weekdays' })}>{t('Weekdays next week')}</button>
-          {days.map((d, i) => (
-            <button key={d} type="button" className="toggle" aria-pressed={isDate(d)} aria-label={dateChip(d, i).full} onClick={() => pickDay({ kind: 'date', date: d })}>
-              {dateChip(d, i).label}
-            </button>
-          ))}
-          {dayChoice.kind === 'date' && !days.includes(dayChoice.date) && (
-            <button type="button" className="toggle" aria-pressed="true">{day(`${dayChoice.date}T12:00:00Z`, 'UTC')}</button>
-          )}
-          <button type="button" className="toggle" aria-expanded={moreDates} aria-label={t('More dates')} onClick={() => setMoreDates(!moreDates)}>
-            <Icon name="dots" className="size-4" />
+        <span id="compose-day" className={label}>{t('Date')}</span>
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+          {[...days, ...(days.includes(plan.date) ? [] : [plan.date])].map((d) => {
+            const chip = dateChip(d, days.indexOf(d));
+            return (
+              <button key={d} type="button" aria-pressed={plan.date === d} aria-label={chip.full} onClick={() => set({ date: d })}
+                      className="press grid min-w-12 shrink-0 justify-items-center rounded-[14px] border-2 border-stroke bg-surface px-2 py-1 aria-pressed:bg-lime aria-pressed:text-on-accent">
+                <span className="text-caption font-bold whitespace-nowrap">{days.includes(d) ? chip.label : weekdayShort(weekdayOf(d))}</span>
+                <span className="text-headline tabular-nums">{chip.day}</span>
+              </button>
+            );
+          })}
+          <button type="button" aria-expanded={moreDates} aria-label={t('More dates')} onClick={() => setMoreDates(!moreDates)}
+                  className="press grid min-w-12 shrink-0 place-items-center rounded-[14px] border-2 border-stroke bg-surface px-2">
+            <Icon name="dots" className="size-5" />
           </button>
         </div>
         {moreDates && (
-          <input type="date" className="field" aria-label={t('More dates')} min={today(tz, 0)} max={today(tz, 30)}
-                 value={dayChoice.kind === 'date' ? dayChoice.date : ''}
-                 onChange={(e) => e.target.value && pickDay({ kind: 'date', date: e.target.value })} />
+          <input type="date" className="field" aria-label={t('More dates')} min={today(tz, 0)} max={today(tz, 30)} value={plan.date}
+                 onChange={(e) => e.target.value && set({ date: e.target.value })} />
         )}
       </div>
 
       <div className="grid gap-2" role="group" aria-labelledby="compose-time">
-        <span id="compose-time" className="text-footnote font-bold text-ink-secondary">{t('What time')}</span>
-        <div className="flex flex-wrap gap-2">
-          {usual.map((u, i) => (
-            <button key={`${u.weekday}-${u.start}`} type="button" className="toggle" aria-pressed={time.kind === 'custom' && time.usual === i} onClick={() => pickUsual(u, i)}>
-              {slotLabel(u)}
-            </button>
-          ))}
-          {(['morning', 'afternoon', 'evening'] as const).map((part) => (
-            <button key={part} type="button" className="toggle" aria-pressed={time.kind === 'part' && time.part === part} onClick={() => pickTime({ kind: 'part', part })}>
-              {{ morning: t('Morning'), afternoon: t('Afternoon'), evening: t('Evening') }[part]}
-            </button>
-          ))}
-          <button type="button" className="toggle" aria-pressed={time.kind === 'any'} onClick={() => pickTime({ kind: 'any' })}>{t('Whenever')}</button>
-          <button type="button" className="toggle" aria-pressed={time.kind === 'custom' && time.usual === undefined}
-                  onClick={() => pickTime(time.kind === 'custom' ? { kind: 'custom', from: time.from, to: time.to } : { kind: 'custom', from: 19 * 60, to: 21 * 60 })}>
-            {t('Set my own')}
-          </button>
-        </div>
-        {time.kind === 'custom' && time.usual === undefined && (
-          <div className="flex flex-wrap items-center gap-2 text-subhead font-bold">
-            <label className="flex items-center gap-2">{t('From')}
-              <select className="field w-auto" value={time.from}
-                      onChange={(e) => { const from = Number(e.target.value); pickTime({ kind: 'custom', from, to: Math.max(time.to, from + 120) }); }}>
-                {halfHours(360, 1320).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
-              </select>
-            </label>
-            <label className="flex items-center gap-2">{t('To')}
-              <select className="field w-auto" value={time.to} onChange={(e) => pickTime({ kind: 'custom', from: time.from, to: Number(e.target.value) })}>
-                {halfHours(time.from + 120, 1440).map((m) => <option key={m} value={m}>{clock(m)}</option>)}
-              </select>
-            </label>
-          </div>
-        )}
-        <p className={`text-footnote font-bold ${ok ? 'text-ink-secondary' : 'text-danger'}`} aria-live="polite">
-          {ok ? choiceCaption(dayChoice, time, tz) : t('Too late for that. Pick a later time.')}
+        <p id="compose-time" className={label}>
+          {t('Time')}
+          {freeThen && <span className="font-normal"> · {t('{name} is free {time}', { name: other.nickname, time: slotLabel(freeThen) })}</span>}
         </p>
+        <div className="grid grid-cols-2 gap-3">
+          <Stepper label={t('Start')} value={plan.from} min={360} max={1380} onChange={setFrom} />
+          <Stepper label={t('End')} value={plan.to} min={plan.from + 60} max={Math.min(1440, plan.from + 240)} onChange={(to) => set({ to })} />
+        </div>
+        {!ok && <p className="text-footnote font-bold text-danger" aria-live="polite">{t('Too late for that. Pick a later time.')}</p>}
       </div>
 
       <div className="grid gap-2">
-        <span className="text-footnote font-bold text-ink-secondary">{t('Court')}</span>
+        <span className={label}>{t('Court')}</span>
         {court && !picking ? (
           <button type="button" onClick={() => setPicking(true)} aria-label={t('Change court: {name}', { name: court.name })}
                   className="sticker press flex items-center gap-3 p-3 text-left">
@@ -254,13 +244,33 @@ function Compose({ other, venues, slot, date, room, onClose, onSent, onError }: 
   );
 }
 
-/** 小卡片下面的时间：“周六 11/15 · 下午”和“14:00–18:00 之间 · 2 小时 · 球馆” */
+/** 开始、结束时间：减、加半小时 */
+function Stepper({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (value: number) => void }) {
+  const step = 'press grid size-11 shrink-0 place-items-center rounded-[12px] disabled:opacity-35';
+  return (
+    <div role="group" aria-label={label} className="sticker flex items-center gap-1 p-1">
+      <button type="button" className={step} aria-label={`${label}: ${t('Earlier')}`} disabled={value - 30 < min} onClick={() => onChange(value - 30)}>
+        <Icon name="minus" className="size-4" />
+      </button>
+      <span className="grid min-w-0 flex-1 justify-items-center">
+        <span className="text-caption font-bold text-ink-secondary">{label}</span>
+        <span className="text-headline tabular-nums" aria-live="polite">{clock(value)}</span>
+      </span>
+      <button type="button" className={step} aria-label={`${label}: ${t('Later')}`} disabled={value + 30 > max} onClick={() => onChange(value + 30)}>
+        <Icon name="plus" className="size-4" />
+      </button>
+    </div>
+  );
+}
+
+/** 小卡片下面的时间：“周六 · 19:00–21:00”和“单打 · 球馆”（旧版 App 发的大概时间：“周六 11/15 · 下午”和“14:00–18:00 之间 · 2 小时 · 单打 · 球馆”） */
 export function InviteSlot({ room }: { room: RoomSummary }) {
   const tz = room.venue?.tz;
   const open = unset(room);
   const title = open ? windowTitle(room, tz)
     : room.starts_at && room.ends_at ? `${dayName(room.starts_at, tz)} · ${timeOf(room.starts_at, tz)}–${timeOf(room.ends_at, tz)}` : t('Time not set yet');
-  const detail = [open ? windowDetail(room, tz) : null, open ? t('2 hours') : null, room.venue?.name].filter(Boolean).join(' · ');
+  const detail = [open ? windowDetail(room, tz) : null, open ? t('2 hours') : null, room.mode === 'doubles' ? t('Doubles') : t('Singles'), room.venue?.name]
+    .filter(Boolean).join(' · ');
   return (
     <div className="sticker grid gap-0.5 p-4">
       <p className="text-headline">{title}</p>
@@ -280,7 +290,8 @@ export function InviteAnswer({ room, onDone, onCounter, heading = 'h2' }: { room
   const other = otherOf(room);
   const Heading = heading;
   const title = !inv.awaiting_me ? t('Waiting for {name}', { name: other.nickname })
-    : room.my_status !== 'owner' && inv.rounds === 0 ? t('{name} invited you to play', { name: other.nickname })
+    : room.my_status !== 'owner' && inv.rounds === 0
+      ? (room.mode === 'doubles' ? t('{name} invited you to play doubles', { name: other.nickname }) : t('{name} invited you to play', { name: other.nickname }))
     : t('{name} suggested another time', { name: other.nickname });
 
   async function respond(accept: boolean) {
@@ -296,6 +307,10 @@ export function InviteAnswer({ room, onDone, onCounter, heading = 'h2' }: { room
     if (accept && game) {
       toast(t('Game confirmed'));
       navigate(`/games/${game}/`);
+    } else if (accept) {
+      // 双打：成了一个公开的双打局，等另外两个人
+      toast(t('Doubles game open. 2 more players can join.'));
+      navigate(`/rooms/${room.id}/`);
     }
   }
 
@@ -329,40 +344,6 @@ function CounterSheet({ room, onClose, onSent }: { room?: Invite; onClose: () =>
 function useInvites() {
   const { data, refresh } = useLive<RoomSummary[]>('nearby_invites', { every: 60_000 });
   return { waiting: (data ?? []).filter(isInvite).filter((r) => r.invite.awaiting_me), refresh };
-}
-
-/** 发现页那排头像里：等我回的邀请，一人一个。点开只回这一个；已经回过、过期了的（别处回了、刚好过期），刷新后拿掉并提示 */
-export function InviteStories() {
-  const { waiting, refresh } = useInvites();
-  const [open, setOpen] = useState<string>();
-  const [counter, setCounter] = useState<Invite>();
-  const room = waiting.find((r) => r.id === open);
-  useEffect(() => {
-    if (open && !room) {
-      setOpen(undefined);
-      toast(t('This invite is no longer open.'));
-    }
-  }, [open, room]);
-  return (
-    <>
-      {waiting.map((r) => {
-        const other = otherOf(r);
-        const label = r.my_status !== 'owner' && r.invite.rounds === 0 ? t('{name} invited you to play', { name: other.nickname })
-          : t('{name} suggested another time', { name: other.nickname });
-        return <Story key={r.id} person={other} ring="lime" icon="mail" title={other.nickname} label={label} onClick={() => { setOpen(r.id); void refresh(); }} />;
-      })}
-      <Sheet open={Boolean(room)} onClose={() => setOpen(undefined)} labelledBy="invites-title">
-        <div className="flex items-center gap-3">
-          <p id="invites-title" className="kicker flex-1 text-ink-secondary">{t('Invites')}</p>
-          <IconButton icon="x" label={t('Close')} onClick={() => setOpen(undefined)} />
-        </div>
-        {room && (
-          <InviteAnswer room={room} onDone={() => { setOpen(undefined); void refresh(); }} onCounter={(r) => { setOpen(undefined); setCounter(r); }} />
-        )}
-      </Sheet>
-      <CounterSheet room={counter} onClose={() => setCounter(undefined)} onSent={() => void refresh()} />
-    </>
-  );
 }
 
 /** 通知页最上面：还没回的邀请 */

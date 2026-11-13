@@ -3,9 +3,6 @@ import type { Centre } from './pickers';
 
 // 你在哪一带（定位或搜的城市）：首页、球馆、附近球局共用。只存在这个浏览器里，读不到就重新问
 
-/** 附近范围的默认值（和附近球局、球群一样） */
-export const NEARBY_KM = 30;
-
 const key = 'badie-area';
 const listeners = new Set<() => void>();
 let area: Centre | undefined;
@@ -37,11 +34,12 @@ export function useArea() {
   );
 }
 
-// 附近范围（iOS 设置里的“附近范围”）：发现页的卡片和日期上的人数用多大范围。只存在这个浏览器里
-export const RANGES = [10, 30, 50, 100];
+// 附近范围（iOS 设置里的“附近范围”）：发现页的卡片和日期上的人数用多大范围。只存在这个浏览器里，默认 10 公里（和 iOS 一样）
+export const RANGES = [5, 10, 20, 50];
+const DEFAULT_KM = 10;
 const rangeKey = 'badie-nearby-km';
 const rangeListeners = new Set<() => void>();
-let range = NEARBY_KM;
+let range = DEFAULT_KM;
 try {
   const saved = Number(localStorage.getItem(rangeKey));
   if (RANGES.includes(saved)) range = saved;
@@ -66,6 +64,6 @@ export function useNearbyKm() {
       return () => rangeListeners.delete(notify);
     },
     () => range,
-    () => NEARBY_KM,
+    () => DEFAULT_KM,
   );
 }

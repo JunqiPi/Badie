@@ -13,8 +13,6 @@ export interface UsualTime {
 export type Daypart = 'morning' | 'afternoon' | 'evening';
 /** 上午 08–12、下午 14–18、晚上 18–22（从 0 点起的分钟） */
 export const PARTS: Record<Daypart, [number, number]> = { morning: [480, 720], afternoon: [840, 1080], evening: [1080, 1320] };
-/** 都行：每天 08–22 */
-const ANY: [number, number] = [480, 1320];
 const TWO_HOURS = 120 * 60000;
 
 export const toMinutes = (hhmm: string) => {
@@ -77,58 +75,6 @@ export function nextOccurrence(u: UsualTime, tz: string, now = Date.now()) {
   }
 }
 
-/** 哪天：这周末 / 下周工作日 / 某一天 */
-export type DayChoice = { kind: 'weekend' } | { kind: 'weekdays' } | { kind: 'date'; date: string };
-/** 什么时候：上午 / 下午 / 晚上 / 都行 / 自己定（usual = 点的是对方第几段空闲时间） */
-export type TimeChoice = { kind: 'part'; part: Daypart } | { kind: 'any' } | { kind: 'custom'; from: number; to: number; usual?: number };
-
-/** 选的哪天包括哪几个日期：这周末（今天是周日就只有今天）、下周一到周五、某一天 */
-export function datesOf(choice: DayChoice, tz: string): string[] {
-  if (choice.kind === 'date') return [choice.date];
-  const days = Array.from({ length: 14 }, (_, i) => today(tz, i));
-  if (choice.kind === 'weekend') {
-    const first = days.findIndex((d) => weekdayOf(d) === 7 || weekdayOf(d) === 1);
-    return weekdayOf(days[first]) === 7 ? [days[first], days[first + 1]] : [days[first]];
-  }
-  const monday = days.findIndex((d, i) => i > 0 && weekdayOf(d) === 2);
-  return days.slice(monday, monday + 5);
-}
-
-const rangeOf = (time: TimeChoice): [number, number] => (time.kind === 'custom' ? [time.from, time.to] : time.kind === 'part' ? PARTS[time.part] : ANY);
-
-/** 发给服务器的窗口：开始、结束和时段（null = 不限） */
-export function windowOf(dayChoice: DayChoice, time: TimeChoice, tz: string) {
-  const dates = datesOf(dayChoice, tz);
-  const [from, to] = rangeOf(time);
-  const last = time.kind === 'custom' ? dates[0] : dates[dates.length - 1];
-  return { start: zoned(dates[0], from, tz), end: zoned(last, to, tz), daypart: time.kind === 'part' ? time.part : null };
-}
-
-/** 这个窗口里还有没有来得及打满 2 小时的时间 */
-export function fits(dayChoice: DayChoice, time: TimeChoice, tz: string, now = Date.now()) {
-  const dates = time.kind === 'custom' ? datesOf(dayChoice, tz).slice(0, 1) : datesOf(dayChoice, tz);
-  const [from, to] = rangeOf(time);
-  return to - from >= 120 && dates.some((d) => zoned(d, to, tz).getTime() - Math.max(zoned(d, from, tz).getTime(), earliest(now)) >= TWO_HOURS);
-}
-
-/** 选好的时间下面那行小字：“14:00–18:00 之间打 2 小时” */
-export function choiceCaption(dayChoice: DayChoice, time: TimeChoice, tz: string) {
-  const [from, to] = rangeOf(time);
-  if (time.kind === 'custom' && to - from === 120) return `${clock(from)}–${clock(to)}`;
-  if (time.kind !== 'custom' && datesOf(dayChoice, tz).length > 1) return t('2 hours, {from}–{to} on one of these days', { from: clock(from), to: clock(to) });
-  return t('Play 2 hours between {from} and {to}', { from: clock(from), to: clock(to) });
-}
-
-/** 发出后提示里的：“周六下午”“这周末 · 都行” */
-export function choiceLabel(dayChoice: DayChoice, time: TimeChoice) {
-  const dayText = dayChoice.kind === 'weekend' ? t('This weekend')
-    : dayChoice.kind === 'weekdays' ? t('Weekdays next week')
-    : weekdayShort(weekdayOf(dayChoice.date));
-  if (time.kind === 'part' && dayChoice.kind === 'date') return t('{day} {time}', { day: dayText, time: partLower(time.part) });
-  const timeText = time.kind === 'part' ? partName(time.part) : time.kind === 'any' ? t('Whenever') : `${clock(time.from)}–${clock(time.to)}`;
-  return `${dayText} · ${timeText}`;
-}
-
 /** 带大概时间的球局、邀请、聊天（服务器给的字段） */
 export interface Windowed {
   time_set?: boolean | null;
@@ -143,25 +89,6 @@ export const unset = (w: Windowed): w is Windowed & { window_start: string; wind
 
 /** 结束前一分钟：24:00 结束的算当天 */
 const lastMinute = (iso: string) => new Date(new Date(iso).getTime() - 60000).toISOString();
-
-/** 已经填好的窗口反推成选项（换个时间时用） */
-export function choiceOf(w: { window_start: string; window_end: string; daypart?: Daypart | null }, tz: string): { day: DayChoice; time: TimeChoice } {
-  const s = wallClock(w.window_start, tz);
-  const e = wallClock(lastMinute(w.window_end), tz);
-  const end = e.minutes + 1;
-  if (s.date === e.date) {
-    const dayChoice: DayChoice = { kind: 'date', date: s.date };
-    if (w.daypart) return { day: dayChoice, time: { kind: 'part', part: w.daypart } };
-    if (s.minutes <= ANY[0] && end === ANY[1]) return { day: dayChoice, time: { kind: 'any' } };
-    return { day: dayChoice, time: { kind: 'custom', from: s.minutes, to: end } };
-  }
-  const weekend = datesOf({ kind: 'weekend' }, tz);
-  const weekdays = datesOf({ kind: 'weekdays' }, tz);
-  const dayChoice: DayChoice = s.date === weekend[0] && e.date === weekend[weekend.length - 1] ? { kind: 'weekend' }
-    : s.date === weekdays[0] && e.date === weekdays[weekdays.length - 1] ? { kind: 'weekdays' }
-    : { kind: 'date', date: s.date };
-  return { day: dayChoice, time: w.daypart ? { kind: 'part', part: w.daypart } : { kind: 'any' } };
-}
 
 /** 大字：“周六 · 下午”“周末 · 晚上”“工作日 · 晚上” */
 export function windowTitle(w: Windowed & { window_start: string; window_end: string }, tz?: string | null) {

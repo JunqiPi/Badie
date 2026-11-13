@@ -2,11 +2,12 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { setArea, useArea } from './area';
 import { currentLocale, t, useLocale } from './i18n';
 import { Icon } from './icons';
-import { Divider, Empty, IconTile, Tag } from './kit';
+import { GroupCard } from './Groups';
+import { Avatar, Divider, Empty, IconTile, Tag } from './kit';
 import { AreaPicker } from './pickers';
-import { navigate } from './router';
+import { Link, navigate } from './router';
 import { signInFirst } from './Shell';
-import { supabase, type NearbyVenue, type Venue } from './supabase';
+import { supabase, type GroupSummary, type InviteUser, type NearbyVenue, type Venue, type VenuePeople } from './supabase';
 import { Button, Skeleton, toast } from './ui';
 
 export const km = (metres: number) =>
@@ -115,7 +116,8 @@ export function Courts() {
               </Suspense>
             </div>
             {selected && (
-              <VenueDetail ref={detail} venue={selected} favorite={favorites.has(selected.id)} onFavorite={() => toggleFavorite(selected)} onConfirm={() => confirm(selected)} />
+              <VenueDetail ref={detail} venue={selected} signedIn={Boolean(userId)} favorite={favorites.has(selected.id)}
+                           onFavorite={() => toggleFavorite(selected)} onConfirm={() => confirm(selected)} />
             )}
           </div>
 
@@ -159,10 +161,11 @@ export function Courts() {
   );
 }
 
-/** 选中的球馆：类型、场地数、价格、开放时间、导航、收藏 */
-function VenueDetail({ ref, venue, favorite, onFavorite, onConfirm }: {
+/** 选中的球馆：类型、场地数、价格、开放时间、导航、收藏；登录后还有最近在这打过的人、常客和这里的球群 */
+function VenueDetail({ ref, venue, signedIn, favorite, onFavorite, onConfirm }: {
   ref: React.Ref<HTMLElement>;
   venue: Venue;
+  signedIn: boolean;
   favorite: boolean;
   onFavorite: () => void;
   onConfirm: () => void;
@@ -180,6 +183,7 @@ function VenueDetail({ ref, venue, favorite, onFavorite, onConfirm }: {
           <Icon name={favorite ? 'heart' : 'heartOutline'} className="size-5" />
         </button>
       </div>
+      {signedIn && <VenuePeopleRows venue={venue} />}
       <ul className="flex flex-wrap gap-2">
         <li><Tag icon="verified" tint={venue.status === 'unconfirmed' ? 'muted' : 'mint'}>{venue.status === 'verified' ? t('Verified') : venue.status === 'confirmed' ? t('Confirmed by players') : t('Not yet confirmed')}</Tag></li>
         {venue.kind && venue.kind !== 'dedicated' && <li><Tag tint="lavender">{t(kindLabel[venue.kind])}</Tag></li>}
@@ -195,8 +199,63 @@ function VenueDetail({ ref, venue, favorite, onFavorite, onConfirm }: {
         {venue.website && <a className="button button-quiet" href={venue.website} rel="noopener nofollow"><Icon name="globe" className="size-4" />{t('Website')}</a>}
         {venue.status !== 'verified' && <Button variant="quiet" onClick={onConfirm}>{t('I’ve played here')}</Button>}
       </div>
+      {signedIn && <VenueGroups venue={venue} />}
       {venue.attribution && <p className="text-caption text-ink-tertiary">{venue.attribution}</p>}
     </section>
+  );
+}
+
+/** 最近 30 天在这打过的人、常客：一排圆头像，点进去看资料。只列在附近的人里能看到的 */
+function VenuePeopleRows({ venue }: { venue: Venue }) {
+  const [people, setPeople] = useState<VenuePeople>();
+  useEffect(() => {
+    let stale = false;
+    supabase!.rpc('venue_people', { p_venue: venue.id }).then(({ data }) => !stale && setPeople((data as VenuePeople | null) ?? undefined));
+    return () => {
+      stale = true;
+    };
+  }, [venue.id]);
+  const row = (id: string, title: string, list: InviteUser[] = []) =>
+    list.length > 0 && (
+      <div className="grid gap-2">
+        <h4 id={id} className="text-headline">{title}</h4>
+        <ul className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]" aria-labelledby={id}>
+          {list.map((u) => (
+            <li key={u.id} className="shrink-0">
+              <Link to={`/players/${u.id}/`} className="press grid w-14 justify-items-center gap-1">
+                <Avatar id={u.id} name={u.nickname} photo={u.avatar} size={48} />
+                <span className="w-full truncate text-center text-caption font-bold">{u.nickname}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  return (
+    <>
+      {row(`recent-${venue.id}`, t('Recently played here'), people?.recent)}
+      {row(`regulars-${venue.id}`, t('Regulars'), people?.regulars)}
+    </>
+  );
+}
+
+/** 这里的球群（每周的固定局写在卡片上） */
+function VenueGroups({ venue }: { venue: Venue }) {
+  const [groups, setGroups] = useState<GroupSummary[]>([]);
+  useEffect(() => {
+    let stale = false;
+    supabase!.rpc('groups_near', { lat: venue.lat, lng: venue.lon, radius_km: 1 })
+      .then(({ data }) => !stale && setGroups(((data ?? []) as GroupSummary[]).filter((g) => g.venue.id === venue.id)));
+    return () => {
+      stale = true;
+    };
+  }, [venue.id]);
+  if (!groups.length) return null;
+  return (
+    <div className="grid gap-3">
+      <h4 className="text-headline">{t('Regular games · Groups')}</h4>
+      {groups.map((g) => <GroupCard key={g.id} group={g} />)}
+    </div>
   );
 }
 

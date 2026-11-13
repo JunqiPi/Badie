@@ -190,6 +190,12 @@ export interface NearbyPlayer {
 /** 卡片和邀请里的人：多了偏好的项目和空闲时间 */
 export type InviteUser = CandidateUser & { preferred_mode?: Mode | null; usual_times?: UsualTime[] | null };
 
+/** 球馆页上的人（venue_people）：最近 30 天在这打过的、常客，各最多 20 位 */
+export interface VenuePeople {
+  recent: InviteUser[];
+  regulars: InviteUser[];
+}
+
 /** 服务器按两人的空闲时间建议的窗口（suggest_invite_window） */
 export interface InviteSuggestion {
   window_start: string;

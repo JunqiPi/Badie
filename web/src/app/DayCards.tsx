@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches, matchesNearby, saveFilter, timeLabels, type DayFilter, type TimeOfDay } from './dayFilter';
 import { AvatarCrop, decode } from './AvatarCrop';
 import { uploadCardPhoto } from './CardBackground';
@@ -14,7 +14,7 @@ import { Avatar, Empty, IconButton, IconTile } from './kit';
 import { DayCard, type CardPerson } from './PlayerCard';
 import { Link, navigate } from './router';
 import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type Profile } from './supabase';
-import { timeOf } from './time';
+import { capitalize, dateChip, timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
 import type { UsualTime } from './usual';
 
@@ -57,16 +57,17 @@ function rememberPhotoAsked() {
 type Composing = { card: NearbyPlayer; slot?: UsualTime };
 
 /** 发现页（第一个 tab）的一叠卡片，一张张左右滑（iOS 的 DayCandidatesView）。
- *  选了某一天：这天附近在找人、和我水平对得上的球友，刷完接着看附近的人；不给 date 就是“附近的人”：只有附近的人的卡片。
+ *  选了某一天（在筛选里）：这天附近在找人、和我水平对得上的球友，刷完接着看附近的人；不给 date 就是“附近的人”：只有附近的人的卡片。
  *  这天的卡片就是对方的约球请求（项目、时间都定好了），右滑直接约：单打发约球邀请，双打替我开一个公开的双打局并邀请 TA。
- *  附近的人右滑打开约 TA 的半屏（哪天、什么时候、球馆），发出一个只有两个人的邀请局。
- *  place：左上角（在哪、什么时候），拿到附近有几个人；children：头部下面、卡片上面的东西（一排头像） */
-export function Deck({ date, profile, onProfile, place, children }: {
+ *  附近的人右滑打开约 TA 的半屏（项目、哪天、几点到几点、球馆），发出一个邀请。
+ *  上面：左边附近范围，右边球馆和筛选；下面一排圆头像是这叠卡片里的人，点一个就翻到 TA */
+export function Deck({ date, days, onDate, profile, onProfile }: {
   date?: string;
+  /** 筛选里能选的日子（接下来 30 天） */
+  days: string[];
+  onDate: (date?: string) => void;
   profile: Profile;
   onProfile: (p: Profile) => void;
-  place: (people?: number) => ReactNode;
-  children?: ReactNode;
 }) {
   const area = useArea();
   const km = useNearbyKm();
@@ -83,6 +84,9 @@ export function Deck({ date, profile, onProfile, place, children }: {
   const [leaving, setLeaving] = useState<'left' | 'right'>();
   const [filter, setFilterState] = useState<DayFilter>(loadFilter);
   const [editing, setEditing] = useState(false);
+  const [ranging, setRanging] = useState(false);
+  // 点了上面那排头像里的谁：TA 的卡片排到最前面（滑走以后照原来的顺序）
+  const [front, setFront] = useState<string>();
   const start = useRef<{ x: number; y: number; id: number }>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   // 已经滑过的，自动刷新时不再加回来
@@ -92,7 +96,9 @@ export function Deck({ date, profile, onProfile, place, children }: {
   const dayPeople = new Set(cards?.map((c) => c.user.id));
   const visibleDay = cards?.filter((c) => matches(filter, c)) ?? [];
   const visibleNearby = nearby?.filter((c) => !dayPeople.has(c.user.id) && matchesNearby(filter, c)) ?? [];
-  const deck = loaded ? [...visibleDay.map(dayItem), ...visibleNearby.map(nearbyItem)] : undefined;
+  const ordered = loaded ? [...visibleDay.map(dayItem), ...visibleNearby.map(nearbyItem)] : undefined;
+  const picked = ordered?.find((item) => item.key === front);
+  const deck = picked ? [picked, ...ordered!.filter((item) => item !== picked)] : ordered;
   const total = (cards?.length ?? 0) + (nearby?.filter((c) => !dayPeople.has(c.user.id)).length ?? 0);
   const top = deck?.[0];
   // 正在看的那张：自动刷新时不能让它突然消失
@@ -342,28 +348,35 @@ export function Deck({ date, profile, onProfile, place, children }: {
   const x = leaving === 'left' ? -1.2 * innerWidth : leaving === 'right' ? 1.2 * innerWidth : drag.x;
   const inNearby = top?.kind === 'nearby';
   // 这天的卡片刷完了、第一次看到附近的人：上面一条虚线框
-  const divider = !lobby && inNearby && nearbySeen === 0;
+  const divider = !lobby && inNearby && nearbySeen === 0 && !deck?.some((item) => item.kind === 'day');
   const second = deck?.[1];
   const actions = { onSlot: (card: NearbyPlayer, slot: UsualTime) => compose({ card, slot }) };
   const friend = top ? friendOf(top) : undefined;
   // 这天有过请求（滑过的也算）：刷完了说“都看完了”，一个都没有说“这天还没人约”
   const dayHadCards = (cards?.length ?? 0) > 0 || [...seen.current].some((key) => !key.startsWith('n:'));
-  const filters = activeCount(filter);
+  const filters = activeCount(filter) + (date ? 1 : 0);
 
   return (
-    // 在哪 · 什么时候、一排头像在上面，卡片占满剩下的高度，三个按钮在标签栏上面
+    // 附近范围、一排头像在上面，卡片占满剩下的高度，三个按钮在标签栏上面
     <div className="mx-auto flex min-h-[calc(100dvh-4rem-1.25rem-var(--tabbar)-1.5rem)] w-full max-w-md flex-col gap-3 lg:min-h-[calc(100dvh-4rem-2rem-4rem)]">
       <header className="flex items-center gap-2.5">
         <h1 className="sr-only">{t('Discover')}</h1>
-        {place(nearby?.length)}
+        <RangePicker open={ranging} onOpen={() => setRanging(true)} onClose={() => setRanging(false)} />
+        <IconButton icon="building" label={t('Courts')} to="/courts/" />
         <IconButton icon="filter" label={filters ? t('Filters · {n}', { n: filters }) : t('Filters')} badge={filters} onClick={() => setEditing(true)} />
       </header>
 
-      {children}
+      {deck && deck.length > 0 && <People items={deck} onPick={(key) => !leaving && setFront(key)} />}
 
       {/* 选了的条件（点 ✕ 去掉） */}
       {filters > 0 && (
         <div className="rail gap-2! py-0!">
+          {date && (
+            <button type="button" onClick={() => onDate(undefined)} aria-label={t('Remove {name}', { name: dayLabel(date, days.indexOf(date)) })}
+                    className="press flex min-h-9 items-center gap-1 rounded-full border-2 border-stroke bg-lime px-3 text-footnote font-bold text-on-accent">
+              {dayLabel(date, days.indexOf(date))} <Icon name="x" className="size-3" />
+            </button>
+          )}
           {chips(filter, places(cards, nearby)).map(([label, clear]) => (
             <button key={label} type="button" onClick={() => setFilter(clear(filter))} aria-label={t('Remove {name}', { name: label })}
                     className="press flex min-h-9 items-center gap-1 rounded-full border-2 border-stroke bg-lime px-3 text-footnote font-bold text-on-accent">
@@ -389,7 +402,7 @@ export function Deck({ date, profile, onProfile, place, children }: {
             <p className="text-title3">{date && !dayHadCards ? t('No one’s posted for this day yet') : t('You’ve seen everyone nearby')}</p>
             <div className="mt-1 flex flex-wrap justify-center gap-2">
               <Link to={date ? `/play/?date=${date}` : '/play/'} className="button">{t('Send a match request')}</Link>
-              <button type="button" onClick={() => setEditing(true)} className="button button-quiet">{t('Widen search')}</button>
+              <button type="button" onClick={() => setRanging(true)} className="button button-quiet">{t('Widen search')}</button>
             </div>
           </div>
         ) : (
@@ -437,7 +450,7 @@ export function Deck({ date, profile, onProfile, place, children }: {
         </div>
       )}
 
-      {/* 筛选：附近范围、项目、球馆、等级、时间、对方性别、只看没爽约过的 */}
+      {/* 筛选：哪天、项目、球馆、等级、时间、对方性别、只看没爽约过的 */}
       <dialog
         ref={dialog}
         aria-labelledby="filter-title"
@@ -446,12 +459,12 @@ export function Deck({ date, profile, onProfile, place, children }: {
         className="m-0 mt-auto max-h-[90dvh] w-full max-w-none bg-transparent p-0 text-ink open:animate-sheet sm:m-auto sm:max-w-md sm:open:animate-pop"
       >
         {editing && (
-          <FilterSheet initial={filter} km={km} cards={cards ?? []} nearby={nearby?.filter((c) => !dayPeople.has(c.user.id)) ?? []}
-                       onDone={(next, range) => { setFilter(next); if (range !== km) setNearbyKm(range); setEditing(false); }} onCancel={() => setEditing(false)} />
+          <FilterSheet initial={filter} date={date} days={days} cards={cards ?? []} nearby={nearby?.filter((c) => !dayPeople.has(c.user.id)) ?? []}
+                       onDone={(next, day) => { setFilter(next); if (day !== date) onDate(day); setEditing(false); }} onCancel={() => setEditing(false)} />
         )}
       </dialog>
 
-      {/* 约附近的人：哪天、什么时候、球馆 */}
+      {/* 约附近的人：项目、哪天、几点到几点、球馆 */}
       <InviteSheet open={Boolean(composing)} onClose={() => setComposing(undefined)}
                    other={composing?.card.user ?? ({} as InviteUser)} venues={composing?.card.venues} slot={composing?.slot} date={date}
                    onSent={({ remaining, label }) => composing && sent(composing.card, remaining, label)}
@@ -579,16 +592,18 @@ function chips(f: DayFilter, cards: Places): [string, (f: DayFilter) => DayFilte
   return list;
 }
 
-function FilterSheet({ initial, km, cards, nearby, onDone, onCancel }: {
+function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
   initial: DayFilter;
-  km: number;
+  date?: string;
+  days: string[];
   cards: DayCandidate[];
   nearby: NearbyPlayer[];
-  onDone: (f: DayFilter, km: number) => void;
+  onDone: (f: DayFilter, date?: string) => void;
   onCancel: () => void;
 }) {
   const [draft, setDraft] = useState(initial);
-  const [range, setRange] = useState(km);
+  const [day, setDay] = useState(date);
+  const counts = useDayCounts();
   const set = (patch: Partial<DayFilter>) => setDraft((d) => ({ ...d, ...patch }));
   // 常在附近的人也算进去
   const count = cards.filter((c) => matches(draft, c)).length + nearby.filter((c) => matchesNearby(draft, c)).length;
@@ -598,20 +613,31 @@ function FilterSheet({ initial, km, cards, nearby, onDone, onCancel }: {
   const label = 'text-footnote font-bold text-ink-secondary';
   const chip = (on: boolean) => `toggle ${on ? '' : ''}`;
   return (
-    <form method="dialog" onSubmit={(e) => { e.preventDefault(); onDone(draft, range); }}
+    <form method="dialog" onSubmit={(e) => { e.preventDefault(); onDone(draft, day); }}
           className="grid max-h-[90dvh] grid-rows-[auto_1fr_auto] rounded-t-[28px] border-2 border-b-0 border-stroke bg-canvas sm:rounded-[28px] sm:border-b-2 sm:shadow-card">
       <div className="flex items-center gap-3 px-5 pt-5">
         <h2 id="filter-title" className="flex-1 text-title3">{t('Filters')}</h2>
-        <button type="button" className="link text-footnote font-bold" onClick={() => setDraft(emptyFilter)}>{t('Reset')}</button>
+        <button type="button" className="link text-footnote font-bold" onClick={() => { setDraft(emptyFilter); setDay(undefined); }}>{t('Reset')}</button>
         <IconButton icon="x" label={t('Close')} onClick={onCancel} />
       </div>
       <div className="grid content-start gap-5 overflow-y-auto px-5 py-4">
-        <div className={section} role="group" aria-labelledby="f-range">
-          <span id="f-range" className={label}>{t('Nearby range')}</span>
+        {/* 哪天：任何时间（附近的人），或者某一天在找人的；一周以后只列有人的天 */}
+        <div className={section} role="group" aria-labelledby="f-date">
+          <span id="f-date" className={label}>{t('Date')}</span>
           <div className="flex flex-wrap gap-2">
-            {RANGES.map((n) => (
-              <button key={n} type="button" className="toggle" aria-pressed={range === n} onClick={() => setRange(n)}>{distance(n * 1000)}</button>
-            ))}
+            <button type="button" className="toggle" aria-pressed={!day} onClick={() => setDay(undefined)}>{t('Any time')}</button>
+            {days.map((d, i) => {
+              const n = counts?.[d] ?? 0;
+              if (i >= 7 && !n && d !== day) return null;
+              const full = dateChip(d, i).full;
+              return (
+                <button key={d} type="button" className="toggle" aria-pressed={day === d} onClick={() => setDay(d)}
+                        aria-label={counts ? full + t(', {n} available', { n }) : full}>
+                  {dayLabel(d, i)}
+                  {n > 0 && <span aria-hidden="true" className="tabular-nums opacity-70">{n}</span>}
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className={section} role="group" aria-labelledby="f-event">
@@ -673,8 +699,8 @@ function FilterSheet({ initial, km, cards, nearby, onDone, onCancel }: {
         </label>
       </div>
       <div className="border-t-2 border-stroke px-5 pt-3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-        {/* 换了范围要重新查，数不出有几个人 */}
-        <Button className="w-full">{range === km ? t('Show {n} player|Show {n} players', { n: count }) : t('Done')}</Button>
+        {/* 换了日子要重新查，数不出有几个人 */}
+        <Button className="w-full">{day === date ? t('Show {n} player|Show {n} players', { n: count }) : t('Done')}</Button>
       </div>
     </form>
   );
@@ -686,5 +712,83 @@ function Round({ icon, label, className, disabled, onClick }: { icon: IconName; 
             className={`press grid place-items-center rounded-full border-2 border-stroke shadow-low disabled:opacity-60 ${className}`}>
       <Icon name={icon} className="size-7" />
     </button>
+  );
+}
+
+/** 日子的叫法：明天、一周以内写星期几（今天是“今天”），再往后写几月几号 */
+function dayLabel(d: string, i: number) {
+  return i === 1 ? capitalize(new Intl.RelativeTimeFormat(currentLocale(), { numeric: 'auto' }).format(1, 'day'))
+    : i >= 0 && i < 7 ? dateChip(d, i).label
+    : new Intl.DateTimeFormat(currentLocale(), { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${d}T12:00:00Z`));
+}
+
+/** 接下来每天附近有几个人在找（和日期上的卡片同一套条件） */
+function useDayCounts() {
+  const area = useArea();
+  const km = useNearbyKm();
+  const [counts, setCounts] = useState<Record<string, number>>();
+  useEffect(() => {
+    if (!area) return;
+    let stale = false;
+    supabase!
+      .rpc('pool_by_day', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km, p_tz: Intl.DateTimeFormat().resolvedOptions().timeZone })
+      .then(({ data }) => !stale && setCounts((data ?? {}) as Record<string, number>));
+    return () => {
+      stale = true;
+    };
+  }, [area?.lat, area?.lon, km]);
+  return counts;
+}
+
+/** 左上角：小字“附近”，大字“10 公里内 ▾”。点开选 5 / 10 / 20 / 50 公里（和 iOS 设置里的附近范围一样） */
+function RangePicker({ open, onOpen, onClose }: { open: boolean; onOpen: () => void; onClose: () => void }) {
+  const km = useNearbyKm();
+  const within = (n: number) => t('Within {distance}', { distance: distance(n * 1000) });
+  return (
+    <>
+      <button type="button" aria-haspopup="dialog" onClick={onOpen} className="press grid min-w-0 flex-1 justify-items-start text-left">
+        <span className="text-caption font-bold text-ink-secondary">{t('Nearby')}</span>
+        <span className="flex max-w-full items-center gap-1 text-title3">
+          <span className="truncate">{within(km)}</span>
+          <Icon name="chevronDown" className="size-4 shrink-0" />
+        </span>
+      </button>
+      <Sheet open={open} onClose={onClose} labelledBy="range-title">
+        <div className="flex items-center gap-3">
+          <h2 id="range-title" className="flex-1 text-title3">{t('Nearby range')}</h2>
+          <IconButton icon="x" label={t('Close')} onClick={onClose} />
+        </div>
+        <div className="grid gap-2">
+          {RANGES.map((n) => (
+            <button key={n} type="button" aria-pressed={km === n} onClick={() => { if (n !== km) setNearbyKm(n); onClose(); }}
+                    className={`press flex min-h-12 items-center rounded-[14px] border-2 border-stroke px-4 text-left text-headline ${km === n ? 'bg-lime text-on-accent' : 'bg-surface'}`}>
+              {within(n)}
+            </button>
+          ))}
+        </div>
+      </Sheet>
+    </>
+  );
+}
+
+/** 卡片上面一排圆头像：这叠卡片里的人，正在看的那个是柠檬绿的圈。点别人就翻到 TA */
+function People({ items, onPick }: { items: Item[]; onPick: (key: string) => void }) {
+  return (
+    <ul className="rail gap-3! py-0.5!" aria-label={t('Players nearby')}>
+      {items.map((item, i) => {
+        const user = item.card.user;
+        return (
+          <li key={item.key}>
+            <button type="button" aria-current={i === 0 || undefined} aria-label={user.nickname} onClick={() => i > 0 && onPick(item.key)}
+                    className="press grid w-16 justify-items-center gap-1">
+              <span className={`grid size-16 place-items-center rounded-full border-2 border-stroke p-[3px] ${i === 0 ? 'bg-lime' : 'bg-surface'}`}>
+                <Avatar id={user.id} name={user.nickname} photo={user.avatar} size={52} />
+              </span>
+              <span className="w-full truncate text-center text-caption font-bold">{user.nickname}</span>
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

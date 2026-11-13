@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { t } from './i18n';
-import { Avatar, LevelBadge } from './kit';
+import { LevelBadge } from './kit';
 import { Link } from './router';
 import { avatarUrl, tagText } from './supabase';
 
@@ -51,24 +51,31 @@ export interface CardPerson {
   recent_no_shows?: number | null;
 }
 
-/** 卡片上半部分：有背景照片就铺满；没有就是纯色 + 中间的大头像 */
-export function CardCover({ person, avatarSize = 140, className = '', children }: { person: CardPerson; avatarSize?: number; className?: string; children?: ReactNode }) {
+/** 没有照片时卡片上的球场线（白线，竖着的整片羽毛球场：13.4 × 6.1 米，单位 0.1 米） */
+function CourtLines() {
+  return (
+    <svg viewBox="-2 -2 65 138" aria-hidden="true" className="absolute inset-5 size-[calc(100%-2.5rem)] text-white/85" fill="none" stroke="currentColor" strokeWidth="3">
+      <rect x="0" y="0" width="61" height="134" vectorEffect="non-scaling-stroke" />
+      <path d="M4.6 0V134M56.4 0V134M0 67H61M0 47.2H61M0 86.8H61M0 7.6H61M0 126.4H61M30.5 0V47.2M30.5 86.8V134" vectorEffect="non-scaling-stroke" />
+    </svg>
+  );
+}
+
+/** 卡片上半部分：有背景照片就铺满；没有就是卡片颜色 + 球场线 */
+export function CardCover({ person, className = '', children }: { person: CardPerson; className?: string; children?: ReactNode }) {
   const color = cardColorOf(person.id, person.card_color);
   return (
-    <div className={`relative grid place-items-center overflow-hidden ${person.card_photo ? 'bg-surface-muted' : background[color]} ${className}`}>
-      {person.card_photo ? (
-        <img src={avatarUrl(person.card_photo)} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
-      ) : (
-        <Avatar id={person.id} name={person.nickname} photo={person.avatar} size={avatarSize} className="relative shadow-card" />
-      )}
+    <div className={`relative overflow-hidden ${person.card_photo ? 'bg-surface-muted' : background[color]} ${className}`}>
+      {person.card_photo
+        ? <img src={avatarUrl(person.card_photo)} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
+        : <CourtLines />}
       {children}
     </div>
   );
 }
 
-/** 发现页的大卡片（iOS 的 CoverCard）：左上角一个白色小标签（多远 · 常去哪家，或时间 · 项目），
- *  下面写名字、编号、等级，一行“双打 · 靠谱”，再下面是 footer（空闲时间）。
- *  有照片：照片铺满整张，字压在底部的深色渐变上；没照片：上面约六成是纯色 + 大头像，下面一块白色信息区 */
+/** 发现页的大卡片（iOS 的 CoverCard）：上面约四分之三是照片（没照片是颜色 + 球场线），左上角一个白色小标签（多远 · 常去哪家，或时间 · 项目）；
+ *  下面一小块信息：名字、编号、等级，一行“双打 · 靠谱”，再下面是 footer（空闲时间） */
 export function DayCard({ person, label, details = [], reliable = false, profile = false, footer, children }: {
   person: CardPerson;
   /** 照片左上角的小标签 */
@@ -82,7 +89,6 @@ export function DayCard({ person, label, details = [], reliable = false, profile
   /** 盖在照片上的东西（左滑右滑的提示） */
   children?: ReactNode;
 }) {
-  const photo = !!person.card_photo;
   const misses = person.recent_no_shows ?? 0;
   const line = [...details, reliable && t('Reliable'), misses > 0 && t('{n} missed game in 180 days|{n} missed games in 180 days', { n: misses })]
     .filter(Boolean).join(' · ');
@@ -90,26 +96,23 @@ export function DayCard({ person, label, details = [], reliable = false, profile
   const name = (
     <>
       <span className="truncate">{person.nickname}</span>
-      {person.tag != null && <span className={`shrink-0 ${photo ? 'text-white/70' : 'text-ink-secondary'}`}>{tagText(person.tag)}</span>}
+      {person.tag != null && <span className="shrink-0 text-ink-secondary">{tagText(person.tag)}</span>}
     </>
   );
   return (
     <article aria-label={person.nickname} className="sticker relative flex h-full flex-col overflow-hidden">
-      {/* 没照片：颜色占六成，信息区至少四成，字多时颜色让出来 */}
-      <CardCover person={person} className={`min-h-0 ${photo ? 'flex-1' : 'flex-[62_1_0%] border-b-[3px] border-stroke'}`} />
+      <CardCover person={person} className="min-h-0 flex-1 border-b-[3px] border-stroke" />
       {label && (
         <span className="absolute top-3 left-3 max-w-[calc(100%-1.5rem)] truncate rounded-full border-2 border-stroke bg-surface px-2.5 py-0.5 text-caption font-black text-ink">
           {label}
         </span>
       )}
-      <div className={`grid content-start gap-2 px-4 pb-4 sm:px-5 ${photo
-        ? 'absolute inset-x-0 bottom-0 bg-linear-to-t from-black/85 via-black/60 to-transparent pt-14 text-white'
-        : 'flex-[38_1_0%] bg-surface pt-4 text-ink'}`}>
+      <div className="grid content-start gap-1.5 bg-surface px-4 pt-3 pb-4 text-ink sm:px-5">
         <div className="flex min-w-0 items-center gap-2">
           {profile ? <Link to={`/players/${person.id}/`} className="flex min-w-0 text-title3 hover:underline">{name}</Link> : <p className="flex min-w-0 text-title3">{name}</p>}
           <LevelBadge rating={person.rating} named={false} />
         </div>
-        {line && <p className={`truncate text-subhead font-bold ${photo ? 'text-white/90' : 'text-ink-secondary'}`}>{line}</p>}
+        {line && <p className="truncate text-subhead font-bold text-ink-secondary">{line}</p>}
         {footer}
       </div>
       {children}
