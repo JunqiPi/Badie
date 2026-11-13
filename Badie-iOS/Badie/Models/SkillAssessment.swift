@@ -108,12 +108,12 @@ enum PlayStyle: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .cannon: return String(localized: "重炮手")
+        case .cannon: return String(localized: "杀球重炮手")
         case .net: return String(localized: "网前魔术师")
         case .wall: return String(localized: "铁壁")
-        case .quick: return String(localized: "快枪手")
-        case .engine: return String(localized: "永动机")
-        case .captain: return String(localized: "指挥官")
+        case .quick: return String(localized: "弹簧腿")
+        case .engine: return String(localized: "小马达")
+        case .captain: return String(localized: "战术师")
         case .allround: return String(localized: "六边形战士")
         case .rookie: return String(localized: "新星")
         }
@@ -149,19 +149,16 @@ enum PlayStyle: String, CaseIterable, Identifiable, Hashable {
     var partnerText: String { partner?.title ?? String(localized: "谁都行") }
 
     /// 卡片画面里重复的大字（装饰，不翻译）
-    var ghostWord: String { rawValue == "allround" ? "ALL-ROUND" : rawValue.uppercased() }
-
-    /// 拟声字（装饰，不翻译）
-    var onomatopoeia: String {
+    var ghostWord: String {
         switch self {
-        case .cannon: return "ドン!"
-        case .net: return "ふわっ"
-        case .wall: return "ガッ"
-        case .quick: return "シュッ"
-        case .engine: return "ダッ"
-        case .captain: return "ピタッ"
-        case .allround: return "キラッ"
-        case .rookie: return "ピョン"
+        case .cannon: return "SMASH"
+        case .net: return "NET"
+        case .wall: return "WALL"
+        case .quick: return "SPRING"
+        case .engine: return "MOTOR"
+        case .captain: return "TACTICS"
+        case .allround: return "ALL-ROUND"
+        case .rookie: return "ROOKIE"
         }
     }
 
@@ -180,13 +177,6 @@ struct PlayProfile: Hashable {
 
     /// 卡片上的数字：四舍五入到整级（1–9）
     func displayValue(_ axis: PlayAxis) -> Int { min(9, max(1, Int(value(axis).rounded()))) }
-
-    /// 从高到低的维度（一样高时按维度顺序）
-    var rankedAxes: [PlayAxis] {
-        PlayAxis.allCases.enumerated()
-            .sorted { (-value($0.element), $0.offset) < (-value($1.element), $1.offset) }
-            .map { $0.element }
-    }
 }
 
 /// 离下一级还差的一项
@@ -501,7 +491,7 @@ enum SkillAssessment {
         "passive": 2, "doubles": 2, "stability": 3, "tactics": 2, "standing": 1, "experience": 2, "recency": 0
     ]
 
-    /// 演示：等级卡片截图用，杀球最好（重炮手），等级还是 4
+    /// 演示：等级卡片截图用，杀球最好（杀球重炮手），等级还是 4
     static let levelCardDemoAnswers: [String: Int] = demoAnswers.merging(["smash": 5]) { $1 }
     #endif
 }

@@ -57,7 +57,7 @@ final class PlayStyleTests: XCTestCase {
         // 完全的新手（1−）：新星；网前 0.5 显示成 1；没有“还差”
         Fixture(name: "brandNew", technique: [0, 0, 0, 0, 0, 0, 0], game: [0, 0, 0, 0], tier: "1−", style: .rookie,
                 axes: [1, 0.5, 1.5, 1, 1, 1.75], shown: [1, 1, 2, 1, 1, 2], bestShot: "clear", gap: nil),
-        // 2 级：新星（六项看是指挥官也不算）；杀球和步法一样弱：按题目顺序取杀球
+        // 2 级：新星（六项看是战术师也不算）；杀球和步法一样弱：按题目顺序取杀球
         Fixture(name: "tieGap", technique: [1, 1, 2, 1, 1, 1, 1], game: [0, 1, 1, 0], tier: "2", style: .rookie,
                 axes: [1.5, 2, 2, 2, 1.5, 2.25], shown: [2, 2, 2, 2, 2, 2], bestShot: "clear", gap: (3, "smash")),
         // 2 级的入门球友：新星
@@ -119,11 +119,6 @@ final class PlayStyleTests: XCTestCase {
         }
     }
 
-    func testRankedAxesBreakTiesInOrder() throws {
-        let profile = try XCTUnwrap(SkillAssessment.playProfile(answers([3, 2, 5, 2, 4, 2, 3], [2, 2, 3, 2])))
-        XCTAssertEqual(Array(profile.rankedAxes.prefix(3)), [.net, .defense, .tactics])
-    }
-
     func testSummaryKeepsAnswersForTheCard() throws {
         let given = answers([4, 5, 4, 2, 3, 3, 4], [2, 2, 3, 2])
         let summary = SkillAssessmentSummary(level: 4, needsCalibration: false, isReturning: false, assessedAt: Date(),
@@ -156,6 +151,28 @@ final class PlayStyleTests: XCTestCase {
         }
         XCTAssertNil(LevelCardData.tier(fromSlug: "4-up"))
         XCTAssertNil(LevelCardData.tier(fromSlug: "levels"))
+    }
+
+    func testCardTextOnlyShowsWhatIsKnown() {
+        var data = LevelCardData(tier: SkillTier(level: 4, modifier: .plus), label: .selfRated)
+        let status = LevelCardLabel.selfRated.title
+        XCTAssertEqual(data.subline(), "\(data.tierLine) · \(status)")
+        // 什么都不知道：背面印这一档的标准
+        XCTAssertEqual(data.backRows.map(\.label), [data.tierLine])
+        data.region = "Los Angeles"
+        data.mode = .doubles
+        data.venue = "LABC"
+        data.times = "周三晚上"
+        XCTAssertEqual(data.subline(includesTier: false), "LOS ANGELES · \(status)")
+        XCTAssertEqual(data.backRows.map(\.value), [GameMode.doubles.title, "LABC", "周三晚上"])
+        // 没有头像，或者关掉了“印上头像”：不印
+        XCTAssertNil(data.avatarImage)
+        XCTAssertFalse(data.footer.isEmpty)
+    }
+
+    func testGhostWords() {
+        XCTAssertEqual(PlayStyle.allCases.map(\.ghostWord),
+                       ["SMASH", "NET", "WALL", "SPRING", "MOTOR", "TACTICS", "ALL-ROUND", "ROOKIE"])
     }
 
     func testCardLabel() {

@@ -27,7 +27,7 @@ enum DemoLauncher {
             return environment
         }
 
-        // 做过定级、存着答案（重炮手、4 级）：“我的”有“分享等级卡片”，卡片上有打法；四个月前测的，可以重测
+        // 做过定级、存着答案（杀球重炮手、4 级）：“我的”有“分享等级卡片”，卡片上有打法；四个月前测的，可以重测
         let answers = SkillAssessment.levelCardDemoAnswers
         let assessment = SkillAssessment.evaluate(answers).map {
             SkillAssessmentSummary(level: $0.level, needsCalibration: $0.needsCalibration, isReturning: $0.isReturning,
@@ -45,9 +45,9 @@ enum DemoLauncher {
             assessment: assessment
         )
         seedPlayerPhotos(backend)
-        // “我的”最上面是我的卡片（有照片，头像还没传，下面显示“资料 3/4”）；编辑资料里卡片照片和头像都有
-        if screen == "profile" || screen == "editProfile" {
-            seedMyPhotos(backend, avatar: screen == "editProfile")
+        // “我的”最上面是我的卡片（有照片，头像还没传，下面显示“资料 3/4”）；编辑资料里卡片照片和头像都有；等级卡片上印头像
+        if screen == "profile" || screen == "editProfile" || screen == "levelCard" {
+            seedMyPhotos(backend, avatar: screen != "profile")
         }
         environment = AppEnvironment(backend: backend)
         environment.appState.skipsSplash = true
@@ -96,7 +96,7 @@ enum DemoLauncher {
         case "levelGuide":
             router.show(.levelGuide, in: .profile)
         case "levelCard":
-            // 等级卡片：重炮手、4 级（上面建账号时已存答案），常去 LABC、周三晚上有空
+            // 等级卡片：杀球重炮手、4 级（上面建账号时已存答案），常去 LABC、周三晚上有空，有头像
             environment.appState.opensLevelCardDemo = true
             router.show(.levelGuide, in: .profile)
         case "levelGuideElite":
