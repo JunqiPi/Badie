@@ -18,7 +18,7 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
     <div className="mx-auto grid max-w-3xl gap-5">
       <LargeTitle title={t('Level chart')} subtitle={t('Badie levels 1–9')} />
       <p className="text-subhead text-ink-secondary">
-        {t('Levels 1–9, each split into three tiers (−, base, +), for 27 tiers in total. Each level from 3 to 6 adds one more dimension: can you do the shots → how good are your attacking shots → can you get out of trouble on defensive shots, plus tactics → where you stand in your club. Expand any level to see its skill breakdown (footwork, power, front and back court, attack and defense). Judge by what you can do consistently, not shots you pull off once in a while. 7 and up means state, national, and international level, based only on verifiable results, rankings, and certificates.')}
+        {t('Nine levels, each split into −, base and +. Go by what you can do most of the time, not your best shot.')}
       </p>
 
       {profile ? (
@@ -28,23 +28,6 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
       ) : (
         <QuizEntry />
       )}
-
-      <dl className="tile grid gap-1.5 bg-surface-muted p-4 text-footnote">
-        {[['−', 'Just reached this level; some strokes aren’t consistent yet'], [t('Base'), 'Consistently does everything at this level'], ['+', 'Solid at this level, with some next-level skills']].map(([mark, meaning]) => (
-          <div key={mark} className="flex gap-3">
-            <dt className="w-10 shrink-0 font-black">{mark}</dt>
-            <dd>{t(meaning)}</dd>
-          </div>
-        ))}
-        <p className="mt-1 text-caption text-ink-secondary">{t('From level 7 up, the gaps are big, so each tier has its own name and is set by evidence.')}</p>
-      </dl>
-
-      <section className="sticker grid gap-2 p-5">
-        <h2 className="text-title3">{t('Men’s and women’s levels')}</h2>
-        <p className="text-subhead text-ink-secondary">
-          {t('Men and women are rated on separate ladders, the way clubs and tournaments do it: a women’s 4 is a strong player among women. When men and women play together, Badie counts a women’s level about 1.5 levels lower (a men’s 3 usually beats a women’s 4 in singles), so mixed games stay even. You can also choose to play only with women or only with men.')}
-        </p>
-      </section>
 
       <ol className="grid gap-3">
         {levels.map((l) => (
@@ -92,7 +75,7 @@ export function LevelGuide({ profile }: { profile: Profile | null }) {
         ))}
       </ol>
       <p className="text-caption text-ink-tertiary">
-        {t('Breakdowns follow the level descriptions shared on the Zhongyu Online forum, USTA NTRP and public tournament results.')}
+        {t('Men and women are rated separately. In mixed games, a women’s level counts about 1.5 lower.')} {t('Breakdowns follow the level descriptions shared on the Zhongyu Online forum, USTA NTRP and public tournament results.')}
       </p>
     </div>
   );

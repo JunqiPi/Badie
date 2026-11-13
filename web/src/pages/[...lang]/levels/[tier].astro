@@ -45,8 +45,7 @@ const image = page.selfAssessed ? `/og/levels/${lang ?? 'en'}/${page.slug}.png` 
         <span data-ref-swap>Lv.{page.label} {name}</span>
         {page.selfAssessed && <span data-ref-swap hidden>{t('Your friend is {level}. What about you?', { level: page.label })}</span>}
       </h1>
-      <p class="text-headline">{meaning(page)}</p>
-      {summary && <p class="max-w-prose text-subhead font-semibold">{summary}</p>}
+      <p class="max-w-prose text-headline">{summary ?? meaning(page)}</p>
       <p class="text-footnote font-bold">{[info.usFlight && `≈ ${t(info.usFlight)}`, t(info.experience)].filter(Boolean).join(' · ')}</p>
       {
         page.selfAssessed ? (
@@ -62,14 +61,17 @@ const image = page.selfAssessed ? `/og/levels/${lang ?? 'en'}/${page.slug}.png` 
       <ul class="list-disc pl-5 text-subhead">{info.anchors.map((a) => <li>{t(a)}</li>)}</ul>
       {
         info.notes.length > 0 && (
-          <dl class="grid gap-2 rounded-[12px] bg-surface-muted p-3 text-footnote">
-            {info.notes.map(([label, text]) => (
-              <div class="grid gap-x-3 sm:grid-cols-[7rem_1fr]">
-                <dt class="font-bold">{t(label)}</dt>
-                <dd>{t(text)}</dd>
-              </div>
-            ))}
-          </dl>
+          <details>
+            <summary class="cursor-pointer text-footnote font-bold text-ink-secondary">{t('Skill breakdown ({n})', { n: info.notes.length })}</summary>
+            <dl class="mt-2 grid gap-2 rounded-[12px] bg-surface-muted p-3 text-footnote">
+              {info.notes.map(([label, text]) => (
+                <div class="grid gap-x-3 sm:grid-cols-[7rem_1fr]">
+                  <dt class="font-bold">{t(label)}</dt>
+                  <dd>{t(text)}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
         )
       }
     </section>
