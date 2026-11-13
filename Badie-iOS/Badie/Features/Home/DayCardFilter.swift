@@ -148,9 +148,23 @@ struct DayCardFilterSheet: View {
     let venues: [(venue: MockBackend.DayCandidate.Venue, count: Int)]
     /// 按现在的条件能看到几个人
     let count: (DayCardFilter) -> Int
+    /// 现在看的是哪天（nil：任何时间）；换了一天在点按钮时告诉外面
+    var day: Date?
+    var onDay: (Date?) -> Void = { _ in }
 
+    @EnvironmentObject private var matchManager: MatchManager
+    @EnvironmentObject private var locationManager: LocationManager
     @Environment(\.dismiss) private var dismiss
     @State private var draft = DayCardFilter()
+    @State private var draftDay: Date?
+
+    private var dayChanged: Bool { draftDay != day }
+
+    /// 今天起 7 天
+    private var days: [Date] {
+        let today = Calendar.current.startOfDay(for: Date())
+        return (0..<7).compactMap { Calendar.current.date(byAdding: .day, value: $0, to: today) }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -159,9 +173,12 @@ struct DayCardFilterSheet: View {
                     .font(AppTheme.Typography.title)
                     .foregroundStyle(AppTheme.Colors.ink)
                 Spacer()
-                Button("重置") { draft = DayCardFilter() }
-                    .buttonStyle(TextActionStyle())
-                    .disabled(draft == DayCardFilter())
+                Button("重置") {
+                    draft = DayCardFilter()
+                    draftDay = nil
+                }
+                .buttonStyle(TextActionStyle())
+                .disabled(draft == DayCardFilter() && draftDay == nil)
             }
             .padding(.horizontal, AppTheme.Spacing.screen)
             .padding(.top, AppTheme.Spacing.xl)
@@ -169,6 +186,7 @@ struct DayCardFilterSheet: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+                    section(String(localized: "日期")) { dayChips }
                     section(String(localized: "项目")) {
                         SegmentedSticker(options: DayCardFilter.Event.allCases, selection: $draft.event, title: { $0.title })
                     }
@@ -214,9 +232,11 @@ struct DayCardFilterSheet: View {
                 .padding(.bottom, AppTheme.Spacing.xl)
             }
 
-            Button(String(localized: "看 \(count(draft)) 个人")) {
+            // 换了一天，人数要换过去才知道
+            Button(dayChanged ? String(localized: "好") : String(localized: "看 \(count(draft)) 个人")) {
                 filter = draft
                 filter.save()
+                if dayChanged { onDay(draftDay) }
                 dismiss()
             }
             .buttonStyle(.brutalPrimary)
@@ -224,7 +244,29 @@ struct DayCardFilterSheet: View {
             .padding(.vertical, AppTheme.Spacing.md)
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
-        .onAppear { draft = filter }
+        .onAppear {
+            draft = filter
+            draftDay = day
+        }
+    }
+
+    /// 任何时间（附近的人）、今天、明天……后面是这天有几个人有空
+    private var dayChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ChoiceChip(title: String(localized: "任何时间"), isSelected: draftDay == nil) { draftDay = nil }
+                ForEach(days, id: \.self) { date in
+                    let count = matchManager.availableCount(on: date, radiusKm: locationManager.preferences.travelRadiusKm)
+                    ChoiceChip(title: count > 0 ? "\(WindowText.dayName(date)) · \(count)" : WindowText.dayName(date),
+                               isSelected: draftDay.map { Calendar.current.isDate($0, inSameDayAs: date) } ?? false) {
+                        draftDay = date
+                    }
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
+            .padding(.vertical, 4)
+        }
+        .padding(.horizontal, -AppTheme.Spacing.screen)
     }
 
     /// 这天卡片里的球馆，加上以前选过、这天没人约的（人数 0，可以去掉）

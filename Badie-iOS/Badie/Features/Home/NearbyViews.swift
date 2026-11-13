@@ -213,39 +213,28 @@ struct InvitePromptSheet: View {
     }
 }
 
-// MARK: - 约 TA：哪天、什么时候、哪家
+// MARK: - 约 TA：项目、日期、时间、球馆
 
-/// 半屏“约<昵称>”：右滑、点卡片上的空闲时间、收到邀请后“换个时间”都用这一页
+/// 半屏“约<昵称>”：右滑、点卡片上的空闲时间、收到邀请后“换个时间”都用这一页。
+/// 发出去的是定好的时间：哪天、几点到几点（半小时一档，1–4 小时）
 struct InviteComposeSheet: View {
     enum Purpose: Equatable {
         case new
         case counter(roomId: String)
     }
 
-    enum DayChoice: Hashable {
-        case weekend
-        case nextWeekdays
-        case day(Date)
-    }
-
-    enum TimeChoice: Hashable {
-        /// TA 的某段空闲时间（slot id）
-        case usual(String)
-        case part(Daypart)
-        case any
-        case custom
-    }
-
     let userId: String
     var purpose: Purpose = .new
-    /// TA 的空闲时间（排在“什么时候”最前面）
+    /// TA 的空闲时间：选的那天 TA 有空，时间上面写一句“<TA> 周五晚上有空”
     var partnerTimes: [RecurringTimeSlot] = []
     /// TA 常去的球馆（卡片上的），近的在前
     var theirVenues: [MockBackend.DayCandidate.Venue] = []
-    /// 点卡片上的空闲时间进来：时间已经填好
+    /// 点卡片上的空闲时间进来：按那一段填好
     var prefill: RecurringTimeSlot?
     /// 换个时间：现在的球馆
     var currentVenue: BadmintonCourt?
+    /// 默认的项目：TA 常打的；换个时间是现在的项目
+    var initialMode: GameMode?
     /// 发出去了（新邀请带结果；换个时间是 nil）
     var onSent: (MockBackend.InviteResult?, PlayWindow) -> Void
 
@@ -254,10 +243,10 @@ struct InviteComposeSheet: View {
     @EnvironmentObject private var locationManager: LocationManager
     @Environment(\.dismiss) private var dismiss
 
-    @State private var day: DayChoice = .weekend
-    @State private var time: TimeChoice = .any
-    @State private var customStart = 19 * 60
-    @State private var customEnd = 21 * 60
+    @State private var mode: GameMode = .singles
+    @State private var day = Calendar.current.startOfDay(for: Date())
+    @State private var startMinutes = 19 * 60
+    @State private var endMinutes = 21 * 60
     @State private var venueIds: [String] = []
     @State private var suggestedVenueName: String?
     @State private var showsDatePicker = false
@@ -267,45 +256,34 @@ struct InviteComposeSheet: View {
     @State private var errorText: String?
     @State private var didLoad = false
 
-    private var partner: User? { friendManager.user(id: userId) }
-    private var times: [RecurringTimeSlot] { UsualTimeText.sortedByNext(partnerTimes) }
+    /// 一场 1–4 小时（和服务器一致）
+    private static let shortest = 60
+    private static let longest = 240
 
-    private var nextDays: [Date] {
+    private var partner: User? { friendManager.user(id: userId) }
+
+    /// 日期条：今天起 14 天；用日历选了更远的那天也放进来
+    private var days: [Date] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-        return (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: today) }
+        var list = (0..<14).compactMap { calendar.date(byAdding: .day, value: $0, to: today) }
+        if !list.contains(day) { list.append(day) }
+        return list
     }
 
-    /// 现在选的时间窗口
+    /// 定好的时间：整个窗口就是一场
     private var window: PlayWindow? {
-        switch day {
-        case .weekend:
-            return PlayWindow.weekend(daypart: part)
-        case .nextWeekdays:
-            return PlayWindow.nextWeekdays(daypart: part)
-        case .day(let date):
-            switch time {
-            case .usual(let id):
-                guard let slot = times.first(where: { $0.id == id }) else { return PlayWindow.on(date, daypart: nil) }
-                return PlayWindow.nextOccurrence(of: slot)
-            case .part(let daypart):
-                return PlayWindow.on(date, daypart: daypart)
-            case .any:
-                return PlayWindow.on(date, daypart: nil)
-            case .custom:
-                return PlayWindow.on(date, startMinutes: customStart, endMinutes: customEnd)
-            }
-        }
+        guard var window = PlayWindow.on(day, startMinutes: startMinutes, endMinutes: endMinutes) else { return nil }
+        window.durationMinutes = endMinutes - startMinutes
+        return window
     }
 
-    private var part: Daypart? {
-        if case .part(let daypart) = time { return daypart }
-        return nil
-    }
-
-    private var isSpecificDay: Bool {
-        if case .day = day { return true }
-        return false
+    /// 选的那天 TA 有空的那段：“周五晚上”（和选的时间重叠的优先）
+    private var partnerFree: String? {
+        let weekday = Calendar.current.component(.weekday, from: day)
+        let sameDay = partnerTimes.filter { $0.dayOfWeek == weekday }.sorted { $0.startMinutes < $1.startMinutes }
+        let slot = sameDay.first { $0.startMinutes < endMinutes && $0.endMinutes > startMinutes } ?? sameDay.first
+        return slot.map(UsualTimeText.chip)
     }
 
     private var venueId: String? { venueIds.first }
@@ -324,13 +302,44 @@ struct InviteComposeSheet: View {
                 Text(purpose == .new ? String(localized: "约\(partner?.nickname ?? "")") : String(localized: "换个时间"))
                     .font(AppTheme.Typography.title2)
                     .foregroundStyle(AppTheme.Colors.ink)
+                    .lineLimit(2)
                     .padding(.top, AppTheme.Spacing.xl)
-                field(String(localized: "哪天")) { dayChips }
-                field(String(localized: "什么时候")) {
+                field(String(localized: "项目")) {
+                    SegmentedSticker(options: GameMode.allCases, selection: $mode, title: { $0.title })
+                }
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    HStack {
+                        fieldTitle(String(localized: "日期"))
+                        Spacer()
+                        IconButton(systemName: "calendar", accessibilityLabel: String(localized: "选日期")) {
+                            pickedDate = day
+                            showsDatePicker = true
+                        }
+                    }
+                    DateStrip(days: days, selection: $day)
+                        .padding(.horizontal, -AppTheme.Spacing.screen)
+                }
+                field(String(localized: "时间")) {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                        timeChips
-                        if time == .custom { customSteppers }
-                        captionLine
+                        if let partnerFree, let name = partner?.nickname {
+                            Text("\(name) \(partnerFree)有空")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
+                        }
+                        HStack(spacing: AppTheme.Spacing.md) {
+                            TimeStepper(title: String(localized: "开始"), minutes: startBinding, range: (6 * 60)...(23 * 60))
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 14, weight: .heavy))
+                                .foregroundStyle(AppTheme.Colors.inkTertiary)
+                                .accessibilityHidden(true)
+                            TimeStepper(title: String(localized: "结束"), minutes: endBinding, range: (7 * 60)...(24 * 60))
+                        }
+                        if !(window?.isPossible() ?? false) {
+                            Text("这个时间来不及了")
+                                .font(AppTheme.Typography.footnoteBold)
+                                .foregroundStyle(AppTheme.Colors.danger)
+                        }
                     }
                 }
                 field(String(localized: "球馆")) { venueButton }
@@ -353,12 +362,8 @@ struct InviteComposeSheet: View {
             didLoad = true
             await loadDefaults()
         }
-        .onChange(of: customStart) { _, start in
-            if customEnd < start + 120 { customEnd = min(24 * 60, start + 120) }
-        }
-        .onChange(of: customEnd) { _, end in
-            if customStart > end - 120 { customStart = max(6 * 60, end - 120) }
-        }
+        .onChange(of: day) { _, _ in errorText = nil }
+        .onChange(of: mode) { _, _ in errorText = nil }
         .sheet(isPresented: $showsDatePicker) {
             datePickerSheet
                 .presentationDetents([.medium])
@@ -370,57 +375,21 @@ struct InviteComposeSheet: View {
         }
     }
 
+    private func fieldTitle(_ title: String) -> some View {
+        Text(title)
+            .font(AppTheme.Typography.footnoteBold)
+            .foregroundStyle(AppTheme.Colors.inkSecondary)
+            .accessibilityAddTraits(.isHeader)
+    }
+
     private func field<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Text(title)
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
+            fieldTitle(title)
             content()
         }
     }
 
-    // MARK: 哪天
-
-    private var dayChips: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: AppTheme.Spacing.sm) {
-                ChoiceChip(title: String(localized: "这周末"), isSelected: day == .weekend) { selectDay(.weekend) }
-                ChoiceChip(title: String(localized: "下周工作日"), isSelected: day == .nextWeekdays) { selectDay(.nextWeekdays) }
-                ForEach(nextDays, id: \.self) { date in
-                    ChoiceChip(title: WindowText.dayName(date), isSelected: day == .day(date)) { selectDay(.day(date)) }
-                }
-                // 用日历选了 7 天以后的某天
-                if case .day(let date) = day, !nextDays.contains(date) {
-                    ChoiceChip(title: WindowText.dayName(date), isSelected: true) {}
-                }
-                ChoiceChip(title: "…", isSelected: false) {
-                    if case .day(let date) = day { pickedDate = date }
-                    showsDatePicker = true
-                }
-                .accessibilityLabel(Text("选日期"))
-            }
-            .padding(.vertical, 4)
-        }
-    }
-
-    private func selectDay(_ choice: DayChoice) {
-        day = choice
-        switch choice {
-        case .weekend, .nextWeekdays:
-            // 跨好几天的只能选时段
-            if time == .custom { time = .any }
-            if case .usual = time { time = .any }
-        case .day(let date):
-            // 选了 TA 的某段空闲时间又换了一天：改成那一段所在的时段
-            if case .usual(let id) = time, let slot = times.first(where: { $0.id == id }) {
-                let sameDay = PlayWindow.nextOccurrence(of: slot).map { Calendar.current.isDate($0.start, inSameDayAs: date) } ?? false
-                if !sameDay {
-                    time = Daypart.best(start: slot.startMinutes, end: slot.endMinutes).map { TimeChoice.part($0) } ?? .any
-                }
-            }
-        }
-        errorText = nil
-    }
+    // MARK: 日期、时间
 
     private var datePickerSheet: some View {
         let calendar = Calendar.current
@@ -432,7 +401,7 @@ struct InviteComposeSheet: View {
                 .labelsHidden()
                 .tint(AppTheme.Colors.ink)
             Button("好") {
-                selectDay(.day(calendar.startOfDay(for: pickedDate)))
+                day = calendar.startOfDay(for: pickedDate)
                 showsDatePicker = false
             }
             .buttonStyle(BrutalButtonStyle(kind: .primary, size: .large, fullWidth: true))
@@ -441,75 +410,23 @@ struct InviteComposeSheet: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
 
-    // MARK: 什么时候
-
-    private var timeChips: some View {
-        FlowLayout(spacing: AppTheme.Spacing.sm) {
-            ForEach(times.prefix(4)) { slot in
-                ChoiceChip(title: UsualTimeText.chip(slot), isSelected: time == .usual(slot.id), tint: AppTheme.Colors.peach) {
-                    selectUsual(slot)
-                }
-            }
-            ForEach(Daypart.allCases) { daypart in
-                ChoiceChip(title: daypart.title, isSelected: time == .part(daypart)) { selectTime(.part(daypart)) }
-            }
-            ChoiceChip(title: String(localized: "都行"), isSelected: time == .any) { selectTime(.any) }
-            if isSpecificDay {
-                ChoiceChip(title: String(localized: "自己定"), isSelected: time == .custom) { selectTime(.custom) }
-            }
-        }
+    /// 改开始：时长不变，结束跟着挪（最晚 24:00）
+    private var startBinding: Binding<Int> {
+        Binding(get: { startMinutes }, set: { start in
+            let length = endMinutes - startMinutes
+            startMinutes = start
+            endMinutes = min(24 * 60, start + length)
+            errorText = nil
+        })
     }
 
-    private func selectTime(_ choice: TimeChoice) {
-        time = choice
-        errorText = nil
-    }
-
-    /// TA 的空闲时间：日子跟着变成那一段最近的一次
-    private func selectUsual(_ slot: RecurringTimeSlot) {
-        guard let next = PlayWindow.nextOccurrence(of: slot) else { return }
-        day = .day(Calendar.current.startOfDay(for: next.start))
-        time = .usual(slot.id)
-        errorText = nil
-    }
-
-    private var customSteppers: some View {
-        VStack(spacing: AppTheme.Spacing.xs) {
-            Stepper(value: $customStart, in: (6 * 60)...(22 * 60), step: 30) {
-                clockRow(String(localized: "开始"), customStart)
-            }
-            Stepper(value: $customEnd, in: (8 * 60)...(24 * 60), step: 30) {
-                clockRow(String(localized: "结束"), customEnd)
-            }
-        }
-        .padding(AppTheme.Spacing.md)
-        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
-    }
-
-    private func clockRow(_ title: String, _ minutes: Int) -> some View {
-        HStack {
-            Text(title)
-                .font(AppTheme.Typography.bodyBold)
-            Spacer()
-            Text(RecurringTimeSlot.clock(minutes))
-                .font(AppTheme.Typography.headline)
-                .monospacedDigit()
-        }
-        .foregroundStyle(AppTheme.Colors.ink)
-    }
-
-    @ViewBuilder
-    private var captionLine: some View {
-        if let window, window.isPossible() {
-            Text(isSpecificDay ? WindowText.caption(window) : "\(WindowText.headline(window)) · \(WindowText.caption(window))")
-                .font(AppTheme.Typography.footnote)
-                .foregroundStyle(AppTheme.Colors.inkSecondary)
-                .monospacedDigit()
-        } else {
-            Text("这个时间来不及了")
-                .font(AppTheme.Typography.footnoteBold)
-                .foregroundStyle(AppTheme.Colors.danger)
-        }
+    /// 改结束：一场保持 1–4 小时，不够或太长就挪开始
+    private var endBinding: Binding<Int> {
+        Binding(get: { endMinutes }, set: { end in
+            endMinutes = end
+            startMinutes = min(max(startMinutes, end - Self.longest), end - Self.shortest)
+            errorText = nil
+        })
     }
 
     // MARK: 球馆
@@ -547,15 +464,20 @@ struct InviteComposeSheet: View {
 
     // MARK: 默认值
 
-    /// 点了空闲时间就用那一段；否则用两人空闲时间的交集（服务器给），没有交集就“这周末 · 都行”。
+    /// 项目：TA 常打的。时间：点了空闲时间就用那一段；否则用两人空闲时间的交集（服务器给）；都没有就 19:00–21:00（今天来不及就明天）。
     /// 球馆：建议的那家，否则两人都常去的、我常去的、TA 常去的
     private func loadDefaults() async {
+        if let initialMode { mode = initialMode }
         if let currentVenue { venueIds = [currentVenue.id] }
-        if let prefill {
-            selectUsual(times.first(where: { $0.id == prefill.id }) ?? prefill)
+        if let prefill, let next = PlayWindow.nextOccurrence(of: prefill) {
+            apply(next)
+        } else if !(window?.isPossible() ?? false), let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: day) {
+            day = tomorrow
         }
+        let before = (day, startMinutes, endMinutes)
         let suggestion = await appState.backend.suggestInvite(with: userId, venueId: currentVenue?.id)
-        if prefill == nil, let window = suggestion?.window { apply(window) }
+        // 等建议的时候已经自己改了时间，就不再覆盖
+        if prefill == nil, let window = suggestion?.window, (day, startMinutes, endMinutes) == before { apply(window) }
         if venueIds.isEmpty {
             if let id = suggestion?.venueId {
                 venueIds = [id]
@@ -568,30 +490,20 @@ struct InviteComposeSheet: View {
         }
     }
 
-    /// 服务器建议的时间（同一天的）换成上面的选项
+    /// 一段时间（TA 的空闲时间、两人的交集）填成：那天，从开头打 2 小时
     private func apply(_ window: PlayWindow) {
-        guard window.isSingleDay else { return }
         let calendar = Calendar.current
-        let date = calendar.startOfDay(for: window.start)
-        day = .day(date)
-        if let slot = times.first(where: { slot in
-            guard let next = PlayWindow.nextOccurrence(of: slot) else { return false }
-            return calendar.isDate(next.start, inSameDayAs: date) && next.start <= window.start && next.end >= window.end
-        }) {
-            time = .usual(slot.id)
-        } else if let daypart = window.displayDaypart, PlayWindow.on(date, daypart: daypart)?.end == window.end {
-            time = .part(daypart)
-        } else {
-            customStart = max(6 * 60, Int(window.start.timeIntervalSince(date) / 60) / 30 * 30)
-            customEnd = min(24 * 60, max(customStart + 120, Int(window.end.timeIntervalSince(date) / 60) / 30 * 30))
-            time = .custom
-        }
+        let start = (PlayWindow.clockMinutes(window.start, calendar: calendar) + 29) / 30 * 30
+        guard (6 * 60)...(23 * 60) ~= start else { return }
+        day = calendar.startOfDay(for: window.start)
+        startMinutes = start
+        endMinutes = min(24 * 60, start + 120)
     }
 
     // MARK: 发出
 
     private func send() {
-        guard let window, window.isPossible(), let venueId else { return }
+        guard !isWorking, let window, window.isPossible(), let venueId else { return }
         isWorking = true
         errorText = nil
         Task {
@@ -599,11 +511,12 @@ struct InviteComposeSheet: View {
             do {
                 switch purpose {
                 case .new:
-                    let result = try await appState.backend.invitePlayer(userId, venueId: venueId, window: window)
+                    let result = try await appState.backend.invitePlayer(userId, venueId: venueId, window: window, mode: mode)
                     Haptics.success()
                     onSent(result, window)
                 case .counter(let roomId):
-                    try await appState.backend.counterInvite(roomId, venueId: venueId == currentVenue?.id ? nil : venueId, window: window)
+                    try await appState.backend.counterInvite(roomId, venueId: venueId == currentVenue?.id ? nil : venueId,
+                                                             window: window, mode: mode)
                     Haptics.success()
                     onSent(nil, window)
                 }
@@ -634,6 +547,7 @@ enum InviteText {
         case "already_invited": return String(localized: "你们之间已经有一个邀请了")
         case "not_visible": return String(localized: "先在设置里打开“在同馆常客里显示我”")
         case "invalid_window", "invalid_slot": return String(localized: "这个时间来不及了")
+        case "overlapping": return String(localized: "这个时间你已经有球局或待确认的约球了。")
         case "not_your_turn": return String(localized: "在等对方回复")
         case "invite_expired": return String(localized: "这个邀请已经过期了")
         case "too_late": return String(localized: "来不及了，换个时间吧")
@@ -678,7 +592,7 @@ struct InviteSlotCard: View {
             Text(headline)
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
-            Text([detail, room.court?.name].compactMap { $0 }.joined(separator: " · "))
+            Text([room.mode.title, detail, room.court?.name].compactMap { $0 }.joined(separator: " · "))
                 .font(AppTheme.Typography.footnote)
                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                 .monospacedDigit()
@@ -757,7 +671,7 @@ struct InviteAnswerSheet: View {
             let other = room.invite?.other(than: me) ?? ""
             InviteComposeSheet(userId: other, purpose: .counter(roomId: room.id),
                                partnerTimes: appState.backend.usualTimes(of: other),
-                               currentVenue: room.court) { _, _ in
+                               currentVenue: room.court, initialMode: room.mode) { _, _ in
                 answered.insert(room.id)
                 onAnswered(room, nil)
                 appState.showToast(String(localized: "已发给 TA"), style: .success)
@@ -853,7 +767,7 @@ struct InviteRoomView: View {
                 let other = invite.other(than: me)
                 InviteComposeSheet(userId: other, purpose: .counter(roomId: room.id),
                                    partnerTimes: appState.backend.usualTimes(of: other),
-                                   currentVenue: room.court) { _, _ in
+                                   currentVenue: room.court, initialMode: room.mode) { _, _ in
                     appState.showToast(String(localized: "已发给 TA"), style: .success)
                 }
                 .presentationDetents([.large])

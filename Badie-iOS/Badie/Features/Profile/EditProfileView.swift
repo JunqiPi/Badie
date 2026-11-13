@@ -165,9 +165,7 @@ struct EditProfileView: View {
             if let user = previewUser {
                 let cover = AvatarPhotos.cardImage(userId: user.id, avatar: user.avatar)
                 VStack(alignment: .leading, spacing: 0) {
-                    CardCover(color: user.cardColor, photo: cover) {
-                        AvatarView(text: user.avatarText, paletteIndex: avatar.paletteIndex, size: 64, image: photo)
-                    }
+                    CardCover(color: user.cardColor, photo: cover)
                     .frame(height: 132)
                     .overlay {
                         if isUploadingCard {

@@ -1,10 +1,11 @@
 import PhotosUI
 import SwiftUI
 
-/// 发现页中间的一叠卡片，左右滑，下面 ✕ ♥ ★ 三个按钮（选哪天、筛选按钮在 DiscoverView 的头部）。
+/// 发现页中间的一叠卡片，上面一排圆头像是叠里的人（点一个跳到 TA），左右滑，下面 ✕ ♥ ★ 三个按钮
+/// （筛选按钮在 DiscoverView 的头部，选哪天在筛选里）。
 /// - 选了某天（day 不为 nil）：这天附近在找人、和我水平对得上的球友。卡片就是对方的约球请求（项目、时间都定好了）。
 ///   右滑和点爱心一样，直接约：单打发约球邀请，TA 确认就成局；双打替我开一个公开的双打局并邀请 TA，附近的人可以加入补齐。
-/// - “附近的人”（day 为 nil）：常在附近打的人，不分日期。右滑是约 TA，选个大概的时间和球馆发一个邀请。
+/// - “附近的人”（day 为 nil）：常在附近打的人，不分日期。右滑是约 TA：选单打双打、哪天几点和球馆发一个邀请。
 struct DayCandidatesView: View {
     /// 演示截图：打开后直接弹出约第一张卡的半屏
     static var demoOpensInvite = false
@@ -43,6 +44,11 @@ struct DayCandidatesView: View {
     @State private var composeTarget: ComposeTarget?
     /// 刷完了点“扩大范围”：改附近范围
     @State private var showsRadius = false
+    /// 正在看的那张（点了顶上的头像就跳到 TA）；nil 或已经不在叠里了就是第一张
+    @State private var focusId: String?
+    /// 筛选里换了哪天：筛选收起后再换（换一天整叠卡会重建）
+    @State private var pickedDay: Date?
+    @State private var dayChanged = false
 
     private struct ComposeTarget: Identifiable {
         let player: MockBackend.NearbyPlayer
@@ -83,11 +89,25 @@ struct DayCandidatesView: View {
             case .nearby(let player): return "nearby-\(player.id)"
             }
         }
+
+        var userId: String {
+            switch self {
+            case .day(let card): return card.userId
+            case .nearby(let player): return player.userId
+            }
+        }
     }
 
     private var deck: [DeckCard] {
         lobbyOnly ? visibleNearby.map { DeckCard.nearby($0) } : visible.map { DeckCard.day($0) }
     }
+
+    private var currentIndex: Int { deck.firstIndex { $0.id == focusId } ?? 0 }
+
+    private var currentCard: DeckCard? { deck.isEmpty ? nil : deck[currentIndex] }
+
+    /// 后面露出来的那张：下一张，到底了是第一张
+    private var nextCard: DeckCard? { deck.count > 1 ? deck[(currentIndex + 1) % deck.count] : nil }
 
     var body: some View {
         VStack(spacing: AppTheme.Spacing.lg) {
@@ -100,10 +120,11 @@ struct DayCandidatesView: View {
                 Spacer()
                 ProgressView()
                 Spacer()
-            } else if let card = deck.first {
+            } else if let card = currentCard {
+                peopleRow(current: card)
                 ZStack {
-                    if deck.count > 1 {
-                        cardView(deck[1]).scaleEffect(0.96).offset(y: 10).allowsHitTesting(false).accessibilityHidden(true)
+                    if let behind = nextCard {
+                        cardView(behind).scaleEffect(0.96).offset(y: 10).allowsHitTesting(false).accessibilityHidden(true)
                     }
                     cardView(card)
                         .overlay(alignment: drag.width > 0 ? .topLeading : .topTrailing) { swipeStamp(card) }
@@ -155,10 +176,19 @@ struct DayCandidatesView: View {
             Task { await load(showsErrors: true) }
         }
         .task { await keepFresh() }
-        .sheet(isPresented: $showsFilter) {
-            DayCardFilterSheet(filter: $filter, venues: venueCounts, count: { filtered(by: $0).count + filteredNearby(by: $0).count })
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showsFilter, onDismiss: {
+            if dayChanged {
+                dayChanged = false
+                pick(pickedDay)
+            }
+        }) {
+            DayCardFilterSheet(filter: $filter, venues: venueCounts, count: { filtered(by: $0).count + filteredNearby(by: $0).count },
+                               day: day) { newDay in
+                pickedDay = newDay
+                dayChanged = true
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(item: $prompt) { kind in
             InvitePromptSheet(kind: kind, onConfirm: { confirmPrompt(kind) }, onCancel: { cancelPrompt() },
@@ -172,7 +202,8 @@ struct DayCandidatesView: View {
         }
         .sheet(item: $composeTarget) { target in
             InviteComposeSheet(userId: target.player.userId, partnerTimes: target.player.usualTimes,
-                               theirVenues: target.player.venues, prefill: target.slot) { result, window in
+                               theirVenues: target.player.venues, prefill: target.slot,
+                               initialMode: target.player.preferredMode) { result, window in
                 sent(target.player, result: result, window: window)
             }
             .presentationDetents([.large])
@@ -182,6 +213,54 @@ struct DayCandidatesView: View {
             TravelRadiusSheet()
                 .presentationDetents([.height(320)])
                 .presentationDragIndicator(.visible)
+        }
+    }
+
+    /// 叠里的人，一人一个圆头像（同一个人有几张卡只放一个）；正在看的那个加一圈柠檬绿
+    private func peopleRow(current: DeckCard) -> some View {
+        var seenUsers = Set<String>()
+        let people = deck.filter { seenUsers.insert($0.userId).inserted }
+        return ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
+                    ForEach(people) { card in
+                        if let user = friendManager.user(id: card.userId) {
+                            PersonBubble(user: user, isCurrent: card.userId == current.userId, size: 44) { jump(to: card) }
+                                .id(card.userId)
+                        }
+                    }
+                }
+                .padding(.horizontal, AppTheme.Spacing.screen)
+                .padding(.vertical, AppTheme.Spacing.xxs)
+            }
+            .onChange(of: current.userId) { _, userId in
+                withAnimation(AppTheme.Motion.standard) { proxy.scrollTo(userId, anchor: .center) }
+            }
+        }
+    }
+
+    private func jump(to card: DeckCard) {
+        guard !leaving, card.id != currentCard?.id else { return }
+        Haptics.selection()
+        withAnimation(AppTheme.Motion.standard) {
+            drag = .zero
+            focusId = card.id
+        }
+    }
+
+    /// 这张飞走后看哪张：后面露出来的那张
+    private func following(_ id: String) -> String? {
+        guard deck.count > 1, let index = deck.firstIndex(where: { $0.id == id }) else { return nil }
+        return deck[(index + 1) % deck.count].id
+    }
+
+    /// 筛选里换了一天；快速约球的日期也跟着变（和原来首页的日期条一样）
+    private func pick(_ newDay: Date?) {
+        withAnimation(AppTheme.Motion.standard) { appState.discoverDay = newDay }
+        guard let newDay else { return }
+        matchManager.draft.day = newDay
+        if !matchManager.draft.validation.isValid, Calendar.current.isDateInToday(newDay) {
+            matchManager.draft.apply(TimeSlot.suggestedDefault())
         }
     }
 
@@ -329,7 +408,8 @@ struct DayCandidatesView: View {
             let fresh = try await appState.backend.dayCandidates(on: day, center: locationManager.coordinate,
                                                                  radiusKm: locationManager.preferences.travelRadiusKm)
             let freshIds = Set(fresh.map(\.id))
-            let current = visible.first?.id
+            var current: String?
+            if case .day(let card)? = currentCard { current = card.id }
             var merged = cards.filter { freshIds.contains($0.id) || $0.id == current }
             let known = Set(merged.map(\.id))
             merged += fresh.filter { !known.contains($0.id) && !seen.contains($0.id) }
@@ -343,7 +423,8 @@ struct DayCandidatesView: View {
         guard let fresh = try? await appState.backend.nearbyPlayers(center: locationManager.coordinate,
                                                                     radiusKm: locationManager.preferences.travelRadiusKm) else { return }
         let freshIds = Set(fresh.map(\.id))
-        let current = visibleNearby.first?.id
+        var current: String?
+        if case .nearby(let player)? = currentCard { current = player.id }
         var merged = nearby.filter { freshIds.contains($0.id) || $0.id == current }
         let known = Set(merged.map(\.id))
         merged += fresh.filter { !known.contains($0.id) && !nearbySeen.contains($0.id) }
@@ -370,12 +451,20 @@ struct DayCandidatesView: View {
 
     private func next(_ card: MockBackend.DayCandidate, toRight: Bool) {
         seen.insert(card.id)
-        fly(toRight: toRight) { cards.removeAll { $0.id == card.id } }
+        let after = following(DeckCard.day(card).id)
+        fly(toRight: toRight) {
+            cards.removeAll { $0.id == card.id }
+            focusId = after
+        }
     }
 
     private func next(_ player: MockBackend.NearbyPlayer, toRight: Bool) {
         nearbySeen.insert(player.id)
-        fly(toRight: toRight) { nearby.removeAll { $0.id == player.id } }
+        let after = following(DeckCard.nearby(player).id)
+        fly(toRight: toRight) {
+            nearby.removeAll { $0.id == player.id }
+            focusId = after
+        }
     }
 
     /// 没约成（网络、撞时间等）：卡片放回最前面，还能再滑；TA 已经约不了的就不放回
@@ -386,6 +475,7 @@ struct DayCandidatesView: View {
             seen.remove(card.id)
             cards.removeAll { $0.id == card.id }
             cards.insert(card, at: 0)
+            focusId = DeckCard.day(card).id
         }
     }
 
@@ -545,7 +635,8 @@ struct DayCandidatesView: View {
     private func sent(_ player: MockBackend.NearbyPlayer, result: MockBackend.InviteResult?, window: PlayWindow) {
         next(player, toRight: true)
         let name = friendManager.user(id: player.userId)?.nickname ?? ""
-        var text = String(localized: "已邀请\(name) · \(WindowText.headline(window))")
+        let when = "\(WindowText.days(window)) \(WindowText.caption(window))"
+        var text = String(localized: "已邀请\(name) · \(when)")
         if let result { text += "\n" + String(localized: "今天还能约 \(result.remaining) 个") }
         appState.showToast(text, style: .success)
     }

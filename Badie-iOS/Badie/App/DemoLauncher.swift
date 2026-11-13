@@ -116,7 +116,8 @@ enum DemoLauncher {
                 router.show(.groupChat(threadId: thread.id), in: .messages)
             }
         case "home", "nearbyCards":
-            // 发现页（打开 App 就是这页）：附近的人的大卡片（常去的球馆、常有空的时间）；上面一排圆头像：两个约你、一个挑战、一个加你（示例数据自带）
+            // 发现页（打开 App 就是这页）：附近的人的大卡片（常去的球馆、常有空的时间）；上面一排圆头像是这叠卡里的人。
+            // 示例球友没有卡片照片，卡片是颜色 + 球场线（以后有照片素材再加）
             router.selectedTab = .home
             environment.appState.discoverDay = nil
         case "dayCards":
@@ -130,7 +131,7 @@ enum DemoLauncher {
                 backend.db.users[id]?.avatar.cardColor = .lime
             }
         case "nearbyInvite":
-            // 点了卡片上的空闲时间：约 TA 的半屏，时间已经填好
+            // 点了卡片上的空闲时间：约 TA 的半屏（项目、日期、几点到几点、球馆），时间已经填好
             router.selectedTab = .home
             DayCandidatesView.demoOpensInvite = true
         case "inviteAnswer":

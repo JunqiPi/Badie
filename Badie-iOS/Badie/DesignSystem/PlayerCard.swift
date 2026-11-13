@@ -45,11 +45,10 @@ extension User {
     var cardColor: CardColor { avatar.cardColor ?? .default(for: id) }
 }
 
-/// 卡片上半部分：有背景照片就铺满照片；没有就是纯色 + 中间的大头像
-struct CardCover<Face: View>: View {
+/// 卡片上半部分：有背景照片就铺满照片；没有就是卡片颜色 + 白色的球场线
+struct CardCover: View {
     let color: CardColor
     let photo: UIImage?
-    @ViewBuilder let face: () -> Face
 
     var body: some View {
         ZStack {
@@ -57,16 +56,45 @@ struct CardCover<Face: View>: View {
                 Color.clear.overlay { Image(uiImage: photo).resizable().scaledToFill() }
             } else {
                 color.fill
-                face()
+                CourtLines()
+                    .stroke(Color.white.opacity(0.85), lineWidth: 3)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 16)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .clipped()
+        .accessibilityHidden(true)
     }
 }
 
-/// 发现页的大卡片，左上角一个白色小标签。
-/// 有照片：照片铺满，底部压暗写名字、等级、一行信息；没照片：上面约六成是纯色 + 大头像，下面一块白色信息区
+/// 羽毛球场的线（从上往下看，网在中间），铺满给的框
+struct CourtLines: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        func x(_ f: CGFloat) -> CGFloat { rect.minX + rect.width * f }
+        func y(_ f: CGFloat) -> CGFloat { rect.minY + rect.height * f }
+        func line(_ x1: CGFloat, _ y1: CGFloat, _ x2: CGFloat, _ y2: CGFloat) {
+            path.move(to: CGPoint(x: x(x1), y: y(y1)))
+            path.addLine(to: CGPoint(x: x(x2), y: y(y2)))
+        }
+        path.addRect(rect)
+        // 网、两边的前发球线
+        line(0, 0.5, 1, 0.5)
+        line(0, 0.32, 1, 0.32)
+        line(0, 0.68, 1, 0.68)
+        // 中线
+        line(0.5, 0, 0.5, 0.32)
+        line(0.5, 0.68, 0.5, 1)
+        // 单打边线
+        line(0.08, 0, 0.08, 1)
+        line(0.92, 0, 0.92, 1)
+        return path
+    }
+}
+
+/// 发现页的大卡片：上面约四分之三是照片（没照片是卡片颜色 + 球场线），左上角一个白色小标签；
+/// 下面一块白色信息区：名字和等级、一行信息、空闲时间
 struct CoverCard<Footer: View>: View {
     let user: User?
     /// 左上角：“3.2 公里 · 常去 X” / “周六 14:00–17:00 · 单打”
@@ -78,43 +106,35 @@ struct CoverCard<Footer: View>: View {
 
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous)
-        let photo = user.flatMap { AvatarPhotos.cardImage(userId: $0.id, avatar: $0.avatar) }
-        Group {
-            if let photo, let user {
-                ZStack(alignment: .bottomLeading) {
-                    CardCover(color: user.cardColor, photo: photo) { EmptyView() }
-                    info(onPhoto: true)
-                        .padding(.top, AppTheme.Spacing.xxxl)
-                        .background(LinearGradient(colors: [.black.opacity(0), .black.opacity(0.72)], startPoint: .top, endPoint: .bottom))
-                }
-            } else {
-                GeometryReader { proxy in
-                    VStack(spacing: 0) {
-                        colorCover
-                            .frame(minHeight: 0, maxHeight: .infinity)
-                        Rectangle()
-                            .fill(AppTheme.Colors.stroke)
-                            .frame(height: 3)
-                        // 信息区至少占四成；字多（小屏、大字体）时上面的颜色让出来
-                        info(onPhoto: false)
-                            .frame(minHeight: proxy.size.height * 0.38, alignment: .top)
-                            .background(AppTheme.Colors.surface)
-                    }
+        VStack(spacing: 0) {
+            Group {
+                if let user {
+                    CardCover(color: user.cardColor, photo: AvatarPhotos.cardImage(userId: user.id, avatar: user.avatar))
+                } else {
+                    AppTheme.Colors.surfaceMuted
                 }
             }
-        }
-        .overlay(alignment: .topLeading) {
-            if let pill, !pill.isEmpty {
-                Text(pill)
-                    .font(AppTheme.Typography.footnoteBold)
-                    .foregroundStyle(AppTheme.Colors.onAccent)
-                    .lineLimit(1)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Capsule().fill(Color.white))
-                    .overlay(Capsule().strokeBorder(AppTheme.Colors.onAccent, lineWidth: 1.5))
-                    .padding(AppTheme.Spacing.md)
+            // 字多（小屏、大字体）时照片让出来
+            .frame(minHeight: 0, maxHeight: .infinity)
+            .overlay(alignment: .topLeading) {
+                if let pill, !pill.isEmpty {
+                    Text(pill)
+                        .font(AppTheme.Typography.footnoteBold)
+                        .foregroundStyle(AppTheme.Colors.onAccent)
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(Color.white))
+                        .overlay(Capsule().strokeBorder(AppTheme.Colors.onAccent, lineWidth: 1.5))
+                        .padding(AppTheme.Spacing.md)
+                }
             }
+            Rectangle()
+                .fill(AppTheme.Colors.stroke)
+                .frame(height: 3)
+            info
+                .fixedSize(horizontal: false, vertical: true)
+                .background(AppTheme.Colors.surface)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         // 小屏（iPhone SE）也放得下底部的名字和空闲时间
@@ -128,33 +148,12 @@ struct CoverCard<Footer: View>: View {
         .accessibilityAction(named: Text("看资料")) { onProfile?() }
     }
 
-    /// 没照片时的上半部分：卡片颜色 + 居中的大头像（放不下就换小一号，上下让开左上角的标签）
-    @ViewBuilder
-    private var colorCover: some View {
-        if let user {
-            CardCover(color: user.cardColor, photo: nil) {
-                ViewThatFits(in: .vertical) {
-                    face(user, size: 120)
-                    face(user, size: 72)
-                }
-                .padding(.vertical, 40)
-            }
-        } else {
-            AppTheme.Colors.surfaceMuted
-        }
-    }
-
-    private func face(_ user: User, size: CGFloat) -> some View {
-        AvatarView(user: user, size: size)
-            .background(Circle().fill(AppTheme.Colors.shadow).offset(x: 3, y: 4))
-    }
-
-    private func info(onPhoto: Bool) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+    private var info: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
             if let user {
                 HStack(spacing: AppTheme.Spacing.sm) {
                     NicknameText(user: user)
-                        .font(AppTheme.Typography.title2)
+                        .font(AppTheme.Typography.title3)
                     LevelBadge(tier: user.displayTier)
                         .fixedSize()
                 }
@@ -162,14 +161,15 @@ struct CoverCard<Footer: View>: View {
             if !line.isEmpty {
                 Text(line)
                     .font(AppTheme.Typography.subheadlineBold)
-                    .foregroundStyle(onPhoto ? Color.white : AppTheme.Colors.inkSecondary)
+                    .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .lineLimit(1)
             }
             footer()
         }
-        .foregroundStyle(onPhoto ? Color.white : AppTheme.Colors.ink)
+        .foregroundStyle(AppTheme.Colors.ink)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AppTheme.Spacing.lg)
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .padding(.vertical, AppTheme.Spacing.md)
     }
 }
 
@@ -229,5 +229,33 @@ struct DayCardView: View {
         [details.venues.first, details.recentNoShows == 0 ? String(localized: "靠谱") : nil]
             .compactMap { $0 }
             .joined(separator: " · ")
+    }
+}
+
+/// 一个人：圆头像 + 下面的名字。发现页顶上那一排（正在看的那张卡加一圈柠檬绿）、球馆页的“最近在这打过”和“常客”
+struct PersonBubble: View {
+    let user: User
+    var isCurrent = false
+    var size: CGFloat = 52
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: AppTheme.Spacing.xs) {
+                AvatarView(user: user, size: size)
+                    .padding(4)
+                    .background(Circle().fill(isCurrent ? AppTheme.Colors.lime : Color.clear))
+                    .overlay(Circle().strokeBorder(isCurrent ? AppTheme.Colors.stroke : Color.clear, lineWidth: 2))
+                Text(user.nickname)
+                    .font(AppTheme.Typography.caption)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                    .lineLimit(1)
+                    .frame(width: size + 16)
+            }
+        }
+        .buttonStyle(PressableStyle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(user.nickname)
+        .accessibilityAddTraits(isCurrent ? [.isButton, .isSelected] : .isButton)
     }
 }

@@ -57,6 +57,23 @@ final class NearbyInviteTests: XCTestCase {
         }
     }
 
+    /// 新的约 TA：定好的时间（窗口正好一场，1.5 小时）、双打
+    func testExactDoublesInvite() async throws {
+        let players = try await lobby()
+        try XCTSkipIf(players.isEmpty, "附近没有示例球友")
+        let target = players[0]
+        let tomorrow = try XCTUnwrap(Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: Date())))
+        var window = try XCTUnwrap(PlayWindow.on(tomorrow, startMinutes: 19 * 60, endMinutes: 20 * 60 + 30))
+        window.durationMinutes = 90
+        XCTAssertTrue(window.isExact)
+        let result = try await backend.invitePlayer(target.userId, venueId: target.venues[0].id, window: window, mode: .doubles)
+        let room = try XCTUnwrap(backend.db.rooms[result.roomId])
+        XCTAssertEqual(room.mode, .doubles)
+        XCTAssertNil(room.window, "定好的时间不是窗口")
+        XCTAssertEqual(room.slot?.startTime, window.start)
+        XCTAssertEqual(room.slot?.endTime, window.end)
+    }
+
     func testDailyLimit() async throws {
         backend.demoInvitesSent = Array(repeating: Date(), count: MockBackend.inviteLimit)
         let players = try await lobby()

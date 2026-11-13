@@ -2,8 +2,9 @@ import Foundation
 
 // MARK: - 附近的人、邀请局
 /// 附近的人：有等级、打开了“在同馆常客里显示我”、常去附近球馆的人（球友也在里面）。
-/// 右滑是约 TA：选个大概的时间和球馆，发一个只邀请 TA 的单打局。TA 可以说好、换个时间或不了；
-/// 说好就成局，具体几点再在群聊里定（定时间）。每 24 小时最多发 10 个。
+/// 右滑是约 TA：选单打或双打、哪天几点和球馆，发一个只邀请 TA 的局。TA 可以说好、换个时间或不了；
+/// 单打说好就成局；双打说好后是一个 4 人的房间，另外两个位置别人可以加入。每 24 小时最多发 10 个。
+/// （以前的版本发的是一段大概的时间，说好以后再定几点，这种邀请服务器还认）
 /// 正式后端：服务器的 nearby_players / invite_player 等。演示模式：用示例球友
 extension MockBackend {
 
@@ -211,13 +212,14 @@ extension MockBackend {
         return InviteSuggestion(window: window, venueId: raw.venueId, venueName: raw.venueName)
     }
 
-    /// 发邀请：一个只邀请 TA 的单打局
-    func invitePlayer(_ userId: String, venueId: String, window: PlayWindow) async throws -> InviteResult {
-        guard let remote else { return try demoInvite(userId, venueId: venueId, window: window) }
+    /// 发邀请：一个只邀请 TA 的局。窗口正好一场那么长（durationMinutes）就是定好的时间
+    func invitePlayer(_ userId: String, venueId: String, window: PlayWindow, mode: GameMode = .singles) async throws -> InviteResult {
+        guard let remote else { return try demoInvite(userId, venueId: venueId, window: window, mode: mode) }
         let raw: RemoteInviteResult = try await remote.rpc("invite_player", [
             "p_user": userId, "p_venue": venueId,
             "p_window_start": Self.iso(window.start), "p_window_end": Self.iso(window.end),
             "p_daypart": window.daypart?.rawValue ?? NSNull(),
+            "p_duration": window.durationMinutes, "p_mode": mode.serverValue,
         ])
         try? await loadRemoteRoom(raw.roomId)
         return InviteResult(roomId: raw.roomId, remaining: raw.remaining)
@@ -250,12 +252,13 @@ extension MockBackend {
     }
 
     /// 换个时间：venueId 为 nil 时球馆不变
-    func counterInvite(_ roomId: String, venueId: String?, window: PlayWindow) async throws {
-        guard let remote else { return try demoCounter(roomId, venueId: venueId, window: window) }
+    func counterInvite(_ roomId: String, venueId: String?, window: PlayWindow, mode: GameMode = .singles) async throws {
+        guard let remote else { return try demoCounter(roomId, venueId: venueId, window: window, mode: mode) }
         try await remote.call("counter_invite", [
             "p_room": roomId, "p_venue": venueId ?? NSNull(),
             "p_window_start": Self.iso(window.start), "p_window_end": Self.iso(window.end),
             "p_daypart": window.daypart?.rawValue ?? NSNull(),
+            "p_duration": window.durationMinutes, "p_mode": mode.serverValue,
         ])
         try? await loadRemoteRoom(roomId)
     }
@@ -281,6 +284,50 @@ extension MockBackend {
         guard let remote else { return try demoSetGameTime(gameId, startsAt: startsAt) }
         try await remote.call("set_game_time", ["p_game": gameId, "p_starts_at": Self.iso(startsAt)])
         await refreshRemoteActivity()
+    }
+
+    // MARK: 球馆里的人
+
+    /// 球馆页的两排头像：最近 30 天在这打完过一场的人、常客（都是在大厅里能看到的人，最多各 20 个）
+    struct VenuePeople: Equatable {
+        var recent: [String] = []
+        var regulars: [String] = []
+    }
+
+    private struct RemoteVenuePeople: Decodable {
+        let recent: [RemoteLobbyUser]?
+        let regulars: [RemoteLobbyUser]?
+    }
+
+    func venuePeople(_ venueId: String) async throws -> VenuePeople {
+        guard let remote else { return demoVenuePeople(venueId) }
+        let raw: RemoteVenuePeople = try await remote.rpc("venue_people", ["p_venue": venueId])
+        let people = (raw.recent ?? []) + (raw.regulars ?? [])
+        for person in people { cacheLobbyUser(person) }
+        // 头像边显示边下
+        Task {
+            for person in people { await applyAvatar(person.avatar, to: person.id) }
+            emit(.friendsChanged)
+        }
+        let me = currentUserId
+        return VenuePeople(recent: (raw.recent ?? []).map(\.id).filter { $0 != me },
+                           regulars: (raw.regulars ?? []).map(\.id).filter { $0 != me })
+    }
+
+    /// 演示：常客是把这里设为常去的示例球友；示例球友之间没有打球记录，“最近在这打过”取我在这打完的球局里的人，再加一半常客
+    private func demoVenuePeople(_ venueId: String, now: Date = Date()) -> VenuePeople {
+        guard let me = currentUserId else { return VenuePeople() }
+        let blocked = blockedIds()
+        let regulars = db.bots.keys.sorted().filter {
+            demoEligible($0, me: me, blocked: blocked) && (db.favoriteCourtIds[$0] ?? []).contains(venueId)
+        }
+        let played = db.games.values
+            .filter { $0.court.id == venueId && $0.status == .completed && now.timeIntervalSince($0.slot.startTime) < 30 * 86400 }
+            .flatMap(\.playerIds)
+            .filter { demoEligible($0, me: me, blocked: blocked) }
+        var seen = Set<String>()
+        let recent = (played + regulars.filter { $0.stableHash % 2 == 0 }).filter { seen.insert($0).inserted }
+        return VenuePeople(recent: Array(recent.prefix(20)), regulars: Array(regulars.prefix(20)))
     }
 
     // MARK: 演示模式
@@ -377,16 +424,19 @@ extension MockBackend {
     }
 
     private func demoInviteRoom(from: String, to: String, court: BadmintonCourt, window: PlayWindow, now: Date,
-                                awaiting: String? = nil, rounds: Int = 0) -> Room {
+                                mode: GameMode = .singles, awaiting: String? = nil, rounds: Int = 0) -> Room {
         let participants = db.users[from].map { [RoomParticipant(user: $0, joinedAt: now)] } ?? []
-        return Room(id: UUID().uuidString, code: "", ownerId: from, mode: .singles, visibility: .privateRoom,
+        // 双打说好后要让别人加入，要有房间码
+        let code = mode == .doubles ? Room.generateCode(excluding: Set(db.rooms.values.map(\.code))) : ""
+        return Room(id: UUID().uuidString, code: code, ownerId: from, mode: mode, visibility: .privateRoom,
                     participants: participants, invitedUserIds: [to], waitlist: [], court: court, slot: window.slot,
                     levelRange: 1...9, tags: [], note: "", createdAt: now, lastActivityAt: now, status: .open,
                     window: window.isExact ? nil : window,
                     invite: LobbyInvite(fromId: from, toId: to, awaitingId: awaiting ?? to, rounds: rounds, answerBy: window.deadline))
     }
 
-    private func demoInvite(_ userId: String, venueId: String, window: PlayWindow, now: Date = Date()) throws -> InviteResult {
+    private func demoInvite(_ userId: String, venueId: String, window: PlayWindow, mode: GameMode,
+                            now: Date = Date()) throws -> InviteResult {
         let me = try requireUser()
         guard me.privacy.showsAsRegular else { throw RemoteError.server("not_visible") }
         guard demoEligible(userId, me: me.id, blocked: blockedIds()), !demoDeclined.contains(userId) else {
@@ -397,7 +447,7 @@ extension MockBackend {
         guard demoInvitesSent.count < Self.inviteLimit else { throw RemoteError.server("invite_limit") }
         guard let court = venue(id: venueId) else { throw RemoteError.server("invalid_venues") }
         let checked = try demoChecked(window, now: now)
-        let room = demoInviteRoom(from: me.id, to: userId, court: court, window: checked, now: now)
+        let room = demoInviteRoom(from: me.id, to: userId, court: court, window: checked, now: now, mode: mode)
         demoInvitesSent.append(now)
         db.rooms[room.id] = room
         scheduleSave()
@@ -486,6 +536,20 @@ extension MockBackend {
             return nil
         }
         let ids = [invite.fromId, invite.toId]
+        room.participants = ids.compactMap { db.users[$0].map { RoomParticipant(user: $0, joinedAt: now) } }
+        room.invitedUserIds = []
+        if room.mode == .doubles {
+            // 双打：两个人先占两个位置，房间公开，附近的人可以加入补齐
+            room.invite = nil
+            room.visibility = .publicListing
+            room.lastActivityAt = now
+            db.rooms[roomId] = room
+            addInbox(InboxItem(kind: .roomJoined, title: String(localized: "\(name)答应了"), body: "\(when) · \(court.name)",
+                               relatedId: roomId), to: other)
+            scheduleSave()
+            emit(.roomsChanged)
+            return nil
+        }
         // 费用按一场 2 小时算（还没定时间时 slot 是整个窗口）
         let duration = room.window?.duration ?? slot.duration
         let costSlot = TimeSlot(date: slot.startTime, startTime: slot.startTime, endTime: slot.startTime.addingTimeInterval(duration))
@@ -496,8 +560,6 @@ extension MockBackend {
             cancelledBy: nil, cancelledLate: false, reminderEnabled: false
         )
         game.window = room.window
-        room.participants = ids.compactMap { db.users[$0].map { RoomParticipant(user: $0, joinedAt: now) } }
-        room.invitedUserIds = []
         room.status = .started(gameId: game.id)
         db.rooms[roomId] = room
         db.games[game.id] = game
@@ -510,7 +572,7 @@ extension MockBackend {
         return game.id
     }
 
-    private func demoCounter(_ roomId: String, venueId: String?, window: PlayWindow, now: Date = Date()) throws {
+    private func demoCounter(_ roomId: String, venueId: String?, window: PlayWindow, mode: GameMode, now: Date = Date()) throws {
         let me = try requireUser()
         guard var room = db.rooms[roomId], room.status.isOpen, var invite = room.invite else {
             throw RemoteError.server("not_available")
@@ -526,6 +588,7 @@ extension MockBackend {
         invite.rounds += 1
         invite.answerBy = checked.deadline
         room.invite = invite
+        room.mode = mode
         room.slot = checked.slot
         room.window = checked.isExact ? nil : checked
         room.lastActivityAt = now

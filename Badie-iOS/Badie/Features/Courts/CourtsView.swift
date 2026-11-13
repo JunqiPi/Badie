@@ -126,6 +126,7 @@ struct CourtDetailSheet: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var groupManager: GroupManager
+    @EnvironmentObject private var friendManager: FriendManager
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var matchManager: MatchManager
     @Environment(\.dismiss) private var dismiss
@@ -133,6 +134,10 @@ struct CourtDetailSheet: View {
     @State private var showReport = false
     @State private var hasConfirmed = false
     @State private var regularsCount: Int?
+    /// 最近在这打过的人、常客
+    @State private var people = MockBackend.VenuePeople()
+    /// 弹窗里点了某个人：在这个弹窗上面再弹 TA 的资料（整页时用全局的）
+    @State private var shownPlayer: PlayerSheetItem?
 
     /// 最新数据（确认后状态会变化）
     private var venue: BadmintonCourt { appState.backend.venue(id: court.id) ?? court }
@@ -186,6 +191,9 @@ struct CourtDetailSheet: View {
                     StatTile(value: venue.courtCount.map { "\($0)" } ?? "–", label: String(localized: "场地数"))
                     StatTile(value: regularsCount.map { "\($0)" } ?? "–", label: String(localized: "人常去"))
                 }
+
+                peopleRow(String(localized: "最近在这打过"), ids: people.recent)
+                peopleRow(String(localized: "常客"), ids: people.regulars)
 
                 VStack(alignment: .leading, spacing: 0) {
                     InfoRow(icon: Money.icon(for: venue.currencyCode), tint: AppTheme.Colors.butter,
@@ -276,6 +284,12 @@ struct CourtDetailSheet: View {
         // 收藏或取消后人数会变
         .task(id: locationManager.isFavorite(venue.id)) {
             regularsCount = await appState.backend.fetchRegularsCount(for: venue.id)
+            if let fresh = try? await appState.backend.venuePeople(venue.id) { people = fresh }
+        }
+        .sheet(item: $shownPlayer) { item in
+            PlayerProfileSheet(userId: item.id, allowsInvite: false)
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
         }
         .confirmationDialog("选择导航方式", isPresented: $showNavigation, titleVisibility: .visible) {
             ForEach(MapsLauncher.apps(for: venue)) { app in
@@ -304,6 +318,33 @@ struct CourtDetailSheet: View {
         } message: {
             Text("一个人的报告不会让球馆下架；多位球友报告后会进入人工核实。")
         }
+    }
+
+    // MARK: 最近在这打过、常客
+
+    /// 一排头像，点一个看 TA 的资料；没人就不显示
+    @ViewBuilder
+    private func peopleRow(_ title: String, ids: [String]) -> some View {
+        // 从 friendManager 读：头像下好了会跟着刷新
+        let users = ids.compactMap { friendManager.user(id: $0) }
+        if !users.isEmpty {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                SectionTitle(title: title, detail: "\(users.count)")
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
+                        ForEach(users) { user in
+                            PersonBubble(user: user, size: 48) { showPlayer(user.id) }
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
+                }
+                .padding(.horizontal, -AppTheme.Spacing.screen)
+            }
+        }
+    }
+
+    private func showPlayer(_ userId: String) {
+        if isSheet { shownPlayer = PlayerSheetItem(id: userId) } else { appState.showPlayer(userId) }
     }
 
     // MARK: 这里的固定局
