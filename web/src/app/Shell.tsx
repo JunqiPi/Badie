@@ -58,13 +58,13 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
               ))}
             </ul>
           </nav>
-          {/* 小屏上没登录时有“测等级”和“登录”两个字的入口：间距收一点，360 宽也放得下最长的语言 */}
-          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* 小屏上没登录时有“测等级”和“登录”两个带字的入口：间距收一点，不到 360 宽时字再小一号，320 宽也放得下最长的语言 */}
+          <div className="ml-auto flex shrink-0 items-center gap-1 max-[359px]:gap-0 sm:gap-2">
             {guest && (
               <Link
                 to="/level-quiz/"
                 aria-current={onLevels ? 'page' : undefined}
-                className={`flex h-10 items-center rounded-full px-2 text-subhead font-bold whitespace-nowrap sm:px-3 ${onLevels ? 'bg-lime text-on-accent' : 'text-on-bar hover:bg-on-bar/10'}`}
+                className={`flex h-10 items-center rounded-full px-2 text-subhead font-bold whitespace-nowrap max-[359px]:px-1.5 max-[359px]:text-footnote sm:px-3 ${onLevels ? 'bg-lime text-on-accent' : 'text-on-bar hover:bg-on-bar/10'}`}
               >
                 {t('Level test')}
               </Link>
@@ -85,7 +85,7 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
                 </Link>
               </>
             ) : guest && !path.startsWith('/signin/') && (
-              <Link to={signInFirst(path)} className="flex h-10 items-center rounded-full px-2 text-subhead font-bold whitespace-nowrap text-on-bar hover:bg-on-bar/10 sm:px-3">
+              <Link to={signInFirst(path)} className="flex h-10 items-center rounded-full px-2 text-subhead font-bold whitespace-nowrap text-on-bar hover:bg-on-bar/10 max-[359px]:px-1.5 max-[359px]:text-footnote sm:px-3">
                 {t('Sign in')}
               </Link>
             )}
@@ -337,7 +337,7 @@ export function LanguageSwitch() {
       >
         <Icon name="globe" className="size-5" />
         {/* 桌面顶栏放了导航，1280px 以下只留地球图标，免得挤出屏幕 */}
-        <span className="hidden sm:inline lg:hidden xl:inline">{name}</span>
+        <span className="hidden sm:inline lg:hidden 2xl:inline">{name}</span>
         <Icon name="chevronDown" className={`hidden size-3 transition-transform sm:block lg:hidden xl:block ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
