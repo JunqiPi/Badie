@@ -30,16 +30,18 @@ for (const [i, pick] of picks.entries()) {
 await page.waitForURL('**/level-quiz/result/');
 await page.getByRole('heading', { name: 'All-rounder' }).waitFor();
 await page.getByText('Self-rated').waitFor();
-await page.getByRole('img', { name: 'Level card' }).waitFor();
+await page.getByRole('img', { name: 'Front of the level card' }).waitFor();
 
 // 保存图片、复制链接
 const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Save image' }).click()]);
 assert.equal(download.suggestedFilename(), 'badie-level-4.png');
 await page.getByRole('button', { name: 'Copy link' }).click();
 assert.equal(await page.evaluate(() => navigator.clipboard.readText()), `${new URL(base).origin}/levels/4/?ref=card`);
-// 限时动态尺寸也画得出来
-await page.getByRole('button', { name: 'Story' }).click();
-await page.getByRole('img', { name: 'Level card' }).waitFor();
+// 翻到背面：保存的是背面
+await page.getByRole('button', { name: 'Flip' }).click();
+await page.getByRole('img', { name: 'Back of the level card' }).waitFor();
+const [back] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Save image' }).click()]);
+assert.equal(back.suggestedFilename(), 'badie-level-4-back.png');
 assert.ok(!visited.some((path) => path.startsWith('/signin/')), `no sign-in on the way: ${visited.join(' ')}`);
 
 // 去注册：建好资料后等级已经存上，不用再答一遍；来源记在资料里

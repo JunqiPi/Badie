@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { archetypeInfo, axes, axisLevel, axisNames, evaluate, playStyle, questionTitle, tier, tierSlug, type Axis, type PlayStyle } from './assessment';
 import { currentLocale, pathPrefixes, t, useLocale } from './i18n';
 import { Icon } from './icons';
-import { Segmented, Starburst, Tag } from './kit';
-import { fontsReady, loadArt, renderCard, type CardInput, type CardSize } from './levelCard';
+import { Starburst, Tag } from './kit';
+import { fontsReady, loadArt, loadImage, renderCard, type CardFace, type CardInput } from './levelCard';
 import { clearPending, loadPending, saveArgs, validAnswers } from './quizStore';
 import { Link, navigate } from './router';
 import { signInFirst } from './Shell';
-import { problem, supabase, tagText, type Profile } from './supabase';
+import { avatarUrl, problem, supabase, tagText, type Profile } from './supabase';
 import { Button, toast } from './ui';
 import { freeSummary } from './usual';
 
@@ -148,41 +148,51 @@ function Radar({ scores }: { scores: Record<Axis, number> }) {
 /** 这一档页面的链接：卡片带来的访问加 ?ref=card；中文等界面语言用对应语言的页面 */
 export const cardLink = (rating: number) => `${location.origin}${pathPrefixes[currentLocale()]}/levels/${tierSlug(rating)}/?ref=card`;
 
-/** 分享卡片：两种尺寸，可选印昵称、印不印网址；能调系统分享就分享，否则保存图片、复制链接 */
+/** 分享卡片：一张卡，点一下翻面；可选印昵称、头像、网址。能调系统分享就分享，否则保存图片、复制链接。分享的是正在看的那一面 */
 function ShareCard({ result, style, profile }: { result: { rating: number; next?: { level: number; skill: string; id: string } }; style: PlayStyle; profile: Profile | null }) {
   const locale = useLocale();
-  const [size, setSize] = useState<CardSize>('post');
+  const [face, setFace] = useState<CardFace>('front');
   const [name, setName] = useState(profile ? profile.nickname : '');
   const [withLink, setWithLink] = useState(true);
-  const [image, setImage] = useState<{ blob: Blob; url: string }>();
+  const [withPhoto, setWithPhoto] = useState(true);
+  const [images, setImages] = useState<Record<CardFace, { blob: Blob; url: string }>>();
   const [failed, setFailed] = useState(false);
   const latest = useRef(0);
   const level = tier(result.rating);
   const link = cardLink(result.rating);
-  const fileName = `badie-level-${tierSlug(result.rating)}.png`;
+  const fileName = `badie-level-${tierSlug(result.rating)}${face === 'back' ? '-back' : ''}.png`;
+  const photo = profile?.avatar_path;
 
   useEffect(() => {
     const run = ++latest.current;
     // 打字时等一下再画
     const timer = setTimeout(async () => {
       try {
-        const [art] = await Promise.all([loadArt(style.archetype), fontsReady()]);
-        const blob = await renderCard(size, cardInput({ result, style, profile, name, withLink, art }));
+        const [art, avatar] = await Promise.all([
+          loadArt(style.archetype),
+          // 头像取不到就不印，卡片照样出
+          photo && withPhoto ? loadImage(avatarUrl(photo)).catch(() => undefined) : undefined,
+          fontsReady(),
+        ]);
+        const input = cardInput({ result, style, profile, name, withLink, art, avatar });
+        const [front, back] = await Promise.all([renderCard('front', input), renderCard('back', input)]);
         if (run !== latest.current) return;
         setFailed(false);
-        setImage((old) => {
-          if (old) URL.revokeObjectURL(old.url);
-          return { blob, url: URL.createObjectURL(blob) };
+        setImages((old) => {
+          if (old) Object.values(old).forEach((image) => URL.revokeObjectURL(image.url));
+          return { front: { blob: front, url: URL.createObjectURL(front) }, back: { blob: back, url: URL.createObjectURL(back) } };
         });
       } catch {
         if (run === latest.current) setFailed(true);
       }
-    }, image ? 250 : 0);
+    }, images ? 250 : 0);
     return () => clearTimeout(timer);
-  }, [size, name, withLink, locale, style.archetype, result.rating]);
+  }, [name, withLink, withPhoto, photo, locale, style.archetype, result.rating]);
 
+  const image = images?.[face];
   const file = image && new File([image.blob], fileName, { type: 'image/png' });
   const canShare = Boolean(file && typeof navigator.share === 'function' && navigator.canShare?.({ files: [file] }));
+  const flip = () => setFace((current) => (current === 'front' ? 'back' : 'front'));
 
   async function share() {
     try {
@@ -204,28 +214,37 @@ function ShareCard({ result, style, profile }: { result: { rating: number; next?
   return (
     <section className="sticker grid gap-4 p-5 sm:p-6" aria-labelledby="share">
       <h2 id="share" className="text-title3">{t('Level card')}</h2>
-      <Segmented
-        label={t('Card size')}
-        value={size}
-        onChange={setSize}
-        options={[{ value: 'post', label: t('Post') }, { value: 'story', label: t('Story') }]}
-      />
-      <div className="grid justify-items-center rounded-[16px] bg-surface-muted p-3">
-        {image ? (
-          <img src={image.url} alt={t('Level card')} className={`w-full rounded-[8px] ${size === 'post' ? 'max-w-[20rem]' : 'max-w-[16rem]'}`} />
+      <div className="grid justify-items-center gap-3 rounded-[16px] bg-surface-muted p-4">
+        {images ? (
+          // 两面背靠背叠在一起，翻面时整张转半圈；点卡片和点“翻面”一样
+          <div className="w-full max-w-[20rem] cursor-pointer [perspective:1200px]" onClick={flip}>
+            <div className={`relative aspect-[4/5] transition-transform duration-500 [transform-style:preserve-3d] motion-reduce:transition-none ${face === 'back' ? '[transform:rotateY(180deg)]' : ''}`}>
+              {(['front', 'back'] as const).map((side) => (
+                <img key={side} src={images[side].url} alt={t(side === 'front' ? 'Front of the level card' : 'Back of the level card')} aria-hidden={side !== face}
+                     className={`absolute inset-0 size-full rounded-[14px] shadow-lg [backface-visibility:hidden] ${side === 'back' ? '[transform:rotateY(180deg)]' : ''}`} />
+              ))}
+            </div>
+          </div>
         ) : failed ? (
           <p role="alert" className="p-6 text-subhead">{t('Couldn’t make the image. Try again.')}</p>
         ) : (
-          <span aria-hidden="true" className={`grid w-full place-items-center ${size === 'post' ? 'aspect-[4/5] max-w-[20rem]' : 'aspect-[9/16] max-w-[16rem]'}`}>
+          <span aria-hidden="true" className="grid aspect-[4/5] w-full max-w-[20rem] place-items-center">
             <span className="size-6 animate-spin rounded-full border-[3px] border-ink-secondary border-t-transparent" />
           </span>
         )}
+        {images && <Button variant="quiet" onClick={flip}>{t('Flip')}</Button>}
       </div>
       <label className="grid gap-1.5">
         <span className="text-subhead font-bold">{t('Name on the card')}</span>
         <input className="field" maxLength={12} value={name} onChange={(e) => setName(e.target.value)} autoComplete="nickname" />
         <span className="text-footnote text-ink-secondary">{t('Optional. It stays on this device.')}</span>
       </label>
+      {photo && (
+        <label className="flex cursor-pointer items-center gap-3">
+          <input type="checkbox" checked={withPhoto} onChange={(e) => setWithPhoto(e.target.checked)} className="size-5 accent-[#17140f]" />
+          <span className="text-subhead font-bold">{t('Show my photo on the card')}</span>
+        </label>
+      )}
       <label className="flex cursor-pointer items-start gap-3">
         <input type="checkbox" checked={withLink} onChange={(e) => setWithLink(e.target.checked)} className="mt-1 size-5 accent-[#17140f]" />
         <span className="grid gap-0.5">
@@ -243,13 +262,14 @@ function ShareCard({ result, style, profile }: { result: { rating: number; next?
 }
 
 /** 卡片上的文字按当前界面语言翻译好 */
-function cardInput({ result, style, profile, name, withLink, art }: {
+function cardInput({ result, style, profile, name, withLink, art, avatar }: {
   result: { rating: number; next?: { level: number; skill: string; id: string } };
   style: PlayStyle;
   profile: Profile | null;
   name: string;
   withLink: boolean;
-  art: CanvasImageSource;
+  art: HTMLImageElement;
+  avatar?: HTMLImageElement;
 }): CardInput {
   const info = archetypeInfo[style.archetype];
   const level = tier(result.rating);
@@ -277,7 +297,6 @@ function cardInput({ result, style, profile, name, withLink, art }: {
     styleName: t(info.name),
     line: t(info.line),
     bestShot: t(questionTitle(style.bestShot)),
-    partner,
     scores: style.scores,
     axisNames: Object.fromEntries(axes.map((a) => [a, t(axisNames[a])])) as Record<Axis, string>,
     next: result.next && { title: t('To reach level {n}', { n: result.next.level }), skill: t(result.next.skill) },
@@ -285,13 +304,10 @@ function cardInput({ result, style, profile, name, withLink, art }: {
     text: {
       playStyle: t('Play style'),
       bestShot: t('Best shot'),
-      bestPartner: t('Best partner'),
-      levelStatus: t('Level · self-rated'),
       quiz: t('Find your level · 2 min'),
-      noSignup: t('Find your level · No sign-up'),
-      hashtag: t('#MyBadmintonCard'),
       footer: withLink ? 'BADIE.RSVP/LEVELS' : t('Search Badie badminton on the App Store'),
     },
     art,
+    avatar,
   };
 }

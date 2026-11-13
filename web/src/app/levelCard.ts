@@ -1,10 +1,11 @@
-// 等级卡片：在浏览器里用 canvas 画，不经过服务器。版式见 Badie-iOS/docs/LEVEL_CARD.md 和设计稿 v2（照 Valorant 的球员卡）：
-// 帖子 1080×1350（海报上斜放正面和背面两张卡），限时动态 1080×1920（角色窗 + 打法面板 + 六格数据）。
-// 人物先用剪影占位：public/cards/<打法>.svg，正式插画做好后直接换文件
-import { archetypeInfo, axes, axisLevel, type Archetype, type Axis } from './assessment';
+// 等级卡片：在浏览器里用 canvas 画，不经过服务器。
+// 一张 4:5 的卡（1080×1350），有正面和背面：页面上只显示一张，点一下翻面，分享的是正在看的那一面。
+// 所有打法用同一套颜色（黑、米白、柠檬绿），靠人物剪影和背后的英文大字区分。
+// 剪影在 public/cards/<打法>.png（透明底、纯色、按人物裁好），换图直接换文件
+import { axes, axisLevel, type Archetype, type Axis } from './assessment';
 
-export type CardSize = 'post' | 'story';
-export const cardSizes: Record<CardSize, [number, number]> = { post: [1080, 1350], story: [1080, 1920] };
+export type CardFace = 'front' | 'back';
+export const cardSize: [number, number] = [1080, 1350];
 
 /** 卡片上的文字都由调用方翻译好再传进来 */
 export type CardInput = {
@@ -24,53 +25,27 @@ export type CardInput = {
   styleName: string;
   line: string;
   bestShot: string;
-  partner: string;
   scores: Record<Axis, number>;
   axisNames: Record<Axis, string>;
   /** 离 5 级还差 → 反手后场 */
   next?: { title: string; skill: string };
-  /** 背面的几行（位置、常去球馆、空闲时间、最佳搭档），只放知道的 */
+  /** 背面的几行（偏好、空闲时间、最佳搭档），只放知道的 */
   rows: { label: string; value: string }[];
-  text: { playStyle: string; bestShot: string; bestPartner: string; levelStatus: string; quiz: string; noSignup: string; hashtag: string; footer: string };
-  art: CanvasImageSource;
+  text: { playStyle: string; bestShot: string; quiz: string; footer: string };
+  art: HTMLImageElement;
+  /** 头像；没有或不想印就不传 */
+  avatar?: HTMLImageElement;
 };
 
 const ink = '#17140f';
 const cream = '#f2efe7';
 const gray = '#9a948a';
-const red = '#e5484d';
 const lime = '#d4f33f';
-const gold = '#d9b44a';
 const stack = '"Nunito Variable", ui-rounded, system-ui, "PingFang SC", "Hiragino Sans", "Apple SD Gothic Neo", "Noto Sans CJK SC", sans-serif';
 const font = (size: number, weight = 900) => `${weight} ${size}px ${stack}`;
 
-/** 鬼影大字（卡片美术区里重复的打法名）：装饰，用英文 */
-const ghostWord: Record<Archetype, string> = { cannon: 'CANNON', net: 'NET', wall: 'WALL', quick: 'QUICK', engine: 'ENGINE', captain: 'CAPTAIN', allround: 'ALL-ROUND', rookie: 'ROOKIE' };
-
-// MARK: 颜色
-
-const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
-const rgba = (hex: string, alpha: number) => `rgba(${rgb(hex).join(',')},${alpha})`;
-/** a 往 b 混 amount（0–1） */
-function mix(a: string, b: string, amount: number) {
-  const [x, y] = [rgb(a), rgb(b)];
-  return `#${x.map((v, i) => Math.round(v + (y[i] - v) * amount).toString(16).padStart(2, '0')).join('')}`;
-}
-
-/** 每种打法的海报底色、底色上的字、深色卡片上的强调色 */
-function palette(archetype: Archetype) {
-  const info = archetypeInfo[archetype];
-  const allround = archetype === 'allround';
-  return {
-    background: info.color,
-    onBackground: info.ink,
-    accent: allround ? gold : info.color,
-    band: allround ? '#2a2620' : ink,
-    circuit: archetype === 'net' || archetype === 'captain' ? ink : allround ? gold : '#6b4cff',
-    glow: allround ? gold : info.color,
-    brand: allround ? gold : lime,
-  };
-}
+/** 人物区里重复的大字：装饰，用英文 */
+const ghostWord: Record<Archetype, string> = { cannon: 'SMASH', net: 'NET', wall: 'WALL', quick: 'SPRING', engine: 'MOTOR', captain: 'TACTICS', allround: 'ALL-ROUND', rookie: 'ROOKIE' };
 
 // MARK: 画图的小工具
 
@@ -145,146 +120,85 @@ function spaced(ctx: CanvasRenderingContext2D, spacing: number) {
   if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = `${spacing}px`;
 }
 
-/** 在 (cx, cy) 转 angle 度，再以 w×h 的左上角为原点画 */
-function rotated(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, angle: number, draw: () => void) {
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate((angle * Math.PI) / 180);
-  ctx.translate(-w / 2, -h / 2);
-  draw();
-  ctx.restore();
+/** 图片等比放进 w×h 的框里，水平居中、贴着底边 */
+function contain(ctx: CanvasRenderingContext2D, image: HTMLImageElement, x: number, y: number, w: number, h: number) {
+  const scale = Math.min(w / image.naturalWidth, h / image.naturalHeight);
+  const [dw, dh] = [image.naturalWidth * scale, image.naturalHeight * scale];
+  ctx.drawImage(image, x + (w - dw) / 2, y + h - dh, dw, dh);
 }
 
-// 小图标：40×40 的路径，和设计稿一样
-type IconName = 'hex' | 'racket' | 'next' | 'pair' | Axis;
-const icons: Record<IconName, { d: string; stroke?: number }> = {
-  hex: { d: 'M20 2 L38 12 L38 28 L20 38 L2 28 L2 12 Z' },
-  racket: { d: 'M38 12 A10 8 0 1 1 18 12 A10 8 0 1 1 38 12 M4 36 L22 18', stroke: 3.5 },
-  next: { d: 'M6 34 L34 6 M24 6 L34 6 L34 16', stroke: 4 },
-  pair: { d: 'M21 14 A7 7 0 1 1 7 14 A7 7 0 1 1 21 14 M35 18 A7 7 0 1 1 21 18 A7 7 0 1 1 35 18' },
-  attack: { d: 'M4 30 L36 6 L30 20 L38 22 L8 38 Z' },
-  net: { d: 'M2 18 H38 V21 H2 Z M20 4 L26 14 L14 14 Z' },
-  defense: { d: 'M20 3 L36 9 L34 26 Q28 35 20 38 Q12 35 6 26 L4 9 Z' },
-  speed: { d: 'M4 8 L16 20 L4 32 M18 8 L30 20 L18 32', stroke: 4 },
-  footwork: { d: 'M18 26 A6 9 0 1 1 6 26 A6 9 0 1 1 18 26 M34 14 A6 9 0 1 1 22 14 A6 9 0 1 1 34 14' },
-  tactics: { d: 'M36 20 A16 16 0 1 1 4 20 A16 16 0 1 1 36 20 M28 20 A8 8 0 1 1 12 20 A8 8 0 1 1 28 20 M23 20 A3 3 0 1 1 17 20 A3 3 0 1 1 23 20', stroke: 3 },
-};
-
-function icon(ctx: CanvasRenderingContext2D, name: IconName, x: number, y: number, size: number, color: string) {
-  const { d, stroke } = icons[name];
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.scale(size / 40, size / 40);
-  const path = new Path2D(d);
-  if (stroke) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = stroke;
-    ctx.lineCap = 'round';
-    ctx.stroke(path);
-  } else {
+/** 头像：圆形，外面一圈卡片底色和一圈柠檬绿 */
+function drawAvatar(ctx: CanvasRenderingContext2D, image: HTMLImageElement | undefined, cx: number, cy: number, r: number) {
+  if (!image) return;
+  for (const [radius, color] of [[r + 7, ink], [r + 3, lime]] as const) {
     ctx.fillStyle = color;
-    ctx.fill(path);
-  }
-  ctx.restore();
-}
-
-/** 得分最高的几项（同分按六项的顺序） */
-const topAxes = (scores: Record<Axis, number>) => [...axes].sort((a, b) => scores[b] - scores[a]);
-
-// MARK: 帖子 1080×1350
-
-export function drawPost(ctx: CanvasRenderingContext2D, card: CardInput) {
-  const [W, H] = cardSizes.post;
-  const color = palette(card.archetype);
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = color.background;
-  ctx.fillRect(0, 0, W, H);
-
-  // 上下两条带缺口的黑边
-  ctx.fillStyle = color.band;
-  polygon(ctx, [[0, 0], [W, 0], [W, 124], [842, 124], [778, 74], [302, 74], [238, 124], [0, 124]]);
-  ctx.fill();
-  polygon(ctx, [[0, H - 124], [238, H - 124], [302, H - 74], [778, H - 74], [842, H - 124], [W, H - 124], [W, H], [0, H]]);
-  ctx.fill();
-
-  // 电路线
-  ctx.fillStyle = color.circuit;
-  for (const [x, top, length] of [[88, true, 240], [W - 94, true, 300], [120, false, 220], [W - 126, false, 260]] as [number, boolean, number][]) {
-    const y = top ? 0 : H - length;
-    ctx.fillRect(x, y, 6, length);
     ctx.beginPath();
-    ctx.arc(x + 3, top ? length : H - length, 9, 0, Math.PI * 2);
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.fill();
   }
-
-  // 背景里的大字
-  ctx.fillStyle = rgba(color.onBackground, 0.07);
-  ctx.font = font(300);
-  ctx.textAlign = 'left';
-  ctx.fillText('BAD', 320, 600);
-  ctx.fillText('IE', 320, 855);
-
-  // 顶部：测测你几级 · 2 分钟 / 网址
-  ctx.textAlign = 'center';
-  ctx.fillStyle = color.onBackground;
-  spaced(ctx, 3);
-  drawFit(ctx, card.text.quiz, W / 2, 182, 860, 24);
-  spaced(ctx, 1);
-  drawFit(ctx, card.text.footer, W / 2, 240, 900, 52);
-  spaced(ctx, 0);
-
-  drawBack(ctx, card, color);
-  drawFront(ctx, card, color);
-
-  // 话题
-  ctx.textAlign = 'center';
-  ctx.fillStyle = color.onBackground;
-  drawFit(ctx, card.text.hashtag, W / 2, H - 162, 900, 34);
-}
-
-function cardBase(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.35)';
-  ctx.shadowBlur = 60;
-  ctx.shadowOffsetY = 28;
-  ctx.fillStyle = ink;
   ctx.beginPath();
-  ctx.roundRect(0, 0, w, h, 16);
-  ctx.fill();
-  ctx.restore();
-  ctx.beginPath();
-  ctx.roundRect(0, 0, w, h, 16);
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
   ctx.clip();
+  const side = Math.min(image.naturalWidth, image.naturalHeight);
+  ctx.drawImage(image, (image.naturalWidth - side) / 2, (image.naturalHeight - side) / 2, side, side, cx - r, cy - r, r * 2, r * 2);
+  ctx.restore();
 }
 
-/** 正面：美术区（鬼影字、人物、等级徽章、单双打图标），下面是名字、打法和最强一拍 */
-function drawFront(ctx: CanvasRenderingContext2D, card: CardInput, color: ReturnType<typeof palette>) {
-  const [w, h] = [472, 700];
-  rotated(ctx, 296, 650, w, h, -4, () => {
-    cardBase(ctx, w, h);
+/** 地区 · 4+ 中级 · 自评（只放知道的） */
+const subline = (card: CardInput, withLevel: boolean) =>
+  [card.region?.toUpperCase(), withLevel ? `${card.label} ${card.levelName}` : undefined, card.status].filter(Boolean).join(' · ');
+
+/** 卡片底和一圈细边；里面按 540×675 的坐标画（导出时放大一倍） */
+function frame(ctx: CanvasRenderingContext2D, draw: (w: number, h: number) => void) {
+  const [w, h] = [cardSize[0] / 2, cardSize[1] / 2];
+  ctx.save();
+  ctx.scale(2, 2);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = ink;
+  ctx.fillRect(0, 0, w, h);
+  draw(w, h);
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(5, 5, w - 10, h - 10, 18);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// MARK: 正面：人物区（大字、剪影、等级徽章、单双打），下面是头像、名字、打法和最强一拍
+
+export function drawFront(ctx: CanvasRenderingContext2D, card: CardInput) {
+  frame(ctx, (w, h) => {
+    const top = 392;
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(12, 12, w - 24, top - 12, [14, 14, 0, 0]);
+    ctx.clip();
     ctx.fillStyle = cream;
-    ctx.fillRect(0, 0, w, 416);
-    ctx.fillStyle = 'rgba(23,20,15,0.09)';
-    ctx.font = font(116);
+    ctx.fillRect(0, 0, w, top);
+    ctx.fillStyle = 'rgba(23,20,15,0.08)';
+    ctx.font = font(128);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    for (let i = 0; i < 4; i++) ctx.fillText(ghostWord[card.archetype], -12, -12 + i * 100);
+    for (let i = 0; i < 4; i++) ctx.fillText(ghostWord[card.archetype], -6, -8 + i * 104);
     ctx.textBaseline = 'alphabetic';
-    ctx.drawImage(card.art, 60, 12, 360, 420);
+    contain(ctx, card.art, 96, 30, w - 192, top - 46);
+    ctx.restore();
 
     // 等级徽章
     ctx.fillStyle = ink;
-    hexagon(ctx, 20, 20, 68, 76);
+    hexagon(ctx, 30, 30, 76, 86);
     ctx.fill();
-    ctx.fillStyle = color.accent;
+    ctx.fillStyle = lime;
     ctx.textAlign = 'center';
-    drawFit(ctx, card.label, 54, 68, 56, 28);
+    drawFit(ctx, card.label, 68, 84, 62, 32);
 
     // 单打、双打：偏好的那个填满
-    ([['singles', 40], ['doubles', 92]] as const).forEach(([mode, cy]) => {
+    ([['singles', 52], ['doubles', 108]] as const).forEach(([mode, cy]) => {
       const on = card.mode === mode;
       ctx.beginPath();
-      ctx.arc(w - 40, cy, 20, 0, Math.PI * 2);
+      ctx.arc(w - 52, cy, 21, 0, Math.PI * 2);
       ctx.fillStyle = on ? ink : cream;
       ctx.fill();
       ctx.lineWidth = 4;
@@ -293,301 +207,135 @@ function drawFront(ctx: CanvasRenderingContext2D, card: CardInput, color: Return
       ctx.fillStyle = on ? cream : ink;
       for (const dx of mode === 'singles' ? [0] : [-6, 6]) {
         ctx.beginPath();
-        ctx.arc(w - 40 + dx, cy, 5, 0, Math.PI * 2);
+        ctx.arc(w - 52 + dx, cy, 5, 0, Math.PI * 2);
         ctx.fill();
       }
     });
 
-    // 红色的 HUD 线
-    ctx.fillStyle = red;
-    ctx.fillRect(20, 300, 68, 4);
-    ctx.fillRect(w - 68, 240, 48, 4);
-
-    // 下半部分
+    // BADIE 标
     ctx.fillStyle = ink;
-    ctx.fillRect(0, 416, w, h - 416);
-    polygon(ctx, [[176, 400], [296, 400], [306, 428], [166, 428]]);
+    polygon(ctx, [[w / 2 - 66, top - 18], [w / 2 + 66, top - 18], [w / 2 + 78, top + 12], [w / 2 - 78, top + 12]]);
     ctx.fill();
-    ctx.fillStyle = color.brand;
+    ctx.fillStyle = lime;
     ctx.font = font(20);
-    spaced(ctx, 4);
-    ctx.fillText('BADIE', w / 2 + 2, 421);
+    ctx.textAlign = 'center';
+    spaced(ctx, 5);
+    ctx.fillText('BADIE', w / 2 + 2, top + 5);
     spaced(ctx, 0);
 
-    const title = card.name ?? `${card.label} ${card.levelName}`;
-    const sub = [card.region?.toUpperCase(), card.name ? `${card.label} ${card.levelName}` : undefined, card.status].filter(Boolean).join(' · ');
+    // 头像压在人物区和信息区的交界上
+    drawAvatar(ctx, card.avatar, 76, top + 2, 44);
+
     ctx.fillStyle = '#ffffff';
-    drawFit(ctx, title, w / 2, 488, w - 48, 38);
+    drawFit(ctx, card.name ?? `${card.label} ${card.levelName}`, w / 2, top + 66, w - (card.avatar ? 250 : 60), 40);
     ctx.fillStyle = gray;
     spaced(ctx, 1);
-    drawFit(ctx, sub, w / 2, 522, w - 48, 17, 800);
+    drawFit(ctx, subline(card, Boolean(card.name)), w / 2, top + 98, w - 60, 17, 800);
     spaced(ctx, 0);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fillRect(30, top + 122, w - 60, 1.5);
 
     // 左下：打法
     ctx.textAlign = 'left';
-    ctx.font = font(15, 700);
-    const lines = wrapLines(ctx, card.line, 236, 2, card.locale);
-    ctx.fillStyle = '#d6d1c8';
-    lines.forEach((line, i) => ctx.fillText(line, 24, h - 24 - (lines.length - 1 - i) * 20));
-    const nameY = h - 24 - lines.length * 20 - 6;
-    ctx.fillStyle = '#ffffff';
-    drawFit(ctx, card.styleName, 24, nameY, 236, 46);
     ctx.fillStyle = gray;
-    drawFit(ctx, card.text.playStyle, 24, nameY - 50, 236, 16);
+    drawFit(ctx, card.text.playStyle, 30, top + 154, 270, 15, 800);
+    ctx.fillStyle = '#ffffff';
+    drawFit(ctx, card.styleName, 30, top + 204, 290, 44);
+    ctx.font = font(15, 700);
+    ctx.fillStyle = '#d6d1c8';
+    wrapLines(ctx, card.line, 290, 2, card.locale).forEach((line, i) => ctx.fillText(line, 30, top + 230 + i * 20));
 
     // 右下：最强一拍
     ctx.textAlign = 'right';
-    icon(ctx, 'racket', w - 24 - 64, h - 24 - 60, 64, '#ffffff');
-    ctx.fillStyle = '#ffffff';
-    drawFit(ctx, card.bestShot, w - 24, h - 96, 170, 28);
     ctx.fillStyle = gray;
-    drawFit(ctx, card.text.bestShot, w - 24, h - 134, 170, 16);
+    drawFit(ctx, card.text.bestShot, w - 30, top + 154, 180, 15, 800);
+    ctx.fillStyle = lime;
+    drawFit(ctx, card.bestShot, w - 30, top + 200, 180, 28);
+
+    footer(ctx, card.text.footer, w, h);
   });
 }
 
-/** 背面：名字、浅色的 HUD 面板（只放知道的几行）、竖排 BADIE、底部六项能力 */
-function drawBack(ctx: CanvasRenderingContext2D, card: CardInput, color: ReturnType<typeof palette>) {
-  const [w, h] = [472, 680];
-  rotated(ctx, 800, 792, w, h, 3, () => {
-    cardBase(ctx, w, h);
+// MARK: 背面：名字、知道的几行、离下一级还差什么、六项能力
 
-    ctx.fillStyle = '#2a2620';
-    ctx.beginPath();
-    ctx.roundRect(24, 24, 68, 68, 14);
+export function drawBack(ctx: CanvasRenderingContext2D, card: CardInput) {
+  frame(ctx, (w, h) => {
+    ctx.fillStyle = lime;
+    hexagon(ctx, 30, 30, 60, 68);
     ctx.fill();
-    ctx.fillStyle = color.accent;
-    hexagon(ctx, 36, 32, 44, 52);
-    ctx.fill();
-    ctx.fillStyle = card.archetype === 'net' || card.archetype === 'wall' || card.archetype === 'captain' ? '#ffffff' : ink;
+    ctx.fillStyle = ink;
     ctx.textAlign = 'center';
-    drawFit(ctx, card.label, 58, 66, 38, 18);
-
+    drawFit(ctx, card.label, 60, 73, 50, 24);
     ctx.textAlign = 'left';
     ctx.fillStyle = '#ffffff';
-    drawFit(ctx, card.name ?? card.styleName, 108, 58, w - 132, 28);
-    let x = 108;
-    if (card.region) {
-      ctx.fillStyle = gray;
-      spaced(ctx, 1);
-      const region = fitText(ctx, card.region.toUpperCase(), 220, 16, 800);
-      ctx.fillText(region, x, 86);
-      x += ctx.measureText(region).width + 10;
-      spaced(ctx, 0);
-    }
-    ctx.font = font(15);
-    const chip = `LV.${card.label}`;
-    const chipWidth = ctx.measureText(chip).width + 12;
-    ctx.fillStyle = '#6b4cff';
-    ctx.fillRect(x, 70, chipWidth, 22);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(chip, x + 6, 87);
-
-    // 浅色面板：行少时矮一点，上下居中
-    const rows = card.rows.slice(0, 4);
-    const ph = Math.max(240, rows.length * 86 + 130);
-    const top = 132 + (396 - ph) / 2;
-    ctx.fillStyle = cream;
-    polygon(ctx, ([[0, 0.08], [0.14, 0.08], [0.18, 0], [0.82, 0], [0.86, 0.08], [1, 0.08], [1, 0.92], [0.86, 0.92], [0.82, 1], [0.18, 1], [0.14, 0.92], [0, 0.92]] as [number, number][])
-      .map(([px, py]) => [px * w, top + py * ph]));
-    ctx.fill();
-
-    // 竖排 BADIE
-    ctx.save();
-    ctx.translate(30, top + ph / 2 - 50);
-    ctx.rotate(Math.PI / 2);
-    ctx.fillStyle = card.archetype === 'cannon' || card.archetype === 'rookie' ? ink : color.accent;
-    ctx.font = font(20);
-    spaced(ctx, 6);
-    ctx.textAlign = 'left';
-    ctx.fillText('BADIE', 0, 0);
+    drawFit(ctx, card.name ?? card.styleName, 106, 62, w - (card.avatar ? 220 : 140), 30);
+    ctx.fillStyle = gray;
+    spaced(ctx, 1);
+    drawFit(ctx, subline(card, true), 106, 90, w - (card.avatar ? 220 : 140), 15, 800);
     spaced(ctx, 0);
-    ctx.restore();
+    drawAvatar(ctx, card.avatar, w - 62, 64, 30);
 
-    const rowHeight = 76;
-    const gap = 10;
-    let y = top + ph / 2 - (rows.length * rowHeight + (rows.length - 1) * gap) / 2;
-    ctx.textAlign = 'center';
-    for (const row of rows) {
+    // 浅色面板：行少时每行高一点
+    const rows = card.rows.slice(0, 4);
+    const rowHeight = rows.length > 3 ? 60 : 74;
+    const gap = rows.length > 3 ? 8 : 10;
+    const top = 128;
+    const panel = rows.length * rowHeight + (rows.length - 1) * gap + 44;
+    ctx.fillStyle = cream;
+    ctx.beginPath();
+    ctx.roundRect(24, top, w - 48, panel, 14);
+    ctx.fill();
+    rows.forEach((row, i) => {
+      const y = top + 22 + i * (rowHeight + gap);
       ctx.fillStyle = '#e2ddd2';
-      ctx.fillRect(60, y, w - 120, rowHeight);
-      ctx.fillStyle = red;
-      spaced(ctx, 2);
-      drawFit(ctx, row.label, w / 2, y + 27, w - 150, 15);
-      spaced(ctx, 0);
+      ctx.beginPath();
+      ctx.roundRect(44, y, w - 88, rowHeight, 8);
+      ctx.fill();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#6f695e';
+      drawFit(ctx, row.label, 62, y + rowHeight / 2 + 6, 130, 15, 800);
+      ctx.textAlign = 'right';
       ctx.fillStyle = ink;
-      drawFit(ctx, row.value, w / 2, y + 60, w - 150, 22);
-      y += rowHeight + gap;
+      drawFit(ctx, row.value, w - 62, y + rowHeight / 2 + 8, w - 250, 21);
+    });
+
+    let y = top + panel + 42;
+    if (card.next) {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = gray;
+      drawFit(ctx, card.next.title, 30, y, 200, 15, 800);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = lime;
+      drawFit(ctx, card.next.skill, w - 30, y + 2, w - 250, 22);
+      y += 26;
     }
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fillRect(30, y, w - 60, 1.5);
 
     // 六项能力
-    const col = (w - 48) / axes.length;
+    const col = (w - 60) / axes.length;
     axes.forEach((axis, i) => {
-      const cx = 24 + col * i + col / 2;
-      ctx.fillStyle = gray;
+      const cx = 30 + col * i + col / 2;
       ctx.textAlign = 'center';
-      drawFit(ctx, card.axisNames[axis], cx, 580, col - 6, 15);
+      ctx.fillStyle = gray;
+      drawFit(ctx, card.axisNames[axis], cx, y + 46, col - 6, 14, 800);
       ctx.fillStyle = '#ffffff';
       const value = String(axisLevel(card.scores[axis]));
-      ctx.font = font(54);
-      condensed(ctx, value, cx - (ctx.measureText(value).width * 0.78) / 2, 648, 54);
+      ctx.font = font(56);
+      condensed(ctx, value, cx - (ctx.measureText(value).width * 0.78) / 2, y + 118, 56);
     });
+
+    footer(ctx, `${card.text.quiz} · ${card.text.footer}`, w, h);
   });
 }
 
-// MARK: 限时动态 1080×1920
-
-export function drawStory(ctx: CanvasRenderingContext2D, card: CardInput) {
-  const [W, H] = cardSizes.story;
-  const color = palette(card.archetype);
-  const base = card.archetype === 'allround' ? '#120f0a' : '#0b0d24';
-  const soft = mix(color.glow, '#ffffff', 0.7);
-  ctx.textBaseline = 'alphabetic';
-
-  const background = ctx.createRadialGradient(W / 2, 576, 0, W / 2, 576, 1400);
-  background.addColorStop(0, mix(color.glow, base, 0.72));
-  background.addColorStop(0.55, mix(color.glow, base, 0.94));
-  background.addColorStop(1, '#05060f');
-  ctx.fillStyle = background;
-  ctx.fillRect(0, 0, W, H);
-
-  // 斜线
-  ctx.save();
-  ctx.translate(W / 2, H / 2);
-  ctx.rotate((30 * Math.PI) / 180);
-  ctx.fillStyle = rgba(color.glow, 0.09);
-  for (let x = -1600; x < 1600; x += 160) ctx.fillRect(x, -1600, 5, 3200);
-  ctx.restore();
-
-  // Logo
+/** 底边的一行小字：网址（或“在 App Store 搜 Badie”） */
+function footer(ctx: CanvasRenderingContext2D, text: string, w: number, h: number) {
   ctx.textAlign = 'center';
-  ctx.fillStyle = color.brand;
-  ctx.font = font(64);
-  ctx.fillText('badie', W / 2, 112);
-
-  // 角色窗
-  const [ax, ay, aw, ah] = [192, 165, 696, 800];
-  const outline: [number, number][] = [[42, 0], [334, 0], [362, 24], [aw, 24], [aw, ah], [0, ah], [0, 40]];
-  ctx.save();
-  ctx.translate(ax, ay);
-  ctx.save();
-  ctx.shadowColor = rgba(color.glow, 0.6);
-  ctx.shadowBlur = 110;
-  const frame = ctx.createLinearGradient(0, 0, aw * 0.4, ah);
-  frame.addColorStop(0, mix(color.glow, '#ffffff', 0.1));
-  frame.addColorStop(1, mix(color.glow, base, 0.62));
-  ctx.fillStyle = frame;
-  polygon(ctx, outline);
-  ctx.fill();
-  ctx.restore();
-
-  const [wx, wy, ww, wh] = [43, 53, aw - 86, ah - 96];
-  const pane = ctx.createLinearGradient(0, wy, 0, wy + wh);
-  pane.addColorStop(0, mix(color.glow, '#ffffff', 0.45));
-  pane.addColorStop(1, mix(color.glow, base, 0.35));
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(wx, wy, ww, wh);
-  ctx.clip();
-  ctx.fillStyle = pane;
-  ctx.fillRect(wx, wy, ww, wh);
-  ctx.drawImage(card.art, wx + 40, wy + 27, 533, 622);
-  // 拟声字
-  ctx.save();
-  ctx.translate(wx + ww - 24, wy + 110);
-  ctx.rotate((-10 * Math.PI) / 180);
-  ctx.textAlign = 'right';
-  ctx.font = font(84);
-  ctx.lineJoin = 'round';
-  ctx.lineWidth = 8;
-  ctx.strokeStyle = base;
-  ctx.strokeText(archetypeInfo[card.archetype].sound, 0, 0);
-  ctx.fillStyle = card.archetype === 'cannon' ? '#ffffff' : card.archetype === 'allround' ? gold : lime;
-  ctx.fillText(archetypeInfo[card.archetype].sound, 0, 0);
-  ctx.restore();
-  ctx.restore();
-
-  // 竖排 BADIE · 年份
-  ctx.save();
-  ctx.translate(14, 160);
-  ctx.rotate(Math.PI / 2);
-  ctx.textAlign = 'left';
-  ctx.fillStyle = soft;
-  ctx.font = font(21);
-  spaced(ctx, 5);
-  ctx.fillText(`BADIE · ${new Date().getFullYear()}`, 0, 0);
+  ctx.fillStyle = gray;
+  spaced(ctx, 3);
+  drawFit(ctx, text, w / 2, h - 24, w - 80, 13, 800);
   spaced(ctx, 0);
-  ctx.restore();
-  ctx.restore();
-
-  // 打法面板
-  const [tx, ty, tw, th] = [160, 896, 760, 256];
-  const panel = ctx.createLinearGradient(0, ty, 0, ty + th);
-  panel.addColorStop(0, rgba(mix(color.glow, base, 0.45), 0.94));
-  panel.addColorStop(1, rgba(mix(color.glow, base, 0.75), 0.96));
-  ctx.fillStyle = panel;
-  polygon(ctx, [[tx, ty], [tx + tw * 0.58, ty], [tx + tw * 0.62, ty - 4], [tx + tw, ty], [tx + tw, ty + th * 0.82], [tx + tw * 0.94, ty + th], [tx, ty + th]]);
-  ctx.fill();
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffffff';
-  drawFit(ctx, card.styleName, W / 2, ty + 108, tw - 60, 80);
-  ctx.font = font(28, 700);
-  ctx.fillStyle = mix(color.glow, '#ffffff', 0.8);
-  wrapLines(ctx, card.line, tw - 80, 2, card.locale).forEach((line, i) => ctx.fillText(line, W / 2, ty + 158 + i * 38));
-
-  // 六格数据
-  const [top, second, third] = topAxes(card.scores);
-  const tiles: { label: string; value: string; small?: string; icon: IconName }[] = [
-    { label: card.text.levelStatus, value: card.label, small: card.levelName, icon: 'hex' },
-    { label: card.text.bestShot, value: card.bestShot, icon: 'racket' },
-    { label: card.axisNames[top], value: String(axisLevel(card.scores[top])), icon: top },
-    { label: card.axisNames[second], value: String(axisLevel(card.scores[second])), icon: second },
-    card.next
-      ? { label: card.next.title, value: card.next.skill, icon: 'next' }
-      : { label: card.axisNames[third], value: String(axisLevel(card.scores[third])), icon: third },
-    { label: card.text.bestPartner, value: card.partner, icon: 'pair' },
-  ];
-  const [gx, gy, tileW, tileH, gap] = [117, 1179, 412, 144, 21];
-  tiles.forEach((tile, i) => {
-    const x = gx + (i % 2) * (tileW + gap);
-    const y = gy + Math.floor(i / 2) * (tileH + gap);
-    ctx.save();
-    ctx.translate(x, y);
-    polygon(ctx, [[16, 0], [tileW - 16, 0], [tileW, 17], [tileW, tileH - 17], [tileW - 16, tileH], [16, tileH], [0, tileH - 17], [0, 17]]);
-    const fill = ctx.createLinearGradient(0, 0, tileW, tileH);
-    fill.addColorStop(0, 'rgba(255,255,255,0.10)');
-    fill.addColorStop(1, 'rgba(255,255,255,0.03)');
-    ctx.fillStyle = fill;
-    ctx.fill();
-    ctx.strokeStyle = rgba(soft, 0.35);
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.clip();
-    ctx.globalAlpha = 0.22;
-    icon(ctx, tile.icon, tileW - 150, tileH - 128, 140, '#ffffff');
-    ctx.globalAlpha = 1;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = soft;
-    spaced(ctx, 2);
-    drawFit(ctx, tile.label, 27, 44, tileW - 54, 21);
-    spaced(ctx, 0);
-    ctx.fillStyle = '#ffffff';
-    const value = fitText(ctx, tile.value, tile.small ? 140 : tileW - 70, 56);
-    ctx.fillText(value, 27, 112);
-    if (tile.small) {
-      const after = 27 + ctx.measureText(value).width + 12;
-      drawFit(ctx, tile.small, after, 110, tileW - after - 30, 32, 800);
-    }
-    ctx.restore();
-  });
-
-  // 话题和落款
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#ffffff';
-  drawFit(ctx, card.text.hashtag, W / 2, 1770, 900, 36);
-  ctx.fillStyle = soft;
-  drawFit(ctx, card.text.noSignup, W / 2, 1822, 900, 32);
-  ctx.fillStyle = '#ffffff';
-  drawFit(ctx, card.text.footer, W / 2, 1868, 900, 38);
 }
 
 /** 等 Nunito 加载好再画（没加载好 canvas 会用系统字体） */
@@ -600,22 +348,24 @@ export async function fontsReady() {
   }
 }
 
-export function loadArt(archetype: Archetype) {
+/** 加载要画进卡片的图片（剪影、头像）。头像在别的域名上，要按跨域方式取，不然画完导不出图 */
+export function loadImage(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image();
+    image.crossOrigin = 'anonymous';
     image.onload = () => resolve(image);
     image.onerror = reject;
-    image.src = `/cards/${archetype}.svg`;
+    image.src = src;
   });
 }
 
+export const loadArt = (archetype: Archetype) => loadImage(`/cards/${archetype}.png`);
+
 /** 画成 PNG */
-export async function renderCard(size: CardSize, card: CardInput) {
-  const [width, height] = cardSizes[size];
+export async function renderCard(face: CardFace, card: CardInput) {
   const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
+  [canvas.width, canvas.height] = cardSize;
   const ctx = canvas.getContext('2d')!;
-  (size === 'post' ? drawPost : drawStory)(ctx, card);
+  (face === 'front' ? drawFront : drawBack)(ctx, card);
   return new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('toBlob'))), 'image/png'));
 }

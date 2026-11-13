@@ -209,16 +209,16 @@ export type Archetype = 'cannon' | 'net' | 'wall' | 'quick' | 'engine' | 'captai
 export const archetypes: Archetype[] = ['cannon', 'net', 'wall', 'quick', 'engine', 'captain', 'allround', 'rookie'];
 const archetypeOf: Record<Axis, Archetype> = { attack: 'cannon', net: 'net', defense: 'wall', speed: 'quick', footwork: 'engine', tactics: 'captain' };
 
-/** 打法的名字、一句话、最佳搭档（六边形战士和新星的搭档是“谁都行”）、卡片底色和上面的字色、拟声字 */
-export const archetypeInfo: Record<Archetype, { name: string; line: string; partner?: Archetype; color: string; ink: string; sound: string }> = {
-  cannon: { name: 'Cannon', line: 'One shot from the back decides it. You smash when you get the chance.', partner: 'net', color: '#d4f33f', ink: '#17140f', sound: 'ドン!' },
-  net: { name: 'Net magician', line: 'One net spin and they have to lift.', partner: 'cannon', color: '#8b7cf6', ink: '#ffffff', sound: 'ふわっ' },
-  wall: { name: 'Iron wall', line: 'They can’t put you away.', partner: 'quick', color: '#4f8cff', ink: '#ffffff', sound: 'ガッ' },
-  quick: { name: 'Quick draw', line: 'The faster the midcourt, the more at home you are.', partner: 'wall', color: '#ff9a3c', ink: '#17140f', sound: 'シュッ' },
-  engine: { name: 'Engine', line: 'You run the whole court and get to every shot.', partner: 'captain', color: '#2ec4b6', ink: '#17140f', sound: 'ダッ' },
-  captain: { name: 'Captain', line: 'You move everyone around the court.', partner: 'engine', color: '#ff5a5f', ink: '#ffffff', sound: 'ピタッ' },
-  allround: { name: 'All-rounder', line: 'No weak spots.', color: '#17140f', ink: '#d9b44a', sound: 'キラッ' },
-  rookie: { name: 'Rookie', line: 'Just starting out, when you improve fastest.', color: '#6ec1ff', ink: '#17140f', sound: 'ピョン' },
+/** 打法的名字、一句话、最佳搭档（六边形战士和新星的搭档是“谁都行”）、结果页这一块的底色和字色 */
+export const archetypeInfo: Record<Archetype, { name: string; line: string; partner?: Archetype; color: string; ink: string }> = {
+  cannon: { name: 'Smash cannon', line: 'One shot from the back decides it. You smash when you get the chance.', partner: 'net', color: '#d4f33f', ink: '#17140f' },
+  net: { name: 'Net magician', line: 'One net spin and they have to lift.', partner: 'cannon', color: '#8b7cf6', ink: '#ffffff' },
+  wall: { name: 'Iron wall', line: 'They can’t put you away.', partner: 'quick', color: '#4f8cff', ink: '#ffffff' },
+  quick: { name: 'Spring legs', line: 'The faster the midcourt, the more at home you are.', partner: 'wall', color: '#ff9a3c', ink: '#17140f' },
+  engine: { name: 'Little motor', line: 'You run the whole court and get to every shot.', partner: 'captain', color: '#2ec4b6', ink: '#17140f' },
+  captain: { name: 'Tactician', line: 'You move everyone around the court.', partner: 'engine', color: '#ff5a5f', ink: '#ffffff' },
+  allround: { name: 'All-rounder', line: 'No weak spots.', color: '#17140f', ink: '#d9b44a' },
+  rookie: { name: 'Rookie', line: 'Just starting out, when you improve fastest.', color: '#6ec1ff', ink: '#17140f' },
 };
 
 export type PlayStyle = {
