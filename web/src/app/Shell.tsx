@@ -20,7 +20,9 @@ export const signInFirst = (next: string) => `/signin/?next=${encodeURIComponent
 
 export function Shell({ path, me, guest, counts, children }: { path: string; me: Profile | null; guest: boolean; counts?: InboxCounts; children: ReactNode }) {
   const menu = useRef<HTMLDialogElement>(null);
-  const current = tabs.find((tab) => tab.match.test(path));
+  // 没登录的人：顶栏有“测等级”，等级表和问卷算在它下面，不算“我”
+  const onLevels = guest && /^\/(levels|level-quiz)\//.test(path);
+  const current = onLevels ? undefined : tabs.find((tab) => tab.match.test(path));
   const messages = counts ? counts.messages + counts.requests : 0;
   const badge = (tab: (typeof tabs)[number]) => (tab.to === '/messages/' ? messages : 0);
   const name = (tab: (typeof tabs)[number]) => (badge(tab) ? t('{label}, {n} unread', { label: t(tab.label), n: badge(tab) }) : t(tab.label));
@@ -56,7 +58,17 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
               ))}
             </ul>
           </nav>
-          <div className="ml-auto flex shrink-0 items-center gap-2">
+          {/* 小屏上没登录时有“测等级”和“登录”两个字的入口：间距收一点，360 宽也放得下最长的语言 */}
+          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+            {guest && (
+              <Link
+                to="/level-quiz/"
+                aria-current={onLevels ? 'page' : undefined}
+                className={`flex h-10 items-center rounded-full px-2 text-subhead font-bold whitespace-nowrap sm:px-3 ${onLevels ? 'bg-lime text-on-accent' : 'text-on-bar hover:bg-on-bar/10'}`}
+              >
+                {t('Level test')}
+              </Link>
+            )}
             <LanguageSwitch />
             {me ? (
               <>
@@ -73,7 +85,7 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
                 </Link>
               </>
             ) : guest && !path.startsWith('/signin/') && (
-              <Link to={signInFirst(path)} className="flex h-10 items-center rounded-full px-3 text-subhead font-bold text-on-bar hover:bg-on-bar/10">
+              <Link to={signInFirst(path)} className="flex h-10 items-center rounded-full px-2 text-subhead font-bold whitespace-nowrap text-on-bar hover:bg-on-bar/10 sm:px-3">
                 {t('Sign in')}
               </Link>
             )}
