@@ -25,6 +25,12 @@ export const pathPrefixes: Record<Locale, string> = {
 /** 有 10 种语言的静态页面：首页、等级表、每一档的页面（参数是去掉语言前缀后的路径） */
 export const everyLanguage = /^\/(?:$|levels\/)/;
 
+/** 去掉地址开头的语言前缀：/zh/levels/ → /levels/；没有前缀的原样返回 */
+export function withoutLanguagePrefix(pathname: string) {
+  const prefix = Object.values(pathPrefixes).filter(Boolean).sort((x, y) => y.length - x.length).find((p) => pathname.startsWith(`${p}/`));
+  return prefix ? pathname.slice(prefix.length) : pathname;
+}
+
 /** 在 from 语言的静态页面上换成 to：这页有那种语言的版本就去那一版，没有就去英文版（按记住的语言显示） */
 export function pathInLanguage(pathname: string, from: Locale, to: Locale) {
   const prefix = pathPrefixes[from];

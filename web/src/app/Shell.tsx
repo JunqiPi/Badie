@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { currentLocale, languages, pathInLanguage, rememberLocale, setLocale, startLocale, t, useLocale, type Locale } from './i18n';
+import { currentLocale, languages, pathInLanguage, rememberLocale, setLocale, startLocale, t, useLocale, withoutLanguagePrefix, type Locale } from './i18n';
 import { Icon, type IconName } from './icons';
 import { Avatar, CountBadge, IconTile, Wordmark, type Tint } from './kit';
 import { Link, navigate } from './router';
@@ -21,8 +21,10 @@ export const signInFirst = (next: string) => `/signin/?next=${encodeURIComponent
 export function Shell({ path, me, guest, counts, children }: { path: string; me: Profile | null; guest: boolean; counts?: InboxCounts; children: ReactNode }) {
   const menu = useRef<HTMLDialogElement>(null);
   // 没登录的人：顶栏有“测等级”，等级表和问卷算在它下面，不算“我”
-  const onLevels = guest && /^\/(levels|level-quiz)\//.test(path);
-  const current = onLevels ? undefined : tabs.find((tab) => tab.match.test(path));
+  // 其他语言的静态页面，构建时把页面里的站内地址都加了语言前缀（连传进来的 path 也是），判断在哪个 tab 之前先去掉
+  const local = withoutLanguagePrefix(path);
+  const onLevels = guest && /^\/(levels|level-quiz)\//.test(local);
+  const current = onLevels ? undefined : tabs.find((tab) => tab.match.test(local));
   const messages = counts ? counts.messages + counts.requests : 0;
   const badge = (tab: (typeof tabs)[number]) => (tab.to === '/messages/' ? messages : 0);
   const name = (tab: (typeof tabs)[number]) => (badge(tab) ? t('{label}, {n} unread', { label: t(tab.label), n: badge(tab) }) : t(tab.label));

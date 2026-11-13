@@ -4,7 +4,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { archetypeInfo, axisNames, questions } from '../src/app/assessment.ts';
 import { faq } from '../src/app/faq.ts';
-import { languages, pathInLanguage, t } from '../src/app/i18n.ts';
+import { languages, pathInLanguage, t, withoutLanguagePrefix } from '../src/app/i18n.ts';
 
 const app = new URL('../src/app/', import.meta.url);
 const sources = (dir: URL, pattern: RegExp) =>
@@ -68,4 +68,13 @@ test('静态页面上换语言：有那种语言的版本就去那一版，没�
   // 关于、球馆目录只有英文和简体中文
   assert.equal(pathInLanguage('/zh/courts/us/', 'zh-Hans', 'ja'), '/courts/us/');
   assert.equal(pathInLanguage('/zh/about/', 'zh-Hans', 'en'), '/about/');
+});
+
+test('去掉地址开头的语言前缀', () => {
+  assert.equal(withoutLanguagePrefix('/zh/levels/'), '/levels/');
+  assert.equal(withoutLanguagePrefix('/zh-hant/levels/4-plus/'), '/levels/4-plus/');
+  assert.equal(withoutLanguagePrefix('/ja/'), '/');
+  assert.equal(withoutLanguagePrefix('/levels/'), '/levels/');
+  // “/zhongshan/” 不是语言前缀
+  assert.equal(withoutLanguagePrefix('/courts/zh/'), '/courts/zh/');
 });
