@@ -36,6 +36,21 @@ export async function pwnedPasswords(page, leaked = []) {
   }));
 }
 
+/** 注册时的常去球馆：浏览器有定位时已经选好最近的一家，没有就按名字搜一家 */
+export async function pickUsualCourt(page, name = 'Los Angeles Badminton Club') {
+  if (await page.getByRole('button', { name: 'Change' }).isVisible()) return;
+  await page.getByRole('combobox', { name: 'Search courts' }).fill(name.slice(0, 12));
+  await page.getByRole('option', { name: new RegExp(name) }).first().click();
+}
+
+/** 快速匹配里选这家球馆：注册时选的常去球馆会默认带上（等它读出来），已经在就不再搜 */
+export async function chooseMatchVenue(page, name = 'Los Angeles Badminton Club') {
+  const already = await page.getByRole('button', { name: `Remove ${name}` }).waitFor({ timeout: 5000 }).then(() => true, () => false);
+  if (already) return;
+  await page.getByRole('combobox', { name: /^(Choose venue|Add or change venue)$/ }).fill(name.slice(0, 21));
+  await page.getByRole('option', { name: new RegExp(name) }).first().click();
+}
+
 /** 用邮箱 + 密码注册（输入邮件里的确认码）并建好资料，停在定级问卷 */
 export async function signUp(page, email, nickname, gender = 'Male') {
   page.on('pageerror', (error) => {
@@ -50,6 +65,7 @@ export async function signUp(page, email, nickname, gender = 'Male') {
   await page.getByRole('button', { name: 'Create account' }).click();
   await page.getByLabel('Nickname').fill(nickname);
   await page.getByRole('radio', { name: gender, exact: true }).click();
+  await pickUsualCourt(page);
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByText('Level quiz').waitFor();
 }

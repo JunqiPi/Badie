@@ -31,7 +31,7 @@ create function pg_temp.wd2() returns int language sql as $$
 $$;
 
 -- 1 我；2 同馆（21BC）；3、8、10 常去 5 公里外的 Synergy；4 没打开显示；5 拉黑了我；6 已是球友（同馆）；7 在圣地亚哥；
--- 9 同馆但没定级；10 给我发过好友申请；11–20 没收藏球馆
+-- 9 同馆、跳过了问卷（按 3 级算，也在大厅里）；10 给我发过好友申请；11–20 没收藏球馆
 update public.profiles set show_as_regular = (id <> pg_temp.u(4)), assessed_at = case when id <> pg_temp.u(9) then now() end
   where id in (select pg_temp.u(n) from generate_series(1, 20) n);
 update public.profiles set preferred_mode = 'doubles' where id = pg_temp.u(2);
@@ -47,18 +47,18 @@ insert into public.friend_requests (from_id, to_id) values (pg_temp.u(10), pg_te
 
 -- 谁出现 -------------------------------------------------------------------------
 select pg_temp.login(1);
-select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(3), pg_temp.u(8), pg_temp.u(10)],
-          '开了显示、定过级、没拉黑、收藏的球馆在附近的人；球友也出现；同馆的在前');
+select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(9), pg_temp.u(3), pg_temp.u(8), pg_temp.u(10)],
+          '开了显示、没拉黑、收藏的球馆在附近的人（跳过问卷的也在）；球友也出现；同馆的在前');
 insert into r select 'list', public.nearby_players(37.514849, -121.986485, 20);
 select is((select (v -> 0 ->> 'shared_venues')::int from r where k = 'list'), 1, '共同球馆个数');
 select is((select v -> 0 -> 'venues' -> 0 ->> 'id' from r where k = 'list'), 'v-us-ca-21-badminton-club-21bc', 'TA 在附近的球馆');
 select is((select v -> 0 -> 'user' ->> 'preferred_mode' from r where k = 'list'), 'doubles', '带上喜欢的打法');
-select is((select v -> 2 -> 'venues' -> 0 ->> 'km' from r where k = 'list')::numeric between 4 and 7, true, '距离按公里');
+select is((select v -> 3 -> 'venues' -> 0 ->> 'km' from r where k = 'list')::numeric between 4 and 7, true, '距离按公里');
 select is((select v -> 0 -> 'user' -> 'usual_times' from r where k = 'list'), '[]'::jsonb, '带上常用时间（没设是空的）');
 select is((select array_agg(x ->> 'is_friend' order by n) from r, jsonb_array_elements(v) with ordinality t(x, n) where k = 'list'),
-          array['false', 'true', 'false', 'false', 'false'], '是不是球友');
+          array['false', 'true', 'false', 'false', 'false', 'false'], '是不是球友');
 select is((select array_agg(coalesce(x ->> 'friend_request', '-') order by n) from r, jsonb_array_elements(v) with ordinality t(x, n) where k = 'list'),
-          array['-', '-', '-', '-', 'received'], 'TA 申请过加我');
+          array['-', '-', '-', '-', '-', 'received'], 'TA 申请过加我');
 
 -- 加球友：不同馆的人也能申请（大厅里的人都能看资料）
 select is(public.send_friend_request(pg_temp.u(3)), 'requested', '大厅里的人能申请加球友');
@@ -72,17 +72,15 @@ select throws_ok($$ select public.send_friend_request(pg_temp.u(12)) $$, '42501'
 
 -- 跳过 30 天
 select public.skip_nearby(pg_temp.u(8));
-select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(3), pg_temp.u(10)], '跳过的人不再出现');
+select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(9), pg_temp.u(3), pg_temp.u(10)], '跳过的人不再出现');
 reset role;
 update public.nearby_skips set created_at = now() - interval '31 days' where user_id = pg_temp.u(1);
 select pg_temp.login(1);
-select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(3), pg_temp.u(8), pg_temp.u(10)], '30 天后又出现');
+select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(9), pg_temp.u(3), pg_temp.u(8), pg_temp.u(10)], '30 天后又出现');
 
--- 定级以后出现
-reset role;
-update public.profiles set assessed_at = now() where id = pg_temp.u(9);
-select pg_temp.login(1);
-select ok(pg_temp.u(9) = any (pg_temp.near()), '定级以后出现在大厅里');
+-- 跳过问卷的按 3 级算
+select is((select (x -> 'user' ->> 'rating')::numeric from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) x
+           where x -> 'user' ->> 'id' = pg_temp.u(9)::text), 3.00, '跳过问卷的按 3 级算');
 
 -- 常用时间 ---------------------------------------------------------------------------
 select lives_ok(format($$ update public.profiles set usual_times = '[{"weekday": %s, "start": "14:00", "end": "18:00"}]' where id = %L $$,

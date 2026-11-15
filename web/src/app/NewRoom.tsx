@@ -123,8 +123,9 @@ export function NewRoom({ profile }: { profile: Profile }) {
   const level = eventLevel(profile, playEvent);
   const [isPublic, setPublic] = useState(true);
   const [slot, setSlot] = useState<Slot>(() => start.slot ?? { date: today(zone(), 1), from: 19 * 60, to: 21 * 60 });
-  const [min, setMin] = useState(Math.max(1, level - 1));
-  const [max, setMax] = useState(Math.min(9, level + 1));
+  // 默认不限水平
+  const [min, setMin] = useState(1);
+  const [max, setMax] = useState(9);
   const [picked, setPicked] = useState<RoomTag[]>([]);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -174,9 +175,10 @@ export function NewRoom({ profile }: { profile: Profile }) {
         <SlotFields slot={slot} onChange={setSlot} />
 
         <EventField mode={mode} gender={profile.gender} partner={invitee ? partner : null} value={playEvent} onChange={(value) => {
-          // 换了项目，自己的等级可能跟着换算：范围重新围着自己
-          const own = eventLevel(profile, value);
+          // 换了项目，自己的等级可能跟着换算：自己缩小过范围的，范围重新围着自己；不限的照样不限
           setChosen(value);
+          if (min === 1 && max === 9) return;
+          const own = eventLevel(profile, value);
           setMin(Math.max(1, own - 1));
           setMax(Math.min(9, own + 1));
         }} />

@@ -290,7 +290,7 @@ function NewRequest({ profile, editing, onCreated, onCancelEdit }: { profile: Pr
   });
   const [from, setFrom] = useState(draft?.from ?? 19 * 60);
   const [to, setTo] = useState(draft?.to ?? 21 * 60);
-  const [tolerance, setTolerance] = useState<1 | 2 | 8>(editing?.skill_tolerance ?? 1);
+  const [tolerance, setTolerance] = useState<1 | 2 | 8>(editing?.skill_tolerance ?? 8);
   const [autoAccept, setAutoAccept] = useState(editing?.auto_accept ?? false);
   // 项目：记住上次的选择（只存在这个浏览器里）；换成单打时混双不能选，按不限
   const [chosen, setChosen] = useState<PlayEvent>(() => {

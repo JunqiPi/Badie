@@ -93,7 +93,7 @@ select is((select v - 'room_id' from r where k = 'dbl_yes'), '{"status": "accept
 select is((select (x ->> 'status') || ' ' || (x ->> 'visibility') || ' ' || (x ->> 'going') || '/' || (x ->> 'capacity')
            from pg_temp.summary('dbl') x), 'open public 2/4', '公开的双打局，2/4');
 select is((select x -> 'invite' from pg_temp.summary('dbl') x), 'null'::jsonb, '不再是一对一的邀请');
-select is((select (x ->> 'level_min') || '-' || (x ->> 'level_max') from pg_temp.summary('dbl') x), '3-6', '水平范围：两个人上下各一级');
+select is((select (x ->> 'level_min') || '-' || (x ->> 'level_max') from pg_temp.summary('dbl') x), '1-9', '水平范围不限');
 select is(pg_temp.last_title(5), 'Ex1 said yes to doubles', '告诉对方');
 select ok(not exists (select 1 from jsonb_array_elements(public.nearby_invites()) x where (x ->> 'id') = pg_temp.room('dbl')::text),
           '不在邀请列表里');

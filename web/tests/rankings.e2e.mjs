@@ -47,12 +47,13 @@ await alex.getByRole('button', { name: 'Last week' }).click();
 await alex.getByRole('heading', { name: 'Last week' }).waitFor();
 await alex.getByRole('heading', { name: 'Court champions' }).waitFor();
 await alex.waitForFunction(() => !document.querySelector('.skeleton'));
-if (await alex.getByText('Alex (you)').count()) throw new Error('this week’s games showed up on last week’s board');
+// 只看周榜（下面的本月馆主按月算，Alex 本月是馆主）
+if (await alex.getByRole('region', { name: 'Last week' }).getByText('Alex (you)').count()) throw new Error('this week’s games showed up on last week’s board');
 await alex.getByRole('button', { name: 'This week' }).click();
 await alex.getByRole('listitem').filter({ hasText: 'Alex (you)' }).getByText('38 pts').waitFor();
 
 // 资料页的胜率（自己看得到，3 场还不公开）
-await alex.getByRole('link', { name: /Alex \(you\)/ }).click();
+await alex.getByRole('region', { name: 'This week' }).getByRole('link', { name: /Alex \(you\)/ }).click();
 await alex.getByText('100%', { exact: true }).waitFor();
 await alex.getByText('Others can see this after 5 confirmed games.').waitFor();
 

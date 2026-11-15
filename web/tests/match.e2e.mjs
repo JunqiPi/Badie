@@ -2,7 +2,7 @@
 // 需要本地 Supabase 和已启动的网站；把球局挪到“已开始”要直接改库（DB_URL）
 import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
-import { base, signUp } from './helpers.mjs';
+import { base, chooseMatchVenue, signUp } from './helpers.mjs';
 
 const db = process.env.DB_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 const stamp = Date.now();
@@ -40,8 +40,7 @@ async function request(page) {
   await page.getByRole('button', { name: 'Singles' }).click();
   // 选明天：今晚的局离现在不到 2 小时就算临时局，测试结果不能看运行的时间
   await page.getByRole('radiogroup', { name: 'Date', exact: true }).getByRole('radio').nth(1).click();
-  await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
-  await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
+  await chooseMatchVenue(page);
   await page.getByRole('button', { name: 'Start matching' }).click();
 }
 

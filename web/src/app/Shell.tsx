@@ -24,7 +24,8 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
   // 其他语言的静态页面，构建时把页面里的站内地址都加了语言前缀（连传进来的 path 也是），判断在哪个 tab 之前先去掉
   const local = withoutLanguagePrefix(path);
   const onLevels = guest && /^\/(levels|level-quiz)\//.test(local);
-  const current = onLevels ? undefined : tabs.find((tab) => tab.match.test(local));
+  const tab = tabs.find((item) => item.match.test(local));
+  const current = onLevels ? undefined : tab;
   const messages = counts ? counts.messages + counts.requests : 0;
   const badge = (tab: (typeof tabs)[number]) => (tab.to === '/messages/' ? messages : 0);
   const name = (tab: (typeof tabs)[number]) => (badge(tab) ? t('{label}, {n} unread', { label: t(tab.label), n: badge(tab) }) : t(tab.label));
@@ -99,8 +100,9 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
         </div>
       </header>
 
-      {/* key 让每次换 tab 都重新播放进场动画 */}
-      <main id="main" key={current?.to ?? path} className="page animate-enter pt-5 pb-[calc(var(--tabbar)+1.5rem)] lg:pt-8 lg:pb-16">
+      {/* key 让每次换 tab 都重新播放进场动画。只跟地址走、不跟登录状态走：
+          查完登录状态（没登录时“测等级”亮）不能让页面重新生成，不然页面脚本改过的内容（分享卡片带来的“你的朋友是 4+”）会被冲掉 */}
+      <main id="main" key={tab?.to ?? path} className="page animate-enter pt-5 pb-[calc(var(--tabbar)+1.5rem)] lg:pt-8 lg:pb-16">
         {children}
       </main>
       <Footer />

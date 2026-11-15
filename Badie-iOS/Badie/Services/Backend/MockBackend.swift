@@ -62,6 +62,8 @@ final class MockBackend {
     var remotePoolByDay: (center: Coordinate, radiusKm: Double, at: Date, counts: [String: Int])?
     /// 服务器上的管理员（只用来显示演示模式开关；审核权限在服务器上另外检查）
     var remoteIsAdmin = false
+    /// 这次启动已从服务器读过谁的常去球馆（读到之前本机缓存可能是空的，不能当作“没有常去球馆”）
+    var remoteFavoritesLoadedFor: String?
     /// 上次按位置拉取球馆的地点、半径和时间
     var remoteVenuesLoaded: (center: Coordinate, radiusKm: Double, at: Date)?
     /// 附近的人（只在演示模式用，正式后端都记在服务器上）：跳过的人、发邀请的时间（每天 10 个）、
