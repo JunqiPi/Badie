@@ -68,7 +68,7 @@ select is((select v from r where k = 'enough'), '0', '附近真人到 6 个就�
 
 -- 9 号没定级：不补示例
 select pg_temp.login(9);
-insert into r select 'unrated', jsonb_array_length(pg_temp.list())::text;
+insert into r select 'unrated', pg_temp.samples()::text;
 reset role;
 select is((select v from r where k = 'unrated'), '0', '没定级的人不补示例');
 
