@@ -27,7 +27,7 @@ begin
   if have >= 6 then return found; end if;
   -- 没定级的人看不到附近的人，也不补示例
   if auth.uid() is null or not public.has_level(auth.uid()) then return found; end if;
-  select p.rating into mine from public.profiles p where p.id = auth.uid();
+  select coalesce(p.rating, 3) into mine from public.profiles p where p.id = auth.uid();
 
   -- 示例“常去”的球馆：我附近真实的球馆，近的在前，最多 4 家
   select coalesce(jsonb_agg(jsonb_build_object('id', v.id, 'name', v.name, 'km', round((v.dist / 1000)::numeric, 1)) order by v.dist, v.id), '[]'::jsonb)

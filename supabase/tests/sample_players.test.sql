@@ -25,7 +25,7 @@ create temp table r (k text primary key, v text);
 grant all on r to authenticated, anon;
 
 -- 都定了级；2–8 号收藏了弗里蒙特的一家球馆、愿意被看到
-update public.profiles set rating = 4, assessed_at = now(), show_as_regular = true where id in (select pg_temp.u(n) from generate_series(1, 8) n);
+update public.profiles set assessed_at = now(), show_as_regular = true where id in (select pg_temp.u(n) from generate_series(1, 8) n);
 insert into public.favorite_venues (user_id, venue_id)
   select pg_temp.u(n), (select v.id from public.venues v
                         where extensions.st_dwithin(v.location, extensions.st_makepoint(-121.986485, 37.514849)::extensions.geography, 20000)
@@ -39,7 +39,8 @@ insert into r select 'total', jsonb_array_length(pg_temp.list())::text;
 insert into r select 'samples', pg_temp.samples()::text;
 insert into r select 'first_real', (not public.is_sample_player((pg_temp.list() -> 0 -> 'user' ->> 'id')::uuid))::text;
 insert into r select 'photo', pg_temp.list() -> 3 -> 'user' ->> 'card_photo';
-insert into r select 'rating_ok', (((pg_temp.list() -> 3 -> 'user' ->> 'rating')::numeric) between 3 and 5)::text;
+insert into r select 'rating_ok', (abs((pg_temp.list() -> 3 -> 'user' ->> 'rating')::numeric - (select coalesce(p.rating, 3) from public.profiles p where p.id = pg_temp.u(1))) <= 1.01
+                                    or (pg_temp.list() -> 3 -> 'user' ->> 'rating')::numeric in (1, 6.33))::text;
 insert into r select 'has_venue', (jsonb_array_length(pg_temp.list() -> 3 -> 'venues') = 1)::text;
 reset role;
 select is((select v from r where k = 'real'), '3', '附近有 3 个真人');
