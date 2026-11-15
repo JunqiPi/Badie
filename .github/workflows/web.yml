@@ -91,7 +91,7 @@ jobs:
           WRANGLER_SEND_METRICS=false npx --yes wrangler@4.151.1 pages dev dist --ip 127.0.0.1 --port 4321 &
           for i in $(seq 1 60); do curl -sf http://127.0.0.1:4321/app/ >/dev/null && break; sleep 1; done
 
-      # 失败时把最后几十行另外打成提示：不登录 GitHub 也能在这次运行的页面上看到
+      # 失败时把最后几行另外打成提示：不登录 GitHub 也能在这次运行的页面上看到
       - name: Run end-to-end tests
         working-directory: web
         run: |
@@ -99,6 +99,6 @@ jobs:
           npm run e2e 2>&1 | tee /tmp/e2e.txt
           code=${PIPESTATUS[0]}
           if [ "$code" != 0 ]; then
-            tail -n 25 /tmp/e2e.txt | cut -c1-300 | while IFS= read -r line; do [ -n "$line" ] && echo "::error title=e2e::$line"; done
+            tail -n 9 /tmp/e2e.txt | cut -c1-300 | while IFS= read -r line; do [ -n "$line" ] && echo "::error title=e2e::$line"; done
           fi
           exit "$code"
