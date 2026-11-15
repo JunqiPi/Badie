@@ -1,0 +1,23 @@
+{
+  "arrow.right": "arrow_forward",
+  "bolt.fill": "bolt-fill",
+  "bubble.left.and.bubble.right": "forum",
+  "bubble.left.and.bubble.right.fill": "forum-fill",
+  "checkmark.circle.fill": "check_circle-fill",
+  "chevron.left": "chevron_left",
+  "chevron.right": "chevron_right",
+  "exclamationmark.triangle.fill": "warning-fill",
+  "figure.badminton": "badminton-fill",
+  "heart": "favorite",
+  "heart.fill": "favorite-fill",
+  "info.circle.fill": "info-fill",
+  "number": "tag",
+  "person.3.fill": "groups-fill",
+  "person.crop.circle": "account_circle",
+  "person.crop.circle.fill": "account_circle-fill",
+  "plus": "add",
+  "sportscourt.fill": "stadium-fill",
+  "ticket": "confirmation_number",
+  "ticket.fill": "confirmation_number-fill",
+  "xmark": "close"
+}

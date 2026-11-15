@@ -1,0 +1,61 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main, "claude/**" ]
+    paths:
+      - "Badie-Android/**"
+      - "Badie-iOS/Badie/Localizable.xcstrings"
+      - ".github/workflows/android.yml"
+  pull_request:
+    paths:
+      - "Badie-Android/**"
+      - "Badie-iOS/Badie/Localizable.xcstrings"
+  workflow_dispatch:
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Test, lint & build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: Badie-Android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # 界面文字在构建时从 iPhone 的 Localizable.xcstrings 转出来，所以改了那个文件也要跑这里
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --console=plain
+
+      - name: Lint
+        run: ./gradlew :app:lintDebug --console=plain
+
+      - name: Build
+        run: ./gradlew :app:assembleDebug --console=plain
+
+      # 调试包：没有正式签名，只用来装到自己的手机上看
+      - uses: actions/upload-artifact@v4
+        with:
+          name: badie-debug-apk
+          path: Badie-Android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: reports
+          path: |
+            Badie-Android/app/build/reports
+          retention-days: 7
