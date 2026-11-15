@@ -18,7 +18,9 @@ class BadieApplication : Application() {
     val environment: AppEnvironment by lazy {
         val remote = SupabaseClient(KeystoreSessionStorage.create(this), OkHttpTransport.transport)
         val backend = Backend(remote, cacheStore(), deviceCountry = { Locale.getDefault().country }, serverLocale = { AppLanguage.current })
-        AppEnvironment(MainScope(), backend).also { it.appState.start() }
+        val settings = getSharedPreferences("settings", MODE_PRIVATE)
+        AppEnvironment(MainScope(), backend, settings.getString("appearance", null)) { settings.edit().putString("appearance", it).apply() }
+            .also { it.appState.start() }
     }
 
     /** 本机缓存：一个文件，放在 App 自己的目录里（不备份，见 data_extraction_rules.xml） */

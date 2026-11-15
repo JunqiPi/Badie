@@ -33,6 +33,10 @@ object Sym {
     val eyeSlashFill = SymbolId(R.drawable.sym_visibility_off_fill)
     /** figure.badminton */
     val figureBadminton = SymbolId(R.drawable.sym_badminton_fill)
+    /** gearshape.fill */
+    val gearshapeFill = SymbolId(R.drawable.sym_settings_fill)
+    /** globe */
+    val globe = SymbolId(R.drawable.sym_language)
     /** heart */
     val heart = SymbolId(R.drawable.sym_favorite)
     /** heart.fill */

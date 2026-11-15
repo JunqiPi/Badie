@@ -16,7 +16,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Stable
-class AppState(private val scope: CoroutineScope, val backend: Backend) {
+class AppState(
+    private val scope: CoroutineScope,
+    val backend: Backend,
+    /** 上次选的外观 */
+    savedAppearance: String? = null,
+    private val saveAppearance: (String) -> Unit = {},
+) {
     enum class Phase { Launching, Onboarding, Main }
 
     var phase by mutableStateOf(Phase.Launching)
@@ -24,7 +30,14 @@ class AppState(private val scope: CoroutineScope, val backend: Backend) {
 
     var toast by mutableStateOf<Toast?>(null)
 
-    var appearance by mutableStateOf(Appearance.System)
+    /** 外观（跟随系统、浅色、深色）；改了就记到本机 */
+    var appearance: Appearance
+        get() = appearanceState
+        set(value) {
+            appearanceState = value
+            saveAppearance(value.name)
+        }
+    private var appearanceState by mutableStateOf(Appearance.entries.firstOrNull { it.name == savedAppearance } ?: Appearance.System)
 
     val currentUser: User? get() = backend.currentUser
 
@@ -82,8 +95,8 @@ class AppState(private val scope: CoroutineScope, val backend: Backend) {
 }
 
 /** 整个 App 共用的状态和管理器，对应 iPhone 的 AppEnvironment */
-class AppEnvironment(scope: CoroutineScope, backend: Backend) {
-    val appState = AppState(scope, backend)
+class AppEnvironment(scope: CoroutineScope, backend: Backend, savedAppearance: String? = null, saveAppearance: (String) -> Unit = {}) {
+    val appState = AppState(scope, backend, savedAppearance, saveAppearance)
     val router = Router()
 }
 

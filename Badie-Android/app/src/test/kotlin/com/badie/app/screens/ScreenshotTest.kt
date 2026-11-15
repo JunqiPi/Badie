@@ -41,6 +41,8 @@ import com.badie.app.features.onboarding.GenderPromptView
 import com.badie.app.features.onboarding.OnboardingFlow
 import com.badie.app.features.onboarding.OnboardingModel
 import com.badie.app.features.onboarding.OnboardingStep
+import com.badie.app.features.profile.LanguagePicker
+import com.badie.app.features.profile.SettingsView
 import com.badie.app.models.Avatar
 import com.badie.app.models.GameMode
 import com.badie.app.models.Gender
@@ -170,6 +172,12 @@ class ScreenshotTest {
     fun preferences() = shot("onboarding-6-preferences") {
         OnboardingFlow(onboarding(OnboardingStep.Preferences, LocalEnv.current) { preferredMode = GameMode.Doubles })
     }
+
+    @Test
+    fun settings() = shot("settings") { SettingsView() }
+
+    @Test
+    fun languagePicker() = shot("language-picker-ko", qualifiers = "ko") { LanguagePicker {} }
 
     @Test
     fun genderPrompt() = shot("gender-prompt") { GenderPromptView() }

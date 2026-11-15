@@ -57,6 +57,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.badie.app.design.AppTheme
 import com.badie.app.design.CountBadge
 import com.badie.app.design.Dot
+import com.badie.app.design.IconButton
 import com.badie.app.design.IconTile
 import com.badie.app.design.LargeTitleHeader
 import com.badie.app.design.ScreenHeader
@@ -68,6 +69,7 @@ import com.badie.app.design.pressable
 import com.badie.app.design.rememberHaptics
 import com.badie.app.design.rounded
 import com.badie.app.design.sticker
+import com.badie.app.features.profile.SettingsView
 import com.badie.app.l10n.tr
 import kotlinx.coroutines.launch
 
@@ -141,8 +143,11 @@ fun MainTabView() {
 /** 各标签页的根页面。页面还没搬过来的，先只有标题 */
 @Composable
 private fun TabRoot(tab: MainTab) {
+    val router = LocalEnv.current.router
     Column(Modifier.fillMaxSize()) {
-        LargeTitleHeader(tr(tab.titleKey))
+        LargeTitleHeader(tr(tab.titleKey)) {
+            if (tab == MainTab.Profile) IconButton(Sym.gearshapeFill, tr("设置")) { router.open(Route.Settings) }
+        }
     }
 }
 
@@ -150,6 +155,7 @@ private fun TabRoot(tab: MainTab) {
 @Composable
 private fun RouteDestination(route: Route) {
     val router = LocalEnv.current.router
+    if (route == Route.Settings) return SettingsView()
     Column(Modifier.fillMaxSize()) {
         ScreenHeader(
             title = when (route) {

@@ -48,9 +48,12 @@ object AppLanguage {
     val chosen: String?
         get() = AppCompatDelegate.getApplicationLocales().get(0)?.let(::match)
 
+    /** 跟随系统时用哪种：按系统的语言顺序挑第一个我们有的 */
+    val system: String
+        get() = match(LocaleListCompat.getAdjustedDefault().let { list -> (0 until list.size()).mapNotNull(list::get) })
+
     /** 现在实际用的语言 */
-    val current: String
-        get() = chosen ?: match(LocaleListCompat.getAdjustedDefault().let { list -> (0 until list.size()).mapNotNull(list::get) })
+    val current: String get() = chosen ?: system
 
     /** 换语言（null = 跟随系统）；不认识的语言也按跟随系统 */
     fun choose(code: String?) {

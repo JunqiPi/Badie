@@ -252,6 +252,15 @@ class Backend(
         }
     }
 
+    /** 在 App 里换了语言：通知、邮件也跟着换。没同步上的话，下次读资料时会再对一次 */
+    suspend fun syncServerLocale() {
+        val id = state.user?.id ?: return
+        try {
+            remote.update("profiles", "id=eq.$id", json("locale" to serverLocale()))
+        } catch (_: RemoteError) {
+        }
+    }
+
     /** 以前注册、还没选性别的人补选 */
     suspend fun updateGender(gender: Gender) = updateProfile(json("gender" to gender.serverJSON)) { it.copy(gender = gender) }
 
