@@ -37,7 +37,7 @@ create function pg_temp.invited(n int) returns jsonb language sql as $$
   select x from jsonb_array_elements(public.nearby_invites()) x where x -> 'invite' -> 'to' ->> 'id' = pg_temp.u(n)::text
 $$;
 
--- 1–15 都开了显示、定过级、常去 21BC；13 没开显示；14 没定级；15 是 2 的球友；16 没收藏球馆
+-- 1–15 都开了显示、定过级、常去 21BC；13 没开显示；14 跳过了问卷（按 3 级算，能约）；15 是 2 的球友；16 没收藏球馆
 update public.profiles set show_as_regular = (id <> pg_temp.u(13)), assessed_at = case when id <> pg_temp.u(14) then now() end
   where id in (select pg_temp.u(n) from generate_series(1, 16) n);
 update public.profiles set locale = 'zh-Hans' where id = pg_temp.u(4);
@@ -75,8 +75,10 @@ select ok((public.player_card(pg_temp.u(1)) ->> 'usual_times') is not null, '资
 
 -- 不能约的
 select pg_temp.login(1);
-select throws_ok($$ select public.invite_player(pg_temp.u(14), 'v-us-ca-21-badminton-club-21bc', pg_temp.at(1, '14:00'), pg_temp.at(1, '18:00')) $$,
-                 'P0002', 'not_available', '没定级的不能约');
+-- 不真的发：每天 10 个的上限后面要用
+reset role;
+select is(public.invite_allowed(pg_temp.u(1), pg_temp.u(14)), true, '跳过问卷的也能约（按 3 级算）');
+select pg_temp.login(1);
 select throws_ok($$ select public.invite_player(pg_temp.u(13), 'v-us-ca-21-badminton-club-21bc', pg_temp.at(1, '14:00'), pg_temp.at(1, '18:00')) $$,
                  'P0002', 'not_available', '没开显示的不能约');
 select throws_ok($$ select public.invite_player(pg_temp.u(1), 'v-us-ca-21-badminton-club-21bc', pg_temp.at(1, '14:00'), pg_temp.at(1, '18:00')) $$,

@@ -19,7 +19,7 @@ create function pg_temp.ids(list jsonb) returns uuid[] language sql as $$
   select coalesce(array_agg((x ->> 'id')::uuid order by n), '{}') from jsonb_array_elements(list) with ordinality t(x, n)
 $$;
 
--- 1 是我；5 没开显示；6 被我拉黑；7 被我举报过；8 没定级；其余开了显示、定过级
+-- 1 是我；5 没开显示；6 被我拉黑；7 被我举报过；8 跳过了问卷（按 3 级算，也列出来）；其余开了显示、定过级
 update public.profiles set show_as_regular = (id <> pg_temp.u(5)), assessed_at = case when id <> pg_temp.u(8) then now() end
   where id in (select pg_temp.u(n) from generate_series(1, 8) n);
 update public.profiles set show_as_regular = true where id = pg_temp.u(8);
@@ -46,8 +46,8 @@ insert into public.game_players (game_id, user_id, team, rating) values
 select pg_temp.login(1);
 select is(pg_temp.ids(public.venue_people('v-us-ca-21-badminton-club-21bc') -> 'recent'), array[pg_temp.u(4), pg_temp.u(2), pg_temp.u(3)],
           '最近打过：近的在前，不列自己、还没打的、30 天前的');
-select is(pg_temp.ids(public.venue_people('v-us-ca-21-badminton-club-21bc') -> 'regulars'), array[pg_temp.u(2), pg_temp.u(3)],
-          '常客：不列自己、没开显示、拉黑、举报过、没定级的');
+select is(pg_temp.ids(public.venue_people('v-us-ca-21-badminton-club-21bc') -> 'regulars'), array[pg_temp.u(2), pg_temp.u(3), pg_temp.u(8)],
+          '常客：不列自己、没开显示、拉黑、举报过的；跳过问卷的也列出来');
 select is((public.venue_people('v-us-ca-21-badminton-club-21bc') -> 'recent' -> 1) ?& array['nickname', 'tag', 'rating', 'avatar', 'card_color',
           'card_photo', 'preferred_mode', 'usual_times', 'recent_no_shows'], true, '和附近的人一样的资料');
 

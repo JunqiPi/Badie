@@ -50,7 +50,7 @@ insert into r select 'dbl', public.invite_player(pg_temp.u(2), 'v-us-ca-21-badmi
                                                  null, 120, 'doubles');
 select pg_temp.login(2);
 select lives_ok(format('select public.respond_invite(%L, true)', pg_temp.room('dbl')), '两位 1 级女生约双打：能答应');
-select is(pg_temp.levels('dbl'), '1-2', '水平范围 1–2');
+select is(pg_temp.levels('dbl'), '1-9', '水平范围不限');
 select pg_temp.login(1);
 select lives_ok(format('select public.create_room(%L, %L, %L, %L, %L, 1, 3)', 'doubles', 'public', 'v-us-ca-21-badminton-club-21bc',
                        pg_temp.at(3, '19:00'), pg_temp.at(3, '21:00')), '1 级女生能开不限性别的局');
