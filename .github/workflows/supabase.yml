@@ -45,8 +45,16 @@ jobs:
       - name: Lint schema
         run: supabase db lint -s public --level warning --fail-on warning
 
+      # 失败的那几行另外打成提示：不登录 GitHub 也能在这次运行的页面上看到
       - name: Run database tests
-        run: supabase test db
+        run: |
+          set +e
+          supabase test db 2>&1 | tee /tmp/dbtests.txt
+          code=${PIPESTATUS[0]}
+          if [ "$code" != 0 ]; then
+            grep -nE "not ok|Failed test|ERROR|Dubious|Parse errors|Bad plan|# +(have|want|died|caught|wanted)" /tmp/dbtests.txt | head -30 | while IFS= read -r line; do echo "::error title=database test::$line"; done
+          fi
+          exit "$code"
 
       # 生产库每次部署都会再执行一遍 seed.sql
       - name: Seed can be re-run
