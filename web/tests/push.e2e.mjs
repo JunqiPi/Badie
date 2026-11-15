@@ -4,7 +4,7 @@
 import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
-import { base, signUp } from './helpers.mjs';
+import { base, chooseMatchVenue, signUp } from './helpers.mjs';
 
 const db = process.env.DB_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322/postgres';
 const sql = (query) => execFileSync('psql', [db, '-qtAc', query]).toString().trim();
@@ -55,8 +55,7 @@ await page.goto(`${base}/games/`);
 await page.getByRole('link', { name: 'Start matching' }).click();
 await page.getByRole('button', { name: 'Singles' }).click();
 await page.getByRole('radiogroup', { name: 'Date', exact: true }).getByRole('radio').nth(1).click();
-await page.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
-await page.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
+await chooseMatchVenue(page);
 await page.getByRole('button', { name: 'Start matching' }).click();
 const prompt = page.getByText('Get a notification as soon as you’re matched.');
 await prompt.waitFor();

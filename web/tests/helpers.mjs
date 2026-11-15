@@ -43,6 +43,14 @@ export async function pickUsualCourt(page, name = 'Los Angeles Badminton Club') 
   await page.getByRole('option', { name: new RegExp(name) }).first().click();
 }
 
+/** 快速匹配里选这家球馆：注册时选的常去球馆会默认带上（等它读出来），已经在就不再搜 */
+export async function chooseMatchVenue(page, name = 'Los Angeles Badminton Club') {
+  const already = await page.getByRole('button', { name: `Remove ${name}` }).waitFor({ timeout: 5000 }).then(() => true, () => false);
+  if (already) return;
+  await page.getByRole('combobox', { name: /^(Choose venue|Add or change venue)$/ }).fill(name.slice(0, 21));
+  await page.getByRole('option', { name: new RegExp(name) }).first().click();
+}
+
 /** 用邮箱 + 密码注册（输入邮件里的确认码）并建好资料，停在定级问卷 */
 export async function signUp(page, email, nickname, gender = 'Male') {
   page.on('pageerror', (error) => {
