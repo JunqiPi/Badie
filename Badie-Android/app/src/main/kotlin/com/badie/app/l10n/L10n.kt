@@ -4,8 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 
 /**
  * 界面文字。和 iPhone 一样，代码里写简体中文原文（就是 xcstrings 里的 key），
@@ -43,8 +42,7 @@ object L10n {
 @Composable
 @ReadOnlyComposable
 fun tr(key: String, vararg args: Any?): String {
-    LocalConfiguration.current
-    return L10n.lookup(LocalContext.current.resources, key, args)
+    return L10n.lookup(LocalResources.current, key, args)
 }
 
 internal object L10nFormat {

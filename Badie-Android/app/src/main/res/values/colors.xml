@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 图标的底色，和 iPhone 的图标一样 -->
+    <color name="ic_launcher_background">#D5FA23</color>
+</resources>

@@ -36,6 +36,11 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // 只带我们有译文的 10 种语言；依赖库自带的其他语言不打进包
+    androidResources {
+        localeFilters += listOf("en", "b+zh+Hans", "b+zh+Hant", "ja", "ko", "in", "ms", "th", "vi", "hi")
+    }
 }
 
 dependencies {

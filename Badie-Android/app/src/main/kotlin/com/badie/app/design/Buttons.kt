@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 
 // MARK: - 主按钮：描边 + 垂直硬投影，按下时压平
@@ -107,7 +108,7 @@ fun BrutalButton(
             }
             .clip(shape)
             .clickable(interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
-            .offset(y = sink)
+            .offset { IntOffset(0, sink.roundToPx()) }
             .padding(horizontal = size.horizontalPadding),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
