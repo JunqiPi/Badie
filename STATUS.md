@@ -62,7 +62,7 @@
 
 **这个云端开发环境的坑**
 
-- 没有 Android SDK，要自己装：下载 `commandlinetools-linux`，`sdkmanager "platforms;android-37.0" "build-tools;37.0.0" "platform-tools"`，在 `Badie-Android/local.properties` 写 `sdk.dir=`（这个文件不进仓库）。
+- 没有 Android SDK，要自己装：下载 `commandlinetools-linux`，`sdkmanager "platforms;android-37.0" "build-tools;36.0.0" "platform-tools"`，在 `Badie-Android/local.properties` 写 `sdk.dir=`（这个文件不进仓库）。
 - Maven Central 在这里被限流（一多半请求回 429）：第一次构建要反复跑十几遍才能把依赖下全，下全以后就快了。加新依赖时也会这样。CI 上没有这个问题。
 - 读 CI 的日志很费 token：编译错误尽量在本机跑出来。
 
