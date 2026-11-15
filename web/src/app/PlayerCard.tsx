@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react';
 import { t } from './i18n';
-import { Shuttlecock } from './icons';
 import { LevelBadge } from './kit';
 import { Link } from './router';
-import { isSample } from './samples';
 import { avatarUrl, tagText } from './supabase';
 
 /** 卡片颜色：没传背景照片时，卡片上半部分用这个颜色（和服务器、iOS 同一套名字） */
@@ -68,13 +66,7 @@ export function CardCover({ person, className = '', children }: { person: CardPe
   const color = cardColorOf(person.id, person.card_color);
   return (
     <div className={`relative overflow-hidden ${person.card_photo ? 'bg-surface-muted' : background[color]} ${className}`}>
-      {isSample(person.id) ? (
-        // 示例球友：照片位是一张写着“示例”的占位图
-        <div className="absolute inset-0 grid place-content-center justify-items-center gap-3 bg-surface-muted bg-[repeating-linear-gradient(135deg,transparent_0_16px,rgb(23_20_15/0.05)_16px_32px)]">
-          <Shuttlecock className="size-16 opacity-25" />
-          <span className="rounded-full border-2 border-dashed border-stroke bg-surface px-5 py-1.5 text-title2 text-ink-secondary">{t('Sample')}</span>
-        </div>
-      ) : person.card_photo
+      {person.card_photo
         ? <img src={avatarUrl(person.card_photo)} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
         : <CourtLines />}
       {children}

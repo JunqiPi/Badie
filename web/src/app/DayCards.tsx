@@ -13,8 +13,8 @@ import { Icon, type IconName } from './icons';
 import { Avatar, Empty, IconButton, IconTile } from './kit';
 import { DayCard, type CardPerson } from './PlayerCard';
 import { Link, navigate } from './router';
-import { isSample, samplePlayers } from './samples';
-import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type NearbyVenue, type Profile } from './supabase';
+import { isSample } from './samples';
+import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type Profile } from './supabase';
 import { capitalize, dateChip, timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
 import type { UsualTime } from './usual';
@@ -125,15 +125,10 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     setNearby(undefined);
     setNearbySeen(0);
     seen.current.clear();
-    // 附近的真人排在前面；真人太少时后面补示例球友（常去的球馆用我附近真实的球馆），见 samples.ts
-    void Promise.all([
-      supabase!.rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km }),
-      supabase!.rpc('venues_near', { lat: area.lat, lng: area.lon, radius_km: km, max_results: 6 }),
-    ]).then(([people, venues]) => {
-      if (stale) return;
-      const real = people.error ? [] : ((people.data ?? []) as NearbyPlayer[]);
-      setNearby([...real, ...samplePlayers(real.length, me.current.rating ?? 3, (venues.data ?? []) as NearbyVenue[])]);
-    });
+    // 附近的真人排在前面；真人太少时服务器在后面补示例球友（见 samples.ts）
+    supabase!
+      .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
+      .then(({ data, error }) => !stale && setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
     if (!date) return () => {
       stale = true;
     };

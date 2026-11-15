@@ -18,7 +18,7 @@ $$;
 -- 在 21BC（弗里蒙特）20 公里内看到的人，按顺序
 create function pg_temp.near(lat double precision default 37.514849, lon double precision default -121.986485) returns uuid[] language sql as $$
   select coalesce(array_agg((x -> 'user' ->> 'id')::uuid order by n), '{}')
-  from jsonb_array_elements(public.nearby_players(lat, lon, 20)) with ordinality t(x, n)
+  from jsonb_array_elements(public.nearby_real_players(lat, lon, 20)) with ordinality t(x, n)
 $$;
 create temp table r (k text primary key, v jsonb);
 grant all on r to authenticated, anon;
@@ -49,7 +49,7 @@ insert into public.friend_requests (from_id, to_id) values (pg_temp.u(10), pg_te
 select pg_temp.login(1);
 select is(pg_temp.near(), array[pg_temp.u(2), pg_temp.u(6), pg_temp.u(3), pg_temp.u(8), pg_temp.u(10)],
           '开了显示、定过级、没拉黑、收藏的球馆在附近的人；球友也出现；同馆的在前');
-insert into r select 'list', public.nearby_players(37.514849, -121.986485, 20);
+insert into r select 'list', public.nearby_real_players(37.514849, -121.986485, 20);
 select is((select (v -> 0 ->> 'shared_venues')::int from r where k = 'list'), 1, '共同球馆个数');
 select is((select v -> 0 -> 'venues' -> 0 ->> 'id' from r where k = 'list'), 'v-us-ca-21-badminton-club-21bc', 'TA 在附近的球馆');
 select is((select v -> 0 -> 'user' ->> 'preferred_mode' from r where k = 'list'), 'doubles', '带上喜欢的打法');
@@ -63,7 +63,7 @@ select is((select array_agg(coalesce(x ->> 'friend_request', '-') order by n) fr
 -- 加球友：不同馆的人也能申请（大厅里的人都能看资料）
 select is(public.send_friend_request(pg_temp.u(3)), 'requested', '大厅里的人能申请加球友');
 select ok(public.player_card(pg_temp.u(8)) is not null, '大厅里的人能看资料');
-select is((select x ->> 'friend_request' from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) x
+select is((select x ->> 'friend_request' from jsonb_array_elements(public.nearby_real_players(37.514849, -121.986485, 20)) x
            where x -> 'user' ->> 'id' = pg_temp.u(3)::text), 'sent', '我申请过显示 sent');
 reset role;
 update public.profiles set discoverable = false where id = pg_temp.u(12);
@@ -96,7 +96,7 @@ select throws_ok($$ update public.profiles set usual_times = '[{"weekday": 1, "s
 select throws_ok($$ update public.profiles set usual_times = (select jsonb_agg(jsonb_build_object('weekday', 1, 'start', '08:00', 'end', '09:00'))
                                                              from generate_series(1, 6)) where id = pg_temp.u(1) $$,
                  '23514', null, '最多 5 段');
-select is((select x -> 'user' -> 'usual_times' -> 0 ->> 'start' from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) x
+select is((select x -> 'user' -> 'usual_times' -> 0 ->> 'start' from jsonb_array_elements(public.nearby_real_players(37.514849, -121.986485, 20)) x
            where x -> 'user' ->> 'id' = pg_temp.u(2)::text), null, '别人没设就没有');
 
 -- 推荐时间：两人常用时间的重叠

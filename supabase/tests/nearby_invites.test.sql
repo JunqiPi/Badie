@@ -22,7 +22,7 @@ create function pg_temp.at(days int, hhmm text) returns timestamptz language sql
 $$;
 create function pg_temp.near() returns uuid[] language sql as $$
   select coalesce(array_agg((x -> 'user' ->> 'id')::uuid order by n), '{}')
-  from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) with ordinality t(x, n)
+  from jsonb_array_elements(public.nearby_real_players(37.514849, -121.986485, 20)) with ordinality t(x, n)
 $$;
 create function pg_temp.kinds(n int, k text) returns int language sql security definer as $$
   select count(*)::int from public.notifications where user_id = pg_temp.u(n) and kind = k

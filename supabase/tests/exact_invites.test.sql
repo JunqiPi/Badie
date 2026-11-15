@@ -97,7 +97,7 @@ select is((select (x ->> 'level_min') || '-' || (x ->> 'level_max') from pg_temp
 select is(pg_temp.last_title(5), 'Ex1 said yes to doubles', '告诉对方');
 select ok(not exists (select 1 from jsonb_array_elements(public.nearby_invites()) x where (x ->> 'id') = pg_temp.room('dbl')::text),
           '不在邀请列表里');
-select ok(pg_temp.u(5) in (select (x -> 'user' ->> 'id')::uuid from jsonb_array_elements(public.nearby_players(37.514849, -121.986485, 20)) x),
+select ok(pg_temp.u(5) in (select (x -> 'user' ->> 'id')::uuid from jsonb_array_elements(public.nearby_real_players(37.514849, -121.986485, 20)) x),
           '两个人之间没有还在等的邀请了');
 
 -- 附近的人可以加入，人齐了房主开局
