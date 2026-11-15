@@ -159,6 +159,16 @@
   - 结果页（`SkillAssessmentViews.swift` 的 `AssessmentResultCard`）还是原来的一张柠檬绿卡片，结构和网站不一样（没有星形，打法和雷达图在同一张卡里）。要照网站这版做，得看着截图调；做这次改动的会话读不到 CI 的截图，所以没动。
 - 这台 Windows 电脑上 `astro check` 会报 8 个和大小写有关的错（`Levels.tsx` 和 `levels.ts` 在不分大小写的盘上被当成同一个文件），本机起预览也要临时把 `./Levels` 的引用写成 `./Levels.tsx`；CI 上没有这个问题。本机的 Node 是 22.14，Astro 要 22.22 以上，可以用 `npx -p node@22.22.0` 取一个新的来跑。
 
+## 让注册的人都出现在发现页（2026-11-15）
+
+线上 28 人里只有 2 人出现在“附近的人”：要同时打开“显示我”、定过级、有常去球馆（我们不存位置，常去球馆就是“在哪一带”），24 人没有常去球馆。用户定的：
+- **注册时常去球馆必填**，知道位置时自动选上最近的一家（能换）；注册后自动显示在附近的人里（开关只在设置里）。网站 `Onboarding.tsx` + `usualCourt.ts`，iPhone `OnboardingFlow.swift`（1.0.6）
+- **跳过问卷的按 3 级算**，也进附近的人、能被约（`has_level` 对有资料的人都为真，迁移 `20261218000000_everyone_in_discover.sql`）
+- **约球默认不限等级**：快速匹配默认“不限”，开局默认 1–9，双打邀请答应后的公开局 1–9
+- **补常去球馆**：迁移按最近的约球请求 / 房间 / 球局 / 球群补一家（线上能补 11 人）；网站发现页和 iPhone 拿到真实定位时，一家都没有的自动收藏最近的一家（每个账号一次，自己删了不再补）；剩下 13 人没有任何记录，用户发邮件问了球馆，对照表里能唯一对上的 6 人已手动写进 `favorite_venues`（2026-11-15）。还差：Sumit 的 Riverside Leisure Centre 是 Chelmsford 还是 Exeter；Parks Sports Centre、PlayFit Sports Club、Kesgrave Sports Centre、Benchakitti（曼谷）、Shah Alam Badminton Centre、San Diego Badminton Club 不在球馆库里
+- **安卓的注册页还没跟上**（还有“显示我”开关、常去球馆不必填），文字表里为它留着“在附近的人里显示我”
+- 顺手修了：没登录时查完登录状态，页面主体会重新生成，把分享卡片带来的“你的朋友是 4+”冲回普通标题（`Shell.tsx` 里 main 的 key 只跟地址走）
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。
