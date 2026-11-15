@@ -324,4 +324,35 @@ final class VenueTests: XCTestCase {
         XCTAssertEqual(backend.db.venues[pending.id]?.applePlaceId, "p9")
         XCTAssertTrue(backend.allVenues.contains { $0.id == pending.id })
     }
+
+    // MARK: 自动选常去球馆
+
+    func testNearestCourtPrefersListedVenuesInRange() {
+        let near = Coordinate(latitude: la.latitude + 0.01, longitude: la.longitude)
+        let mid = Coordinate(latitude: la.latitude + 0.03, longitude: la.longitude)
+        let far = Coordinate(latitude: la.latitude + 0.5, longitude: la.longitude)
+        let pending = venue("v-pending", "新加的球馆", at: near, status: .unconfirmed)
+        let listed = venue("v-listed", "Arena", at: mid)
+        let distant = venue("v-far", "Far Arena", at: far)
+        XCTAssertEqual(BadmintonCourt.nearest(in: [distant, pending, listed], to: la, withinKm: 10)?.id, "v-listed",
+                       "优先已确认的球馆")
+        XCTAssertEqual(BadmintonCourt.nearest(in: [distant, pending], to: la, withinKm: 10)?.id, "v-pending",
+                       "范围内只有待确认的就用它")
+        XCTAssertNil(BadmintonCourt.nearest(in: [distant], to: la, withinKm: 10), "范围外的不选")
+        XCTAssertNil(BadmintonCourt.nearest(in: [], to: la, withinKm: 10))
+    }
+
+    func testFavoriteBackfillDecision() {
+        func decide(remote: Bool = true, loaded: Bool = true, has: Bool = false, done: Bool = false,
+                    nearby: Bool = true) -> FavoriteBackfill.Decision {
+            FavoriteBackfill.decide(isRemote: remote, favoritesLoaded: loaded, hasFavorites: has, alreadyDone: done,
+                                    hasNearbyCourt: nearby)
+        }
+        XCTAssertEqual(decide(), .pick, "没有常去球馆、知道附近的球馆：补最近的一家")
+        XCTAssertEqual(decide(has: true), .markDone, "已有常去球馆：记下，以后全删了也不补")
+        XCTAssertEqual(decide(done: true), .wait, "每个账号只补一次")
+        XCTAssertEqual(decide(loaded: false), .wait, "还没读到服务器上的收藏")
+        XCTAssertEqual(decide(nearby: false), .wait, "没定位或附近没有球馆")
+        XCTAssertEqual(decide(remote: false), .wait, "演示后端不补")
+    }
 }

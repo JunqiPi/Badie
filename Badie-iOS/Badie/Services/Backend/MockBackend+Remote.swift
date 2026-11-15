@@ -169,6 +169,7 @@ extension MockBackend {
     /// 退出登录：清掉上一个账号的消息、球友和别人的资料，换账号登录时不会看到
     func clearRemoteCache() {
         remoteIsAdmin = false
+        remoteFavoritesLoadedFor = nil
         remoteAvatarPath = nil
         remoteCardPhotoPath = nil
         remoteAvatarChecked = []
@@ -216,6 +217,7 @@ extension MockBackend {
         guard let profile = rows.first else { return nil }
         let favorites: [FavoriteRow] = try await client.select("favorite_venues", query: "select=venue_id&order=created_at")
         db.favoriteCourtIds[profile.id] = favorites.map(\.venueId)
+        remoteFavoritesLoadedFor = profile.id
         // 写缓存之前查：缓存会通知界面刷新，设置页据此决定是否显示演示模式开关
         remoteIsAdmin = (try? await client.rpc("is_admin", as: Bool.self)) ?? false
         var user = cache(profile, email: session.email)

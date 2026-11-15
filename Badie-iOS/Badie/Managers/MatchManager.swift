@@ -11,8 +11,8 @@ struct MatchDraft: Equatable {
     var startMinutes: Int = 19 * 60
     var endMinutes: Int = 21 * 60
     var courtIds: [String] = []
-    /// 1、2 或 8(不限)
-    var skillTolerance: Int = 1
+    /// 1、2 或 8(不限)；默认不限水平
+    var skillTolerance: Int = MatchRequest.anySkill
     /// 符合条件的提议直接替我接受（默认关闭）
     var autoAccept = false
     /// 项目：男单女单男双女双、混双；nil = 不限

@@ -51,8 +51,16 @@ final class LocationManager: NSObject, ObservableObject {
             case .sessionChanged:
                 self?.favoriteCourtIds = self?.backend.favoriteCourtIds() ?? []
                 self?.refreshCourts()
+                self?.backfillFavoriteIfNeeded()
+            case .userUpdated:
+                // 启动时从服务器刷新资料会顺便读常去球馆，这里跟上
+                guard let self else { return }
+                let favorites = self.backend.favoriteCourtIds()
+                if favorites != self.favoriteCourtIds { self.favoriteCourtIds = favorites }
+                self.backfillFavoriteIfNeeded()
             case .venuesChanged:
                 self?.refreshCourts()
+                self?.backfillFavoriteIfNeeded()
             default:
                 break
             }
@@ -99,6 +107,49 @@ final class LocationManager: NSObject, ObservableObject {
     func toggleFavorite(_ courtId: String) {
         backend.toggleFavoriteCourt(courtId)
         favoriteCourtIds = backend.favoriteCourtIds()
+    }
+
+    /// 出行范围内离我最近的球馆。只在拿到真实定位时给，没定位时不按默认城市猜
+    var nearestCourtToUser: BadmintonCourt? {
+        guard let currentLocation else { return nil }
+        return BadmintonCourt.nearest(in: nearbyCourts, to: Coordinate(currentLocation.coordinate),
+                                      withinKm: preferences.travelRadiusKm)
+    }
+
+    // MARK: 老用户补常去球馆
+
+    /// 附近的人按常去球馆找人：以前注册时没选常去球馆的人，替他收藏最近的一家。
+    /// 每个账号只做一次（记在本机），之后自己全删了也不再补。
+    /// 注册最后一步保存期间暂停，免得和用户自己选的球馆一起加上
+    var holdsFavoriteBackfill = false
+
+    private static func favoriteBackfillKey(_ userId: String) -> String { "BadieFavoriteBackfill.\(userId)" }
+
+    /// 这个账号不用再自动补（注册时已经选过）
+    func markFavoriteBackfillDone() {
+        guard let userId = backend.currentUserId else { return }
+        defaults.set(true, forKey: Self.favoriteBackfillKey(userId))
+    }
+
+    private func backfillFavoriteIfNeeded() {
+        guard !holdsFavoriteBackfill, let userId = backend.currentUserId else { return }
+        let key = Self.favoriteBackfillKey(userId)
+        let nearest = nearestCourtToUser
+        let decision = FavoriteBackfill.decide(isRemote: backend.isRemote,
+                                               favoritesLoaded: backend.remoteFavoritesLoadedFor == userId,
+                                               hasFavorites: !backend.favoriteCourtIds().isEmpty,
+                                               alreadyDone: defaults.bool(forKey: key),
+                                               hasNearbyCourt: nearest != nil)
+        switch decision {
+        case .wait:
+            break
+        case .markDone:
+            defaults.set(true, forKey: key)
+        case .pick:
+            guard let nearest else { return }
+            defaults.set(true, forKey: key)
+            toggleFavorite(nearest.id)
+        }
     }
 
     // MARK: Permission & updates
@@ -159,12 +210,43 @@ final class LocationManager: NSObject, ObservableObject {
         }
         lastRefreshLocation = location
         refreshCourts()
+        backfillFavoriteIfNeeded()
         // 后台发现会把 Apple 地图上的场地直接放进本机球馆库；正式后端只收球友确认过再提交的
         guard allowsMapSearch, !backend.isRemote else { return }
         Task {
             await VenueDiscovery.run(backend: backend, near: Coordinate(location.coordinate))
             refreshCourts()
         }
+    }
+}
+
+// MARK: - 自动选常去球馆
+
+extension BadmintonCourt {
+    /// 范围内离 center 最近的一家；优先已确认的球馆，范围内一家都没有就返回 nil
+    static func nearest(in courts: [BadmintonCourt], to center: Coordinate, withinKm radiusKm: Double) -> BadmintonCourt? {
+        let inRange = courts.filter { $0.distance(from: center) <= radiusKm }
+        let listed = inRange.filter { $0.status != .unconfirmed }
+        return (listed.isEmpty ? inRange : listed).min { $0.distance(from: center) < $1.distance(from: center) }
+    }
+}
+
+/// 老用户补常去球馆：什么时候替他选
+enum FavoriteBackfill {
+    enum Decision: Equatable {
+        /// 现在不动（演示后端、做过了、还没读到服务器上的收藏、还不知道附近的球馆）
+        case wait
+        /// 已经有常去球馆：记下来，以后全删了也不补
+        case markDone
+        /// 收藏最近的一家
+        case pick
+    }
+
+    static func decide(isRemote: Bool, favoritesLoaded: Bool, hasFavorites: Bool, alreadyDone: Bool,
+                       hasNearbyCourt: Bool) -> Decision {
+        guard isRemote, !alreadyDone, favoritesLoaded else { return .wait }
+        if hasFavorites { return .markDone }
+        return hasNearbyCourt ? .pick : .wait
     }
 }
 

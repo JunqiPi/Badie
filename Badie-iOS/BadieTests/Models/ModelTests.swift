@@ -80,6 +80,10 @@ final class ModelTests: XCTestCase {
         XCTAssertTrue(draft.validation.isValid)
     }
 
+    func testMatchDraftDefaultsToAnyLevel() {
+        XCTAssertEqual(MatchDraft().skillTolerance, MatchRequest.anySkill, "约球默认不限水平")
+    }
+
     func testTrimmedForGameCapsAtTwoHours() {
         let trimmed = slot(18, 22).trimmedForGame()
         XCTAssertEqual(trimmed.duration, 2 * 3600)

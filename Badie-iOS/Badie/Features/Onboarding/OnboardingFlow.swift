@@ -39,10 +39,8 @@ struct OnboardingForm {
     var level: Int? { assessmentResult?.level ?? (skippedAssessment ? SkillAssessment.provisionalLevel : nil) }
     var preferredMode: GameMode?
     var timePresets: Set<TimePreset> = []
-    /// 常去球馆（注册后设为收藏，快速匹配默认选中）
+    /// 常去球馆（必选；注册后设为收藏，快速匹配默认选中，附近的人也按它找人）
     var favoriteVenueIds: [String] = []
-    /// 在附近的人里显示我（默认打开；就是设置里的“在同馆常客里显示我”）
-    var showsInLobby = true
 }
 
 /// 邮件里的 6 位码用来做什么：确认注册的邮箱、验证码登录、重设密码（就是 Supabase 校验时的 type）
@@ -107,6 +105,8 @@ struct OnboardingFlow: View {
     @State private var resendRemaining = 0
     @StateObject private var captcha = CaptchaModel()
     @State private var showVenuePicker = false
+    /// 已经替用户选过最近的球馆（只选一次，用户删掉后不再选回来）
+    @State private var venuePreselected = false
     @FocusState private var codeFocused: Bool
     @FocusState private var phoneFocused: Bool
     /// 后台开了的第三方登录（apple / google），没开的不显示按钮。先用记下的结果马上显示，后台问到新的再换
@@ -544,15 +544,9 @@ struct OnboardingFlow: View {
             }
             favoriteVenuesCard
             locationCard
-            Toggle(isOn: $form.showsInLobby) {
-                Text("在附近的人里显示我")
-                    .font(AppTheme.Typography.bodyBold)
-                    .foregroundStyle(AppTheme.Colors.ink)
-            }
-            .tint(AppTheme.Colors.success)
-            .padding(AppTheme.Spacing.md)
-            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
         }
+        .onAppear { preselectNearestVenue() }
+        .onChange(of: locationManager.nearbyCourts) { _, _ in preselectNearestVenue() }
         .sheet(isPresented: $showVenuePicker) {
             VenuePickerView(mode: .multiple(max: 3), selection: $form.favoriteVenueIds, allowsAdding: false)
                 .presentationDragIndicator(.visible)
@@ -569,7 +563,8 @@ struct OnboardingFlow: View {
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                 RulesButton(title: String(localized: "常去球馆"),
                             points: [String(localized: "选好后，快速匹配默认用这几家。"),
-                                     String(localized: "选了同一家球馆的人才会被匹配到一起。")])
+                                     String(localized: "选了同一家球馆的人才会被匹配到一起。"),
+                                     String(localized: "附近的人按常去球馆找到你。")])
                 Spacer(minLength: 0)
             }
             Button {
@@ -582,7 +577,7 @@ struct OnboardingFlow: View {
                             Text("添加球馆")
                                 .font(AppTheme.Typography.headline)
                                 .foregroundStyle(AppTheme.Colors.ink)
-                            Text("选填")
+                            Text("至少选一家")
                                 .font(AppTheme.Typography.footnote)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                         } else {
@@ -761,7 +756,7 @@ struct OnboardingFlow: View {
         case .code: return form.code.count == 6 && (form.codePurpose != .recovery || !form.password.isEmpty)
         case .profile: return MockBackend.isValidNickname(form.nickname) && form.gender != .unspecified
         case .level: return form.level != nil
-        case .preferences: return true
+        case .preferences: return !form.favoriteVenueIds.isEmpty
         }
     }
 
@@ -947,10 +942,15 @@ struct OnboardingFlow: View {
     }
 
     private func finish() async {
-        guard let level = form.level else { return }
+        guard let level = form.level, !form.favoriteVenueIds.isEmpty else { return }
         let result = form.assessmentResult
         isWorking = true
-        defer { isWorking = false }
+        // 保存期间别让“老用户补常去球馆”抢先加上最近的一家
+        locationManager.holdsFavoriteBackfill = true
+        defer {
+            isWorking = false
+            locationManager.holdsFavoriteBackfill = false
+        }
         let slots = Array(form.timePresets.sorted { $0.rawValue < $1.rawValue }.flatMap(\.slots).prefix(TimeSlotConstants.maximumRecurringSlots))
         do {
             if appState.isRemote {
@@ -963,12 +963,10 @@ struct OnboardingFlow: View {
                     answers: form.assessmentAnswers
                 )
                 try? appState.backend.saveRecurringSlots(slots)
-                applyLobbyVisibility()
+                enableLobbyVisibility()
+                saveFavoriteVenues()
                 await uploadPhoto()
                 if result == nil { appState.backend.markAssessmentSkipped() }
-                for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
-                    locationManager.toggleFavorite(venueId)
-                }
                 return
             }
             try await appState.register(
@@ -986,22 +984,35 @@ struct OnboardingFlow: View {
                                            answers: form.assessmentAnswers)
                 }
             )
-            applyLobbyVisibility()
+            enableLobbyVisibility()
+            saveFavoriteVenues()
             await uploadPhoto()
             if result == nil { appState.backend.markAssessmentSkipped() }
-            for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
-                locationManager.toggleFavorite(venueId)
-            }
         } catch {
             appState.showError(error)
         }
     }
 
-    /// 最后一步的“在附近的人里显示我”：和默认不一样才存
-    private func applyLobbyVisibility() {
-        guard var privacy = appState.currentUser?.privacy, privacy.showsAsRegular != form.showsInLobby else { return }
-        privacy.showsAsRegular = form.showsInLobby
+    /// 注册后默认在附近的人里显示（就是设置里的“在同馆常客里显示我”，之后可以在设置里关）
+    private func enableLobbyVisibility() {
+        guard var privacy = appState.currentUser?.privacy, !privacy.showsAsRegular else { return }
+        privacy.showsAsRegular = true
         appState.backend.updatePrivacy(privacy)
+    }
+
+    /// 选的常去球馆设为收藏；这个账号以后不再自动补
+    private func saveFavoriteVenues() {
+        for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
+            locationManager.toggleFavorite(venueId)
+        }
+        locationManager.markFavoriteBackfillDone()
+    }
+
+    /// 知道真实位置时，先替用户选上最近的球馆（可以改）；没定位就让用户自己选
+    private func preselectNearestVenue() {
+        guard !venuePreselected, form.favoriteVenueIds.isEmpty, let nearest = locationManager.nearestCourtToUser else { return }
+        venuePreselected = true
+        form.favoriteVenueIds = [nearest.id]
     }
 
     /// 注册时选了照片：账号建好后再传；没传上去不影响注册，之后可以在编辑资料里再传
