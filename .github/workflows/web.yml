@@ -96,9 +96,9 @@ jobs:
         working-directory: web
         run: |
           set +e
-          npm run e2e 2>&1 | tee /tmp/e2e.txt
+          node tests/levelcard.e2e.mjs 2>&1 | tee /tmp/e2e.txt
           code=${PIPESTATUS[0]}
           if [ "$code" != 0 ]; then
-            tail -n 9 /tmp/e2e.txt | cut -c1-300 | while IFS= read -r line; do [ -n "$line" ] && echo "::error title=e2e::$line"; done
+            grep -a DEBUG /tmp/e2e.txt | head -9 | cut -c1-300 | while IFS= read -r line; do [ -n "$line" ] && echo "::error title=e2e::$line"; done
           fi
           exit "$code"
