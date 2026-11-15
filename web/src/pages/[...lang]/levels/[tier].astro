@@ -42,8 +42,8 @@ const image = page.selfAssessed ? `/og/levels/${lang ?? 'en'}/${page.slug}.png` 
     <header class="sticker grid justify-items-start gap-3 bg-lime p-6 text-on-accent sm:p-8">
       <p class="kicker">{t('Badie levels 1–9')}</p>
       <h1 class="text-display lg:text-[2.75rem]">
-        <span data-ref-swap>Lv.{page.label} {name}</span>
-        {page.selfAssessed && <span data-ref-swap hidden>{t('Your friend is {level}. What about you?', { level: page.label })}</span>}
+        <span data-ref-swap="default">Lv.{page.label} {name}</span>
+        {page.selfAssessed && <span data-ref-swap="card" hidden>{t('Your friend is {level}. What about you?', { level: page.label })}</span>}
       </h1>
       <p class="max-w-prose text-headline">{summary ?? meaning(page)}</p>
       <p class="text-footnote font-bold">{[info.usFlight && `≈ ${t(info.usFlight)}`, t(info.experience)].filter(Boolean).join(' · ')}</p>
@@ -116,6 +116,10 @@ const image = page.selfAssessed ? `/og/levels/${lang ?? 'en'}/${page.slug}.png` 
   // 从分享卡片来的：标题换成“你的朋友是 4+。你呢？”，并记下来源（注册时写进资料）
   rememberRef(location.search);
   if (new URLSearchParams(location.search).get('ref') === 'card') {
-    for (const element of document.querySelectorAll<HTMLElement>('[data-ref-swap]')) element.hidden = !element.hidden;
+    // 直接设成该显示的样子，不是对调：这段脚本偶尔会执行两次，对调两次就又变回去了
+    const friend = document.querySelector<HTMLElement>('[data-ref-swap="card"]');
+    if (friend) {
+      for (const element of document.querySelectorAll<HTMLElement>('[data-ref-swap]')) element.hidden = element !== friend;
+    }
   }
 </script>
