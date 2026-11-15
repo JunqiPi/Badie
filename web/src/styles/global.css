@@ -532,3 +532,16 @@
   border-radius: 12px;
   box-shadow: var(--shadow-low);
 }
+
+/* 分享卡片带来的访问（levels/[tier].astro）：<html data-ref="card"> 时换成“你的朋友是 4。你呢？”。
+   标记在 React 外面，网站外壳重新渲染也不会丢 */
+@layer base {
+  /* 盖过 Tailwind 给 [hidden] 的 display: none !important：它在 base 层里，带 !important 时层里的规则压过层外的，
+     所以这条也放进 base 层，靠更具体的选择器赢。没有 CSS 时只看得到原来的标题 */
+  html[data-ref='card'] [data-ref-card][hidden] {
+    display: inline !important;
+  }
+  html[data-ref='card'] [data-ref-default] {
+    display: none;
+  }
+}
