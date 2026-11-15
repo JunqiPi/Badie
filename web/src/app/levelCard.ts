@@ -45,7 +45,7 @@ const stack = '"Nunito Variable", ui-rounded, system-ui, "PingFang SC", "Hiragin
 const font = (size: number, weight = 900) => `${weight} ${size}px ${stack}`;
 
 /** 人物区里重复的大字：装饰，用英文 */
-const ghostWord: Record<Archetype, string> = { cannon: 'SMASH', net: 'NET', wall: 'WALL', quick: 'SPRING', engine: 'MOTOR', captain: 'TACTICS', allround: 'ALL-ROUND', rookie: 'ROOKIE' };
+export const ghostWord: Record<Archetype, string> = { cannon: 'SMASH', net: 'NET', wall: 'WALL', quick: 'SPRING', engine: 'MOTOR', captain: 'TACTICS', allround: 'ALL-ROUND', rookie: 'ROOKIE' };
 
 // MARK: 画图的小工具
 
@@ -235,22 +235,22 @@ export function drawFront(ctx: CanvasRenderingContext2D, card: CardInput) {
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
     ctx.fillRect(30, top + 122, w - 60, 1.5);
 
-    // 左下：打法
+    // 左下：打法。说明最多两行，第二行的基线（top + 236）要离底边落款（h - 20）够远，不能叠在一起
     ctx.textAlign = 'left';
     ctx.fillStyle = gray;
-    drawFit(ctx, card.text.playStyle, 30, top + 154, 270, 15, 800);
+    drawFit(ctx, card.text.playStyle, 30, top + 148, 270, 15, 800);
     ctx.fillStyle = '#ffffff';
-    drawFit(ctx, card.styleName, 30, top + 204, 290, 44);
+    drawFit(ctx, card.styleName, 30, top + 194, 290, 44);
     ctx.font = font(15, 700);
     ctx.fillStyle = '#d6d1c8';
-    wrapLines(ctx, card.line, 290, 2, card.locale).forEach((line, i) => ctx.fillText(line, 30, top + 230 + i * 20));
+    wrapLines(ctx, card.line, 290, 2, card.locale).forEach((line, i) => ctx.fillText(line, 30, top + 218 + i * 18));
 
     // 右下：最强一拍
     ctx.textAlign = 'right';
     ctx.fillStyle = gray;
-    drawFit(ctx, card.text.bestShot, w - 30, top + 154, 180, 15, 800);
+    drawFit(ctx, card.text.bestShot, w - 30, top + 148, 180, 15, 800);
     ctx.fillStyle = lime;
-    drawFit(ctx, card.bestShot, w - 30, top + 200, 180, 28);
+    drawFit(ctx, card.bestShot, w - 30, top + 190, 180, 28);
 
     footer(ctx, card.text.footer, w, h);
   });
@@ -334,7 +334,7 @@ function footer(ctx: CanvasRenderingContext2D, text: string, w: number, h: numbe
   ctx.textAlign = 'center';
   ctx.fillStyle = gray;
   spaced(ctx, 3);
-  drawFit(ctx, text, w / 2, h - 24, w - 80, 13, 800);
+  drawFit(ctx, text, w / 2, h - 20, w - 80, 13, 800);
   spaced(ctx, 0);
 }
 

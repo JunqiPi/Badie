@@ -1,6 +1,6 @@
 # Badie
 
-免费的羽毛球找搭子 App：网站 https://badie.rsvp（Astro + React，`web/`）、iPhone App（SwiftUI，`Badie-iOS/`）、后端 Supabase（`supabase/`）。
+免费的羽毛球找搭子 App：网站 https://badie.rsvp（Astro + React，`web/`）、iPhone App（SwiftUI，`Badie-iOS/`）、安卓 App（Kotlin + Compose，`Badie-Android/`，在做，还没上架）、后端 Supabase（`supabase/`）。
 
 **新会话先读 `STATUS.md`**：现在的版本、怎么发版、最近的功能和已知问题。
 
@@ -34,6 +34,10 @@
   - 中文版静态页面（`/zh/…`）在构建时翻译，见 `src/lib/static-i18n.ts`。
 - **端到端测试**（`web/tests/*.e2e.mjs`）：需要本机的 Supabase（`supabase start`），网站要按本机 Supabase 的地址构建。
 - **iOS**：只能在 CI（GitHub Actions 的 macOS）上编译和测试。开发分支只编译和跑测试（约 15 分钟）；推 main、开 PR 或手动运行 iOS CI 才截图（多 20–30 分钟）。xcstrings 的格式是 `json.dumps(d, ensure_ascii=False, indent=2, separators=(",", " : "))`，key 排序。
+- **安卓**（在 `Badie-Android/` 下运行）：
+  - 改完跑 `./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`。
+  - 功能、规则、文案和 iPhone 完全一致：照着 iPhone 的源文件搬，需求见 `Badie-Android/docs/REQUIREMENTS.md`，进度和做法见 `STATUS.md` 的“安卓版”。
+  - 界面文字不在安卓这边写：构建时从 iPhone 的 `Localizable.xcstrings` 转，代码里写 `tr("简体中文原文")`。要加新句子，先加到 xcstrings（10 种语言都要有）。
 - **数据库**：迁移放在 `supabase/migrations/`，pgTAP 测试放在 `supabase/tests/`。
 
 ## 省 token

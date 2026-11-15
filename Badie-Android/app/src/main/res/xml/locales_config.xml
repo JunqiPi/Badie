@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 系统设置里“App 语言”能选的 10 种，和 iPhone、服务器一致 -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="zh-Hans" />
+    <locale android:name="zh-Hant" />
+    <locale android:name="ja" />
+    <locale android:name="ko" />
+    <locale android:name="id" />
+    <locale android:name="ms" />
+    <locale android:name="th" />
+    <locale android:name="vi" />
+    <locale android:name="hi" />
+</locale-config>

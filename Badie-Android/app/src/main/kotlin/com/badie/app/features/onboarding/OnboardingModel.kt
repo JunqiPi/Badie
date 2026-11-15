@@ -1,0 +1,308 @@
+package com.badie.app.features.onboarding
+
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.badie.app.backend.AuthOutcome
+import com.badie.app.backend.Backend
+import com.badie.app.design.Toast
+import com.badie.app.l10n.L10n.tr
+import com.badie.app.models.Avatar
+import com.badie.app.models.GameMode
+import com.badie.app.models.Gender
+import com.badie.app.models.SkillAssessment
+import com.badie.app.models.SkillAssessmentResult
+import com.badie.app.models.SkillAssessmentSummary
+import com.badie.app.remote.PasswordRules
+import com.badie.app.remote.RemoteError
+import com.badie.app.remote.Transport
+import com.badie.app.shell.AppState
+
+enum class OnboardingStep {
+    Welcome, Email, Code, Profile, Level, Preferences;
+
+    /** 进度条里的序号（欢迎页不算） */
+    val progressIndex: Int get() = ordinal
+
+    companion object {
+        const val PROGRESS_TOTAL = 5
+    }
+}
+
+/** 邮件里的 6 位码用来做什么：确认注册的邮箱、验证码登录、重设密码（就是服务器校验时的 type） */
+enum class CodePurpose(val rawValue: String) { Signup("signup"), Email("email"), Recovery("recovery") }
+
+/**
+ * 登录和注册的流程：每一步填了什么、现在能不能继续、点了按钮做什么。界面只管照着画。
+ * 对应 iPhone 的 OnboardingFlow（正式后端那一路）
+ */
+@Stable
+class OnboardingModel(
+    private val appState: AppState,
+    val captcha: CaptchaModel,
+    /** 查密码有没有泄露过用的请求 */
+    private val passwordLookup: Transport,
+    private val now: () -> Long = System::currentTimeMillis,
+    /** 从哪一步开始（截图用） */
+    initialStep: OnboardingStep = OnboardingStep.Welcome,
+) {
+    private val backend: Backend get() = appState.backend
+
+    var step by mutableStateOf(initialStep)
+        private set
+
+    var agreed by mutableStateOf(false)
+    var email by mutableStateOf("")
+    var password by mutableStateOf("")
+    /** true 是注册，false 是登录 */
+    var newAccount by mutableStateOf(false)
+    var codePurpose by mutableStateOf(CodePurpose.Email)
+        private set
+    var code by mutableStateOf("")
+        private set
+    var nickname by mutableStateOf("")
+    var gender by mutableStateOf(Gender.Unspecified)
+    var avatar by mutableStateOf(Avatar("", 0))
+    /** 定级问卷的答案（题目 ID → 选项） */
+    val assessmentAnswers = mutableStateMapOf<String, Int>()
+    /** 暂时跳过定级（先按 Lv.3 匹配） */
+    var skippedAssessment by mutableStateOf(false)
+        private set
+    var preferredMode by mutableStateOf<GameMode?>(null)
+    /** 在附近的人里显示我（默认开） */
+    var showsInLobby by mutableStateOf(true)
+
+    var isWorking by mutableStateOf(false)
+        private set
+    var errorText by mutableStateOf<String?>(null)
+    /** 还要等几秒才能重新发验证码 */
+    var resendRemaining by mutableIntStateOf(0)
+
+    val assessmentResult: SkillAssessmentResult? get() = SkillAssessment.evaluate(assessmentAnswers)
+
+    /** 问卷自动算出的等级；跳过时暂用 Lv.3 */
+    val level: Int? get() = assessmentResult?.level ?: if (skippedAssessment) SkillAssessment.PROVISIONAL_LEVEL else null
+
+    val isResettingPassword: Boolean get() = codePurpose == CodePurpose.Recovery
+
+    val primaryTitle: String
+        get() = when (step) {
+            OnboardingStep.Welcome -> tr("邮箱登录 / 注册")
+            OnboardingStep.Email -> if (newAccount) tr("注册") else tr("登录")
+            OnboardingStep.Code -> if (isResettingPassword) tr("保存新密码并登录") else tr("验证")
+            OnboardingStep.Profile, OnboardingStep.Level -> tr("下一步")
+            OnboardingStep.Preferences -> tr("开始约球")
+        }
+
+    val canContinue: Boolean
+        get() = when (step) {
+            OnboardingStep.Welcome -> true
+            OnboardingStep.Email -> email.isNotEmpty() && password.isNotEmpty() && captcha.isReady && (agreed || !newAccount)
+            OnboardingStep.Code -> code.length == 6 && (!isResettingPassword || password.isNotEmpty())
+            OnboardingStep.Profile -> Backend.isValidNickname(nickname) && gender != Gender.Unspecified
+            OnboardingStep.Level -> level != null
+            OnboardingStep.Preferences -> true
+        }
+
+    fun toggleNewAccount() {
+        newAccount = !newAccount
+        errorText = null
+    }
+
+    /** 改了输入：出错的提示收起来 */
+    fun edited() {
+        errorText = null
+    }
+
+    /** 输验证码：只收 6 位数字；输满自动提交（重设密码还要填新密码，不自动提交） */
+    suspend fun updateCode(value: String) {
+        code = value.filter { it in '0'..'9' }.take(6)
+        errorText = null
+        if (code.length == 6 && !isResettingPassword) submitCode()
+    }
+
+    suspend fun primaryAction() {
+        errorText = null
+        when (step) {
+            OnboardingStep.Welcome -> step = OnboardingStep.Email
+            OnboardingStep.Email -> {
+                if (!Backend.isValidEmail(email)) {
+                    errorText = tr("邮箱地址好像不对。")
+                    return
+                }
+                submitPassword()
+            }
+            OnboardingStep.Code -> submitCode()
+            OnboardingStep.Profile -> {
+                if (!Backend.isValidNickname(nickname)) {
+                    errorText = tr("昵称需为 2-12 个字符")
+                    return
+                }
+                step = OnboardingStep.Level
+            }
+            OnboardingStep.Level -> step = OnboardingStep.Preferences
+            OnboardingStep.Preferences -> finish()
+        }
+    }
+
+    fun skipAssessment() {
+        skippedAssessment = true
+        step = OnboardingStep.Preferences
+    }
+
+    fun goBack() {
+        errorText = null
+        step = when (step) {
+            OnboardingStep.Welcome, OnboardingStep.Email -> OnboardingStep.Welcome
+            OnboardingStep.Code, OnboardingStep.Profile -> OnboardingStep.Email
+            OnboardingStep.Level -> OnboardingStep.Profile
+            OnboardingStep.Preferences -> OnboardingStep.Level
+        }
+    }
+
+    /** 邮箱 + 密码登录或注册。注册后要输入邮件里的码确认邮箱 */
+    private suspend fun submitPassword() = working {
+        if (newAccount) {
+            PasswordRules.problem(password, passwordLookup)?.let {
+                errorText = it
+                return@working
+            }
+        }
+        // 令牌只能用一次：不管成没成功都换一个新的
+        val token = captcha.token
+        try {
+            if (!newAccount) {
+                signedIn(backend.signIn(email, password, token))
+            } else {
+                val outcome = backend.signUp(email, password, token)
+                if (outcome != null) signedIn(outcome) else codeSent(CodePurpose.Signup)
+            }
+        } catch (error: RemoteError) {
+            val known = (error as? RemoteError.Server)?.code
+            when (known) {
+                // 已经注册过：切回登录
+                "user_already_exists" -> newAccount = false
+                // 注册了但还没确认邮箱：去输确认码
+                "email_not_confirmed" -> {
+                    codePurpose = CodePurpose.Signup
+                    step = OnboardingStep.Code
+                }
+            }
+            errorText = error.message
+        } finally {
+            captcha.reset()
+        }
+    }
+
+    /** 忘记密码、改用验证码登录、重发注册确认码：都是往邮箱发 6 位码 */
+    suspend fun sendEmailCode(purpose: CodePurpose) {
+        errorText = null
+        if (!Backend.isValidEmail(email)) {
+            errorText = tr("请先填写邮箱。")
+            return
+        }
+        working {
+            val token = captcha.token
+            try {
+                when (purpose) {
+                    CodePurpose.Recovery -> backend.sendPasswordReset(email, token)
+                    CodePurpose.Signup -> backend.resendSignupCode(email, token)
+                    CodePurpose.Email -> backend.sendCode(email, token)
+                }
+                // 重设密码：清掉刚才填错的旧密码，让人填新的
+                if (purpose == CodePurpose.Recovery && codePurpose != CodePurpose.Recovery) password = ""
+                codeSent(purpose)
+            } catch (error: RemoteError) {
+                errorText = error.message
+            } finally {
+                captcha.reset()
+            }
+        }
+    }
+
+    private fun codeSent(purpose: CodePurpose) {
+        codePurpose = purpose
+        code = ""
+        resendRemaining = 60
+        step = OnboardingStep.Code
+    }
+
+    private suspend fun submitCode() {
+        if (code.length != 6 || isWorking) return
+        working {
+            val resetting = isResettingPassword
+            if (resetting) {
+                PasswordRules.problem(password, passwordLookup)?.let {
+                    errorText = it
+                    return@working
+                }
+            }
+            try {
+                val outcome = backend.verify(email, code, codePurpose.rawValue)
+                if (resetting) {
+                    try {
+                        backend.updatePassword(password)
+                        appState.showToast(tr("密码已保存"), Toast.Style.Success)
+                    } catch (_: RemoteError) {
+                        appState.showToast(tr("已登录，但新密码没保存，可以在设置里重新设置。"), Toast.Style.Error)
+                    }
+                }
+                signedIn(outcome)
+            } catch (error: RemoteError) {
+                errorText = error.message
+                code = ""
+            }
+        }
+    }
+
+    /** 登录成功：老用户直接进 App，新用户去填资料 */
+    private fun signedIn(outcome: AuthOutcome) {
+        when (outcome) {
+            is AuthOutcome.SignedIn -> {
+                // 重设密码时已经提示过“密码已保存”，不再盖掉
+                if (!isResettingPassword) appState.showToast(tr("欢迎回来，%@", outcome.user.nickname), Toast.Style.Success)
+                appState.syncPhase()
+            }
+            is AuthOutcome.NeedsProfile -> step = OnboardingStep.Profile
+        }
+    }
+
+    private suspend fun finish() {
+        val level = level ?: return
+        val result = assessmentResult
+        working {
+            try {
+                backend.register(
+                    nickname, gender, avatar,
+                    assessment = result?.let {
+                        SkillAssessmentSummary(level, it.needsCalibration, it.isReturning, assessedAt = now(), rating = it.tier.rating)
+                    },
+                    answers = assessmentAnswers.toMap(),
+                )
+            } catch (error: Exception) {
+                appState.showError(error)
+                return@working
+            }
+            // 资料建好就算注册成功；下面两项没存上不拦着进 App，以后在设置里能改
+            try {
+                if (backend.currentUser?.privacy?.showsAsRegular != showsInLobby) backend.updateShowsAsRegular(showsInLobby)
+                if (preferredMode != null) backend.updatePreferredMode(preferredMode)
+            } catch (_: RemoteError) {
+            }
+            appState.showToast(tr("注册成功，欢迎加入"), Toast.Style.Success)
+            appState.syncPhase()
+        }
+    }
+
+    private suspend fun working(block: suspend () -> Unit) {
+        isWorking = true
+        try {
+            block()
+        } finally {
+            isWorking = false
+        }
+    }
+}

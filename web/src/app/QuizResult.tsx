@@ -3,7 +3,7 @@ import { archetypeInfo, axes, axisLevel, axisNames, evaluate, playStyle, questio
 import { currentLocale, pathPrefixes, t, useLocale } from './i18n';
 import { Icon } from './icons';
 import { Starburst, Tag } from './kit';
-import { fontsReady, loadArt, loadImage, renderCard, type CardFace, type CardInput } from './levelCard';
+import { fontsReady, ghostWord, loadArt, loadImage, renderCard, type CardFace, type CardInput } from './levelCard';
 import { clearPending, loadPending, saveArgs, validAnswers } from './quizStore';
 import { Link, navigate } from './router';
 import { signInFirst } from './Shell';
@@ -48,15 +48,7 @@ export function QuizResult({ profile, onProfile }: { profile: Profile | null; on
 
   return (
     <div className="mx-auto grid max-w-2xl gap-6">
-      <section className="sticker animate-enter grid justify-items-center gap-2 bg-lime p-6 text-center text-on-accent sm:p-8" aria-labelledby="result">
-        <p className="kicker">{t('Your level')}</p>
-        <h1 id="result" className="outline-none">
-          <Starburst tint="butter" size={128}>{level.label}</Starburst>
-        </h1>
-        <p className="text-title2">{level.name}</p>
-        <p className="max-w-md text-subhead font-semibold">{level.summary}</p>
-        <Tag tint="surface">{t('Self-rated')}</Tag>
-      </section>
+      <LevelHero level={level} rating={result.rating} />
 
       <ul className="grid gap-2 text-subhead text-ink-secondary">
         {result.limitingGate && <li>{result.limitingGate}</li>}
@@ -96,33 +88,147 @@ export function QuizResult({ profile, onProfile }: { profile: Profile | null; on
   );
 }
 
-/** 打法：名字、一句话、六项能力的雷达图、最强一拍、最佳搭档 */
-function PlayStyleCard({ style }: { style: PlayStyle }) {
-  const info = archetypeInfo[style.archetype];
-  const partner = info.partner ? t(archetypeInfo[info.partner].name) : t('Anyone works');
+/** 星形周围的小贴纸：进场时从星形后面弹出来，停在这些位置（x、y 是离星形中心的距离） */
+const pieces: { x: number; y: number; turn: number; size: number; delay: number; tint?: string; round?: boolean }[] = [
+  { x: -128, y: -30, turn: -28, size: 34, delay: 260 },
+  { x: 124, y: 34, turn: 150, size: 28, delay: 340 },
+  { x: -96, y: 52, turn: 0, size: 16, delay: 300, tint: 'pink', round: true },
+  { x: 104, y: -48, turn: 0, size: 20, delay: 220, tint: 'sky', round: true },
+  { x: -150, y: 26, turn: 18, size: 14, delay: 380, tint: 'lavender' },
+  { x: 150, y: -6, turn: -14, size: 13, delay: 420, tint: 'mint' },
+];
+
+/** 等级从 1 数到结果（关了动效的人直接看到结果） */
+function useCountUp(target: number) {
+  const still = useMemo(() => typeof matchMedia !== 'function' || matchMedia('(prefers-reduced-motion: reduce)').matches, []);
+  const [shown, setShown] = useState(still ? target : 1);
+  useEffect(() => {
+    if (still || target <= 1) return;
+    let current = 1;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const start = setTimeout(() => {
+      timer = setInterval(() => {
+        current += 1;
+        setShown(current);
+        if (current >= target) clearInterval(timer);
+      }, 110);
+    }, 250);
+    return () => {
+      clearTimeout(start);
+      clearInterval(timer);
+    };
+  }, [target, still]);
+  return shown;
+}
+
+/** 结果的第一块：星形里的等级（盖章一样弹出来）、名字、一句话，下面是 1–9 级的刻度 */
+function LevelHero({ level, rating }: { level: ReturnType<typeof tier>; rating: number }) {
+  const shown = useCountUp(level.level);
   return (
-    <section className="sticker grid gap-4 p-5 sm:grid-cols-[minmax(0,1fr)_14rem] sm:items-center sm:p-6" style={{ background: info.color, color: info.ink }} aria-labelledby="style">
-      <div className="grid content-start gap-3">
-        <p className="kicker">{t('Play style')}</p>
-        <h2 id="style" className="text-title">{t(info.name)}</h2>
-        <p className="text-subhead font-semibold">{t(info.line)}</p>
-        <dl className="grid grid-cols-2 gap-3 text-subhead">
-          <div><dt className="text-caption opacity-80">{t('Best shot')}</dt><dd className="font-black">{t(questionTitle(style.bestShot))}</dd></div>
-          <div><dt className="text-caption opacity-80">{t('Best partner')}</dt><dd className="font-black">{partner}</dd></div>
-        </dl>
+    <section className="sticker relative isolate overflow-hidden bg-lime text-on-accent" aria-labelledby="result">
+      <div aria-hidden="true" className="result-pattern absolute -inset-16 -z-10" />
+      <div className="grid justify-items-center gap-2 p-6 text-center sm:p-8">
+        <p className="kicker">{t('Your level')}</p>
+        <h1 id="result" aria-label={level.label} className="relative outline-none">
+          <span aria-hidden="true" className="max-[419px]:hidden">
+            {pieces.map((piece) => (
+              <span
+                key={`${piece.x},${piece.y}`}
+                className={`result-piece absolute top-1/2 left-1/2 ${piece.tint ? `border-2 border-[#17140f] shadow-[1.5px_2px_0_#17140f] ${piece.round ? 'rounded-full' : 'rounded-[4px]'}` : ''}`}
+                style={{
+                  ['--x' as string]: `${piece.x}px`,
+                  ['--y' as string]: `${piece.y}px`,
+                  ['--turn' as string]: `${piece.turn}deg`,
+                  ['--delay' as string]: `${piece.delay}ms`,
+                  width: piece.size,
+                  height: piece.size,
+                  background: piece.tint ? `var(--color-${piece.tint})` : 'url(/logo.svg) center / contain no-repeat',
+                }}
+              />
+            ))}
+          </span>
+          <span className="result-stamp relative block">
+            <Starburst tint="butter" size={152}>{shown >= level.level ? level.label : shown}</Starburst>
+          </span>
+        </h1>
+        <p className="text-display">{level.name}</p>
+        <p className="max-w-md text-subhead font-semibold">{level.summary}</p>
+        <Tag tint="surface">{t('Self-rated')}</Tag>
+        <LevelScale rating={rating} />
       </div>
-      <Radar scores={style.scores} />
     </section>
   );
 }
 
-/** 六项能力的雷达图（满格是 6 级，问卷最高到 6+） */
+/** 1–9 级的刻度：到自己这一级为止涂黑，圆点停在 −、平、+ 的准确位置 */
+function LevelScale({ rating }: { rating: number }) {
+  const clamped = Math.min(9.33, Math.max(0.67, rating));
+  return (
+    <div aria-hidden="true" className="mt-3 w-full max-w-sm">
+      <div className="relative">
+        <div className="grid grid-cols-9 gap-1">
+          {Array.from({ length: 9 }, (_, i) => (
+            <span key={i} className={`h-2.5 rounded-full border-2 border-[#17140f] ${i + 1 <= Math.round(rating) ? 'bg-[#17140f]' : 'bg-white/70'}`} />
+          ))}
+        </div>
+        <span
+          className="result-marker absolute top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#17140f] bg-butter shadow-[1.5px_2px_0_#17140f]"
+          style={{ left: `${((clamped - 0.5) / 9) * 100}%` }}
+        />
+      </div>
+      <div className="mt-1.5 grid grid-cols-9 gap-1 text-caption font-black tabular-nums">
+        {Array.from({ length: 9 }, (_, i) => (
+          <span key={i} className={i + 1 === Math.round(rating) ? '' : 'opacity-50'}>{i + 1}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** 打法：上面是和卡片一样的人物区（英文大字、剪影），下面是一句话、最强一拍、最佳搭档和六项能力的雷达图 */
+function PlayStyleCard({ style }: { style: PlayStyle }) {
+  const info = archetypeInfo[style.archetype];
+  const partner = info.partner ? t(archetypeInfo[info.partner].name) : t('Anyone works');
+  return (
+    <section className="sticker animate-enter overflow-hidden" style={{ background: info.color, color: info.ink }} aria-labelledby="style">
+      <div className="relative isolate flex h-48 items-start overflow-hidden border-b-2 border-stroke bg-[#f2efe7] p-5 text-[#17140f] sm:h-52 sm:items-end sm:p-6">
+        <div aria-hidden="true" className="absolute -top-3 -left-1 -z-10 grid text-[5.75rem] leading-[0.84] font-black tracking-tight whitespace-nowrap text-[#17140f]/[0.07] select-none sm:text-[6.5rem]">
+          <span>{ghostWord[style.archetype]}</span>
+          <span>{ghostWord[style.archetype]}</span>
+          <span>{ghostWord[style.archetype]}</span>
+        </div>
+        <img src={`/cards/${style.archetype}.png`} alt="" className="style-figure absolute right-3 bottom-0 -z-10 max-h-[72%] max-w-[62%] object-contain object-bottom sm:right-8 sm:max-h-[94%] sm:max-w-[48%]" />
+        <div className="grid max-w-[80%] gap-1 sm:max-w-[50%]">
+          <p className="kicker">{t('Play style')}</p>
+          <h2 id="style" className="text-title sm:text-display">{t(info.name)}</h2>
+        </div>
+      </div>
+      <div className="grid gap-5 p-5 sm:grid-cols-[minmax(0,1fr)_13.5rem] sm:items-center sm:p-6">
+        <div className="grid content-start gap-4">
+          <p className="text-headline">{t(info.line)}</p>
+          <dl className="flex flex-wrap gap-2">
+            {[[t('Best shot'), t(questionTitle(style.bestShot))], [t('Best partner'), partner]].map(([label, value]) => (
+              <div key={label} className="grid gap-0.5 rounded-control border-2 border-stroke bg-surface px-3 py-2 text-ink shadow-low">
+                <dt className="text-caption text-ink-secondary">{label}</dt>
+                <dd className="text-subhead font-black">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <Radar scores={style.scores} />
+      </div>
+    </section>
+  );
+}
+
+/** 六项能力的雷达图（满格是 6 级，问卷最高到 6+）：形状从中心长出来 */
 function Radar({ scores }: { scores: Record<Axis, number> }) {
   const [size, center, radius] = [224, 112, 70];
   const point = (i: number, r: number) => {
     const angle = ((-90 + i * 60) * Math.PI) / 180;
     return [center + r * Math.cos(angle), center + r * Math.sin(angle)];
   };
+  const reach = (i: number) => (radius * Math.max(0.3, Math.min(6, scores[axes[i]]))) / 6;
   const shape = (r: (i: number) => number) => axes.map((_, i) => point(i, r(i)).join(',')).join(' ');
   return (
     <figure className="grid justify-items-center">
@@ -130,7 +236,17 @@ function Radar({ scores }: { scores: Record<Axis, number> }) {
         {[2, 4, 6].map((level) => (
           <polygon key={level} points={shape(() => (radius * level) / 6)} fill="none" stroke="currentColor" strokeOpacity={0.3} strokeWidth={1.5} />
         ))}
-        <polygon points={shape((i) => (radius * Math.max(0.3, Math.min(6, scores[axes[i]]))) / 6)} fill="currentColor" fillOpacity={0.28} stroke="currentColor" strokeWidth={3} strokeLinejoin="round" />
+        {axes.map((axis, i) => {
+          const [x, y] = point(i, radius);
+          return <line key={axis} x1={center} y1={center} x2={x} y2={y} stroke="currentColor" strokeOpacity={0.18} strokeWidth={1.5} />;
+        })}
+        <g className="radar-shape" style={{ transformOrigin: `${center}px ${center}px` }}>
+          <polygon points={shape(reach)} fill="currentColor" fillOpacity={0.3} stroke="currentColor" strokeWidth={3} strokeLinejoin="round" />
+          {axes.map((axis, i) => {
+            const [x, y] = point(i, reach(i));
+            return <circle key={axis} cx={x} cy={y} r={4} fill="currentColor" />;
+          })}
+        </g>
         {axes.map((axis, i) => {
           const [x, y] = point(i, radius + 24);
           return (
