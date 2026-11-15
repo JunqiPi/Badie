@@ -26,7 +26,9 @@ object L10n {
 
     internal fun lookup(resources: Resources?, key: String, args: Array<out Any?>): String {
         val texts = args.map { it.toString() }
-        if (resources == null) return L10nFormat.fillSource(key, texts)
+        if (resources == null) {
+            return L10nTable.sourceText[key]?.let { L10nFormat.fill(it, texts) } ?: L10nFormat.fillSource(key, texts)
+        }
         L10nTable.plurals[key]?.let { id ->
             val quantity = (args[L10nTable.pluralArg.getValue(key)] as Number).toInt()
             return L10nFormat.fill(resources.getQuantityText(id, quantity).toString(), texts)

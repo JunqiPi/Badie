@@ -65,7 +65,7 @@ class SupabaseClientTest {
     fun appleSendsIdTokenAndRawNonce() = runTest {
         server.on("POST /auth/v1/token", token("apple"))
         val client = client()
-        client.signIn(provider = "apple", idToken = "id-token", nonce = "raw-nonce")
+        client.signInWithIdToken(provider = "apple", idToken = "id-token", nonce = "raw-nonce")
 
         assertEquals("grant_type=id_token", server.query(0))
         assertEquals("apple", text(0, "provider"))

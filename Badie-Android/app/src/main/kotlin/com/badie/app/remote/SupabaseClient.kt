@@ -121,7 +121,7 @@ class SupabaseClient(
     }
 
     /** Apple / Google：把对方给的身份令牌和原始 nonce 交给 Supabase 换登录状态 */
-    suspend fun signIn(provider: String, idToken: String, nonce: String?): RemoteSession {
+    suspend fun signInWithIdToken(provider: String, idToken: String, nonce: String?): RemoteSession {
         val data = send(
             "auth/v1/token?grant_type=id_token",
             body = JsonObject(json("provider" to provider, "id_token" to idToken) + (if (nonce == null) emptyMap() else json("nonce" to nonce))),

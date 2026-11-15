@@ -169,6 +169,8 @@ abstract class GenerateStrings : DefaultTask() {
         val kt = StringBuilder("// 自动生成，不要手改\npackage com.badie.app.l10n\n\nimport com.badie.app.R\n\n")
         kt.append("internal object L10nTable {\n    val strings = HashMap<String, Int>(${keys.size * 2})\n    val plurals = HashMap<String, Int>()\n")
         kt.append("    /** 复数跟着第几个参数走（从 0 数） */\n    val pluralArg = HashMap<String, Int>()\n\n")
+        // 简体中文是原文，但有少数句子在文字表里另写了一遍（调了参数顺序，或改过措辞）。没有界面时（单元测试）用这份
+        kt.append("    /** 简体中文和 key 不一样的句子 */\n    val sourceText = HashMap<String, String>()\n\n")
         val chunks = keys.chunked(300)
         kt.append("    init {\n")
         chunks.indices.forEach { kt.append("        fill$it()\n") }
@@ -181,6 +183,10 @@ abstract class GenerateStrings : DefaultTask() {
                     kt.append("        pluralArg[${literal(key)}] = ${pluralArg[key]}\n")
                 } else {
                     kt.append("        strings[${literal(key)}] = R.string.${names[key]}\n")
+                }
+                val zh = plain(key, "zh-Hans")
+                if (zh != key && key !in pluralKeys) {
+                    kt.append("        sourceText[${literal(key)}] = ${literal(convert(zh, key, argCount.getValue(key)))}\n")
                 }
             }
             kt.append("    }\n")

@@ -31,12 +31,16 @@ object Sym {
     val infoCircleFill = SymbolId(R.drawable.sym_info_fill)
     /** number */
     val number = SymbolId(R.drawable.sym_tag)
+    /** person.2.fill */
+    val person2Fill = SymbolId(R.drawable.sym_group_fill)
     /** person.3.fill */
     val person3Fill = SymbolId(R.drawable.sym_groups_fill)
     /** person.crop.circle */
     val personCropCircle = SymbolId(R.drawable.sym_account_circle)
     /** person.crop.circle.fill */
     val personCropCircleFill = SymbolId(R.drawable.sym_account_circle_fill)
+    /** person.fill */
+    val personFill = SymbolId(R.drawable.sym_person_fill)
     /** plus */
     val plus = SymbolId(R.drawable.sym_add)
     /** sportscourt.fill */

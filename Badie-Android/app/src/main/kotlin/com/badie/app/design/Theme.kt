@@ -1,6 +1,6 @@
 package com.badie.app.design
 
-import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.spring
@@ -156,10 +156,10 @@ object AppTheme {
     }
 
     object Motion {
-        fun <T> press(): AnimationSpec<T> = tween(120, easing = LinearOutSlowInEasing)
-        fun <T> standard(): AnimationSpec<T> = spring(dampingRatio = 0.78f, stiffness = 320f)
-        fun <T> bouncy(): AnimationSpec<T> = spring(dampingRatio = 0.6f, stiffness = 195f)
-        fun <T> gentle(): AnimationSpec<T> = tween(300, easing = FastOutSlowInEasing)
+        fun <T> press(): FiniteAnimationSpec<T> = tween(120, easing = LinearOutSlowInEasing)
+        fun <T> standard(): FiniteAnimationSpec<T> = spring(dampingRatio = 0.78f, stiffness = 320f)
+        fun <T> bouncy(): FiniteAnimationSpec<T> = spring(dampingRatio = 0.6f, stiffness = 195f)
+        fun <T> gentle(): FiniteAnimationSpec<T> = tween(300, easing = FastOutSlowInEasing)
         const val collisionMillis = 700
     }
 }
