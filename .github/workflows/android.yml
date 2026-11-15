@@ -52,6 +52,15 @@ jobs:
           path: Badie-Android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
 
+      # 界面截图（测试时渲染的，不用模拟器）：对着 iPhone 的截图看
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: Badie-Android/app/build/outputs/roborazzi
+          if-no-files-found: ignore
+          retention-days: 14
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

@@ -37,6 +37,20 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests {
+            // 截图测试和文字测试要读真的资源（译文、图标、字体）
+            isIncludeAndroidResources = true
+            all {
+                // 每次都重新出图，放在 app/build/outputs/roborazzi
+                it.systemProperty("roborazzi.test.record", "true")
+                it.maxHeapSize = "2g"
+                // 模拟 Android 环境的测试库要碰 JDK 内部的类
+                it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED", "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
+            }
+        }
+    }
+
     // 只带我们有译文的 10 种语言；依赖库自带的其他语言不打进包
     androidResources {
         localeFilters += listOf("en", "b+zh+Hans", "b+zh+Hant", "ja", "ko", "in", "ms", "th", "vi", "hi")
@@ -63,6 +77,13 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    // 截图测试：没有模拟器也能把界面渲染成图（见 src/test/.../ScreenshotTest.kt）
+    testImplementation(platform(libs.compose.bom))
+    testImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.test.manifest)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
 }
 
 // MARK: - 界面文字

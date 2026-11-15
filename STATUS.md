@@ -1,4 +1,4 @@
-# Badie 现状须知（2026-11-13）
+# Badie 现状须知（2026-11-15）
 
 新会话先读这一页，再按需要看 `CLAUDE.md` 和 `Badie-iOS/docs/` 里的文档。
 
@@ -18,6 +18,53 @@
 - 1.0.2 的 10 种语言更新说明、推广文本在 `Badie-iOS/docs/STORE_LISTING.md`。给用户时**直接贴内容**，不要只给路径。
 - 审核演示账号 `review@badie.rsvp`，**不能注销**。演示模式：设置 → 管理员 → 进入演示模式（只有管理员能看到）。
 - 打赏：美国区链到 Ko-fi（https://ko-fi.com/badie ），欧盟 27 国不显示，其他地区用苹果内购（`com.badie.app.tip.small/medium/large`）。提交时 Notes 要写明打赏不解锁功能、美国区用 Ko-fi（guideline 3.1.1）。
+
+## 安卓版（2026-11-15 开始做，还不能用）
+
+需求是 `Badie-Android/docs/REQUIREMENTS.md`（按 iPhone 1.0.5 逐项盘点，用户已定：Kotlin + Compose、最低 Android 8.0、地图用 Google、打赏只放 Ko-fi、做 Apple 登录、演示模式只给管理员）。工程在 `Badie-Android/`，开发分支 `claude/hopeful-pascal-0pew21`，**还没推 main**。
+
+**做法**（后面照着来）
+
+- 一个文件对一个文件地搬 iPhone 的代码，名字尽量不变，测试用例也照搬。文字多的表（等级标准、问卷）用脚本从 Swift 转，不手抄。
+- 界面文字只有 iPhone 的 `Localizable.xcstrings` 一份：构建时转成 10 种语言的 `strings.xml`（`app/build.gradle.kts` 里的 `generateStrings`），代码里写 `tr("简体中文原文", 参数)`，参数的位置写 `%@` 或 `%lld`。测试会查每个原文都在文字表里。
+- 图标：iPhone 的系统图标名对应到 Material Symbols，在 `scripts/icons.json` 里加一行，跑 `python3 scripts/gen_icons.py <解开的 @material-symbols/svg-700 包里的 rounded 目录>`，代码里写 `Sym.boltFill`。
+- 跑：`cd Badie-Android && ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`。Android CI 跑同样三步，并把调试包（`badie-debug-apk`）和界面截图（`screenshots`）传成产物。
+- 没有模拟器也能看界面：`src/test/.../screens/ScreenshotTest.kt` 把页面渲染成图，在 `app/build/outputs/roborazzi/`。搬一个页面加一张，对着 iPhone 的截图看。
+
+**做完的**
+
+1. 工程和 CI；App 图标；系统设置里的 App 语言（10 种）。
+2. 设计系统的基础：颜色、字号、间距、贴纸卡片、按钮、图标按钮、角标、页头、提示条、空状态、横幅（`design/`）。
+3. 骨架：启动页、四个标签各一条导航栈、悬浮标签栏、“+”菜单（`shell/`）。各标签页和推进去的页面还是空的；启动后直接进主界面，没有登录。
+4. 后端客户端：登录、调接口、读写表、照片、换令牌、约 100 个错误码的文案、密码规则、登录状态加密存本机（`remote/`）。
+5. 模型：等级和 27 档、等级标准、性别、认证、距离、定级问卷（14 题、算分、打法）、用户（综合等级、靠谱徽章）、口碑、赛后评价（`models/`）。问卷的测试用例和 iPhone、网页一样。
+6. App 里换语言的逻辑（`l10n/AppLanguage.kt`），设置页还没做。
+7. 测试 87 个，本机和 CI 都过；截图 7 张（主界面、“+”菜单、启动页、基础组件，含深色和日语）。截图里中文的粗体不明显，是测试环境的字体只有一种粗细，真机上要再看。
+
+**接下来的顺序**
+
+1. 用户模型、本机缓存、登录和注册（邮箱验证码、密码、人机验证、定级问卷的界面、补选性别），先能用真账号登录。Google、Apple 登录放在这一步的最后（见下面“要用户准备的”）。
+2. “我的”、编辑资料、设置、等级对照表、等级卡片。
+3. 球馆（球馆库、收藏、添加）。
+4. 发现页（附近的人、邀请）、快速匹配。
+5. 球局、房间、赛果、互评、爽约。
+6. 球群、球友、消息、通知中心。
+7. 排行榜、挑战、高水平认证。
+8. 推送、网页链接进 App、开赛提醒（后端要配合改，见需求文档 8.3）。
+9. 演示模式、商店截图和文案、封闭测试、上架。
+
+**要用户准备的**（到那一步再弄，不急）
+
+- Google 登录、Apple 登录：要先有安卓的签名密钥（用户自己生成、自己保管），再在 Google Cloud 建安卓客户端；Apple 那边加回调地址。
+- 球馆那一步之前：Google Cloud 账号（绑卡），开地图和 Places 的 key。
+- 推送那一步之前：Firebase 项目。
+- 上架：Google Play 开发者账号；个人账号要 12 个测试者连续测 14 天。
+
+**这个云端开发环境的坑**
+
+- 没有 Android SDK，要自己装：下载 `commandlinetools-linux`，`sdkmanager "platforms;android-37.0" "build-tools;37.0.0" "platform-tools"`，在 `Badie-Android/local.properties` 写 `sdk.dir=`（这个文件不进仓库）。
+- Maven Central 在这里被限流（一多半请求回 429）：第一次构建要反复跑十几遍才能把依赖下全，下全以后就快了。加新依赖时也会这样。CI 上没有这个问题。
+- 读 CI 的日志很费 token：编译错误尽量在本机跑出来。
 
 ## 怎么发版
 
