@@ -46,8 +46,8 @@ fun tr(key: String, vararg args: Any?): String {
 }
 
 internal object L10nFormat {
-    private val converted = Regex("""%(?:(\d+)\$s|%)""")
-    private val source = Regex("""%(?:(\d+)\$)?(@|lld|%)""")
+    private val converted = Regex("""%(?:(\d+)[$]s|%)""")
+    private val source = Regex("""%(?:(\d+)[$])?(@|lld|%)""")
 
     /** 填转换后的文字：%1$s、%2$s 按序号，%% 是百分号 */
     fun fill(template: String, args: List<String>): String = converted.replace(template) { m ->
