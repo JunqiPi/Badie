@@ -16,11 +16,11 @@ page.on('framenavigated', (frame) => frame === page.mainFrame() && visited.push(
 
 // 分享卡片带来的访问：标题换成“你的朋友是 4。你呢？”
 await page.goto(`${base}/levels/4/?ref=card`);
-// 临时排查：把页面上的报错、失败的请求和当时的标题打出来
+// 这一步偶尔会等不到标题：失败时把页面上的报错、失败的请求和当时的标题打出来（CI 会把 DEBUG 开头的行显示成提示）
 page.on('console', (m) => m.type() === 'error' && console.log('DEBUG console:', m.text().slice(0, 250)));
 page.on('requestfailed', (r) => console.log('DEBUG failed:', r.url().slice(0, 150), r.failure()?.errorText));
 page.on('response', (r) => r.status() >= 400 && console.log('DEBUG', r.status(), r.url().slice(0, 150)));
-await page.getByRole('heading', { name: 'Your friend is 4. What about you?' }).waitFor({ timeout: 8000 }).catch(async (e) => {
+await page.getByRole('heading', { name: 'Your friend is 4. What about you?' }).waitFor().catch(async (e) => {
   console.log('DEBUG url:', page.url());
   console.log('DEBUG h1:', JSON.stringify(await page.locator('h1, h2').allInnerTexts()).slice(0, 250));
   console.log('DEBUG ref:', await page.evaluate(() => localStorage.getItem('badie-ref')), 'swap:', await page.locator('[data-ref-swap]').count());
