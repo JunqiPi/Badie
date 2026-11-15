@@ -1,5 +1,6 @@
 package com.badie.app.models
 
+import kotlinx.serialization.Serializable
 import com.badie.app.l10n.L10n.tr
 
 // MARK: - 赛后评价
@@ -135,6 +136,7 @@ data class PendingSurvey(
 
 // MARK: - 履约档案（客观数据：签到 / 爽约 / 临时取消）
 
+@Serializable
 data class AttendanceRecord(val gamesPlayed: Int, val noShows: Int, val lateCancellations: Int) {
     /** 履约率：完成场次 / (完成 + 爽约 + 临时取消) */
     val reliabilityPercentage: Int

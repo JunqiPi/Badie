@@ -34,15 +34,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
-import android.provider.Settings
 import com.badie.app.design.AppLogo
 import com.badie.app.design.AppTheme
 import com.badie.app.design.ToastView
 import com.badie.app.design.Wordmark
+import com.badie.app.features.onboarding.GenderPromptView
+import com.badie.app.features.onboarding.OnboardingFlow
+import com.badie.app.models.Gender
+import com.badie.app.design.reduceMotion
 import kotlinx.coroutines.delay
 
 @Composable
@@ -52,8 +54,12 @@ fun RootView() {
         AnimatedContent(appState.phase, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "phase") { phase ->
             when (phase) {
                 AppState.Phase.Launching -> SplashView()
-                // 登录和注册还没搬过来，先直接进主界面
-                AppState.Phase.Onboarding, AppState.Phase.Main -> MainTabView()
+                AppState.Phase.Onboarding -> OnboardingFlow()
+                AppState.Phase.Main -> {
+                    MainTabView()
+                    // 以前注册、还没选定级用的性别：先补上（男女等级分开算，匹配要用）
+                    if (appState.currentUser?.gender == Gender.Unspecified) GenderPromptView()
+                }
             }
         }
         ToastHost()
@@ -81,13 +87,6 @@ fun ToastHost(modifier: Modifier = Modifier) {
             }
         }
     }
-}
-
-/** 系统关了动画（“移除动画”）时，弹跳这类装饰动效要停掉 */
-@Composable
-fun reduceMotion(): Boolean {
-    val resolver = LocalContext.current.contentResolver
-    return remember(resolver) { Settings.Global.getFloat(resolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f }
 }
 
 @Composable

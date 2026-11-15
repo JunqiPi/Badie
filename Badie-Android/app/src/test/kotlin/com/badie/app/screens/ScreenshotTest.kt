@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
+import com.badie.app.TestSupport
 import com.badie.app.design.AppTheme
 import com.badie.app.design.Appearance
 import com.badie.app.design.BadieTheme
@@ -34,6 +35,17 @@ import com.badie.app.design.Sym
 import com.badie.app.design.Toast
 import com.badie.app.design.ToastView
 import com.badie.app.design.card
+import com.badie.app.features.onboarding.CaptchaModel
+import com.badie.app.l10n.L10n
+import com.badie.app.features.onboarding.GenderPromptView
+import com.badie.app.features.onboarding.OnboardingFlow
+import com.badie.app.features.onboarding.OnboardingModel
+import com.badie.app.features.onboarding.OnboardingStep
+import com.badie.app.models.Avatar
+import com.badie.app.models.GameMode
+import com.badie.app.models.Gender
+import com.badie.app.models.SkillAssessment
+import com.badie.app.remote.HttpResponse
 import com.badie.app.shell.AppEnvironment
 import com.badie.app.shell.CreateMenuSheet
 import com.badie.app.shell.LocalEnv
@@ -42,6 +54,7 @@ import com.badie.app.shell.SplashView
 import com.github.takahirom.roborazzi.captureRoboImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -61,9 +74,14 @@ class ScreenshotTest {
     @get:Rule
     val compose = createComposeRule()
 
+    @After
+    fun detach() = L10n.detach()
+
     private fun shot(name: String, qualifiers: String = "b+zh+Hans", appearance: Appearance = Appearance.Light, content: @Composable () -> Unit) {
         RuntimeEnvironment.setQualifiers("+$qualifiers")
-        val environment = AppEnvironment(CoroutineScope(Dispatchers.Unconfined))
+        // 不在界面里取的文字（按钮标题、出错提示）也跟着这次的语言
+        L10n.attach(RuntimeEnvironment.getApplication())
+        val environment = AppEnvironment(CoroutineScope(Dispatchers.Unconfined), TestSupport.backend())
         compose.setContent {
             CompositionLocalProvider(LocalEnv provides environment) {
                 BadieTheme(appearance) {
@@ -94,6 +112,67 @@ class ScreenshotTest {
 
     @Test
     fun componentsDark() = shot("components-dark", appearance = Appearance.Dark) { Components() }
+
+    // MARK: 登录和注册
+
+    private fun onboarding(step: OnboardingStep, environment: AppEnvironment, setUp: OnboardingModel.() -> Unit = {}): OnboardingModel =
+        OnboardingModel(environment.appState, CaptchaModel(), passwordLookup = { HttpResponse(200, ByteArray(0)) }, initialStep = step).apply(setUp)
+
+    @Test
+    fun welcome() = shot("onboarding-1-welcome") { OnboardingFlow(onboarding(OnboardingStep.Welcome, LocalEnv.current)) }
+
+    @Test
+    fun welcomeEnglishDark() = shot("onboarding-1-welcome-en-dark", qualifiers = "en", appearance = Appearance.Dark) {
+        OnboardingFlow(onboarding(OnboardingStep.Welcome, LocalEnv.current))
+    }
+
+    @Test
+    fun emailSignIn() = shot("onboarding-2-email") {
+        OnboardingFlow(onboarding(OnboardingStep.Email, LocalEnv.current) { email = "alex@example.com"; captcha.receive("""{"token":""}""") })
+    }
+
+    @Test
+    fun emailRegisterWithError() = shot("onboarding-2-register-en", qualifiers = "en") {
+        OnboardingFlow(
+            onboarding(OnboardingStep.Email, LocalEnv.current) {
+                toggleNewAccount(); email = "alex@example"; password = "shuttle rally"; agreed = true
+                captcha.receive("""{"token":""}"""); errorText = L10n.tr("邮箱地址好像不对。")
+            },
+        )
+    }
+
+    @Test
+    fun code() = shot("onboarding-3-code") {
+        OnboardingFlow(onboarding(OnboardingStep.Code, LocalEnv.current) { email = "alex@example.com"; resendRemaining = 42 })
+    }
+
+    @Test
+    fun profile() = shot("onboarding-4-profile") {
+        OnboardingFlow(onboarding(OnboardingStep.Profile, LocalEnv.current) { nickname = "阿杰"; gender = Gender.Male; avatar = Avatar("", 2) })
+    }
+
+    @Test
+    fun levelQuestion() = shot("onboarding-5-question") {
+        OnboardingFlow(onboarding(OnboardingStep.Level, LocalEnv.current) { assessmentAnswers["clear"] = 3 })
+    }
+
+    @Test
+    fun levelResult() = shot("onboarding-5-result", qualifiers = "b+zh+Hans-h1500dp") {
+        OnboardingFlow(onboarding(OnboardingStep.Level, LocalEnv.current) { assessmentAnswers.putAll(SkillAssessment.levelCardDemoAnswers) })
+    }
+
+    @Test
+    fun levelResultDarkJapanese() = shot("onboarding-5-result-ja-dark", qualifiers = "ja-h1500dp", appearance = Appearance.Dark) {
+        OnboardingFlow(onboarding(OnboardingStep.Level, LocalEnv.current) { assessmentAnswers.putAll(SkillAssessment.demoAnswers) })
+    }
+
+    @Test
+    fun preferences() = shot("onboarding-6-preferences") {
+        OnboardingFlow(onboarding(OnboardingStep.Preferences, LocalEnv.current) { preferredMode = GameMode.Doubles })
+    }
+
+    @Test
+    fun genderPrompt() = shot("gender-prompt") { GenderPromptView() }
 
     /** 设计系统的基础组件摆在一页上 */
     @Composable

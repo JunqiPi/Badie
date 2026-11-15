@@ -1,5 +1,6 @@
 package com.badie.app.models
 
+import kotlinx.serialization.Serializable
 import com.badie.app.l10n.L10n.tr
 import com.badie.app.l10n.ListText
 import kotlin.math.ceil
@@ -163,6 +164,7 @@ data class PlayProfile(
 data class AssessmentGap(/** 下一级（整数） */ val level: Int, val dimension: AssessmentDimension)
 
 /** 定级结果的摘要（存到用户资料里） */
+@Serializable
 data class SkillAssessmentSummary(
     val level: Int,
     val needsCalibration: Boolean,

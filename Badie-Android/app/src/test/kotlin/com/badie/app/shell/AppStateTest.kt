@@ -1,5 +1,6 @@
 package com.badie.app.shell
 
+import com.badie.app.TestSupport
 import com.badie.app.design.Toast
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy
@@ -13,7 +14,7 @@ import org.junit.Test
 class AppStateTest {
     @Test
     fun toastDisappearsAfterAWhile() = runTest {
-        val state = AppState(backgroundScope)
+        val state = AppState(backgroundScope, TestSupport.backend())
         state.showToast("资料已保存", Toast.Style.Success)
         assertEquals("资料已保存", state.toast?.message)
         advanceTimeBy(AppState.TOAST_MILLIS - 1)
@@ -25,7 +26,7 @@ class AppStateTest {
 
     @Test
     fun aNewToastRestartsTheClock() = runTest {
-        val state = AppState(backgroundScope)
+        val state = AppState(backgroundScope, TestSupport.backend())
         state.showToast("一")
         advanceTimeBy(2000)
         state.showToast("二")
@@ -38,9 +39,12 @@ class AppStateTest {
 
     @Test
     fun launchEndsOnce() {
-        val state = AppState(kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined))
+        // 没登录：启动页放完进登录
+        val state = AppState(kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined), TestSupport.backend())
         assertEquals(AppState.Phase.Launching, state.phase)
+        state.syncPhase()
+        assertEquals("启动页没放完先不动", AppState.Phase.Launching, state.phase)
         state.finishLaunch()
-        assertEquals(AppState.Phase.Main, state.phase)
+        assertEquals(AppState.Phase.Onboarding, state.phase)
     }
 }

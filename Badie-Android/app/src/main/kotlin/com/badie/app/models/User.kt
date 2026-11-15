@@ -1,10 +1,12 @@
 package com.badie.app.models
 
+import kotlinx.serialization.Serializable
 import com.badie.app.l10n.L10n.tr
 import java.util.Locale
 import kotlin.math.abs
 
 /** 头像：照片，或“首字 / 表情 + 马卡龙底色” */
+@Serializable
 data class Avatar(
     /** 表情或单字；为空时用昵称的第一个字 */
     val symbol: String,
@@ -27,6 +29,7 @@ data class Avatar(
 
 // MARK: - 隐私设置
 
+@Serializable
 data class PrivacySettings(
     /** 在常去球馆的“同馆常客”里显示我（默认开） */
     val showsAsRegular: Boolean = true,
@@ -46,6 +49,7 @@ data class PrivacySettings(
 
 // MARK: - 用户
 
+@Serializable
 data class User(
     val id: String,
     val nickname: String,

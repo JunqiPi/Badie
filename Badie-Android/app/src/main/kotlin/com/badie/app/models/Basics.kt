@@ -69,6 +69,14 @@ enum class VerificationStatus(val rawValue: String) {
         val unverifiedMaxTier = SkillTier(7, SkillTier.Modifier.Minus)
 
         fun of(rawValue: String?): VerificationStatus = entries.firstOrNull { it.rawValue == rawValue } ?: Unverified
+
+        /** 服务器的写法：tournament / national / bwf；别的都不算认证 */
+        fun ofServer(value: String?): VerificationStatus? = when (value) {
+            "tournament" -> Tournament
+            "national" -> National
+            "bwf" -> Bwf
+            else -> null
+        }
     }
 }
 
@@ -132,6 +140,12 @@ enum class GameMode(val rawValue: String, val versusText: String, val icon: Symb
             Singles -> tr("单打")
             Doubles -> tr("双打")
         }
+
+    val serverValue: String get() = if (this == Singles) "singles" else "doubles"
+
+    companion object {
+        fun ofServer(value: String): GameMode = if (value == "singles") Singles else Doubles
+    }
 }
 
 // MARK: - 谁可以向我发起挑战
@@ -147,6 +161,9 @@ enum class ChallengePolicy(val rawValue: String) {
             Nobody -> tr("不接受")
         }
 
+    /** 服务器的写法：similar 对应“水平相近” */
+    val serverValue: String get() = if (this == SimilarLevel) "similar" else rawValue
+
     val detail: String
         get() = when (this) {
             Everyone -> tr("任何同一国家/地区的球友都能向你发起挑战")
@@ -154,6 +171,11 @@ enum class ChallengePolicy(val rawValue: String) {
             Friends -> tr("只有加了球友的人能挑战你")
             Nobody -> tr("别人看不到“发起挑战”")
         }
+
+    companion object {
+        fun ofServer(value: String): ChallengePolicy =
+            if (value == "similar") SimilarLevel else entries.firstOrNull { it.rawValue == value } ?: SimilarLevel
+    }
 }
 
 // MARK: - 卡片背景的颜色

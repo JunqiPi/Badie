@@ -20,6 +20,11 @@ object L10n {
         resources = context.resources
     }
 
+    /** 测试用：回到没接界面的状态 */
+    internal fun detach() {
+        resources = null
+    }
+
     /** 不在界面里（管理器、错误提示）取文字。没接上界面时（单元测试）给简体中文原文 */
     fun tr(key: String, vararg args: Any?): String = lookup(resources, key, args)
 

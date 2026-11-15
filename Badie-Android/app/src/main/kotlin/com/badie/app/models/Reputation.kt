@@ -1,5 +1,6 @@
 package com.badie.app.models
 
+import kotlinx.serialization.Serializable
 import java.util.Locale
 import kotlin.math.abs
 
@@ -9,6 +10,7 @@ import kotlin.math.abs
  * 由赛后评价聚合得到的声誉数据。分数只在内部用于排序和审核，不对任何人展示；
  * 对外只显示正面标签（月度快照，避免从变化反推出是谁评的）。
  */
+@Serializable
 data class ReputationScore(
     /** 有效评价次数（过期问卷不计入） */
     val evaluationCount: Int,

@@ -1,5 +1,5 @@
 ---
-// App 登录用的人机验证：iOS 用看不见的网页视图打开这个页面，拿到 Cloudflare Turnstile 令牌后交给 App，
+// App 登录用的人机验证：iPhone 和安卓都用看不见的网页视图打开这个页面，拿到 Cloudflare Turnstile 令牌后交给 App，
 // App 再随“发验证码”请求交给 Supabase（站点密钥只配在网站上，App 不用另外配置）。
 // 和网页登录一样只在 Cloudflare 觉得可疑时才显示验证框；网站没配置 site key 时直接告诉 App 不需要验证
 const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
@@ -32,8 +32,11 @@ const siteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? '';
       type Message = { token?: string; interactive?: boolean; error?: string };
       type Turnstile = { render: (el: HTMLElement, options: Record<string, unknown>) => string };
 
-      // 只有 App 里的网页视图有这个通道；在普通浏览器里打开什么也不会发生
-      const post = (message: Message) => (window as any).webkit?.messageHandlers?.captcha?.postMessage(message);
+      // 只有 App 里的网页视图有这两个通道（iPhone 的收对象，安卓的收 JSON 文字）；在普通浏览器里打开什么也不会发生
+      const post = (message: Message) => {
+        (window as any).webkit?.messageHandlers?.captcha?.postMessage(message);
+        (window as any).BadieCaptcha?.postMessage(JSON.stringify(message));
+      };
       const widget = document.getElementById('widget')!;
       const siteKey = widget.dataset.sitekey;
 
