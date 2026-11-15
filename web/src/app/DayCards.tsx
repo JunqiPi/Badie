@@ -13,7 +13,8 @@ import { Icon, type IconName } from './icons';
 import { Avatar, Empty, IconButton, IconTile } from './kit';
 import { DayCard, type CardPerson } from './PlayerCard';
 import { Link, navigate } from './router';
-import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type Profile } from './supabase';
+import { isSample, samplePlayers } from './samples';
+import { problem, supabase, type DayCandidate, type InviteUser, type NearbyPlayer, type NearbyVenue, type Profile } from './supabase';
 import { capitalize, dateChip, timeOf } from './time';
 import { Button, Skeleton, toast } from './ui';
 import type { UsualTime } from './usual';
@@ -124,9 +125,15 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     setNearby(undefined);
     setNearbySeen(0);
     seen.current.clear();
-    supabase!
-      .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
-      .then(({ data, error }) => !stale && setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
+    // 附近的真人排在前面；真人太少时后面补示例球友（常去的球馆用我附近真实的球馆），见 samples.ts
+    void Promise.all([
+      supabase!.rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km }),
+      supabase!.rpc('venues_near', { lat: area.lat, lng: area.lon, radius_km: km, max_results: 6 }),
+    ]).then(([people, venues]) => {
+      if (stale) return;
+      const real = people.error ? [] : ((people.data ?? []) as NearbyPlayer[]);
+      setNearby([...real, ...samplePlayers(real.length, me.current.rating ?? 3, (venues.data ?? []) as NearbyVenue[])]);
+    });
     if (!date) return () => {
       stale = true;
     };
@@ -193,8 +200,12 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     }, 220);
   }
 
+  /** 示例球友约不了：说明一下 */
+  const explain = () => toast(t('This is a sample player. You can invite real players once they join nearby.'));
+
   function skip(item: Item) {
     next(item, 'left');
+    if (isSample(item.card.user.id)) return;
     if (item.kind === 'day') void supabase!.rpc('skip_candidate', { p_ticket: item.card.ticket });
     else void supabase!.rpc('skip_nearby', { p_user: item.card.user.id });
   }
@@ -211,6 +222,7 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
   /** 约附近的人：先确认附近的人能看到我；没有卡片照片的，第一次提醒一下；然后打开约 TA 的半屏 */
   function compose(c: Composing) {
     settle();
+    if (isSample(c.card.user.id)) return explain();
     if (!me.current.show_as_regular) return setAsking({ kind: 'visible', ...c });
     if (!me.current.card_photo_path && !photoAsked()) {
       rememberPhotoAsked();
@@ -278,6 +290,7 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
   /** ★ 加球友：不占每天 10 个邀请，也不翻到下一张。已经是球友就去聊天；申请过了提示一下；TA 申请过我就直接接受 */
   async function star(item: Item) {
     const id = item.card.user.id;
+    if (isSample(id)) return explain();
     const state = friendOf(item);
     if (state.is_friend) return navigate(`/messages/dm/${id}/`);
     if (state.friend_request === 'sent') return toast(t('Requested'));
@@ -337,7 +350,7 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     else {
       settle();
       // 没怎么动：是点了一下卡片，打开 TA 的资料
-      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) navigate(`/players/${top.card.user.id}/`);
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) isSample(top.card.user.id) ? explain() : navigate(`/players/${top.card.user.id}/`);
     }
   }
   function cancel() {
@@ -525,7 +538,7 @@ function NearbyCard({ card, filter, hint, actions }: { card: NearbyPlayer; filte
       label={where}
       details={[mode && (mode === 'doubles' ? t('Doubles') : t('Singles'))]}
       reliable={(card.user.recent_no_shows ?? 0) === 0}
-      profile
+      profile={!isSample(card.user.id)}
       footer={<UsualChips times={card.user.usual_times} onPick={(slot) => actions?.onSlot(card, slot)} />}
     >
       <Stamp hint={hint} like={t('Invite')} />
