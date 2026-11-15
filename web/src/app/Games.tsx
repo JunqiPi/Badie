@@ -174,7 +174,7 @@ function QuickMatch({ last }: { last?: Ticket }) {
     [last?.mode === 'singles' ? 'user' : 'users', last?.mode === 'singles' ? t('Singles') : t('Doubles')],
     ['clock', last ? `${timeOf(last.starts_at, tz)}–${timeOf(last.ends_at, tz)}` : t('Tonight')],
     ['pin', last ? t('{n} venue|{n} venues', { n: last.venues.length }) : t('Courts near you')],
-    ['level', !last || last.skill_tolerance === 1 ? t('Level ±1') : last.skill_tolerance === 8 ? t('Any level') : t('Level ±{n}', { n: last.skill_tolerance })],
+    ['level', !last || last.skill_tolerance === 8 ? t('Any level') : last.skill_tolerance === 1 ? t('Level ±1') : t('Level ±{n}', { n: last.skill_tolerance })],
   ];
   return (
     <section aria-labelledby="quick" className="sticker grid content-start gap-3 bg-lime p-5 text-on-accent">

@@ -1,10 +1,13 @@
-import { useState, type SubmitEvent } from 'react';
+import { useEffect, useState, type SubmitEvent } from 'react';
+import { setArea, useArea } from './area';
 import { GenderField, type Gender } from './gender';
 import { currentLocale, t } from './i18n';
 import { loadRef } from './quizStore';
 import { heardFromOptions, problem as explain, supabase, type HeardFrom, type Profile } from './supabase';
 import { CardFan } from './kit';
-import { Button, Field } from './ui';
+import { CourtSearch } from './pickers';
+import { Button, Field, toast } from './ui';
+import { addUsualCourt, nearestCourt, type UsualCourt } from './usualCourt';
 
 /** “你从哪里知道 Badie 的” 的选项（和数据库的约束一致） */
 const heardFromLabel = (option: HeardFrom) => ({
@@ -48,8 +51,11 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   const [touched, setTouched] = useState(false);
   const [country, setCountry] = useState(guessCountry);
   const [gender, setGender] = useState<Gender | null>(null);
-  // 在附近的人里显示我（新账号默认开）
-  const [visible, setVisible] = useState(true);
+  // 常去球馆：必填，默认离你最近的一家（附近的人靠它找到你）。“在附近的人里显示我”新账号默认开，以后在设置里能关
+  const [court, setCourt] = useState<UsualCourt>();
+  const [changingCourt, setChangingCourt] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const area = useArea();
   const [heardFrom, setHeardFrom] = useState<HeardFrom | ''>('');
   // 点了“继续”才提示没选性别（离开昵称框就提示会让页面跳动，点不准）
   const [tried, setTried] = useState(false);
@@ -57,11 +63,36 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   const [error, setError] = useState<string>();
   const problem = nicknameProblem(nickname);
 
+  // 知道你在哪（定位过或搜过城市）就先选上最近的一家
+  useEffect(() => {
+    if (!area || court) return;
+    let stale = false;
+    nearestCourt(area).then((nearest) => !stale && nearest && setCourt((current) => current ?? nearest));
+    return () => {
+      stale = true;
+    };
+  }, [area]);
+
+  function locate() {
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        setLocating(false);
+        setArea({ lat: p.coords.latitude, lon: p.coords.longitude });
+      },
+      () => {
+        setLocating(false);
+        toast(t('Location is off. Search for your court instead.'), 'error');
+      },
+      { timeout: 10000 },
+    );
+  }
+
   async function save(event: SubmitEvent) {
     event.preventDefault();
     setTouched(true);
     setTried(true);
-    if (problem || !gender) return;
+    if (problem || !gender || !court) return;
     setBusy(true);
     const { data, error } = await supabase!
       .from('profiles')
@@ -69,12 +100,12 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
       .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender, ...(loadRef() && { ref: loadRef() }), ...(heardFrom && { heard_from: heardFrom }) })
       .select()
       .single();
-    // 新账号默认显示；关掉的再改一下（新建资料时不能直接写这一项）
-    if (!error && !visible) await supabase!.from('profiles').update({ show_as_regular: false }).eq('id', userId);
+    const saved = !error && !(await addUsualCourt(userId, court.id)).error;
     setBusy(false);
     // 昵称有不当用语时说清楚原因，其他情况多半是重名之类，换一个就好
     if (error) setError(error.message === 'objectionable_content' ? explain(error) : t('Couldn’t save. Try a different nickname.'));
-    else onDone({ ...(data as Profile), show_as_regular: visible && (data as Profile).show_as_regular });
+    else if (!saved) setError(t('Couldn’t save. Try again.'));
+    else onDone(data as Profile);
   }
 
   return (
@@ -109,6 +140,26 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
           )}
         </Field>
         <GenderField value={gender} onChange={setGender} error={tried && !gender ? t('Choose one to continue.') : undefined} />
+        <fieldset className="grid gap-1.5">
+          <legend className="mb-1.5 text-footnote font-bold text-ink-secondary">{t('Usual court')}</legend>
+          {court && !changingCourt ? (
+            <div className="tile flex items-center gap-3 p-3">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-headline">{court.name}</span>
+                <span className="block truncate text-footnote text-ink-secondary">{court.city}</span>
+              </span>
+              <button type="button" onClick={() => setChangingCourt(true)} className="button button-sm button-quiet">{t('Change')}</button>
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              {!court && <Button type="button" variant="quiet" busy={locating} onClick={locate}>{t('Use my location')}</Button>}
+              <CourtSearch onPick={(c) => { setCourt({ id: c.id, name: c.name, city: c.city }); setChangingCourt(false); }} />
+            </div>
+          )}
+          <p className={`text-footnote ${tried && !court ? 'font-bold text-danger' : 'text-ink-secondary'}`} role={tried && !court ? 'alert' : undefined}>
+            {tried && !court ? t('Choose a court to continue.') : t('Players near this court can find you.')}
+          </p>
+        </fieldset>
         <Field label={`${t('Where did you hear about Badie?')} ${t('(optional)')}`}>
           {(props) => (
             <select {...props} value={heardFrom} onChange={(e) => setHeardFrom(e.target.value as HeardFrom | '')} className="field">
@@ -117,11 +168,6 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
             </select>
           )}
         </Field>
-        <label className="flex cursor-pointer items-center gap-3 text-subhead font-bold">
-          <span className="flex-1">{t('Show me in People nearby')}</span>
-          <input type="checkbox" role="switch" checked={visible} onChange={(e) => setVisible(e.target.checked)}
-                 className="relative h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
-        </label>
         <Button className="button-lg button-inverse" busy={busy}>{t('Continue')}</Button>
       </form>
     </div>

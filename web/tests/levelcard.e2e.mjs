@@ -3,7 +3,7 @@
 // 需要本地 Supabase（supabase start）和已启动的网站（BASE_URL）
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
-import { base, emailedCode, password, pwnedPasswords } from './helpers.mjs';
+import { base, emailedCode, password, pickUsualCourt, pwnedPasswords } from './helpers.mjs';
 
 const browser = await chromium.launch();
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'en-US', permissions: ['clipboard-read', 'clipboard-write'] });
@@ -55,6 +55,7 @@ await page.getByLabel('6-digit code').fill(await emailedCode(email));
 await page.getByRole('button', { name: 'Create account' }).click();
 await page.getByLabel('Nickname').fill('Cardy');
 await page.getByRole('radio', { name: 'Male', exact: true }).click();
+await pickUsualCourt(page);
 await page.getByLabel('Where did you hear about Badie? (optional)').selectOption('level_card');
 await page.getByRole('button', { name: 'Continue' }).click();
 await page.waitForURL('**/level-quiz/result/');
