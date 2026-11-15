@@ -21,7 +21,7 @@
 
 ## 安卓版（2026-11-15 开始做，还不能用）
 
-需求是 `Badie-Android/docs/REQUIREMENTS.md`（按 iPhone 1.0.5 逐项盘点，用户已定：Kotlin + Compose、最低 Android 8.0、地图用 Google、打赏只放 Ko-fi、做 Apple 登录、演示模式只给管理员）。工程在 `Badie-Android/`，开发分支 `claude/hopeful-pascal-0pew21`，**还没推 main**。
+需求是 `Badie-Android/docs/REQUIREMENTS.md`（按 iPhone 1.0.5 逐项盘点，用户已定：Kotlin + Compose、最低 Android 8.0、地图用 Google、打赏只放 Ko-fi、做 Apple 登录、演示模式只给管理员）。工程在 `Badie-Android/`，2026-11-15 推到 main（不上架，只是代码进了主干）。
 
 **做法**（后面照着来）
 
@@ -45,7 +45,7 @@
 
 **登录注册里还没做的**（都记在这里，后面对应的那一步补上）
 
-- 安卓上的人机验证要等网站的 `/captcha/` 页面上线才能用：`web/src/pages/captcha.astro` 加了往安卓回传令牌的一行（iPhone 不受影响），在开发分支上，**推 main 以后才生效**。在那之前，真机上登录按钮一直是灰的。
+- 安卓的人机验证靠网站的 `/captcha/` 页面往回传令牌（`web/src/pages/captcha.astro` 里 `BadieCaptcha.postMessage` 那一行，2026-11-15 随 main 上线）。还没在真机上登录过，第一次装到手机上要先验这一步。
 - Apple、Google 登录（要签名密钥和各自后台的配置）。
 - 照片头像（选图、裁剪、上传）。
 - 最后一步里的空闲时间、常去球馆、定位。
