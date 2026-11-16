@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """生成网站的 web/public/.well-known/assetlinks.json：有了它，点 badie.rsvp 的链接才会直接进安卓 App（App Links）。
 
-指纹是 Play 管理中心 → 测试和发布 → 设置 → 应用完整性 → 应用签名 里的 “SHA-256 证书指纹”
-（Google 替我们签名用的那把；第一次上传 AAB 以后才有）。想让自己签的包（上传密钥签的）也能直接进 App，把上传密钥的指纹也加上。
+指纹是签名证书的 SHA-256：每次跑发版工作流（Android release）的运行摘要里都有。网站下载的包和以后 Play 上的包用同一把密钥
+（见 docs/RELEASE.md 的“签名”），所以一个指纹就够了。
 
 用法（在仓库根目录）：
     python3 Badie-Android/scripts/assetlinks.py AA:BB:...:FF [另一个指纹]
