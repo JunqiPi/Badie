@@ -67,6 +67,8 @@ class Backend(
     private val serverLocale: () -> String,
     /** 照片头像（别人的、自己的） */
     val photos: PhotoStore = PhotoStore(remote, kotlinx.coroutines.MainScope(), cacheDir = null),
+    /** 这台设备的推送令牌（没允许通知、测试里为空），见 push/PushRegistry.kt */
+    private val pushToken: () -> String? = { null },
 ) {
     /** 自己现在的头像、卡片背景的地址（换照片时删旧的用） */
     var avatarPath: String? = null
@@ -122,6 +124,7 @@ class Backend(
 
     /** 登录成功（密码、验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料 */
     private suspend fun outcome(session: RemoteSession): AuthOutcome {
+        registerPush()
         val user = refreshProfile()
         return if (user != null) AuthOutcome.SignedIn(user) else AuthOutcome.NeedsProfile(session.email ?: "")
     }
@@ -149,7 +152,8 @@ class Backend(
     suspend fun restoreSession() {
         if (remote.session == null) return signOutLocally()
         try {
-            if (refreshProfile() == null) signOutLocally()
+            if (refreshProfile() == null) return signOutLocally()
+            registerPush()
         } catch (_: RemoteError.NotSignedIn) {
             signOutLocally()
         } catch (_: RemoteError) {
@@ -166,10 +170,35 @@ class Backend(
         if (state.user != null) state = CachedState()
     }
 
-    /** 退出登录：清掉这个账号留在本机的东西，换账号登录时不会看到 */
-    suspend fun signOut() {
+    /** 退出登录：清掉这个账号留在本机的东西，换账号登录时不会看到。注销时推送登记已经先注销了，不用再来一次 */
+    suspend fun signOut(unregistersPush: Boolean = true) {
+        if (unregistersPush) unregisterPush()
         remote.signOut()
         signOutLocally()
+    }
+
+    // MARK: 推送
+
+    /** 登录状态下把这台设备的推送令牌报给服务器 */
+    suspend fun registerPush() {
+        val token = pushToken() ?: return
+        if (remote.session == null) return
+        try {
+            remote.call("register_push", json("p_kind" to "fcm", "p_token" to token))
+        } catch (_: RemoteError) {
+            // 下次启动再报
+        }
+    }
+
+    /** 退出登录、注销前：这台设备不再收这个账号的推送 */
+    suspend fun unregisterPush() {
+        val token = pushToken() ?: return
+        if (remote.session == null) return
+        try {
+            remote.call("unregister_push", json("p_token" to token))
+        } catch (_: RemoteError) {
+            // 离线时照样退出；服务器发不到会自己清掉失效的令牌
+        }
     }
 
     // MARK: 资料

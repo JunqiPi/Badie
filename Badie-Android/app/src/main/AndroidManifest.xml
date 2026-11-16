@@ -36,6 +36,19 @@
             android:name=".features.games.GameReminderReceiver"
             android:exported="false" />
 
+        <!-- 推送（Firebase Cloud Messaging）：收新令牌和服务器的推送，见 push/PushNotifications.kt -->
+        <service
+            android:name=".push.BadieMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <!-- 不自动要令牌：允许了通知才要（和 iPhone 一样），见 push/PushRegistry.kt -->
+        <meta-data
+            android:name="firebase_messaging_auto_init_enabled"
+            android:value="false" />
+
         <!-- 分享等级卡片：把缓存里的图片给别的 App 读 -->
         <provider
             android:name="androidx.core.content.FileProvider"

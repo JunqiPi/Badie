@@ -279,19 +279,20 @@ class ProfileApi(
     /**
      * 注销：先把资料里的照片清掉、删掉文件夹里的全部照片（账号删了以后就没权限删了），再删账号，最后清本机。
      * 服务器会取消以后的球局并通知其他人、把球群交给下一位组织者。对应 iPhone 的 remoteDeleteAccount。
-     * 安卓还没有 Apple 登录和推送，所以没有撤销 Apple 授权、注销推送登记这两步
+     * 安卓还没有 Apple 登录，所以没有撤销 Apple 授权这一步。推送登记先注销（iPhone 靠服务器删账号时一起删）
      */
     suspend fun deleteAccount() {
         val me = backend.currentUser?.id ?: throw RemoteError.NotSignedIn
         if (backend.avatarPath != null) ignoring { remote.call("set_avatar", json("p_path" to null)) }
         if (backend.cardPhotoPath != null) ignoring { remote.call("set_card_photo", json("p_path" to null)) }
         ignoring { backend.photos.cleanUpFolder(me, keeping = emptyList()) }
+        backend.unregisterPush()
         remote.call("delete_account")
         store.save(slotsKey(me), null)
         slotsByUser.remove(me)
         winRate = null
         verification = null
-        backend.signOut()
+        backend.signOut(unregistersPush = false)
     }
 
     private suspend fun ignoring(block: suspend () -> Unit) {

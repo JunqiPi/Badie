@@ -19,6 +19,7 @@ import com.badie.app.models.TimeSlot
 import com.badie.app.models.User
 import com.badie.app.models.UserPreferences
 import com.badie.app.models.Venue
+import com.badie.app.push.PushRegistry
 import com.badie.app.remote.RemoteError
 import com.badie.app.shell.ManagerContext
 import kotlinx.coroutines.Job
@@ -313,6 +314,8 @@ class MatchManager(private val context: ManagerContext, val location: LocationMa
                 reloadMatchmaking()
                 flowTicketId = id
                 phase = if (tickets.any { it.id == id }) Phase.Idle else Phase.Failed(RemoteError.message("bad_response"))
+                // 配上了要第一时间知道：这时候问通知权限，用户最能理解为什么
+                context.android?.let(PushRegistry::askAfterRequest)
             }.onFailure { error ->
                 phase = Phase.Failed((error as? RemoteError)?.message ?: tr("没能发起请求，请重试"))
             }

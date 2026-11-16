@@ -26,7 +26,8 @@ iPhone 用到的系统图标都已经对应好了：`Sym.名字`，名字是系�
 - `design/`：设计系统（`AppTheme`、`sticker`、`card`、`BrutalButton`、`IconButton`、`ScreenHeader`、`LargeTitleHeader`、`SectionTitle`、`StatTile`、`InfoRow`、`MenuRow`、`ToastView`、`EmptyStateView`、`NoticeBanner`、`LoadingDots`、`ProgressBar`、输入框、`AvatarView`、`AvatarStack`、`LevelBadge`、`TagPill`、`ReliableBadge`、`NewPlayerBadge`、`PraiseTagsView`、`VerifiedBadge`、`RatingPicker`、`NicknameText`、`ChoiceChip`、`SegmentedSticker`、`GenderPicker`、`RulesButton`、`SheetScaffold`、`TicketShape`、`DashedDivider`、`StarburstBadge`、`CoverCard`、`CardCover`、`RoundActionLabel`、`NoShowPill`、`PersonBubble`、`markedText`、`LegalLinksRow`）。和 iPhone 的 `DesignSystem/` 对应。
 - `models/`：数据和规则，对应 iPhone 的 `Models/`。
 - `remote/`：`SupabaseClient`（`rpc`、`call`、`select`、`insert`、`update`、`delete`、`upload`…）、`RemoteError`（错误码对应的提示）、`json(...)` 拼参数。
-- `backend/`：`Backend`（账号、资料、常去球馆、照片）、`PhotoStore`（别人的头像、卡片背景，按需下载）。
+- `backend/`：`Backend`（账号、资料、常去球馆、照片、推送登记）、`PhotoStore`（别人的头像、卡片背景，按需下载）。
+- `push/`：推送（Firebase Cloud Messaging）。`PushRegistry`（令牌、问通知权限、链接 → 页面）、`NotificationRouter`（点通知打开页面、前台不重复弹）、`PushNotifications.kt`（解析推送、显示通知、收推送的 Service）。对应 iPhone 的 `Services/PushRegistry.swift`、`NotificationRouter.swift` 和通知扩展。Firebase 的配置在 `res/values/firebase.xml`，不用 Google Services 插件。本地提醒点开也走 `NotificationRouter`。
 - `features/<功能>/`：页面和这一块的管理器。
 
 ## 页面和管理器怎么接
@@ -46,5 +47,6 @@ iPhone 用到的系统图标都已经对应好了：`Sym.名字`，名字是系�
 ## 暂时做不了的（写进报告，不要硬做）
 
 - 地图显示和 Google 地点搜索（要用户开 Google Cloud 的 key）：先用地址文字、距离和“导航”跳到地图 App。
-- Google / Apple 登录（要签名密钥）、推送（要 Firebase 项目）、Play 的应用内评价（要加依赖）、二维码（要加依赖）。
+- Google / Apple 登录（要签名密钥）、Play 的应用内评价（要加依赖）、二维码（要加依赖）。
+- 推送已经能做（2026-11-16 接好 Firebase）：新的推送类型只要服务器发，App 这边按 `link` 跳转，不用改。
 - 演示模式：最后统一做。

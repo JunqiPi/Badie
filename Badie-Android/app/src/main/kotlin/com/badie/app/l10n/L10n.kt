@@ -22,6 +22,11 @@ object L10n {
         com.badie.app.models.DateText.reset()
     }
 
+    /** 没有界面时（App 在后台收到推送、提醒到点）先用 App 的文字表，不然显示成简体中文原文 */
+    fun attachIfNeeded(context: Context) {
+        if (resources == null) attach(context.applicationContext)
+    }
+
     /** 测试用：回到没接界面的状态 */
     internal fun detach() {
         resources = null

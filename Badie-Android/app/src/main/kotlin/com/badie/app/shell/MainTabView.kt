@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.badie.app.push.NotificationRouter
 import com.badie.app.design.AppTheme
 import com.badie.app.design.CountBadge
 import com.badie.app.design.Dot
@@ -69,6 +70,7 @@ import com.badie.app.design.pressable
 import com.badie.app.design.rememberHaptics
 import com.badie.app.design.rounded
 import com.badie.app.design.sticker
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import com.badie.app.features.games.GameDetailScreen
 import com.badie.app.features.games.GameHistoryScreen
@@ -164,6 +166,11 @@ fun MainTabView() {
         MatchFlowOverlay()
     }
     LaunchedEffect(router.navigations) { env.matchManager.isFlowPresented = false }
+    // 点通知打开的页面：主界面出来了才打开（冷启动、在登录页时先记着）
+    DisposableEffect(router) {
+        NotificationRouter.attach(router, env.messageManager)
+        onDispose { NotificationRouter.detach(router) }
+    }
     // 在前台时轮询私信和通知、爽约记录、紧急通知
     SocialOverlays()
 

@@ -15,10 +15,11 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import com.badie.app.MainActivity
 import com.badie.app.R
+import com.badie.app.l10n.L10n
 import com.badie.app.l10n.L10n.tr
 import com.badie.app.models.Game
+import com.badie.app.push.PushNotifier
 
 /**
  * 球局本地提醒：开赛前 1 天、2 小时、15 分钟（多次提醒能显著降低爽约率）。对应 iPhone 的 Services/ReminderService.swift。
@@ -101,17 +102,15 @@ object ReminderService {
         }
     }
 
-    /** 到点发一条通知；点开进 App。发之前查过 canNotify */
+    /** 到点发一条通知；点开进这个球局。发之前查过 canNotify */
     @SuppressLint("NotificationPermission")
     internal fun post(context: Context, gameId: String, title: String, body: String) {
         if (!canNotify(context)) return
+        L10n.attachIfNeeded(context)
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.createNotificationChannel(NotificationChannel(CHANNEL, tr("球局提醒"), NotificationManager.IMPORTANCE_HIGH))
-        val open = PendingIntent.getActivity(
-            context, gameId.hashCode(),
-            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
+        // 点了打开这个球局（和推送一样交给 NotificationRouter）
+        val open = PushNotifier.openIntent(context, gameId.hashCode(), gameId = gameId)
         val notification = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
