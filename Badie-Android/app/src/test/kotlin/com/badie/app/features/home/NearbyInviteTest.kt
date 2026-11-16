@@ -4,7 +4,7 @@ import com.badie.app.TestSupport
 import com.badie.app.TestSupport.serveProfile
 import com.badie.app.backend.DayCandidate
 import com.badie.app.backend.NearbyApi
-import com.badie.app.backend.RemoteRoom
+import com.badie.app.backend.RemoteInviteRoom
 import com.badie.app.models.Coordinate
 import com.badie.app.models.Daypart
 import com.badie.app.models.GameMode
@@ -151,6 +151,6 @@ class NearbyInviteTest {
         assertNull("定好时间的不是窗口", second.window)
         assertEquals(2, second.participants.size)
         assertFalse(second.participants[1].userId == me)
-        assertEquals(RemoteRoom.window(true, 1, 2, null, 120), null)
+        assertEquals(RemoteInviteRoom.window(true, 1, 2, null, 120), null)
     }
 }

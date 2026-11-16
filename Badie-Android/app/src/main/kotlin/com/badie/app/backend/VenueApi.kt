@@ -114,7 +114,7 @@ suspend fun Backend.venuePeople(venueId: String): VenuePeople {
         } catch (_: RemoteError) {
         }
     }
-    fun users(list: List<RemoteLobbyUser>?) = list.orEmpty().filter { it.id != me }.map { it.user() }
+    fun users(list: List<RemoteVenuePerson>?) = list.orEmpty().filter { it.id != me }.map { it.user() }
     return VenuePeople(recent = users(raw.recent), regulars = users(raw.regulars))
 }
 
@@ -202,11 +202,11 @@ private class RegularCountRow(val venueId: String, val regulars: Int)
 private class DuplicateRow(val venueId: String, val venueName: String, val kind: String, val distanceM: Double = 0.0)
 
 @Serializable
-private class RemoteVenuePeople(val recent: List<RemoteLobbyUser>? = null, val regulars: List<RemoteLobbyUser>? = null)
+private class RemoteVenuePeople(val recent: List<RemoteVenuePerson>? = null, val regulars: List<RemoteVenuePerson>? = null)
 
 /** 服务器的 nearby_user：大厅里显示一个人要的那几项 */
 @Serializable
-private class RemoteLobbyUser(
+private class RemoteVenuePerson(
     val id: String,
     val nickname: String,
     val tag: Int? = null,

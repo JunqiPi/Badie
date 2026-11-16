@@ -41,7 +41,7 @@ class RemotePlace(
     val pricing: VenuePricing? = null,
 ) {
     /** 球馆：优先用读过的球馆（信息更全），没有就用服务器给的基本信息 */
-    fun venue(known: Venue?): Venue {
+    fun venue(known: Venue? = null): Venue {
         if (known != null && (known.lat != 0.0 || lat == null)) return known
         return Venue(
             id = id, name = name, lat = lat ?: 0.0, lon = lon ?: 0.0, street = street ?: "", city = city ?: "", region = "",
@@ -62,7 +62,9 @@ class RemotePlayer(
     val checkedIn: Boolean? = null,
     val reviewed: Boolean? = null,
     val paid: Boolean? = null,
-)
+) {
+    fun user(): User = User(id = id, nickname = nickname, phone = "", selfReportedLevel = SkillTier.ofRating(rating).level, selfReportedRating = rating)
+}
 
 @Serializable
 class RemoteGame(

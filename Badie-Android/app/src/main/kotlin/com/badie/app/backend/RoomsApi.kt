@@ -182,6 +182,6 @@ suspend fun Backend.startRoom(roomId: String): String = remote.rpc("start_room",
 
 /** 我的球友（邀请进房间时选） */
 @Serializable
-class RemoteFriends(val friends: List<RemoteRoom.Person> = emptyList())
+class RemoteRoomFriends(val friends: List<RemoteRoom.Person> = emptyList())
 
-suspend fun Backend.myFriends(): List<RemoteRoom.Person> = remote.rpc<RemoteFriends>("my_friends").friends
+suspend fun Backend.myFriends(): List<RemoteRoom.Person> = remote.rpc<RemoteRoomFriends>("my_friends").friends

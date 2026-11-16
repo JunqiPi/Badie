@@ -34,49 +34,6 @@ internal fun iso(millis: Long): String = Instant.ofEpochMilli(millis).toString()
 // MARK: - 服务器的格式
 
 @Serializable
-class RemotePlace(
-    val id: String,
-    val name: String,
-    val city: String? = null,
-    val street: String? = null,
-    val tz: String? = null,
-    val lat: Double? = null,
-    val lon: Double? = null,
-    val country: String? = null,
-    val pricing: Pricing? = null,
-) {
-    @Serializable
-    class Pricing(val perPerson: Double? = null, val perCourtHour: Double? = null)
-
-    /** 球馆：读过完整信息的用读过的，没有就用服务器给的基本信息 */
-    fun venue(known: Venue? = null): Venue {
-        if (known != null && (known.lat != 0.0 || lat == null)) return known
-        val price = pricing?.perPerson?.let { VenuePricing.DropIn(Math.round(it).toInt()) }
-            ?: pricing?.perCourtHour?.let { VenuePricing.PerCourtHour(Math.round(it).toInt()) }
-            ?: VenuePricing.Unknown
-        return Venue(
-            id = id, name = name, lat = lat ?: 0.0, lon = lon ?: 0.0, street = street, city = city, countryCode = country ?: "US",
-            timeZoneId = tz, pricing = price, source = VenueSource.Player, status = VenueStatus.Unconfirmed,
-        )
-    }
-}
-
-/** 提议、球局里的人：只有昵称和等级 */
-@Serializable
-class RemotePlayer(
-    val id: String,
-    val nickname: String,
-    val rating: Double,
-    val team: Int,
-    val me: Boolean,
-    val checkedIn: Boolean? = null,
-    val reviewed: Boolean? = null,
-    val paid: Boolean? = null,
-) {
-    fun user(): User = User(id = id, nickname = nickname, phone = "", selfReportedLevel = SkillTier.ofRating(rating).level, selfReportedRating = rating)
-}
-
-@Serializable
 class RemoteOffer(
     val id: String,
     @Serializable(EpochMillisSerializer::class) val startsAt: Long,

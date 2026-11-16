@@ -90,7 +90,7 @@ private class RemoteRespondResult(val status: String, val gameId: String? = null
 
 /** 房间（这里只用到附近的人里的邀请局）。对应 iPhone 的 MockBackend+RemoteRooms.swift 的 RemoteRoom */
 @Serializable
-class RemoteRoom(
+class RemoteInviteRoom(
     val id: String,
     val mode: String,
     val visibility: String,
@@ -230,7 +230,7 @@ class NearbyApi(private val backend: Backend) {
     /** 我发出的、收到的还没结束的邀请（轮到我回的在前） */
     suspend fun nearbyInvites(known: (String) -> User? = { null }): Invites {
         val me = backend.currentUser ?: return Invites(emptyList(), emptyList(), emptyMap())
-        val rooms = remote.rpc<List<RemoteRoom>>("nearby_invites")
+        val rooms = remote.rpc<List<RemoteInviteRoom>>("nearby_invites")
         val people = rooms.flatMap { listOfNotNull(it.invite?.from, it.invite?.to) }.filter { it.id != me.id }.distinctBy { it.id }
         for (person in people) backend.photos.apply(person.id, person.avatar)
         val users = people.map { it.user(known(it.id)) }
