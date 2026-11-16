@@ -7,6 +7,7 @@ import com.badie.app.models.GameMode
 import com.badie.app.models.Gender
 import com.badie.app.models.SkillAssessment
 import com.badie.app.models.SkillTier
+import com.badie.app.models.VenueStatus
 import com.badie.app.remote.FakeServer
 import com.badie.app.remote.HttpResponse
 import com.badie.app.shell.AppState
@@ -24,11 +25,21 @@ import org.junit.Test
 class OnboardingModelTest {
     private val server = FakeServer()
 
-    private fun TestScope.flow(): Pair<OnboardingModel, AppState> {
-        val appState = AppState(backgroundScope, TestSupport.backend(server))
+    private fun TestScope.flow(signedIn: Boolean = false): Pair<OnboardingModel, AppState> {
+        val appState = AppState(backgroundScope, TestSupport.backend(server, if (signedIn) TestSupport.session() else null))
         appState.finishLaunch()
         val model = OnboardingModel(appState, CaptchaModel(), passwordLookup = { HttpResponse(200, ByteArray(0)) }, now = { TestSupport.CLOCK })
         return model to appState
+    }
+
+    private val here = com.badie.app.models.Coordinate(34.07, -118.03)
+
+    /** 附近的球馆：最近的一家、远一点的两家，还有一家坐标只是大概的 */
+    private val nearby = listOf(
+        "v-near" to 34.075, "v-mid" to 34.10, "v-far" to 34.12, "v-rough" to 34.071,
+    ).joinToString(",", "[", "]") { (id, lat) ->
+        val name = mapOf("v-near" to "Alpha Badminton", "v-mid" to "Mid Club", "v-far" to "Far Gym", "v-rough" to "Somewhere")[id]
+        """{"venue":{"id":"$id","name":"$name","lat":$lat,"lon":-118.03,"country_code":"US","status":"confirmed","location_approximate":${id == "v-rough"}},"distance_m":0}"""
     }
 
     private fun text(index: Int, key: String) = server.json(index)[key]?.jsonPrimitive?.content
@@ -123,12 +134,19 @@ class OnboardingModelTest {
         assertEquals(OnboardingStep.Preferences, model.step)
         assertEquals("开始约球", model.primaryTitle)
 
+        // 常去球馆必选：开了定位就先替人选上最近的一家
         model.preferredMode = GameMode.Singles
-        model.showsInLobby = true
+        assertFalse("还没选常去球馆", model.canContinue)
+        server.on("POST /rest/v1/rpc/venues_near", nearby)
+        model.locationUpdated(here)
+        assertEquals(listOf("v-near"), model.favoriteVenueIds.toList())
+        assertTrue(model.canContinue)
+
         server.on("POST /rest/v1/profiles", "", status = 201)
         server.on("POST /rest/v1/rpc/save_assessment", "")
         server.serveProfile("[${TestSupport.profile()}]")
         server.on("PATCH /rest/v1/profiles", "")
+        server.on("POST /rest/v1/favorite_venues", "", status = 201)
         server.on("PATCH /rest/v1/profiles", "")
         val before = server.requests.size
         model.primaryAction()
@@ -138,8 +156,11 @@ class OnboardingModelTest {
         assertEquals(4.0, server.json(before + 1).getValue("p_rating").jsonPrimitive.content.toDouble(), 0.001)
         assertEquals(14, server.json(before + 1).getValue("p_answers").jsonObject.size)
         val patches = server.requests.indices.filter { server.requests[it].method == "PATCH" }
-        assertEquals("true", text(patches[0], "show_as_regular"))
+        assertEquals("注册后默认在附近的人里显示", "true", text(patches[0], "show_as_regular"))
         assertEquals("singles", text(patches[1], "preferred_mode"))
+        val favorite = server.requests.indices.first { server.path(it) == "/rest/v1/favorite_venues" && server.requests[it].method == "POST" }
+        assertEquals("v-near", text(favorite, "venue_id"))
+        assertEquals(listOf("v-near"), appState.backend.favoriteVenueIds)
         assertEquals(AppState.Phase.Main, appState.phase)
         assertEquals("注册成功，欢迎加入", appState.toast?.message)
         assertEquals(SkillTier(4), appState.currentUser?.displayTier)
@@ -232,6 +253,75 @@ class OnboardingModelTest {
         assertEquals(OnboardingStep.Profile, model.step)
         model.goBack()
         assertEquals("资料那一步往回是邮箱，不回验证码", OnboardingStep.Email, model.step)
+    }
+
+    @Test
+    fun favoriteVenuesNeedOneAndAtMostThree() = runTest {
+        // 到最后一步时已经登录了
+        val (model, _) = flow(signedIn = true)
+        // 没开定位：按默认城市列出附近的，但不替人选
+        server.on("POST /rest/v1/rpc/venues_near", nearby)
+        model.locationUpdated(null)
+        assertEquals(listOf("v-near", "v-mid", "v-far"), model.nearbyVenues.map { it.id })
+        assertTrue("没定位不替人选", model.favoriteVenueIds.isEmpty())
+        assertEquals("坐标只是大概的不列出来", null, model.nearbyVenues.firstOrNull { it.id == "v-rough" })
+
+        // 有定位：选最近的；用户自己删掉以后不再选回来
+        server.on("POST /rest/v1/rpc/venues_near", nearby)
+        model.locationUpdated(here)
+        assertEquals(listOf("v-near"), model.favoriteVenueIds.toList())
+        assertEquals(here.latitude, server.json(server.requests.lastIndex)["lat"]!!.jsonPrimitive.content.toDouble(), 0.0001)
+        model.toggleVenue("v-near")
+        server.on("POST /rest/v1/rpc/venues_near", nearby)
+        model.locationUpdated(here)
+        assertTrue(model.favoriteVenueIds.isEmpty())
+
+        // 最多 3 家
+        for (id in listOf("v-near", "v-mid", "v-far", "v-extra")) model.toggleVenue(id)
+        assertEquals(listOf("v-near", "v-mid", "v-far"), model.favoriteVenueIds.toList())
+        assertEquals("Alpha Badminton", model.venue("v-near")?.name)
+
+        // 按名字找
+        server.on("GET /rest/v1/venues", """[{"id":"v-s","name":"Sun Badminton","lat":34.1,"lon":-118.1,"country_code":"US"}]""")
+        assertEquals(listOf("v-s"), model.searchVenues(" Sun ").map { it.id })
+        val query = server.query(server.requests.lastIndex)!!
+        assertTrue(query, query.contains("name.ilike.*Sun*"))
+        assertTrue(query, query.contains("merged_into=is.null"))
+        assertTrue("空的不搜", model.searchVenues("  ").isEmpty())
+    }
+
+    @Test
+    fun noVenueListedCanStillFinish() = runTest {
+        val (model, appState) = flow(signedIn = true)
+        model.nickname = "Alex"
+        model.gender = Gender.Male
+        model.skipAssessment()
+        assertFalse("还没选常去球馆", model.canContinue)
+        // 我们还没收录的地方：点“列表里没有我的球馆”先继续，以后在球馆页再选
+        model.noVenueListed = true
+        assertTrue(model.canContinue)
+
+        server.on("POST /rest/v1/profiles", "", status = 201)
+        server.serveProfile("[${TestSupport.profile()}]")
+        server.on("PATCH /rest/v1/profiles", "")
+        model.primaryAction()
+        assertTrue("没选就不存常去球馆", server.requests.indices.none { server.path(it) == "/rest/v1/favorite_venues" && server.requests[it].method == "POST" })
+        assertTrue(appState.backend.favoriteVenueIds.isEmpty())
+        assertEquals(AppState.Phase.Main, appState.phase)
+    }
+
+    @Test
+    fun nearestPrefersListedVenuesInRange() {
+        fun venue(id: String, km: Double, status: VenueStatus = VenueStatus.Confirmed) =
+            com.badie.app.models.Venue(id, id, lat = here.latitude + km / 111.0, lon = here.longitude, countryCode = "US", status = status)
+        val venues = listOf(venue("close-unconfirmed", 0.5, VenueStatus.Unconfirmed), venue("listed", 2.0), venue("too-far", 30.0))
+        assertEquals("listed", com.badie.app.models.Venue.nearest(venues, here, 10.0)?.id)
+        assertEquals("范围里只有没核实的也选它", "close-unconfirmed", com.badie.app.models.Venue.nearest(venues.take(1), here, 10.0)?.id)
+        assertNull(com.badie.app.models.Venue.nearest(venues.drop(2), here, 10.0))
+        val address = com.badie.app.models.Venue("v", "v", lat = 0.0, lon = 0.0, street = "10410 Valley Blvd", unit = "Unit B", city = "El Monte", region = "CA", countryCode = "US")
+        assertEquals("10410 Valley Blvd, Unit B, El Monte, CA", address.compactAddress)
+        val chinese = com.badie.app.models.Venue("v", "v", lat = 0.0, lon = 0.0, street = "工体北路4号", city = "朝阳区", region = "北京市", countryCode = "CN")
+        assertEquals("朝阳区工体北路4号", chinese.compactAddress)
     }
 
     @Test

@@ -10,6 +10,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNamingStrategy
 import kotlinx.serialization.json.JsonNull
@@ -43,6 +44,19 @@ object InstantSerializer : KSerializer<Instant> {
     }
 
     override fun serialize(encoder: Encoder, value: Instant) = encoder.encodeString(value.toString())
+}
+
+/** 时间存成毫秒：服务器给的是 ISO 8601 文字，本机缓存里是数字，两种都认；写出去是数字 */
+object EpochMillisSerializer : KSerializer<Long> {
+    override val descriptor = PrimitiveSerialDescriptor("EpochMillis", PrimitiveKind.LONG)
+
+    override fun deserialize(decoder: Decoder): Long {
+        val element = (decoder as? JsonDecoder)?.decodeJsonElement() as? JsonPrimitive ?: return decoder.decodeLong()
+        if (!element.isString) return element.content.toLongOrNull() ?: throw SerializationException("不是时间：$element")
+        return RemoteJSON.parseDate(element.content)?.toEpochMilli() ?: throw SerializationException("不是时间：${element.content}")
+    }
+
+    override fun serialize(encoder: Encoder, value: Long) = encoder.encodeLong(value)
 }
 
 /** 服务器的 JSON：字段是 snake_case；没给的字段按空处理，多出来的字段不管 */

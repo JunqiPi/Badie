@@ -1,12 +1,13 @@
 // 推送服务：数据库有新通知时调用（带 x-push-secret 暗号），取一批“通知 × 设备”，
-// 发给 Apple（iOS App）和浏览器的推送服务。只用 WebCrypto，不引第三方库。
+// 发给 Apple（iOS App）、Google（安卓 App）和浏览器的推送服务。只用 WebCrypto，不引第三方库。
 // 送达的告诉数据库，厂商说已失效的设备删掉；没配密钥的那一类直接算没送达。
 //
 // Secrets：PUSH_SECRET（和 Vault 里的 push_secret 一样）；
 // iOS：APPLE_TEAM_ID + APNS_KEY_ID / APNS_PRIVATE_KEY（没有就用 Apple 登录那把 APPLE_KEY_ID / APPLE_PRIVATE_KEY）；
 // 浏览器：VAPID_PUBLIC_KEY、VAPID_PRIVATE_KEY（supabase/scripts/vapid_keys.mjs 生成）
+// 安卓：FCM_SERVICE_ACCOUNT（Firebase 项目的服务账号 JSON，整个文件的内容）
 
-import { apnsPayload, collapseId, type Item } from './payload.ts';
+import { apnsPayload, collapseId, fcmPayload, type Item } from './payload.ts';
 
 type Result = 'ok' | 'dead' | 'failed';
 
@@ -127,6 +128,51 @@ async function sendWeb(item: Item): Promise<Result> {
 }
 
 // ---------------------------------------------------------------------------
+// 安卓：Firebase Cloud Messaging（HTTP v1）。用服务账号换 1 小时的访问令牌，快过期再换
+// ---------------------------------------------------------------------------
+
+type ServiceAccount = { project_id: string; client_email: string; private_key: string };
+let fcmToken = { expires: 0, value: '' };
+
+async function fcmAccessToken(account: ServiceAccount) {
+  const now = Math.floor(Date.now() / 1000);
+  if (fcmToken.expires > now + 300) return fcmToken.value;
+  const der = Uint8Array.from(atob(account.private_key.replace(/-----[^-]+-----|\s/g, '')), (c) => c.charCodeAt(0));
+  const key = await crypto.subtle.importKey('pkcs8', der, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
+  const unsigned = `${base64url(utf8(JSON.stringify({ alg: 'RS256', typ: 'JWT' })))}.${base64url(utf8(JSON.stringify({
+    iss: account.client_email, scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    aud: 'https://oauth2.googleapis.com/token', iat: now, exp: now + 3600,
+  })))}`;
+  const signature = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, utf8(unsigned));
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: `${unsigned}.${base64url(new Uint8Array(signature))}`,
+    }),
+  });
+  if (!response.ok) throw new Error(`fcm token: ${response.status}`);
+  const { access_token, expires_in } = await response.json();
+  fcmToken = { expires: now + Number(expires_in ?? 3600), value: access_token };
+  return access_token as string;
+}
+
+async function sendFcm(item: Item): Promise<Result> {
+  if (!env('FCM_SERVICE_ACCOUNT')) return 'failed';
+  const account: ServiceAccount = JSON.parse(env('FCM_SERVICE_ACCOUNT'));
+  const response = await fetch(`https://fcm.googleapis.com/v1/projects/${account.project_id}/messages:send`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${await fcmAccessToken(account)}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(fcmPayload(item, env('SUPABASE_URL'))),
+  });
+  if (response.ok) return 'ok';
+  // 卸载了 App、令牌过期：UNREGISTERED（404）；令牌格式不对：INVALID_ARGUMENT（400）
+  const { error } = await response.json().catch(() => ({ error: null }));
+  const code = error?.details?.find((d: { errorCode?: string }) => d.errorCode)?.errorCode ?? error?.status;
+  return response.status === 404 || code === 'UNREGISTERED' || (response.status === 400 && code === 'INVALID_ARGUMENT') ? 'dead' : 'failed';
+}
+
+// ---------------------------------------------------------------------------
 
 Deno.serve(async (request) => {
   if (!env('PUSH_SECRET') || request.headers.get('x-push-secret') !== env('PUSH_SECRET')) return new Response('forbidden', { status: 403 });
@@ -135,7 +181,8 @@ Deno.serve(async (request) => {
   const delivered = new Set<number>();
   const dead: string[] = [];
   await Promise.all(items.map(async (item) => {
-    const result = await (item.kind === 'web' ? sendWeb(item) : sendApns(item)).catch((): Result => 'failed');
+    const send = item.kind === 'web' ? sendWeb : item.kind === 'fcm' ? sendFcm : sendApns;
+    const result = await send(item).catch((): Result => 'failed');
     if (result === 'ok' && item.id !== null) delivered.add(item.id);
     if (result === 'dead') dead.push(item.token);
   }));

@@ -7,6 +7,20 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// MARK: - 版本号和签名（见 docs/RELEASE.md）
+// versionCode：Play 要求每次上传都比上一次大。由发版工作流（.github/workflows/android-release.yml）传进来，
+// 用的是那个工作流的运行序号（每跑一次加 1，不会重复），本机构建是 1。
+// versionName：给人看的版本，和 iPhone 对齐，发版前在下面改。
+val releaseVersionCode = providers.environmentVariable("BADIE_VERSION_CODE").map(String::toInt).orElse(1)
+
+// 上传密钥（upload key）：只从环境变量读，不进仓库。四个都有才签名，否则正式包不签名（本机检查构建用）。
+// CI 里由 GitHub Secrets 解出来，见 android-release.yml
+val uploadKeystore = providers.environmentVariable("BADIE_UPLOAD_KEYSTORE")
+val uploadStorePassword = providers.environmentVariable("BADIE_UPLOAD_STORE_PASSWORD")
+val uploadKeyAlias = providers.environmentVariable("BADIE_UPLOAD_KEY_ALIAS")
+val uploadKeyPassword = providers.environmentVariable("BADIE_UPLOAD_KEY_PASSWORD")
+val signsRelease = listOf(uploadKeystore, uploadStorePassword, uploadKeyAlias, uploadKeyPassword).all { it.isPresent }
+
 android {
     namespace = "com.badie.app"
     compileSdk = 37
@@ -15,15 +29,37 @@ android {
         applicationId = "com.badie.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
+        versionCode = releaseVersionCode.get()
         versionName = "1.0.5"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (signsRelease) {
+            create("upload") {
+                storeFile = file(uploadKeystore.get())
+                storePassword = uploadStorePassword.get()
+                keyAlias = uploadKeyAlias.get()
+                keyPassword = uploadKeyPassword.get()
+            }
+        }
     }
 
     buildTypes {
+        // 端到端测试（src/androidTest，在模拟器上跑）连电脑上的本机 Supabase：
+        // ./gradlew -Pbadie.supabaseUrl=http://10.0.2.2:54321 -Pbadie.supabaseKey=<本机的 publishable key>。
+        // 不传就是空的，连正式后端；正式包不能换
+        debug {
+            buildConfigField("String", "SUPABASE_URL_OVERRIDE", "\"${providers.gradleProperty("badie.supabaseUrl").getOrElse("")}\"")
+            buildConfigField("String", "SUPABASE_KEY_OVERRIDE", "\"${providers.gradleProperty("badie.supabaseKey").getOrElse("")}\"")
+        }
         release {
+            buildConfigField("String", "SUPABASE_URL_OVERRIDE", "\"\"")
+            buildConfigField("String", "SUPABASE_KEY_OVERRIDE", "\"\"")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (signsRelease) signingConfig = signingConfigs.getByName("upload")
         }
     }
 
@@ -45,6 +81,8 @@ android {
                 // 每次都重新出图，放在 app/build/outputs/roborazzi
                 it.systemProperty("roborazzi.test.record", "true")
                 it.maxHeapSize = "2g"
+                // 截图也算测试的产出：测试从缓存取结果时，截图一起取回来
+                it.outputs.dir(it.project.layout.buildDirectory.dir("outputs/roborazzi"))
                 // 模拟 Android 环境的测试库要碰 JDK 内部的类
                 it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED", "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
             }
@@ -74,6 +112,14 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    // 推送（FCM）。不用 Google Services 插件：配置写在 res/values/firebase.xml
+    implementation(libs.firebase.messaging)
+    // Google 登录：系统的凭据管理器（Credential Manager）拿 Google 的身份令牌
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
+    // Apple 登录：在浏览器标签页（Custom Tabs）里打开授权页
+    implementation(libs.androidx.browser)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -84,6 +130,14 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
+
+    // 端到端测试：在模拟器上点真的界面，连本机的 Supabase（见 STATUS.md 的“安卓版”和 .github/workflows/android-e2e.yml）
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.uiautomator)
 }
 
 // MARK: - 界面文字

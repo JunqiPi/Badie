@@ -35,6 +35,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # Robolectric 在测试时才从 Maven Central 下载安卓运行库（约 150 MB，存在 ~/.m2），偶尔下载失败：缓存起来
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ hashFiles('Badie-Android/gradle/libs.versions.toml') }}
+
       # 界面文字在构建时从 iPhone 的 Localizable.xcstrings 转出来，所以改了那个文件也要跑这里
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest --console=plain

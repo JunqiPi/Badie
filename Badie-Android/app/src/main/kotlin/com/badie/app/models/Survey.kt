@@ -17,6 +17,14 @@ enum class AttendanceAnswer(val rawValue: String) {
         }
 
     val wasPunctual: Boolean get() = this == OnTime
+
+    /** 服务器的写法 */
+    val serverValue: String
+        get() = when (this) {
+            OnTime -> "on_time"
+            Late -> "late"
+            NoShow -> "no_show"
+        }
 }
 
 /** 对“水平是否如实”的三选一校准：高低各移动一档（1/3 级） */
@@ -50,6 +58,21 @@ enum class SurveyTag(val rawValue: String) {
             FairPlay -> tr("不抢球")
             GreatPartner -> tr("默契搭档")
         }
+
+    /** 服务器的写法 */
+    val serverValue: String
+        get() = when (this) {
+            Friendly -> "friendly"
+            Punctual -> "punctual"
+            Skilled -> "skilled"
+            Patient -> "patient"
+            FairPlay -> "fair_play"
+            GreatPartner -> "great_partner"
+        }
+
+    companion object {
+        fun ofServer(value: String): SurveyTag? = entries.firstOrNull { it.serverValue == value }
+    }
 }
 
 /**
@@ -74,6 +97,15 @@ enum class SurveyIssue(val rawValue: String) {
             Rude -> tr("场上沟通可以再温和一点，大家都是来开心打球的。")
             Hogging -> tr("双打时注意轮换和分工，让搭档也有球打。")
             Unpaid -> tr("打完记得及时结清 AA，可以在球局里标记已付。")
+        }
+
+    /** 服务器的写法 */
+    val serverValue: String
+        get() = when (this) {
+            UnsafePlay -> "unsafe_play"
+            Rude -> "rude"
+            Hogging -> "hogging"
+            Unpaid -> "unpaid"
         }
 }
 

@@ -131,12 +131,15 @@ fun BrutalButton(
     BrutalButton(onClick, modifier, kind, size, fullWidth, enabled) { FitText(title) }
 }
 
-/** 一行字，放不下时缩小（最小到八成），再放不下才省略 */
+/** 一行字，放不下时缩小（默认最小到八成，iPhone 的 minimumScaleFactor），再放不下才省略 */
 @Composable
-fun FitText(text: String, modifier: Modifier = Modifier, style: TextStyle = LocalTextStyle.current, color: Color = LocalContentColor.current) {
+fun FitText(
+    text: String, modifier: Modifier = Modifier, style: TextStyle = LocalTextStyle.current, color: Color = LocalContentColor.current,
+    minimumScale: Float = 0.8f,
+) {
     BasicText(
         text, modifier, style = style, color = { color }, maxLines = 1, overflow = TextOverflow.Ellipsis,
-        autoSize = TextAutoSize.StepBased(minFontSize = style.fontSize * 0.8f, maxFontSize = style.fontSize),
+        autoSize = TextAutoSize.StepBased(minFontSize = style.fontSize * minimumScale, maxFontSize = style.fontSize),
     )
 }
 

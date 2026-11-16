@@ -2,7 +2,15 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { existsSync, readFileSync } from 'node:fs';
 import { noindexPaths } from './src/lib/venues';
+
+// 安卓 App 的安装包：web.yml 在构建前从最新的安卓 Release 下载到 public/android/（见 src/app/androidApp.ts）。
+// 有的话把 version.json 交给页面（PUBLIC_ 开头的环境变量浏览器里也能读），没有就不显示下载
+const androidVersion = new URL('./public/android/version.json', import.meta.url);
+if (existsSync(androidVersion) && existsSync(new URL('./public/android/badie.apk', import.meta.url))) {
+  process.env.PUBLIC_ANDROID_APP = readFileSync(androidVersion, 'utf8');
+}
 
 const hidden = noindexPaths();
 hidden.add('/captcha/');

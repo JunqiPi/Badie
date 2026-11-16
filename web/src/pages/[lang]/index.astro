@@ -3,11 +3,15 @@
 // 英文首页是网页 App，这一页是静态的，给搜索引擎和 AI 读
 import Base from '../../layouts/Base.astro';
 import { signInFirst } from '../../app/Shell';
+import { APP_STORE_URL } from '../../app/Contact';
+import { androidApp } from '../../app/androidApp';
 import { prefixes, translator } from '../../lib/static-i18n';
 
 export const getStaticPaths = () => prefixes.map((lang) => ({ params: { lang } }));
 
 const t = translator(Astro.url.pathname);
+// 安卓安装包（网站直接下载）发版后才有；这一页是静态的，iPhone 和安卓两个都列出来
+const androidPath = `/${Astro.params.lang}/android/`;
 const slogan = t('Badminton buddy?\nFind one *today*.').split('*');
 const steps = [['bg-lavender', 'Set your level'], ['bg-lime', 'Get matched'], ['bg-peach', 'Play, then confirm']];
 ---
@@ -19,7 +23,11 @@ const steps = [['bg-lavender', 'Set your level'], ['bg-lime', 'Get matched'], ['
         {slogan.map((part, i) => (i % 2 ? <mark class="marker">{part}</mark> : part))}
       </h1>
       <p class="max-w-xl text-[1.0625rem] leading-relaxed text-ink-secondary lg:text-[1.1875rem]">{t('Badie finds players at your level near you. Free.')}</p>
-      <a href={signInFirst('/play/')} class="button button-lg">{t('Start matching')}</a>
+      <div class="flex flex-wrap gap-3">
+        <a href={signInFirst('/play/')} class="button button-lg">{t('Start matching')}</a>
+        <a href={APP_STORE_URL} class="button button-lg button-quiet">{t('Get the iPhone app')}</a>
+        {androidApp && <a href={androidPath} class="button button-lg button-quiet">{t('Get the Android app')}</a>}
+      </div>
       <a href="/level-quiz/" class="sticker lift grid gap-0.5 bg-lime p-4 text-on-accent">
         <span class="text-headline">{t('What level are you?')}</span>
         <span class="text-footnote font-bold">{t('Find your level · 2 min, no sign-up')}</span>

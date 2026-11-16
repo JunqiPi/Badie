@@ -55,6 +55,24 @@ jobs:
           psql "$(cat supabase/.temp/pooler-url)" -At -v ON_ERROR_STOP=1 -f supabase/scripts/export_collected_venues.sql > supabase/data/badie-venues.json
           python3 -c "import json; print(len(json.load(open('supabase/data/badie-venues.json'))['venues']), 'collected venues')"
 
+      # 安卓 App 的安装包：从最新的安卓发布（android-release.yml 发的 android-v… Release）下载到 public/android/，
+      # 网站上就是 /android/badie.apk 和 /android/version.json，构建时 astro.config.ts 读到它才显示下载。
+      # 还没有发布时跳过；查发布出错时停下（不然部署出去的网站会少了安装包，App 的更新检查也会找不到）
+      - name: Android app from the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq '[.[] | select(.draft | not) | select(.tag_name | startswith("android-v"))] | sort_by(.created_at) | last | .tag_name // empty')
+          if [ -z "$tag" ]; then echo "还没有安卓的发布，网站不放安装包"; exit 0; fi
+          mkdir -p public/android
+          gh release download "$tag" -R "$GITHUB_REPOSITORY" -p badie.apk -p android-version.json -D public/android --clobber
+          mv public/android/android-version.json public/android/version.json
+          expected=$(jq -r .sha256 public/android/version.json)
+          actual=$(sha256sum public/android/badie.apk | cut -d' ' -f1)
+          if [ "$expected" != "$actual" ]; then echo "::error::$tag 的 badie.apk 和 version.json 里的 SHA-256 对不上"; exit 1; fi
+          echo "安装包：$tag（$(stat -c %s public/android/badie.apk) 字节）"
+
       # 这几个值都可以公开，放在仓库 Variables（不是 Secrets）
       - run: npm run build
         env:

@@ -1,6 +1,6 @@
 // 推送内容的测试：deno test --allow-env --allow-read supabase/functions/
 import assert from 'node:assert/strict';
-import { apnsPayload, collapseId, type Item } from './payload.ts';
+import { apnsPayload, collapseId, fcmPayload, type Item } from './payload.ts';
 
 const base: Item = { id: 1, kind: 'apns', token: 't', title: 'Game on', body: 'Saturday 7 PM', link: '/games/g/' };
 const chat: Item = {
@@ -28,4 +28,18 @@ Deno.test('没有头像就不给地址；只有球群只留最新一条', () => 
   assert.deepEqual(collapseId(group), 'group:p');
   assert.deepEqual(collapseId(chat), undefined);
   assert.deepEqual(collapseId(base), undefined);
+});
+
+Deno.test('安卓：只发数据，聊天信息转成字符串，球群的推送互相替换', () => {
+  const plain = fcmPayload({ ...base, kind: 'fcm', token: 'f1' }, 'https://x.supabase.co');
+  assert.deepEqual(plain, {
+    message: { token: 'f1', data: { title: 'Game on', body: 'Saturday 7 PM', link: '/games/g/' }, android: { priority: 'HIGH', ttl: '3600s' } },
+  });
+  const group: Item = { ...chat, kind: 'fcm', chat: { ...chat.chat!, thread: 'group:p' } };
+  const payload = fcmPayload(group, 'https://x.supabase.co');
+  assert.equal(payload.message.android.collapse_key, 'group:p');
+  const parsed = JSON.parse(payload.message.data.chat);
+  assert.equal(parsed.avatar, 'https://x.supabase.co/storage/v1/object/public/avatars/u1/a.jpg');
+  assert.equal(parsed.thread, 'group:p');
+  assert.ok(Object.values(payload.message.data).every((value) => typeof value === 'string'), 'data 里只能是文字');
 });

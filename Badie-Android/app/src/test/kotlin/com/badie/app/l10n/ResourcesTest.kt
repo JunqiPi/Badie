@@ -50,4 +50,25 @@ class ResourcesTest {
         assertEquals("2 challenges awaiting reply", tr("en", "%lld 个挑战待回应", 2))
         assertEquals("2 个挑战待回应", tr("zh-Hans", "%lld 个挑战待回应", 2))
     }
+
+    @Test
+    fun datesFollowTheLanguageOfTheText() {
+        val base: Context = RuntimeEnvironment.getApplication()
+        fun attach(language: String) {
+            val configuration = Configuration(base.resources.configuration).apply { setLocale(Locale.forLanguageTag(language)) }
+            L10n.attach(base.createConfigurationContext(configuration))
+        }
+        val time = java.time.ZonedDateTime.of(2026, 11, 16, 6, 39, 0, 0, java.time.ZoneOffset.UTC).toInstant().toEpochMilli()
+        try {
+            attach("en")
+            val english = com.badie.app.models.DateText.time(time, java.time.ZoneOffset.UTC)
+            attach("zh-Hans")
+            val chinese = com.badie.app.models.DateText.time(time, java.time.ZoneOffset.UTC)
+            assertEquals("界面是中文时不写 AM", false, chinese.contains("AM"))
+            assertEquals(true, chinese.contains("6:39"))
+            assertEquals(true, english.contains("6:39"))
+        } finally {
+            L10n.detach()
+        }
+    }
 }

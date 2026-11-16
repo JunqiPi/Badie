@@ -1,0 +1,238 @@
+name: Android release
+
+# 打安卓的正式包，用同一把密钥签名：
+#   - AAB：给 Google Play（作为产物 badie-release-aab 上传，以后手动传到 Play 管理中心）
+#   - APK（通用包）：给网站直接下载。在 main 上运行时发成 GitHub Release（android-v<版本>-<versionCode>，
+#     附 badie.apk 和 android-version.json），再让网站重新部署，https://badie.rsvp/android/ 就换成新的。
+# 只能手动运行：Actions → Android release → Run workflow（选 main）。步骤见 Badie-Android/docs/RELEASE.md。
+#
+# 签名密钥从哪来（不用人手动生成）：
+#   1. GitHub Secrets 里有 ANDROID_UPLOAD_KEYSTORE_BASE64、ANDROID_UPLOAD_STORE_PASSWORD、ANDROID_UPLOAD_KEY_ALIAS、
+#      ANDROID_UPLOAD_KEY_PASSWORD 四个时用它们；
+#   2. 否则用生产 Supabase 的 Vault（android_signing_keystore、android_signing_password）。第一次运行时 Vault 里没有，
+#      自动生成一把存进去（Badie-Android/scripts/vault-signing-key.sh）。连数据库用的是 supabase-deploy.yml 那套 secret。
+#
+# 仓库是公开的：这里不打印任何密钥，也不打印签名证书的名字；只把证书的 SHA-1、SHA-256 指纹（公开的）写进运行摘要。
+# 产物和 Release 里只有安装包，没有密钥。
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Signed AAB and APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      # 发 GitHub Release
+      contents: write
+      # 发完让网站重新部署（gh workflow run web.yml）
+      actions: write
+    defaults:
+      run:
+        working-directory: Badie-Android
+    env:
+      # Cloudflare Pages 单个文件最大 25 MiB，安装包要放在网站上
+      MAX_APK_BYTES: 26214400
+      APK_URL: https://badie.rsvp/android/badie.apk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # 只读缓存：正式包的构建不往缓存里写东西
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: true
+
+      # 先定密钥从哪来，缺东西就在这里停下（还没跑测试、没碰数据库）
+      - name: Choose signing key
+        id: key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ] && [ -n "$STORE_PASSWORD" ] && [ -n "$KEY_ALIAS" ] && [ -n "$KEY_PASSWORD" ]; then
+            echo "签名密钥：GitHub Secrets"
+            echo "source=secrets" >> "$GITHUB_OUTPUT"
+          elif [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_DB_PASSWORD" ] && [ -n "$PROJECT_REF" ]; then
+            echo "签名密钥：Supabase Vault"
+            echo "source=vault" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::没有签名密钥：GitHub Secrets 里既没有 ANDROID_UPLOAD_* 四个，也没有连 Supabase 用的 SUPABASE_ACCESS_TOKEN、SUPABASE_DB_PASSWORD 和变量 SUPABASE_PROJECT_REF（见 Badie-Android/docs/RELEASE.md）"
+            exit 1
+          fi
+
+      # 和平时的 Android CI 一样先跑测试和检查，过了才打包
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --console=plain
+
+      - name: Lint (release)
+        run: ./gradlew :app:lintRelease --console=plain
+
+      - uses: supabase/setup-cli@v1
+        if: steps.key.outputs.source == 'vault'
+        with:
+          version: 2.121.0
+
+      # 和 supabase-deploy.yml 一样：link 会记下 IPv4 连接池地址（supabase/.temp/pooler-url，GitHub 的机器没有 IPv6）
+      - name: Link Supabase
+        if: steps.key.outputs.source == 'vault'
+        working-directory: .
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+        run: supabase link --project-ref "$PROJECT_REF"
+
+      # 密钥库解到临时目录（这一步结束就删），密码只经环境变量交给 Gradle。
+      # --no-configuration-cache：签名用的密码不写进 Gradle 的配置缓存
+      - name: Build signed AAB and APK
+        env:
+          KEY_SOURCE: ${{ steps.key.outputs.source }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          # Play 要求每次上传的 versionCode 都更大，网站的更新提示也按它比新旧：用这个工作流的运行序号（每跑一次加 1）
+          BADIE_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          set +x
+          umask 077
+          export BADIE_UPLOAD_KEYSTORE="$RUNNER_TEMP/upload.jks"
+          if [ "$KEY_SOURCE" = secrets ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$BADIE_UPLOAD_KEYSTORE"
+            export BADIE_UPLOAD_STORE_PASSWORD="$STORE_PASSWORD" BADIE_UPLOAD_KEY_ALIAS="$KEY_ALIAS" BADIE_UPLOAD_KEY_PASSWORD="$KEY_PASSWORD"
+          else
+            VAULT_DB_URL="$(cat "$GITHUB_WORKSPACE/supabase/.temp/pooler-url")" \
+              bash scripts/vault-signing-key.sh "$BADIE_UPLOAD_KEYSTORE" "$RUNNER_TEMP/upload.pw"
+            BADIE_UPLOAD_STORE_PASSWORD="$(cat "$RUNNER_TEMP/upload.pw")"
+            rm -f "$RUNNER_TEMP/upload.pw"
+            export BADIE_UPLOAD_STORE_PASSWORD BADIE_UPLOAD_KEY_PASSWORD="$BADIE_UPLOAD_STORE_PASSWORD" BADIE_UPLOAD_KEY_ALIAS=upload
+          fi
+          unset KEYSTORE_BASE64 STORE_PASSWORD KEY_PASSWORD PGPASSWORD
+          ./gradlew :app:bundleRelease :app:assembleRelease --console=plain --no-configuration-cache
+          rm -f "$BADIE_UPLOAD_KEYSTORE"
+
+      - name: Remove keystore
+        if: always()
+        working-directory: .
+        run: rm -f "$RUNNER_TEMP/upload.jks" "$RUNNER_TEMP/upload.pw" supabase/.temp/pooler-url
+
+      # 确认真的签上了、APK 放得进网站；写出给网站和 App 用的 android-version.json。
+      # 只打印通过没有和公开的指纹，不打印证书上的名字
+      - name: Verify and describe
+        id: apk
+        run: |
+          aab=app/build/outputs/bundle/release/app-release.aab
+          apk=app/build/outputs/apk/release/app-release.apk
+          tools="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+
+          if jarsigner -verify "$aab" 2>&1 | grep -q "jar verified"; then echo "AAB 签名：通过"; else echo "::error::AAB 没有签名"; exit 1; fi
+          if "$tools/apksigner" verify "$apk" > /dev/null 2>&1; then echo "APK 签名：通过"; else echo "::error::APK 签名没通过"; exit 1; fi
+
+          size=$(stat -c %s "$apk")
+          if [ "$size" -gt "$MAX_APK_BYTES" ]; then
+            echo "::error::APK 有 $size 字节，超过 Cloudflare Pages 单个文件 25 MiB 的上限，网站放不下"
+            exit 1
+          fi
+
+          badging=$("$tools/aapt2" dump badging "$apk")
+          versionCode=$(printf '%s\n' "$badging" | sed -nE "s/^package: .* versionCode='([0-9]+)'.*/\1/p")
+          versionName=$(printf '%s\n' "$badging" | sed -nE "s/^package: .* versionName='([^']+)'.*/\1/p")
+          minSdk=$(printf '%s\n' "$badging" | sed -nE "s/^minSdkVersion:'([0-9]+)'.*/\1/p")
+          [ "$versionCode" = "${{ github.run_number }}" ] || { echo "::error::APK 的 versionCode（$versionCode）不是运行序号"; exit 1; }
+          sha256=$(sha256sum "$apk" | cut -d' ' -f1)
+
+          mkdir -p "$RUNNER_TEMP/release"
+          cp "$apk" "$RUNNER_TEMP/release/badie.apk"
+          jq -n --argjson versionCode "$versionCode" --arg versionName "$versionName" --arg url "$APK_URL" \
+            --arg sha256 "$sha256" --argjson minSdk "$minSdk" --argjson size "$size" \
+            '{versionCode: $versionCode, versionName: $versionName, url: $url, sha256: $sha256, minSdk: $minSdk, size: $size}' \
+            > "$RUNNER_TEMP/release/android-version.json"
+          cat "$RUNNER_TEMP/release/android-version.json"
+
+          # 证书指纹（公开的值）：Google 登录的安卓客户端要 SHA-1，assetlinks.json 要 SHA-256
+          certs=$("$tools/apksigner" verify --print-certs "$apk" 2>/dev/null | grep -E 'certificate SHA-(1|256) digest:' || true)
+          colons() { tr 'a-f' 'A-F' | sed -E 's/(..)/\1:/g; s/:$//'; }
+          sha1=$(printf '%s\n' "$certs" | grep -m1 'SHA-1 digest' | awk '{print $NF}' | colons)
+          sha256cert=$(printf '%s\n' "$certs" | grep -m1 'SHA-256 digest' | awk '{print $NF}' | colons)
+
+          {
+            echo "versionName=$versionName"
+            echo "versionCode=$versionCode"
+            echo "tag=android-v$versionName-$versionCode"
+          } >> "$GITHUB_OUTPUT"
+          {
+            echo "### Badie $versionName（versionCode $versionCode）"
+            echo "- APK：$(awk "BEGIN{printf \"%.1f\", $size/1048576}") MB，SHA-256 \`$sha256\`"
+            echo "- AAB：产物 badie-release-aab，传到 Play 管理中心"
+            echo ""
+            echo "签名证书指纹（公开的，配置 Google 登录和 assetlinks.json 用）："
+            echo "- SHA-1：\`$sha1\`"
+            echo "- SHA-256：\`$sha256cert\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: badie-release-aab
+          path: |
+            Badie-Android/app/build/outputs/bundle/release/app-release.aab
+            Badie-Android/app/build/outputs/mapping/release/mapping.txt
+          retention-days: 30
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: badie-release-apk
+          path: ${{ runner.temp }}/release/
+          retention-days: 30
+
+      # 只有 main 上的才公开发布：开发分支跑出来的 APK 只在产物里
+      - name: Publish GitHub Release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.apk.outputs.tag }}
+          VERSION_NAME: ${{ steps.apk.outputs.versionName }}
+          VERSION_CODE: ${{ steps.apk.outputs.versionCode }}
+        run: |
+          cd "$RUNNER_TEMP/release"
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            # 同一次运行点了“重新运行”：换掉里面的文件
+            gh release upload "$TAG" badie.apk android-version.json --clobber -R "$GITHUB_REPOSITORY"
+          else
+            # 只有安卓的发布时才标成“最新”；以后有了别的发布（比如 iPhone 的），不去抢它的
+            others=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate --jq '.[] | select(.tag_name | startswith("android-v") | not) | .id' | wc -l)
+            latest=--latest
+            [ "$others" -eq 0 ] || latest=--latest=false
+            sha256=$(jq -r .sha256 android-version.json)
+            gh release create "$TAG" badie.apk android-version.json -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" "$latest" \
+              --title "Badie for Android $VERSION_NAME" \
+              --notes "Badie for Android $VERSION_NAME (versionCode $VERSION_CODE). Download it from https://badie.rsvp/android/ — SHA-256 of badie.apk: $sha256"
+          fi
+          echo "已发布 $TAG" >> "$GITHUB_STEP_SUMMARY"
+
+      # 网站在部署前下载最新的安卓发布（web.yml），所以发完要让它在 main 上重新部署一次
+      - name: Redeploy website
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run web.yml --ref main -R "$GITHUB_REPOSITORY"
+          echo "已触发网站重新部署（Web CI），几分钟后 https://badie.rsvp/android/ 换成新版本" >> "$GITHUB_STEP_SUMMARY"

@@ -1012,7 +1012,7 @@ struct OnboardingFlow: View {
         }
     }
 
-    /// 注册后默认在附近的人里显示（就是设置里的“在同馆常客里显示我”，之后可以在设置里关）
+    /// 注册后默认在附近的人里显示（就是设置里的“在发现里显示我”，之后可以在设置里关）
     private func enableLobbyVisibility() {
         guard var privacy = appState.currentUser?.privacy, !privacy.showsAsRegular else { return }
         privacy.showsAsRegular = true

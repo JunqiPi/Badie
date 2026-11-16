@@ -69,9 +69,10 @@ fun Modifier.sticker(
     radius: Dp = AppTheme.Radius.lg,
     shadow: DpOffset = AppTheme.Elevation.card,
     stroke: Color = AppTheme.colors.stroke,
+    strokeWidth: Dp = AppTheme.Stroke.width,
 ): Modifier {
     val shadowColor = AppTheme.colors.shadow
-    return drawBehind { drawSticker(fill, stroke, shadowColor, radius, shadow) }
+    return drawBehind { drawSticker(fill, stroke, shadowColor, radius, shadow, strokeWidth) }
 }
 
 /** 带内边距的卡片，占满宽度 */
@@ -258,9 +259,10 @@ fun StatTile(value: String, label: String, modifier: Modifier = Modifier, /** �
             .clearAndSetSemantics { contentDescription = "$label $value" },
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        Text(
+        // 放不下时缩小到六成（“0.9 英里”这类长一点的值）
+        FitText(
             value, style = rounded(24, FontWeight.Black).copy(fontFeatureSettings = "tnum"),
-            color = if (accent == null) AppTheme.colors.ink else AppTheme.colors.onAccent, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            color = if (accent == null) AppTheme.colors.ink else AppTheme.colors.onAccent, minimumScale = 0.6f,
         )
         Text(
             label, style = AppTheme.Typography.caption, maxLines = 1, overflow = TextOverflow.Ellipsis,

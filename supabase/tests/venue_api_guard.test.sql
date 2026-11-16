@@ -1,4 +1,4 @@
--- 不能直接整表读球馆表；按位置、搜索、按 id 照常；别的表、写操作、后台不受影响
+-- 检查函数：不能直接整表读球馆表；按位置、搜索、按 id 照常；别的表、写操作、后台不受影响（还没启用，见迁移）
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(7);
@@ -29,9 +29,7 @@ select is((select name from public.venue_brief('v-test-guard')), 'Guard Hall', '
 reset role;
 select lives_ok('select public.check_request()', '后台（postgres、service_role）不受影响');
 
-select is((select count(*) from pg_db_role_setting s join pg_roles r on r.oid = s.setrole
-           where r.rolname = 'authenticator' and 'pgrst.db_pre_request=public.check_request' = any (s.setconfig))::int,
-          1, '每个接口请求前都会检查');
+select is((select count(*) from public.venues_by_ids(array['v-test-guard', 'v-none']))::int, 1, '按一组 id 查照常');
 
 select * from finish();
 rollback;

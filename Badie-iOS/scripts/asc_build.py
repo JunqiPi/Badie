@@ -47,6 +47,8 @@ def main():
     mode, number = sys.argv[1], sys.argv[2]
     shots.refresh_token()
     app_id, versions = shots.find_versions()
+    for other in versions[:5]:
+        print(f"版本 {other['attributes']['versionString']}：{shots.state_of(other)}")
     version = next((v for v in versions if v["attributes"]["versionString"] == number), None)
     if version is None and mode == "attach":
         version = asc.api("POST", "/appStoreVersions", {"data": {

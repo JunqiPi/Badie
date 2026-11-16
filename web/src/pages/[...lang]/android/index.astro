@@ -1,0 +1,67 @@
+---
+// 安卓 App 的下载页（/android/、/zh/android/……，10 种语言）：下载按钮、版本、大小、怎么装、文件的 SHA-256，适合发链接给别人。
+// 安装包是构建前从最新的安卓 Release 下载的（见 web.yml 和 src/app/androidApp.ts），还没有时说明先用网站
+import Base from '../../../layouts/Base.astro';
+import { APP_STORE_URL } from '../../../app/Contact';
+import { ANDROID_APK, androidApp, androidSteps, megabytes } from '../../../app/androidApp';
+import { allLanguages, translator } from '../../../lib/static-i18n';
+
+export const getStaticPaths = () => allLanguages.map((lang) => ({ params: { lang } }));
+
+const t = translator(Astro.url.pathname);
+const app = androidApp;
+---
+
+<Base title={t('Badie for Android — download the app')} description={t('Download Badie for Android. Free, and the same account as the website and the iPhone app.')}>
+  <div class="mx-auto grid max-w-3xl gap-8">
+    <header class="grid justify-items-start gap-4">
+      <h1 class="text-display lg:text-[2.75rem]">{t('Badie for Android')}</h1>
+      {app ? (
+        <>
+          <p class="max-w-prose text-[1.0625rem] leading-relaxed text-ink-secondary">{t('Download the app here. It uses the same account as the website and the iPhone app.')}</p>
+          <a href={ANDROID_APK} download="badie.apk" class="button button-lg">{t('Download the Android app')}</a>
+          <p class="text-footnote font-bold text-ink-secondary">
+            {t('Version {version} · {size} MB', { version: app.versionName, size: megabytes(app.size) })} · {t('Android 8.0 or later')}
+          </p>
+        </>
+      ) : (
+        <>
+          <p class="max-w-prose text-[1.0625rem] leading-relaxed text-ink-secondary">{t('The Android app isn’t ready yet. On Android, open badie.rsvp in Chrome and add it to your home screen.')}</p>
+          <a href="/" class="button button-lg">{t('Open Badie')}</a>
+        </>
+      )}
+    </header>
+
+    {app && (
+      <>
+        <section aria-labelledby="install" class="grid gap-3">
+          <h2 id="install" class="text-title2">{t('How to install')}</h2>
+          <ol class="grid gap-3">
+            {androidSteps(t).map((step, i) => (
+              <li class="sticker flex items-start gap-3 p-4">
+                <span class="grid size-7 shrink-0 place-items-center rounded-full bg-[#17140f] text-footnote font-black text-lime">{i + 1}</span>
+                <p class="text-subhead">{step}</p>
+              </li>
+            ))}
+          </ol>
+          <p class="text-footnote text-ink-secondary">{t('Sign in with the same account you use on the website or iPhone.')}</p>
+        </section>
+
+        <section aria-labelledby="updates" class="grid gap-2">
+          <h2 id="updates" class="text-title2">{t('New versions')}</h2>
+          <p class="max-w-prose text-subhead">{t('The app tells you when there’s a new version. Download it from this page and install it over the old one. You stay signed in.')}</p>
+        </section>
+
+        <section aria-labelledby="check" class="grid gap-2">
+          <h2 id="check" class="text-title2">{t('Check the file')}</h2>
+          <p class="text-subhead">{t('SHA-256 of badie.apk:')}</p>
+          <code class="sticker block p-4 font-mono text-footnote break-all select-all">{app.sha256}</code>
+        </section>
+      </>
+    )}
+
+    <p class="text-footnote font-bold">
+      <a href={APP_STORE_URL} class="link">{t('Get the iPhone app')}</a>
+    </p>
+  </div>
+</Base>

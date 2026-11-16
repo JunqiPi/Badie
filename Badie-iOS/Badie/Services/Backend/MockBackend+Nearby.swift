@@ -1,7 +1,7 @@
 import Foundation
 
 // MARK: - 附近的人、邀请局
-/// 附近的人：有等级、打开了“在同馆常客里显示我”、常去附近球馆的人（球友也在里面）。
+/// 附近的人：有等级、打开了“在发现里显示我”、常去附近球馆的人（球友也在里面）。
 /// 右滑是约 TA：选单打或双打、哪天几点和球馆，发一个只邀请 TA 的局。TA 可以说好、换个时间或不了；
 /// 单打说好就成局；双打说好后是一个 4 人的房间，另外两个位置别人可以加入。每 24 小时最多发 10 个。
 /// （以前的版本发的是一段大概的时间，说好以后再定几点，这种邀请服务器还认）
@@ -186,7 +186,7 @@ extension MockBackend {
         try? await remote.call("skip_nearby", ["p_user": userId])
     }
 
-    /// 打开“在同馆常客里显示我”（等服务器存好再返回：接着要发邀请）
+    /// 打开“在发现里显示我”（等服务器存好再返回：接着要发邀请）
     func enableShowsAsRegular() async throws {
         guard var user = currentUser else { throw BackendError.notSignedIn }
         if let remote {

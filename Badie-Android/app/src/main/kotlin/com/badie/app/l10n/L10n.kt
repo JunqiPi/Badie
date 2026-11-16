@@ -18,12 +18,24 @@ object L10n {
     /** 当前界面的文字表。Activity 每次创建（包括换语言后重建）都要接一次 */
     fun attach(context: Context) {
         resources = context.resources
+        // 日期也跟着界面的语言排
+        com.badie.app.models.DateText.reset()
+    }
+
+    /** 没有界面时（App 在后台收到推送、提醒到点）先用 App 的文字表，不然显示成简体中文原文 */
+    fun attachIfNeeded(context: Context) {
+        if (resources == null) attach(context.applicationContext)
     }
 
     /** 测试用：回到没接界面的状态 */
     internal fun detach() {
         resources = null
+        com.badie.app.models.DateText.reset()
     }
+
+    /** 界面文字现在用的语言（10 种之一）；没接上界面时为 null */
+    val language: String?
+        get() = resources?.configuration?.locales?.takeIf { !it.isEmpty }?.get(0)?.let(AppLanguage::match)
 
     /** 不在界面里（管理器、错误提示）取文字。没接上界面时（单元测试）给简体中文原文 */
     fun tr(key: String, vararg args: Any?): String = lookup(resources, key, args)

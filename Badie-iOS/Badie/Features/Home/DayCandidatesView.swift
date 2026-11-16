@@ -558,7 +558,7 @@ struct DayCandidatesView: View {
     /// 选照片的提醒每台设备只出一次
     private static let photoAskedKey = "BadieNearbyPhotoAsked"
 
-    /// 右滑、点卡片上的空闲时间：约 TA。没打开“在同馆常客里显示我”先问；没卡片照片提醒一次
+    /// 右滑、点卡片上的空闲时间：约 TA。没打开“在发现里显示我”先问；没卡片照片提醒一次
     private func invite(_ player: MockBackend.NearbyPlayer, slot: RecurringTimeSlot?) {
         guard !leaving, let me = appState.currentUser else { return }
         if !me.privacy.showsAsRegular {

@@ -54,7 +54,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.badie.app.push.NotificationRouter
 import com.badie.app.design.AppTheme
+import com.badie.app.features.profile.openLink
+import androidx.compose.ui.platform.LocalContext
 import com.badie.app.design.CountBadge
 import com.badie.app.design.Dot
 import com.badie.app.design.IconButton
@@ -69,7 +72,45 @@ import com.badie.app.design.pressable
 import com.badie.app.design.rememberHaptics
 import com.badie.app.design.rounded
 import com.badie.app.design.sticker
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import com.badie.app.features.games.GameDetailScreen
+import com.badie.app.features.games.GameHistoryScreen
+import com.badie.app.features.games.GamesScreen
+import com.badie.app.features.games.SurveyFormScreen
+import com.badie.app.features.games.SurveyListScreen
+import com.badie.app.features.groups.CreateGroupScreen
+import com.badie.app.features.groups.GroupScreen
+import com.badie.app.features.groups.GroupsScreen
+import com.badie.app.features.home.DiscoverScreen
+import com.badie.app.features.matching.MatchFlowOverlay
+import com.badie.app.features.matching.MatchSetupSheet
+import com.badie.app.features.messages.ChatScreen
+import com.badie.app.features.messages.GroupChatScreen
+import com.badie.app.features.messages.MessagesScreen
+import com.badie.app.features.messages.NotificationsScreen
+import com.badie.app.features.messages.SocialOverlays
+import com.badie.app.features.profile.EditProfileScreen
+import com.badie.app.features.profile.LevelGuideScreen
+import com.badie.app.features.profile.ProfileScreen
+import com.badie.app.features.profile.RecurringSlotsScreen
 import com.badie.app.features.profile.SettingsView
+import com.badie.app.features.profile.VerificationScreen
+import com.badie.app.features.rankings.ChallengesScreen
+import com.badie.app.features.rankings.LeaderboardScreen
+import com.badie.app.features.rooms.CreateRoomScreen
+import com.badie.app.features.rooms.JoinRoomScreen
+import com.badie.app.features.rooms.PublicGamesScreen
+import com.badie.app.features.rooms.RoomScreen
+import com.badie.app.features.social.AddFriendScreen
+import com.badie.app.features.social.BlockedUsersScreen
+import com.badie.app.features.social.FriendsScreen
+import com.badie.app.features.social.PlayerProfileSheet
+import com.badie.app.features.social.StrikesSheet
+import com.badie.app.features.venues.AddVenueScreen
+import com.badie.app.features.venues.CourtsScreen
+import com.badie.app.features.venues.MatchVenuesScreen
+import com.badie.app.features.venues.VenueScreen
 import com.badie.app.l10n.tr
 import kotlinx.coroutines.launch
 
@@ -82,7 +123,8 @@ private sealed interface StackKey {
 /** 主框架：四个标签页各自一条导航栈 + 悬浮标签栏 + 中间的“+” */
 @Composable
 fun MainTabView() {
-    val router = LocalEnv.current.router
+    val env = LocalEnv.current
+    val router = env.router
     val holder = rememberSaveableStateHolder()
     var pendingCreateAction by remember { mutableStateOf<CreateAction?>(null) }
 
@@ -114,8 +156,47 @@ fun MainTabView() {
             enter = slideInVertically(AppTheme.Motion.standard()) { it } + fadeIn(),
             exit = slideOutVertically(AppTheme.Motion.standard()) { it } + fadeOut(),
         ) {
-            FloatingTabBar(badges = emptyMap()) { router.isCreateMenuPresented = true }
+            Column {
+                env.updates.available?.let { release ->
+                    val context = LocalContext.current
+                    UpdateBanner(
+                        release,
+                        onDownload = { context.openLink(SideloadUpdates.downloadUrl(release)) },
+                        onDismiss = { env.updates.dismiss() },
+                        modifier = Modifier.padding(horizontal = AppTheme.Spacing.lg).padding(bottom = AppTheme.Spacing.xs),
+                    )
+                }
+                FloatingTabBar(
+                    badges = mapOf(
+                        MainTab.Games to env.surveyManager.pendingCount,
+                        MainTab.Messages to env.messageManager.unreadCount + env.friendManager.incomingRequestCount,
+                    ),
+                ) { router.isCreateMenuPresented = true }
+            }
         }
+
+        // 匹配流程（全屏）：任何页面跳转都会把它关掉，不然新页面在它后面看不见
+        MatchFlowOverlay()
+    }
+    LaunchedEffect(router.navigations) { env.matchManager.isFlowPresented = false }
+    // 从网站下载安装的：看有没有新版本（一天最多查一次）
+    LaunchedEffect(Unit) { env.updates.checkIfDue() }
+    // 点通知打开的页面：主界面出来了才打开（冷启动、在登录页时先记着）
+    DisposableEffect(router) {
+        NotificationRouter.attach(router, env.messageManager)
+        onDispose { NotificationRouter.detach(router) }
+    }
+    // 在前台时轮询私信和通知、爽约记录、紧急通知
+    SocialOverlays()
+
+    if (router.isMatchSetupPresented) {
+        BadieSheet(onDismiss = { router.isMatchSetupPresented = false }) { dismiss -> MatchSetupSheet(onDismiss = dismiss) }
+    }
+    env.appState.presentedPlayer?.let { userId ->
+        BadieSheet(onDismiss = { env.appState.presentedPlayer = null }) { dismiss -> PlayerProfileSheet(userId, onDismiss = dismiss) }
+    }
+    if (env.appState.showsStrikes) {
+        BadieSheet(onDismiss = { env.appState.showsStrikes = false }) { dismiss -> StrikesSheet(onDismiss = dismiss) }
     }
 
     if (router.isCreateMenuPresented) {
@@ -140,32 +221,51 @@ fun MainTabView() {
     }
 }
 
-/** 各标签页的根页面。页面还没搬过来的，先只有标题 */
+/** 各标签页的根页面 */
 @Composable
 private fun TabRoot(tab: MainTab) {
-    val router = LocalEnv.current.router
-    Column(Modifier.fillMaxSize()) {
-        LargeTitleHeader(tr(tab.titleKey)) {
-            if (tab == MainTab.Profile) IconButton(Sym.gearshapeFill, tr("设置")) { router.open(Route.Settings) }
-        }
+    when (tab) {
+        MainTab.Home -> DiscoverScreen()
+        MainTab.Games -> GamesScreen()
+        MainTab.Messages -> MessagesScreen()
+        MainTab.Profile -> ProfileScreen()
     }
 }
 
-/** 推进导航栈的页面。还没搬过来的先只有返回栏 */
+/** 推进导航栈的页面，和 iPhone 的 RouteDestination 一一对应 */
 @Composable
 private fun RouteDestination(route: Route) {
-    val router = LocalEnv.current.router
-    if (route == Route.Settings) return SettingsView()
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader(
-            title = when (route) {
-                is Route.CreateRoom -> tr("发起球局")
-                Route.Groups -> tr("固定局 · 球群")
-                is Route.JoinRoom -> tr("输入房间码 / 群号")
-                else -> ""
-            },
-            onBack = { router.pop() },
-        )
+    when (route) {
+        is Route.Game -> GameDetailScreen(route.id)
+        is Route.Room -> RoomScreen(route.id)
+        is Route.CreateRoom -> CreateRoomScreen(route.mode, route.invitee)
+        is Route.JoinRoom -> JoinRoomScreen(route.code)
+        Route.PublicGames -> PublicGamesScreen()
+        is Route.Chat -> ChatScreen(route.userId)
+        Route.Friends -> FriendsScreen()
+        Route.AddFriend -> AddFriendScreen()
+        Route.Surveys -> SurveyListScreen()
+        is Route.Survey -> SurveyFormScreen(route.pendingId)
+        Route.EditProfile -> EditProfileScreen()
+        Route.Settings -> SettingsView()
+        Route.RecurringSlots -> RecurringSlotsScreen()
+        Route.BlockedUsers -> BlockedUsersScreen()
+        Route.Notifications -> NotificationsScreen()
+        Route.Courts -> CourtsScreen()
+        Route.GameHistory -> GameHistoryScreen()
+        is Route.Venue -> VenueScreen(route.id)
+        is Route.MatchVenues -> MatchVenuesScreen(route.query)
+        Route.AddVenue -> AddVenueScreen()
+        is Route.GroupChat -> GroupChatScreen(route.threadId)
+        is Route.Group -> GroupScreen(route.id)
+        Route.Groups -> GroupsScreen()
+        is Route.CreateGroup -> CreateGroupScreen(route.venueId)
+        is Route.EditGroup -> CreateGroupScreen(venueId = null, editingGroupId = route.id)
+        Route.LevelGuide -> LevelGuideScreen()
+        Route.Verification -> VerificationScreen()
+        Route.Leaderboard -> LeaderboardScreen()
+        is Route.VenueLeaderboard -> LeaderboardScreen(route.venueId)
+        Route.Challenges -> ChallengesScreen()
     }
 }
 

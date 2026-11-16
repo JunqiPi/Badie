@@ -1,0 +1,116 @@
+name: Android E2E
+
+# 在 Android 模拟器上点真的界面，连本机的 Supabase：注册登录、聊天、推送、各处自动刷新。
+# 测试在 Badie-Android/app/src/androidTest，怎么一段段跑见 Badie-Android/e2e/run.sh
+on:
+  push:
+    branches: [ main, "claude/**" ]
+    paths:
+      - "Badie-Android/**"
+      - "Badie-iOS/Badie/Localizable.xcstrings"
+      - "supabase/**"
+      - ".github/workflows/android-e2e.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: android-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Emulator end-to-end (local Supabase)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # 模拟器要硬件加速
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+        with:
+          version: 2.121.0
+
+      - name: Start Supabase (database, auth, REST, mail)
+        run: |
+          supabase start -x studio,imgproxy,logflare,vector,supavisor,postgres-meta,edge-runtime,realtime
+          supabase status -o env > "$RUNNER_TEMP/status.env"
+          publishable=$(grep '^PUBLISHABLE_KEY=' "$RUNNER_TEMP/status.env" | cut -d= -f2- | tr -d '"')
+          service=$(grep '^SERVICE_ROLE_KEY=' "$RUNNER_TEMP/status.env" | cut -d= -f2- | tr -d '"')
+          rm "$RUNNER_TEMP/status.env"
+          echo "::add-mask::$service"
+          {
+            echo "SUPABASE_URL=http://127.0.0.1:54321"
+            echo "PUBLISHABLE_KEY=$publishable"
+            echo "SERVICE_ROLE_KEY=$service"
+          } >> "$GITHUB_ENV"
+
+      # 推送：数据库有新通知时用 pg_net 叫 /functions/v1/send-push（地址和暗号在 Vault），推送服务用 FCM_SERVICE_ACCOUNT 发给 Firebase。
+      # 没配这个 Secret 时推送服务照样起（别的推送照常排队），推送的测试跳过
+      - name: Serve the push function
+        env:
+          FCM_SERVICE_ACCOUNT: ${{ secrets.FCM_SERVICE_ACCOUNT }}
+        run: |
+          secret=$(openssl rand -hex 24)
+          echo "::add-mask::$secret"
+          umask 077
+          {
+            echo "PUSH_SECRET=$secret"
+            if [ -n "$FCM_SERVICE_ACCOUNT" ]; then printf "FCM_SERVICE_ACCOUNT='%s'\n" "$(printf '%s' "$FCM_SERVICE_ACCOUNT" | jq -c .)"; fi
+          } > "$RUNNER_TEMP/functions.env"
+          # 数据库容器里，网关的地址是容器名
+          psql postgresql://postgres:postgres@127.0.0.1:54322/postgres -qc \
+            "select vault.create_secret('http://supabase_kong_badie:8000', 'project_url'); select vault.create_secret('$secret', 'push_secret');" >/dev/null
+          supabase functions serve --env-file "$RUNNER_TEMP/functions.env" > "$RUNNER_TEMP/functions.log" 2>&1 &
+          for i in $(seq 1 90); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:54321/functions/v1/send-push || true)
+            [ "$code" = 403 ] && break
+            sleep 2
+          done
+          echo "send-push: $code"
+          if [ -n "$FCM_SERVICE_ACCOUNT" ]; then echo "PUSH=1" >> "$GITHUB_ENV"; else echo "PUSH=0" >> "$GITHUB_ENV"; echo "::notice::没有配 FCM_SERVICE_ACCOUNT，推送的测试会跳过"; fi
+
+      # 调试包连本机的 Supabase（模拟器里电脑的地址是 10.0.2.2），见 app/build.gradle.kts
+      - name: Build the app and the tests against it
+        working-directory: Badie-Android
+        run: ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain -Pbadie.supabaseUrl=http://10.0.2.2:54321 "-Pbadie.supabaseKey=$PUBLISHABLE_KEY"
+
+      # Google APIs 的系统镜像带 Google Play 服务，FCM 才能用
+      - name: Run on the emulator
+        uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        env:
+          E2E_OUT: ${{ github.workspace }}/e2e-output
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          disk-size: 6000M
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
+          disable-animations: true
+          script: bash Badie-Android/e2e/run.sh
+
+      # 只在没通过时传：截图、录屏、界面结构、logcat、推送服务的日志（都不含密钥；不传数据库）
+      - name: Collect the push function log
+        if: failure()
+        run: cp "$RUNNER_TEMP/functions.log" e2e-output/ 2>/dev/null || true
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: failure()
+        with:
+          name: android-e2e
+          path: e2e-output
+          if-no-files-found: ignore
+          retention-days: 7

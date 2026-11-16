@@ -103,7 +103,7 @@ struct SettingsView: View {
                             }
                             InsetDivider()
                             Toggle(isOn: regularBinding) {
-                                toggleTitle(String(localized: "在同馆常客里显示我"))
+                                toggleTitle(String(localized: "在发现里显示我"))
                             }
                             InsetDivider()
                             Toggle(isOn: privacyBinding(\.allowsMessageRequests)) {
@@ -268,7 +268,7 @@ struct SettingsView: View {
         )
     }
 
-    /// “在同馆常客里显示我”：打开直接存，关掉先确认
+    /// “在发现里显示我”：打开直接存，关掉先确认
     private var regularBinding: Binding<Bool> {
         Binding(
             get: { appState.currentUser?.privacy.showsAsRegular ?? false },
@@ -358,7 +358,7 @@ struct SettingsView: View {
         var rules: [String] = [
             String(localized: "找球友时，附近的人在首页能看到你的昵称、头像、等级和想打的时间、球馆，看不到联系方式"),
             String(localized: "同馆常客只显示昵称、等级和球馆，不显示时间和位置"),
-            String(localized: "打开“在同馆常客里显示我”，也会出现在附近的人里：别人能看到你的昵称、等级、常去的球馆和常用时间，可以约你"),
+            String(localized: "打开“在发现里显示我”，别人在发现里能看到你的昵称、等级、常去的球馆和常用时间，可以约你"),
             String(localized: "消息请求来自同球群的人；关闭后只有球友能私信你，球局群聊不受影响"),
             String(localized: "按昵称找到你的人能看到你的昵称和等级，可以发好友申请"),
         ]

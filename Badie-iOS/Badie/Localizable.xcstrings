@@ -11479,6 +11479,66 @@
         }
       }
     },
+    "Badie %@ 可以更新了" : {
+      "comment" : "Android only: banner when a newer version of the app downloaded from the website is available. %@ is the version, like 1.0.6.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badie %@ is available"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badie %@ उपलब्ध है"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badie %@ sudah tersedia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badie %@ にアップデートできます"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badie %@(으)로 업데이트할 수 있어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badie %@ sudah tersedia"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "อัปเดตเป็น Badie %@ ได้แล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã có Badie %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Badie %@ 可以更新了"
+          }
+        }
+      }
+    },
     "Badie v%@" : {
       "localizations" : {
         "hi" : {
@@ -17122,6 +17182,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下次還想和對方打"
+          }
+        }
+      }
+    },
+    "下载" : {
+      "comment" : "Android only: button on the update banner that opens the new installer in the browser.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "डाउनलोड करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unduh"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muat turun"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ดาวน์โหลด"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tải xuống"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載"
           }
         }
       }
@@ -30886,6 +31006,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "先在「訊息 - 球友」裡加球友。"
+          }
+        }
+      }
+    },
+    "先在设置里打开“在发现里显示我”" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn on “Show me in Discover” in Settings first."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "पहले सेटिंग में “खोजें में मुझे दिखाएँ” चालू करें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktifkan “Tampilkan saya di Jelajahi” di Pengaturan dulu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先に設定で『「見つける」に自分を表示』をオンにしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "먼저 설정에서 “둘러보기에 나를 표시”를 켜 주세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hidupkan “Tunjukkan saya dalam Teroka” dalam Tetapan dahulu."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิด “แสดงฉันในหน้าสำรวจ” ในการตั้งค่าก่อน"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hãy bật “Hiện tôi trong Khám phá” trong Cài đặt trước."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先在設定裡打開「在發現裡顯示我」"
           }
         }
       }
@@ -49504,6 +49682,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在俱樂部裡的位置"
+          }
+        }
+      }
+    },
+    "在发现里显示我" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show me in Discover"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "खोजें में मुझे दिखाएँ"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tampilkan saya di Jelajahi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「見つける」に自分を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "둘러보기에 나를 표시"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tunjukkan saya dalam Teroka"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แสดงฉันในหน้าสำรวจ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiện tôi trong Khám phá"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在發現裡顯示我"
           }
         }
       }
@@ -74942,6 +75178,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打開"
+          }
+        }
+      }
+    },
+    "打开“在发现里显示我”，别人在发现里能看到你的昵称、等级、常去的球馆和常用时间，可以约你" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With “Show me in Discover” on, others see your nickname, level, usual venues and usual times in Discover, and can invite you"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“खोजें में मुझे दिखाएँ” चालू होने पर दूसरे लोग खोजें में आपका निकनेम, लेवल, नियमित वेन्यू और अक्सर खाली समय देखते हैं, और आपको बुला सकते हैं"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jika “Tampilkan saya di Jelajahi” aktif, orang lain melihat nama panggilan, level, GOR rutin, dan waktu luangmu di Jelajahi, dan bisa mengajakmu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "『「見つける」に自分を表示』をオンにすると、ほかの人が「見つける」であなたのニックネーム、レベル、よく行く会場、よく空いている時間を見て、誘えるようになります"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“둘러보기에 나를 표시”를 켜면 다른 사람이 둘러보기에서 내 닉네임, 레벨, 자주 가는 체육관, 자주 되는 시간을 보고 초대할 수 있어요"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jika “Tunjukkan saya dalam Teroka” dihidupkan, orang lain nampak nama panggilan, tahap, gelanggang biasa dan masa lapang anda dalam Teroka, dan boleh mengajak anda"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เมื่อเปิด “แสดงฉันในหน้าสำรวจ” คนอื่นจะเห็นชื่อเล่น ระดับ สนามประจำ และเวลาที่ว่างบ่อยของคุณในหน้าสำรวจ และชวนคุณได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi bật “Hiện tôi trong Khám phá”, người khác thấy biệt danh, trình độ, sân hay đến và giờ hay rảnh của bạn trong Khám phá, và có thể rủ bạn"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開「在發現裡顯示我」，別人在發現裡能看到你的暱稱、等級、常去的球館和常用時間，可以約你"
           }
         }
       }
