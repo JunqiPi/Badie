@@ -267,7 +267,7 @@ export function Deck({ date, days, onDate, profile, onProfile, onGroups }: {
     if (error.message === 'not_available' || error.message === 'already_invited') next(nearbyItem(card), 'left');
   }
 
-  /** 让附近的人也能看到我：打开“在同馆常客里显示我”，然后接着约 */
+  /** 让附近的人也能看到我：打开“在发现里显示我”，然后接着约 */
   async function becomeVisible(c: Composing) {
     setAsking(undefined);
     const { data, error } = await supabase!.from('profiles').update({ show_as_regular: true }).eq('id', me.current.id).select().single();

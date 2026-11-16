@@ -154,7 +154,7 @@ struct FriendStarButton: View {
 
 struct InvitePromptSheet: View {
     enum Kind: String, Identifiable {
-        /// 没打开“在同馆常客里显示我”
+        /// 没打开“在发现里显示我”
         case visibility
         /// 没有卡片背景照片
         case photo
@@ -549,7 +549,7 @@ enum InviteText {
         switch code {
         case "invite_limit": return String(localized: "今天的 10 个用完了，明天再来")
         case "already_invited": return String(localized: "你们之间已经有一个邀请了")
-        case "not_visible": return String(localized: "先在设置里打开“在同馆常客里显示我”")
+        case "not_visible": return String(localized: "先在设置里打开“在发现里显示我”")
         case "invalid_window", "invalid_slot": return String(localized: "这个时间来不及了")
         case "overlapping": return String(localized: "这个时间你已经有球局或待确认的约球了。")
         case "not_your_turn": return String(localized: "在等对方回复")
