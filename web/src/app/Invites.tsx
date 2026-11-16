@@ -112,8 +112,9 @@ function Compose({ other, venues, slot, date, room, onClose, onSent, onError }: 
   }, []);
 
   async function venue(id: string) {
-    const { data } = await supabase!.from('venues').select('id, name, city, time_zone_id').eq('id', id).maybeSingle();
-    return (data ?? undefined) as Court | undefined;
+    // 球馆表不能直接读（防止整表被拿走），按 id 查一家
+    const { data } = await supabase!.rpc('venue_brief', { p_id: id });
+    return ((data as Court[] | null)?.[0] ?? undefined) as Court | undefined;
   }
 
   async function pickCourt(id: string, fallback?: Court) {

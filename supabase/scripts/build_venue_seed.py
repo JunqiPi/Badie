@@ -35,6 +35,8 @@ def text_array(values):
 
 rows, ids = [], []
 for path in catalogs:
+    if path.name == "badie-venues.json":  # 网站构建时从数据库导出的，不是目录
+        continue
     catalog = json.loads(path.read_text(encoding="utf-8"))
     source = kinds[catalog.get("kind")]
     for v in catalog["venues"]:
@@ -56,6 +58,7 @@ assert rows, "no venue catalogs found"
 assert len(ids) == len(set(ids)), "duplicate venue ids across catalogs"
 
 REMOVED = "removed from the official catalog"
+COLLECTED = r"^v-[a-z]{2}-b[0-9a-f]{10}$"
 catalog_fields = ["name", "aliases", "location", "street", "unit", "city", "region", "postal_code", "time_zone_id",
                   "court_count", "pricing", "phone", "website", "entrance_note", "attribution", "location_approximate",
                   "kind", "play_times", "checked_on"]
@@ -72,8 +75,10 @@ on conflict (id) do update set
   review_flag = nullif(venues.review_flag, '{REMOVED}')
 where venues.source = excluded.source and venues.merged_into is null;
 
+-- 我们自己整理、直接写进数据库的球馆（id 是 v-国家-b 加 10 位十六进制，见 build_imported_venues.py）不在目录文件里，不隐藏
 update public.venues set hidden_pending_review = true, review_flag = '{REMOVED}'
 where source in ('curated', 'open_data', 'open_street_map') and merged_into is null and not hidden_pending_review
+  and id !~ '{COLLECTED}'
   and id <> all ('{{{",".join(ids)}}}'::text[]);
 """
 (root / "supabase/seed.sql").write_text(sql_text, encoding="utf-8")

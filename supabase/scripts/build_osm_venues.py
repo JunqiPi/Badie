@@ -25,7 +25,6 @@ import urllib.request
 from collections import defaultdict
 from pathlib import Path
 
-import reverse_geocoder
 from timezonefinder import TimezoneFinder
 
 root = Path(__file__).resolve().parents[2]
@@ -241,6 +240,8 @@ def main():
     fresh = [c for c in kept if not any(
         metres(c["point"], p) < 150 or (c["name"] and metres(c["point"], p) < 1000 and any(same_name(c["name"], n) for n in names))
         for p, names in near_known(c["point"]))]
+
+    import reverse_geocoder  # 只在这里用到；别的脚本 import 本文件的函数时不需要装
 
     places = reverse_geocoder.search([c["point"] for c in fresh], mode=1) if fresh else []
     tzf = TimezoneFinder()

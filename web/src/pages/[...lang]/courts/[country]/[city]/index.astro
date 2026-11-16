@@ -4,12 +4,13 @@ import Breadcrumbs from '../../../../../components/Breadcrumbs.astro';
 import { PinsMap } from '../../../../../app/PinsMap';
 import VenueRow from '../../../../../components/VenueRow.astro';
 import { cityName, citySummary, countries, formatPrice, nearbyCities, type City, type Country } from '../../../../../lib/venues';
-import { fitTitle, languages, translator } from '../../../../../lib/static-i18n';
+import { metroOf } from '../../../../../lib/metros';
+import { fitTitle, languages, pageLocale, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
   return languages.flatMap((lang) =>
     countries.flatMap((country) =>
-      country.cities.map((city) => ({ params: { lang, country: country.code, city: city.slug }, props: { country, city } })),
+      country.cities.filter((city) => city.hasPage).map((city) => ({ params: { lang, country: country.code, city: city.slug }, props: { country, city } })),
     ),
   );
 }
@@ -19,6 +20,9 @@ const name = cityName(city);
 const count = city.venues.length;
 const summary = citySummary(city);
 const neighbours = nearbyCities(city);
+// 所在都会区的价格页（现在只有美国有）
+const metro = metroOf(city.venues[0]);
+const metroName = metro && (pageLocale(Astro.url.pathname) === 'zh-Hans' ? metro.zh : metro.name);
 const attributions = [...new Set(city.venues.map((v) => v.attribution).filter(Boolean))];
 const pins = city.venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }));
 
@@ -44,6 +48,11 @@ const facts = [
     <p class="text-subhead font-bold text-ink-secondary" data-region={country.code}>{country.name}</p>
     <h1 class="text-display lg:text-[2.75rem]">{name}</h1>
     <p class="mt-3 text-subhead text-ink-secondary">{facts.join(' ')}</p>
+    {metro && (
+      <p class="mt-3">
+        <a href={metro.path} class="link" data-t="Drop-in prices around {place}" data-place={metroName}>Drop-in prices around {metroName}</a>
+      </p>
+    )}
   </header>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_26rem]">

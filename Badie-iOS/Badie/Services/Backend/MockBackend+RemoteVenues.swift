@@ -65,6 +65,21 @@ extension MockBackend {
         }
     }
 
+    /// 按名字、城市在服务器的全部球馆里搜（search_venues，最多 20 家，近的在前）；搜到的存进缓存，选了以后也认得
+    func remoteSearchVenues(_ query: String, near center: Coordinate) async -> [BadmintonCourt] {
+        guard let remote else { return [] }
+        do {
+            let rows: [RemoteVenue] = try await remote.rpc("search_venues", [
+                "q": query, "lat": center.latitude, "lng": center.longitude, "max_results": 20,
+            ])
+            let usable = rows.filter { $0.locationApproximate != true }
+            if usable.map({ cacheRemoteVenue($0) }).contains(true) { scheduleSave() }
+            return usable.compactMap { venue(id: $0.id) }
+        } catch {
+            return []
+        }
+    }
+
     /// 打包目录里有的以目录为准（字段更全），没有的存进缓存；返回缓存有没有变
     @discardableResult
     func cacheRemoteVenue(_ remote: RemoteVenue) -> Bool {
@@ -172,6 +187,10 @@ final class RemoteVenueService: VenueService {
 
     func confirmVenue(_ id: String) async throws {
         try await backend.remoteConfirmVenue(id)
+    }
+
+    func searchServer(_ query: String, near center: Coordinate) async -> [BadmintonCourt] {
+        await backend.remoteSearchVenues(query, near: center)
     }
 
     func reportVenue(_ id: String, issue: VenueIssue, detail: String) async throws {

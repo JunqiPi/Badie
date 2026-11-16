@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { allVenues, cityName, countries, englishName, type Venue } from '../lib/venues';
+import { venuePages, cityName, countries, englishName, type Venue } from '../lib/venues';
 
 const round = (n: number) => Math.round(n * 1e4) / 1e4;
 const centre = (venues: Venue[]) => [
@@ -17,7 +17,7 @@ export const GET: APIRoute = () => {
       c: centre(city.venues),
     })),
   );
-  const courts = allVenues.map((venue) => ({
+  const courts = venuePages.map((venue) => ({
     k: 'court',
     n: [venue.name, englishName(venue)].filter(Boolean).join(' · '),
     s: venue.city,

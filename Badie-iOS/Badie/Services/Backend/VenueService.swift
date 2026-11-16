@@ -29,6 +29,12 @@ protocol VenueService: AnyObject {
                   entranceNote: String?, now: Date) async throws -> BadmintonCourt
     func confirmVenue(_ id: String) async throws
     func reportVenue(_ id: String, issue: VenueIssue, detail: String) async throws
+    /// 在服务器的全部球馆里按名字、城市搜（本机只有 App 自带的和附近的球馆，远处的要问服务器）
+    func searchServer(_ query: String, near center: Coordinate) async -> [BadmintonCourt]
+}
+
+extension VenueService {
+    func searchServer(_ query: String, near center: Coordinate) async -> [BadmintonCourt] { [] }
 }
 
 extension MockBackend: VenueService {}

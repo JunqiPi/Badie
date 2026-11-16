@@ -341,6 +341,16 @@ struct VenuePickerView: View {
         if locationManager.allowsMapSearch && allowsAdding {
             mapSearch.update(query: trimmed, near: center)
         }
+        // 本机搜到的少：再问服务器（远处城市的球馆本机没有）。多等一会儿，免得每个字都发请求
+        guard found.count < 5, trimmed.count >= 2 else { return }
+        try? await Task.sleep(for: .milliseconds(250))
+        guard !Task.isCancelled else { return }
+        let more = await venueService.searchServer(trimmed, near: center)
+        guard !Task.isCancelled else { return }
+        let known = Set(found.map(\.venue.id))
+        hits = found + more.filter { !known.contains($0.id) }.prefix(15 - found.count).map {
+            VenueSearch.Hit(venue: $0, score: 0, distanceKm: $0.location.distanceKm(to: center))
+        }
     }
 
     /// 出行范围内收录太少时，用 Apple 地图找附近的羽毛球场地作为建议（不会自动入库）

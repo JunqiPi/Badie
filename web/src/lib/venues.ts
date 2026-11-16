@@ -1,12 +1,17 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-// 目录和 iOS 共用（Badie-iOS/Badie/Resources），接上数据库后改为从 Supabase 读取
-const catalogDir = join(process.cwd(), '..', 'Badie-iOS', 'Badie', 'Resources');
-const catalogs = ['curated-US', 'curated-MY', 'venues-GB', 'venues-HK', 'venues-JP', 'venues-SG', 'venues-TW'];
+// 目录和 iOS 共用（Badie-iOS/Badie/Resources），加上只进数据库的（supabase/data：OpenStreetMap、我们整理的）。
+// Cloudflare Pages 一次最多部署 2 万个文件，所以只有 App 自带的球馆有自己的页面；
+// 其余的在城市页、国家页的列表里，点开是地图。少于 3 家的城市也不单独成页，列在国家页里。
+const catalogDirs = [
+  { dir: join(process.cwd(), '..', 'Badie-iOS', 'Badie', 'Resources'), pages: true },
+  { dir: join(process.cwd(), '..', 'supabase', 'data'), pages: false },
+];
+const MIN_CITY_PAGE = 3;
 
 type Source = 'curated' | 'openStreetMap' | 'openData';
-type Facility = 'dedicated' | 'multiSport' | 'recCenter' | 'school' | 'communityHall';
+type Facility = 'dedicated' | 'multiSport' | 'recCenter' | 'school' | 'communityHall' | 'outdoor';
 
 export const facilityLabel: Record<Facility, string> = {
   dedicated: 'Badminton center',
@@ -14,6 +19,7 @@ export const facilityLabel: Record<Facility, string> = {
   recCenter: 'Community center',
   school: 'School gym',
   communityHall: 'Community hall',
+  outdoor: 'Outdoor court',
 };
 
 interface CatalogEntry {
@@ -28,6 +34,7 @@ interface CatalogEntry {
   region: string;
   postcode: string;
   country: string;
+  tz?: string;
   courts?: number;
   price?: { perPerson?: number; perCourtHour?: number };
   phone?: string;
@@ -54,7 +61,9 @@ export interface Venue extends CatalogEntry {
   source: Source;
   confirmed: boolean;
   attribution?: string;
+  /** 自己的页面，或者没有页面时的地图链接 */
   path: string;
+  hasPage: boolean;
   indexable: boolean;
 }
 
@@ -63,7 +72,9 @@ export interface City {
   name: string;
   region: string;
   country: string;
+  /** 城市页；不单独成页的城市是国家页上的锚点 */
   path: string;
+  hasPage: boolean;
   venues: Venue[];
   indexable: boolean;
 }
@@ -103,18 +114,26 @@ function uniqueSlug(base: string, taken: Set<string>): string {
   return slug;
 }
 
+const mapLink = (venue: CatalogEntry) => `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lon}`;
+
 function load(): Country[] {
-  const venues = catalogs.flatMap((name) => {
-    const catalog: Catalog = JSON.parse(readFileSync(join(catalogDir, `${name}.json`), 'utf8'));
-    return catalog.venues
-      .filter((entry) => !entry.approx)
-      .map((entry) => ({
-        ...entry,
-        source: catalog.kind ?? 'openData',
-        confirmed: (entry.status ?? catalog.status ?? 'verified') !== 'unconfirmed',
-        attribution: entry.attr ?? catalog.attribution,
-      }));
-  });
+  const venues = catalogDirs.flatMap(({ dir, pages }) =>
+    readdirSync(dir)
+      .filter((file) => file.endsWith('.json'))
+      .sort()
+      .flatMap((file) => {
+        const catalog: Catalog = JSON.parse(readFileSync(join(dir, file), 'utf8'));
+        return catalog.venues
+          .filter((entry) => !entry.approx) // 位置不准的不上网站
+          .map((entry) => ({
+            ...entry,
+            source: catalog.kind ?? 'openData',
+            confirmed: (entry.status ?? catalog.status ?? 'verified') !== 'unconfirmed',
+            attribution: entry.attr ?? catalog.attribution,
+            hasPage: pages,
+          }));
+      }),
+  );
 
   const countries = new Map<string, Country>();
   const cities = new Map<string, City>();
@@ -143,6 +162,7 @@ function load(): Country[] {
         region: region === entry.city ? '' : region,
         country: code,
         path: `${country.path}${slug}/`,
+        hasPage: true,
         venues: [],
         indexable: false,
       };
@@ -152,16 +172,18 @@ function load(): Country[] {
 
     const taken = venueSlugs.get(city) ?? new Set<string>();
     venueSlugs.set(city, taken);
-    const slug = uniqueSlug(slugify(englishName(entry) ?? entry.name), taken);
+    const slug = entry.hasPage ? uniqueSlug(slugify(englishName(entry) ?? entry.name), taken) : '';
     // 只有名字和地址的页面对搜索没有价值，先不让收录，等有了场地数、价格或球友贡献再放开
-    const indexable = entry.courts !== undefined || entry.price !== undefined || entry.playTimes !== undefined;
-    city.venues.push({ ...entry, slug, path: `${city.path}${slug}/`, indexable });
+    const indexable = entry.hasPage && (entry.courts !== undefined || entry.price !== undefined || entry.playTimes !== undefined);
+    city.venues.push({ ...entry, slug, path: entry.hasPage ? `${city.path}${slug}/` : mapLink(entry), indexable });
     country.venueCount++;
   }
 
   for (const city of cities.values()) {
     city.venues.sort((a, b) => a.name.localeCompare(b.name));
-    city.indexable = city.venues.length >= 3;
+    city.indexable = city.venues.length >= MIN_CITY_PAGE;
+    city.hasPage = city.indexable || city.venues.some((v) => v.hasPage);
+    if (!city.hasPage) city.path = `${countries.get(city.country)!.path}#area-${city.slug}`;
   }
   for (const country of countries.values()) {
     country.cities.sort((a, b) => b.venues.length - a.venues.length || a.name.localeCompare(b.name));
@@ -174,14 +196,16 @@ export const allCities = countries.flatMap((c) => c.cities);
 export const inCountry = (country: Country) => (country.name.startsWith('United ') ? `the ${country.name}` : country.name);
 export const cityName = (city: City) => (city.region ? `${city.name}, ${city.region}` : city.name);
 export const allVenues = allCities.flatMap((c) => c.venues);
+export const venuePages = allVenues.filter((v) => v.hasPage);
+export const cityPages = allCities.filter((c) => c.hasPage);
 
 export function noindexPaths(): Set<string> {
   // 只有一个城市的国家（新加坡）：国家页和城市页内容重复，只收录城市页
   const single = countries.filter((c) => c.cities.length === 1);
-  return new Set([...single, ...allCities.filter((c) => !c.indexable), ...allVenues.filter((v) => !v.indexable)].map((p) => p.path));
+  return new Set([...single, ...cityPages.filter((c) => !c.indexable), ...venuePages.filter((v) => !v.indexable)].map((p) => p.path));
 }
 
-function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
+export function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
   const rad = Math.PI / 180;
   const dLat = (b.lat - a.lat) * rad;
   const dLon = (b.lon - a.lon) * rad;
@@ -213,16 +237,40 @@ export function formatAddress(venue: CatalogEntry): string {
   return [street, area].filter(Boolean).join(', ');
 }
 
-const continents: Record<string, string> = { us: 'North America', gb: 'Europe', hk: 'Asia', jp: 'Asia', my: 'Asia', sg: 'Asia', tw: 'Asia' };
+// 时区在 Atlantic/、Indian/ 下的地方
+const ISLANDS: Record<string, string> = {
+  is: '150', fo: '150', pt: '150', es: '150', mv: '142', io: '142', re: '002', mu: '002', sc: '002', km: '002',
+  yt: '002', cv: '002', mg: '002', bm: '003', fk: '005', gs: '005', sh: '002',
+};
+const SOUTH_AMERICA = new Set(['ar', 'bo', 'br', 'cl', 'co', 'ec', 'gy', 'pe', 'py', 'sr', 'uy', 've']);
 
-export function byContinent(): { continent: string; countries: Country[] }[] {
-  const groups = new Map<string, Country[]>();
-  for (const country of countries) {
-    const continent = continents[country.code] ?? 'Other';
-    groups.set(continent, [...(groups.get(continent) ?? []), country]);
-  }
-  return [...groups].map(([continent, list]) => ({ continent, countries: list }));
+/** 按这个国家球馆的时区归到大洲（Europe/London → 欧洲）。code 是联合国 M.49 编码，页面上用 data-region 翻成各种语言 */
+function continentOf(country: Country): { code: string; name: string } {
+  const zone = country.cities[0]?.venues[0]?.tz?.split('/')[0] ?? '';
+  const code =
+    ISLANDS[country.code] ??
+    (zone === 'America' ? (SOUTH_AMERICA.has(country.code) ? '005' : '003')
+    : zone === 'Australia' || zone === 'Pacific' ? '009'
+    : ({ Europe: '150', Asia: '142', Africa: '002' } as Record<string, string>)[zone] ?? '001');
+  return { code, name: new Intl.DisplayNames(['en'], { type: 'region' }).of(code) ?? 'World' };
 }
+
+/** 各大洲（球馆多的在前），每个大洲里的国家按球馆数排 */
+export function byContinent(list: Country[] = countries): { code: string; continent: string; count: number; countries: Country[] }[] {
+  const groups = new Map<string, { code: string; continent: string; count: number; countries: Country[] }>();
+  for (const country of list) {
+    const { code, name } = continentOf(country);
+    const group = groups.get(code) ?? { code, continent: name, count: 0, countries: [] };
+    group.countries.push(country);
+    group.count += country.venueCount;
+    groups.set(code, group);
+  }
+  for (const group of groups.values()) group.countries.sort((a, b) => b.venueCount - a.venueCount);
+  return [...groups.values()].sort((a, b) => b.count - a.count);
+}
+
+/** 国旗：两个“区域指示符”字母拼成的 emoji（不支持的系统上显示成两个字母，也看得懂） */
+export const flag = (code: string) => String.fromCodePoint(...[...code.toUpperCase()].map((letter) => 0x1f1a5 + letter.charCodeAt(0)));
 
 function centroid(city: City) {
   const n = city.venues.length;

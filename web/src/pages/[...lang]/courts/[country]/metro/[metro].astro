@@ -1,0 +1,180 @@
+---
+// 都会区的价格页（/courts/us/metro/los-angeles/）：一个都会区里打羽毛球的地方，按散客价从低到高列出来。见 src/lib/metros.ts
+import Base from '../../../../../layouts/Base.astro';
+import Breadcrumbs from '../../../../../components/Breadcrumbs.astro';
+import { PinsMap } from '../../../../../app/PinsMap';
+import { countries, formatPrice, type Venue } from '../../../../../lib/venues';
+import { metros, metroSummary, type Metro } from '../../../../../lib/metros';
+import { fitTitle, languages, localPath, pageLocale, regionName, translator } from '../../../../../lib/static-i18n';
+
+export function getStaticPaths() {
+  return languages.flatMap((lang) => metros.map((metro) => ({ params: { lang, country: 'us', metro: metro.slug }, props: { metro } })));
+}
+
+const { metro } = Astro.props as { metro: Metro };
+const country = countries.find((c) => c.code === 'us')!;
+const t = translator(Astro.url.pathname);
+const locale = pageLocale(Astro.url.pathname);
+const placeIn = (m: Metro) => (locale === 'zh-Hans' ? m.zh : m.name);
+const place = placeIn(metro);
+const summary = metroSummary(metro);
+const price = (amount: number) => formatPrice(amount, 'US');
+const checked = summary.checked && new Date(`${summary.checked}T12:00:00Z`).toLocaleDateString(locale === 'en' ? 'en-US' : locale, { month: 'long', year: 'numeric' });
+
+const facts = [
+  checked
+    ? t('{n} places to play badminton around {place}, checked by the Badie team in {date}.', { n: metro.venues.length, place, date: checked })
+    : t('{n} places to play badminton around {place}.', { n: metro.venues.length, place }),
+  summary.dropIn &&
+    (summary.dropIn.high === 0
+      ? t('Drop-in is free.')
+      : summary.dropIn.low === summary.dropIn.high
+        ? t('Drop-in is {price} per person.', { price: price(summary.dropIn.low) })
+        : summary.dropIn.low === 0
+          ? t('Drop-in runs from free to {high} per person.', { high: price(summary.dropIn.high) })
+          : t('Drop-in runs from {low} to {high} per person.', { low: price(summary.dropIn.low), high: price(summary.dropIn.high) })),
+  summary.rental &&
+    summary.rental.low !== summary.rental.high &&
+    t('Renting a court costs {low} to {high} an hour.', { low: price(summary.rental.low), high: price(summary.rental.high) }),
+].filter((fact): fact is string => Boolean(fact));
+
+const groups = [
+  { title: 'Badminton clubs', venues: metro.clubs },
+  { title: 'Community centers and school gyms', venues: metro.community },
+].filter((group) => group.venues.length > 0);
+const others = metros.filter((other) => other !== metro);
+const pins = metro.venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }));
+const attributions = [...new Set(metro.venues.map((v) => v.attribution).filter(Boolean))];
+const amount = (value: number | undefined) => (value === undefined ? undefined : formatPrice(value, 'US'));
+
+const site = Astro.site ?? new URL('http://localhost');
+const link = (path: string) => new URL(localPath(Astro.url.pathname, path), site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'ItemList',
+      name: t('Badminton in {place}', { place }),
+      numberOfItems: metro.venues.length,
+      itemListElement: metro.venues.map((venue: Venue, index) => ({ '@type': 'ListItem', position: index + 1, name: venue.name, url: link(venue.path) })),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { name: t('Courts'), path: '/courts/' },
+        { name: regionName(country.code, locale, country.name), path: country.path },
+        { name: place, path: metro.path },
+      ].map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: link(item.path) })),
+    },
+  ],
+};
+---
+
+<Base
+  title={fitTitle(
+    t('Badminton in {place}: drop-in prices and courts — Badie', { place }),
+    t('Badminton in {place}: drop-in prices and courts', { place }),
+    t('Badminton in {place}: drop-in prices', { place }),
+  )}
+  description={facts.join(' ')}
+  jsonLd={jsonLd}
+>
+  <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }, { label: country.name, href: country.path, region: country.code }]} />
+
+  <header class="max-w-3xl">
+    <p class="text-subhead font-bold text-ink-secondary" data-region={country.code}>{country.name}</p>
+    <h1 class="text-display lg:text-[2.75rem]" data-t="Badminton in {place}" data-place={place}>Badminton in {place}</h1>
+    <p class="mt-3 text-subhead text-ink-secondary">{facts.join(' ')}</p>
+  </header>
+
+  <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_26rem]">
+    <div class="grid min-w-0 content-start gap-10">
+      {
+        groups.map((group) => (
+          <section>
+            <h2 class="text-title3" data-t={group.title}>{group.title}</h2>
+            <div class="sticker mt-4 overflow-hidden">
+              <table class="w-full table-fixed text-left">
+                <thead>
+                  <tr class="border-b-2 border-stroke/15 align-bottom text-caption text-ink-secondary">
+                    <th scope="col" class="px-4 py-2.5 font-bold" data-t="Courts">Courts</th>
+                    <th scope="col" class="w-16 px-1 py-2.5 text-right font-bold sm:w-28" data-t="drop-in per person">drop-in per person</th>
+                    <th scope="col" class="w-[4.75rem] py-2.5 pr-4 pl-1 text-right font-bold sm:w-32" data-t="court rental per hour">court rental per hour</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.venues.map((venue, index) => (
+                    <>
+                      <tr class:list={['align-top', index > 0 && 'border-t-2 border-stroke/10']}>
+                        <th scope="row" class:list={['px-4 pt-3 font-normal wrap-break-word', !venue.playTimes && 'pb-3']}>
+                          <a href={venue.path} class="font-bold leading-snug underline-offset-4 hover:underline">{venue.name}</a>
+                          <p class="text-footnote text-ink-secondary">
+                            {venue.city}
+                            {venue.courts && (
+                              <>
+                                {' · '}
+                                <span data-t="{n} court|{n} courts" data-n={venue.courts}>{venue.courts} {venue.courts === 1 ? 'court' : 'courts'}</span>
+                              </>
+                            )}
+                          </p>
+                        </th>
+                        <td class="px-1 pt-3 text-right text-headline tabular-nums" data-t={venue.price?.perPerson === 0 ? 'Free' : undefined}>
+                          {amount(venue.price?.perPerson) ?? <span class="text-ink-tertiary">—</span>}
+                        </td>
+                        <td class="pt-3 pr-4 pl-1 text-right text-headline tabular-nums">
+                          {amount(venue.price?.perCourtHour) ?? <span class="text-ink-tertiary">—</span>}
+                        </td>
+                      </tr>
+                      {/* 开放时段单独一行、占满整行：手机上名字那一栏很窄，挤在里面要折很多行 */}
+                      {venue.playTimes && (
+                        <tr>
+                          <td colspan="3" class="px-4 pt-1 pb-3 text-footnote text-ink-secondary">{venue.playTimes}</td>
+                        </tr>
+                      )}
+                    </>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ))
+      }
+      <p class="-mt-6 text-footnote text-ink-secondary" data-t="Prices and hours change. Check the official website before you go.">
+        Prices and hours change. Check the official website before you go.
+      </p>
+    </div>
+
+    <aside>
+      <div class="grid gap-3 lg:sticky lg:top-24">
+        <div class="sticker h-64 overflow-hidden lg:h-80">
+          <PinsMap client:visible pins={pins} label={t('Map of courts in {place}', { place })} />
+        </div>
+        <a href="/play/" class="sticker lift block bg-lime p-5 text-on-accent">
+          <p class="text-headline" data-t="Looking for people to play with here?">Looking for people to play with here?</p>
+          <p class="mt-1 text-footnote" data-t="Badie matches players at the same level who are free at the same time.">Badie matches players at the same level who are free at the same time.</p>
+          <p class="button button-sm button-inverse mt-3 inline-flex" data-t="Quick Match">Quick Match</p>
+        </a>
+      </div>
+    </aside>
+  </div>
+
+  {
+    others.length > 0 && (
+      <section class="mt-14">
+        <h2 class="text-title3" data-t="Other metro areas">Other metro areas</h2>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {others.map((other) => (
+            <li>
+              <a href={other.path} class="sticker lift inline-flex items-center gap-2 rounded-full! px-4 py-2 font-bold">
+                {placeIn(other)}
+                <span class="text-ink-tertiary">{other.venues.length}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <Fragment slot="attribution">{attributions.length > 0 && <p>{attributions.join(' · ')}</p>}</Fragment>
+</Base>

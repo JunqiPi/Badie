@@ -3,7 +3,7 @@ import Base from '../../../layouts/Base.astro';
 import CountryCard from '../../../components/CountryCard.astro';
 import CourtSearch from '../../../components/CourtSearch.astro';
 import { Courts } from '../../../app/Courts';
-import { allVenues, byContinent, countries } from '../../../lib/venues';
+import { allVenues, byContinent, countries, flag } from '../../../lib/venues';
 import { languages, translator } from '../../../lib/static-i18n';
 
 export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } }));
@@ -11,6 +11,9 @@ export const getStaticPaths = () => languages.map((lang) => ({ params: { lang } 
 const t = translator(Astro.url.pathname);
 
 const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
+// 球馆最多的几个国家用大卡片，其余按大洲列出
+const featured = countries.slice(0, 8);
+const rest = byContinent(countries.slice(featured.length));
 ---
 
 <Base
@@ -32,11 +35,29 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
   <section class="mt-12 grid gap-6" aria-labelledby="countries">
     <h2 id="countries" class="text-title2" data-t="Browse by country">Browse by country</h2>
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {
-        byContinent().flatMap((group) => group.countries).map((country) => (
-          <CountryCard country={country} tint={tints[countries.indexOf(country) % tints.length]} />
-        ))
-      }
+      {featured.map((country, index) => <CountryCard country={country} tint={tints[index % tints.length]} />)}
     </div>
+    {
+      rest.length > 0 && (
+        <div class="mt-6 columns-1 gap-5 sm:columns-2 lg:columns-3">
+          {rest.map((group) => (
+            <section class="sticker mb-5 break-inside-avoid p-5">
+              <h3 class="text-headline" data-region={group.code}>{group.continent}</h3>
+              <ul class="mt-3 grid gap-0.5">
+                {group.countries.map((country) => (
+                  <li>
+                    <a href={country.path} class="-mx-2 flex items-center gap-2.5 rounded-[10px] px-2 py-1.5 font-bold transition-colors hover:bg-surface">
+                      <span aria-hidden="true" class="text-[1.25rem] leading-none">{flag(country.code)}</span>
+                      <span class="min-w-0 flex-1 truncate" data-region={country.code}>{country.name}</span>
+                      <span class="shrink-0 text-footnote text-ink-tertiary tabular-nums">{country.venueCount.toLocaleString('en')}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )
+    }
   </section>
 </Base>

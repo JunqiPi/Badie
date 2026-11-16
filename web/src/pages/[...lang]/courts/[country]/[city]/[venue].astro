@@ -5,13 +5,14 @@ import { PinsMap } from '../../../../../app/PinsMap';
 import { Icon } from '../../../../../app/icons';
 import VenueRow from '../../../../../components/VenueRow.astro';
 import { cityName, countries, englishName, facilityLabel, formatAddress, formatPrice, nearby, type City, type Country, type Venue } from '../../../../../lib/venues';
+import { metroOf } from '../../../../../lib/metros';
 import { fitTitle, languages, localPath, pageLocale, regionName, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
   return languages.flatMap((lang) =>
     countries.flatMap((country) =>
       country.cities.flatMap((city) =>
-        city.venues.map((venue) => ({
+        city.venues.filter((venue) => venue.hasPage).map((venue) => ({
           params: { lang, country: country.code, city: city.slug, venue: venue.slug },
           props: { country, city, venue },
         })),
@@ -25,6 +26,9 @@ const alias = englishName(venue);
 const address = formatAddress(venue);
 const place = cityName(city);
 const others = nearby(venue);
+// 所在都会区的价格页（现在只有美国有）
+const metro = metroOf(venue);
+const metroName = metro && (pageLocale(Astro.url.pathname) === 'zh-Hans' ? metro.zh : metro.name);
 
 // 数字格：手机上一行放不下三格时自动换行（“Percuma”“HK$27” 在 60px 宽的格子里放不下）
 const facts = [
@@ -136,6 +140,11 @@ const jsonLd = {
           </div>
         )
       }
+      {metro && (
+        <p class="mt-5">
+          <a href={metro.path} class="link" data-t="Drop-in prices around {place}" data-place={metroName}>Drop-in prices around {metroName}</a>
+        </p>
+      )}
     </header>
 
     <aside class="lg:col-start-2 lg:row-span-2 lg:row-start-1">
