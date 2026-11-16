@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只走 HTTPS（和系统的默认一样）。调试包在 src/debug 里另有一份，多放行本机的 Supabase -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

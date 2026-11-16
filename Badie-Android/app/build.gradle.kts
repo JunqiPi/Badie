@@ -17,10 +17,20 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0.5"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        // 端到端测试（src/androidTest，在模拟器上跑）连电脑上的本机 Supabase：
+        // ./gradlew -Pbadie.supabaseUrl=http://10.0.2.2:54321 -Pbadie.supabaseKey=<本机的 publishable key>。
+        // 不传就是空的，连正式后端；正式包不能换
+        debug {
+            buildConfigField("String", "SUPABASE_URL_OVERRIDE", "\"${providers.gradleProperty("badie.supabaseUrl").getOrElse("")}\"")
+            buildConfigField("String", "SUPABASE_KEY_OVERRIDE", "\"${providers.gradleProperty("badie.supabaseKey").getOrElse("")}\"")
+        }
         release {
+            buildConfigField("String", "SUPABASE_URL_OVERRIDE", "\"\"")
+            buildConfigField("String", "SUPABASE_KEY_OVERRIDE", "\"\"")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -88,6 +98,14 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.roborazzi)
     testImplementation(libs.roborazzi.compose)
+
+    // 端到端测试：在模拟器上点真的界面，连本机的 Supabase（见 STATUS.md 的“安卓版”和 .github/workflows/android-e2e.yml）
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.uiautomator)
 }
 
 // MARK: - 界面文字

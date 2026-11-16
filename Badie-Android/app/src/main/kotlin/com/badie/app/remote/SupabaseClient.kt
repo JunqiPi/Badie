@@ -1,5 +1,6 @@
 package com.badie.app.remote
 
+import com.badie.app.BuildConfig
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.KSerializer
@@ -16,10 +17,23 @@ import java.io.IOException
  * secret key 绝不放进 App
  */
 object SupabaseConfig {
-    const val URL = "https://yeffnjdpjejlplqryjfx.supabase.co"
-    const val PUBLISHABLE_KEY = "sb_publishable_oTHxEWYt2Gg8omKs98IHoQ_jNM0Blig"
-    /** 网站上的人机验证页（见 web/src/pages/captcha.astro） */
-    const val CAPTCHA_PAGE = "https://badie.rsvp/captcha/"
+    /** 调试包可以在构建时换成本机的 Supabase（端到端测试用，见 app/build.gradle.kts）；正式包永远连正式后端 */
+    private val isLocal = BuildConfig.SUPABASE_URL_OVERRIDE.isNotEmpty()
+
+    val URL = BuildConfig.SUPABASE_URL_OVERRIDE.ifEmpty { "https://yeffnjdpjejlplqryjfx.supabase.co" }
+    val PUBLISHABLE_KEY = BuildConfig.SUPABASE_KEY_OVERRIDE.ifEmpty { "sb_publishable_oTHxEWYt2Gg8omKs98IHoQ_jNM0Blig" }
+
+    /**
+     * 网站上的人机验证页（见 web/src/pages/captcha.astro）。本机的 Supabase 不查人机验证：
+     * 换成一个直接回“不用验证”的页面，和网站没配 site key 时一样
+     */
+    val CAPTCHA_PAGE = if (isLocal) {
+        "data:text/html;charset=utf-8," + java.net.URLEncoder.encode(
+            "<script>BadieCaptcha.postMessage(JSON.stringify({token: ''}))</script>", "UTF-8",
+        ).replace("+", "%20")
+    } else {
+        "https://badie.rsvp/captcha/"
+    }
 }
 
 class HttpRequest(val url: String, val method: String, val headers: Map<String, String>, val body: ByteArray?, val timeoutMillis: Long = 20_000)
