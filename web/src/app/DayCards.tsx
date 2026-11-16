@@ -115,8 +115,8 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     saveFilter(next);
   };
 
-  // 换天、换范围时重新拉；选了某一天时每 30 秒拉一次这天的请求：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉。
-  // 连着换天时，上一天晚到的结果不要（stale）
+  // 换天、换范围时重新拉；之后每 30 秒（附近的人每分钟）、回到这个页面时再拉：新出现的人接在后面，不打乱正在看的那张；
+  // 已经走了的人拿掉。连着换天时，上一天晚到的结果不要（stale）
   useEffect(() => {
     if (!area) return;
     let stale = false;
@@ -124,12 +124,37 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     setNearby(undefined);
     setNearbySeen(0);
     seen.current.clear();
-    supabase!
-      .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
-      .then(({ data, error }) => !stale && setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
-    if (!date) return () => {
-      stale = true;
+    const loadNearby = () =>
+      supabase!
+        .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
+        .then(({ data, error }) => {
+          if (stale) return;
+          if (error) return setNearby((list) => list ?? []);
+          const fresh = (data ?? []) as NearbyPlayer[];
+          setNearby((current) => {
+            if (!current) return fresh;
+            const ids = new Set(fresh.map((c) => c.user.id));
+            const kept = current.filter((c) => ids.has(c.user.id) || `n:${c.user.id}` === currentTop.current);
+            const known = new Set(kept.map((c) => c.user.id));
+            return [...kept, ...fresh.filter((c) => !known.has(c.user.id) && !seen.current.has(`n:${c.user.id}`))];
+          });
+        });
+    void loadNearby();
+    const visible = () => document.visibilityState === 'visible';
+    const nearbyTimer = setInterval(() => visible() && void loadNearby(), 60_000);
+    let loadDay: (() => void) | undefined;
+    const back = () => {
+      if (!visible()) return;
+      void loadNearby();
+      loadDay?.();
     };
+    document.addEventListener('visibilitychange', back);
+    const stop = () => {
+      stale = true;
+      clearInterval(nearbyTimer);
+      document.removeEventListener('visibilitychange', back);
+    };
+    if (!date) return stop;
     const { from, to } = bounds(date);
     let first = true;
     const load = () =>
@@ -154,10 +179,11 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
             return [...kept, ...fresh.filter((c) => !known.has(c.ticket) && !seen.current.has(c.ticket))];
           });
         });
+    loadDay = () => void load();
     void load();
-    const timer = setInterval(() => document.visibilityState === 'visible' && void load(), 30_000);
+    const timer = setInterval(() => visible() && void load(), 30_000);
     return () => {
-      stale = true;
+      stop();
       clearInterval(timer);
     };
   }, [date, area?.lat, area?.lon, km]);
