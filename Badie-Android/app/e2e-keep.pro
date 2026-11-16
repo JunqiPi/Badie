@@ -22,4 +22,5 @@
 -keep class androidx.tracing.** { *; }
 -keep class androidx.annotation.** { *; }
 -keep class androidx.concurrent.** { *; }
+-keep class javax.inject.** { *; }
 -keep class com.google.common.util.concurrent.ListenableFuture { *; }

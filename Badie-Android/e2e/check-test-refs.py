@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 # 压缩包的端到端测试（-Pbadie.minify=true）构建完先查一遍：测试 APK 调到的 App 里的类和方法，压缩后的 App 里都还在。
 # 测试 APK 不带 App 已有的库，R8 删掉了测试要用的方法，测试一跑就是 NoSuchMethodError；这里在装到模拟器前就能看出来，
-# 缺的要加到 app/e2e-keep.pro。用法：python3 e2e/check-test-refs.py <dexdump> <app.apk> <test.apk>
+# 缺的要加到 app/e2e-keep.pro。用法：python3 e2e/check-test-refs.py <dexdump> <android.jar> <app.apk> <test.apk>
 import re, subprocess, sys, zipfile, tempfile, os, collections
-dexdump, app_apk, test_apk = sys.argv[1:4]
-FRAMEWORK = ("Landroid/", "Ljava/", "Ljavax/", "Ldalvik/", "Lorg/json/", "Lorg/w3c/", "Lorg/xml/", "Lsun/", "Lcom/android/internal/", "Lorg/apache/http/", "Lorg/xmlpull/",
-             # JUnit / Hamcrest 里可选的引用，用不到
-             "Lorg/easymock/", "Lorg/jmock/")
+dexdump, android_jar, app_apk, test_apk = sys.argv[1:5]
+# 系统自带的类（按 android.jar 的清单）。OPTIONAL：JUnit、Hamcrest 等里可选的引用，用不到
+with zipfile.ZipFile(android_jar) as z:
+    FRAMEWORK_CLASSES = {"L" + n[:-6] + ";" for n in z.namelist() if n.endswith(".class")}
+OPTIONAL = ("Lorg/easymock/", "Lorg/jmock/", "Ljava/beans/", "Ljavax/lang/model/",
+            # 手机上有、android.jar 里没有的：测试库（android.test）和 Unsafe
+            "Landroid/test/", "Lsun/misc/")
 
 def dumps(apk, disasm):
     d = tempfile.mkdtemp()
@@ -57,7 +60,7 @@ def has(cls, member, seen=None):
     seen = seen or set()
     if cls in seen: return False
     seen.add(cls)
-    if cls.startswith(FRAMEWORK): return True
+    if cls in FRAMEWORK_CLASSES: return True
     info = app.get(cls) or test.get(cls)
     if info is None: return False
     if member is None or member in info["members"]: return True
@@ -65,7 +68,7 @@ def has(cls, member, seen=None):
     if name in ("<init>", "<clinit>"): return False
     return any(has(p, member, seen) for p in [info["super"]] + info["ifaces"] if p)
 
-missing = sorted({(c, m) for (c, m) in refs if c not in test and not c.startswith(FRAMEWORK) and not has(c, m)})
+missing = sorted({(c, m) for (c, m) in refs if c not in test and not c.startswith(OPTIONAL) and not has(c, m)}, key=lambda r: (r[0], r[1] or ""))
 for c, m in missing:
     print("App 里没有：" + (c if m is None else f"{c}.{m}"))
 if missing:

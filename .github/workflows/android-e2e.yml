@@ -103,7 +103,7 @@ jobs:
           # 压缩包：测试 APK 调到的类和方法在压缩后的 App 里都要在，不然装上去每个测试都是 NoSuchMethodError
           if [ "$BUILD" = minified ]; then
             dexdump=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/dexdump
-            python3 -I e2e/check-test-refs.py "$dexdump" app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            python3 -I e2e/check-test-refs.py "$dexdump" "$(ls -d "$ANDROID_HOME"/platforms/android-* | sort -V | tail -1)/android.jar" app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
           fi
 
       # Google APIs 的系统镜像带 Google Play 服务，FCM 才能用
