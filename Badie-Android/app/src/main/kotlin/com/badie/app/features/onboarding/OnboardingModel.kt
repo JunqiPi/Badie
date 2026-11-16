@@ -337,7 +337,7 @@ class OnboardingModel(
                 return@working
             }
             // 资料建好就算注册成功；下面几项没存上不拦着进 App，以后在设置里能改。
-            // 注册后默认在附近的人里显示（就是设置里的“在同馆常客里显示我”，之后可以在设置里关）
+            // 注册后默认在附近的人里显示（就是设置里的“在发现里显示我”，之后可以在设置里关）
             try {
                 if (backend.currentUser?.privacy?.showsAsRegular == false) backend.updateShowsAsRegular(true)
                 backend.saveFavoriteVenues(favoriteVenueIds.toList())

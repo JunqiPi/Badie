@@ -22,7 +22,7 @@ import com.badie.app.remote.json
 import kotlinx.serialization.Serializable
 
 // 附近的人和邀请局，对应 iPhone 的 MockBackend+Nearby.swift（正式后端那一路）。
-// 附近的人：有等级、打开了“在同馆常客里显示我”、常去附近球馆的人（球友也在里面）。
+// 附近的人：有等级、打开了“在发现里显示我”、常去附近球馆的人（球友也在里面）。
 // 右滑是约 TA：选单打或双打、哪天几点和球馆，发一个只邀请 TA 的局。TA 可以说好、换个时间或不了。每 24 小时最多发 10 个
 
 /** 和 TA 之间的好友申请 */

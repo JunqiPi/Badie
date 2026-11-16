@@ -191,7 +191,7 @@ fun FriendStarButton(userId: String, isFriend: Boolean = false, request: FriendR
 // MARK: - 第一次约人前：让附近的人也能看到你 / 加一张照片
 
 enum class InvitePromptKind {
-    /** 没打开“在同馆常客里显示我” */
+    /** 没打开“在发现里显示我” */
     Visibility,
     /** 没有卡片背景照片 */
     Photo,
@@ -251,7 +251,7 @@ object InviteText {
         return when (code) {
             "invite_limit" -> L10n.tr("今天的 10 个用完了，明天再来")
             "already_invited" -> L10n.tr("你们之间已经有一个邀请了")
-            "not_visible" -> L10n.tr("先在设置里打开“在同馆常客里显示我”")
+            "not_visible" -> L10n.tr("先在设置里打开“在发现里显示我”")
             "invalid_window", "invalid_slot" -> L10n.tr("这个时间来不及了")
             "overlapping" -> L10n.tr("这个时间你已经有球局或待确认的约球了。")
             "not_your_turn" -> L10n.tr("在等对方回复")

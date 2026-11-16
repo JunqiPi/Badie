@@ -294,7 +294,7 @@ fun DayCandidatesView(
         }
     }
 
-    /** 右滑、点卡片上的空闲时间：约 TA。没打开“在同馆常客里显示我”先问；没卡片照片提醒一次 */
+    /** 右滑、点卡片上的空闲时间：约 TA。没打开“在发现里显示我”先问；没卡片照片提醒一次 */
     fun invite(player: NearbyPlayer, slot: RecurringTimeSlot?) {
         val me = appState.currentUser ?: return
         if (leaving) return

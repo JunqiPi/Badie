@@ -212,7 +212,7 @@ fun SettingsView() {
                     ToggleRow(tr("在首页显示我"), privacy.showsWhenSearching, { on -> updatePrivacy { it.copy(showsWhenSearching = on) } })
                     InsetDivider()
                     // 打开直接存，关掉先确认（附近的人就约不了你了）
-                    ToggleRow(tr("在同馆常客里显示我"), privacy.showsAsRegular, { on ->
+                    ToggleRow(tr("在发现里显示我"), privacy.showsAsRegular, { on ->
                         if (on) updatePrivacy { it.copy(showsAsRegular = true) } else confirmHideRegular = true
                     })
                     InsetDivider()
@@ -379,7 +379,7 @@ private fun ChallengePolicyRow(policy: ChallengePolicy, onSelect: (ChallengePoli
 private fun visibilityRules(): List<String> = buildList {
     add(L10n.tr("找球友时，附近的人在首页能看到你的昵称、头像、等级和想打的时间、球馆，看不到联系方式"))
     add(L10n.tr("同馆常客只显示昵称、等级和球馆，不显示时间和位置"))
-    add(L10n.tr("打开“在同馆常客里显示我”，也会出现在附近的人里：别人能看到你的昵称、等级、常去的球馆和常用时间，可以约你"))
+    add(L10n.tr("打开“在发现里显示我”，别人在发现里能看到你的昵称、等级、常去的球馆和常用时间，可以约你"))
     add(L10n.tr("消息请求来自同球群的人；关闭后只有球友能私信你，球局群聊不受影响"))
     add(L10n.tr("按昵称找到你的人能看到你的昵称和等级，可以发好友申请"))
     for (policy in ChallengePolicy.entries) add(L10n.tr("挑战 · %@：%@", policy.title, policy.detail))
