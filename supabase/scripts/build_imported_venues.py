@@ -8,7 +8,9 @@
 
 坐标先按名字到 OpenStreetMap 里批量找（QLever，一次 500 个名字）：同名的地方所在的市 / 区 / 省、邮编或 addr:city
 出现在表里的地址中，就用它的位置。找不到的再用 Nominatim（OpenStreetMap 的地址搜索，每秒最多 1 次）按地址查，每条最多 3 次；
-只查到城市 / 邮编一级的，标成位置大概（approx，状态“待确认”）。查过的结果存在 --cache 目录，重跑不重复查。
+门牌号查不到但街道查得到、而且那一段不长（1.2 公里内）的，用街道的位置。
+--overture：只查到城市或街道的，再到 Overture Maps（开放地图数据）里按名字找，找到就用场馆本身的位置（overture_places.py）。
+都只查到城市 / 邮编一级的，标成位置大概（approx，状态“待确认”）。查过的结果存在 --cache 目录，重跑不重复查。
 不打包进 App；坐标署名 © OpenStreetMap contributors（ODbL）。id 由名字和地址算出，重跑不会换。
 
 用法（在仓库根目录；需要 pip install timezonefinder==6.5.9）:
@@ -197,6 +199,22 @@ def plain_words(text):
     return set(re.findall(r"[^\W_]+", text))
 
 
+def streets(core):
+    """地址里去掉门牌号后的街道名（“493 Mountain Hwy”→“Mountain Hwy”，“Jl. Sudirman No.12”→“Jl. Sudirman”）"""
+    out = []
+    for part in core[:-1]:
+        street = re.sub(r"^\d+[\w/-]*\s+|\s+(?:no\.?|nr\.?|#)\s*\d+\w*.*$|\s+\d+[\w/-]*$", "", part, flags=re.I).strip()
+        if street != part and len(re.findall(r"[^\W\d_]", street)) >= 4 and street not in out:
+            out.append(street)
+    return out
+
+
+def span(hit):
+    """查到的地方有多大（外框对角线，米）"""
+    south, north, west, east = (float(x) for x in hit.get("boundingbox", [0, 90, 0, 180]))
+    return metres((south, west), (north, east))
+
+
 def locality(hit):
     a = hit.get("address", {})
     return next((a[k] for k in ("city", "town", "village", "municipality", "suburb", "county", "state_district", "state")
@@ -218,6 +236,8 @@ def main():
     parser.add_argument("csv", type=Path)
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true", help="只数一数，不查坐标")
+    parser.add_argument("--overture", action="store_true",
+                        help="只查到城市或街道的，再到 Overture Maps 里按名字找（overture_places.py），找到就用它的位置")
     args = parser.parse_args()
     args.cache.mkdir(parents=True, exist_ok=True)
 
@@ -290,10 +310,35 @@ def main():
                     not hit or metres((float(hit["lat"]), float(hit["lon"])),
                                       (float(byname["lat"]), float(byname["lon"]))) < 30_000):
                 hit, exact = byname, True
+        on_street = False
+        if not exact and len(core) > 1:
+            # OSM 里没有这个门牌号，但街道有（“493 Mountain Hwy”）：查这条街，查到的一段不长（外框对角线 1.2 公里内）就算准
+            for street in streets(core)[:1]:
+                h = geo.search(f"{street}, {core[-1]}", country)
+                if h and h["place_rank"] >= EXACT_RANK and plain_words(core[-1]) <= plain_words(h["display_name"]) \
+                        and span(h) < 1200:
+                    hit, exact, on_street = h, True, True
+                    break
         if not hit or (not exact and generic(name)):  # 只知道在哪个城市、名字又只是“羽毛球场”的：找不到是哪一家
             continue
-        found.append({"name": name, "address": address, "hit": hit, "approx": not exact, "core": core,
+        found.append({"name": name, "address": address, "hit": hit, "approx": not exact, "core": core, "on_street": on_street,
                       "point": (float(hit["lat"]), float(hit["lon"]))})
+
+    if args.overture:  # 只查到城市或街道的：到 Overture Maps 里按名字找，找到就用场馆本身的位置
+        import overture_places
+        cache_file = args.cache / f"overture-{overture_places.RELEASE}.json"
+        done = json.loads(cache_file.read_text(encoding="utf-8")) if cache_file.exists() else {}
+        ask = [(f"{c['name']}|{c['address']}", c["name"], c["point"]) for c in found
+               if (c["approx"] or c.get("on_street")) and f"{c['name']}|{c['address']}" not in done]
+        if ask:
+            got = overture_places.find(ask)
+            done.update({k: got.get(k) for k, _, _ in ask})
+            cache_file.write_text(json.dumps(done, ensure_ascii=False), encoding="utf-8")
+        for c in found:
+            o = done.get(f"{c['name']}|{c['address']}") if c["approx"] or c.get("on_street") else None
+            if o:
+                c.update(approx=False, point=(o["lat"], o["lon"]), overture=o)
+        print(f"{sum(1 for c in found if c.get('overture'))} placed by Overture Maps", flush=True)
 
     near_known = grid(known, lambda v: v["point"], cell=0.02)
     in_region = grid(known, lambda v: v["point"], cell=0.3)
@@ -349,6 +394,11 @@ def main():
         }
         if c["approx"]:
             venue["approx"] = True
+        if c.get("overture"):  # 位置来自 Overture Maps；城市、省还是 OpenStreetMap 的
+            o = c["overture"]
+            venue["street"] = o["street"] or venue["street"]
+            venue["postcode"] = o["postcode"] or venue["postcode"]
+            venue["attr"] = f"Coordinates {overture_places.ATTRIBUTION}; address © OpenStreetMap contributors, ODbL 1.0"
         venues.append(venue)
 
     venues.sort(key=lambda v: (v["country"], v["region"], v["city"], v["name"], v["id"]))
