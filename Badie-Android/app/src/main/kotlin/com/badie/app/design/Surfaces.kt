@@ -69,9 +69,10 @@ fun Modifier.sticker(
     radius: Dp = AppTheme.Radius.lg,
     shadow: DpOffset = AppTheme.Elevation.card,
     stroke: Color = AppTheme.colors.stroke,
+    strokeWidth: Dp = AppTheme.Stroke.width,
 ): Modifier {
     val shadowColor = AppTheme.colors.shadow
-    return drawBehind { drawSticker(fill, stroke, shadowColor, radius, shadow) }
+    return drawBehind { drawSticker(fill, stroke, shadowColor, radius, shadow, strokeWidth) }
 }
 
 /** 带内边距的卡片，占满宽度 */

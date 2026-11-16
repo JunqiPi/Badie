@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -188,6 +189,21 @@ class ScreenshotTest {
     fun languagePicker() = shot("language-picker-ko", qualifiers = "ko") { LanguagePicker {} }
 
     @Test
+    fun coverCard() = shot("cover-card") {
+        val user = com.badie.app.models.User.create("u-7", "欣然", selfReportedLevel = 4).copy(tag = 42)
+        Column(Modifier.padding(AppTheme.Spacing.screen).fillMaxWidth()) {
+            com.badie.app.design.CoverCard(user, pill = "3.2 公里 · 常去 LABC", line = "双打 · 靠谱", modifier = Modifier.height(480.dp)) {
+                com.badie.app.design.NoShowPill(1)
+            }
+            Row(Modifier.padding(top = 24.dp), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                com.badie.app.design.RoundActionLabel(Sym.xmark, AppTheme.colors.surface)
+                com.badie.app.design.RoundActionLabel(Sym.heartFill, AppTheme.colors.lime)
+                com.badie.app.design.RoundActionLabel(Sym.starFill, AppTheme.colors.butter)
+            }
+        }
+    }
+
+    @Test
     fun genderPrompt() = shot("gender-prompt") { GenderPromptView() }
 
     /** 设计系统的基础组件摆在一页上 */
@@ -218,6 +234,11 @@ class ScreenshotTest {
                     MenuRow(Sym.person3Fill, "固定局 · 球群", value = "2", badge = 1) {}
                 }
                 NoticeBanner(Sym.exclamationmarkTriangleFill, "开启定位", actionTitle = "设置", action = {})
+                Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+                    com.badie.app.design.LevelBadge(com.badie.app.models.SkillTier(4, com.badie.app.models.SkillTier.Modifier.Plus))
+                    com.badie.app.design.ReliableBadge()
+                    com.badie.app.design.NewPlayerBadge()
+                }
                 EmptyStateView(Sym.figureBadminton, "附近暂时没有人", tint = colors.sky)
             }
         }

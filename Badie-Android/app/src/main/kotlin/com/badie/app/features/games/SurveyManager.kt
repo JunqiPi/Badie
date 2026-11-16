@@ -11,4 +11,7 @@ import com.badie.app.shell.ManagerContext
 class SurveyManager(private val context: ManagerContext) {
     /** 待评价的份数（球局标签的角标） */
     val pendingCount: Int get() = 0
+
+    /** 下拉刷新：重新读一遍（shell/RefreshEverything.kt 统一调） */
+    suspend fun refresh() {}
 }

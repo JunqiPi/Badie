@@ -11,4 +11,7 @@ import com.badie.app.shell.ManagerContext
 class MessageManager(private val context: ManagerContext) {
     /** 没读的消息数（消息标签的角标） */
     val unreadCount: Int get() = 0
+
+    /** 下拉刷新：重新读一遍（shell/RefreshEverything.kt 统一调） */
+    suspend fun refresh() {}
 }

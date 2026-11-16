@@ -13,4 +13,7 @@ import com.badie.app.shell.ManagerContext
 class MatchManager(private val context: ManagerContext) {
     /** 匹配流程的全屏页开着（任何页面跳转都会把它关掉） */
     var isFlowPresented by androidx.compose.runtime.mutableStateOf(false)
+
+    /** 下拉刷新：重新读一遍（shell/RefreshEverything.kt 统一调） */
+    suspend fun refresh() {}
 }

@@ -17,7 +17,10 @@ class BadieApplication : Application() {
     /** 整个 App 一份，Activity 重建（转屏、换语言）时不丢 */
     val environment: AppEnvironment by lazy {
         val remote = SupabaseClient(KeystoreSessionStorage.create(this), OkHttpTransport.transport)
-        val backend = Backend(remote, cacheStore(), deviceCountry = { Locale.getDefault().country }, serverLocale = { AppLanguage.current })
+        val photos = com.badie.app.backend.PhotoStore(remote, MainScope(), File(cacheDir, "photos"))
+        val backend = Backend(
+            remote, cacheStore(), deviceCountry = { Locale.getDefault().country }, serverLocale = { AppLanguage.current }, photos = photos,
+        )
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
         AppEnvironment(MainScope(), backend, settings.getString("appearance", null), { settings.edit().putString("appearance", it).apply() }, this)
             .also { it.appState.start() }

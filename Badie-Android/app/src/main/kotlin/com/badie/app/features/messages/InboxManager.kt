@@ -8,4 +8,7 @@ import com.badie.app.shell.ManagerContext
  * 对应 iPhone 的 Managers/SocialManagers.swift 的 InboxManager。在 shell/AppState.kt 的 AppEnvironment 里已经建好，构造参数不要改
  */
 @Stable
-class InboxManager(private val context: ManagerContext)
+class InboxManager(private val context: ManagerContext) {
+    /** 下拉刷新：重新读一遍（shell/RefreshEverything.kt 统一调） */
+    suspend fun refresh() {}
+}

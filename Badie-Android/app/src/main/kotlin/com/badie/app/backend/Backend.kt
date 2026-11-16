@@ -65,7 +65,15 @@ class Backend(
     private val deviceCountry: () -> String,
     /** 通知和邮件用 App 当前的界面语言 */
     private val serverLocale: () -> String,
+    /** 照片头像（别人的、自己的） */
+    val photos: PhotoStore = PhotoStore(remote, kotlinx.coroutines.MainScope(), cacheDir = null),
 ) {
+    /** 自己现在的头像、卡片背景的地址（换照片时删旧的用） */
+    var avatarPath: String? = null
+        private set
+    var cardPhotoPath: String? = null
+        private set
+
     private var state: CachedState = loadCache()
         set(value) {
             field = value
@@ -152,6 +160,9 @@ class Backend(
     /** 只清本机的登录状态（服务器那边已经失效，或者从没登录过） */
     fun signOutLocally() {
         isAdmin = false
+        avatarPath = null
+        cardPhotoPath = null
+        photos.clear()
         if (state.user != null) state = CachedState()
     }
 
@@ -176,6 +187,10 @@ class Backend(
         }
         val user = user(profile, email = session.email)
         state = CachedState(user, favorites)
+        avatarPath = profile.avatarPath
+        cardPhotoPath = profile.cardPhotoPath
+        photos.apply(profile.id, profile.avatarPath)
+        photos.applyCard(profile.id, profile.cardPhotoPath)
         if (profile.locale != serverLocale()) {
             try {
                 remote.update("profiles", "id=eq.${profile.id}", json("locale" to serverLocale()))
@@ -218,7 +233,11 @@ class Backend(
             ),
             gender = Gender.ofServer(profile.gender),
             preferredMode = profile.preferredMode?.let(GameMode::ofServer) ?: known.preferredMode,
-            avatar = known.avatar.copy(cardColor = CardColor.of(profile.cardColor)),
+            avatar = known.avatar.copy(
+                cardColor = CardColor.of(profile.cardColor),
+                photoVersion = profile.avatarPath?.let(PhotoStore::version),
+                cardPhotoVersion = profile.cardPhotoPath?.let(PhotoStore::version),
+            ),
         ).let { user ->
             if (kind != null && profile.verifiedRating != null) {
                 user.applyingVerification(kind, SkillTier.ofRating(profile.verifiedRating))
@@ -297,6 +316,40 @@ class Backend(
             remote.insert("favorite_venues", json("user_id" to userId, "venue_id" to id))
             state = state.copy(favoriteVenueIds = state.favoriteVenueIds + id)
         }
+    }
+
+    // MARK: 照片
+
+    /** 上传自己的头像（320×320 的 JPEG）：先传新的、换上，再删旧的 */
+    suspend fun uploadAvatar(jpeg: ByteArray) {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        val path = photos.upload(me.id, jpeg, "set_avatar", old = avatarPath, other = cardPhotoPath)
+        avatarPath = path
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(photoVersion = PhotoStore.version(path))))
+    }
+
+    /** 上传卡片背景（600×800 的 JPEG） */
+    suspend fun uploadCardPhoto(jpeg: ByteArray) {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        val path = photos.upload(me.id, jpeg, "set_card_photo", old = cardPhotoPath, other = avatarPath)
+        cardPhotoPath = path
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(cardPhotoVersion = PhotoStore.version(path))))
+    }
+
+    /** 改回文字头像 */
+    suspend fun removeAvatar() {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        photos.remove(me.id, "set_avatar", avatarPath)
+        avatarPath = null
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(photoVersion = null)))
+    }
+
+    /** 卡片不用照片了（改用颜色） */
+    suspend fun removeCardPhoto() {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        photos.remove(me.id, "set_card_photo", cardPhotoPath)
+        cardPhotoPath = null
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(cardPhotoVersion = null)))
     }
 
     /** 以前注册、还没选性别的人补选 */

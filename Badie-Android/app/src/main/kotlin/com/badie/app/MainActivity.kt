@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import com.badie.app.design.Appearance
 import com.badie.app.design.BadieTheme
+import com.badie.app.design.LocalPhotos
 import com.badie.app.l10n.L10n
 import com.badie.app.shell.LocalEnv
 import com.badie.app.shell.RootView
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
                 val style = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
             }
-            CompositionLocalProvider(LocalEnv provides environment) {
+            CompositionLocalProvider(LocalEnv provides environment, LocalPhotos provides environment.appState.backend.photos) {
                 BadieTheme(appearance) { RootView() }
             }
         }

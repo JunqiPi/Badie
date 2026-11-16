@@ -11,4 +11,7 @@ import com.badie.app.shell.ManagerContext
 class FriendManager(private val context: ManagerContext) {
     /** 收到、还没处理的好友申请（消息标签的角标） */
     val incomingRequestCount: Int get() = 0
+
+    /** 下拉刷新：重新读一遍（shell/RefreshEverything.kt 统一调） */
+    suspend fun refresh() {}
 }
