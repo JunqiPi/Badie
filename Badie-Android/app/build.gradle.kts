@@ -7,6 +7,20 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// MARK: - 版本号和签名（见 docs/RELEASE.md）
+// versionCode：Play 要求每次上传都比上一次大。由发版工作流（.github/workflows/android-release.yml）传进来，
+// 用的是那个工作流的运行序号（每跑一次加 1，不会重复），本机构建是 1。
+// versionName：给人看的版本，和 iPhone 对齐，发版前在下面改。
+val releaseVersionCode = providers.environmentVariable("BADIE_VERSION_CODE").map(String::toInt).orElse(1)
+
+// 上传密钥（upload key）：只从环境变量读，不进仓库。四个都有才签名，否则正式包不签名（本机检查构建用）。
+// CI 里由 GitHub Secrets 解出来，见 android-release.yml
+val uploadKeystore = providers.environmentVariable("BADIE_UPLOAD_KEYSTORE")
+val uploadStorePassword = providers.environmentVariable("BADIE_UPLOAD_STORE_PASSWORD")
+val uploadKeyAlias = providers.environmentVariable("BADIE_UPLOAD_KEY_ALIAS")
+val uploadKeyPassword = providers.environmentVariable("BADIE_UPLOAD_KEY_PASSWORD")
+val signsRelease = listOf(uploadKeystore, uploadStorePassword, uploadKeyAlias, uploadKeyPassword).all { it.isPresent }
+
 android {
     namespace = "com.badie.app"
     compileSdk = 37
@@ -15,9 +29,20 @@ android {
         applicationId = "com.badie.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
+        versionCode = releaseVersionCode.get()
         versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (signsRelease) {
+            create("upload") {
+                storeFile = file(uploadKeystore.get())
+                storePassword = uploadStorePassword.get()
+                keyAlias = uploadKeyAlias.get()
+                keyPassword = uploadKeyPassword.get()
+            }
+        }
     }
 
     buildTypes {
@@ -34,6 +59,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            if (signsRelease) signingConfig = signingConfigs.getByName("upload")
         }
     }
 
@@ -88,6 +114,12 @@ dependencies {
     implementation(libs.okhttp)
     // 推送（FCM）。不用 Google Services 插件：配置写在 res/values/firebase.xml
     implementation(libs.firebase.messaging)
+    // Google 登录：系统的凭据管理器（Credential Manager）拿 Google 的身份令牌
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
+    // Apple 登录：在浏览器标签页（Custom Tabs）里打开授权页
+    implementation(libs.androidx.browser)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

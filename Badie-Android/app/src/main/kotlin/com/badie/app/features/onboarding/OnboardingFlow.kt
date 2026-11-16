@@ -1,6 +1,23 @@
 package com.badie.app.features.onboarding
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import androidx.compose.foundation.Image
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withLink
+import androidx.core.net.toUri
+import com.badie.app.R
+import com.badie.app.backend.ProfileStore
+import com.badie.app.design.LegalLinks
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -104,8 +121,21 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingFlow() {
     val appState = LocalEnv.current.appState
-    OnboardingFlow(remember { OnboardingModel(appState, CaptchaModel(), OkHttpTransport.transport) })
+    val context = LocalContext.current
+    OnboardingFlow(
+        remember {
+            // 上次问到的第三方登录记在本机：按钮不用等网络就能显示
+            val store = ProfileStore.preferences(context)
+            OnboardingModel(
+                appState, CaptchaModel(), OkHttpTransport.transport,
+                savedProviders = store.load(PROVIDERS_KEY)?.split(",")?.filter { it.isNotEmpty() }?.toSet(),
+                saveProviders = { store.save(PROVIDERS_KEY, it.sorted().joinToString(",")) },
+            )
+        },
+    )
 }
+
+private const val PROVIDERS_KEY = "socialProviders"
 
 @Composable
 fun OnboardingFlow(model: OnboardingModel) {
@@ -118,6 +148,7 @@ fun OnboardingFlow(model: OnboardingModel) {
         }
     }
     BackHandler(enabled = model.step != OnboardingStep.Welcome) { model.goBack() }
+    LaunchedEffect(Unit) { model.refreshProviders() }
 
     Column(
         Modifier.fillMaxSize().background(AppTheme.colors.canvas).windowInsetsPadding(WindowInsets.safeDrawing).imePadding(),
@@ -512,9 +543,15 @@ private fun Footer(model: OnboardingModel, onPrimary: () -> Unit) {
     ) {
         // 发请求前的人机验证：填邮箱和输验证码（重新发送）两步都要
         if (model.step == OnboardingStep.Email || model.step == OnboardingStep.Code) CaptchaArea(model.captcha)
+        val social = model.step == OnboardingStep.Welcome && model.socialProviders.isNotEmpty()
+        if (social) SocialButtons(model)
         BrutalButton(
             onPrimary,
-            kind = if (model.step == OnboardingStep.Welcome) ButtonKind.Inverse else ButtonKind.Primary,
+            kind = when {
+                model.step != OnboardingStep.Welcome -> ButtonKind.Primary
+                social -> ButtonKind.Secondary
+                else -> ButtonKind.Inverse
+            },
             enabled = model.canContinue && !model.isWorking,
         ) {
             if (model.isWorking) {
@@ -523,6 +560,62 @@ private fun Footer(model: OnboardingModel, onPrimary: () -> Unit) {
             }
             Text(model.primaryTitle, maxLines = 1)
         }
+        if (social) TermsNote()
+    }
+}
+
+/** 通过 Apple / Google 继续（Apple 放第一个：按 Apple 的规定不能比别的第三方登录不显眼） */
+@Composable
+private fun SocialButtons(model: OnboardingModel) {
+    val scope = rememberCoroutineScope()
+    val activity = LocalActivity.current
+    val haptics = rememberHaptics()
+    LaunchedEffect(model.errorText) { if (model.errorText != null) haptics.error() }
+    ErrorLine(model.errorText)
+    if ("apple" in model.socialProviders) {
+        BrutalButton({ if (activity != null) scope.launch { model.signInWithApple(BrowserAuthSession.opener(activity)) } }, kind = ButtonKind.Inverse) {
+            Image(painterResource(R.drawable.logo_apple), null, Modifier.size(20.dp), colorFilter = ColorFilter.tint(LocalContentColor.current))
+            Spacer(Modifier.size(AppTheme.Spacing.sm))
+            Text(tr("通过 Apple 继续"), maxLines = 1)
+        }
+    }
+    if ("google" in model.socialProviders) {
+        BrutalButton({ if (activity != null) scope.launch { model.signInWithGoogle(CredentialManagerGoogle(activity)) } }, kind = ButtonKind.Secondary) {
+            Image(painterResource(R.drawable.logo_google), null, Modifier.size(20.dp))
+            Spacer(Modifier.size(AppTheme.Spacing.sm))
+            Text(tr("使用 Google 账号继续"), maxLines = 1)
+        }
+    }
+}
+
+/** 第三方登录不打勾，所以用一行字说明：继续就算同意；协议和隐私政策可以点开（各语言语序不同，按译文里两个参数的位置放链接） */
+@Composable
+private fun TermsNote() {
+    val context = LocalContext.current
+    val terms = tr("用户协议")
+    val privacy = tr("隐私政策")
+    val linkStyle = TextLinkStyles(SpanStyle(color = AppTheme.colors.inkSecondary, textDecoration = TextDecoration.Underline))
+    val sentence = tr("继续即表示你同意%@和%@。", TERMS_MARK, PRIVACY_MARK)
+    val text = buildAnnotatedString {
+        for (part in sentence.split(Regex("(?<=[$TERMS_MARK$PRIVACY_MARK])|(?=[$TERMS_MARK$PRIVACY_MARK])"))) {
+            when (part) {
+                TERMS_MARK -> withLink(LinkAnnotation.Clickable("terms", linkStyle) { openLink(context, LegalLinks.TERMS) }) { append(terms) }
+                PRIVACY_MARK -> withLink(LinkAnnotation.Clickable("privacy", linkStyle) { openLink(context, LegalLinks.PRIVACY) }) { append(privacy) }
+                else -> append(part)
+            }
+        }
+    }
+    Text(text, Modifier.fillMaxWidth(), style = AppTheme.Typography.caption, color = AppTheme.colors.inkTertiary, textAlign = TextAlign.Center)
+}
+
+/** 句子里先放两个不会出现的字符占位，再换成链接 */
+private const val TERMS_MARK = "\u0001"
+private const val PRIVACY_MARK = "\u0002"
+
+private fun openLink(context: Context, url: String) {
+    try {
+        context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+    } catch (_: ActivityNotFoundException) {
     }
 }
 

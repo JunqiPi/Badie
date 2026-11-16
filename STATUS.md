@@ -51,9 +51,14 @@
 7. **登录和注册**（`features/onboarding/`，2026-11-15）：欢迎页、邮箱 + 密码登录和注册、验证码登录、忘记密码、6 位验证码、人机验证、称呼和头像（颜色加表情）、定级问卷和结果卡、最后一步（常打、在附近的人里显示我）、以前没选性别的人补选。流程逻辑在 `OnboardingModel.kt`，有测试。
 8. **全部功能页面**（2026-11-16，六块分头搬完再合起来）：发现页（附近的人、按天的卡片、筛选、约人和回邀请）、快速匹配（设置、找人、确认、结束）；球局（球局页、签到、AA、赛果、互评、再约一次、开赛前本地提醒）、房间（开局、大厅、房间码、公开球局）；球友、球友资料、举报、爽约记录和申诉、私信和群聊、通知中心、球群（找、报名、候补、名单、建群）；球馆（附近、球馆页、选球馆、添加、附近范围）；排行榜、挑战；“我的”、编辑资料（照片头像和卡片背景、裁剪）、设置全部、空闲时间、等级对照表、重新定级、高水平认证、帮助和反馈、等级卡片（生成图片、分享、存相册）。各块的服务器调用在 `backend/*Api.kt`。
 9. 各块已经接起来（2026-11-16）：位置和附近范围只有一份（`LocationManager`），球局页有约球请求、球群、本周排行、同馆常客，球馆页列出球群，“我的”有球友数、挑战、加球友链接，发现页的铃铛有角标，日期跟着界面语言。
-10. 测试 437 个，本机过；截图 109 张。
+10. 测试 452 个左右（合并后见 CI），本机过；截图 109 张。
 11. **推送**（2026-11-16，Firebase Cloud Messaging，`push/`）：允许了通知就要令牌，登录后、每次启动报给服务器（`register_push`，kind 是 `fcm`），退出登录和注销前先注销；发出约球请求后问一次通知权限；聊天显示成带头像的会话通知，同一会话归在一条；在前台时正开着的会话不弹，并马上拉新消息；点通知（包括本地提醒）打开对应页面，冷启动时等主界面出来再跳。Firebase 配置在 `res/values/firebase.xml`（`google-services.json` 不进仓库）。还没在真机上收过推送。截图里中文的粗体不明显，是测试环境的字体只有一种粗细，真机上要再看。
 12. **跟上 main 上后来的改动**（2026-11-16）：注册时“列表里没有我的球馆”；关“在同馆常客里显示我”前先确认；露天场地（读 `venues.kind`，球馆页显示“露天场地”，自动选常去球馆先选室内）；球馆搜索用 `search_venues`；发现页附近的人每分钟刷新、回到 App 时刷新；球群多球馆（1–5 个，主球馆在前）、每周场次选球馆、球群页和场次写实际球馆、发现页筛选里的“显示：球友 / 球群”（附近的球群，近的在前）。
+13. **上架准备**（2026-11-16，详细步骤见 `Badie-Android/docs/RELEASE.md`）：
+    - 正式包：R8 压缩混淆加去资源（规则 `app/proguard-rules.pro`），只连正式 Supabase。versionName 在 `app/build.gradle.kts` 手改；versionCode 用发版工作流的运行序号，自动加 1。
+    - 签名：Play 应用签名；上传密钥从环境变量读，CI 里来自 GitHub Secrets（`ANDROID_UPLOAD_KEYSTORE_BASE64`、`ANDROID_UPLOAD_STORE_PASSWORD`、`ANDROID_UPLOAD_KEY_ALIAS`、`ANDROID_UPLOAD_KEY_PASSWORD`）。工作流 **Android release**（只能手动跑）先测试和 lint，再打签名的 AAB，产物 `badie-release-aab`。
+    - Google 登录：系统的凭据管理器，令牌签给网页客户端（Supabase 已认）。Apple 登录：浏览器标签页里走 Supabase 的网页授权（PKCE），跳回 `com.badie.app://auth/callback`。按钮的位置、文字、“Apple 没开时不显示 Google”和 iPhone 一样。
+    - 网页链接进 App（App Links）：路径和 iPhone 一样，加球友链接、等级页也接了。网站的 `assetlinks.json` 要等第一次上传后拿到 Google 的签名指纹，用 `Badie-Android/scripts/assetlinks.py` 生成。
 
 **搬的时候没法做、先简化的**（等对应的东西齐了再补）
 
@@ -62,12 +67,14 @@
 - 球局提醒是本机闹钟，手机重启后会丢；加到日历时带不了坐标和提前 2 小时的闹钟（安卓的日历接口不支持）。
 - 导航用系统的“选择 App”，不像 iPhone 列出几个地图 App。
 - 打赏（Ko-fi）按手机卡或设备的地区判断是否显示（安卓看不到商店地区）。
-- 注销账号不做 Apple 撤销（安卓还没有 Apple 登录）。
+- 注销账号不做 Apple 撤销：安卓的 Apple 登录走网页授权，授权码在 Supabase 那里，App 拿不到（要改服务器）。
+- Apple 登录拿不到第一次授权时给的名字，昵称不预先填。
+- 等级页链接对没定级的人只打开编辑资料，不直接开始测。
 
 **登录注册里还没做的**（都记在这里，后面对应的那一步补上）
 
 - 安卓的人机验证靠网站的 `/captcha/` 页面往回传令牌（`web/src/pages/captcha.astro` 里 `BadieCaptcha.postMessage` 那一行，2026-11-15 随 main 上线）。还没在真机上登录过，第一次装到手机上要先验这一步。
-- Apple、Google 登录（要签名密钥和各自后台的配置）。
+- Apple、Google 登录：代码已做（2026-11-16），等用户做完下面“上架要用户做的”第 6、7 步才能用。
 - 照片头像（选图、裁剪、上传）。
 - 最后一步里的空闲时间。
 - 结果卡里的六维雷达图、“看对照表”、“分享等级卡片”。
@@ -84,14 +91,22 @@
 
 **接下来的顺序**
 
-1. 推送在真机上验一遍（要 Supabase 填好 `FCM_SERVICE_ACCOUNT`）；网页链接进 App（要签名密钥）。
-2. Google、Apple 登录（见下面“要用户准备的”）。
+1. 用户按下面“上架要用户做的”传第一个包到内部测试；装到手机上验推送（要 Supabase 填好 `FCM_SERVICE_ACCOUNT`）、Google 和 Apple 登录、网页链接、人机验证。
+2. 加 `assetlinks.json`（要第一次上传后的 SHA-256）。
 3. 地图（要 Google Cloud 的 key）。
 4. 演示模式、商店截图和文案、封闭测试、上架。
 
 **要用户准备的**（到那一步再弄，不急）
 
-- Google 登录、Apple 登录：要先有安卓的签名密钥（用户自己生成、自己保管），再在 Google Cloud 建安卓客户端；Apple 那边加回调地址。
+- **上架要用户做的**（按顺序，每一步点哪里见 `Badie-Android/docs/RELEASE.md`）：
+  1. 自己电脑上用 `keytool` 生成上传密钥（`CN=Badie`，别填真名），存进密码管理器。
+  2. GitHub Secrets 加四条：`ANDROID_UPLOAD_KEYSTORE_BASE64`、`ANDROID_UPLOAD_STORE_PASSWORD`、`ANDROID_UPLOAD_KEY_ALIAS`（`upload`）、`ANDROID_UPLOAD_KEY_PASSWORD`。
+  3. Play 管理中心建 App。
+  4. 代码在 main 上以后，Actions → Android release → Run workflow，下载 `badie-release-aab`。
+  5. 传到内部测试（用 Play 应用签名），然后在“应用签名”页记下应用签名密钥的 SHA-1、SHA-256（公开的，可以发到聊天里）。
+  6. Google Cloud → Google Auth Platform → Clients → 建 Android 客户端：包名 `com.badie.app`，SHA-1 填应用签名的。
+  7. Supabase → Authentication → URL Configuration → Redirect URLs 加 `com.badie.app://auth/callback`。
+  8. 把 SHA-256 给助手（或自己跑 `Badie-Android/scripts/assetlinks.py`），生成网站的 `assetlinks.json`，推 main。
 - 球馆那一步之前：Google Cloud 账号（绑卡），开地图和 Places 的 key。
 - 上架：Google Play 开发者账号；个人账号要 12 个测试者连续测 14 天。
 

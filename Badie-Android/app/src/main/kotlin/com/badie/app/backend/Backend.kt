@@ -122,6 +122,14 @@ class Backend(
 
     suspend fun updatePassword(password: String) = remote.updatePassword(password)
 
+    /** Google：凭据管理器给的身份令牌和 nonce 原文交给 Supabase */
+    suspend fun signInWithIdToken(provider: String, idToken: String, nonce: String): AuthOutcome =
+        outcome(remote.signInWithIdToken(provider, idToken, nonce))
+
+    /** Apple：浏览器里授权完跳回来的 code 换登录状态 */
+    suspend fun signInWithCode(authCode: String, codeVerifier: String): AuthOutcome =
+        outcome(remote.exchangeCode(authCode, codeVerifier))
+
     /** 登录成功（密码、验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料 */
     private suspend fun outcome(session: RemoteSession): AuthOutcome {
         registerPush()

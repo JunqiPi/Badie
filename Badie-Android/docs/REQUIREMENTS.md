@@ -45,7 +45,7 @@ iPhone 源文件：`Badie-iOS/Badie/App/`（`BadieApp`、`AppEnvironment`、`Roo
 - 提示条在顶部，2.6 秒自动消失，点一下也消失；根页和每个全屏页、弹层各有一个。
 
 **链接**
-- 只认 `https://badie.rsvp` 的网页链接，没有自定义协议（Google 登录回调除外）。安卓用 App Links，网站要加 `assetlinks.json`（见第 8 节）。
+- 只认 `https://badie.rsvp` 的网页链接，没有自定义协议（Google 登录回调除外；安卓的 Apple 登录回调用 `com.badie.app://auth/callback`）。安卓用 App Links，网站要加 `assetlinks.json`（见第 8 节和 `docs/RELEASE.md`）。
 - 推送点开走的是同一套解析。冷启动时先记下要去的页面，界面准备好再跳。
 
 | 链接（先去掉 `/app` 前缀） | 打开 |
@@ -728,8 +728,8 @@ iPhone 源文件：`Features/Profile/`（`ProfileView`、`EditProfileView`、`Av
 
 1. 推送登记：`push_devices.kind` 现在只允许 `apns`、`apns_sandbox`、`web`，要加上 FCM；`register_push` 对令牌格式的检查要放开，现在的规则会拒绝 FCM 的令牌。
 2. 推送发送：`supabase/functions/send-push` 现在只会直连 APNs 和发网页推送，要加 FCM；`link` 和聊天信息放进数据部分；按 FCM 返回的错误清理失效的设备。要新增密钥，由用户填到后台。
-3. Google 登录：新建安卓客户端，并加进后端 Google 登录允许的客户端列表。
-4. Apple 登录：走网页授权，要在允许的回调地址里加安卓的回调。`apple-revoke` 现在把客户端写死成 iPhone 的，网页流程拿到的授权码属于另一个客户端，要支持切换。
+3. Google 登录：新建安卓客户端（包名 + 应用签名的 SHA-1）。2026-11-16 核实：凭据管理器给的令牌签给网页客户端，Supabase 已经认，不用加进客户端列表。步骤见 `docs/RELEASE.md`。
+4. Apple 登录：走网页授权（Supabase PKCE），要在允许的回调地址里加 `com.badie.app://auth/callback`。`apple-revoke` 现在把客户端写死成 iPhone 的，网页流程拿到的授权码属于另一个客户端，要支持切换。
 5. 人机验证页加安卓的回传分支（见上表）。
 6. 网站加 `assetlinks.json`（见上表）。
 7. 反馈里的平台字段传 `android`，服务器应该不用改，没有实测。
