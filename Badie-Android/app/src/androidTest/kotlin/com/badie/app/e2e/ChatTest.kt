@@ -25,7 +25,7 @@ class ChatTest : E2ETest() {
         launch()
         signInWithPassword(a.email)
         openTab("消息")
-        waitFor(text("Blake", substring = true), what = "球友 Blake 的会话")
+        waitFor(text(t("还没有聊天")), what = "会话列表（刚成为球友、还没聊过的不列出来，和 iPhone 一样）")
 
         // 停在会话列表：B 发来的私信自己出现，标签上有角标
         val first = "Hi Alex $stamp"

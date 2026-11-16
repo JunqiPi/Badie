@@ -55,6 +55,9 @@ abstract class E2ETest {
     /** 界面上的字：写简体中文原文（和 App 代码里的 tr 一样），取模拟器当前语言的译文 */
     fun t(key: String, vararg args: Any?): String = L10n.lookup(context.resources, key, args)
 
+    /** 带参数的句子里参数前面那段（按它找） */
+    fun prefix(key: String) = t(key, "\u0000").substringBefore("\u0000")
+
     fun launch(): ActivityScenario<MainActivity> = ActivityScenario.launch(MainActivity::class.java)
 
     /** 从桌面图标打开（和用户点图标一样：已经开着就回到原来的页面） */
@@ -143,6 +146,8 @@ abstract class E2ETest {
         type(1, password)
         tapText("登录")
         waitMain()
+        // “欢迎回来”的提示条盖着页头右边的按钮，点了只会收起提示：等它自己消失
+        waitGone(text(prefix("欢迎回来，%@"), substring = true))
     }
 
     fun openTab(titleKey: String) {

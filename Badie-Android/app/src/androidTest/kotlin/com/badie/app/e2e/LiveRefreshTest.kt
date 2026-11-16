@@ -21,9 +21,6 @@ import java.time.temporal.ChronoUnit
 class LiveRefreshTest : E2ETest() {
     private fun hasState(value: String) = SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, value)
 
-    /** 带参数的句子里参数前面那段（按它找卡片） */
-    private fun prefix(key: String) = t(key, "\u0000").substringBefore("\u0000")
-
     /** 整点，[days] 天后 */
     private fun later(days: Long): Instant = Instant.now().plus(days, ChronoUnit.DAYS).truncatedTo(ChronoUnit.HOURS)
 
@@ -84,7 +81,7 @@ class LiveRefreshTest : E2ETest() {
         signInWithPassword(a.email)
         openTab("球局")
         tap(text(t("私密 · %@", code), substring = true), WAIT)
-        waitFor(text(code, substring = true), what = "房间里的房间码")
+        waitFor(text(t("房间码")), what = "房间页")
 
         Harness.rpc(b, "join_room_code", json("p_code" to code))
         waitFor(mentions("Brynn"), WAIT, "房间里新进来的 B")

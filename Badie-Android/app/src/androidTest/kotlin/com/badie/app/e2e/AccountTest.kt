@@ -51,6 +51,7 @@ class AccountTest : E2ETest() {
         tapText("开始约球")
         waitMain()
         waitFor(text(t("注册成功，欢迎加入")), what = "注册成功的提示")
+        waitGone(text(t("注册成功，欢迎加入")))
 
         // 退出登录，再用密码登录
         signOut()
