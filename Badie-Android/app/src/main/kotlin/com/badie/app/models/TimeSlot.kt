@@ -1,6 +1,7 @@
 package com.badie.app.models
 
 import com.badie.app.l10n.AppLanguage
+import com.badie.app.l10n.L10n
 import com.badie.app.l10n.L10n.tr
 import kotlinx.serialization.Serializable
 import java.time.Instant
@@ -287,17 +288,17 @@ val List<RecurringTimeSlot>.activeSlots: List<RecurringTimeSlot> get() = filter 
 // MARK: - 日期文本
 
 object DateText {
-    /** 语言用 App 里选的，地区（12/24 小时制等）沿用系统的 */
+    /** 语言和界面文字一样（App 里选的，或跟随系统），地区（12/24 小时制等）沿用系统的 */
     @Volatile
     private var locale: Locale = appLocale()
 
-    /** 在 App 里换了语言：日期按新语言重新排 */
+    /** 换了语言（界面重建时 L10n.attach 会调）：日期按新语言重新排 */
     fun reset() {
         locale = appLocale()
     }
 
     private fun appLocale(): Locale = try {
-        Locale.Builder().setLanguageTag(AppLanguage.current).setRegion(Locale.getDefault().country).build()
+        Locale.Builder().setLanguageTag(L10n.language ?: AppLanguage.current).setRegion(Locale.getDefault().country).build()
     } catch (_: Throwable) {
         Locale.getDefault()
     }
