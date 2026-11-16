@@ -83,7 +83,7 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
         </div>
         <div class="mt-5 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {(grouped ? regions : [{ name: '', cities: alphabetical(country.cities), count: country.venueCount }]).map((region, index) => (
-            <details data-region-group open={openAll || !grouped} class="sticker overflow-hidden open:col-span-full">
+            <details data-region-group open={openAll || !grouped} class="group/region sticker overflow-hidden open:col-span-full">
               <summary class:list={['flex cursor-pointer items-center justify-between gap-3 px-4 py-3', !grouped && 'sr-only']}>
                 <span class="min-w-0">
                   <span class="block truncate text-headline">{region.name}</span>
@@ -95,7 +95,7 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
                   {region.count}
                 </span>
               </summary>
-              <ul class:list={['columns-1 gap-6 px-2 pb-3 sm:columns-2 lg:columns-3', grouped ? 'border-t-2 border-stroke/10 pt-2' : 'pt-3']}>
+              <ul class:list={['columns-1 gap-6 px-2 pb-3 sm:group-open/region:columns-2 lg:group-open/region:columns-3', grouped ? 'border-t-2 border-stroke/10 pt-2' : 'pt-3']}>
                 {region.cities.map((city) => (
                   <li data-area={cityName(city).toLowerCase()} class="break-inside-avoid">
                     {city.hasPage ? (
