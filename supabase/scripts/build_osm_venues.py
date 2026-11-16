@@ -273,9 +273,17 @@ def main():
             venue["facility"] = "outdoor"
         if c["courts"] > 1:
             venue["courts"] = c["courts"]
-        en = t.get("name:en") if c["name"] else None
-        if en and en != venue["name"]:
-            venue["aliases"] = [en]
+        # 别名：OSM 里各种语言的名字，换一种语言也能搜到；自动起名的场地加上英文的“Badminton court”
+        aliases = []
+        if c["name"]:
+            for key, value in sorted(t.items()):
+                if key.startswith("name:") or key in ("alt_name", "official_name", "int_name", "short_name", "old_name", "loc_name"):
+                    aliases += [clean_name(v) for v in value.split(";")]
+        elif term != "Badminton court":
+            aliases.append(f"{c['where'][1]} · Badminton court" if c["where"] else "Badminton court")
+        aliases = list(dict.fromkeys(a for a in aliases if 2 <= len(a) <= 120 and a != venue["name"]))[:12]
+        if aliases:
+            venue["aliases"] = aliases
         if t.get("website") or t.get("contact:website"):
             venue["web"] = t.get("website") or t.get("contact:website")
         if t.get("phone") or t.get("contact:phone"):
