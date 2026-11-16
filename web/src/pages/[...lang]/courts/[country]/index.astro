@@ -2,7 +2,7 @@
 import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
 import { PinsMap } from '../../../../app/PinsMap';
-import { cityName, countries, inCountry, type Country } from '../../../../lib/venues';
+import { cityName, countries, formatAddress, inCountry, type City, type Country } from '../../../../lib/venues';
 import { languages, pageLocale, regionName, translator } from '../../../../lib/static-i18n';
 
 export function getStaticPaths() {
@@ -14,7 +14,13 @@ const t = translator(Astro.url.pathname);
 const place = pageLocale(Astro.url.pathname) === 'en' ? inCountry(country) : regionName(country.code, pageLocale(Astro.url.pathname), country.name);
 const venues = country.cities.flatMap((c) => c.venues);
 const topCities = country.cities.slice(0, 9);
-const alphabetical = [...country.cities].sort((a, b) => cityName(a).localeCompare(cityName(b)));
+const alphabetical = (list: City[]) => [...list].sort((a, b) => cityName(a).localeCompare(cityName(b)));
+// 地区多的国家按省 / 州分组，每组一张卡片，点开看城市；只有一组时直接列出
+const regions = [...Map.groupBy(country.cities, (city) => city.region || '')]
+  .map(([name, cities]) => ({ name, cities: alphabetical(cities), count: cities.reduce((n, c) => n + c.venues.length, 0) }))
+  .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+const grouped = regions.length > 1 && country.cities.length > 12;
+const openAll = country.cities.length <= 24;
 const attributions = [...new Set(venues.map((v) => v.attribution).filter(Boolean))];
 const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
 ---
@@ -66,28 +72,59 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
   </section>
 
   {
-    country.cities.length > topCities.length && (
+    (country.cities.length > topCities.length || country.cities.some((city) => !city.hasPage)) && (
       <section class="mt-14">
         <div class="flex flex-wrap items-center justify-between gap-4">
-          <h2 class="text-title3" data-t="All {n} areas A–Z" data-n={country.cities.length}>All {country.cities.length.toLocaleString('en')} areas A–Z</h2>
+          <h2 class="text-title3" data-t="All {n} areas" data-n={country.cities.length}>All {country.cities.length.toLocaleString('en')} areas</h2>
           <label class="w-full sm:w-56">
             <span class="sr-only" data-t="Filter areas">Filter areas</span>
             <input data-area-filter type="search" placeholder="Filter areas" data-t-placeholder="Filter areas" class="field" />
           </label>
         </div>
-        <details data-area-list open={country.cities.length <= 60} class="mt-5">
-          <summary class="link inline-block cursor-pointer py-1" data-t="Show all areas">Show all areas</summary>
-          <ul class="mt-4 columns-1 gap-8 sm:columns-2 lg:columns-3">
-            {alphabetical.map((city) => (
-              <li data-area={cityName(city).toLowerCase()} class="break-inside-avoid">
-                <a href={city.path} class="flex justify-between gap-3 rounded-[10px] px-2 py-1.5 font-bold transition-colors hover:bg-surface">
-                  <span class="truncate">{cityName(city)}</span>
-                  <span class="shrink-0 text-ink-tertiary">{city.venues.length}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </details>
+        <div class="mt-5 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {(grouped ? regions : [{ name: '', cities: alphabetical(country.cities), count: country.venueCount }]).map((region, index) => (
+            <details data-region-group open={openAll || !grouped} class="sticker overflow-hidden open:col-span-full">
+              <summary class:list={['flex cursor-pointer items-center justify-between gap-3 px-4 py-3', !grouped && 'sr-only']}>
+                <span class="min-w-0">
+                  <span class="block truncate text-headline">{region.name}</span>
+                  <span class="block text-footnote font-bold text-ink-secondary" data-t="{n} courts in {areas} areas" data-n={region.count} data-areas={region.cities.length}>
+                    {region.count.toLocaleString('en')} courts in {region.cities.length} areas
+                  </span>
+                </span>
+                <span class:list={['grid size-10 shrink-0 place-items-center rounded-[12px] border-2 border-stroke text-headline text-on-accent tabular-nums', tints[index % tints.length]]}>
+                  {region.count}
+                </span>
+              </summary>
+              <ul class:list={['columns-1 gap-6 px-2 pb-3 sm:columns-2 lg:columns-3', grouped ? 'border-t-2 border-stroke/10 pt-2' : 'pt-3']}>
+                {region.cities.map((city) => (
+                  <li data-area={cityName(city).toLowerCase()} class="break-inside-avoid">
+                    {city.hasPage ? (
+                      <a href={city.path} class="flex justify-between gap-3 rounded-[10px] px-2 py-1.5 font-bold transition-colors hover:bg-surface">
+                        <span class="truncate">{city.name}</span>
+                        <span class="shrink-0 text-ink-tertiary tabular-nums">{city.venues.length}</span>
+                      </a>
+                    ) : (
+                      // 不单独成页的小地方（一两家）：球馆直接列在这里，点开是地图
+                      <div id={`area-${city.slug}`} class="scroll-mt-28 px-2 py-1.5 target:rounded-[10px] target:bg-lime/30">
+                        <p class="text-footnote font-bold text-ink-secondary">{city.name}</p>
+                        <ul class="mt-0.5 grid gap-1">
+                          {city.venues.map((venue) => (
+                            <li>
+                              <a href={venue.path} rel="noopener" class="group/venue block">
+                                <span class="block font-bold leading-snug group-hover/venue:underline">{venue.name}</span>
+                                <span class="block truncate text-footnote text-ink-secondary">{formatAddress(venue)}</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </div>
       </section>
     )
   }
@@ -97,12 +134,28 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
 
 <script>
   const input = document.querySelector<HTMLInputElement>('[data-area-filter]');
-  const list = document.querySelector<HTMLDetailsElement>('[data-area-list]');
+  const groups = [...document.querySelectorAll<HTMLDetailsElement>('[data-region-group]')];
+  const initiallyOpen = groups.map((group) => group.open);
   input?.addEventListener('input', () => {
     const query = input.value.trim().toLowerCase();
-    if (list && query) list.open = true;
-    for (const item of document.querySelectorAll<HTMLElement>('[data-area]')) {
-      item.hidden = !item.dataset.area!.includes(query);
-    }
+    groups.forEach((group, index) => {
+      let matches = 0;
+      for (const item of group.querySelectorAll<HTMLElement>('[data-area]')) {
+        item.hidden = !item.dataset.area!.includes(query);
+        if (!item.hidden) matches++;
+      }
+      group.hidden = matches === 0;
+      group.open = query ? matches > 0 : initiallyOpen[index];
+    });
   });
+  // 从别处链接到某个小地方（#area-…）：展开它所在的省 / 州和它自己
+  const openArea = () => {
+    const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    const group = target?.closest<HTMLDetailsElement>('[data-region-group]');
+    if (!target || !group) return;
+    group.open = true;
+    target.scrollIntoView({ block: 'center' });
+  };
+  openArea();
+  window.addEventListener('hashchange', openArea);
 </script>

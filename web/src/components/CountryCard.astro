@@ -1,5 +1,5 @@
 ---
-import { cityName, type Country } from '../lib/venues';
+import { cityName, flag as flagOf, type Country } from '../lib/venues';
 
 interface Props {
   country: Country;
@@ -7,8 +7,7 @@ interface Props {
 }
 
 const { country, tint } = Astro.props;
-// 国旗：两个“区域指示符”字母拼成的 emoji（不支持的系统上显示成两个字母，也看得懂）
-const flag = String.fromCodePoint(...[...country.code.toUpperCase()].map((letter) => 0x1f1a5 + letter.charCodeAt(0)));
+const flag = flagOf(country.code);
 ---
 
 <article class:list={['sticker lift relative grid gap-3 p-4 text-on-accent', tint]}>

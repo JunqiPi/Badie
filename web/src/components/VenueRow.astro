@@ -11,7 +11,7 @@ const { venue, distanceKm } = Astro.props;
 const subtitle = englishName(venue);
 ---
 
-<a href={venue.path} data-venue={venue.id} class="sticker lift flex min-w-0 gap-3 p-3.5">
+<a href={venue.path} rel={venue.hasPage ? undefined : 'noopener'} data-venue={venue.id} class="sticker lift flex min-w-0 gap-3 p-3.5">
   <span aria-hidden="true" class="grid size-11 shrink-0 place-items-center rounded-[13px] border-2 border-stroke bg-sky text-on-accent">
     <Icon name="pin" />
   </span>

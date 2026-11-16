@@ -11,7 +11,7 @@ export function getStaticPaths() {
   return languages.flatMap((lang) =>
     countries.flatMap((country) =>
       country.cities.flatMap((city) =>
-        city.venues.map((venue) => ({
+        city.venues.filter((venue) => venue.hasPage).map((venue) => ({
           params: { lang, country: country.code, city: city.slug, venue: venue.slug },
           props: { country, city, venue },
         })),

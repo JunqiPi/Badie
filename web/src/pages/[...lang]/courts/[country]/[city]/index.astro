@@ -9,7 +9,7 @@ import { fitTitle, languages, translator } from '../../../../../lib/static-i18n'
 export function getStaticPaths() {
   return languages.flatMap((lang) =>
     countries.flatMap((country) =>
-      country.cities.map((city) => ({ params: { lang, country: country.code, city: city.slug }, props: { country, city } })),
+      country.cities.filter((city) => city.hasPage).map((city) => ({ params: { lang, country: country.code, city: city.slug }, props: { country, city } })),
     ),
   );
 }
