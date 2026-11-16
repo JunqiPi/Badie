@@ -19,6 +19,7 @@ struct DayCandidatesView: View {
     var reloadToken = 0
 
     @EnvironmentObject private var appState: AppState
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var friendManager: FriendManager
     @EnvironmentObject private var locationManager: LocationManager
@@ -181,6 +182,9 @@ struct DayCandidatesView: View {
             Task { await load(showsErrors: true) }
         }
         .task { await keepFresh() }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { Task { await load(showsErrors: false) } }
+        }
         .sheet(isPresented: $showsFilter, onDismiss: {
             if dayChanged {
                 dayChanged = false
@@ -391,15 +395,17 @@ struct DayCandidatesView: View {
         router.isMatchSetupPresented = true
     }
 
-    /// 某天的卡片每 30 秒拉一次（在别的标签页时不拉）：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉。
-    /// 附近的人变得慢，只在打开、下拉、开定位、改范围时拉
+    /// 某天的卡片每 30 秒拉一次，附近的人每分钟拉一次（在别的标签页时不拉），回到 App 时也拉：
+    /// 新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉
     private func keepFresh() async {
         await load(showsErrors: true)
-        guard !lobbyOnly else { return }
+        var tick = 0
         while !Task.isCancelled {
             try? await Task.sleep(nanoseconds: 30_000_000_000)
             guard !Task.isCancelled else { return }
-            if router.selectedTab == .home { await load(showsErrors: false) }
+            tick += 1
+            guard router.selectedTab == .home, scenePhase == .active else { continue }
+            if !lobbyOnly || tick.isMultiple(of: 2) { await load(showsErrors: false) }
         }
     }
 

@@ -340,6 +340,14 @@ final class VenueTests: XCTestCase {
                        "范围内只有待确认的就用它")
         XCTAssertNil(BadmintonCourt.nearest(in: [distant], to: la, withinKm: 10), "范围外的不选")
         XCTAssertNil(BadmintonCourt.nearest(in: [], to: la, withinKm: 10))
+
+        var park = venue("v-park", "公园 · 羽毛球场", at: near, status: .unconfirmed)
+        park.facility = .outdoor
+        let hall = venue("v-hall", "体育馆", at: mid, status: .unconfirmed)
+        XCTAssertEqual(BadmintonCourt.nearest(in: [park, hall], to: la, withinKm: 10)?.id, "v-hall", "都待确认时先选室内的")
+        XCTAssertEqual(BadmintonCourt.nearest(in: [park], to: la, withinKm: 10)?.id, "v-park", "只有露天场地就用它")
+        XCTAssertEqual(VenueFacility(server: "multi_sport"), .multiSport)
+        XCTAssertEqual(VenueFacility(server: "outdoor"), .outdoor)
     }
 
     func testFavoriteBackfillDecision() {

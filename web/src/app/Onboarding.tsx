@@ -54,6 +54,8 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
   // 常去球馆：必填，默认离你最近的一家（附近的人靠它找到你）。“在附近的人里显示我”新账号默认开，以后在设置里能关
   const [court, setCourt] = useState<UsualCourt>();
   const [changingCourt, setChangingCourt] = useState(false);
+  // 我们还没收录的地方（搜不到自己的球馆）：可以先不选，以后在球馆页选
+  const [noCourt, setNoCourt] = useState(false);
   const [locating, setLocating] = useState(false);
   const area = useArea();
   const [heardFrom, setHeardFrom] = useState<HeardFrom | ''>('');
@@ -92,7 +94,7 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
     event.preventDefault();
     setTouched(true);
     setTried(true);
-    if (problem || !gender || !court) return;
+    if (problem || !gender || (!court && !noCourt)) return;
     setBusy(true);
     const { data, error } = await supabase!
       .from('profiles')
@@ -100,7 +102,7 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
       .insert({ id: userId, nickname: nickname.trim(), country_code: country, gender, ...(loadRef() && { ref: loadRef() }), ...(heardFrom && { heard_from: heardFrom }) })
       .select()
       .single();
-    const saved = !error && !(await addUsualCourt(userId, court.id)).error;
+    const saved = !error && (!court || !(await addUsualCourt(userId, court.id)).error);
     setBusy(false);
     // 昵称有不当用语时说清楚原因，其他情况多半是重名之类，换一个就好
     if (error) setError(error.message === 'objectionable_content' ? explain(error) : t('Couldn’t save. Try a different nickname.'));
@@ -153,11 +155,18 @@ export function Onboarding({ userId, onDone }: { userId: string; onDone: (profil
           ) : (
             <div className="grid gap-2">
               {!court && <Button type="button" variant="quiet" busy={locating} onClick={locate}>{t('Use my location')}</Button>}
-              <CourtSearch onPick={(c) => { setCourt({ id: c.id, name: c.name, city: c.city }); setChangingCourt(false); }} />
+              <CourtSearch onPick={(c) => { setCourt({ id: c.id, name: c.name, city: c.city }); setChangingCourt(false); setNoCourt(false); }} />
+              {!court && !noCourt && (
+                <button type="button" onClick={() => setNoCourt(true)} className="justify-self-start text-footnote font-bold underline underline-offset-4">
+                  {t('My court isn’t listed')}
+                </button>
+              )}
             </div>
           )}
-          <p className={`text-footnote ${tried && !court ? 'font-bold text-danger' : 'text-ink-secondary'}`} role={tried && !court ? 'alert' : undefined}>
-            {tried && !court ? t('Choose a court to continue.') : t('Players near this court can find you.')}
+          <p className={`text-footnote ${tried && !court && !noCourt ? 'font-bold text-danger' : 'text-ink-secondary'}`} role={tried && !court && !noCourt ? 'alert' : undefined}>
+            {tried && !court && !noCourt ? t('Choose a court to continue.')
+              : !court && noCourt ? t('OK. You can choose one later in Courts.')
+              : t('Players near this court can find you.')}
           </p>
         </fieldset>
         <Field label={`${t('Where did you hear about Badie?')} ${t('(optional)')}`}>

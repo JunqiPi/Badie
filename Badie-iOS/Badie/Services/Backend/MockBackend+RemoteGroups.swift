@@ -11,6 +11,8 @@ extension MockBackend {
         let end: Int
         let capacity: Int
         let fee: String?
+        /// 在哪个球馆；nil = 主球馆（旧服务器没有这一项）
+        let venue: String?
     }
 
     struct RemoteGroupSummary: Decodable {
@@ -34,10 +36,15 @@ extension MockBackend {
         let joinPolicy: String
         let gender: String?
         let coached: Bool?
+        /// 主球馆
         let venue: Venue
+        /// 所有球馆，主球馆在前（旧服务器没有这一项）
+        let venues: [Venue]?
         let schedules: [RemoteSchedule]?
         let activity: Activity
         let myRole: String?
+        /// groups_near 才有：离搜索中心最近的那个球馆有多远（米）
+        let distanceM: Double?
     }
 
     struct RemoteGroupDetail: Decodable {
@@ -57,6 +64,8 @@ extension MockBackend {
             let waitlist: Int
             let myStatus: String?
             let players: [Player]?
+            /// 这一场在哪个球馆（旧服务器没有这一项）
+            let venue: String?
         }
 
         struct Member: Decodable {
@@ -75,6 +84,7 @@ extension MockBackend {
         let gender: String?
         let coached: Bool?
         let venue: RemoteGroupSummary.Venue
+        let venues: [RemoteGroupSummary.Venue]?
         let schedules: [RemoteSchedule]?
         let activity: RemoteGroupSummary.Activity
         let myRole: String?
@@ -146,13 +156,16 @@ extension MockBackend {
 
     // MARK: 操作
 
-    func remoteCreateGroup(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+    /// venueIds：1–5 个球馆，第一个是主球馆（p_venue 也照旧发主球馆）
+    func remoteCreateGroup(name: String, venueIds: [String], schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
                            joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil,
                            coached: Bool = false) async throws -> PlayGroup {
         let remote = try requireRemote()
+        guard let main = venueIds.first else { throw BackendError.venueNotFound }
         let id: String = try await remote.rpc("create_group", [
             "p_name": name.trimmingCharacters(in: .whitespacesAndNewlines),
-            "p_venue": venueId,
+            "p_venue": main,
+            "p_venues": venueIds,
             "p_summary": summary.trimmingCharacters(in: .whitespacesAndNewlines),
             "p_level_min": levelRange.lowerBound,
             "p_level_max": levelRange.upperBound,
@@ -166,8 +179,9 @@ extension MockBackend {
         return group
     }
 
+    /// venueIds 为 nil 时球馆不变
     func remoteUpdateGroup(_ groupId: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                           joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool) async throws {
+                           joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool, venueIds: [String]? = nil) async throws {
         try await requireRemote().call("update_group", [
             "p_group": groupId,
             "p_name": name.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -177,6 +191,7 @@ extension MockBackend {
             "p_policy": joinPolicy.rawValue,
             "p_schedules": Self.serverSchedules(schedules),
             "p_coached": coached,
+            "p_venues": venueIds.map { $0 as Any } ?? NSNull(),
         ])
         try await loadRemoteGroup(groupId)
     }
@@ -188,9 +203,14 @@ extension MockBackend {
         try await refreshRemoteSocial()
     }
 
-    /// 服务器的星期是 0 = 周日
+    /// 服务器的星期是 0 = 周日；不在主球馆的场次带上 venue
     private static func serverSchedules(_ schedules: [GroupSchedule]) -> [[String: Any]] {
-        schedules.map { ["weekday": $0.weekday - 1, "start": $0.startMinutes, "end": $0.endMinutes, "capacity": $0.capacity, "fee": $0.feeNote ?? ""] }
+        schedules.map { schedule in
+            var item: [String: Any] = ["weekday": schedule.weekday - 1, "start": schedule.startMinutes, "end": schedule.endMinutes,
+                                       "capacity": schedule.capacity, "fee": schedule.feeNote ?? ""]
+            if let venue = schedule.venueId { item["venue"] = venue }
+            return item
+        }
     }
 
     /// 输群号找球群
@@ -244,13 +264,15 @@ extension MockBackend {
 
     private func cacheGroup(_ summary: RemoteGroupSummary, me: String) {
         cacheGroup(id: summary.id, name: summary.name, summary: summary.summary, levels: summary.levelMin...max(summary.levelMin, summary.levelMax),
-                   joinPolicy: summary.joinPolicy, audience: summary.gender, coached: summary.coached, venue: summary.venue, schedules: summary.schedules ?? [], activity: summary.activity,
+                   joinPolicy: summary.joinPolicy, audience: summary.gender, coached: summary.coached, venue: summary.venue, venues: summary.venues,
+                   schedules: summary.schedules ?? [], activity: summary.activity,
                    myRole: summary.myRole, inviteCode: nil, members: nil, pending: nil, me: me)
     }
 
     private func cacheGroup(_ detail: RemoteGroupDetail, me: String) {
         cacheGroup(id: detail.id, name: detail.name, summary: detail.summary, levels: detail.levelMin...max(detail.levelMin, detail.levelMax),
-                   joinPolicy: detail.joinPolicy, audience: detail.gender, coached: detail.coached, venue: detail.venue, schedules: detail.schedules ?? [], activity: detail.activity,
+                   joinPolicy: detail.joinPolicy, audience: detail.gender, coached: detail.coached, venue: detail.venue, venues: detail.venues,
+                   schedules: detail.schedules ?? [], activity: detail.activity,
                    myRole: detail.myRole, inviteCode: detail.inviteCode, members: detail.members, pending: detail.pending, me: me)
         guard let group = db.groups[detail.id] else { return }
         let calendar = venue(id: group.venueId)?.calendar ?? .current
@@ -273,28 +295,34 @@ extension MockBackend {
             }
             let weekday = calendar.component(.weekday, from: session.startsAt)
             let start = calendar.component(.hour, from: session.startsAt) * 60 + calendar.component(.minute, from: session.startsAt)
-            let schedule = group.schedules.first { $0.weekday == weekday && $0.startMinutes == start }
+            // 同一时间在不同球馆的两个场次：按球馆分开
+            let sameTime = group.schedules.filter { $0.weekday == weekday && $0.startMinutes == start }
+            let schedule = sameTime.first { session.venue == nil || $0.effectiveVenueId(in: group) == session.venue } ?? sameTime.first
             db.groupSessions[session.id] = GroupSession(
                 id: session.id, groupId: detail.id, scheduleId: schedule?.id ?? "",
                 slot: TimeSlot(date: session.startsAt, startTime: session.startsAt, endTime: session.endsAt),
-                capacity: session.capacity, signedUp: signedUp, waitlist: waitlist, isCancelled: session.cancelled
+                capacity: session.capacity, signedUp: signedUp, waitlist: waitlist, isCancelled: session.cancelled,
+                venueId: session.venue ?? schedule?.effectiveVenueId(in: group)
             )
         }
     }
 
     private func cacheGroup(id: String, name: String, summary: String?, levels: ClosedRange<Int>, joinPolicy: String, audience: String?, coached: Bool?,
-                            venue place: RemoteGroupSummary.Venue, schedules: [RemoteSchedule], activity: RemoteGroupSummary.Activity,
+                            venue place: RemoteGroupSummary.Venue, venues: [RemoteGroupSummary.Venue]?,
+                            schedules: [RemoteSchedule], activity: RemoteGroupSummary.Activity,
                             myRole: String?, inviteCode: String?, members: [RemoteGroupDetail.Member]?,
                             pending: [RemoteGroupDetail.Member]?, me: String) {
         let existing = db.groups[id]
         for member in (members ?? []) + (pending ?? []) {
             cacheRemoteUser(id: member.id, nickname: member.nickname, rating: member.rating)
         }
-        if venue(id: place.id) == nil {
-            db.venues[place.id] = BadmintonCourt(
-                id: place.id, name: place.name, location: Coordinate(latitude: 0, longitude: 0),
-                address: PostalAddress(street: "", city: place.city ?? "", region: "", countryCode: CountryInfo.deviceCountry.code),
-                timeZoneId: place.tz, source: .player, status: .unconfirmed
+        // 本地还没有的球馆先记个名字（主球馆在前）
+        let courts = [place] + (venues ?? []).filter { $0.id != place.id }
+        for court in courts where venue(id: court.id) == nil {
+            db.venues[court.id] = BadmintonCourt(
+                id: court.id, name: court.name, location: Coordinate(latitude: 0, longitude: 0),
+                address: PostalAddress(street: "", city: court.city ?? "", region: "", countryCode: CountryInfo.deviceCountry.code),
+                timeZoneId: court.tz ?? place.tz, source: .player, status: .unconfirmed
             )
         }
         let joined = ["owner", "organizer", "member"].contains(myRole ?? "")
@@ -312,11 +340,13 @@ extension MockBackend {
             levelRange: levels,
             schedules: schedules.enumerated().map { index, schedule in
                 GroupSchedule(id: "\(id)-\(index)", weekday: schedule.weekday + 1, startMinutes: schedule.start, endMinutes: schedule.end,
-                              capacity: schedule.capacity, feeNote: schedule.fee?.isEmpty == false ? schedule.fee : nil)
+                              capacity: schedule.capacity, feeNote: schedule.fee?.isEmpty == false ? schedule.fee : nil,
+                              venueId: schedule.venue)
             },
             joinPolicy: joinPolicy == "approval" ? .approval : .open,
             inviteCode: inviteCode ?? existing?.inviteCode ?? "", createdAt: existing?.createdAt ?? Date(),
-            audience: audience.flatMap(Gender.init(rawValue:)), coached: coached
+            audience: audience.flatMap(Gender.init(rawValue:)), coached: coached,
+            otherVenueIds: courts.count > 1 ? courts.dropFirst().map(\.id) : nil
         )
         remoteGroupActivity[id] = GroupActivity(sessionsLast30Days: activity.sessions, averageTurnout: activity.average)
     }

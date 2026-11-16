@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useArea } from './area';
 import { Combobox } from './Combobox';
 import { t } from './i18n';
 import { Icon } from './icons';
@@ -61,13 +62,14 @@ export function AreaPicker({ onPick }: { onPick: (centre: Centre) => void }) {
 
 export type Court = { id: string; name: string; city: string; time_zone_id: string | null };
 
-/** 按名字搜球馆 */
+/** 按名字搜球馆：名字、别名（别的语言的名字）、城市都算，离你近的在前（服务器上的 search_venues） */
 export function CourtSearch({ onPick, label = t('Search courts') }: { onPick: (court: Court) => void; label?: string }) {
   const [hits, setHits] = useState<Court[]>([]);
+  const area = useArea();
   async function search(query: string) {
-    const q = query.replace(/[%_*(),.]/g, ' ').trim();
+    const q = query.trim();
     if (q.length < 2) return setHits([]);
-    const { data } = await supabase!.from('venues').select('id, name, city, time_zone_id').is('merged_into', null).ilike('name', `%${q}%`).limit(8);
+    const { data } = await supabase!.rpc('search_venues', { q, lat: area?.lat ?? null, lng: area?.lon ?? null, max_results: 8 });
     setHits((data ?? []) as Court[]);
   }
   return (

@@ -5,14 +5,30 @@ import SwiftUI
 /// 下面一排圆头像是这叠卡里的人（DayCandidatesView）。谁约了我、谁想加我这类待办在通知里。
 /// 原来首页的球局、快速约球、附近球局、排行在“球局”标签里
 struct DiscoverView: View {
+    /// 最上面切换“球友 / 球群”：球友是原来的卡片，球群是附近的球群（近的在前）。记住上次选的
+    enum Mode: String, CaseIterable {
+        case players
+        case groups
+
+        var title: String {
+            switch self {
+            case .players: return String(localized: "球友")
+            case .groups: return String(localized: "球群")
+            }
+        }
+    }
+
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var matchManager: MatchManager
     @EnvironmentObject private var inboxManager: InboxManager
 
+    @AppStorage("discoverMode") private var mode: Mode = .players
     @State private var filter = DayCardFilter.load()
     @State private var showsFilter = false
+    /// 看球群时的筛选（只有“显示：球友 / 球群”）
+    @State private var showsGroupFilter = false
     /// 下拉刷新时加一，卡片跟着重新拉
     @State private var reloadToken = 0
     /// 附近的人里的邀请（我发的、收到的，还没结束的），和点了“好”之后要打开的球局
@@ -62,11 +78,16 @@ struct DiscoverView: View {
                 await loadInvites()
             }
 
+            if mode == .groups {
+                NearbyGroupsList()
+                    .frame(maxHeight: .infinity)
+            } else {
             DayCandidatesView(day: selectedDay, filter: $filter, showsFilter: $showsFilter, reloadToken: reloadToken)
                 .id(deckKey)
                 .frame(maxHeight: .infinity)
                 // ✕ ♥ ★ 停在标签栏上面（中间的“+”比标签栏高出一截）
                 .padding(.bottom, AppTheme.Spacing.tabBarClearance - AppTheme.Spacing.md)
+            }
         }
         .sheet(isPresented: $appState.showsInvites, onDismiss: {
             // 点了好：半屏收起后打开球局
@@ -82,6 +103,12 @@ struct DiscoverView: View {
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(28)
+        }
+        .sheet(isPresented: $showsGroupFilter) {
+            GroupsFilterSheet()
+                .presentationDetents([.height(220)])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
         }
         .task {
             await loadInvites()
@@ -138,8 +165,8 @@ struct DiscoverView: View {
                 router.open(.notifications)
             }
             IconButton(systemName: "line.3.horizontal.decrease", accessibilityLabel: String(localized: "筛选"),
-                       badge: filter.activeCount + (selectedDay == nil ? 0 : 1)) {
-                showsFilter = true
+                       badge: mode == .groups ? 1 : filter.activeCount + (selectedDay == nil ? 0 : 1)) {
+                if mode == .groups { showsGroupFilter = true } else { showsFilter = true }
             }
         }
     }
@@ -198,5 +225,72 @@ struct DiscoverView: View {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }
+    }
+}
+
+// MARK: - 球群：附近的球群，近的在前
+
+/// 看球群时点筛选：只有“显示：球友 / 球群”，选球友就回到卡片
+private struct GroupsFilterSheet: View {
+    @AppStorage("discoverMode") private var discoverMode = "players"
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            Text("筛选")
+                .font(AppTheme.Typography.title)
+                .foregroundStyle(AppTheme.Colors.ink)
+            Text("显示")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .accessibilityAddTraits(.isHeader)
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ChoiceChip(title: String(localized: "球友"), isSelected: false) {
+                    discoverMode = "players"
+                    dismiss()
+                }
+                ChoiceChip(title: String(localized: "球群"), isSelected: true) {}
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, AppTheme.Spacing.screen)
+        .padding(.top, AppTheme.Spacing.xl)
+    }
+}
+
+private struct NearbyGroupsList: View {
+    @EnvironmentObject private var groupManager: GroupManager
+    @EnvironmentObject private var locationManager: LocationManager
+    @EnvironmentObject private var router: Router
+
+    var body: some View {
+        let _ = groupManager.revision
+        let groups = groupManager.nearestGroups(to: locationManager.coordinate, radiusKm: locationManager.preferences.travelRadiusKm)
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                if groups.isEmpty {
+                    EmptyStateView(icon: "person.3", title: String(localized: "附近还没有球群"),
+                                   tint: AppTheme.Colors.lavender, actionTitle: String(localized: "建群")) {
+                        router.open(.createGroup(venueId: nil))
+                    }
+                    .card()
+                } else {
+                    ForEach(groups) { group in
+                        Button {
+                            router.open(.group(id: group.id))
+                        } label: {
+                            GroupCard(group: group, venue: groupManager.venue(of: group), activity: groupManager.activity(of: group.id),
+                                      status: groupManager.currentUserId.map { group.isPending($0) } == true ? String(localized: "待审核") : nil)
+                        }
+                        .buttonStyle(PressableStyle(scale: 0.98))
+                    }
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
+            .padding(.top, AppTheme.Spacing.xs)
+            .padding(.bottom, AppTheme.Spacing.tabBarClearance)
+        }
+        .refreshesEverything()
     }
 }

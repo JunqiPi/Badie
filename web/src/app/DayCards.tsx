@@ -61,13 +61,16 @@ type Composing = { card: NearbyPlayer; slot?: UsualTime };
  *  这天的卡片就是对方的约球请求（项目、时间都定好了），右滑直接约：单打发约球邀请，双打替我开一个公开的双打局并邀请 TA。
  *  附近的人右滑打开约 TA 的半屏（项目、哪天、几点到几点、球馆），发出一个邀请。
  *  上面：左边附近范围，右边球馆和筛选；下面一排圆头像是这叠卡片里的人，点一个就翻到 TA */
-export function Deck({ date, days, onDate, profile, onProfile }: {
+export function Deck({ date, days, onDate, profile, onProfile, onGroups }: {
   date?: string;
   /** 筛选里能选的日子（接下来 30 天） */
   days: string[];
   onDate: (date?: string) => void;
   profile: Profile;
   onProfile: (p: Profile) => void;
+  /** 最上面的“球友 / 球群”切换 */
+  /** 筛选里选了“球群”：发现页换成附近的球群 */
+  onGroups?: () => void;
 }) {
   const area = useArea();
   const km = useNearbyKm();
@@ -115,8 +118,8 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     saveFilter(next);
   };
 
-  // 换天、换范围时重新拉；选了某一天时每 30 秒拉一次这天的请求：新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉。
-  // 连着换天时，上一天晚到的结果不要（stale）
+  // 换天、换范围时重新拉；之后每 30 秒（附近的人每分钟）、回到这个页面时再拉：新出现的人接在后面，不打乱正在看的那张；
+  // 已经走了的人拿掉。连着换天时，上一天晚到的结果不要（stale）
   useEffect(() => {
     if (!area) return;
     let stale = false;
@@ -124,12 +127,37 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
     setNearby(undefined);
     setNearbySeen(0);
     seen.current.clear();
-    supabase!
-      .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
-      .then(({ data, error }) => !stale && setNearby(error ? [] : ((data ?? []) as NearbyPlayer[])));
-    if (!date) return () => {
-      stale = true;
+    const loadNearby = () =>
+      supabase!
+        .rpc('nearby_players', { p_lat: area.lat, p_lon: area.lon, p_radius_km: km })
+        .then(({ data, error }) => {
+          if (stale) return;
+          if (error) return setNearby((list) => list ?? []);
+          const fresh = (data ?? []) as NearbyPlayer[];
+          setNearby((current) => {
+            if (!current) return fresh;
+            const ids = new Set(fresh.map((c) => c.user.id));
+            const kept = current.filter((c) => ids.has(c.user.id) || `n:${c.user.id}` === currentTop.current);
+            const known = new Set(kept.map((c) => c.user.id));
+            return [...kept, ...fresh.filter((c) => !known.has(c.user.id) && !seen.current.has(`n:${c.user.id}`))];
+          });
+        });
+    void loadNearby();
+    const visible = () => document.visibilityState === 'visible';
+    const nearbyTimer = setInterval(() => visible() && void loadNearby(), 60_000);
+    let loadDay: (() => void) | undefined;
+    const back = () => {
+      if (!visible()) return;
+      void loadNearby();
+      loadDay?.();
     };
+    document.addEventListener('visibilitychange', back);
+    const stop = () => {
+      stale = true;
+      clearInterval(nearbyTimer);
+      document.removeEventListener('visibilitychange', back);
+    };
+    if (!date) return stop;
     const { from, to } = bounds(date);
     let first = true;
     const load = () =>
@@ -154,10 +182,11 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
             return [...kept, ...fresh.filter((c) => !known.has(c.ticket) && !seen.current.has(c.ticket))];
           });
         });
+    loadDay = () => void load();
     void load();
-    const timer = setInterval(() => document.visibilityState === 'visible' && void load(), 30_000);
+    const timer = setInterval(() => visible() && void load(), 30_000);
     return () => {
-      stale = true;
+      stop();
       clearInterval(timer);
     };
   }, [date, area?.lat, area?.lon, km]);
@@ -460,7 +489,8 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
       >
         {editing && (
           <FilterSheet initial={filter} date={date} days={days} cards={cards ?? []} nearby={nearby?.filter((c) => !dayPeople.has(c.user.id)) ?? []}
-                       onDone={(next, day) => { setFilter(next); if (day !== date) onDate(day); setEditing(false); }} onCancel={() => setEditing(false)} />
+                       onDone={(next, day) => { setFilter(next); if (day !== date) onDate(day); setEditing(false); }} onCancel={() => setEditing(false)}
+                       onGroups={onGroups && (() => { setEditing(false); onGroups(); })} />
         )}
       </dialog>
 
@@ -592,7 +622,7 @@ function chips(f: DayFilter, cards: Places): [string, (f: DayFilter) => DayFilte
   return list;
 }
 
-function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
+function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel, onGroups }: {
   initial: DayFilter;
   date?: string;
   days: string[];
@@ -600,6 +630,7 @@ function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
   nearby: NearbyPlayer[];
   onDone: (f: DayFilter, date?: string) => void;
   onCancel: () => void;
+  onGroups?: () => void;
 }) {
   const [draft, setDraft] = useState(initial);
   const [day, setDay] = useState(date);
@@ -621,6 +652,7 @@ function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
         <IconButton icon="x" label={t('Close')} onClick={onCancel} />
       </div>
       <div className="grid content-start gap-5 overflow-y-auto px-5 py-4">
+        {onGroups && <ShowChoice value="players" onPick={(v) => v === 'groups' && onGroups()} />}
         {/* 哪天：任何时间（附近的人），或者某一天在找人的；一周以后只列有人的天 */}
         <div className={section} role="group" aria-labelledby="f-date">
           <span id="f-date" className={label}>{t('Date')}</span>
@@ -706,6 +738,19 @@ function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
   );
 }
 
+/** 筛选最上面：看球友还是看球群（选了就换，不用再点“完成”） */
+export function ShowChoice({ value, onPick }: { value: 'players' | 'groups'; onPick: (v: 'players' | 'groups') => void }) {
+  return (
+    <div className="grid gap-2" role="group" aria-labelledby="f-show">
+      <span id="f-show" className="text-footnote font-bold text-ink-secondary">{t('Show')}</span>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="toggle" aria-pressed={value === 'players'} onClick={() => onPick('players')}>{t('Players')}</button>
+        <button type="button" className="toggle" aria-pressed={value === 'groups'} onClick={() => onPick('groups')}>{t('Groups')}</button>
+      </div>
+    </div>
+  );
+}
+
 function Round({ icon, label, className, disabled, onClick }: { icon: IconName; label: string; className: string; disabled: boolean; onClick: () => void }) {
   return (
     <button type="button" aria-label={label} title={label} disabled={disabled} onClick={onClick}
@@ -741,7 +786,7 @@ function useDayCounts() {
 }
 
 /** 左上角：小字“附近”，大字“10 公里内 ▾”。点开选 5 / 10 / 20 / 50 公里（和 iOS 设置里的附近范围一样） */
-function RangePicker({ open, onOpen, onClose }: { open: boolean; onOpen: () => void; onClose: () => void }) {
+export function RangePicker({ open, onOpen, onClose }: { open: boolean; onOpen: () => void; onClose: () => void }) {
   const km = useNearbyKm();
   const within = (n: number) => t('Within {distance}', { distance: distance(n * 1000) });
   return (

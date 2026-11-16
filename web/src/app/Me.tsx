@@ -2,6 +2,7 @@ import { useEffect, useState, type SubmitEvent } from 'react';
 import { gapText, tier } from './assessment';
 import { DONATIONS_OPEN, SUPPORT_EMAIL } from './Contact';
 import { MyCard, ProfileProgress, useMyCourts } from './EditProfile';
+import { Sheet } from './Nearby';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Divider, Group, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile } from './kit';
@@ -271,6 +272,8 @@ type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'show_searchin
 
 /** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
 export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
+  const [hiding, setHiding] = useState(false);
+
   async function save(patch: Partial<Toggles>) {
     onChange({ ...profile, ...patch });
     const { data, error } = await supabase!.from('profiles').update(patch).eq('id', profile.id).select().single();
@@ -302,7 +305,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Switch checked={profile.discoverable} onChange={(v) => save({ discoverable: v })} title={t('Let players find me by nickname')}
                 text={t('They see your nickname and level, and can send a friend request.')} />
         <Divider />
-        <Switch checked={profile.show_as_regular} onChange={(v) => save({ show_as_regular: v })} title={t('Show me as a regular at my courts')}
+        <Switch checked={profile.show_as_regular} onChange={(v) => (v ? save({ show_as_regular: true }) : setHiding(true))} title={t('Show me as a regular at my courts')}
                 text={t('Shows your card, level and free times in People nearby and to players who starred the same court. Never where you are.')} />
         <Divider />
         <Switch checked={profile.allow_message_requests} onChange={(v) => save({ allow_message_requests: v })} title={t('Allow message requests from my groups')}
@@ -311,6 +314,16 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Switch checked={profile.show_on_boards} onChange={(v) => save({ show_on_boards: v })} title={t('Show me on leaderboards')}
                 text={t('Weekly and court boards show your nickname, level and games.')} />
       </Group>
+
+      {/* 关掉之前说清楚：别人就约不了你了 */}
+      <Sheet open={hiding} onClose={() => setHiding(false)} labelledBy="hide-title">
+        <h2 id="hide-title" className="text-title3">{t('Turn off?')}</h2>
+        <p className="text-subhead text-ink-secondary">{t('We only use your usual courts so players nearby can find you and invite you to play. If you turn this off, they can’t invite you.')}</p>
+        <div className="grid grid-cols-[1fr_2fr] gap-3">
+          <Button variant="quiet" onClick={() => { setHiding(false); void save({ show_as_regular: false }); }}>{t('Turn off')}</Button>
+          <Button onClick={() => setHiding(false)}>{t('Keep on')}</Button>
+        </div>
+      </Sheet>
 
       <Group title={t('Who can challenge me')}>
         <div role="radiogroup" aria-label={t('Who can challenge me')} className="flex flex-wrap gap-2 py-3">

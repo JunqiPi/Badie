@@ -1,4 +1,5 @@
-"""把 Badie-iOS/Badie/Resources 里的场馆目录生成 supabase/seed.sql（本地开发、CI，以及同步到生产库）。
+"""把 Badie-iOS/Badie/Resources 里的场馆目录（加上只进数据库、不打包进 App 的 supabase/data，
+比如 build_osm_venues.py 生成的 OpenStreetMap 球馆）生成 supabase/seed.sql（本地开发、CI，以及同步到生产库）。
 
 可以重复执行：目录里的场馆按 id 新增或更新（只动目录自己的字段，球友确认、收藏等不受影响）；
 从目录里删掉的场馆不删除，而是隐藏并进审核队列，由管理员决定。
@@ -10,10 +11,10 @@ import json
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
-catalogs = sorted((root / "Badie-iOS/Badie/Resources").glob("*.json"))
+catalogs = sorted((root / "Badie-iOS/Badie/Resources").glob("*.json")) + sorted((root / "supabase/data").glob("*.json"))
 kinds = {"curated": "curated", "openStreetMap": "open_street_map", None: "open_data"}
 facilities = {"dedicated": "dedicated", "multiSport": "multi_sport", "recCenter": "rec_center",
-              "school": "school", "communityHall": "community_hall"}
+              "school": "school", "communityHall": "community_hall", "outdoor": "outdoor"}
 
 
 def sql(value):

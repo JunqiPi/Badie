@@ -1,4 +1,4 @@
-// 球群端到端：建群 → 凭群号加入 → 报名 → 群聊 → 同群的消息请求
+// 球群端到端：建群（两个球馆，场次在第二个）→ 发现页切到球群能看到 → 凭群号加入 → 报名 → 群聊 → 同群的消息请求
 // 需要本地 Supabase 和已启动的网站；打过的场次直接写进库（DB_URL）
 import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
@@ -8,7 +8,8 @@ const db = process.env.DB_URL ?? 'postgresql://postgres:postgres@127.0.0.1:54322
 const sql = (query) => execFileSync('psql', [db, '-qtAc', query]).toString().trim();
 const stamp = Date.now();
 const browser = await chromium.launch();
-const open = async (viewport) => (await browser.newContext({ viewport, timezoneId: 'America/Los_Angeles' })).newPage();
+const open = async (viewport) =>
+  (await browser.newContext({ viewport, timezoneId: 'America/Los_Angeles', geolocation: { latitude: 34.0765, longitude: -118.0462 }, permissions: ['geolocation'] })).newPage();
 const alex = await open({ width: 1280, height: 900 });
 const blake = await open({ width: 390, height: 844 });
 
@@ -26,11 +27,31 @@ await alex.getByRole('link', { name: 'Start a group' }).first().click();
 await alex.getByLabel('Name', { exact: true }).fill('Thu doubles');
 await alex.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles Badminton');
 await alex.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
+// 第二个球馆，每周那一场放在第二个球馆
+await alex.getByRole('combobox', { name: 'Add another court' }).fill('San Gabriel Valley');
+await alex.getByRole('option', { name: /San Gabriel Valley Badminton Club/ }).click();
+await alex.getByText('Main court', { exact: false }).first().waitFor();
 await alex.getByLabel('Day of the week').selectOption(tomorrow);
+await alex.getByRole('combobox', { name: /^Court/ }).selectOption({ label: 'San Gabriel Valley Badminton Club' });
 await alex.getByLabel('Spots').fill('8');
 await alex.getByRole('button', { name: 'Create group' }).click();
 await alex.getByRole('heading', { name: 'Thu doubles' }).waitFor();
 const code = (await alex.locator('p.font-mono').innerText()).trim();
+// 球群页列出两个球馆，这一场写在第二个球馆
+await alex.getByRole('heading', { name: 'Los Angeles Badminton Club' }).waitFor();
+await alex.getByRole('article').first().getByText('San Gabriel Valley Badminton Club').waitFor();
+
+// 发现页的筛选里选“球群”，附近能看到这个群（任何一个球馆在范围内都算）
+await blake.goto(`${base}/`);
+await blake.getByRole('button', { name: /^Filters/ }).click();
+await blake.getByRole('button', { name: 'Groups', exact: true }).click();
+// 注册时可能已经用定位选好了位置；没选就点“用我的位置”
+const locate = blake.getByRole('button', { name: 'Use my location' });
+if (await locate.waitFor({ timeout: 3000 }).then(() => true, () => false)) await locate.click();
+await blake.getByRole('link', { name: /Thu doubles/ }).getByText('Also at San Gabriel Valley Badminton Club').waitFor();
+// 记住选择：刷新后还是球群
+await blake.reload();
+await blake.getByRole('button', { name: 'Remove Groups' }).waitFor();
 
 // Blake 凭群号加入（“输入房间码 / 群号”页）、报名
 await blake.goto(`${base}/join/`);

@@ -6,7 +6,7 @@ import { supabase } from './supabase';
 
 export type UsualCourt = { id: string; name: string; city: string };
 
-/** 离这个位置最近的一家球馆（50 公里内，不要位置不准的） */
+/** 离这个位置最近的一家球馆（50 公里内，不要位置不准的；有室内的就不选露天场地，服务器已经把室内的排在前面） */
 export async function nearestCourt(centre: Centre): Promise<UsualCourt | undefined> {
   const { data } = await supabase!.rpc('venues_near', { lat: centre.lat, lng: centre.lon, radius_km: 50, max_results: 5 });
   const venue = ((data ?? []) as { venue: UsualCourt & { location_approximate?: boolean } }[]).find((r) => !r.venue.location_approximate)?.venue;

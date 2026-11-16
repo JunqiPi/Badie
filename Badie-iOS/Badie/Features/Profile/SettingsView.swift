@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var showDelete = false
     @State private var showReset = false
     @State private var showLanguage = false
+    @State private var confirmHideRegular = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -101,7 +102,7 @@ struct SettingsView: View {
                                 toggleTitle(String(localized: "在首页显示我"))
                             }
                             InsetDivider()
-                            Toggle(isOn: privacyBinding(\.showsAsRegular)) {
+                            Toggle(isOn: regularBinding) {
                                 toggleTitle(String(localized: "在同馆常客里显示我"))
                             }
                             InsetDivider()
@@ -239,6 +240,13 @@ struct SettingsView: View {
             Text(appState.isRemote ? String(localized: "将删除你的资料、球友、私信、评价和球局记录，且无法恢复。以后的球局会取消并通知其他球友；你管理的球群交给下一位组织者。")
                                    : String(localized: "将删除你的资料、球友关系、聊天记录、球局与评价，且无法恢复。"))
         }
+        // 关掉之前说清楚：附近的人就约不了你了
+        .alert("要关掉吗？", isPresented: $confirmHideRegular) {
+            Button("保持打开", role: .cancel) {}
+            Button("关掉", role: .destructive) { setRegular(false) }
+        } message: {
+            Text("我们只用你的常去球馆，让附近的球友找到你、约你打球。关掉后，别人就约不了你了。")
+        }
         .alert("重置演示数据？", isPresented: $showReset) {
             Button("取消", role: .cancel) {}
             Button("重置", role: .destructive) { appState.resetDemoData() }
@@ -258,6 +266,22 @@ struct SettingsView: View {
                 appState.backend.updatePrivacy(privacy)
             }
         )
+    }
+
+    /// “在同馆常客里显示我”：打开直接存，关掉先确认
+    private var regularBinding: Binding<Bool> {
+        Binding(
+            get: { appState.currentUser?.privacy.showsAsRegular ?? false },
+            set: { value in
+                if value { setRegular(true) } else { confirmHideRegular = true }
+            }
+        )
+    }
+
+    private func setRegular(_ value: Bool) {
+        guard var privacy = appState.currentUser?.privacy else { return }
+        privacy.showsAsRegular = value
+        appState.backend.updatePrivacy(privacy)
     }
 
     private var challengePolicy: Binding<ChallengePolicy> {

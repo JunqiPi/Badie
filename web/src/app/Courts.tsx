@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { setArea, useArea } from './area';
 import { currentLocale, t, useLocale } from './i18n';
 import { Icon } from './icons';
-import { GroupCard } from './Groups';
+import { courtsOf, GroupCard } from './Groups';
 import { Avatar, Divider, Empty, IconTile, Tag } from './kit';
 import { AreaPicker } from './pickers';
 import { Link, navigate } from './router';
@@ -245,7 +245,7 @@ function VenueGroups({ venue }: { venue: Venue }) {
   useEffect(() => {
     let stale = false;
     supabase!.rpc('groups_near', { lat: venue.lat, lng: venue.lon, radius_km: 1 })
-      .then(({ data }) => !stale && setGroups(((data ?? []) as GroupSummary[]).filter((g) => g.venue.id === venue.id)));
+      .then(({ data }) => !stale && setGroups(((data ?? []) as GroupSummary[]).filter((g) => courtsOf(g).some((c) => c.id === venue.id))));
     return () => {
       stale = true;
     };
@@ -265,4 +265,5 @@ const kindLabel: Record<NonNullable<Venue['kind']>, string> = {
   rec_center: 'Community center',
   school: 'School gym',
   community_hall: 'Community hall',
+  outdoor: 'Outdoor court',
 };

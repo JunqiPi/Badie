@@ -33,6 +33,10 @@ struct GroupCard: View {
                     TagPill(text: "\(schedule.weekdayTitle) \(schedule.timeText)", icon: "calendar", fill: AppTheme.Colors.surfaceMuted,
                             foreground: AppTheme.Colors.ink)
                 }
+                if group.venueIds.count > 1 {
+                    TagPill(text: String(localized: "\(group.venueIds.count) 个球馆"), icon: "mappin.and.ellipse", fill: AppTheme.Colors.surfaceMuted,
+                            foreground: AppTheme.Colors.ink)
+                }
                 if group.isCoached {
                     TagPill(text: String(localized: "教练带课"), icon: "graduationcap.fill", fill: AppTheme.Colors.sky)
                 }
@@ -246,6 +250,9 @@ struct GroupDetailView: View {
                 }
                 .buttonStyle(.plain)
             }
+            ForEach(groupManager.otherVenues(of: group), id: \.id) { venue in
+                courtLink(venue)
+            }
             if !group.summary.isEmpty {
                 Text(group.summary)
                     .font(AppTheme.Typography.subheadline)
@@ -286,6 +293,30 @@ struct GroupDetailView: View {
             }
         }
         .card()
+    }
+
+    /// 其他球馆（和主球馆一样的样子，点开球馆页）
+    private func courtLink(_ venue: BadmintonCourt) -> some View {
+        Button {
+            router.open(.venue(id: venue.id))
+        } label: {
+            HStack(spacing: AppTheme.Spacing.md) {
+                IconTile(systemName: "mappin.and.ellipse", fill: AppTheme.Colors.sky, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(venue.name)
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                    Text(venue.address)
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        .lineLimit(2)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(AppTheme.Colors.inkTertiary)
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: Join
@@ -430,6 +461,12 @@ struct SessionRow: View {
                     Text(session.slot.formattedFull)
                         .font(AppTheme.Typography.bodyBold)
                         .foregroundStyle(AppTheme.Colors.ink)
+                    if let venueName = groupManager.sessionVenueName(session) {
+                        Label(venueName, systemImage: "mappin.and.ellipse")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .lineLimit(1)
+                    }
                     HStack(spacing: 6) {
                         Text("已报 \(session.signedUp.count)/\(session.capacity)")
                         if !session.waitlist.isEmpty { Text("· 候补 \(session.waitlist.count)") }
@@ -510,7 +547,7 @@ struct SessionSheet: View {
                             Text(session.slot.formattedFull)
                                 .font(AppTheme.Typography.title2)
                                 .foregroundStyle(AppTheme.Colors.ink)
-                            Text(groupManager.venue(of: group)?.name ?? group.name)
+                            Text(groupManager.sessionVenueName(session) ?? groupManager.venue(of: group)?.name ?? group.name)
                                 .font(AppTheme.Typography.footnote)
                                 .foregroundStyle(AppTheme.Colors.inkSecondary)
                         }
@@ -586,6 +623,12 @@ struct CreateGroupView: View {
     @State private var name = ""
     @State private var summary = ""
     @State private var venueId: String?
+    /// 主球馆以外的球馆（一共最多 5 个）；有几个球馆时每个场次选在哪个
+    @State private var extraVenueIds: [String] = []
+    /// 正在换的那个其他球馆（nil = 再加一个）
+    @State private var extraIndex: Int?
+    @State private var pickedExtraId: String?
+    @State private var showExtraPicker = false
     @State private var schedules = [GroupSchedule(id: UUID().uuidString, weekday: 5, startMinutes: 19 * 60 + 30, endMinutes: 22 * 60,
                                                   capacity: 12, feeNote: nil)]
     @State private var lowerLevel = 1
@@ -611,6 +654,16 @@ struct CreateGroupView: View {
     ]
 
     private var venue: BadmintonCourt? { venueId.flatMap { locationManager.court(id: $0) } }
+
+    /// 所有球馆，主球馆在前
+    private var allVenueIds: [String] { (venueId.map { [$0] } ?? []) + extraVenueIds }
+
+    private var allCourts: [BadmintonCourt] { allVenueIds.compactMap { locationManager.court(id: $0) } }
+
+    /// 这个场次在哪个球馆（没选或选的球馆删掉了就是主球馆）
+    private func courtId(of schedule: GroupSchedule) -> String? {
+        schedule.venueId.flatMap { allVenueIds.contains($0) ? $0 : nil } ?? allVenueIds.first
+    }
 
     private var validationMessage: String? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -645,6 +698,9 @@ struct CreateGroupView: View {
                     }
                     if !isEditing {
                         section(String(localized: "固定球馆")) { venueButton }
+                    }
+                    if venueId != nil {
+                        section(String(localized: "其他球馆")) { extraVenuesEditor }
                     }
                     section(String(localized: "每周固定场次")) {
                         ForEach($schedules) { $schedule in
@@ -704,6 +760,10 @@ struct CreateGroupView: View {
                 .presentationDragIndicator(.visible)
         }
         .onAppear(perform: setup)
+        // 主球馆换成了其他球馆里的一个、或者删了球馆：去掉重复，场次回到主球馆
+        .onChange(of: allVenueIds) { _, ids in
+            normalizeCourts(ids)
+        }
         // 关掉“教练带课”以后回到普通群的 4–40 人（步长 2）
         .onChange(of: coached) { _, coached in
             guard !coached else { return }
@@ -747,12 +807,110 @@ struct CreateGroupView: View {
         .buttonStyle(PressableStyle(scale: 0.98))
     }
 
+    /// 其他球馆：和固定球馆一样的样子，点开换一家，右边可以删
+    private var extraVenuesEditor: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            ForEach(Array(extraVenueIds.enumerated()), id: \.element) { index, id in
+                courtButton(locationManager.court(id: id), title: id, onRemove: { extraVenueIds.removeAll { $0 == id } },
+                            action: { pickExtra(index) })
+            }
+            if allVenueIds.count < PlayGroup.maxVenues {
+                courtButton(nil, title: String(localized: "再加一个球馆"), action: { pickExtra(nil) })
+            }
+        }
+        .sheet(isPresented: $showExtraPicker, onDismiss: applyExtraPick) {
+            CourtPickerSheet(selectedId: $pickedExtraId, slot: nil)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+    }
+
+    private func courtButton(_ court: BadmintonCourt?, title: String, onRemove: (() -> Void)? = nil,
+                             action: @escaping () -> Void) -> some View {
+        HStack(spacing: AppTheme.Spacing.md) {
+            Button(action: action) {
+                HStack(spacing: AppTheme.Spacing.md) {
+                    IconTile(systemName: "sportscourt.fill", fill: AppTheme.Colors.sky, size: 40)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(court?.name ?? title)
+                            .font(AppTheme.Typography.bodyBold)
+                            .foregroundStyle(AppTheme.Colors.ink)
+                        if let address = court?.address {
+                            Text(address)
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
+                        }
+                    }
+                    Spacer()
+                    if onRemove == nil {
+                        Image(systemName: "chevron.right")
+                            .foregroundStyle(AppTheme.Colors.inkTertiary)
+                    }
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(PressableStyle(scale: 0.98))
+            if let onRemove {
+                Button(action: onRemove) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(AppTheme.Colors.inkTertiary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(String(localized: "移除\(court?.name ?? title)"))
+            }
+        }
+        .padding(AppTheme.Spacing.md)
+        .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
+    }
+
+    private func pickExtra(_ index: Int?) {
+        extraIndex = index
+        pickedExtraId = index.map { extraVenueIds[$0] }
+        showExtraPicker = true
+    }
+
+    /// 选好了：换掉那一家，或者加在最后（和已有的重复就不加）
+    private func applyExtraPick() {
+        defer {
+            extraIndex = nil
+            pickedExtraId = nil
+        }
+        guard let id = pickedExtraId, id != venueId, !extraVenueIds.contains(id) else { return }
+        if let index = extraIndex, extraVenueIds.indices.contains(index) {
+            extraVenueIds[index] = id
+        } else if allVenueIds.count < PlayGroup.maxVenues {
+            extraVenueIds.append(id)
+        }
+    }
+
+    private func normalizeCourts(_ ids: [String]) {
+        if let venueId, extraVenueIds.contains(venueId) {
+            extraVenueIds.removeAll { $0 == venueId }
+        }
+        for index in schedules.indices where schedules[index].venueId.map({ !ids.contains($0) }) ?? false {
+            schedules[index].venueId = nil
+        }
+    }
+
     private func scheduleEditor(_ schedule: Binding<GroupSchedule>) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             HStack(spacing: 6) {
                 ForEach(weekdays.indices, id: \.self) { index in
                     ChoiceChip(title: weekdays[index].1, isSelected: schedule.wrappedValue.weekday == weekdays[index].0) {
                         schedule.wrappedValue.weekday = weekdays[index].0
+                    }
+                }
+            }
+            if allCourts.count > 1 {
+                FlowLayout(spacing: 6) {
+                    ForEach(allCourts, id: \.id) { court in
+                        ChoiceChip(title: court.name, isSelected: courtId(of: schedule.wrappedValue) == court.id) {
+                            schedule.wrappedValue.venueId = court.id == allVenueIds.first ? nil : court.id
+                        }
                     }
                 }
             }
@@ -801,6 +959,8 @@ struct CreateGroupView: View {
             upperLevel = group.levelRange.upperBound
             joinPolicy = group.joinPolicy
             coached = group.isCoached
+            venueId = group.venueId
+            extraVenueIds = Array(group.venueIds.dropFirst())
             return
         }
         venueId = initialVenueId ?? locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil }
@@ -816,7 +976,7 @@ struct CreateGroupView: View {
             do {
                 if let editingGroupId {
                     try await groupManager.update(editingGroupId, name: name, schedules: schedules, levelRange: lowerLevel...upperLevel,
-                                                  joinPolicy: joinPolicy, summary: summary, coached: coached)
+                                                  joinPolicy: joinPolicy, summary: summary, coached: coached, venueIds: allVenueIds)
                     appState.showToast(String(localized: "已保存"), style: .success)
                     router.pop()
                     return
@@ -824,7 +984,7 @@ struct CreateGroupView: View {
                 guard let venueId else { return }
                 let group = try await groupManager.create(name: name, venueId: venueId, schedules: schedules,
                                                           levelRange: lowerLevel...upperLevel, joinPolicy: joinPolicy, summary: summary,
-                                                          audience: audience, coached: coached)
+                                                          audience: audience, coached: coached, otherVenueIds: extraVenueIds)
                 Haptics.success()
                 appState.showToast(String(localized: "已建群，群号 \(group.inviteCode)，可以分享到微信"), style: .success)
                 router.pop()

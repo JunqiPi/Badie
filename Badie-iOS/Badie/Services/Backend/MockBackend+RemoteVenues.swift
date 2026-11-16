@@ -36,6 +36,7 @@ extension MockBackend {
         let createdAt: Date?
         let playTimes: String?
         let locationApproximate: Bool?
+        let kind: String?
     }
 
     private struct NearbyRow: Decodable {
@@ -97,6 +98,7 @@ extension MockBackend {
             status: VenueStatus(rawValue: remote.status) ?? .unconfirmed, createdAt: remote.createdAt ?? Date()
         )
         court.playTimes = remote.playTimes
+        court.facility = remote.kind.flatMap(VenueFacility.init(server:))
         return court
     }
 

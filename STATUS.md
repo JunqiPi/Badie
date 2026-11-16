@@ -173,9 +173,31 @@
 - **注册时常去球馆必填**，知道位置时自动选上最近的一家（能换）；注册后自动显示在附近的人里（开关只在设置里）。网站 `Onboarding.tsx` + `usualCourt.ts`，iPhone `OnboardingFlow.swift`（1.0.6）
 - **跳过问卷的按 3 级算**，也进附近的人、能被约（`has_level` 对有资料的人都为真，迁移 `20261218000000_everyone_in_discover.sql`）
 - **约球默认不限等级**：快速匹配默认“不限”，开局默认 1–9，双打邀请答应后的公开局 1–9
-- **补常去球馆**：迁移按最近的约球请求 / 房间 / 球局 / 球群补一家（线上能补 11 人）；网站发现页和 iPhone 拿到真实定位时，一家都没有的自动收藏最近的一家（每个账号一次，自己删了不再补）；剩下 13 人没有任何记录，用户发邮件问了球馆，对照表里能唯一对上的 6 人已手动写进 `favorite_venues`（2026-11-15）。还差：Sumit 的 Riverside Leisure Centre 是 Chelmsford 还是 Exeter；Parks Sports Centre、PlayFit Sports Club、Kesgrave Sports Centre、Benchakitti（曼谷）、Shah Alam Badminton Centre、San Diego Badminton Club 不在球馆库里
-- 安卓的注册页已跟上（2026-11-16）
-- 顺手修了：没登录时查完登录状态，页面主体会重新生成，把分享卡片带来的“你的朋友是 4+”冲回普通标题（`Shell.tsx` 里 main 的 key 只跟地址走）
+- **补常去球馆**：迁移按最近的约球请求 / 房间 / 球局 / 球群补一家（线上能补 11 人）；网站发现页和 iPhone 拿到真实定位时，一家都没有的自动收藏最近的一家（每个账号一次，自己删了不再补）；剩下 13 人没有任何记录，用户发邮件问了球馆后手动写进 `favorite_venues`；库里没有的 5 家（英国 3、曼谷、Shah Alam）放在 `Resources/curated-added.json`
+- **注册时要是搜不到自己的球馆**，可以点“列表里没有我的球馆”先继续（以后在球馆页再选）
+- **设置里关“在同馆常客里显示我”先确认**：“我们只用你的常去球馆，让附近的球友找到你、约你打球。关掉后，别人就约不了你了。”（关掉后 `invite_allowed` 确实不让别人约）
+- 安卓的注册页已跟上 1.0.6 的“常去球馆必选、默认显示”（2026-11-16）；“列表里没有我的球馆”和关掉“显示我”时的确认还没跟上
+
+## 全世界的球馆：OpenStreetMap（2026-11-16）
+
+- `supabase/scripts/build_osm_venues.py` 从 QLever（qlever.dev，OSM 全球数据，overpass-api.de 在这台机器上连不上）拉所有 `sport=badminton`（约 1.36 万个，中国大陆占 4482 个）。用户定的：**除了商店都收**；另外也不收标了不对外开放的（305 个）和军事区里的，中国大陆、朝鲜不收
+- 有名字的用自己的名字；没名字但在有名字的体育馆里的用那栋楼；没名字的露天场地叫“所在公园 / 学校 / 小区 · 羽毛球场”（按当地语言），50 米内同一处的几块并成一个、记下场地数。和 App 里已有的球馆 150 米内或 1 公里内同名的跳过。结果 7301 家，其中露天 4421 家（`venues.kind = 'outdoor'`，迁移 `20261219000000_outdoor_courts.sql`），球馆库一共 11053 家
+- 放 `supabase/data/osm-venues.json`：只进数据库，不打包进 App、不生成网站静态页；状态“待确认”，署名 © OpenStreetMap contributors（ODbL，这份文件在公开仓库里，满足共享要求）。id 用 OSM 编号（`v-fr-osm-w140992546`），重跑不会换 id；OSM 那边删了的会按种子规则隐藏进审核
+- 露天场地太多会把球馆挤掉：`venues_near` 把室内的排前面；注册时自动选常去球馆，网站和 iPhone 都先选室内的（iPhone 1.0.6 起读 `kind`，详情页显示“露天场地”）
+- **换一种语言也能搜到**：OSM 里各种语言的名字（`name:en`、`name:th`、`alt_name`……）都放进别名；自动起名的场地加英文别名 “Badminton court”。网站的球馆搜索改用 `search_venues`（迁移 `20261220000000_search_venues.sql`）：名字、别名、城市都搜，不分大小写和重音、忽略空格，离你近的在前（以前只按名字搜、不认别名、随便取 8 个）。iPhone 搜的是本机已有的球馆（附近的 + App 自带目录），本来就认别名、拼音；搜不到还能用 Apple 地图。城市名只有英文（“首尔”搜不到，“Seoul”可以）
+- 更新：装 `reverse_geocoder==1.5.1 timezonefinder==6.5.9`，跑这个脚本再跑 `build_venue_seed.py`
+- 噪音还有一些（小区、学校里的场地外人进不去，偶尔把整个体育场算进来），靠球友确认 / 举报
+
+## 一个球群几个球馆、发现页找球群（2026-11-16，网站和数据库，没推 main）
+
+- 迁移 `20261221000000_group_venues.sql`，测试 `supabase/tests/group_venues.test.sql`：
+  - 新表 `group_venues` 存球群全部球馆（1–5 个，position 0 是主球馆）；`play_groups.venue_id` 一直等于主球馆，旧版 App 只认它，照常能用
+  - 每周场次可以选在哪个球馆（`group_schedules.venue_id`，空 = 主球馆）；生成场次时把球馆写进 `group_sessions.venue_id`，以后换主球馆、删球馆，已经生成的场次不会悄悄换地方。删掉的球馆上的场次回到主球馆（报名不丢）；某一场换球馆和改时间一样：原来的取消（通知报了名的人），按新的生成
+  - `create_group` / `update_group` 多一个 `p_venues`（按顺序，第一个是主球馆；编辑时 null = 不变），场次 jsonb 可带 `"venue"`。旧版 App 编辑时不带 `"venue"`，沿用原来的球馆
+  - `group_summary` 多 `venues`，每周场次多 `venue`；`group_page` 每一场多 `venue`；`my_groups` 的场次写实际球馆；取消、递补的通知也写实际球馆
+  - `groups_near`：任何一个球馆在范围内都算，多 `distance_m`（到最近的球馆），近的在前
+- 网站：建群、编辑可以加到 5 个球馆，多于一个时每周场次能选球馆；球群页和卡片列出所有球馆；发现页的筛选里多了“显示：球友 / 球群”（记在浏览器里，选了球群时筛选按钮上有角标、条件栏里有“球群 ✕”），球群按附近范围列出。iPhone 一样放在筛选里（1.0.6）；发现页顶部和以前一样
+- iPhone 另外在做；**安卓还没跟上**（`Badie-Android/` 还只有单个球馆的球群）
 
 ## 已知、没修的
 

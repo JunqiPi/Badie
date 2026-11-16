@@ -41,6 +41,8 @@ struct OnboardingForm {
     var timePresets: Set<TimePreset> = []
     /// 常去球馆（必选；注册后设为收藏，快速匹配默认选中，附近的人也按它找人）
     var favoriteVenueIds: [String] = []
+    /// 我们还没收录的地方，搜不到自己的球馆：可以先不选，以后在球馆页选（有定位时“老用户补常去球馆”会补上最近的一家）
+    var noVenueListed = false
 }
 
 /// 邮件里的 6 位码用来做什么：确认注册的邮箱、验证码登录、重设密码（就是 Supabase 校验时的 type）
@@ -598,6 +600,23 @@ struct OnboardingFlow: View {
                 .card()
             }
             .buttonStyle(PressableStyle(scale: 0.98))
+            if venues.isEmpty {
+                if form.noVenueListed {
+                    Text("好的，以后可以在球馆页再选。")
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                } else {
+                    Button {
+                        form.noVenueListed = true
+                    } label: {
+                        Text("列表里没有我的球馆")
+                            .font(AppTheme.Typography.footnoteBold)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .underline()
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
     }
 
@@ -756,7 +775,7 @@ struct OnboardingFlow: View {
         case .code: return form.code.count == 6 && (form.codePurpose != .recovery || !form.password.isEmpty)
         case .profile: return MockBackend.isValidNickname(form.nickname) && form.gender != .unspecified
         case .level: return form.level != nil
-        case .preferences: return !form.favoriteVenueIds.isEmpty
+        case .preferences: return !form.favoriteVenueIds.isEmpty || form.noVenueListed
         }
     }
 
@@ -942,7 +961,7 @@ struct OnboardingFlow: View {
     }
 
     private func finish() async {
-        guard let level = form.level, !form.favoriteVenueIds.isEmpty else { return }
+        guard let level = form.level, !form.favoriteVenueIds.isEmpty || form.noVenueListed else { return }
         let result = form.assessmentResult
         isWorking = true
         // 保存期间别让“老用户补常去球馆”抢先加上最近的一家
@@ -1005,7 +1024,8 @@ struct OnboardingFlow: View {
         for venueId in form.favoriteVenueIds where !locationManager.isFavorite(venueId) {
             locationManager.toggleFavorite(venueId)
         }
-        locationManager.markFavoriteBackfillDone()
+        // 没选（列表里没有）的不记：以后附近有收录的球馆时还能自动补上
+        if !form.favoriteVenueIds.isEmpty { locationManager.markFavoriteBackfillDone() }
     }
 
     /// 知道真实位置时，先替用户选上最近的球馆（可以改）；没定位就让用户自己选

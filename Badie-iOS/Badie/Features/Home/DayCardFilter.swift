@@ -157,6 +157,8 @@ struct DayCardFilterSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var draft = DayCardFilter()
     @State private var draftDay: Date?
+    /// 发现页看球友还是球群（DiscoverView 读同一个值）；选了球群就关掉筛选，换成附近的球群
+    @AppStorage("discoverMode") private var discoverMode = "players"
 
     private var dayChanged: Bool { draftDay != day }
 
@@ -186,6 +188,15 @@ struct DayCardFilterSheet: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+                    section(String(localized: "显示")) {
+                        HStack(spacing: AppTheme.Spacing.sm) {
+                            ChoiceChip(title: String(localized: "球友"), isSelected: true) {}
+                            ChoiceChip(title: String(localized: "球群"), isSelected: false) {
+                                discoverMode = "groups"
+                                dismiss()
+                            }
+                        }
+                    }
                     section(String(localized: "日期")) { dayChips }
                     section(String(localized: "项目")) {
                         SegmentedSticker(options: DayCardFilter.Event.allCases, selection: $draft.event, title: { $0.title })
