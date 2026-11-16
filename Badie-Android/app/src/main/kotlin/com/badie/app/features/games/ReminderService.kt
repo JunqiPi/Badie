@@ -24,10 +24,7 @@ import com.badie.app.models.Game
  * 球局本地提醒：开赛前 1 天、2 小时、15 分钟（多次提醒能显著降低爽约率）。对应 iPhone 的 Services/ReminderService.swift。
  * 用不精确的闹钟（AlarmManager.set，不要精确闹钟权限），到点由 [GameReminderReceiver] 发通知。
  *
- * TODO（要改 AndroidManifest.xml，不在这个文件夹里）：
- *  - 加 `<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />`（Android 13 起发通知要用户同意）
- *  - 在 application 里登记 `<receiver android:name=".features.games.GameReminderReceiver" android:exported="false" />`
- *  没登记之前闹钟照样排，但到点收不到。手机重启后闹钟会丢（要 RECEIVE_BOOT_COMPLETED 再排一次），iPhone 没有这个问题
+ * 通知权限和 [GameReminderReceiver] 登记在 AndroidManifest.xml。手机重启后闹钟会丢（要 RECEIVE_BOOT_COMPLETED 再排一次），iPhone 没有这个问题
  */
 object ReminderService {
     private class Offset(val id: String, val millis: Long, val titleKey: String)
@@ -104,7 +101,7 @@ object ReminderService {
         }
     }
 
-    /** 到点发一条通知；点开进 App。发之前查过 canNotify；通知权限要等 AndroidManifest.xml 加上（见上面的 TODO） */
+    /** 到点发一条通知；点开进 App。发之前查过 canNotify */
     @SuppressLint("NotificationPermission")
     internal fun post(context: Context, gameId: String, title: String, body: String) {
         if (!canNotify(context)) return

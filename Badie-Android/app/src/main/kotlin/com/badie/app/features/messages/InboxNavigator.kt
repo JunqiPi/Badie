@@ -99,8 +99,9 @@ fun AppEnvironment.openInboxItem(item: InboxItem) {
         InboxItem.Kind.GameConfirmed, InboxItem.Kind.GameCancelled, InboxItem.Kind.GameReminder, InboxItem.Kind.ResultUpdate, InboxItem.Kind.GameTimeSet ->
             id?.let { router.open(Route.Game(it)) }
         InboxItem.Kind.ReviewReceived -> router.select(MainTab.Profile)
-        // 找到搭子、匹配进展：打开匹配流程（iPhone 会定位到那个请求；安卓的快速匹配还没搬）
-        InboxItem.Kind.MatchOffer, InboxItem.Kind.MatchUpdate -> matchManager.isFlowPresented = true
+        // 找到搭子、匹配进展：打开那个请求的匹配流程
+        InboxItem.Kind.MatchOffer, InboxItem.Kind.MatchUpdate ->
+            if (id != null) matchManager.openTicket(id) else matchManager.isFlowPresented = true
         InboxItem.Kind.MessageRequest -> id?.let { router.open(Route.Chat(it), MainTab.Messages) }
         InboxItem.Kind.GroupUpdate -> id?.let { router.open(Route.Group(it)) }
         // 接受后 relatedId 是球局 ID，否则是挑战 ID
