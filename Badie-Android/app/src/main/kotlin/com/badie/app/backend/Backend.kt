@@ -291,10 +291,12 @@ class Backend(
 
     /** 附近的球馆，按距离排；坐标只是大概的不要 */
     suspend fun venuesNear(center: Coordinate, radiusKm: Double): List<Venue> {
-        val rows = remote.rpc<List<NearbyVenueRow>>(
+        val rows = remote.rpc<List<JsonObject>>(
             "venues_near", json("lat" to center.latitude, "lng" to center.longitude, "radius_km" to radiusKm, "max_results" to 200),
         )
-        return rows.map { it.venue }.filter { it.locationApproximate != true }.onEach { venues[it.id] = it }
+        // 返回的是整行：只读认识的列（venueFromRow），一家读不懂不影响别的
+        return rows.mapNotNull { (it["venue"] as? JsonObject)?.let(::venueFromRow) }
+            .filter { it.locationApproximate != true }.onEach { venues[it.id] = it }
     }
 
     /** 按名字或地址找球馆（没开定位、或者附近列表里没有的时候用） */
@@ -315,6 +317,31 @@ class Backend(
         for (id in ids.filter { it !in state.favoriteVenueIds }) {
             remote.insert("favorite_venues", json("user_id" to userId, "venue_id" to id))
             state = state.copy(favoriteVenueIds = state.favoriteVenueIds + id)
+        }
+    }
+
+    /** 记下读到的球馆（球馆页、添加、确认以后），选球馆、常去球馆显示名字用 */
+    fun cacheVenue(venue: Venue) {
+        venues[venue.id] = venue
+    }
+
+    /** 收藏或取消一家常去球馆：先改本机的，没同步上就按服务器的恢复 */
+    suspend fun setFavoriteVenue(id: String, on: Boolean) {
+        val userId = state.user?.id ?: throw RemoteError.NotSignedIn
+        if ((id in state.favoriteVenueIds) == on) return
+        state = state.copy(favoriteVenueIds = if (on) state.favoriteVenueIds + id else state.favoriteVenueIds - id)
+        try {
+            if (on) {
+                remote.insert("favorite_venues", json("user_id" to userId, "venue_id" to id))
+            } else {
+                remote.delete("favorite_venues", "user_id=eq.$userId&venue_id=eq.$id")
+            }
+        } catch (error: RemoteError) {
+            try {
+                refreshProfile()
+            } catch (_: RemoteError) {
+            }
+            throw error
         }
     }
 
@@ -424,8 +451,5 @@ class RemoteProfile(
 @Serializable
 private class FavoriteRow(val venueId: String)
 
-@Serializable
-private class NearbyVenueRow(val venue: Venue)
-
-private const val VENUE_COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,postal_code,country_code,status,location_approximate," +
+internal const val VENUE_COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,postal_code,country_code,status,location_approximate," +
     "time_zone_id,apple_place_id,court_count,pricing,pricing_note,currency_code,phone,website,entrance_note,source,created_at,play_times"
