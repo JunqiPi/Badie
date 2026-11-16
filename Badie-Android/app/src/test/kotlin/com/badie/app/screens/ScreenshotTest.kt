@@ -111,6 +111,22 @@ class ScreenshotTest {
     @Test
     fun splash() = shot("splash") { SplashView() }
 
+    // 从网站下载安装的包有新版本时，标签栏上面那一条
+    @Test
+    fun updateBanner() = shot("update-banner") { UpdateBannerSample() }
+
+    @Test
+    fun updateBannerEnglishDark() = shot("update-banner-en-dark", qualifiers = "en", appearance = Appearance.Dark) { UpdateBannerSample() }
+
+    @Composable
+    private fun UpdateBannerSample() {
+        Column(Modifier.padding(AppTheme.Spacing.lg).fillMaxWidth()) {
+            com.badie.app.shell.UpdateBanner(
+                com.badie.app.shell.AndroidRelease(7, "1.0.6", com.badie.app.shell.SideloadUpdates.APK_URL), onDownload = {}, onDismiss = {},
+            )
+        }
+    }
+
     @Test
     fun components() = shot("components-zh") { Components() }
 

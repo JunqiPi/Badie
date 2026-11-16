@@ -56,6 +56,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.badie.app.push.NotificationRouter
 import com.badie.app.design.AppTheme
+import com.badie.app.features.profile.openLink
+import androidx.compose.ui.platform.LocalContext
 import com.badie.app.design.CountBadge
 import com.badie.app.design.Dot
 import com.badie.app.design.IconButton
@@ -154,18 +156,31 @@ fun MainTabView() {
             enter = slideInVertically(AppTheme.Motion.standard()) { it } + fadeIn(),
             exit = slideOutVertically(AppTheme.Motion.standard()) { it } + fadeOut(),
         ) {
-            FloatingTabBar(
-                badges = mapOf(
-                    MainTab.Games to env.surveyManager.pendingCount,
-                    MainTab.Messages to env.messageManager.unreadCount + env.friendManager.incomingRequestCount,
-                ),
-            ) { router.isCreateMenuPresented = true }
+            Column {
+                env.updates.available?.let { release ->
+                    val context = LocalContext.current
+                    UpdateBanner(
+                        release,
+                        onDownload = { context.openLink(SideloadUpdates.downloadUrl(release)) },
+                        onDismiss = { env.updates.dismiss() },
+                        modifier = Modifier.padding(horizontal = AppTheme.Spacing.lg).padding(bottom = AppTheme.Spacing.xs),
+                    )
+                }
+                FloatingTabBar(
+                    badges = mapOf(
+                        MainTab.Games to env.surveyManager.pendingCount,
+                        MainTab.Messages to env.messageManager.unreadCount + env.friendManager.incomingRequestCount,
+                    ),
+                ) { router.isCreateMenuPresented = true }
+            }
         }
 
         // 匹配流程（全屏）：任何页面跳转都会把它关掉，不然新页面在它后面看不见
         MatchFlowOverlay()
     }
     LaunchedEffect(router.navigations) { env.matchManager.isFlowPresented = false }
+    // 从网站下载安装的：看有没有新版本（一天最多查一次）
+    LaunchedEffect(Unit) { env.updates.checkIfDue() }
     // 点通知打开的页面：主界面出来了才打开（冷启动、在登录页时先记着）
     DisposableEffect(router) {
         NotificationRouter.attach(router, env.messageManager)

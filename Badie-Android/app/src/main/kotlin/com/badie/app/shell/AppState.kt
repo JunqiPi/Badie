@@ -135,6 +135,8 @@ class AppEnvironment(
     val surveyManager = SurveyManager(context)
     val inboxManager = InboxManager(context)
     val groupManager = GroupManager(context, locationManager)
+    /** 从网站下载安装的正式包：有新版本时提示（见 SideloadUpdates） */
+    val updates = SideloadUpdates.forApp(android)
 }
 
 val LocalEnv = staticCompositionLocalOf<AppEnvironment> { error("没有提供 AppEnvironment") }
