@@ -12,9 +12,9 @@ object TestSupport {
     const val CLOCK = 1_800_000_000_000L
     const val USER_ID = "6f1c2c3e-0000-4000-8000-000000000001"
 
-    fun backend(server: FakeServer = FakeServer(), session: RemoteSession? = null): Backend = Backend(
+    fun backend(server: FakeServer = FakeServer(), session: RemoteSession? = null, pushToken: String? = null): Backend = Backend(
         SupabaseClient(SessionStorage({ session }, {}), server.transport, now = { CLOCK }),
-        CacheStore.memory, now = { CLOCK }, deviceCountry = { "US" }, serverLocale = { "zh-Hans" },
+        CacheStore.memory, now = { CLOCK }, deviceCountry = { "US" }, serverLocale = { "zh-Hans" }, pushToken = { pushToken },
     )
 
     fun session() = RemoteSession("old", "r-old", CLOCK + 3_600_000, USER_ID, "alex@example.com")

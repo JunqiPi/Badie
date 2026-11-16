@@ -3,7 +3,7 @@
 // 聊天推送没有 id（不回报送达），带 chat：会话、发消息的人（头像是 avatars 桶里的路径）、群名、会话人数
 export type Chat = { thread: string; sender: string; name: string | null; avatar: string | null; group: string | null; members: number | null };
 export type Item = {
-  id: number | null; kind: 'apns' | 'apns_sandbox' | 'web'; token: string; keys?: { p256dh: string; auth: string };
+  id: number | null; kind: 'apns' | 'apns_sandbox' | 'web' | 'fcm'; token: string; keys?: { p256dh: string; auth: string };
   title: string; body: string; link?: string; chat?: Chat;
 };
 
@@ -22,3 +22,22 @@ export function apnsPayload(item: Item, supabaseUrl: string) {
 
 // 球群人多，同一个群在锁屏上只留最新一条；私信和球局群聊每条都留
 export const collapseId = (item: Item) => (item.chat?.thread.startsWith('group:') ? item.chat.thread : undefined);
+
+// 发给安卓（Firebase Cloud Messaging）的内容：只发数据，由 App 自己显示通知（聊天显示成带头像的会话通知）。
+// FCM 的 data 里只能放文字，聊天信息整个转成 JSON 字符串；头像给完整地址
+export function fcmPayload(item: Item, supabaseUrl: string) {
+  const data: Record<string, string> = { title: item.title, body: item.body };
+  if (item.link) data.link = item.link;
+  if (item.chat) {
+    const { avatar, ...chat } = item.chat;
+    data.chat = JSON.stringify({ ...chat, avatar: avatar ? `${supabaseUrl}/storage/v1/object/public/avatars/${avatar}` : null });
+  }
+  const collapse = collapseId(item);
+  return {
+    message: {
+      token: item.token,
+      data,
+      android: { priority: 'HIGH', ttl: '3600s', ...(collapse ? { collapse_key: collapse } : {}) },
+    },
+  };
+}

@@ -8,7 +8,9 @@ import com.badie.app.remote.KeystoreSessionStorage
 import com.badie.app.remote.OkHttpTransport
 import com.badie.app.remote.SupabaseClient
 import com.badie.app.shell.AppEnvironment
+import com.badie.app.push.PushRegistry
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.IOException
 import java.util.Locale
@@ -17,10 +19,24 @@ class BadieApplication : Application() {
     /** 整个 App 一份，Activity 重建（转屏、换语言）时不丢 */
     val environment: AppEnvironment by lazy {
         val remote = SupabaseClient(KeystoreSessionStorage.create(this), OkHttpTransport.transport)
-        val backend = Backend(remote, cacheStore(), deviceCountry = { Locale.getDefault().country }, serverLocale = { AppLanguage.current })
+        val photos = com.badie.app.backend.PhotoStore(remote, MainScope(), File(cacheDir, "photos"))
+        val backend = Backend(
+            remote, cacheStore(), deviceCountry = { Locale.getDefault().country }, serverLocale = { AppLanguage.current }, photos = photos,
+            pushToken = { PushRegistry.token },
+        )
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
-        AppEnvironment(MainScope(), backend, settings.getString("appearance", null)) { settings.edit().putString("appearance", it).apply() }
+        val scope = MainScope()
+        // 推送：拿到令牌就报给服务器（没登录时先记着，登录后再报）。每次启动重新要一次
+        PushRegistry.onToken = { scope.launch { backend.registerPush() } }
+        PushRegistry.refresh(this)
+        AppEnvironment(scope, backend, settings.getString("appearance", null), { settings.edit().putString("appearance", it).apply() }, this)
             .also { it.appState.start() }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        // App 不在前台时 Firebase 换了令牌：起一份环境（会核对登录状态），登录着就报给服务器
+        PushRegistry.onToken = { environment }
     }
 
     /** 本机缓存：一个文件，放在 App 自己的目录里（不备份，见 data_extraction_rules.xml） */

@@ -3,6 +3,7 @@ package com.badie.app.models
 import com.badie.app.design.Sym
 import com.badie.app.design.SymbolId
 import com.badie.app.l10n.L10n.tr
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
@@ -15,6 +16,28 @@ val String.stableHash: Int
         for (byte in encodeToByteArray()) hash = hash * 33UL + byte.toUByte().toULong()
         return (hash and 0x7FFF_FFFFUL).toInt()
     }
+
+/** 字数：和 iPhone 的 String.count 一样按看到的字算（一个表情、带声调的字母都算一个） */
+val String.characterCount: Int
+    get() {
+        val iterator = java.text.BreakIterator.getCharacterInstance()
+        iterator.setText(this)
+        var count = 0
+        while (iterator.next() != java.text.BreakIterator.DONE) count += 1
+        return count
+    }
+
+/** 等级范围（1...9 这种）存成 [最低, 最高] */
+object IntRangeSerializer : kotlinx.serialization.KSerializer<IntRange> {
+    private val list = kotlinx.serialization.builtins.ListSerializer(Int.serializer())
+    override val descriptor = list.descriptor
+    override fun serialize(encoder: kotlinx.serialization.encoding.Encoder, value: IntRange) =
+        list.serialize(encoder, listOf(value.first, value.last))
+    override fun deserialize(decoder: kotlinx.serialization.encoding.Decoder): IntRange {
+        val bounds = list.deserialize(decoder)
+        return bounds[0]..bounds[1]
+    }
+}
 
 // MARK: - 高水平认证
 
@@ -62,6 +85,15 @@ enum class VerificationStatus(val rawValue: String) {
             Tournament -> tr("赛果认证")
             National -> tr("等级认证")
             Bwf -> tr("BWF 认证")
+        }
+
+    /** 服务器的写法：tournament / national / bwf */
+    val serverValue: String
+        get() = when (this) {
+            Tournament -> "tournament"
+            National -> "national"
+            Bwf -> "bwf"
+            Unverified -> ""
         }
 
     companion object {

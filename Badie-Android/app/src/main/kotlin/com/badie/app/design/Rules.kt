@@ -100,10 +100,11 @@ fun RulesSheet(title: String, points: List<String>) {
 /** 半屏弹层的外壳：圆角 28，带拖动条，底色是页面底色 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SheetScaffold(onDismiss: () -> Unit, content: @Composable () -> Unit) {
+fun SheetScaffold(onDismiss: () -> Unit, /** 直接拉满（选球馆这类长列表） */ fullHeight: Boolean = false, content: @Composable () -> Unit) {
     val handle = AppTheme.colors.inkTertiary
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = fullHeight),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = AppTheme.colors.canvas,
         tonalElevation = 0.dp,

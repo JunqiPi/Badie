@@ -45,6 +45,8 @@ android {
                 // 每次都重新出图，放在 app/build/outputs/roborazzi
                 it.systemProperty("roborazzi.test.record", "true")
                 it.maxHeapSize = "2g"
+                // 截图也算测试的产出：测试从缓存取结果时，截图一起取回来
+                it.outputs.dir(it.project.layout.buildDirectory.dir("outputs/roborazzi"))
                 // 模拟 Android 环境的测试库要碰 JDK 内部的类
                 it.jvmArgs("--add-exports=java.base/jdk.internal.access=ALL-UNNAMED", "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED")
             }
@@ -74,6 +76,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
+    // 推送（FCM）。不用 Google Services 插件：配置写在 res/values/firebase.xml
+    implementation(libs.firebase.messaging)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

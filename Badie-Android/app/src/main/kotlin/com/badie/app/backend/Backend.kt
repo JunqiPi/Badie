@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import com.badie.app.l10n.L10n.tr
 import com.badie.app.models.Avatar
 import com.badie.app.models.CardColor
+import com.badie.app.models.Coordinate
 import com.badie.app.models.ChallengePolicy
 import com.badie.app.models.GameMode
 import com.badie.app.models.Gender
@@ -16,6 +17,7 @@ import com.badie.app.models.SkillAssessmentSummary
 import com.badie.app.models.SkillLevel
 import com.badie.app.models.SkillTier
 import com.badie.app.models.User
+import com.badie.app.models.Venue
 import com.badie.app.models.VerificationStatus
 import com.badie.app.remote.InstantSerializer
 import com.badie.app.remote.RemoteError
@@ -63,7 +65,17 @@ class Backend(
     private val deviceCountry: () -> String,
     /** 通知和邮件用 App 当前的界面语言 */
     private val serverLocale: () -> String,
+    /** 照片头像（别人的、自己的） */
+    val photos: PhotoStore = PhotoStore(remote, kotlinx.coroutines.MainScope(), cacheDir = null),
+    /** 这台设备的推送令牌（没允许通知、测试里为空），见 push/PushRegistry.kt */
+    private val pushToken: () -> String? = { null },
 ) {
+    /** 自己现在的头像、卡片背景的地址（换照片时删旧的用） */
+    var avatarPath: String? = null
+        private set
+    var cardPhotoPath: String? = null
+        private set
+
     private var state: CachedState = loadCache()
         set(value) {
             field = value
@@ -112,6 +124,7 @@ class Backend(
 
     /** 登录成功（密码、验证码、Apple、Google 都一样）：有资料就直接登录，没有就去填资料 */
     private suspend fun outcome(session: RemoteSession): AuthOutcome {
+        registerPush()
         val user = refreshProfile()
         return if (user != null) AuthOutcome.SignedIn(user) else AuthOutcome.NeedsProfile(session.email ?: "")
     }
@@ -139,7 +152,8 @@ class Backend(
     suspend fun restoreSession() {
         if (remote.session == null) return signOutLocally()
         try {
-            if (refreshProfile() == null) signOutLocally()
+            if (refreshProfile() == null) return signOutLocally()
+            registerPush()
         } catch (_: RemoteError.NotSignedIn) {
             signOutLocally()
         } catch (_: RemoteError) {
@@ -150,13 +164,41 @@ class Backend(
     /** 只清本机的登录状态（服务器那边已经失效，或者从没登录过） */
     fun signOutLocally() {
         isAdmin = false
+        avatarPath = null
+        cardPhotoPath = null
+        photos.clear()
         if (state.user != null) state = CachedState()
     }
 
-    /** 退出登录：清掉这个账号留在本机的东西，换账号登录时不会看到 */
-    suspend fun signOut() {
+    /** 退出登录：清掉这个账号留在本机的东西，换账号登录时不会看到。注销时推送登记已经先注销了，不用再来一次 */
+    suspend fun signOut(unregistersPush: Boolean = true) {
+        if (unregistersPush) unregisterPush()
         remote.signOut()
         signOutLocally()
+    }
+
+    // MARK: 推送
+
+    /** 登录状态下把这台设备的推送令牌报给服务器 */
+    suspend fun registerPush() {
+        val token = pushToken() ?: return
+        if (remote.session == null) return
+        try {
+            remote.call("register_push", json("p_kind" to "fcm", "p_token" to token))
+        } catch (_: RemoteError) {
+            // 下次启动再报
+        }
+    }
+
+    /** 退出登录、注销前：这台设备不再收这个账号的推送 */
+    suspend fun unregisterPush() {
+        val token = pushToken() ?: return
+        if (remote.session == null) return
+        try {
+            remote.call("unregister_push", json("p_token" to token))
+        } catch (_: RemoteError) {
+            // 离线时照样退出；服务器发不到会自己清掉失效的令牌
+        }
     }
 
     // MARK: 资料
@@ -174,6 +216,10 @@ class Backend(
         }
         val user = user(profile, email = session.email)
         state = CachedState(user, favorites)
+        avatarPath = profile.avatarPath
+        cardPhotoPath = profile.cardPhotoPath
+        photos.apply(profile.id, profile.avatarPath)
+        photos.applyCard(profile.id, profile.cardPhotoPath)
         if (profile.locale != serverLocale()) {
             try {
                 remote.update("profiles", "id=eq.${profile.id}", json("locale" to serverLocale()))
@@ -216,7 +262,11 @@ class Backend(
             ),
             gender = Gender.ofServer(profile.gender),
             preferredMode = profile.preferredMode?.let(GameMode::ofServer) ?: known.preferredMode,
-            avatar = known.avatar.copy(cardColor = CardColor.of(profile.cardColor)),
+            avatar = known.avatar.copy(
+                cardColor = CardColor.of(profile.cardColor),
+                photoVersion = profile.avatarPath?.let(PhotoStore::version),
+                cardPhotoVersion = profile.cardPhotoPath?.let(PhotoStore::version),
+            ),
         ).let { user ->
             if (kind != null && profile.verifiedRating != null) {
                 user.applyingVerification(kind, SkillTier.ofRating(profile.verifiedRating))
@@ -259,6 +309,103 @@ class Backend(
             remote.update("profiles", "id=eq.$id", json("locale" to serverLocale()))
         } catch (_: RemoteError) {
         }
+    }
+
+    // MARK: 球馆
+
+    /** 读过的球馆（按 id），常去球馆和选球馆时显示名字用 */
+    private val venues = HashMap<String, Venue>()
+
+    fun venue(id: String): Venue? = venues[id]
+
+    /** 附近的球馆，按距离排；坐标只是大概的不要 */
+    suspend fun venuesNear(center: Coordinate, radiusKm: Double): List<Venue> {
+        val rows = remote.rpc<List<JsonObject>>(
+            "venues_near", json("lat" to center.latitude, "lng" to center.longitude, "radius_km" to radiusKm, "max_results" to 200),
+        )
+        // 返回的是整行：只读认识的列（venueFromRow），一家读不懂不影响别的
+        return rows.mapNotNull { (it["venue"] as? JsonObject)?.let(::venueFromRow) }
+            .filter { it.locationApproximate != true }.onEach { venues[it.id] = it }
+    }
+
+    /** 按名字或地址找球馆（没开定位、或者附近列表里没有的时候用） */
+    suspend fun searchVenues(query: String): List<Venue> {
+        val text = query.trim().replace(Regex("""[,()*%\\]"""), " ").trim()
+        if (text.isEmpty()) return emptyList()
+        val pattern = java.net.URLEncoder.encode("*$text*", "UTF-8")
+        val found = remote.select<List<Venue>>(
+            "venues",
+            "select=$VENUE_COLUMNS&merged_into=is.null&or=(name.ilike.$pattern,street.ilike.$pattern,city.ilike.$pattern)&limit=30",
+        )
+        return found.onEach { venues[it.id] = it }
+    }
+
+    /** 常去球馆：服务器上的收藏换成这几家（注册最后一步用） */
+    suspend fun saveFavoriteVenues(ids: List<String>) {
+        val userId = state.user?.id ?: throw RemoteError.NotSignedIn
+        for (id in ids.filter { it !in state.favoriteVenueIds }) {
+            remote.insert("favorite_venues", json("user_id" to userId, "venue_id" to id))
+            state = state.copy(favoriteVenueIds = state.favoriteVenueIds + id)
+        }
+    }
+
+    /** 记下读到的球馆（球馆页、添加、确认以后），选球馆、常去球馆显示名字用 */
+    fun cacheVenue(venue: Venue) {
+        venues[venue.id] = venue
+    }
+
+    /** 收藏或取消一家常去球馆：先改本机的，没同步上就按服务器的恢复 */
+    suspend fun setFavoriteVenue(id: String, on: Boolean) {
+        val userId = state.user?.id ?: throw RemoteError.NotSignedIn
+        if ((id in state.favoriteVenueIds) == on) return
+        state = state.copy(favoriteVenueIds = if (on) state.favoriteVenueIds + id else state.favoriteVenueIds - id)
+        try {
+            if (on) {
+                remote.insert("favorite_venues", json("user_id" to userId, "venue_id" to id))
+            } else {
+                remote.delete("favorite_venues", "user_id=eq.$userId&venue_id=eq.$id")
+            }
+        } catch (error: RemoteError) {
+            try {
+                refreshProfile()
+            } catch (_: RemoteError) {
+            }
+            throw error
+        }
+    }
+
+    // MARK: 照片
+
+    /** 上传自己的头像（320×320 的 JPEG）：先传新的、换上，再删旧的 */
+    suspend fun uploadAvatar(jpeg: ByteArray) {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        val path = photos.upload(me.id, jpeg, "set_avatar", old = avatarPath, other = cardPhotoPath)
+        avatarPath = path
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(photoVersion = PhotoStore.version(path))))
+    }
+
+    /** 上传卡片背景（600×800 的 JPEG） */
+    suspend fun uploadCardPhoto(jpeg: ByteArray) {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        val path = photos.upload(me.id, jpeg, "set_card_photo", old = cardPhotoPath, other = avatarPath)
+        cardPhotoPath = path
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(cardPhotoVersion = PhotoStore.version(path))))
+    }
+
+    /** 改回文字头像 */
+    suspend fun removeAvatar() {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        photos.remove(me.id, "set_avatar", avatarPath)
+        avatarPath = null
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(photoVersion = null)))
+    }
+
+    /** 卡片不用照片了（改用颜色） */
+    suspend fun removeCardPhoto() {
+        val me = state.user ?: throw RemoteError.NotSignedIn
+        photos.remove(me.id, "set_card_photo", cardPhotoPath)
+        cardPhotoPath = null
+        state = state.copy(user = me.copy(avatar = me.avatar.copy(cardPhotoVersion = null)))
     }
 
     /** 以前注册、还没选性别的人补选 */
@@ -332,3 +479,6 @@ class RemoteProfile(
 
 @Serializable
 private class FavoriteRow(val venueId: String)
+
+internal const val VENUE_COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,postal_code,country_code,status,location_approximate," +
+    "time_zone_id,apple_place_id,court_count,pricing,pricing_note,currency_code,phone,website,entrance_note,source,created_at,play_times"

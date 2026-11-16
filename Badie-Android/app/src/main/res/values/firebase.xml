@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Firebase 的配置（推送用）。来自 Firebase 控制台下载的 google-services.json，不用 Google Services 插件；
+     FirebaseInitProvider 启动时按这几个名字读。这个 key 本来就打在每个安装包里，不是密钥 -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="UnusedResources,MissingTranslation">
+    <string name="google_app_id" translatable="false">1:252649414018:android:d953a145a52f63e1ba439b</string>
+    <string name="gcm_defaultSenderId" translatable="false">252649414018</string>
+    <string name="google_api_key" translatable="false">AIzaSyAWB71_HKiKYx4CquMTAxKzqx8uFX-nqJE</string>
+    <string name="project_id" translatable="false">badie-41f72</string>
+    <string name="google_storage_bucket" translatable="false">badie-41f72.firebasestorage.app</string>
+</resources>

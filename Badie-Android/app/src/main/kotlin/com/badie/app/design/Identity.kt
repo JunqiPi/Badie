@@ -69,17 +69,42 @@ fun AvatarView(
     }
 }
 
+/** 某个用户的头像：有上传的照片就显示照片（没下载好之前先显示文字头像） */
 @Composable
 fun AvatarView(user: User, modifier: Modifier = Modifier, size: Dp = 44.dp) {
-    AvatarView(user.avatarText, modifier, paletteIndex = user.avatar.paletteIndex, size = size)
+    AvatarView(user.id, user.avatarText, user.avatar.paletteIndex, modifier, size)
 }
 
-// MARK: - 标签胶囊
+@Composable
+fun AvatarView(userId: String, text: String, paletteIndex: Int, modifier: Modifier = Modifier, size: Dp = 44.dp) {
+    val photos = LocalPhotos.current
+    AvatarView(text, modifier, paletteIndex = paletteIndex, size = size, image = photos?.avatar(userId))
+}
+
+/** 照片从哪取：App 里由 MainActivity 提供；截图测试里没有（只显示文字头像） */
+val LocalPhotos = androidx.compose.runtime.staticCompositionLocalOf<com.badie.app.backend.PhotoStore?> { null }
+
+// MARK: - 标签胶囊（新球友、已认证等）
 
 @Composable
-fun TagPill(text: String, modifier: Modifier = Modifier, fill: Color = AppTheme.colors.surfaceMuted, foreground: Color = AppTheme.colors.ink) {
-    Box(modifier.clip(CircleShape).drawBehind { drawRect(fill) }.padding(horizontal = 8.dp, vertical = 4.dp)) {
-        Text(text, style = AppTheme.Typography.caption.copy(fontWeight = FontWeight.Bold), color = foreground, maxLines = 1)
+fun TagPill(
+    text: String,
+    modifier: Modifier = Modifier,
+    icon: SymbolId? = null,
+    fill: Color = AppTheme.colors.surface,
+    foreground: Color? = null,
+) {
+    val colors = AppTheme.colors
+    val ink = foreground ?: colors.onAccent
+    Row(
+        modifier
+            .sticker(fill, radius = 12.dp, shadow = AppTheme.Elevation.none, strokeWidth = 1.5.dp)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        if (icon != null) Symbol(icon, size = 10, tint = ink)
+        Text(text, style = AppTheme.Typography.caption.copy(fontWeight = FontWeight.Bold), color = ink, maxLines = 1)
     }
 }
 
