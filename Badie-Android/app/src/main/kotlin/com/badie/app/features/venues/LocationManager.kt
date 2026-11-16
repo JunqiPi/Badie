@@ -278,7 +278,7 @@ class LocationManager internal constructor(
         version++
     }
 
-    /** 按名字、别名、缩写、地址找：服务器按名字和地址找到的，加上附近的、常去的，再按匹配度和距离排（最多 15 家） */
+    /** 按名字、别名、缩写、地址找：服务器按名字、别名、城市找到的，加上附近的、常去的（这些本机也按地址比），再按匹配度和距离排（最多 15 家） */
     suspend fun searchCourts(query: String): List<VenueSearch.Hit> {
         val known = nearbyCourts + favoriteCourts
         val remote = try {

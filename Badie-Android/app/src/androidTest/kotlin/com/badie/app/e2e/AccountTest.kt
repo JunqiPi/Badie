@@ -71,5 +71,7 @@ class ColdStartTest : E2ETest() {
         check(!exists(text(t("邮箱登录 / 注册")))) { "冷启动后回到了欢迎页" }
         openTab("我的")
         waitFor(text("Ada"), what = "“我的”里的昵称")
+        // 新的进程里没读过球馆：常去球馆的名字要从服务器的 venues_by_ids 读
+        waitFor(mentions("21 Badminton Club"), what = "卡片上常去球馆的名字")
     }
 }

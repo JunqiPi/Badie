@@ -178,7 +178,7 @@ class LocationManagerTest {
         val manager = manager()
         serveNearby(venueRow("v-1"))
         manager.start()
-        server.on("GET /rest/v1/venues", "[${venueRow("v-9", lat = 34.2).replace("Arena v-9", "Rally Point")}]")
+        server.on("POST /rest/v1/rpc/search_venues", "[${venueRow("v-9", lat = 34.2).replace("Arena v-9", "Rally Point")}]")
         server.on("GET /rest/v1/venue_regular_counts", "[]")
         val hits = manager.searchCourts("arena")
         assertEquals("附近的也能搜到", listOf("v-1"), hits.map { it.venue.id })

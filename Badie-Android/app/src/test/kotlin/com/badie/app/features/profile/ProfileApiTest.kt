@@ -241,9 +241,15 @@ class ProfileApiTest {
         backend.refreshProfile()
         val api = ProfileApi(backend, store, CoroutineScope(Dispatchers.Unconfined))
         server.requests.clear()
-        server.on("GET /rest/v1/venues", """[{"id":"v2","name":"LABC","city":"Los Angeles"},{"id":"v1","name":"Arcadia","city":null}]""")
+        // venues_by_ids 返回整行：只取名字和城市
+        server.on(
+            "POST /rest/v1/rpc/venues_by_ids",
+            """[{"id":"v2","name":"LABC","city":"Los Angeles","lat":34.0,"lon":-118.0,"country_code":"US","amenities":[]},""" +
+                """{"id":"v1","name":"Arcadia","city":null}]""",
+        )
         api.refreshFavoriteVenues()
-        assertTrue(server.query(0)!!.contains("id=in.(v1,v2)"))
+        assertEquals("/rest/v1/rpc/venues_by_ids", server.path(0))
+        assertEquals("""["v1","v2"]""", server.json(0).getValue("p_ids").toString())
         assertEquals("按收藏的先后", listOf("Arcadia", "LABC"), api.favoriteVenues().map { it.name })
     }
 }

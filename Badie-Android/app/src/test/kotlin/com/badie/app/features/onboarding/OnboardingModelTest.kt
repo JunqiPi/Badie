@@ -282,11 +282,10 @@ class OnboardingModelTest {
         assertEquals("Alpha Badminton", model.venue("v-near")?.name)
 
         // 按名字找
-        server.on("GET /rest/v1/venues", """[{"id":"v-s","name":"Sun Badminton","lat":34.1,"lon":-118.1,"country_code":"US"}]""")
+        server.on("POST /rest/v1/rpc/search_venues", """[{"id":"v-s","name":"Sun Badminton","lat":34.1,"lon":-118.1,"country_code":"US"}]""")
         assertEquals(listOf("v-s"), model.searchVenues(" Sun ").map { it.id })
-        val query = server.query(server.requests.lastIndex)!!
-        assertTrue(query, query.contains("name.ilike.*Sun*"))
-        assertTrue(query, query.contains("merged_into=is.null"))
+        assertEquals("/rest/v1/rpc/search_venues", server.path(server.requests.lastIndex))
+        assertEquals("Sun", server.json(server.requests.lastIndex).getValue("q").jsonPrimitive.content)
         assertTrue("空的不搜", model.searchVenues("  ").isEmpty())
     }
 

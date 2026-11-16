@@ -52,7 +52,7 @@ import com.badie.app.models.Venue
 import kotlinx.coroutines.delay
 
 /**
- * 选常去球馆（最多 3 家）：上面是已选的，下面是附近的；打字就按名字或地址搜。
+ * 选常去球馆（最多 3 家）：上面是已选的，下面是附近的；打字就按名字搜（服务器的 search_venues，不认街道地址）。
  * 对应 iPhone 的 VenuePickerView 的多选模式。iPhone 上找不到时可以自己加球馆，安卓要等球馆那一步（地图）做好
  */
 @Composable
@@ -85,7 +85,7 @@ fun VenuePicker(model: OnboardingModel, onDone: () -> Unit) {
             BrutalButton(tr("完成"), onDone, size = ButtonSize.Small, fullWidth = false)
         }
         StickerTextField(
-            query, { query = it }, tr("球馆名、简称（如 LABC）或地址"),
+            query, { query = it }, tr("搜索球馆"),
             modifier = Modifier.padding(horizontal = AppTheme.Spacing.screen),
             style = AppTheme.Typography.body,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, imeAction = ImeAction.Search),

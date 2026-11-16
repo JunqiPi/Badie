@@ -45,13 +45,11 @@ class VenueApiTest {
         assertEquals("34.0", args.getValue("lat").jsonPrimitive.content)
         assertNotNull("搜到的放进缓存", backend.venue("v-a"))
 
-        // 服务器没找到（或者还没有这个函数）：按名字、地址、城市直接查表
+        // 服务器没找到就是没有：不再直接查 venues 表（服务器以后会拦）
         server.requests.clear()
         server.on("POST /rest/v1/rpc/search_venues", "[]")
-        server.on("GET /rest/v1/venues", """[{"id":"v-b","name":"Other","lat":34.07,"lon":-118.03,"street":"1 Main St","country_code":"US"}]""")
-        assertEquals(listOf("v-b"), backend.searchVenues("Main St").map { it.id })
-        val query = server.query(1)!!
-        assertTrue(query, query.contains("street.ilike.*Main St*") || query.contains("street.ilike.*Main+St*"))
+        assertTrue(backend.searchVenues("Main St").isEmpty())
+        assertEquals(listOf("/rest/v1/rpc/search_venues"), server.requests.indices.map(server::path))
         assertEquals("没给位置就不传", "null", server.json(0).getValue("lat").toString())
         assertTrue("空的不搜", backend.searchVenues("  ").isEmpty())
     }
@@ -101,7 +99,7 @@ class VenueApiTest {
             """[{"venue_id":"v-a","venue_name":"Rally Point","kind":"likely","distance_m":35.5},""" +
                 """{"venue_id":"v-b","venue_name":"Other","kind":"same_building","distance_m":12}]""",
         )
-        server.on("GET /rest/v1/venues", "[${venueRow("v-a", "Rally Point")},${venueRow("v-b", "Other")}]")
+        server.on("POST /rest/v1/rpc/venues_by_ids", "[${venueRow("v-a", "Rally Point")},${venueRow("v-b", "Other")}]")
         val duplicates = backend.venueDuplicates(candidate)
         assertEquals(listOf("v-a", "v-b"), duplicates.map { it.venue.id })
         assertEquals(listOf(DuplicateKind.Likely, DuplicateKind.SameBuilding), duplicates.map { it.kind })
@@ -109,7 +107,7 @@ class VenueApiTest {
         assertFalse(duplicates[1].kind.blocksAdding)
         assertEquals(35.5, duplicates[0].distanceMeters, 0.0)
         assertEquals("Rally Point", server.json(0).getValue("name").jsonPrimitive.content)
-        assertTrue(server.query(1)!!.contains("id=in."))
+        assertEquals(listOf("v-a", "v-b"), server.json(1).getValue("p_ids").jsonArray.map { it.jsonPrimitive.content })
     }
 
     @Test
@@ -121,12 +119,54 @@ class VenueApiTest {
 
     @Test
     fun fetchVenueFollowsMerges() = runTest {
-        server.on("GET /rest/v1/venues", "[${venueRow("v-old", mergedInto = "v-kept")}]")
-        server.on("GET /rest/v1/venues", "[${venueRow("v-kept", "Kept")}]")
+        server.on("POST /rest/v1/rpc/venues_by_ids", "[${venueRow("v-old", mergedInto = "v-kept")}]")
+        server.on("POST /rest/v1/rpc/venues_by_ids", "[${venueRow("v-kept", "Kept")}]")
         assertEquals("v-kept", backend.fetchVenue("v-old")?.id)
-        assertTrue(server.query(1)!!.contains("id=eq.v-kept"))
-        server.on("GET /rest/v1/venues", "[]")
+        assertEquals(listOf("v-kept"), server.json(1).getValue("p_ids").jsonArray.map { it.jsonPrimitive.content })
+        server.on("POST /rest/v1/rpc/venues_by_ids", "[]")
         assertNull(backend.fetchVenue("v-gone"))
+        assertNotNull("读到的放进缓存", backend.venue("v-kept"))
+    }
+
+    @Test
+    fun venuesByIdsBatchesAHundredAtATime() = runTest {
+        val ids = (1..250).map { "v-$it" }
+        repeat(3) { server.on("POST /rest/v1/rpc/venues_by_ids", "[]") }
+        assertTrue(backend.remote.venuesByIds(ids + ids.take(10)).isEmpty())
+        assertEquals(3, server.requests.size)
+        val sent = server.requests.indices.map { index -> server.json(index).getValue("p_ids").jsonArray.map { it.jsonPrimitive.content } }
+        assertEquals("一次最多 100 家，重复的只问一次", listOf(100, 100, 50), sent.map { it.size })
+        assertEquals(ids, sent.flatten())
+        assertTrue("没有 id 不发请求", backend.remote.venuesByIds(emptyList()).isEmpty())
+        assertEquals(3, server.requests.size)
+    }
+
+    @Test
+    fun rankingsAndMatchingReadVenuesThroughTheFunction() = runTest {
+        server.on("POST /rest/v1/rpc/venues_by_ids", "[${venueRow("v-a", "Rally Point")}]")
+        assertEquals(listOf("v-a"), RankingsApi(backend.remote).venues(listOf("v-a")).map { it.id })
+        server.on("POST /rest/v1/rpc/venues_by_ids", "[${venueRow("v-b", "Other")}]")
+        assertEquals(listOf("v-b"), MatchApi(backend).venues(listOf("v-b")).map { it.id })
+        assertEquals(listOf("/rest/v1/rpc/venues_by_ids", "/rest/v1/rpc/venues_by_ids"), server.requests.indices.map(server::path))
+        assertTrue("没有 id 不发请求", RankingsApi(backend.remote).venues(emptyList()).isEmpty() && MatchApi(backend).venues(emptyList()).isEmpty())
+        assertEquals(2, server.requests.size)
+    }
+
+    @Test
+    fun venuesByIdsDecodesWholeRows() = runTest {
+        // venues_by_ids 返回整行：多出来的列（设施、核对日期、营业时间的服务器写法）不管，读不懂的一行跳过
+        val full = venueRow("v-a", "Rally Point").dropLast(1) +
+            ""","unit":"B","court_count":8,"time_zone_id":"America/Los_Angeles","kind":"club","hours":{"mon":"9-5"}}"""
+        server.on("POST /rest/v1/rpc/venues_by_ids", """[$full,{"id":"v-bad","name":"No location"}]""")
+        val venues = backend.remote.venuesByIds(listOf("v-a", "v-bad"))
+        assertEquals(listOf("v-a"), venues.map { it.id })
+        val venue = venues.single()
+        assertEquals("Rally Point", venue.name)
+        assertEquals(listOf("AB"), venue.aliases)
+        assertEquals(8, venue.courtCount)
+        assertEquals("America/Los_Angeles", venue.timeZoneId)
+        assertEquals("El Monte", venue.city)
+        assertEquals("B", venue.postalAddress.unit)
     }
 
     @Test
