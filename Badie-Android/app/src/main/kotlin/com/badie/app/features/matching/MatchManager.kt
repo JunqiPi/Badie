@@ -11,6 +11,12 @@ import com.badie.app.shell.ManagerContext
  */
 @Stable
 class MatchManager(private val context: ManagerContext) {
+    /**
+     * 快速匹配选的球馆（最多 3 家）。“选择球馆”页（features/venues 的 MatchVenuesScreen）直接改这个列表，
+     * 名字不要改；MatchManager 的其余部分随便改
+     */
+    val draftVenueIds = androidx.compose.runtime.mutableStateListOf<String>()
+
     /** 匹配流程的全屏页开着（任何页面跳转都会把它关掉） */
     var isFlowPresented by androidx.compose.runtime.mutableStateOf(false)
 
