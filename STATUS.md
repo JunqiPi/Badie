@@ -239,6 +239,14 @@
 - **防整表拿走**：迁移 `20261224000000_venue_api_guard.sql`（测试 `venue_api_guard.test.sql`）写好了 `check_request`（不让 `anon` / `authenticated` 直接 GET `/venues`），**还没启用**：安卓（`android-v1.0.5-1` 已发布）有 5 处直接 `GET /venues?id=in.(…)`（`VenueApi`、`RankingsApi`、`ProfileApi`、`MatchApi`、`Backend`），接口这一层分不出按 id 查和整表翻页。先让安卓改用新的 `venues_by_ids`（一次最多 100 家），装旧包的人都更新后，加迁移 `alter role authenticator set pgrst.db_pre_request = 'public.check_request'; notify pgrst, 'reload config';`。按位置（`venues_near`，100 公里、200 家）、搜索（`search_venues`，50 家）、按 id（`venue_brief`）照常；网站邀请里已改用 `venue_brief`。Cloudflare 上用户加了限速：`/courts/` 页同一 IP 10 秒超过 30 次拦 10 秒（认证过的搜索引擎不受限）
 - **iPhone 1.0.6**：选球馆时本机搜到不到 5 家，再用 `search_venues` 补，远处城市的球馆也能按名字搜到。安卓还没有选球馆的界面
 
+## 美国都会区的价格页（2026-11-16，网站，分支 `claude/metro-prices`，没推 main）
+
+- 为什么：美国的球馆散在郊区小城里，大多数城市页不够 3 家、不让收录，搜 “badminton Los Angeles” 的人没有一页可看。
+- `/courts/us/metro/<名字>/`（中文 `/zh/…`）：一个都会区里打羽毛球的地方，分“羽毛球馆”和“社区活动中心和学校体育馆”两张表，按散客价从低到高，列散客每人、包场每小时、场地数、开放时段。现在 16 个：洛杉矶、湾区、纽约、芝加哥、西雅图、华盛顿、圣地亚哥、达拉斯、休斯敦、奥斯汀、新泽西中部、波士顿、哥伦布、费城、匹兹堡、亚特兰大。
+- 名单和半径在 `web/src/lib/metros.ts`（中心点 + 半径）。只收有自己页面的球馆（App 自带、对照官网核对过的）；够 4 家、其中 3 家有价格才成页，名单里其余的（丹佛、波特兰等）数据补上来以后自己出现。
+- 入口：美国的国家页（“各都会区的散客价”）、都会区里的城市页和球馆页各有一个链接。页面进站点地图，带 ItemList 和面包屑的结构化数据。
+- 其他国家没有价格数据，先不做。
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。

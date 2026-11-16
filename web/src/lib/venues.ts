@@ -205,7 +205,7 @@ export function noindexPaths(): Set<string> {
   return new Set([...single, ...cityPages.filter((c) => !c.indexable), ...venuePages.filter((v) => !v.indexable)].map((p) => p.path));
 }
 
-function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
+export function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {
   const rad = Math.PI / 180;
   const dLat = (b.lat - a.lat) * rad;
   const dLon = (b.lon - a.lon) * rad;

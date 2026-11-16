@@ -3,6 +3,7 @@ import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
 import { PinsMap } from '../../../../app/PinsMap';
 import { cityName, countries, formatAddress, inCountry, type City, type Country } from '../../../../lib/venues';
+import { metros as allMetros } from '../../../../lib/metros';
 import { languages, pageLocale, regionName, translator } from '../../../../lib/static-i18n';
 
 export function getStaticPaths() {
@@ -23,6 +24,9 @@ const grouped = regions.length > 1 && country.cities.length > 12;
 const openAll = country.cities.length <= 24;
 const attributions = [...new Set(venues.map((v) => v.attribution).filter(Boolean))];
 const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
+// 都会区的价格页现在只有美国有
+const metros = country.code === 'us' ? allMetros : [];
+const zh = pageLocale(Astro.url.pathname) === 'zh-Hans';
 ---
 
 <Base
@@ -51,6 +55,24 @@ const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-
       <PinsMap client:visible pins={venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }))} label={t('Map of courts in {place}', { place })} />
     </div>
   </section>
+
+  {
+    metros.length > 0 && (
+      <section class="mt-14">
+        <h2 class="text-title3" data-t="Drop-in prices by metro area">Drop-in prices by metro area</h2>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {metros.map((metro) => (
+            <li>
+              <a href={metro.path} class="sticker lift inline-flex items-center gap-2 rounded-full! px-4 py-2 font-bold">
+                {zh ? metro.zh : metro.name}
+                <span class="text-ink-tertiary">{metro.venues.length}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
 
   <section class="mt-14">
     <h2 class="text-title3" data-t="Areas with the most courts">Areas with the most courts</h2>
