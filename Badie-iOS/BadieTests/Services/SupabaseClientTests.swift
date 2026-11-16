@@ -747,6 +747,7 @@ final class SupabaseClientTests: XCTestCase {
     }
 
     func testNearbyGroupsDecodeWithAndWithoutCourts() async throws {
+        let backend = try await signedInBackend()
         let base = #""summary":null,"level_min":3,"level_max":5,"join_policy":"open","gender":null,"coached":false,"venue":{"id":"v-test-court","name":"Test Court","city":"Irvine","tz":"America/Los_Angeles"},"activity":{"sessions":2,"average":6},"my_role":null"#
         let new = #"{"id":"grp-new","name":"Two courts",\#(base),\#(courts),"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":null,"venue":null},{"weekday":6,"start":540,"end":720,"capacity":8,"fee":null,"venue":"v-second"}],"distance_m":850.5}"#
         let old = #"{"id":"grp-old","name":"One court",\#(base),"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":null}]}"#
