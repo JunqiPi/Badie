@@ -191,6 +191,16 @@
 - 网站：建群、编辑可以加到 5 个球馆，多于一个时每周场次能选球馆；球群页和卡片列出所有球馆；发现页的筛选里多了“显示：球友 / 球群”（记在浏览器里，选了球群时筛选按钮上有角标、条件栏里有“球群 ✕”），球群按附近范围列出。iPhone 一样放在筛选里（1.0.6）；发现页顶部和以前一样
 - iPhone 另外在做；**安卓还没跟上**（`Badie-Android/` 还只有单个球馆的球群）
 
+## 我们整理的球馆、网站球馆目录、防整表拿走（2026-11-16，开发分支，没推 main）
+
+- **我们整理的球馆表**（CSV：名字、地址，约 1.9 万行）：`supabase/scripts/build_imported_venues.py`。不收“could not be confirmed”的、OSM 编号命名的（“Badminton pitch in X #123”，归 OSM 那边）、库里同名同城的
+  - 坐标：先用 QLever 一次 500 个名字到 OSM 里找同名的地方，核对它所在的市 / 区 / 省、邮编在地址里；找不到的再用 Nominatim（每秒 1 次、单线程，从发出算起；每条最多 3 次；只查到城市的标“位置大概”，名字又只是“羽毛球场”的不收）。Nominatim 会模糊匹配（邮编命中别国、“Sub-District”成了监狱），所以查到的地方必须在地址写的城市里
+  - **这批数据不进公开仓库**（防止被一次拿走）：结果写在 `--cache` 目录，直接写进线上数据库；`source = curated`、`status = unconfirmed`，id 是 `v-国家-b` 加 10 位十六进制。`build_venue_seed.py` 同步时不隐藏这种 id。网站构建前用 `supabase/scripts/export_collected_venues.sql` 从线上库只读导出（`web.yml`，用已有的 Supabase 密钥）
+  - 下次导入同类数据：先批量匹配，再一条条查剩下的；装 `timezonefinder==6.5.9`
+- **网站球馆目录**：所有目录（含 `supabase/data` 和上面导出的）都列出来。只有 App 自带的球馆有自己的页面（Cloudflare Pages 一次最多 2 万个文件，现在约 9,500 个）；其余的在列表里，点开是 Google 地图。少于 3 家的城市不单独成页，按省 / 州分组列在国家页上。目录页：球馆最多的 8 个国家大卡片，其余按大洲（时区归大洲，`data-region` 用联合国编码翻译）
+- **防整表拿走**：迁移 `20261222000000_venue_api_guard.sql`（测试 `venue_api_guard.test.sql`）：`db_pre_request` 不让 `anon` / `authenticated` 直接 GET `/venues`；按位置（`venues_near`，100 公里、200 家）、搜索（`search_venues`，50 家）、按 id（新的 `venue_brief`）照常。网站邀请里改用 `venue_brief`。Cloudflare 上用户加了限速：`/courts/` 页同一 IP 10 秒超过 30 次拦 10 秒（认证过的搜索引擎不受限）
+- **iPhone 1.0.6**：选球馆时本机搜到不到 5 家，再用 `search_venues` 补，远处城市的球馆也能按名字搜到。安卓还没有选球馆的界面
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。
