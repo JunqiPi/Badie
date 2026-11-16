@@ -328,16 +328,31 @@ class Backend(
             .filter { it.locationApproximate != true }.onEach { venues[it.id] = it }
     }
 
-    /** 按名字或地址找球馆（没开定位、或者附近列表里没有的时候用） */
-    suspend fun searchVenues(query: String): List<Venue> {
-        val text = query.trim().replace(Regex("""[,()*%\\]"""), " ").trim()
+    /**
+     * 按名字找球馆：服务器的 search_venues 按名字、别名（别的语言的名字）、城市找，不分大小写和重音、忽略空格，
+     * 离 [near] 近的在前（和网站一样）。没找到（或服务器还没有这个函数）时再按名字、地址、城市直接查一次表
+     */
+    suspend fun searchVenues(query: String, near: Coordinate? = null): List<Venue> {
+        val text = query.trim()
+        if (text.isEmpty()) return emptyList()
+        val found = try {
+            remote.rpc<List<JsonObject>>(
+                "search_venues", json("q" to text, "lat" to near?.latitude, "lng" to near?.longitude, "max_results" to 30),
+            ).mapNotNull(::venueFromRow)
+        } catch (_: RemoteError) {
+            emptyList()
+        }
+        return found.ifEmpty { searchVenuesByAddress(text) }.onEach { venues[it.id] = it }
+    }
+
+    private suspend fun searchVenuesByAddress(query: String): List<Venue> {
+        val text = query.replace(Regex("""[,()*%\\]"""), " ").trim()
         if (text.isEmpty()) return emptyList()
         val pattern = java.net.URLEncoder.encode("*$text*", "UTF-8")
-        val found = remote.select<List<Venue>>(
+        return remote.select<List<Venue>>(
             "venues",
             "select=$VENUE_COLUMNS&merged_into=is.null&or=(name.ilike.$pattern,street.ilike.$pattern,city.ilike.$pattern)&limit=30",
         )
-        return found.onEach { venues[it.id] = it }
     }
 
     /** 常去球馆：服务器上的收藏换成这几家（注册最后一步用） */
@@ -481,4 +496,4 @@ class RemoteProfile(
 private class FavoriteRow(val venueId: String)
 
 internal const val VENUE_COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,postal_code,country_code,status,location_approximate," +
-    "time_zone_id,apple_place_id,court_count,pricing,pricing_note,currency_code,phone,website,entrance_note,source,created_at,play_times"
+    "time_zone_id,apple_place_id,court_count,pricing,pricing_note,currency_code,phone,website,entrance_note,source,created_at,play_times,kind"

@@ -232,14 +232,15 @@ enum class VenueStatus(val rawValue: String) {
     object Serializer : RawValueSerializer<VenueStatus>("VenueStatus", { it.rawValue }, { VenueStatus.of(it) })
 }
 
-/** 场地类型：专营球馆以外的地方（社区中心、学校、教会体育馆）只在固定时段开放羽毛球 */
-@Serializable
-enum class VenueFacility {
-    @SerialName("dedicated") Dedicated,
-    @SerialName("multiSport") MultiSport,
-    @SerialName("recCenter") RecCenter,
-    @SerialName("school") School,
-    @SerialName("communityHall") CommunityHall;
+/** 场地类型：专营球馆以外的地方（社区中心、学校、教会体育馆）只在固定时段开放羽毛球；还有公园、学校、小区的露天场地 */
+enum class VenueFacility(val serverValue: String) {
+    Dedicated("dedicated"),
+    MultiSport("multi_sport"),
+    RecCenter("rec_center"),
+    School("school"),
+    CommunityHall("community_hall"),
+    /** OpenStreetMap 里公园、学校、小区的露天场地 */
+    Outdoor("outdoor");
 
     val title: String
         get() = when (this) {
@@ -248,7 +249,27 @@ enum class VenueFacility {
             RecCenter -> tr("社区中心")
             School -> tr("学校")
             CommunityHall -> tr("社区会馆")
+            Outdoor -> tr("露天场地")
         }
+
+    companion object {
+        /** 数据库里 venues.kind 的写法（multi_sport）；不认识的是 null */
+        fun ofServer(value: String?): VenueFacility? = entries.firstOrNull { it.serverValue == value }
+    }
+
+    /** 服务器的 kind 列：空或不认识的读成 null（不让一家球馆因为新的类型读不出来） */
+    object Serializer : KSerializer<VenueFacility?> {
+        override val descriptor: SerialDescriptor = JsonElement.serializer().descriptor
+
+        override fun deserialize(decoder: Decoder): VenueFacility? {
+            val element = (decoder as? JsonDecoder)?.decodeJsonElement() as? JsonPrimitive ?: return null
+            return if (element.isString) ofServer(element.content) else null
+        }
+
+        override fun serialize(encoder: Encoder, value: VenueFacility?) {
+            (encoder as JsonEncoder).encodeJsonElement(value?.let { JsonPrimitive(it.serverValue) } ?: kotlinx.serialization.json.JsonNull)
+        }
+    }
 }
 
 /** 收费方式：国内多为“按场地小时”，美国俱乐部常见“按人次 drop-in” */
@@ -363,7 +384,8 @@ data class Venue(
     val attribution: String? = null,
     /** 坐标只精确到区，地图核对后才显示 */
     val needsLocationCheck: Boolean? = null,
-    val facility: VenueFacility? = null,
+    /** 场地类型（服务器的 kind 列）；露天场地在球馆页标出来，自动选常去球馆时排在室内的后面 */
+    @SerialName("kind") @Serializable(VenueFacility.Serializer::class) val facility: VenueFacility? = null,
     /** 平台最后一次人工核实的日期 */
     @Serializable(EpochMillisSerializer::class) val checkedOn: Long? = null,
 ) {
@@ -423,11 +445,12 @@ data class Venue(
         /** 附近范围（公里）：默认 10，和 iPhone 一样 */
         const val DEFAULT_TRAVEL_RADIUS_KM = UserPreferences.DEFAULT_TRAVEL_RADIUS
 
-        /** 范围内离我最近的球馆；有核实过的就只在核实过的里面挑 */
+        /** 范围内离我最近的球馆：先挑核实过的，再挑室内的，都没有才用露天场地 */
         fun nearest(venues: List<Venue>, to: Coordinate, withinKm: Double): Venue? {
             val inRange = venues.filter { it.distanceKm(to) <= withinKm }
             val listed = inRange.filter { it.status != VenueStatus.Unconfirmed }
-            return (listed.ifEmpty { inRange }).minByOrNull { it.distanceKm(to) }
+            val indoor = inRange.filter { it.facility != VenueFacility.Outdoor }
+            return listed.ifEmpty { indoor.ifEmpty { inRange } }.minByOrNull { it.distanceKm(to) }
         }
     }
 }

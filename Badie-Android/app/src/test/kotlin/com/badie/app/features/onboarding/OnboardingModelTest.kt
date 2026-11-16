@@ -291,6 +291,26 @@ class OnboardingModelTest {
     }
 
     @Test
+    fun noVenueListedCanStillFinish() = runTest {
+        val (model, appState) = flow(signedIn = true)
+        model.nickname = "Alex"
+        model.gender = Gender.Male
+        model.skipAssessment()
+        assertFalse("还没选常去球馆", model.canContinue)
+        // 我们还没收录的地方：点“列表里没有我的球馆”先继续，以后在球馆页再选
+        model.noVenueListed = true
+        assertTrue(model.canContinue)
+
+        server.on("POST /rest/v1/profiles", "", status = 201)
+        server.serveProfile("[${TestSupport.profile()}]")
+        server.on("PATCH /rest/v1/profiles", "")
+        model.primaryAction()
+        assertTrue("没选就不存常去球馆", server.requests.indices.none { server.path(it) == "/rest/v1/favorite_venues" && server.requests[it].method == "POST" })
+        assertTrue(appState.backend.favoriteVenueIds.isEmpty())
+        assertEquals(AppState.Phase.Main, appState.phase)
+    }
+
+    @Test
     fun nearestPrefersListedVenuesInRange() {
         fun venue(id: String, km: Double, status: VenueStatus = VenueStatus.Confirmed) =
             com.badie.app.models.Venue(id, id, lat = here.latitude + km / 111.0, lon = here.longitude, countryCode = "US", status = status)

@@ -10,12 +10,14 @@ import java.util.Locale
 // MARK: - 球群（固定局）
 //
 // 绑定球馆的每周固定场次：一键报名、满员候补、有人退出自动递补。
+// 一个群最多 5 个球馆：第一个是主球馆（venueId，旧版本只认这个），每个场次可以选在哪个球馆。
 // 对外只显示近 30 天的活跃度，不显示成员总数。
 
 @Serializable
 data class PlayGroup(
     val id: String,
     val name: String,
+    /** 主球馆 */
     val venueId: String,
     val ownerId: String,
     /** 组织者（含群主），可以审批、取消场次 */
@@ -34,6 +36,8 @@ data class PlayGroup(
     val audience: Gender? = null,
     /** 教练带课：每场 1–40 人，水平范围只作提示（旧数据里没有这一项） */
     val coached: Boolean? = null,
+    /** 主球馆以外的球馆（按顺序；旧数据里没有这一项） */
+    val otherVenueIds: List<String>? = null,
 ) {
     @Serializable
     enum class JoinPolicy(val rawValue: String) {
@@ -59,6 +63,16 @@ data class PlayGroup(
 
     val isCoached: Boolean get() = coached ?: false
 
+    /** 所有球馆，主球馆在前 */
+    val venueIds: List<String> get() = listOf(venueId) + otherVenueIds.orEmpty().filter { it != venueId }
+
+    /** 换一组球馆：第一个当主球馆 */
+    fun withVenueIds(ids: List<String>): PlayGroup {
+        val first = ids.firstOrNull() ?: return this
+        val rest = ids.drop(1).filter { it != first }.distinct()
+        return copy(venueId = first, otherVenueIds = rest.ifEmpty { null })
+    }
+
     /** 收费说明：各场一样就只留一条，不一样就写明是哪一场 */
     val feeLines: List<String>
         get() {
@@ -76,6 +90,7 @@ data class PlayGroup(
 
     companion object {
         const val MAX_SCHEDULES = 7
+        const val MAX_VENUES = 5
         val NAME_LIMIT = 2..20
     }
 }
@@ -93,7 +108,12 @@ data class GroupSchedule(
     val capacity: Int,
     /** 费用说明，如“每人 $15” */
     val feeNote: String? = null,
+    /** 在哪个球馆（群里的球馆之一）；null = 主球馆 */
+    val venueId: String? = null,
 ) {
+    /** 这个场次实际在哪个球馆：不是群里的球馆（比如被删掉了）就回到主球馆 */
+    fun effectiveVenueId(group: PlayGroup): String = venueId?.takeIf { it in group.venueIds } ?: group.venueId
+
     val weekdayTitle: String
         get() {
             val day = RecurringTimeSlot.weekdayNames[((weekday - 1) % 7 + 7) % 7]
@@ -137,7 +157,11 @@ data class GroupSession(
     val signedUp: List<String>,
     val waitlist: List<String>,
     val isCancelled: Boolean = false,
+    /** 在哪个球馆；null = 球群的主球馆 */
+    val venueId: String? = null,
 ) {
+    fun effectiveVenueId(group: PlayGroup): String = venueId ?: group.venueId
+
     sealed interface Status {
         data object SignedUp : Status
         data class Waitlisted(val position: Int) : Status

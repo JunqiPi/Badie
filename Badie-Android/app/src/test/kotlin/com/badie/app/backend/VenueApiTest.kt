@@ -35,6 +35,28 @@ class VenueApiTest {
     )
 
     @Test
+    fun searchUsesTheServerSearch() = runTest {
+        server.on("POST /rest/v1/rpc/search_venues", "[${venueRow("v-a", "Rally Point")}]")
+        val found = backend.searchVenues(" rally ", Coordinate(34.0, -118.0))
+        assertEquals(listOf("v-a"), found.map { it.id })
+        assertEquals("/rest/v1/rpc/search_venues", server.path(0))
+        val args = server.json(0)
+        assertEquals("rally", args.getValue("q").jsonPrimitive.content)
+        assertEquals("34.0", args.getValue("lat").jsonPrimitive.content)
+        assertNotNull("搜到的放进缓存", backend.venue("v-a"))
+
+        // 服务器没找到（或者还没有这个函数）：按名字、地址、城市直接查表
+        server.requests.clear()
+        server.on("POST /rest/v1/rpc/search_venues", "[]")
+        server.on("GET /rest/v1/venues", """[{"id":"v-b","name":"Other","lat":34.07,"lon":-118.03,"street":"1 Main St","country_code":"US"}]""")
+        assertEquals(listOf("v-b"), backend.searchVenues("Main St").map { it.id })
+        val query = server.query(1)!!
+        assertTrue(query, query.contains("street.ilike.*Main St*") || query.contains("street.ilike.*Main+St*"))
+        assertEquals("没给位置就不传", "null", server.json(0).getValue("lat").toString())
+        assertTrue("空的不搜", backend.searchVenues("  ").isEmpty())
+    }
+
+    @Test
     fun addVenueSendsOnlyWhatIsFilledIn() = runTest {
         server.on("POST /rest/v1/rpc/add_venue", venueRow("v-new", "Rally Point"))
         val venue = backend.addVenue(candidate, listOf(" RP ", ""), courtCount = null, entranceNote = "  ")

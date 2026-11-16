@@ -68,6 +68,10 @@ class VenuesScreenshotTest {
     private val elite = row("v-elite", "Elite Rally Badminton Club", -4.5, 2.0, "4800 Rivergrade Rd", "Baldwin Park", extra = ""","court_count":12""")
     private val arena = row("v-arena", "Arena Badminton", 6.0, -3.0, "1500 S Grand Ave", "Covina", status = "confirmed", extra = ""","court_count":8""")
     private val pending = row("v-new", "Rally Point Community Center", 2.0, -1.0, "321 Main St", "Rosemead", status = "unconfirmed")
+    private val park = row(
+        "v-park", "Arcadia County Park · 羽毛球场", 3.0, 1.5, "405 S Santa Anita Ave", "Arcadia", status = "unconfirmed",
+        aliases = """["Badminton court"]""", extra = ""","kind":"outdoor","court_count":2,"attribution":"© OpenStreetMap contributors"""",
+    )
 
     private fun nearby(vararg rows: String) =
         server.on("POST /rest/v1/rpc/venues_near", rows.joinToString(",", "[", "]") { """{"venue":$it,"distance_m":100}""" })
@@ -144,12 +148,17 @@ class VenuesScreenshotTest {
     fun pendingVenueDetail() = shot("venues-2-detail-pending", environment(), qualifiers = "b+zh+Hans-h1400dp") { VenueScreen("v-new") }
 
     @Test
+    fun outdoorCourtDetail() = shot("venues-2-detail-outdoor", environment(courts = listOf(labc, park)), qualifiers = "b+zh+Hans-h1400dp") {
+        VenueScreen("v-park")
+    }
+
+    @Test
     fun matchVenues() = shot("venues-3-match", environment().also { it.matchManager.draftVenueIds.add("v-elite") }) { MatchVenuesScreen(null) }
 
     @Test
     fun search() {
         val environment = environment()
-        server.on("GET /rest/v1/venues", "[$labc]")
+        server.on("POST /rest/v1/rpc/search_venues", "[$labc]")
         server.on("GET /rest/v1/venue_regular_counts", "[]")
         shot("venues-4-search", environment) {
             VenuePickerView(VenuePickerMode.Browse, emptyList(), {}, {}, Modifier.fillMaxSize(), initialQuery = "labc")
@@ -159,6 +168,7 @@ class VenuesScreenshotTest {
     @Test
     fun searchNothingFound() {
         val environment = environment()
+        server.on("POST /rest/v1/rpc/search_venues", "[]")
         server.on("GET /rest/v1/venues", "[]")
         shot("venues-4-search-empty", environment) {
             VenuePickerView(VenuePickerMode.Single, emptyList(), {}, {}, Modifier.fillMaxSize(), initialQuery = "pickleball")

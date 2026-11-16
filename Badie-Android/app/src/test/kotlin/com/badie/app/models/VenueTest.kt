@@ -172,5 +172,23 @@ class VenueTest {
         assertNotNull(Venue.nearest(listOf(near), la, 10.0))
         assertTrue(UserPreferences.default.isValidTravelRadius(10.0))
         assertFalse(UserPreferences.default.isValidTravelRadius(60.0))
+
+        val park = venue("v-park", VenueStatus.Unconfirmed).copy(facility = VenueFacility.Outdoor)
+        val hall = venue("v-hall", VenueStatus.Unconfirmed).copy(lat = la.latitude + 3.0 / 111)
+        assertEquals("都待确认时先选室内的", "v-hall", Venue.nearest(listOf(park, hall), la, 10.0)?.id)
+        assertEquals("只有露天场地就用它", "v-park", Venue.nearest(listOf(park), la, 10.0)?.id)
+    }
+
+    @Test
+    fun facilityComesFromTheKindColumn() {
+        assertEquals(VenueFacility.MultiSport, VenueFacility.ofServer("multi_sport"))
+        assertEquals(VenueFacility.Outdoor, VenueFacility.ofServer("outdoor"))
+        assertNull(VenueFacility.ofServer("whatever"))
+        fun decode(kind: String) = RemoteJSON.decode<Venue>("""{"id":"v","name":"x","lat":0,"lon":0,"country_code":"US","kind":$kind}""".toByteArray())
+        assertEquals(VenueFacility.Outdoor, decode("\"outdoor\"").facility)
+        assertEquals(VenueFacility.CommunityHall, decode("\"community_hall\"").facility)
+        assertNull("不认识的类型不影响读这家球馆", decode("\"rooftop\"").facility)
+        assertNull(decode("null").facility)
+        assertEquals("露天场地", VenueFacility.Outdoor.title)
     }
 }

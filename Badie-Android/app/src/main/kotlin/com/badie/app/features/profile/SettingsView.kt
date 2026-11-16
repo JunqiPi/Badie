@@ -97,6 +97,7 @@ fun SettingsView() {
     var showHelp by remember { mutableStateOf(false) }
     var showTips by remember { mutableStateOf(false) }
     var showRadius by remember { mutableStateOf(false) }
+    var confirmHideRegular by remember { mutableStateOf(false) }
     val showsSupport = remember { TipJar.isAvailable(context) }
     // 从系统设置回来时重新读权限
     var resumed by remember { mutableIntStateOf(0) }
@@ -210,7 +211,10 @@ fun SettingsView() {
                 Column(Modifier.card(AppTheme.colors.surface, shadow = AppTheme.Elevation.none), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md)) {
                     ToggleRow(tr("在首页显示我"), privacy.showsWhenSearching, { on -> updatePrivacy { it.copy(showsWhenSearching = on) } })
                     InsetDivider()
-                    ToggleRow(tr("在同馆常客里显示我"), privacy.showsAsRegular, { on -> updatePrivacy { it.copy(showsAsRegular = on) } })
+                    // 打开直接存，关掉先确认（附近的人就约不了你了）
+                    ToggleRow(tr("在同馆常客里显示我"), privacy.showsAsRegular, { on ->
+                        if (on) updatePrivacy { it.copy(showsAsRegular = true) } else confirmHideRegular = true
+                    })
                     InsetDivider()
                     ToggleRow(tr("接收消息请求"), privacy.allowsMessageRequests, { on -> updatePrivacy { it.copy(allowsMessageRequests = on) } })
                     InsetDivider()
@@ -291,6 +295,16 @@ fun SettingsView() {
                 env.router.reset()
                 appState.signOut()
             }
+        }
+    }
+    if (confirmHideRegular) {
+        ConfirmDialog(
+            title = tr("要关掉吗？"), message = tr("我们只用你的常去球馆，让附近的球友找到你、约你打球。关掉后，别人就约不了你了。"),
+            confirmTitle = tr("关掉"), cancelTitle = tr("保持打开"),
+            onDismiss = { confirmHideRegular = false },
+        ) {
+            confirmHideRegular = false
+            updatePrivacy { it.copy(showsAsRegular = false) }
         }
     }
     if (showDelete) {
@@ -476,7 +490,7 @@ fun LanguagePicker(onChoose: (String?) -> Unit) {
 
 /** 要用户确认的弹窗（退出登录、注销这类） */
 @Composable
-fun ConfirmDialog(title: String, message: String, confirmTitle: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
+fun ConfirmDialog(title: String, message: String, confirmTitle: String, onDismiss: () -> Unit, cancelTitle: String? = null, onConfirm: () -> Unit) {
     val colors = AppTheme.colors
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -484,6 +498,6 @@ fun ConfirmDialog(title: String, message: String, confirmTitle: String, onDismis
         title = { Text(title, style = AppTheme.Typography.headline, color = colors.ink) },
         text = { Text(message, style = AppTheme.Typography.subheadline, color = colors.inkSecondary) },
         confirmButton = { TextAction(confirmTitle, onConfirm, color = colors.danger) },
-        dismissButton = { TextAction(tr("取消"), onDismiss, color = colors.ink) },
+        dismissButton = { TextAction(cancelTitle ?: tr("取消"), onDismiss, color = colors.ink) },
     )
 }

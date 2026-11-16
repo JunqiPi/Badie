@@ -120,6 +120,9 @@ fun GroupCard(group: PlayGroup, venue: Venue?, activity: GroupActivity, modifier
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             group.schedules.forEach { TagPill("${it.weekdayTitle} ${it.timeText}", icon = Sym.calendar, fill = colors.surfaceMuted, foreground = colors.ink) }
+            if (group.venueIds.size > 1) {
+                TagPill(tr("%lld 个球馆", group.venueIds.size), icon = Sym.mappinAndEllipse, fill = colors.surfaceMuted, foreground = colors.ink)
+            }
             if (group.isCoached) TagPill(tr("教练带课"), icon = Sym.graduationcapFill, fill = colors.sky)
             TagPill(group.levelText, icon = Sym.chartBarFill, fill = colors.surfaceMuted, foreground = colors.ink)
             group.audience?.let { TagPill(it.onlyLabel, fill = colors.peach) }
@@ -294,20 +297,9 @@ private fun GroupHeader(group: PlayGroup) {
     val colors = AppTheme.colors
     val me = env.appState.currentUser?.id
     Column(Modifier.card(), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md)) {
-        groupManager.venue(group)?.let { venue ->
-            Row(
-                Modifier.fillMaxWidth().pressable(scale = 1f) { env.router.open(Route.Venue(venue.id)) },
-                horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconTile(Sym.mappinAndEllipse, fill = colors.sky, size = 40.dp)
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(venue.name, style = AppTheme.Typography.bodyBold, color = colors.ink)
-                    Text(venue.address, style = AppTheme.Typography.footnote, color = colors.inkSecondary, maxLines = 2)
-                }
-                Symbol(Sym.chevronRight, size = 14, tint = colors.inkTertiary)
-            }
-        }
+        groupManager.venue(group)?.let { CourtLink(it) }
+        // 其他球馆（和主球馆一样的样子，点开球馆页）
+        groupManager.otherVenues(group).forEach { CourtLink(it) }
         if (group.summary.isNotEmpty()) Text(group.summary, style = AppTheme.Typography.subheadline, color = colors.ink)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (group.isCoached) TagPill(tr("教练带课"), icon = Sym.graduationcapFill, fill = colors.sky)
@@ -327,6 +319,25 @@ private fun GroupHeader(group: PlayGroup) {
                 Text(tr("球群群聊"))
             }
         }
+    }
+}
+
+/** 球群的一个球馆：点开球馆页 */
+@Composable
+private fun CourtLink(venue: Venue) {
+    val env = LocalEnv.current
+    val colors = AppTheme.colors
+    Row(
+        Modifier.fillMaxWidth().pressable(scale = 1f) { env.router.open(Route.Venue(venue.id)) },
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconTile(Sym.mappinAndEllipse, fill = colors.sky, size = 40.dp)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(venue.name, style = AppTheme.Typography.bodyBold, color = colors.ink)
+            Text(venue.address, style = AppTheme.Typography.footnote, color = colors.inkSecondary, maxLines = 2)
+        }
+        Symbol(Sym.chevronRight, size = 14, tint = colors.inkTertiary)
     }
 }
 
@@ -487,6 +498,12 @@ fun SessionRow(session: GroupSession, userId: String, onOpen: () -> Unit) {
     ) {
         Column(Modifier.weight(1f).pressable(scale = 1f, onClick = onOpen), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(session.slot.formattedFull(), style = AppTheme.Typography.bodyBold, color = colors.ink)
+            env.groupManager.sessionVenueName(session)?.let { venueName ->
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Symbol(Sym.mappinAndEllipse, size = 12, tint = colors.inkSecondary)
+                    Text(venueName, style = AppTheme.Typography.footnote, color = colors.inkSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(tr("已报 %lld/%lld", session.signedUp.size, session.capacity), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
                 if (session.waitlist.isNotEmpty()) Text(tr("· 候补 %lld", session.waitlist.size), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
@@ -521,7 +538,10 @@ fun SessionSheet(sessionId: String, onDismiss: () -> Unit) {
             Row(Modifier.padding(top = AppTheme.Spacing.xl), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(session.slot.formattedFull(), style = AppTheme.Typography.title2, color = AppTheme.colors.ink)
-                    Text(groupManager.venue(group)?.name ?: group.name, style = AppTheme.Typography.footnote, color = AppTheme.colors.inkSecondary)
+                    Text(
+                        groupManager.sessionVenueName(session) ?: groupManager.venue(group)?.name ?: group.name,
+                        style = AppTheme.Typography.footnote, color = AppTheme.colors.inkSecondary,
+                    )
                 }
                 IconButton(Sym.xmark, tr("关闭"), onClick = onDismiss)
             }
@@ -599,6 +619,10 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
     // 教练带课：每场 1–40 人，水平范围只作提示
     var coached by rememberSaveable { mutableStateOf(false) }
     var showVenuePicker by remember { mutableStateOf(false) }
+    // 主球馆以外的球馆（一共最多 5 个）；有几个球馆时每个场次选在哪个
+    val extraVenueIds = remember { mutableStateListOf<String>() }
+    // 正在换的那个其他球馆（null = 再加一个）；-1 = 没在选
+    var extraIndex by remember { mutableStateOf<Int?>(-1) }
     var didSetup by rememberSaveable { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
 
@@ -617,6 +641,9 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
             upperLevel = editing.levelRange.last
             joinPolicy = editing.joinPolicy
             coached = editing.isCoached
+            pickedVenueId = editing.venueId
+            extraVenueIds.clear()
+            extraVenueIds.addAll(editing.venueIds.drop(1))
             return@LaunchedEffect
         }
         if (isEditing) return@LaunchedEffect
@@ -625,6 +652,20 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
         val level = me?.levelFor(audience) ?: 4
         lowerLevel = maxOf(1, level - 2)
         upperLevel = minOf(9, level + 2)
+    }
+
+    // 所有球馆，主球馆在前
+    val allVenueIds = listOfNotNull(pickedVenueId) + extraVenueIds
+    val allCourts = allVenueIds.mapNotNull(groupManager::venue)
+
+    /** 主球馆换成了其他球馆里的一个、或者删了球馆：去掉重复，场次回到主球馆 */
+    fun normalizeCourts() {
+        pickedVenueId?.let { main -> extraVenueIds.removeAll { it == main } }
+        val ids = listOfNotNull(pickedVenueId) + extraVenueIds
+        schedules.indices.forEach { index ->
+            val court = schedules[index].venueId
+            if (court != null && (court !in ids || court == ids.firstOrNull())) schedules[index] = schedules[index].copy(venueId = null)
+        }
     }
 
     val validation: String? = run {
@@ -644,12 +685,14 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
         scope.launch {
             try {
                 if (editingGroupId != null) {
-                    groupManager.update(editingGroupId, name, schedules.toList(), lowerLevel..upperLevel, joinPolicy, summary, coached)
+                    groupManager.update(editingGroupId, name, schedules.toList(), lowerLevel..upperLevel, joinPolicy, summary, coached, allVenueIds)
                     env.appState.showToast(saved, Toast.Style.Success)
                     env.router.pop()
                 } else {
                     val venue = pickedVenueId ?: return@launch
-                    val group = groupManager.create(name, venue, schedules.toList(), lowerLevel..upperLevel, joinPolicy, summary, audience, coached)
+                    val group = groupManager.create(
+                        name, venue, schedules.toList(), lowerLevel..upperLevel, joinPolicy, summary, audience, coached, extraVenueIds.toList(),
+                    )
                     haptics.success()
                     env.appState.showToast(L10n.tr("已建群，群号 %@，可以分享到微信", group.inviteCode), Toast.Style.Success)
                     env.router.pop()
@@ -698,9 +741,24 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
                     }
                 }
             }
+            if (pickedVenueId != null) {
+                FormSection(tr("其他球馆")) {
+                    extraVenueIds.forEachIndexed { index, id ->
+                        CourtButton(groupManager.venue(id), id, onRemove = {
+                            extraVenueIds.remove(id)
+                            normalizeCourts()
+                        }) { extraIndex = index }
+                    }
+                    if (allVenueIds.size < PlayGroup.MAX_VENUES) CourtButton(null, tr("再加一个球馆")) { extraIndex = null }
+                }
+            }
             FormSection(tr("每周固定场次")) {
                 schedules.forEachIndexed { index, schedule ->
-                    ScheduleEditor(schedule, coached, canDelete = schedules.size > 1, onChange = { schedules[index] = it }) { schedules.removeAt(index) }
+                    ScheduleEditor(
+                        schedule, coached, canDelete = schedules.size > 1, courts = allCourts,
+                        courtId = schedule.venueId?.takeIf { it in allVenueIds } ?: allVenueIds.firstOrNull(),
+                        onChange = { schedules[index] = it },
+                    ) { schedules.removeAt(index) }
                 }
                 if (schedules.size < PlayGroup.MAX_SCHEDULES) {
                     TextAction(tr("再加一个场次"), {
@@ -748,7 +806,58 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
                 pickedVenueId = venue.id
                 pickedVenue = venue
                 showVenuePicker = false
+                normalizeCourts()
             }
+        }
+    }
+    val replacing = extraIndex
+    if (replacing != -1) {
+        SheetScaffold(onDismiss = { extraIndex = -1 }, fullHeight = true) {
+            GroupVenuePicker(replacing?.let(extraVenueIds::getOrNull)) { venue ->
+                extraIndex = -1
+                // 选好了：换掉那一家，或者加在最后（和已有的重复就不加）
+                if (venue.id == pickedVenueId || venue.id in extraVenueIds) return@GroupVenuePicker
+                if (replacing != null && replacing in extraVenueIds.indices) {
+                    extraVenueIds[replacing] = venue.id
+                } else if (allVenueIds.size < PlayGroup.MAX_VENUES) {
+                    extraVenueIds.add(venue.id)
+                }
+                env.appState.backend.cacheVenue(venue)
+                normalizeCourts()
+            }
+        }
+    }
+}
+
+/** 建群时的一个其他球馆：和固定球馆一样的样子，点开换一家，右边可以删；没有球馆时是“再加一个球馆” */
+@Composable
+private fun CourtButton(court: Venue?, title: String, onRemove: (() -> Unit)? = null, onClick: () -> Unit) {
+    val colors = AppTheme.colors
+    Row(
+        Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.md, shadow = AppTheme.Elevation.none).padding(AppTheme.Spacing.md),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
+    ) {
+        Row(
+            Modifier.weight(1f).pressable(scale = 0.98f, onClick = onClick),
+            horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconTile(Sym.sportscourtFill, fill = colors.sky, size = 40.dp)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(court?.name ?: title, style = AppTheme.Typography.bodyBold, color = colors.ink)
+                court?.address?.takeIf { it.isNotEmpty() }?.let {
+                    Text(it, style = AppTheme.Typography.footnote, color = colors.inkSecondary, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            if (onRemove == null) Symbol(Sym.chevronRight, size = 14, tint = colors.inkTertiary)
+        }
+        if (onRemove != null) {
+            val label = tr("移除%@", court?.name ?: title)
+            Box(
+                Modifier.size(44.dp).pressable(scale = 0.9f, onClick = onRemove).semantics { contentDescription = label },
+                contentAlignment = Alignment.Center,
+            ) { Symbol(Sym.xmarkCircleFill, size = 22, tint = colors.inkTertiary) }
         }
     }
 }
@@ -767,7 +876,10 @@ private fun weekdays(): List<Pair<Int, String>> =
     listOf(2 to tr("一"), 3 to tr("二"), 4 to tr("三"), 5 to tr("四"), 6 to tr("五"), 7 to tr("六"), 1 to tr("日"))
 
 @Composable
-private fun ScheduleEditor(schedule: GroupSchedule, coached: Boolean, canDelete: Boolean, onChange: (GroupSchedule) -> Unit, onDelete: () -> Unit) {
+private fun ScheduleEditor(
+    schedule: GroupSchedule, coached: Boolean, canDelete: Boolean, courts: List<Venue>, courtId: String?,
+    onChange: (GroupSchedule) -> Unit, onDelete: () -> Unit,
+) {
     val colors = AppTheme.colors
     val capacityRange = GroupSchedule.capacityRange(coached)
     val step = if (coached) 1 else 2
@@ -778,6 +890,16 @@ private fun ScheduleEditor(schedule: GroupSchedule, coached: Boolean, canDelete:
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             weekdays().forEach { (value, title) ->
                 ChoiceChip(title, isSelected = schedule.weekday == value, modifier = Modifier.weight(1f)) { onChange(schedule.copy(weekday = value)) }
+            }
+        }
+        // 几个球馆时选这一场在哪个（主球馆存成 null）
+        if (courts.size > 1) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                courts.forEach { court ->
+                    ChoiceChip(court.name, isSelected = courtId == court.id) {
+                        onChange(schedule.copy(venueId = court.id.takeIf { it != courts.first().id }))
+                    }
+                }
             }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md)) {
@@ -949,7 +1071,7 @@ private fun GroupVenuePicker(selectedId: String?, onPick: (Venue) -> Unit) {
         }
         delay(300)
         hits = try {
-            backend.searchVenues(query)
+            backend.searchVenues(query, center)
         } catch (_: RemoteError) {
             emptyList()
         }

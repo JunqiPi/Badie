@@ -80,6 +80,8 @@ class OnboardingModel(
     var preferredMode by mutableStateOf<GameMode?>(null)
     /** 常去球馆（必选，最多 3 家；注册后设为收藏，快速匹配默认选中，附近的人也按它找人） */
     val favoriteVenueIds = mutableStateListOf<String>()
+    /** 我们还没收录的地方，搜不到自己的球馆：可以先不选，以后在球馆页选 */
+    var noVenueListed by mutableStateOf(false)
     /** 真实的位置；没开定位时为空（列表的距离按默认城市算，但不替人选最近的球馆） */
     var location by mutableStateOf<Coordinate?>(null)
         private set
@@ -118,7 +120,7 @@ class OnboardingModel(
             OnboardingStep.Code -> code.length == 6 && (!isResettingPassword || password.isNotEmpty())
             OnboardingStep.Profile -> Backend.isValidNickname(nickname) && gender != Gender.Unspecified
             OnboardingStep.Level -> level != null
-            OnboardingStep.Preferences -> favoriteVenueIds.isNotEmpty()
+            OnboardingStep.Preferences -> favoriteVenueIds.isNotEmpty() || noVenueListed
         }
 
     fun toggleNewAccount() {
@@ -190,7 +192,7 @@ class OnboardingModel(
 
     suspend fun searchVenues(query: String): List<Venue> = try {
         val center = location ?: Coordinate.fallbackCenter
-        backend.searchVenues(query).sortedBy { it.distanceKm(center) }
+        backend.searchVenues(query, center).sortedBy { it.distanceKm(center) }
     } catch (_: RemoteError) {
         emptyList()
     }
@@ -319,7 +321,7 @@ class OnboardingModel(
 
     private suspend fun finish() {
         val level = level ?: return
-        if (favoriteVenueIds.isEmpty()) return
+        if (favoriteVenueIds.isEmpty() && !noVenueListed) return
         val result = assessmentResult
         working {
             try {

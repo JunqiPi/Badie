@@ -211,6 +211,8 @@ fun DayCardFilterSheet(
     day: Long?,
     onApply: (DayCardFilter) -> Unit,
     onDay: (Long?) -> Unit,
+    /** 选了“显示：球群”：关掉筛选，发现页换成附近的球群 */
+    onGroups: () -> Unit = {},
 ) {
     val colors = AppTheme.colors
     var draft by remember { mutableStateOf(filter) }
@@ -232,6 +234,12 @@ fun DayCardFilterSheet(
             verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xl),
         ) {
             val padded = Modifier.padding(horizontal = AppTheme.Spacing.screen)
+            Section(tr("显示"), padded) {
+                Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+                    ChoiceChip(tr("球友"), isSelected = true) {}
+                    ChoiceChip(tr("球群"), isSelected = false, onClick = onGroups)
+                }
+            }
             Section(tr("日期"), Modifier) {
                 DayChips(draftDay) { draftDay = it }
             }
