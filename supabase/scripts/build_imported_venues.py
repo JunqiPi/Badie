@@ -1,0 +1,284 @@
+"""把我们自己整理的球馆表（CSV，两列：name,address）转成 Badie 的球馆目录：supabase/data/badie-venues.json。
+
+- 名字是“This centre listing could not be confirmed”的不收（网上收集、确认不了的）；
+- 名字是“Badminton pitch in 某地 #123”这种 OSM 编号的不收：OpenStreetMap 的球场由 build_osm_venues.py 管；
+- 和已有目录（App 自带的、supabase/data 里的）同名同城、或 60 米内、或 1 公里内同名的跳过；
+- 中国大陆、朝鲜不收。
+
+坐标用 Nominatim（OpenStreetMap 的地址搜索，每秒最多 1 次）按地址查；地址只查到街道以上的，再按“名字 + 城市”找一次；
+都只查到城市 / 邮编一级的，标成位置大概（approx，状态“待确认”）。查过的结果存在 --cache 目录，重跑不重复查。
+只进数据库，不打包进 App；坐标署名 © OpenStreetMap contributors（ODbL）。id 由名字和地址算出，重跑不会换。
+
+用法（在仓库根目录；需要 pip install timezonefinder==6.5.9）:
+    python3 supabase/scripts/build_imported_venues.py 球馆表.csv --cache 某个目录
+然后跑 build_venue_seed.py。
+"""
+import argparse
+import csv
+import hashlib
+import json
+import re
+import sys
+import time
+import unicodedata
+import urllib.parse
+import urllib.request
+from pathlib import Path
+
+from timezonefinder import TimezoneFinder
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from build_osm_venues import generic, grid, metres, same_name  # noqa: E402
+
+root = Path(__file__).resolve().parents[2]
+OUT = root / "supabase/data/badie-venues.json"
+NOMINATIM = "https://nominatim.openstreetmap.org/search"
+SKIP_COUNTRIES = {"CN", "KP"}
+UNCONFIRMED = re.compile(r"could not be confirmed", re.I)
+OSM_NUMBERED = re.compile(r"#\d+$")
+# Nominatim 的 place_rank：26 以上是街道、门牌、具体的地方；以下是区、城市、邮编
+EXACT_RANK = 26
+
+
+def norm(s):
+    return re.sub(r"[\W_]+", "", unicodedata.normalize("NFKD", s).lower())
+
+
+def clean_address(address):
+    """去掉重复的段，认出“城市, CC, 城市”结尾里的国家代码。"""
+    parts = [p.strip() for p in address.replace("\\n", " ").replace("\n", " ").split(",") if p.strip()]
+    country = None
+    if len(parts) >= 3 and re.fullmatch(r"[A-Z]{2}", parts[-2]) and parts[-1] == parts[-3]:
+        country = parts[-2]
+        parts = parts[:-2]
+    out = []
+    for p in parts:
+        if p not in out:
+            out.append(p)
+    return ", ".join(out), country
+
+
+class Geocoder:
+    def __init__(self, cache):
+        self.path = cache / "nominatim.jsonl"
+        self.known = {}
+        if self.path.exists():
+            for line in self.path.read_text(encoding="utf-8").splitlines():
+                item = json.loads(line)
+                self.known[item["q"]] = item["r"]
+        self.last = 0.0
+        self.calls = 0
+
+    def search(self, query, country=None):
+        key = f"{query}|{country or ''}"
+        if key in self.known:
+            return self.known[key]
+        params = {"q": query, "format": "jsonv2", "addressdetails": 1, "limit": 1}
+        if country:
+            params["countrycodes"] = country.lower()
+        wait = 1.1 - (time.time() - self.last)
+        if wait > 0:
+            time.sleep(wait)
+        for attempt in range(4):
+            try:
+                req = urllib.request.Request(NOMINATIM + "?" + urllib.parse.urlencode(params),
+                                             headers={"User-Agent": "BadieVenueImport/1.0 (+https://badie.rsvp)"})
+                result = json.loads(urllib.request.urlopen(req, timeout=60).read().decode("utf-8"))
+                break
+            except Exception as e:  # 网络抖动：等一会儿再试
+                if attempt == 3:
+                    raise
+                print(f"retry {query!r}: {e}", file=sys.stderr)
+                time.sleep(10 * (attempt + 1))
+        self.last = time.time()
+        self.calls += 1
+        hit = result[0] if result else None
+        self.known[key] = hit
+        with self.path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps({"q": key, "r": hit}, ensure_ascii=False) + "\n")
+        return hit
+
+
+def fallbacks(query):
+    """整条地址查不到时依次再试：去掉邮编和州缩写（“MH”“VIC”），再从前往后去掉楼名、门牌。
+    不单独查邮编：别的国家也有同号的邮编。返回 [(查询, 查到的算不算精确位置)]。"""
+    parts = query.split(", ") if query else []
+    core = [p for p in parts if not re.fullmatch(r"[\d\s-]+", p) and not re.fullmatch(r"[A-Z]{2,3}", p)]
+    out = [(query, True), (", ".join(core), True)] + [(", ".join(core[k:]), False) for k in range(1, len(core))]
+    seen, result = set(), []
+    for q, exact in out:
+        if q and q not in seen:
+            seen.add(q)
+            result.append((q, exact))
+    return result, core
+
+
+def plain_words(text):
+    """不分大小写、不分声调的词（Đ 当 D）。"""
+    text = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D").lower())
+    text = "".join(ch for ch in text if unicodedata.category(ch) != "Mn")
+    return set(re.findall(r"[^\W_]+", text))
+
+
+def locality(hit):
+    a = hit.get("address", {})
+    return next((a[k] for k in ("city", "town", "village", "municipality", "suburb", "county", "state_district", "state")
+                 if a.get(k)), "")
+
+
+def existing_venues():
+    out = []
+    paths = sorted((root / "Badie-iOS/Badie/Resources").glob("*.json")) + sorted((root / "supabase/data").glob("*.json"))
+    for path in paths:
+        if path == OUT:
+            continue
+        for v in json.loads(path.read_text(encoding="utf-8"))["venues"]:
+            out.append({"point": (v["lat"], v["lon"]), "names": [v["name"], *v.get("aliases", [])],
+                        "places": {norm(x) for x in (v.get("city"), v.get("postcode")) if x}})
+    return out
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("csv", type=Path)
+    parser.add_argument("--cache", type=Path, required=True)
+    parser.add_argument("--dry-run", action="store_true", help="只数一数，不查坐标")
+    args = parser.parse_args()
+    args.cache.mkdir(parents=True, exist_ok=True)
+
+    known = existing_venues()
+    by_name = {}
+    for v in known:
+        for n in v["names"]:
+            by_name.setdefault(norm(n), []).append(v)
+
+    counts = {"rows": 0, "unconfirmed": 0, "osm_numbered": 0, "duplicate_row": 0, "same_name_same_city": 0}
+    todo, seen = [], set()
+    with args.csv.open(encoding="utf-8-sig", newline="") as f:
+        for row in csv.DictReader(f):
+            counts["rows"] += 1
+            name = re.sub(r"\s+", " ", row["name"]).strip()[:120]
+            address = row["address"].strip()
+            if UNCONFIRMED.search(name) or not name:
+                counts["unconfirmed"] += 1
+                continue
+            if OSM_NUMBERED.search(name):
+                counts["osm_numbered"] += 1
+                continue
+            if (norm(name), norm(address)) in seen:
+                counts["duplicate_row"] += 1
+                continue
+            seen.add((norm(name), norm(address)))
+            addr_norm = norm(address)
+            if any(p and p in addr_norm for v in by_name.get(norm(name), []) for p in v["places"]):
+                counts["same_name_same_city"] += 1
+                continue
+            todo.append((name, address))
+    print(counts, "to geocode:", len(todo))
+    if args.dry_run:
+        return
+
+    geo = Geocoder(args.cache)
+    found = []
+    for i, (name, address) in enumerate(todo):
+        if i % 200 == 0:
+            print(f"{i}/{len(todo)} ({geo.calls} requests)", flush=True)
+        query, country = clean_address(address)
+        hit, exact = None, False
+        queries, core = fallbacks(query)
+        for q, whole in queries[:4]:
+            hit = geo.search(q, country)
+            # Nominatim 会模糊匹配：“P. Bình Thắng, Dĩ An”给出别的省的“Lãnh Binh Thăng”。查到的地方得在我们写的城市里
+            if hit and plain_words(q.split(", ")[-1]) <= plain_words(hit["display_name"]):
+                # 去掉楼名后查到的，门牌号对得上才算精确；不然只能说明在哪个城市
+                number = hit.get("address", {}).get("house_number", "")
+                exact = hit["place_rank"] >= EXACT_RANK and (whole or (number and number in re.findall(r"\w+", q)))
+                break
+            hit = None
+        if not exact and not generic(name):
+            # 按名字在附近找这家馆
+            where = locality(hit) if hit else (query.split(", ")[-1] if query else "")
+            byname = geo.search(f"{name}, {where}" if where else name,
+                                country or (hit["address"].get("country_code") if hit else None))
+            if byname and byname["place_rank"] >= EXACT_RANK and same_name(name, byname.get("name") or "") and (
+                    not hit or metres((float(hit["lat"]), float(hit["lon"])),
+                                      (float(byname["lat"]), float(byname["lon"]))) < 30_000):
+                hit, exact = byname, True
+        if not hit or (not exact and generic(name)):  # 只知道在哪个城市、名字又只是“羽毛球场”的：找不到是哪一家
+            continue
+        found.append({"name": name, "address": address, "hit": hit, "approx": not exact, "core": core,
+                      "point": (float(hit["lat"]), float(hit["lon"]))})
+
+    near_known = grid(known, lambda v: v["point"], cell=0.02)
+    in_region = grid(known, lambda v: v["point"], cell=0.3)
+
+    def near_existing(c):
+        p = c["point"]
+        if c["approx"]:  # 只知道在哪个城市：30 公里内有同名的就算同一家
+            return any(metres(p, v["point"]) < 30_000 and any(same_name(c["name"], n) for n in v["names"])
+                       for v in in_region(p))
+        return any(metres(p, v["point"]) < 60 or (metres(p, v["point"]) < 1000
+                   and any(same_name(c["name"], n) for n in v["names"])) for v in near_known(p))
+
+    tzf = TimezoneFinder()
+    venues, kept = [], []
+    skipped = {"no_coordinates_or_vague": len(todo) - len(found), "country": 0, "near_existing": 0, "duplicate": 0}
+    # 位置准的先放，同一家写了两遍时留准的那条
+    for c in sorted(found, key=lambda c: (c["approx"], c["name"], c["address"])):
+        a = c["hit"].get("address", {})
+        country = (a.get("country_code") or "").upper()
+        if not country or country in SKIP_COUNTRIES:
+            skipped["country"] += 1
+            continue
+        p = c["point"]
+        if near_existing(c):
+            skipped["near_existing"] += 1
+            continue
+        if any(same_name(c["name"], k["name"]) and metres(p, k["point"]) < (30_000 if c["approx"] else 1000) for k in kept):
+            skipped["duplicate"] += 1
+            continue
+        kept.append(c)
+        if c["approx"]:  # 位置大概的：街道、城市用表里写的，不用 Nominatim 模糊命中的那个地方
+            street = c["core"][0] if len(c["core"]) > 1 else ""
+            city = c["core"][-1] if c["core"] else locality(c["hit"])
+        else:
+            street = " ".join(x for x in (a.get("house_number", ""), a.get("road", "")) if x)
+            if country in ("JP", "KR", "TW", "HK") and a.get("road"):
+                street = a.get("road", "") + a.get("house_number", "")
+            first = c["address"].split(",")[0].strip()
+            if not street and re.search(r"\d", first):
+                street = first
+            city = locality(c["hit"])
+        digest = hashlib.sha1(f"{c['name']}|{c['address']}".encode()).hexdigest()[:10]
+        venue = {
+            "id": f"v-{country.lower()}-b{digest}",
+            "name": c["name"],
+            "lat": round(p[0], 6), "lon": round(p[1], 6),
+            "street": street,
+            "city": city,
+            "region": a.get("state") or a.get("province") or a.get("region") or "",
+            "postcode": a.get("postcode", ""),
+            "country": country,
+            "tz": tzf.timezone_at(lat=p[0], lng=p[1]),
+        }
+        if c["approx"]:
+            venue["approx"] = True
+        venues.append(venue)
+
+    venues.sort(key=lambda v: (v["country"], v["region"], v["city"], v["name"], v["id"]))
+    assert len({v["id"] for v in venues}) == len(venues)
+    catalog = {"source": "Badie research: venues we collected; coordinates from OpenStreetMap (Nominatim)",
+               "kind": "curated", "status": "unconfirmed",
+               "attribution": "Coordinates © OpenStreetMap contributors, ODbL 1.0", "venues": venues}
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    by_country = {}
+    for v in venues:
+        by_country[v["country"]] = by_country.get(v["country"], 0) + 1
+    approx = sum(1 for v in venues if v.get("approx"))
+    print(f"{len(venues)} written ({approx} approximate), skipped {skipped}, {geo.calls} requests")
+    print(", ".join(f"{k} {n}" for k, n in sorted(by_country.items(), key=lambda x: -x[1])))
+
+
+if __name__ == "__main__":
+    main()
