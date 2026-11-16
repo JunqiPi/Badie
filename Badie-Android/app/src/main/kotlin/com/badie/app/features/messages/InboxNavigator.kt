@@ -117,7 +117,7 @@ fun AppEnvironment.openInboxItem(item: InboxItem) {
 
 /**
  * 主界面上和球友、消息有关的后台工作，放在 shell/MainTabView.kt 里：
- * - 回到前台：马上重拉，并开始每 15 秒轮询（球友、会话、通知、球群）；退到后台停
+ * - 回到前台：马上重拉，并开始每 15 秒轮询（球友、会话、通知、球群、房间和球局）；退到后台停
  * - 回到前台：读我的爽约记录（有新的就弹说明，见 AppState.showsStrikes）
  * - 球局没了（取消、被移出、关闭）的通知没读：弹窗，点“知道了”才算看过
  */
@@ -144,6 +144,7 @@ fun SocialOverlays() {
         env.messageManager.startPolling()
         env.inboxManager.startPolling()
         env.groupManager.startPolling()
+        env.roomManager.startPolling()
         val strikes = scope.launch {
             try {
                 env.friendManager.refreshStrikes()
@@ -156,6 +157,7 @@ fun SocialOverlays() {
             env.messageManager.stopPolling()
             env.inboxManager.stopPolling()
             env.groupManager.stopPolling()
+            env.roomManager.stopPolling()
         }
     }
     LaunchedEffect(env.inboxManager.items) { showUrgent() }

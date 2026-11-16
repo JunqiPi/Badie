@@ -31,8 +31,15 @@ import com.badie.app.models.TimeSlot
 import com.badie.app.models.Venue
 import com.badie.app.remote.RemoteError
 import com.badie.app.shell.ManagerContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+
+
+/** 房间和球局在前台时多久重拉一次 */
+private const val ROOM_POLL_MILLIS = 15_000L
 
 /**
  * 球局（房间）和我的球局。对应 iPhone 的 Managers/RoomManager.swift。在 shell/AppState.kt 的 AppEnvironment 里已经建好，构造参数不要改。
@@ -92,6 +99,34 @@ class RoomManager(
         refreshRooms()
         nearbyAt = null
         loadNearby()
+    }
+
+    // MARK: 轮询
+
+    private var polling: kotlinx.coroutines.Job? = null
+
+    /**
+     * 没有实时推送：在前台时每 15 秒重拉我的房间（别人的邀请、进房间的人）和我的球局（约成的球局），和 iPhone 一样
+     * （iPhone 在 MatchManager 每 15 秒的刷新里一起拉）。回到前台时开始，退到后台时停
+     */
+    fun startPolling() {
+        if (polling?.isActive == true) return
+        polling = context.scope.launch {
+            while (isActive) {
+                try {
+                    book.refresh(ifOlderThan = ROOM_POLL_MILLIS - 5_000)
+                    refreshRooms()
+                } catch (_: RemoteError) {
+                    // 网络问题：下次再拉
+                }
+                delay(ROOM_POLL_MILLIS)
+            }
+        }
+    }
+
+    fun stopPolling() {
+        polling?.cancel()
+        polling = null
     }
 
     /** 我在里面（或候补、受邀）的房间；不在列表里的旧房间再拉一次，看是开局了还是关了 */
