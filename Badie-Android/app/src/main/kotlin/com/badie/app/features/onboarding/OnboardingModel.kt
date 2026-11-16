@@ -19,10 +19,13 @@ import com.badie.app.models.SkillAssessment
 import com.badie.app.models.SkillAssessmentResult
 import com.badie.app.models.SkillAssessmentSummary
 import com.badie.app.models.Venue
+import com.badie.app.remote.BrowserSignIn
 import com.badie.app.remote.PasswordRules
 import com.badie.app.remote.RemoteError
+import com.badie.app.remote.SocialSignIn
 import com.badie.app.remote.Transport
 import com.badie.app.shell.AppState
+import kotlinx.coroutines.CancellationException
 
 enum class OnboardingStep {
     Welcome, Email, Code, Profile, Level, Preferences;
@@ -54,6 +57,9 @@ class OnboardingModel(
     private val now: () -> Long = System::currentTimeMillis,
     /** 从哪一步开始（截图用） */
     initialStep: OnboardingStep = OnboardingStep.Welcome,
+    /** 上次问到的后台开了的第三方登录（apple / google）；第一次打开时为空，当作都开着 */
+    savedProviders: Set<String>? = null,
+    private val saveProviders: (Set<String>) -> Unit = {},
 ) {
     private val backend: Backend get() = appState.backend
 
@@ -301,6 +307,60 @@ class OnboardingModel(
             } catch (error: RemoteError) {
                 errorText = error.message
                 code = ""
+            }
+        }
+    }
+
+    // MARK: Apple、Google 登录
+
+    /** 后台开了的第三方登录。先用记下的结果马上显示，后台问到新的再换 */
+    var providers by mutableStateOf(savedProviders ?: setOf("apple", "google"))
+        private set
+
+    /**
+     * 欢迎页显示哪几个按钮。和 iPhone 一样：Apple 没开时 Google 也不显示
+     * （iPhone 是因为 App Store 审核规则 4.8，安卓照搬，两边一致）
+     */
+    val socialProviders: Set<String>
+        get() {
+            if ("apple" !in providers) return emptySet()
+            return providers.intersect(if (SocialSignIn.googleServerClientId == null) setOf("apple") else setOf("apple", "google"))
+        }
+
+    /** 问服务器开了哪些，并记下来；网络不通就还用上一次的结果 */
+    suspend fun refreshProviders() {
+        val fresh = backend.remote.enabledProviders() ?: return
+        providers = fresh
+        saveProviders(fresh)
+    }
+
+    /** 通过 Apple 继续：在浏览器里走 Supabase 的 Apple 授权，跳回来以后用 code 换登录状态 */
+    suspend fun signInWithApple(browser: BrowserAuth) = attemptSignIn {
+        val flow = BrowserSignIn("apple")
+        val callback = browser.open(flow.url) ?: return@attemptSignIn null
+        val code = flow.code(callback) ?: return@attemptSignIn null
+        backend.signInWithCode(code, flow.verifier)
+    }
+
+    /** 使用 Google 账号继续：凭据管理器给身份令牌，像 iPhone 一样交给 Supabase */
+    suspend fun signInWithGoogle(google: GoogleCredentials) = attemptSignIn {
+        val clientId = SocialSignIn.googleServerClientId ?: return@attemptSignIn null
+        val nonce = SocialSignIn.randomString()
+        val idToken = google.idToken(clientId, SocialSignIn.sha256Hex(nonce)) ?: return@attemptSignIn null
+        backend.signInWithIdToken("google", idToken, nonce)
+    }
+
+    /** 自己取消了（返回 null）不提示；别的错误统一一句话 */
+    private suspend fun attemptSignIn(attempt: suspend () -> AuthOutcome?) {
+        if (isWorking) return
+        errorText = null
+        working {
+            try {
+                attempt()?.let { signedIn(it) }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                errorText = tr("登录没有完成，请再试一次，或改用邮箱。")
             }
         }
     }

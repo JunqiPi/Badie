@@ -130,6 +130,16 @@ class SupabaseClient(
         return RemoteJSON.session(data, now()).also { session = it }
     }
 
+    /** 浏览器里的第三方登录（[BrowserSignIn]）跳回来以后：用一次性的 code 和 PKCE 的原文换登录状态 */
+    suspend fun exchangeCode(authCode: String, codeVerifier: String): RemoteSession {
+        val data = send(
+            "auth/v1/token?grant_type=pkce",
+            body = json("auth_code" to authCode, "code_verifier" to codeVerifier),
+            authorized = false,
+        )
+        return RemoteJSON.session(data, now()).also { session = it }
+    }
+
     /** 后台开了哪些登录方式（公开接口）；网络不通时为 null，不当成“都没开” */
     suspend fun enabledProviders(): Set<String>? = try {
         val settings = RemoteJSON.decode<AuthSettings>(send("auth/v1/settings", method = "GET", authorized = false))
