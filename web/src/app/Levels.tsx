@@ -1,7 +1,7 @@
 import { tier } from './assessment';
-import { APP_STORE_URL } from './Contact';
 import { t } from './i18n';
 import { Icon } from './icons';
+import { GetTheApp } from './install';
 import { IconTile, LargeTitle, Notice, Tag, fill, type Tint } from './kit';
 import { faq } from './faq';
 import { levels } from './levels';
@@ -164,7 +164,7 @@ export function About() {
         <p className="text-subhead">{t('Badie works in the browser on any phone or computer, no download needed. There’s also an iPhone app.')}</p>
         <div className="flex flex-wrap gap-2">
           <Link to="/" className="button">{t('Open Badie')}</Link>
-          <a href={APP_STORE_URL} className="button button-quiet">{t('Get the iPhone app')}</a>
+          <GetTheApp noteClassName="text-footnote text-[#f5f0e6]/70" />
         </div>
       </section>
       <section aria-labelledby="questions" className="grid gap-3">

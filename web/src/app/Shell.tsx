@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { currentLocale, languages, pathInLanguage, rememberLocale, setLocale, startLocale, t, useLocale, withoutLanguagePrefix, type Locale } from './i18n';
 import { Icon, type IconName } from './icons';
+import { InstallNudge } from './install';
 import { Avatar, CountBadge, IconTile, Wordmark, type Tint } from './kit';
 import { Link, navigate } from './router';
 import { supabase, type InboxCounts, type Profile } from './supabase';
@@ -109,6 +110,8 @@ export function Shell({ path, me, guest, counts, children }: { path: string; me:
 
       {!chatting && <TabBar current={current?.to} badge={badge} name={name} onCreate={openMenu} />}
       <CreateMenu dialog={menu} signedIn={Boolean(me)} />
+      {/* 登录后的安卓浏览器：提一次可以添加到主屏幕（iPhone 的 Safari 有 App Store 横幅，见 layouts/App.astro） */}
+      {me && !chatting && <InstallNudge />}
       <Toasts />
     </div>
   );

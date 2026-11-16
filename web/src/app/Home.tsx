@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { setArea, useArea } from './area';
-import { APP_STORE_URL } from './Contact';
 import { km } from './Courts';
 import { t } from './i18n';
 import { Icon } from './icons';
+import { GetTheApp } from './install';
 import { CardFan, IconTile, fill, type Tint } from './kit';
 import type { Centre } from './pickers';
 import { QuizEntry } from './Levels';
@@ -113,7 +113,7 @@ function Welcome() {
           <p className={`max-w-xl ${lead}`}>{t('Badie finds players at your level near you. Free.')}</p>
           <div className="flex flex-wrap gap-3">
             <Link to={signInFirst('/play/')} className="button button-lg">{t('Start matching')}<Icon name="arrowRight" className="size-5" /></Link>
-            <a href={APP_STORE_URL} className="button button-lg button-quiet">{t('Get the iPhone app')}</a>
+            <GetTheApp className="button button-lg button-quiet" />
           </div>
           <QuizEntry />
         </div>
