@@ -172,11 +172,12 @@
 
 ## 全世界的球馆：OpenStreetMap（2026-11-16）
 
-- `supabase/scripts/build_osm_venues.py` 从 QLever（qlever.dev，OSM 全球数据，overpass-api.de 在这台机器上连不上）拉所有 `sport=badminton`，约 1.36 万个点，大多是露天场地；只留室内、有名字的（体育馆 / 体育中心 / 建筑里 / 标了室内；露天的名字得像球馆），去掉商店、学校、私人的、公园里的；和 App 里已有的球馆 150 米内或 1 公里内同名的跳过；中国大陆和朝鲜不收。结果约 2400 家，放 `supabase/data/osm-venues.json`（只进数据库，不打包进 App、不生成网站静态页），状态“待确认”，署名 © OpenStreetMap contributors（ODbL，这份文件在公开仓库里，满足共享要求）
-- id 用 OSM 编号（`v-fr-osm-w140992546`），重跑不会换 id；OSM 那边删了的会按种子规则隐藏进审核
+- `supabase/scripts/build_osm_venues.py` 从 QLever（qlever.dev，OSM 全球数据，overpass-api.de 在这台机器上连不上）拉所有 `sport=badminton`（约 1.36 万个，中国大陆占 4482 个）。用户定的：**除了商店都收**；另外也不收标了不对外开放的（305 个）和军事区里的，中国大陆、朝鲜不收
+- 有名字的用自己的名字；没名字但在有名字的体育馆里的用那栋楼；没名字的露天场地叫“所在公园 / 学校 / 小区 · 羽毛球场”（按当地语言），50 米内同一处的几块并成一个、记下场地数。和 App 里已有的球馆 150 米内或 1 公里内同名的跳过。结果 7301 家，其中露天 4421 家（`venues.kind = 'outdoor'`，迁移 `20261219000000_outdoor_courts.sql`），球馆库一共 11053 家
+- 放 `supabase/data/osm-venues.json`：只进数据库，不打包进 App、不生成网站静态页；状态“待确认”，署名 © OpenStreetMap contributors（ODbL，这份文件在公开仓库里，满足共享要求）。id 用 OSM 编号（`v-fr-osm-w140992546`），重跑不会换 id；OSM 那边删了的会按种子规则隐藏进审核
+- 露天场地太多会把球馆挤掉：`venues_near` 把室内的排前面；注册时自动选常去球馆，网站和 iPhone 都先选室内的（iPhone 1.0.6 起读 `kind`，详情页显示“露天场地”）
 - 更新：装 `reverse_geocoder==1.5.1 timezonefinder==6.5.9`，跑这个脚本再跑 `build_venue_seed.py`
-- 噪音还有一些（偶尔把整个体育场、大学体育馆算进来），靠球友确认 / 举报
-- 顺手修了：没登录时查完登录状态，页面主体会重新生成，把分享卡片带来的“你的朋友是 4+”冲回普通标题（`Shell.tsx` 里 main 的 key 只跟地址走）
+- 噪音还有一些（小区、学校里的场地外人进不去，偶尔把整个体育场算进来），靠球友确认 / 举报
 
 ## 已知、没修的
 

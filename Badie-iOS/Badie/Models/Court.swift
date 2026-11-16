@@ -197,6 +197,18 @@ enum VenueFacility: String, Codable, Hashable {
     case recCenter
     case school
     case communityHall
+    /// OpenStreetMap 里公园、学校、小区的露天场地
+    case outdoor
+
+    /// 数据库里 venues.kind 的写法（multi_sport）
+    init?(server: String) {
+        switch server {
+        case "multi_sport": self = .multiSport
+        case "rec_center": self = .recCenter
+        case "community_hall": self = .communityHall
+        default: self.init(rawValue: server)
+        }
+    }
 
     var title: String {
         switch self {
@@ -205,6 +217,7 @@ enum VenueFacility: String, Codable, Hashable {
         case .recCenter: return String(localized: "社区中心")
         case .school: return String(localized: "学校")
         case .communityHall: return String(localized: "社区会馆")
+        case .outdoor: return String(localized: "露天场地")
         }
     }
 }

@@ -112,7 +112,7 @@ export interface Venue {
   source: string;
   attribution: string | null;
   location_approximate: boolean;
-  kind: 'dedicated' | 'multi_sport' | 'rec_center' | 'school' | 'community_hall' | null;
+  kind: 'dedicated' | 'multi_sport' | 'rec_center' | 'school' | 'community_hall' | 'outdoor' | null;
   play_times: string | null;
   lat: number;
   lon: number;

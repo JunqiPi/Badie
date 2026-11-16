@@ -1,7 +1,7 @@
 -- 场馆目录导入（seed.sql 由 supabase/scripts/build_venue_seed.py 生成）
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(10);
+select plan(12);
 
 select cmp_ok((select count(*)::int from public.venues where source = 'open_data'), '>', 3000, '政府开放数据已导入');
 select is((select count(*)::int from public.venues where source = 'curated' and country_code = 'US'), 276, '美国收录 276 处');
@@ -15,6 +15,10 @@ select ok((select count(*) > 2000 and bool_and(status = 'unconfirmed' and attrib
            from public.venues where id like 'v-%-osm-%'), 'OpenStreetMap 球馆：待球友确认，带署名');
 select is((select count(*) from public.venues where id like 'v-%-osm-%' and country_code in ('CN', 'KP')), 0::bigint,
           '中国大陆不导入 OpenStreetMap 球馆');
+select ok((select count(*) > 3000 from public.venues where kind = 'outdoor'), '公园、学校里的露天场地也收，标成露天');
+select ok((select bool_and(not outdoor) from (
+             select coalesce((venue).kind::text = 'outdoor', false) as outdoor from public.venues_near(-6.2, 106.85, 5, 5)) x),
+          '附近的球馆室内的排前面（雅加达露天场地很多）');
 
 select ok((select distance_m between 15000 and 18000 from public.venues_near(34.0765, -118.0462, 30)
            where (venue).id = 'v-us-ca-santa-fe-springs-badminton-club'), 'LABC 到 Santa Fe Springs 约 16 公里');

@@ -226,8 +226,11 @@ extension BadmintonCourt {
     /// 范围内离 center 最近的一家；优先已确认的球馆，范围内一家都没有就返回 nil
     static func nearest(in courts: [BadmintonCourt], to center: Coordinate, withinKm radiusKm: Double) -> BadmintonCourt? {
         let inRange = courts.filter { $0.distance(from: center) <= radiusKm }
+        // 先挑核实过的，再挑室内的，都没有才用露天场地
         let listed = inRange.filter { $0.status != .unconfirmed }
-        return (listed.isEmpty ? inRange : listed).min { $0.distance(from: center) < $1.distance(from: center) }
+        let indoor = inRange.filter { $0.facility != .outdoor }
+        let pool = !listed.isEmpty ? listed : !indoor.isEmpty ? indoor : inRange
+        return pool.min { $0.distance(from: center) < $1.distance(from: center) }
     }
 }
 

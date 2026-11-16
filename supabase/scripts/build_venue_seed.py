@@ -14,7 +14,7 @@ root = Path(__file__).resolve().parents[2]
 catalogs = sorted((root / "Badie-iOS/Badie/Resources").glob("*.json")) + sorted((root / "supabase/data").glob("*.json"))
 kinds = {"curated": "curated", "openStreetMap": "open_street_map", None: "open_data"}
 facilities = {"dedicated": "dedicated", "multiSport": "multi_sport", "recCenter": "rec_center",
-              "school": "school", "communityHall": "community_hall"}
+              "school": "school", "communityHall": "community_hall", "outdoor": "outdoor"}
 
 
 def sql(value):

@@ -265,4 +265,5 @@ const kindLabel: Record<NonNullable<Venue['kind']>, string> = {
   rec_center: 'Community center',
   school: 'School gym',
   community_hall: 'Community hall',
+  outdoor: 'Outdoor court',
 };
