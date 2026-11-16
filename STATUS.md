@@ -20,7 +20,7 @@
 - 审核演示账号 `review@badie.rsvp`，**不能注销**。演示模式：设置 → 管理员 → 进入演示模式（只有管理员能看到）。
 - 打赏：美国区链到 Ko-fi（https://ko-fi.com/badie ），欧盟 27 国不显示，其他地区用苹果内购（`com.badie.app.tip.small/medium/large`）。提交时 Notes 要写明打赏不解锁功能、美国区用 Ko-fi（guideline 3.1.1）。
 
-## 安卓版（2026-11-15 开始做，还不能用）
+## 安卓版（2026-11-15 开始做，还没发过版）
 
 需求是 `Badie-Android/docs/REQUIREMENTS.md`（按 iPhone 1.0.5 逐项盘点，用户已定：Kotlin + Compose、最低 Android 8.0、地图用 Google、打赏只放 Ko-fi、做 Apple 登录、演示模式只给管理员）。工程在 `Badie-Android/`，2026-11-15 推到 main（不上架，只是代码进了主干）。
 
@@ -51,14 +51,16 @@
 7. **登录和注册**（`features/onboarding/`，2026-11-15）：欢迎页、邮箱 + 密码登录和注册、验证码登录、忘记密码、6 位验证码、人机验证、称呼和头像（颜色加表情）、定级问卷和结果卡、最后一步（常打、在附近的人里显示我）、以前没选性别的人补选。流程逻辑在 `OnboardingModel.kt`，有测试。
 8. **全部功能页面**（2026-11-16，六块分头搬完再合起来）：发现页（附近的人、按天的卡片、筛选、约人和回邀请）、快速匹配（设置、找人、确认、结束）；球局（球局页、签到、AA、赛果、互评、再约一次、开赛前本地提醒）、房间（开局、大厅、房间码、公开球局）；球友、球友资料、举报、爽约记录和申诉、私信和群聊、通知中心、球群（找、报名、候补、名单、建群）；球馆（附近、球馆页、选球馆、添加、附近范围）；排行榜、挑战；“我的”、编辑资料（照片头像和卡片背景、裁剪）、设置全部、空闲时间、等级对照表、重新定级、高水平认证、帮助和反馈、等级卡片（生成图片、分享、存相册）。各块的服务器调用在 `backend/*Api.kt`。
 9. 各块已经接起来（2026-11-16）：位置和附近范围只有一份（`LocationManager`），球局页有约球请求、球群、本周排行、同馆常客，球馆页列出球群，“我的”有球友数、挑战、加球友链接，发现页的铃铛有角标，日期跟着界面语言。
-10. 测试 452 个，本机过；截图 109 张。
+10. 测试 464 个，本机过；截图 111 张。
 11. **推送**（2026-11-16，Firebase Cloud Messaging，`push/`）：允许了通知就要令牌，登录后、每次启动报给服务器（`register_push`，kind 是 `fcm`），退出登录和注销前先注销；发出约球请求后问一次通知权限；聊天显示成带头像的会话通知，同一会话归在一条；在前台时正开着的会话不弹，并马上拉新消息；点通知（包括本地提醒）打开对应页面，冷启动时等主界面出来再跳。Firebase 配置在 `res/values/firebase.xml`（`google-services.json` 不进仓库）。还没在真机上收过推送。截图里中文的粗体不明显，是测试环境的字体只有一种粗细，真机上要再看。
 12. **跟上 main 上后来的改动**（2026-11-16）：注册时“列表里没有我的球馆”；关“在同馆常客里显示我”前先确认；露天场地（读 `venues.kind`，球馆页显示“露天场地”，自动选常去球馆先选室内）；球馆搜索用 `search_venues`；发现页附近的人每分钟刷新、回到 App 时刷新；球群多球馆（1–5 个，主球馆在前）、每周场次选球馆、球群页和场次写实际球馆、发现页筛选里的“显示：球友 / 球群”（附近的球群，近的在前）。
 13. **上架准备**（2026-11-16，详细步骤见 `Badie-Android/docs/RELEASE.md`）：
     - 正式包：R8 压缩混淆加去资源（规则 `app/proguard-rules.pro`），只连正式 Supabase。versionName 在 `app/build.gradle.kts` 手改；versionCode 用发版工作流的运行序号，自动加 1。
-    - 签名：Play 应用签名；上传密钥从环境变量读，CI 里来自 GitHub Secrets（`ANDROID_UPLOAD_KEYSTORE_BASE64`、`ANDROID_UPLOAD_STORE_PASSWORD`、`ANDROID_UPLOAD_KEY_ALIAS`、`ANDROID_UPLOAD_KEY_PASSWORD`）。工作流 **Android release**（只能手动跑）先测试和 lint，再打签名的 AAB，产物 `badie-release-aab`。
+    - 签名：一把密钥，网站下载的 APK 和给 Play 的 AAB 都用它签。发版工作流第一次运行时自己生成，存在生产 Supabase 的 Vault（`android_signing_keystore`、`android_signing_password`）；GitHub Secrets 里有 `ANDROID_UPLOAD_*` 四个时优先用那四个。以后上 Play 要把这把密钥当应用签名密钥传上去（PEPK），不能让 Google 生成，不然网站版的人没法从 Play 更新。备份、导出、指纹都在 RELEASE.md。
+    - 工作流 **Android release**（只能手动跑）：测试、lint、取密钥、打 AAB 和通用 APK、验签名（APK 超过 25 MiB 就停）。在 main 上跑时发 GitHub Release `android-v<版本>-<versionCode>`（`badie.apk`、`android-version.json`），再触发 Web CI 重新部署；运行摘要里有证书的 SHA-1、SHA-256。产物 `badie-release-aab`、`badie-release-apk`。**还没真正跑过**（2026-11-16 写好，等用户看过再跑第一次）。
     - Google 登录：系统的凭据管理器，令牌签给网页客户端（Supabase 已认）。Apple 登录：浏览器标签页里走 Supabase 的网页授权（PKCE），跳回 `com.badie.app://auth/callback`。按钮的位置、文字、“Apple 没开时不显示 Google”和 iPhone 一样。
-    - 网页链接进 App（App Links）：路径和 iPhone 一样，加球友链接、等级页也接了。网站的 `assetlinks.json` 要等第一次上传后拿到 Google 的签名指纹，用 `Badie-Android/scripts/assetlinks.py` 生成。
+    - 网页链接进 App（App Links）：路径和 iPhone 一样，加球友链接、等级页也接了。网站的 `assetlinks.json` 等第一次发版后拿到运行摘要里的 SHA-256，用 `Badie-Android/scripts/assetlinks.py` 生成。
+14. **从网站直接下载**（2026-11-16，不等 Play）：网站构建前（`web.yml`）下载最新的安卓 Release 放到 `/android/badie.apk`、`/android/version.json`（`_headers` 设成安装包、附件下载）；`astro.config.ts` 读到才显示下载（`src/app/androidApp.ts`），没有时一切照旧（添加到主屏幕）。安卓手机上首页、关于页的按钮是“下载安卓 App”，点了下载并弹出三步安装说明，“添加到主屏幕”退成下面一行小字；登录后的提示也换成下载 App；电脑上 App Store 旁边多一个“下载安卓 App”去 `/android/`。`/android/` 页面 10 种语言，有版本、大小、SHA-256、安装步骤。App 里（`shell/SideloadUpdates.kt`）：从网站装的正式包每天最多查一次 `version.json`，有新版本在标签栏上面提示，点“下载”用浏览器打开安装包；从 Play 装的和调试包不查。新加的两句文字（“Badie %@ 可以更新了”“下载”）在 xcstrings 里标成手动添加，iPhone 不用。
 
 **搬的时候没法做、先简化的**（等对应的东西齐了再补）
 
@@ -91,22 +93,22 @@
 
 **接下来的顺序**
 
-1. 用户按下面“上架要用户做的”传第一个包到内部测试；装到手机上验推送（要 Supabase 填好 `FCM_SERVICE_ACCOUNT`）、Google 和 Apple 登录、网页链接、人机验证。
-2. 加 `assetlinks.json`（要第一次上传后的 SHA-256）。
-3. 地图（要 Google Cloud 的 key）。
-4. 演示模式、商店截图和文案、封闭测试、上架。
+1. 用户看过后跑第一次 **Android release**（main），网站出现 `/android/`；装到手机上验推送（要 Supabase 填好 `FCM_SERVICE_ACCOUNT`）、Google 和 Apple 登录、网页链接、人机验证、更新提示。
+2. 用运行摘要里的指纹建 Google 登录的安卓客户端（SHA-1）、加 `assetlinks.json`（SHA-256）；备份 Vault 里的密钥。
+3. 开发者验证（Android developer verification）：2026-09-30 起巴西、印尼、新加坡、泰国的手机只能装登记过的 App（网站下载的也算），2027 年全球。要在 Android Developer Console 登记 `com.badie.app` 和证书。
+4. 地图（要 Google Cloud 的 key）。
+5. 演示模式、商店截图和文案、封闭测试、上 Play（应用签名用同一把密钥）。
 
 **要用户准备的**（到那一步再弄，不急）
 
-- **上架要用户做的**（按顺序，每一步点哪里见 `Badie-Android/docs/RELEASE.md`）：
-  1. 自己电脑上用 `keytool` 生成上传密钥（`CN=Badie`，别填真名），存进密码管理器。
-  2. GitHub Secrets 加四条：`ANDROID_UPLOAD_KEYSTORE_BASE64`、`ANDROID_UPLOAD_STORE_PASSWORD`、`ANDROID_UPLOAD_KEY_ALIAS`（`upload`）、`ANDROID_UPLOAD_KEY_PASSWORD`。
-  3. Play 管理中心建 App。
-  4. 代码在 main 上以后，Actions → Android release → Run workflow，下载 `badie-release-aab`。
-  5. 传到内部测试（用 Play 应用签名），然后在“应用签名”页记下应用签名密钥的 SHA-1、SHA-256（公开的，可以发到聊天里）。
-  6. Google Cloud → Google Auth Platform → Clients → 建 Android 客户端：包名 `com.badie.app`，SHA-1 填应用签名的。
-  7. Supabase → Authentication → URL Configuration → Redirect URLs 加 `com.badie.app://auth/callback`。
-  8. 把 SHA-256 给助手（或自己跑 `Badie-Android/scripts/assetlinks.py`），生成网站的 `assetlinks.json`，推 main。
+- **上架要用户做的**（按顺序，每一步点哪里见 `Badie-Android/docs/RELEASE.md` 的“用户要做的”）：
+  1. 推 main 以后 Actions → Android release → Run workflow（main）。签名密钥自动生成，不用手动做。
+  2. 备份 Vault 里的密钥（一条 SQL，存进密码管理器）。
+  3. Google Cloud → Google Auth Platform → Clients → 建 Android 客户端：包名 `com.badie.app`，SHA-1 填运行摘要里的。
+  4. Supabase → Authentication → URL Configuration → Redirect URLs 加 `com.badie.app://auth/callback`。
+  5. 把运行摘要里的 SHA-256 给助手（或自己跑 `Badie-Android/scripts/assetlinks.py`），生成网站的 `assetlinks.json`，推 main。
+  6. Android Developer Console 做开发者验证、登记包名和证书。
+  7. 以后上 Play：应用签名选“从 Java KeyStore 导出并上传密钥”，用同一把。
 - 球馆那一步之前：Google Cloud 账号（绑卡），开地图和 Places 的 key。
 - 上架：Google Play 开发者账号；个人账号要 12 个测试者连续测 14 天。
 
