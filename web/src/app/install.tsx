@@ -1,7 +1,7 @@
 // 装到手机上：iPhone 去 App Store；安卓有安装包时下载安装包（从网站直接下载，见 androidApp.ts），
 // 没有时把网站添加到主屏幕（网站本身就能装：manifest.webmanifest + sw.js + 网页推送）。
 // Chrome 给了安装提示（beforeinstallprompt）就直接弹系统的安装框，没给就打开一个说明怎么加的面板
-import { Children, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
+import { Children, useEffect, useId, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { ANDROID_APK, androidApp, androidPage, androidSteps, megabytes } from './androidApp';
 import { APP_STORE_URL } from './Contact';
 import { t } from './i18n';
@@ -122,10 +122,12 @@ export function AndroidDownload({ className = 'button', onDone }: { className?: 
 }
 
 function AndroidInstallSheet({ dialog, onClose }: { dialog: RefObject<HTMLDialogElement | null>; onClose?: () => void }) {
+  // 首页的按钮和登录后的提示可能同时在页面上：标题的 id 各用各的
+  const title = useId();
   return (
-    <BottomSheet dialog={dialog} onClose={onClose} labelledBy="android-install-title">
+    <BottomSheet dialog={dialog} onClose={onClose} labelledBy={title}>
       <div className="grid gap-1">
-        <h2 id="android-install-title" className="text-title2">{t('Install the Android app')}</h2>
+        <h2 id={title} className="text-title2">{t('Install the Android app')}</h2>
         {androidApp && (
           <p className="text-subhead text-ink-secondary">
             {t('Version {version} · {size} MB', { version: androidApp.versionName, size: megabytes(androidApp.size) })}
@@ -179,10 +181,11 @@ function InstallSheet({ dialog, onClose }: { dialog: RefObject<HTMLDialogElement
     { name: 'Samsung Internet', text: t('Tap ≡ at the bottom, then Add page to → Home screen.') },
   ];
   if (typeof navigator !== 'undefined' && /SamsungBrowser/.test(navigator.userAgent)) browsers.reverse();
+  const title = useId();
   return (
-    <BottomSheet dialog={dialog} onClose={onClose} labelledBy="install-title">
+    <BottomSheet dialog={dialog} onClose={onClose} labelledBy={title}>
       <div className="grid gap-1">
-        <h2 id="install-title" className="text-title2">{t('Add Badie to your home screen')}</h2>
+        <h2 id={title} className="text-title2">{t('Add Badie to your home screen')}</h2>
         <p className="text-subhead text-ink-secondary">{t('It opens like an app and can send you notifications.')}</p>
       </div>
       <ul className="grid gap-3">
