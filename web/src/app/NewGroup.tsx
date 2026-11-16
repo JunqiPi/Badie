@@ -12,6 +12,8 @@ import { Button, Field, PageHeader, Skeleton, toast } from './ui';
 
 /** 每周最多 7 个场次（服务器也这样查） */
 const MAX_SESSIONS = 7;
+/** 一个球群最多 5 个球馆，第一个是主球馆（服务器也这样查） */
+const MAX_COURTS = 5;
 
 const blank = (): Schedule => ({ weekday: 4, start: 19 * 60 + 30, end: 22 * 60, capacity: 12, fee: '' });
 
@@ -23,7 +25,7 @@ export function NewGroup({ profile }: { profile: Profile }) {
   return <GroupForm profile={profile} />;
 }
 
-/** 群主编辑球群和场次：表单和建群一样，球馆和谁能来不能改 */
+/** 群主编辑球群和场次：表单和建群一样，谁能来不能改（球馆可以加减） */
 export function EditGroup({ id, profile }: { id: string; profile: Profile }) {
   const { data: group } = useLive<GroupDetail | null>('group_page', { args: { p_group: id }, every: 3_600_000 });
   if (group === undefined) return <Skeleton className="mx-auto h-96 max-w-2xl" />;
@@ -37,7 +39,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
   const [audience, setAudience] = useState<Gender | null>(null);
   const level = audienceLevel(profile, audience);
   const [name, setName] = useState(group?.name ?? '');
-  const [court, setCourt] = useState<Court>();
+  const [courts, setCourts] = useState<Court[]>(() => (group?.venues ?? (group ? [group.venue] : [])).map((c) => ({ id: c.id, name: c.name, city: c.city, time_zone_id: c.tz })));
   const [summary, setSummary] = useState(group?.summary ?? '');
   const [min, setMin] = useState(group?.level_min ?? Math.max(1, level - 1));
   const [max, setMax] = useState(group?.level_max ?? Math.min(9, level + 1));
@@ -55,9 +57,11 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
     const last = schedules.at(-1) ?? blank();
     setSchedules([...schedules, { ...last, weekday: (last.weekday + 1) % 7, fee: '' }]);
   };
+  // 每一场在哪个球馆：没选或选的球馆删掉了，就是主球馆
+  const courtOf = (s: Schedule) => (courts.some((c) => c.id === s.venue) ? s.venue! : courts[0]?.id);
   const issue =
     name.trim().length < 2 ? t('Give the group a name.')
-    : !group && !court ? t('Pick the court you play at.')
+    : courts.length === 0 ? t('Pick the court you play at.')
     : min > max ? t('The lowest level can’t be above the highest.')
     : schedules.some((s) => s.end - s.start > 720) ? t('Each session can be up to 12 hours')
     : schedules.some((s) => s.end - s.start < 60) ? t('Each session needs at least 1 hour')
@@ -69,10 +73,14 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
     if (issue) return setError(issue);
     setBusy(true);
     setError(undefined);
-    const common = { p_name: name.trim(), p_summary: summary.trim(), p_level_min: min, p_level_max: max, p_policy: approval ? 'approval' : 'open', p_schedules: schedules, p_coached: coached };
+    const sessions = schedules.map((s) => ({ ...s, venue: courts.length > 1 ? courtOf(s) : null }));
+    const common = {
+      p_name: name.trim(), p_summary: summary.trim(), p_level_min: min, p_level_max: max, p_policy: approval ? 'approval' : 'open',
+      p_schedules: sessions, p_coached: coached, p_venues: courts.map((c) => c.id),
+    };
     const { data, error } = group
       ? await supabase!.rpc('update_group', { p_group: group.id, ...common })
-      : await supabase!.rpc('create_group', { ...common, p_venue: court!.id, p_gender: audience });
+      : await supabase!.rpc('create_group', { ...common, p_venue: courts[0].id, p_gender: audience });
     setBusy(false);
     if (error) return setError(problem(error));
     if (group) toast(t('Saved'));
@@ -97,26 +105,27 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
           {(props) => <input {...props} value={name} maxLength={20} onChange={(e) => setName(e.target.value)} className="field" />}
         </Field>
 
-        {!group && (
-          <fieldset className="grid grid-cols-1 gap-2">
-            <legend className="mb-2 text-headline">{t('Court')}</legend>
-            {court ? (
-              <div className="sticker flex items-center gap-3 p-3">
-                <IconTile icon="pin" tint="sky" size="sm" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-bold">{court.name}</span>
-                  <span className="block truncate text-footnote text-ink-secondary">{court.city}</span>
-                </span>
-                <button type="button" onClick={() => setCourt(undefined)} aria-label={t('Change court: {name}', { name: court.name })}
-                        className="press grid size-11 place-items-center rounded-full text-ink-tertiary hover:bg-surface-muted hover:text-ink">
-                  <Icon name="xCircle" className="size-5" />
-                </button>
-              </div>
-            ) : (
-              <CourtSearch onPick={setCourt} label={t('Choose venue')} />
-            )}
-          </fieldset>
-        )}
+        {/* 球馆：1–5 个，第一个是主球馆 */}
+        <fieldset className="grid grid-cols-1 gap-2">
+          <legend className="mb-2 text-headline">{t('Court')}</legend>
+          {courts.map((court, i) => (
+            <div key={court.id} className="sticker flex items-center gap-3 p-3">
+              <IconTile icon="pin" tint={i === 0 ? 'sky' : 'surface'} size="sm" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-bold">{court.name}</span>
+                <span className="block truncate text-footnote text-ink-secondary">{i === 0 && courts.length > 1 ? `${court.city} · ${t('Main court')}` : court.city}</span>
+              </span>
+              <button type="button" onClick={() => setCourts(courts.filter((c) => c.id !== court.id))} aria-label={i === 0 ? t('Change court: {name}', { name: court.name }) : t('Remove {name}', { name: court.name })}
+                      className="press grid size-11 place-items-center rounded-full text-ink-tertiary hover:bg-surface-muted hover:text-ink">
+                <Icon name="xCircle" className="size-5" />
+              </button>
+            </div>
+          ))}
+          {courts.length < MAX_COURTS && (
+            <CourtSearch label={courts.length ? t('Add another court') : t('Choose venue')}
+                         onPick={(court) => !courts.some((c) => c.id === court.id) && setCourts([...courts, court])} />
+          )}
+        </fieldset>
 
         <Field label={t('About (optional)')} hint={t('Pace, who it suits, how fees work. No phone numbers or links.')}>
           {(props) => <textarea {...props} rows={2} maxLength={120} value={summary} onChange={(e) => setSummary(e.target.value)} className="field" />}
@@ -184,6 +193,14 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
                   {ends.map((h) => <option key={h.minutes} value={h.minutes}>{h.label}</option>)}
                 </select>
               </label>
+              {courts.length > 1 && (
+                <label className="grid gap-1.5 sm:col-span-2">
+                  <span className="text-footnote font-bold text-ink-secondary">{t('Court')}</span>
+                  <select value={courtOf(s)} onChange={(e) => update(i, { venue: e.target.value })} className="field">
+                    {courts.map((c, n) => <option key={c.id} value={c.id}>{n === 0 ? `${c.name} · ${t('Main court')}` : c.name}</option>)}
+                  </select>
+                </label>
+              )}
               <label className="grid gap-1.5 sm:col-span-2">
                 <span className="text-footnote font-bold text-ink-secondary">{t('Fee note')} {t('(optional)')}</span>
                 <input value={s.fee ?? ''} maxLength={120} placeholder={t('$12 each, pay at the desk')} onChange={(e) => update(i, { fee: e.target.value })} className="field" />

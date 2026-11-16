@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { activityText, scheduleText } from './Groups';
+import { activityText, courtsOf, scheduleText } from './Groups';
 import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { Avatar, Divider, Empty, IconButton, IconTile, LevelBadge, ScreenHeader, SectionTitle, Tag } from './kit';
 import { Link, navigate } from './router';
-import { problem, supabase, useLive, type GroupDetail, type GroupSession } from './supabase';
+import { problem, supabase, useLive, type GroupCourt, type GroupDetail, type GroupSession, type Schedule } from './supabase';
 import { dayName, hours } from './time';
 import { Button, Skeleton, toast } from './ui';
 
@@ -31,7 +31,10 @@ export function GroupPage({ id }: { id: string }) {
   }
   const member = g.my_role === 'owner' || g.my_role === 'organizer' || g.my_role === 'member';
   const organizer = g.my_role === 'owner' || g.my_role === 'organizer';
-  const tz = g.venue.tz;
+  const courts = courtsOf(g);
+  // 几个球馆时，每周场次后面写在哪个球馆
+  const slotText = (sc: Schedule) =>
+    courts.length > 1 ? `${scheduleText(sc)} · ${(courts.find((c) => c.id === sc.venue) ?? courts[0]).name}` : scheduleText(sc);
   const withFee = g.schedules.filter((sc) => sc.fee);
   const sameFee = withFee.length === g.schedules.length && new Set(withFee.map((sc) => sc.fee)).size === 1;
   const fees = sameFee ? withFee.slice(0, 1) : withFee;
@@ -54,7 +57,7 @@ export function GroupPage({ id }: { id: string }) {
 
   async function copyInvite() {
     const text = t('Join “{name}” on Badie: {times} at {court}. Level {min}–{max}. Open {link} and enter group code {code}.', {
-      name: g!.name, times: g!.schedules.map(scheduleText).join(', '), court: g!.venue.name, min: g!.level_min, max: g!.level_max,
+      name: g!.name, times: g!.schedules.map(slotText).join(', '), court: courts.map((c) => c.name).join(' · '), min: g!.level_min, max: g!.level_max,
       link: `${location.origin}/join/?code=${g!.invite_code ?? ''}`, code: g!.invite_code ?? '',
     });
     try {
@@ -74,27 +77,30 @@ export function GroupPage({ id }: { id: string }) {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
         <div className="grid min-w-0 gap-6">
           <section aria-label={g.venue.name} className="sticker grid gap-3 p-5">
-            <div className="flex items-start gap-3">
-              <IconTile icon="pin" tint="sky" size="lg" />
-              <div className="min-w-0">
-                <h2 className="text-headline">{g.venue.name}</h2>
-                <p className="text-footnote text-ink-secondary">{g.venue.city}</p>
+            {/* 球馆：主球馆在前 */}
+            {courts.map((c, i) => (
+              <div key={c.id} className="flex items-start gap-3">
+                <IconTile icon="pin" tint={i === 0 ? 'sky' : 'surface'} size={i === 0 ? 'lg' : 'md'} />
+                <div className="min-w-0">
+                  {i === 0 ? <h2 className="text-headline">{c.name}</h2> : <p className="font-bold">{c.name}</p>}
+                  <p className="text-footnote text-ink-secondary">{i === 0 && courts.length > 1 ? `${c.city} · ${t('Main court')}` : c.city}</p>
+                </div>
               </div>
-            </div>
+            ))}
             {g.summary && <p className="text-subhead">{g.summary}</p>}
             <ul className="flex flex-wrap gap-1.5">
               {g.coached && <li><Tag icon="user" tint="sky">{t('Coach-led')}</Tag></li>}
               <li><Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag></li>
               {g.gender && <li><Tag icon="users" tint="lavender">{audienceLabel(g.gender)}</Tag></li>}
               <li><Tag icon={g.join_policy === 'approval' ? 'lock' : 'userPlus'}>{g.join_policy === 'approval' ? t('Organizer approves') : t('Join directly')}</Tag></li>
-              {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}`}><Tag icon="calendar" tint="butter">{scheduleText(sc)}</Tag></li>)}
+              {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}-${sc.venue}`}><Tag icon="calendar" tint="butter">{slotText(sc)}</Tag></li>)}
               {member && g.invite_code && <li><Tag icon="hash">{t('Group code {code}', { code: g.invite_code })}</Tag></li>}
             </ul>
             {/* 收费备注最长 120 字，放不进标签：单独一行；各场一样就只写一次 */}
             {fees.map((sc) => (
-              <p key={`${sc.weekday}-${sc.start}`} className="flex gap-1.5 text-subhead [overflow-wrap:anywhere]">
+              <p key={`${sc.weekday}-${sc.start}-${sc.venue}`} className="flex gap-1.5 text-subhead [overflow-wrap:anywhere]">
                 <Icon name="coins" className="mt-0.5 size-4 shrink-0" />
-                <span>{sameFee ? sc.fee : `${scheduleText(sc)}: ${sc.fee}`}</span>
+                <span>{sameFee ? sc.fee : `${slotText(sc)}: ${sc.fee}`}</span>
               </p>
             ))}
             <p className="flex items-center gap-1.5 text-footnote text-ink-secondary"><Icon name="bolt" className="size-3.5" />{activityText(g.activity)}</p>
@@ -105,7 +111,7 @@ export function GroupPage({ id }: { id: string }) {
             <SectionTitle id="sessions" title={t('Upcoming sessions')} detail={t('Leaving within 2 hours of start counts as a late cancellation')} />
             {g.sessions.length === 0 && <p className="text-footnote text-ink-secondary">{t('No sessions scheduled.')}</p>}
             {g.sessions.map((s) => (
-              <Session key={s.id} session={s} tz={tz} member={member} organizer={organizer} busy={busy}
+              <Session key={s.id} session={s} courts={courts} member={member} organizer={organizer} busy={busy}
                        confirm={confirm} setConfirm={setConfirm} act={act} />
             ))}
           </section>
@@ -208,9 +214,10 @@ export function GroupPage({ id }: { id: string }) {
 
 const roles: Record<string, string> = { owner: 'Owner', organizer: 'Organizer' };
 
-function Session({ session: s, tz, member, organizer, busy, confirm, setConfirm, act }: {
+function Session({ session: s, courts, member, organizer, busy, confirm, setConfirm, act }: {
   session: GroupSession;
-  tz: string | null;
+  /** 球群的球馆：几个球馆时写这一场在哪个，时间按这个球馆的时区 */
+  courts: GroupCourt[];
   member: boolean;
   organizer: boolean;
   busy?: string;
@@ -219,6 +226,8 @@ function Session({ session: s, tz, member, organizer, busy, confirm, setConfirm,
   setConfirm: (key?: string) => void;
   act: (name: string, fn: string, args: Record<string, unknown>, done?: string) => Promise<unknown>;
 }) {
+  const court = courts.find((c) => c.id === s.venue) ?? courts[0];
+  const tz = court.tz;
   const going = s.my_status === 'confirmed';
   const waiting = s.my_status?.startsWith('waitlisted');
   const started = new Date(s.starts_at).getTime() <= Date.now();
@@ -236,6 +245,7 @@ function Session({ session: s, tz, member, organizer, busy, confirm, setConfirm,
       <div className="flex items-start gap-3">
         <div className="grid min-w-0 flex-1 gap-1">
           <h3 className="text-headline">{dayName(s.starts_at, tz)} · {hours(s.starts_at, s.ends_at, tz)}</h3>
+          {courts.length > 1 && <p className="flex items-center gap-1 text-footnote font-bold"><Icon name="pin" className="size-3.5 shrink-0" /><span className="truncate">{court.name}</span></p>}
           {s.cancelled ? (
             <p className="text-footnote font-bold text-ink-secondary">{t('Cancelled by the organizer')}</p>
           ) : (

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches, matchesNearby, saveFilter, timeLabels, type DayFilter, type TimeOfDay } from './dayFilter';
 import { AvatarCrop, decode } from './AvatarCrop';
 import { uploadCardPhoto } from './CardBackground';
@@ -61,13 +61,15 @@ type Composing = { card: NearbyPlayer; slot?: UsualTime };
  *  这天的卡片就是对方的约球请求（项目、时间都定好了），右滑直接约：单打发约球邀请，双打替我开一个公开的双打局并邀请 TA。
  *  附近的人右滑打开约 TA 的半屏（项目、哪天、几点到几点、球馆），发出一个邀请。
  *  上面：左边附近范围，右边球馆和筛选；下面一排圆头像是这叠卡片里的人，点一个就翻到 TA */
-export function Deck({ date, days, onDate, profile, onProfile }: {
+export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
   date?: string;
   /** 筛选里能选的日子（接下来 30 天） */
   days: string[];
   onDate: (date?: string) => void;
   profile: Profile;
   onProfile: (p: Profile) => void;
+  /** 最上面的“球友 / 球群”切换 */
+  toggle?: ReactNode;
 }) {
   const area = useArea();
   const km = useNearbyKm();
@@ -385,6 +387,7 @@ export function Deck({ date, days, onDate, profile, onProfile }: {
   return (
     // 附近范围、一排头像在上面，卡片占满剩下的高度，三个按钮在标签栏上面
     <div className="mx-auto flex min-h-[calc(100dvh-4rem-1.25rem-var(--tabbar)-1.5rem)] w-full max-w-md flex-col gap-3 lg:min-h-[calc(100dvh-4rem-2rem-4rem)]">
+      {toggle}
       <header className="flex items-center gap-2.5">
         <h1 className="sr-only">{t('Discover')}</h1>
         <RangePicker open={ranging} onOpen={() => setRanging(true)} onClose={() => setRanging(false)} />
@@ -767,7 +770,7 @@ function useDayCounts() {
 }
 
 /** 左上角：小字“附近”，大字“10 公里内 ▾”。点开选 5 / 10 / 20 / 50 公里（和 iOS 设置里的附近范围一样） */
-function RangePicker({ open, onOpen, onClose }: { open: boolean; onOpen: () => void; onClose: () => void }) {
+export function RangePicker({ open, onOpen, onClose }: { open: boolean; onOpen: () => void; onClose: () => void }) {
   const km = useNearbyKm();
   const within = (n: number) => t('Within {distance}', { distance: distance(n * 1000) });
   return (
