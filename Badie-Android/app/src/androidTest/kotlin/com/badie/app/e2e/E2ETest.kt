@@ -18,6 +18,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import com.badie.app.MainActivity
 import com.badie.app.l10n.L10n
@@ -51,6 +52,17 @@ abstract class E2ETest {
     val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     val context get() = instrumentation.targetContext
     val device: UiDevice by lazy { UiDevice.getInstance(instrumentation) }
+
+    /**
+     * 模拟器上别的系统程序（比如桌面）卡住时，系统会弹“××没有响应”盖住界面：点“等待”关掉。
+     * 返回有没有关掉一个
+     */
+    fun dismissSystemAnr(): Boolean {
+        val wait = device.findObject(By.res("android:id/aerr_wait")) ?: return false
+        wait.click()
+        device.waitForIdle()
+        return true
+    }
 
     /** 界面上的字：写简体中文原文（和 App 代码里的 tr 一样），取模拟器当前语言的译文 */
     fun t(key: String, vararg args: Any?): String = L10n.lookup(context.resources, key, args)

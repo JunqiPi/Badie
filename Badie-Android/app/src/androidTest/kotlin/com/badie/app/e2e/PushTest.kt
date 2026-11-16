@@ -24,9 +24,15 @@ abstract class PushBase : E2ETest() {
         openTab("我的")
         tap(desc(t("设置")))
         tapText("球局提醒")
-        val allow = device.wait(Until.findObject(By.res("com.android.permissioncontroller:id/permission_allow_button")), 15_000)
-            ?: throw AssertionError("没有弹出通知权限框")
-        allow.click()
+        // 等系统的权限框；中间要是有“××没有响应”盖住，先关掉
+        val allowButton = By.res("com.android.permissioncontroller:id/permission_allow_button")
+        val deadline = System.currentTimeMillis() + 20_000
+        var allow = device.findObject(allowButton)
+        while (allow == null && System.currentTimeMillis() < deadline) {
+            dismissSystemAnr()
+            allow = device.wait(Until.findObject(allowButton), 1_000)
+        }
+        (allow ?: throw AssertionError("没有弹出通知权限框")).click()
         waitFor(text(t("已开启")), what = "球局提醒：已开启")
         Harness.eventually("设备登记成 fcm", 90_000) { Harness.pushDevices(player.id).any { it["kind"]?.jsonPrimitive?.content == "fcm" } }
     }
