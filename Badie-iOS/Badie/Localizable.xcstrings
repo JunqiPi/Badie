@@ -28918,6 +28918,64 @@
         }
       }
     },
+    "保持打开" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keep on"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चालू रखें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tetap nyalakan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オンのままにする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "켜 두기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kekal hidupkan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เปิดไว้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vẫn bật"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持開啟"
+          }
+        }
+      }
+    },
     "信息有误" : {
       "localizations" : {
         "en" : {
@@ -32587,6 +32645,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "共同球友 %lld 位"
+          }
+        }
+      }
+    },
+    "关掉" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn off"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बंद करें"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matikan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフにする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "끄기"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matikan"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปิด"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關掉"
           }
         }
       }
@@ -69802,6 +69918,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "我們會讀每一則，回覆會出現在你的通知裡。"
+          }
+        }
+      }
+    },
+    "我们只用你的常去球馆，让附近的球友找到你、约你打球。关掉后，别人就约不了你了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We only use your usual courts so players nearby can find you and invite you to play. If you turn this off, they can’t invite you."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हम आपके नियमित कोर्ट का इस्तेमाल सिर्फ़ इसलिए करते हैं कि आस-पास के खिलाड़ी आपको ढूँढकर खेलने बुला सकें। बंद करने पर वे आपको बुला नहीं पाएँगे।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kami hanya memakai lapangan langgananmu agar pemain di sekitar bisa menemukan dan mengajakmu main. Kalau dimatikan, mereka tidak bisa mengajakmu."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "よく行くコートは、近くの人があなたを見つけて誘うためだけに使います。オフにすると、誘ってもらえなくなります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "자주 가는 코트는 근처 사람들이 나를 찾고 같이 치자고 초대할 때만 써요. 끄면 초대를 받을 수 없어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kami hanya guna gelanggang biasa anda supaya pemain berhampiran boleh menemui dan mengajak anda bermain. Jika dimatikan, mereka tidak boleh mengajak anda."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เราใช้สนามประจำของคุณแค่ให้คนที่อยู่ใกล้หาคุณเจอและชวนคุณไปตี ถ้าปิด จะไม่มีใครชวนคุณได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chúng tôi chỉ dùng sân bạn hay chơi để người chơi gần đó tìm thấy và rủ bạn đánh cầu. Nếu tắt, họ sẽ không rủ bạn được."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我們只用你的常去球館，讓附近的球友找到你、約你打球。關掉後，別人就約不了你了。"
           }
         }
       }
@@ -118371,6 +118545,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "被移出"
+          }
+        }
+      }
+    },
+    "要关掉吗？" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn off?"
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "बंद करें?"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matikan?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフにしますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "끌까요?"
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matikan?"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ปิดไหม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tắt?"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要關掉嗎？"
           }
         }
       }
