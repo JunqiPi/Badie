@@ -260,7 +260,7 @@ fun VenuePickerSheet(selectedId: String?, onPick: (Venue) -> Unit, onDismiss: ()
         }
         delay(300)
         hits = try {
-            backend.searchVenues(query)
+            backend.searchVenues(query, center)
         } catch (_: RemoteError) {
             emptyList()
         }

@@ -14,8 +14,9 @@ import java.time.Instant
 
 // 正式后端：球群（固定局）。对应 iPhone 的 MockBackend+RemoteGroups.swift（参数和字段照抄）
 
+/** venue：在哪个球馆；null = 主球馆（旧服务器没有这一项） */
 @Serializable
-class RemoteSchedule(val weekday: Int, val start: Int, val end: Int, val capacity: Int, val fee: String? = null)
+class RemoteSchedule(val weekday: Int, val start: Int, val end: Int, val capacity: Int, val fee: String? = null, val venue: String? = null)
 
 @Serializable
 class RemoteGroupVenue(val id: String, val name: String, val city: String? = null, val tz: String? = null)
@@ -33,10 +34,15 @@ class RemoteGroupSummary(
     val joinPolicy: String,
     val gender: String? = null,
     val coached: Boolean? = null,
+    /** 主球馆 */
     val venue: RemoteGroupVenue,
+    /** 所有球馆，主球馆在前（旧服务器没有这一项） */
+    val venues: List<RemoteGroupVenue>? = null,
     val schedules: List<RemoteSchedule>? = null,
     val activity: RemoteGroupActivity,
     val myRole: String? = null,
+    /** groups_near 才有：离搜索中心最近的那个球馆有多远（米） */
+    val distanceM: Double? = null,
 )
 
 @Serializable
@@ -50,6 +56,7 @@ class RemoteGroupDetail(
     val gender: String? = null,
     val coached: Boolean? = null,
     val venue: RemoteGroupVenue,
+    val venues: List<RemoteGroupVenue>? = null,
     val schedules: List<RemoteSchedule>? = null,
     val activity: RemoteGroupActivity,
     val myRole: String? = null,
@@ -69,6 +76,8 @@ class RemoteGroupDetail(
         val waitlist: Int,
         val myStatus: String? = null,
         val players: List<Player>? = null,
+        /** 这一场在哪个球馆（旧服务器没有这一项） */
+        val venue: String? = null,
     ) {
         @Serializable
         class Player(val id: String, val nickname: String, val waitlisted: Boolean)
@@ -92,15 +101,16 @@ class GroupsApi(private val remote: SupabaseClient) {
     suspend fun groupsNear(center: Coordinate, radiusKm: Double): List<RemoteGroupSummary> =
         remote.rpc("groups_near", json("lat" to center.latitude, "lng" to center.longitude, "radius_km" to radiusKm))
 
-    /** 返回新球群的 ID */
+    /** 返回新球群的 ID。venueIds：1–5 个球馆，第一个是主球馆（p_venue 也照旧发主球馆） */
     suspend fun create(
-        name: String, venueId: String, schedules: List<GroupSchedule>, levelRange: IntRange, joinPolicy: PlayGroup.JoinPolicy,
+        name: String, venueIds: List<String>, schedules: List<GroupSchedule>, levelRange: IntRange, joinPolicy: PlayGroup.JoinPolicy,
         summary: String, audience: Gender?, coached: Boolean,
     ): String = remote.rpc(
         "create_group",
         json(
             "p_name" to name.trim(),
-            "p_venue" to venueId,
+            "p_venue" to venueIds.first(),
+            "p_venues" to venueIds,
             "p_summary" to summary.trim(),
             "p_level_min" to levelRange.first,
             "p_level_max" to levelRange.last,
@@ -111,9 +121,10 @@ class GroupsApi(private val remote: SupabaseClient) {
         ),
     )
 
+    /** venueIds 为 null 时球馆不变 */
     suspend fun update(
         groupId: String, name: String, schedules: List<GroupSchedule>, levelRange: IntRange, joinPolicy: PlayGroup.JoinPolicy,
-        summary: String, coached: Boolean,
+        summary: String, coached: Boolean, venueIds: List<String>? = null,
     ) = remote.call(
         "update_group",
         json(
@@ -125,6 +136,7 @@ class GroupsApi(private val remote: SupabaseClient) {
             "p_policy" to joinPolicy.rawValue,
             "p_schedules" to serverSchedules(schedules),
             "p_coached" to coached,
+            "p_venues" to venueIds,
         ),
     )
 
@@ -147,9 +159,13 @@ class GroupsApi(private val remote: SupabaseClient) {
     suspend fun cancelSession(sessionId: String) = remote.call("cancel_session", json("p_session" to sessionId))
 
     companion object {
-        /** 服务器的星期是 0 = 周日（本地 1 = 周日） */
+        /** 服务器的星期是 0 = 周日（本地 1 = 周日）；不在主球馆的场次带上 venue */
         fun serverSchedules(schedules: List<GroupSchedule>): List<Map<String, Any>> = schedules.map {
-            mapOf("weekday" to it.weekday - 1, "start" to it.startMinutes, "end" to it.endMinutes, "capacity" to it.capacity, "fee" to (it.feeNote ?: ""))
+            val item = mutableMapOf<String, Any>(
+                "weekday" to it.weekday - 1, "start" to it.startMinutes, "end" to it.endMinutes, "capacity" to it.capacity, "fee" to (it.feeNote ?: ""),
+            )
+            it.venueId?.let { venue -> item["venue"] = venue }
+            item
         }
     }
 }

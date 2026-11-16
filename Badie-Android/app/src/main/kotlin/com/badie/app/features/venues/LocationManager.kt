@@ -282,7 +282,7 @@ class LocationManager internal constructor(
     suspend fun searchCourts(query: String): List<VenueSearch.Hit> {
         val known = nearbyCourts + favoriteCourts
         val remote = try {
-            backend.searchVenues(query)
+            backend.searchVenues(query, coordinate)
         } catch (_: RemoteError) {
             emptyList()
         }

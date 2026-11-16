@@ -105,16 +105,30 @@ class GroupManager(
         return sessionMap.values.filter { it.groupId == groupId && it.isUpcoming(time) }.sortedBy { it.slot.startTime }
     }
 
-    /** 球群的球馆：读过详情的用完整资料（有地址），没读过的用服务器给的名字 */
-    fun venue(group: PlayGroup): Venue? = context.backend.venue(group.venueId) ?: venues[group.venueId]
+    /** 球群的主球馆：读过详情的用完整资料（有地址），没读过的用服务器给的名字 */
+    fun venue(group: PlayGroup): Venue? = venue(group.venueId)
+
+    fun venue(id: String): Venue? = context.backend.venue(id) ?: venues[id]
+
+    /** 主球馆以外的球馆（按顺序） */
+    fun otherVenues(group: PlayGroup): List<Venue> = group.venueIds.drop(1).mapNotNull(::venue)
+
+    /** 球群有几个球馆时，这一场在哪个球馆；只有一个球馆时是 null（界面和以前一样） */
+    fun sessionVenueName(session: GroupSession): String? {
+        val group = groups[session.groupId]?.takeIf { it.venueIds.size > 1 } ?: return null
+        return venue(session.effectiveVenueId(group))?.name
+    }
 
     fun user(id: String): User? = cache.user(id)
 
     /** 附近的球群（按近 30 天场次数排），不含已加入的由页面自己去掉 */
-    fun nearbyGroups(): List<PlayGroup> = sortedByActivity(nearby?.second.orEmpty().mapNotNull { groups[it] })
+    fun nearbyGroups(): List<PlayGroup> = sortedByActivity(nearestGroups())
 
-    /** 这家球馆的球群（按活跃度排）；先调 [loadAtVenue] 拉一次 */
-    fun groups(atVenue: String): List<PlayGroup> = sortedByActivity(groups.values.filter { it.venueId == atVenue })
+    /** 附近的球群，近的在前（服务器按最近的那个球馆排好；发现页的“球群”） */
+    fun nearestGroups(): List<PlayGroup> = nearby?.second.orEmpty().mapNotNull { groups[it] }
+
+    /** 这家球馆的球群（群里任何一个球馆是这家就算，按活跃度排）；先调 [loadAtVenue] 拉一次 */
+    fun groups(atVenue: String): List<PlayGroup> = sortedByActivity(groups.values.filter { atVenue in it.venueIds })
 
     private fun sortedByActivity(list: List<PlayGroup>): List<PlayGroup> =
         list.sortedWith(compareByDescending<PlayGroup> { activity(it.id).sessionsLast30Days }.thenBy { it.name })
@@ -209,20 +223,22 @@ class GroupManager(
 
     // MARK: 操作（都等服务器）
 
+    /** venueId 是主球馆，otherVenueIds 是其他球馆（一共最多 5 个） */
     suspend fun create(
         name: String, venueId: String, schedules: List<GroupSchedule>, levelRange: IntRange, joinPolicy: PlayGroup.JoinPolicy,
-        summary: String, audience: Gender? = null, coached: Boolean = false,
+        summary: String, audience: Gender? = null, coached: Boolean = false, otherVenueIds: List<String> = emptyList(),
     ): PlayGroup {
-        val id = api.create(name, venueId, schedules, levelRange, joinPolicy, summary, audience, coached)
+        val id = api.create(name, listOf(venueId) + otherVenueIds, schedules, levelRange, joinPolicy, summary, audience, coached)
         loadGroup(id)
         return groups[id] ?: throw BackendError(tr("没有找到这个球群"))
     }
 
+    /** venueIds 为 null 时球馆不变 */
     suspend fun update(
         groupId: String, name: String, schedules: List<GroupSchedule>, levelRange: IntRange, joinPolicy: PlayGroup.JoinPolicy,
-        summary: String, coached: Boolean,
+        summary: String, coached: Boolean, venueIds: List<String>? = null,
     ) {
-        api.update(groupId, name, schedules, levelRange, joinPolicy, summary, coached)
+        api.update(groupId, name, schedules, levelRange, joinPolicy, summary, coached, venueIds)
         loadGroup(groupId)
     }
 
@@ -290,7 +306,7 @@ class GroupManager(
     internal fun cacheGroup(summary: RemoteGroupSummary, me: String) {
         cacheGroup(
             summary.id, summary.name, summary.summary, summary.levelMin..maxOf(summary.levelMin, summary.levelMax), summary.joinPolicy,
-            summary.gender, summary.coached, summary.venue, summary.schedules.orEmpty(), summary.activity, summary.myRole,
+            summary.gender, summary.coached, summary.venue, summary.venues, summary.schedules.orEmpty(), summary.activity, summary.myRole,
             inviteCode = null, members = null, pending = null, me = me,
         )
     }
@@ -298,7 +314,7 @@ class GroupManager(
     internal fun cacheGroup(detail: RemoteGroupDetail, me: String) {
         cacheGroup(
             detail.id, detail.name, detail.summary, detail.levelMin..maxOf(detail.levelMin, detail.levelMax), detail.joinPolicy,
-            detail.gender, detail.coached, detail.venue, detail.schedules.orEmpty(), detail.activity, detail.myRole,
+            detail.gender, detail.coached, detail.venue, detail.venues, detail.schedules.orEmpty(), detail.activity, detail.myRole,
             detail.inviteCode, detail.members, detail.pending, me,
         )
         val group = groups[detail.id] ?: return
@@ -325,26 +341,33 @@ class GroupManager(
             val local = start.zoned(zone)
             val weekday = local.dayOfWeek.value % 7 + 1
             val minutes = local.hour * 60 + local.minute
-            val schedule = group.schedules.firstOrNull { it.weekday == weekday && it.startMinutes == minutes }
+            // 同一时间在不同球馆的两个场次：按球馆分开
+            val sameTime = group.schedules.filter { it.weekday == weekday && it.startMinutes == minutes }
+            val schedule = sameTime.firstOrNull { session.venue == null || it.effectiveVenueId(group) == session.venue } ?: sameTime.firstOrNull()
             sessionMap[session.id] = GroupSession(
                 id = session.id, groupId = detail.id, scheduleId = schedule?.id ?: "",
                 slot = TimeSlot.of(start, start, session.endsAt.toEpochMilli(), zone),
                 capacity = session.capacity, signedUp = signedUp, waitlist = waitlist, isCancelled = session.cancelled,
+                venueId = session.venue ?: schedule?.effectiveVenueId(group),
             )
         }
     }
 
     private fun cacheGroup(
         id: String, name: String, summary: String?, levels: IntRange, joinPolicy: String, audience: String?, coached: Boolean?,
-        place: RemoteGroupVenue, schedules: List<RemoteSchedule>, activity: RemoteGroupActivity, myRole: String?, inviteCode: String?,
+        place: RemoteGroupVenue, places: List<RemoteGroupVenue>?, schedules: List<RemoteSchedule>, activity: RemoteGroupActivity,
+        myRole: String?, inviteCode: String?,
         members: List<RemoteGroupDetail.Member>?, pending: List<RemoteGroupDetail.Member>?, me: String,
     ) {
         val existing = groups[id]
         for (member in members.orEmpty() + pending.orEmpty()) cache.cache(member.id, member.nickname, member.rating)
-        if (context.backend.venue(place.id) == null && venues[place.id] == null) {
-            venues[place.id] = Venue(
-                id = place.id, name = place.name, lat = 0.0, lon = 0.0, city = place.city,
-                countryCode = Locale.getDefault().country.ifEmpty { "US" }, timeZoneId = place.tz,
+        // 本地还没有的球馆先记个名字（主球馆在前）
+        val courts = listOf(place) + places.orEmpty().filter { it.id != place.id }
+        for (court in courts) {
+            if (context.backend.venue(court.id) != null || venues[court.id] != null) continue
+            venues[court.id] = Venue(
+                id = court.id, name = court.name, lat = 0.0, lon = 0.0, city = court.city,
+                countryCode = Locale.getDefault().country.ifEmpty { "US" }, timeZoneId = court.tz ?: place.tz,
                 source = VenueSource.Player, status = VenueStatus.Unconfirmed,
             )
         }
@@ -364,12 +387,13 @@ class GroupManager(
             schedules = schedules.mapIndexed { index, schedule ->
                 GroupSchedule(
                     "$id-$index", schedule.weekday + 1, schedule.start, schedule.end, schedule.capacity,
-                    schedule.fee?.takeIf { it.isNotEmpty() },
+                    schedule.fee?.takeIf { it.isNotEmpty() }, venueId = schedule.venue,
                 )
             },
             joinPolicy = if (joinPolicy == "approval") PlayGroup.JoinPolicy.Approval else PlayGroup.JoinPolicy.Open,
             inviteCode = inviteCode ?: existing?.inviteCode ?: "", createdAt = existing?.createdAt ?: now(),
             audience = audience?.let { value -> Gender.entries.firstOrNull { it.rawValue == value } }, coached = coached,
+            otherVenueIds = courts.drop(1).map { it.id }.ifEmpty { null },
         )
         if (groups[id] != group) groups[id] = group
         activities[id] = GroupActivity(activity.sessions, activity.average)

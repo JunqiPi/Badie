@@ -44,6 +44,9 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.badie.app.backend.DayCandidate
 import com.badie.app.backend.InviteResult
 import com.badie.app.backend.NearbyPlayer
@@ -150,6 +153,8 @@ fun DayCandidatesView(
     onShowsFilter: (Boolean) -> Unit,
     reloadToken: Int,
     modifier: Modifier = Modifier,
+    /** 筛选里选了“显示：球群” */
+    onShowGroups: () -> Unit = {},
 ) {
     val env = LocalEnv.current
     val manager = env.matchManager
@@ -213,12 +218,25 @@ fun DayCandidatesView(
     }
 
     LaunchedEffect(needsLocation, location.preferences.travelRadiusKm, reloadToken) { load(showsErrors = true) }
-    // 某天的卡片每 30 秒拉一次（在别的标签页时不拉）；附近的人变得慢，只在打开、下拉、开定位、改范围时拉
+    // 某天的卡片每 30 秒拉一次，附近的人每分钟拉一次（在别的标签页、App 在后台时不拉），回到 App 时也拉：
+    // 新出现的人接在后面，不打乱正在看的那张；已经走了的人拿掉
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     LaunchedEffect(day) {
-        if (day == null) return@LaunchedEffect
+        var tick = 0
         while (true) {
             delay(30_000)
-            if (env.router.selectedTab == MainTab.Home) load(showsErrors = false)
+            tick += 1
+            if (env.router.selectedTab != MainTab.Home || !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) continue
+            if (!lobbyOnly || tick % 2 == 0) load(showsErrors = false)
+        }
+    }
+    // 只在离开过以后回来时拉（刚打开时上面已经拉过）
+    var wasAway by remember { mutableStateOf(false) }
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) { wasAway = true }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if (wasAway) {
+            wasAway = false
+            scope.launch { load(showsErrors = false) }
         }
     }
 
@@ -493,6 +511,10 @@ fun DayCandidatesView(
                 onApply = { applied ->
                     onFilter(applied)
                     onShowsFilter(false)
+                },
+                onGroups = {
+                    onShowsFilter(false)
+                    onShowGroups()
                 },
                 // 筛选里换了一天（换一天整叠卡会重建）；快速约球的日期也跟着变（和原来首页的日期条一样）
                 onDay = { newDay ->

@@ -176,6 +176,11 @@ class ScreenshotTest {
     }
 
     @Test
+    fun preferencesWithoutVenue() = shot("onboarding-6-preferences-no-venue") {
+        OnboardingFlow(onboarding(OnboardingStep.Preferences, LocalEnv.current) { noVenueListed = true })
+    }
+
+    @Test
     fun venuePicker() = shot("onboarding-6-venue-picker") {
         val model = onboarding(OnboardingStep.Preferences, LocalEnv.current)
         androidx.compose.runtime.LaunchedEffect(Unit) { model.locationUpdated(null) }

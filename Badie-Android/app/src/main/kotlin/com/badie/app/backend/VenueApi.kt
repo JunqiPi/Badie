@@ -177,7 +177,7 @@ suspend fun Backend.reportVenue(id: String, issue: VenueIssue, detail: String = 
 
 /**
  * 服务器 venues 表的一整行（add_venue、confirm_venue 返回的）换成球馆：只读 iPhone 也读的那些列，
- * 别的列（设施、营业时间这些服务器上的写法和本机不同）不管
+ * 别的列（营业时间这些服务器上的写法和本机不同）不管
  */
 fun venueFromRow(row: JsonObject): Venue? {
     val columns = VENUE_COLUMNS.split(",").toSet()

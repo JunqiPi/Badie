@@ -374,7 +374,7 @@ class RankingManager(private val backend: Backend, private val now: () -> Long =
 
     suspend fun searchVenues(query: String): List<Venue> {
         val center = locationManager?.currentLocation ?: favoriteVenues.firstOrNull()?.location
-        val found = backend.searchVenues(query)
+        val found = backend.searchVenues(query, center)
         found.forEach { venues[it.id] = it }
         return if (center == null) found else found.sortedBy { it.distanceKm(center) }
     }

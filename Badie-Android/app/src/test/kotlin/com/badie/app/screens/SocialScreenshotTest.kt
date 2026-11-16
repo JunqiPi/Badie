@@ -117,11 +117,12 @@ class SocialScreenshotTest {
         val players = """[{"id":"$me","nickname":"Alex","waitlisted":false},{"id":"$blake","nickname":"Blake","waitlisted":false},{"id":"$dana","nickname":"小雨","waitlisted":true}]"""
         return """{"id":"grp1","name":"周四晚双打群","summary":"轮换上场，新手友好；费用按人头在前台付。","level_min":3,"level_max":5,"join_policy":"approval",""" +
             """"venue":{"id":"v1","name":"Pasadena Badminton","city":"Pasadena","tz":"America/Los_Angeles"},""" +
-            """"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":"每人 $15"},{"weekday":0,"start":600,"end":720,"capacity":12,"fee":"每人 $15"}],""" +
+            """"venues":[{"id":"v1","name":"Pasadena Badminton","city":"Pasadena","tz":"America/Los_Angeles"},{"id":"v2","name":"LA Badminton Center","city":"El Monte","tz":"America/Los_Angeles"}],""" +
+            """"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":"每人 $15","venue":null},{"weekday":0,"start":600,"end":720,"capacity":12,"fee":"每人 $15","venue":"v2"}],""" +
             """"activity":{"sessions":8,"average":7.4},"my_role":${if (member) "\"owner\"" else "null"},"invite_code":"ABC2LX",""" +
             """"sessions":[{"id":"s1","starts_at":"${inDays(2)}","ends_at":"${inDays(2, 2)}","capacity":8,"cancelled":false,"confirmed":2,"waitlist":1,""" +
-            """"my_status":${if (member) "\"confirmed\"" else "null"},"players":${if (member) players else "null"}},""" +
-            """{"id":"s2","starts_at":"${inDays(5)}","ends_at":"${inDays(5, 2)}","capacity":12,"cancelled":false,"confirmed":12,"waitlist":0,"my_status":null,"players":null}],""" +
+            """"my_status":${if (member) "\"confirmed\"" else "null"},"players":${if (member) players else "null"},"venue":"v1"},""" +
+            """{"id":"s2","starts_at":"${inDays(5)}","ends_at":"${inDays(5, 2)}","capacity":12,"cancelled":false,"confirmed":12,"waitlist":0,"my_status":null,"players":null,"venue":"v2"}],""" +
             """"members":${if (member) """[{"id":"$me","nickname":"Alex","rating":4,"role":"owner"},{"id":"$blake","nickname":"Blake","rating":4.33,"role":"member"},{"id":"$dana","nickname":"小雨","rating":3.67,"role":"member"}]""" else "null"},""" +
             """"pending":${if (member) """[{"id":"$casey","nickname":"Casey","rating":3,"role":null}]""" else "null"}}"""
     }
@@ -280,6 +281,7 @@ class SocialScreenshotTest {
         server.on("POST /rest/v1/rpc/group_page", groupPage(member = true))
         val nearby =
             """[{"id":"grp2","name":"周末早场","level_min":2,"level_max":4,"join_policy":"open","gender":"female","venue":{"id":"v2","name":"LA Badminton Center"},""" +
+                """"venues":[{"id":"v2","name":"LA Badminton Center"},{"id":"v4","name":"Arcadia Park"},{"id":"v5","name":"Monterey Park Gym"}],""" +
                 """"schedules":[{"weekday":6,"start":540,"end":720,"capacity":16}],"activity":{"sessions":4,"average":10.5}},""" +
                 """{"id":"grp3","name":"教练小班","level_min":1,"level_max":3,"join_policy":"approval","coached":true,"venue":{"id":"v3","name":"Arcadia Badminton"},""" +
                 """"schedules":[{"weekday":2,"start":1140,"end":1260,"capacity":6}],"activity":{"sessions":0,"average":0},"my_role":"pending"}]"""
@@ -305,6 +307,14 @@ class SocialScreenshotTest {
         server.on("POST /rest/v1/rpc/group_page", groupPage(member = false))
         runBlocking { env.groupManager.loadGroup("grp1") }
         shot("social-group-join", environment = env) { GroupScreen("grp1") }
+    }
+
+    @Test
+    fun editGroupWithSeveralVenues() {
+        val env = environment()
+        server.on("POST /rest/v1/rpc/group_page", groupPage(member = true))
+        runBlocking { env.groupManager.loadGroup("grp1") }
+        shot("social-edit-group", qualifiers = "b+zh+Hans-h1700dp", environment = env) { CreateGroupScreen(null, editingGroupId = "grp1") }
     }
 
     @Test

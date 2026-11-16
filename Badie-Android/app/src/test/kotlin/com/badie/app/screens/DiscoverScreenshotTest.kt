@@ -17,6 +17,7 @@ import com.badie.app.design.Appearance
 import com.badie.app.design.BadieTheme
 import com.badie.app.features.home.DayCardFilter
 import com.badie.app.features.home.DayCardFilterSheet
+import com.badie.app.features.home.DiscoverMode
 import com.badie.app.features.home.DiscoverScreen
 import com.badie.app.features.home.InviteAnswerSheet
 import com.badie.app.features.home.InviteComposeContent
@@ -155,6 +156,21 @@ class DiscoverScreenshotTest {
         server.on("POST /rest/v1/rpc/nearby_invites", "[]")
         server.on("POST /rest/v1/rpc/nearby_players", "[]")
         shot("discover-empty-zh") { DiscoverScreen() }
+    }
+
+    @Test
+    fun nearbyGroups() {
+        server.on("POST /rest/v1/rpc/nearby_invites", "[]")
+        server.on(
+            "POST /rest/v1/rpc/groups_near",
+            """[{"id":"g1","name":"周四晚双打群","level_min":3,"level_max":5,"join_policy":"open","venue":{"id":"v1","name":"圣盖博羽毛球馆"},""" +
+                """"venues":[{"id":"v1","name":"圣盖博羽毛球馆"},{"id":"v2","name":"Arcadia Badminton"}],""" +
+                """"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8},{"weekday":0,"start":600,"end":720,"capacity":12,"venue":"v2"}],""" +
+                """"activity":{"sessions":8,"average":7.4},"distance_m":800},""" +
+                """{"id":"g2","name":"周末早场","level_min":2,"level_max":4,"join_policy":"approval","gender":"female","venue":{"id":"v3","name":"LA Badminton Center"},""" +
+                """"schedules":[{"weekday":6,"start":540,"end":720,"capacity":16}],"activity":{"sessions":0,"average":0},"my_role":"pending","distance_m":6400}]""",
+        )
+        shot("discover-groups-zh", setup = { DiscoverMode.Groups.save(RuntimeEnvironment.getApplication()) }) { DiscoverScreen() }
     }
 
     @Test

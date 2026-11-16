@@ -1,5 +1,6 @@
 package com.badie.app.features.home
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,14 +29,21 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import com.badie.app.design.AppTheme
+import com.badie.app.design.ChoiceChip
+import com.badie.app.design.EmptyStateView
 import com.badie.app.design.IconButton
 import com.badie.app.design.SheetScaffold
 import com.badie.app.design.Sym
 import com.badie.app.design.Symbol
+import com.badie.app.design.card
 import com.badie.app.design.pressable
 import com.badie.app.design.rememberHaptics
+import com.badie.app.features.groups.GroupCard
 import com.badie.app.features.matching.MatchManager
 import com.badie.app.l10n.tr
 import com.badie.app.remote.RemoteError
@@ -62,6 +70,13 @@ fun DiscoverScreen() {
     val scope = rememberCoroutineScope()
     var filter by remember { mutableStateOf(DayCardFilter.load(context)) }
     var showsFilter by remember { mutableStateOf(false) }
+    // 看球友还是球群（记住上次选的）；看球群时的筛选只有“显示：球友 / 球群”
+    var mode by remember { mutableStateOf(DiscoverMode.load(context)) }
+    var showsGroupFilter by remember { mutableStateOf(false) }
+    fun switchMode(next: DiscoverMode) {
+        mode = next
+        next.save(context)
+    }
     // 下拉刷新时加一，卡片跟着重新拉
     var reloadToken by remember { mutableIntStateOf(0) }
     // 点了“好”之后要打开的球局
@@ -104,10 +119,13 @@ fun DiscoverScreen() {
                 Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
                     .padding(horizontal = AppTheme.Spacing.screen).padding(top = AppTheme.Spacing.sm, bottom = AppTheme.Spacing.sm),
             ) {
-                Header(selectedDay, filter.activeCount + if (selectedDay == null) 0 else 1) { showsFilter = true }
+                val badge = if (mode == DiscoverMode.Groups) 1 else filter.activeCount + if (selectedDay == null) 0 else 1
+                Header(selectedDay, badge) { if (mode == DiscoverMode.Groups) showsGroupFilter = true else showsFilter = true }
             }
         }
-        key(selectedDay ?: -1L) {
+        if (mode == DiscoverMode.Groups) {
+            NearbyGroupsList(Modifier.weight(1f))
+        } else key(selectedDay ?: -1L) {
             DayCandidatesView(
                 selectedDay, filter,
                 onFilter = { next ->
@@ -117,7 +135,17 @@ fun DiscoverScreen() {
                 showsFilter = showsFilter, onShowsFilter = { showsFilter = it }, reloadToken = reloadToken,
                 // ✕ ♥ ★ 停在标签栏上面（中间的“+”比标签栏高出一截）
                 modifier = Modifier.weight(1f).padding(bottom = AppTheme.Spacing.tabBarClearance - AppTheme.Spacing.md),
+                onShowGroups = { switchMode(DiscoverMode.Groups) },
             )
+        }
+    }
+
+    if (showsGroupFilter) {
+        SheetScaffold(onDismiss = { showsGroupFilter = false }) {
+            GroupsFilterSheet {
+                showsGroupFilter = false
+                switchMode(DiscoverMode.Players)
+            }
         }
     }
 
@@ -212,4 +240,78 @@ private fun dayTitle(day: Long): String {
     if (isSameDay(day, now)) return tr("今天")
     if (isSameDay(day, com.badie.app.models.addingDays(now, 1))) return tr("明天")
     return DateText.weekday(day)
+}
+
+/** 发现页看球友（原来的卡片）还是球群（附近的球群，近的在前）。记住上次选的 */
+enum class DiscoverMode(val rawValue: String) {
+    Players("players"),
+    Groups("groups");
+
+    fun save(context: Context) {
+        context.getSharedPreferences(STORE, Context.MODE_PRIVATE).edit { putString(KEY, rawValue) }
+    }
+
+    companion object {
+        private const val STORE = "discover"
+        private const val KEY = "discoverMode"
+
+        fun load(context: Context): DiscoverMode {
+            val raw = context.getSharedPreferences(STORE, Context.MODE_PRIVATE).getString(KEY, null)
+            return entries.firstOrNull { it.rawValue == raw } ?: Players
+        }
+    }
+}
+
+// MARK: - 球群：附近的球群，近的在前
+
+/** 看球群时点筛选：只有“显示：球友 / 球群”，选球友就回到卡片 */
+@Composable
+private fun GroupsFilterSheet(onPlayers: () -> Unit) {
+    val colors = AppTheme.colors
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = AppTheme.Spacing.screen).padding(top = AppTheme.Spacing.xl, bottom = AppTheme.Spacing.xxl),
+        verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
+    ) {
+        Text(tr("筛选"), style = AppTheme.Typography.title, color = colors.ink, modifier = Modifier.semantics { heading() })
+        Text(tr("显示"), style = AppTheme.Typography.footnoteBold, color = colors.inkSecondary, modifier = Modifier.semantics { heading() })
+        Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+            ChoiceChip(tr("球友"), isSelected = false, onClick = onPlayers)
+            ChoiceChip(tr("球群"), isSelected = true) {}
+        }
+    }
+}
+
+@Composable
+private fun NearbyGroupsList(modifier: Modifier = Modifier) {
+    val env = LocalEnv.current
+    val groupManager = env.groupManager
+    LaunchedEffect(groupManager.radiusKm, groupManager.location.currentLocation) {
+        try {
+            groupManager.loadNearby(groupManager.currentCenter(), groupManager.radiusKm)
+        } catch (_: RemoteError) {
+        }
+    }
+    val groups = groupManager.nearestGroups()
+    val me = groupManager.currentUserId
+    RefreshEverything(modifier.fillMaxWidth(), extra = { groupManager.loadNearby(groupManager.currentCenter(), groupManager.radiusKm) }) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen)
+                .padding(top = AppTheme.Spacing.xs, bottom = AppTheme.Spacing.tabBarClearance),
+            verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm),
+        ) {
+            if (groups.isEmpty()) {
+                EmptyStateView(
+                    Sym.person3, tr("附近还没有球群"), Modifier.card(), tint = AppTheme.colors.lavender, actionTitle = tr("建群"),
+                ) { env.router.open(Route.CreateGroup()) }
+            } else {
+                groups.forEach { group ->
+                    GroupCard(
+                        group, groupManager.venue(group), groupManager.activity(group.id),
+                        Modifier.pressable(scale = 0.98f) { env.router.open(Route.Group(group.id)) },
+                        status = if (me != null && group.isPending(me)) tr("待审核") else null,
+                    )
+                }
+            }
+        }
+    }
 }

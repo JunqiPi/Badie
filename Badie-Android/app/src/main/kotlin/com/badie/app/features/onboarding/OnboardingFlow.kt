@@ -445,6 +445,20 @@ private fun FavoriteVenuesCard(model: OnboardingModel) {
             }
             Symbol(Sym.chevronRight, size = 13, tint = colors.inkTertiary, modifier = Modifier.padding(top = 4.dp))
         }
+        // 我们还没收录的地方搜不到球馆：可以先不选，以后在球馆页再选
+        if (venues.isEmpty()) {
+            if (model.noVenueListed) {
+                Text(tr("好的，以后可以在球馆页再选。"), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
+            } else {
+                Text(
+                    tr("列表里没有我的球馆"), style = AppTheme.Typography.footnoteBold.copy(textDecoration = TextDecoration.Underline),
+                    color = colors.inkSecondary,
+                    modifier = Modifier
+                        .clickable(remember { MutableInteractionSource() }, indication = null, role = Role.Button) { model.noVenueListed = true }
+                        .padding(vertical = AppTheme.Spacing.xs),
+                )
+            }
+        }
     }
     if (showPicker) {
         SheetScaffold(onDismiss = { showPicker = false }, fullHeight = true) { VenuePicker(model) { showPicker = false } }
