@@ -15,6 +15,7 @@
 -keep class okhttp3.** { *; }
 -keep class okio.** { *; }
 -keep class androidx.compose.** { *; }
+-keep class androidx.collection.** { *; }
 -keep class androidx.activity.** { *; }
 -keep class androidx.lifecycle.** { *; }
 -keep class androidx.core.** { *; }
