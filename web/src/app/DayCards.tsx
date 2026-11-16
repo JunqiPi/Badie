@@ -415,7 +415,7 @@ export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
         </div>
       )}
 
-      <div className="relative flex min-h-[24rem] flex-1 flex-col">
+      <div className={`relative flex flex-1 flex-col ${toggle ? 'min-h-[21rem]' : 'min-h-[24rem]'}`}>
         {!area ? (
           <div className="grid flex-1 content-center"><AreaPrompt /></div>
         ) : !loaded ? (
@@ -442,7 +442,7 @@ export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
                 <p className="text-footnote font-bold text-ink-secondary">{t('Next: players who often play nearby')}</p>
               </div>
             )}
-            <div className="relative min-h-[22rem] flex-1">
+            <div className={`relative flex-1 ${toggle ? 'min-h-[19rem]' : 'min-h-[22rem]'}`}>
               {second && (
                 <div aria-hidden="true" inert className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
                   <Card item={second} filter={filter} />

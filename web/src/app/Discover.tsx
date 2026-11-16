@@ -86,7 +86,7 @@ function NearbyGroups({ toggle }: { toggle: ReactNode }) {
         <IconButton icon="plus" label={t('Start a group')} to="/groups/new/" />
       </header>
       {!area ? (
-        <AreaPrompt tint="lavender" />
+        <AreaPrompt />
       ) : !groups ? (
         <Skeleton className="h-40" />
       ) : groups.length === 0 ? (
