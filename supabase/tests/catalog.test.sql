@@ -1,7 +1,7 @@
 -- 场馆目录导入（seed.sql 由 supabase/scripts/build_venue_seed.py 生成）
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(8);
+select plan(10);
 
 select cmp_ok((select count(*)::int from public.venues where source = 'open_data'), '>', 3000, '政府开放数据已导入');
 select is((select count(*)::int from public.venues where source = 'curated' and country_code = 'US'), 276, '美国收录 276 处');
@@ -9,8 +9,12 @@ select is((select court_count from public.venues where id = 'v-us-ca-orange-coun
 select ok((select kind = 'rec_center' and play_times like 'Free open play%' and pricing ->> 'perPerson' = '0' and checked_on = '2026-10-16'
            from public.venues where id = 'v-us-ca-balboa-park-activity-center'), '社区中心：类型、开放时段、免费、核实日期');
 select is((select pricing ->> 'perPerson' from public.venues where id = 'v-us-ca-labc'), '10', 'LABC 散客价');
-select ok((select bool_and(location_approximate and status = 'unconfirmed') from public.venues where country_code = 'KR'),
-          '韩国数据只有大概位置，标为待确认');
+select ok((select bool_and(location_approximate and status = 'unconfirmed') from public.venues where country_code = 'KR' and source = 'open_data'),
+          '韩国政府数据只有大概位置，标为待确认');
+select ok((select count(*) > 2000 and bool_and(status = 'unconfirmed' and attribution like '%OpenStreetMap%')
+           from public.venues where id like 'v-%-osm-%'), 'OpenStreetMap 球馆：待球友确认，带署名');
+select is((select count(*) from public.venues where id like 'v-%-osm-%' and country_code in ('CN', 'KP')), 0::bigint,
+          '中国大陆不导入 OpenStreetMap 球馆');
 
 select ok((select distance_m between 15000 and 18000 from public.venues_near(34.0765, -118.0462, 30)
            where (venue).id = 'v-us-ca-santa-fe-springs-badminton-club'), 'LABC 到 Santa Fe Springs 约 16 公里');

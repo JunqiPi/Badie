@@ -242,7 +242,7 @@
 | 之后 | 韩国 | Kakao / Naver 本地搜索（Apple 地图在韩国受数据出口限制） | 只存对方的地点 ID |
 | 单独评估 | 中国大陆 | 需要本地主体与 ICP 备案；高德/百度条款禁止存储其数据 | 只存我们自己（用户确认）的数据 |
 
-> OpenStreetMap 的 `sport=badminton` 多数是露天场地（91.6% 为 `leisure=pitch`），且 ODbL 共享条款会传染到合并后的库，所以不并入球馆库。
+> OpenStreetMap 的 `sport=badminton` 多数是露天场地（91.6% 为 `leisure=pitch`）。2026-11 起只导入其中室内、有名字的（约 2400 家，`supabase/scripts/build_osm_venues.py`），作为单独一份目录（`supabase/data/osm-venues.json`，按 ODbL 公开在仓库里），不和其他来源的数据合并成一份。
 
 ### 9.5 首批收录（美国 32 家）
 

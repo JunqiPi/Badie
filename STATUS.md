@@ -165,8 +165,17 @@
 - **注册时常去球馆必填**，知道位置时自动选上最近的一家（能换）；注册后自动显示在附近的人里（开关只在设置里）。网站 `Onboarding.tsx` + `usualCourt.ts`，iPhone `OnboardingFlow.swift`（1.0.6）
 - **跳过问卷的按 3 级算**，也进附近的人、能被约（`has_level` 对有资料的人都为真，迁移 `20261218000000_everyone_in_discover.sql`）
 - **约球默认不限等级**：快速匹配默认“不限”，开局默认 1–9，双打邀请答应后的公开局 1–9
-- **补常去球馆**：迁移按最近的约球请求 / 房间 / 球局 / 球群补一家（线上能补 11 人）；网站发现页和 iPhone 拿到真实定位时，一家都没有的自动收藏最近的一家（每个账号一次，自己删了不再补）；剩下 13 人没有任何记录，用户发邮件问了球馆，对照表里能唯一对上的 6 人已手动写进 `favorite_venues`（2026-11-15）。还差：Sumit 的 Riverside Leisure Centre 是 Chelmsford 还是 Exeter；Parks Sports Centre、PlayFit Sports Club、Kesgrave Sports Centre、Benchakitti（曼谷）、Shah Alam Badminton Centre、San Diego Badminton Club 不在球馆库里
-- **安卓的注册页还没跟上**（还有“显示我”开关、常去球馆不必填），文字表里为它留着“在附近的人里显示我”
+- **补常去球馆**：迁移按最近的约球请求 / 房间 / 球局 / 球群补一家（线上能补 11 人）；网站发现页和 iPhone 拿到真实定位时，一家都没有的自动收藏最近的一家（每个账号一次，自己删了不再补）；剩下 13 人没有任何记录，用户发邮件问了球馆后手动写进 `favorite_venues`；库里没有的 5 家（英国 3、曼谷、Shah Alam）放在 `Resources/curated-added.json`
+- **注册时要是搜不到自己的球馆**，可以点“列表里没有我的球馆”先继续（以后在球馆页再选）
+- **设置里关“在同馆常客里显示我”先确认**：“我们只用你的常去球馆，让附近的球友找到你、约你打球。关掉后，别人就约不了你了。”（关掉后 `invite_allowed` 确实不让别人约）
+- **安卓的注册页和设置还没跟上**（还有“显示我”开关、常去球馆不必填、关掉不确认），文字表里为它留着“在附近的人里显示我”
+
+## 全世界的球馆：OpenStreetMap（2026-11-16）
+
+- `supabase/scripts/build_osm_venues.py` 从 QLever（qlever.dev，OSM 全球数据，overpass-api.de 在这台机器上连不上）拉所有 `sport=badminton`，约 1.36 万个点，大多是露天场地；只留室内、有名字的（体育馆 / 体育中心 / 建筑里 / 标了室内；露天的名字得像球馆），去掉商店、学校、私人的、公园里的；和 App 里已有的球馆 150 米内或 1 公里内同名的跳过；中国大陆和朝鲜不收。结果约 2400 家，放 `supabase/data/osm-venues.json`（只进数据库，不打包进 App、不生成网站静态页），状态“待确认”，署名 © OpenStreetMap contributors（ODbL，这份文件在公开仓库里，满足共享要求）
+- id 用 OSM 编号（`v-fr-osm-w140992546`），重跑不会换 id；OSM 那边删了的会按种子规则隐藏进审核
+- 更新：装 `reverse_geocoder==1.5.1 timezonefinder==6.5.9`，跑这个脚本再跑 `build_venue_seed.py`
+- 噪音还有一些（偶尔把整个体育场、大学体育馆算进来），靠球友确认 / 举报
 - 顺手修了：没登录时查完登录状态，页面主体会重新生成，把分享卡片带来的“你的朋友是 4+”冲回普通标题（`Shell.tsx` 里 main 的 key 只跟地址走）
 
 ## 已知、没修的
