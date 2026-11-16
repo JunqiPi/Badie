@@ -699,19 +699,79 @@ final class SupabaseClientTests: XCTestCase {
         server.on("POST /rest/v1/rpc/create_group", #""grp1""#)
         server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
         let schedule = GroupSchedule(id: "s", weekday: 5, startMinutes: 19 * 60 + 30, endMinutes: 22 * 60, capacity: 8, feeNote: nil)
-        _ = try await backend.remoteCreateGroup(name: " Thu doubles ", venueId: "v-test-court", schedules: [schedule],
+        let elsewhere = GroupSchedule(id: "t", weekday: 7, startMinutes: 9 * 60, endMinutes: 12 * 60, capacity: 8, feeNote: nil, venueId: "v-second")
+        _ = try await backend.remoteCreateGroup(name: " Thu doubles ", venueIds: ["v-test-court", "v-second"], schedules: [schedule, elsewhere],
                                                 levelRange: 3...5, joinPolicy: .approval, summary: "")
         let create = server.json(0)
         XCTAssertEqual(create["p_name"] as? String, "Thu doubles")
+        XCTAssertEqual(create["p_venue"] as? String, "v-test-court", "旧参数照旧发主球馆")
+        XCTAssertEqual(create["p_venues"] as? [String], ["v-test-court", "v-second"])
         XCTAssertEqual(create["p_policy"] as? String, "approval")
         XCTAssertEqual(create["p_coached"] as? Bool, false, "不勾就是普通群")
         let schedules = try XCTUnwrap(create["p_schedules"] as? [[String: Any]])
         XCTAssertEqual(schedules.first?["weekday"] as? Int, 4, "本地周四 5 → 服务器 4")
         XCTAssertEqual(schedules.first?["start"] as? Int, 1170)
+        XCTAssertNil(schedules.first?["venue"], "主球馆的场次不带 venue")
+        XCTAssertEqual(schedules.last?["venue"] as? String, "v-second")
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/update_group", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
+        try await backend.remoteUpdateGroup("grp1", name: "Thu doubles", schedules: [schedule], levelRange: 3...5, joinPolicy: .approval,
+                                            summary: "", coached: false, venueIds: ["v-test-court"])
+        XCTAssertEqual(server.json(0)["p_venues"] as? [String], ["v-test-court"])
 
         server.on("POST /rest/v1/rpc/find_group", "null")
         let missing = try await backend.remoteFindGroup(code: "ZZZZZZ")
         XCTAssertNil(missing)
+    }
+
+    /// 新服务器多给的：所有球馆、场次在哪个球馆、离得多远
+    private let courts = #""venues":[{"id":"v-test-court","name":"Test Court","city":"Irvine","tz":"America/Los_Angeles"},{"id":"v-second","name":"Second Court","city":"Tustin"}]"#
+
+    func testGroupsWithSeveralCourtsComeFromServer() async throws {
+        let backend = try await signedInBackend()
+        let page = groupPage(myStatus: "confirmed")
+            .replacingOccurrences(of: #""schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":"$12"}]"#,
+                                  with: #"\#(courts),"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":"$12","venue":"v-second"}]"#)
+            .replacingOccurrences(of: #"{"id":"s1","#, with: #"{"id":"s1","venue":"v-second","#)
+        server.on("POST /rest/v1/rpc/group_page", page)
+        try await backend.loadRemoteGroup("grp1")
+
+        let group = try XCTUnwrap(backend.group(id: "grp1"))
+        XCTAssertEqual(group.venueId, "v-test-court")
+        XCTAssertEqual(group.venueIds, ["v-test-court", "v-second"])
+        XCTAssertEqual(group.schedules.first?.venueId, "v-second")
+        XCTAssertEqual(backend.session(id: "s1")?.venueId, "v-second")
+        XCTAssertEqual(backend.venue(id: "v-second")?.name, "Second Court", "别的球馆也进本地库")
+    }
+
+    func testNearbyGroupsDecodeWithAndWithoutCourts() async throws {
+        let base = #""summary":null,"level_min":3,"level_max":5,"join_policy":"open","gender":null,"coached":false,"venue":{"id":"v-test-court","name":"Test Court","city":"Irvine","tz":"America/Los_Angeles"},"activity":{"sessions":2,"average":6},"my_role":null"#
+        let new = #"{"id":"grp-new","name":"Two courts",\#(base),\#(courts),"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":null,"venue":null},{"weekday":6,"start":540,"end":720,"capacity":8,"fee":null,"venue":"v-second"}],"distance_m":850.5}"#
+        let old = #"{"id":"grp-old","name":"One court",\#(base),"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":null}]}"#
+
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let decoded = try decoder.decode(MockBackend.RemoteGroupSummary.self, from: Data(new.utf8))
+        XCTAssertEqual(decoded.distanceM, 850.5)
+        XCTAssertEqual(decoded.venues?.map(\.id), ["v-test-court", "v-second"])
+        XCTAssertNil(try decoder.decode(MockBackend.RemoteGroupSummary.self, from: Data(old.utf8)).venues, "旧服务器没有 venues 也能读")
+
+        server.on("POST /rest/v1/rpc/groups_near", "[\(new),\(old)]")
+        let center = Coordinate(latitude: 33.68, longitude: -117.8)
+        XCTAssertTrue(backend.nearestGroups(to: center, radiusKm: 10).isEmpty, "先返回缓存（空），后台去拉")
+        await waitFor { backend.nearestGroups(to: center, radiusKm: 10).count == 2 }
+
+        XCTAssertEqual(backend.nearestGroups(to: center, radiusKm: 10).map(\.id), ["grp-new", "grp-old"], "按服务器的顺序：近的在前")
+        let twoCourts = try XCTUnwrap(backend.db.groups["grp-new"])
+        XCTAssertEqual(twoCourts.venueIds, ["v-test-court", "v-second"])
+        XCTAssertNil(twoCourts.schedules.first?.venueId)
+        XCTAssertEqual(twoCourts.schedules.last?.effectiveVenueId(in: twoCourts), "v-second")
+        let oneCourt = try XCTUnwrap(backend.db.groups["grp-old"])
+        XCTAssertEqual(oneCourt.venueIds, ["v-test-court"])
+        XCTAssertNil(oneCourt.otherVenueIds)
+        XCTAssertEqual(server.requests.count, 1, "60 秒内同一位置不重复拉")
     }
 
     /// 后台拉取的榜单：等它写进缓存

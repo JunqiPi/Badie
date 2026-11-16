@@ -452,6 +452,9 @@ final class GroupManager: ObservableObject {
 
     func groups(near center: Coordinate, radiusKm: Double) -> [PlayGroup] { backend.groups(near: center, radiusKm: radiusKm) }
 
+    /// 附近的球群，近的在前（发现页的“球群”）
+    func nearestGroups(to center: Coordinate, radiusKm: Double) -> [PlayGroup] { backend.nearestGroups(to: center, radiusKm: radiusKm) }
+
     func groups(atVenue venueId: String) -> [PlayGroup] { backend.groups(atVenue: venueId) }
 
     func activity(of groupId: String) -> GroupActivity { backend.activity(of: groupId) }
@@ -462,30 +465,43 @@ final class GroupManager: ObservableObject {
 
     func venue(of group: PlayGroup) -> BadmintonCourt? { backend.venue(id: group.venueId) }
 
+    /// 球群的所有球馆，主球馆在前
+    func venues(of group: PlayGroup) -> [BadmintonCourt] { group.venueIds.compactMap { backend.venue(id: $0) } }
+
+    func venue(id: String) -> BadmintonCourt? { backend.venue(id: id) }
+
+    /// 球群有几个球馆时，这一场在哪个球馆；只有一个球馆时不用写
+    func sessionVenueName(_ session: GroupSession, in group: PlayGroup) -> String? {
+        guard group.venueIds.count > 1 else { return nil }
+        return backend.venue(id: session.effectiveVenueId(in: group))?.name
+    }
+
     func user(_ id: String) -> User? { backend.user(id: id) }
 
     // 正式后端的操作要等服务器，所以都是 async；演示环境直接在本地完成
 
+    /// venueIds：1–5 个球馆，第一个是主球馆
     @discardableResult
-    func create(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+    func create(name: String, venueIds: [String], schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
                 joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil, coached: Bool = false) async throws -> PlayGroup {
         let group = backend.isRemote
-            ? try await backend.remoteCreateGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
+            ? try await backend.remoteCreateGroup(name: name, venueIds: venueIds, schedules: schedules, levelRange: levelRange,
                                                   joinPolicy: joinPolicy, summary: summary, audience: audience, coached: coached)
-            : try backend.createGroup(name: name, venueId: venueId, schedules: schedules, levelRange: levelRange,
+            : try backend.createGroup(name: name, venueIds: venueIds, schedules: schedules, levelRange: levelRange,
                                       joinPolicy: joinPolicy, summary: summary, coached: coached)
         reload()
         return group
     }
 
+    /// venueIds 为 nil 时球馆不变
     func update(_ groupId: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool) async throws {
+                joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool, venueIds: [String]? = nil) async throws {
         if backend.isRemote {
             try await backend.remoteUpdateGroup(groupId, name: name, schedules: schedules, levelRange: levelRange, joinPolicy: joinPolicy, summary: summary,
-                                                coached: coached)
+                                                coached: coached, venueIds: venueIds)
         } else {
             try backend.updateGroup(id: groupId, name: name, schedules: schedules, levelRange: levelRange, joinPolicy: joinPolicy, summary: summary,
-                                    coached: coached)
+                                    coached: coached, venueIds: venueIds)
         }
         reload()
     }

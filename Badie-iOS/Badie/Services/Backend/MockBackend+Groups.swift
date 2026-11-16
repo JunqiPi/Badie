@@ -22,27 +22,40 @@ extension MockBackend {
         return db.groups.values.filter { $0.isMember(me) }.sorted { $0.name < $1.name }
     }
 
-    /// 某个球馆的球群
+    /// 某个球馆的球群（群里任何一个球馆是这家就算）
     func groups(atVenue venueId: String) -> [PlayGroup] {
         guard let target = venue(id: venueId) else { return [] }
         if isRemote {
             loadRemoteGroupsNear(target.location, radiusKm: 5)
-            return sortedByActivity(db.groups.values.filter { $0.venueId == venueId })
+            return sortedByActivity(db.groups.values.filter { $0.venueIds.contains(venueId) })
         }
-        return sortedByActivity(db.groups.values.filter { venue(id: $0.venueId).map { VenueCluster.same($0, target) } ?? false })
+        return sortedByActivity(db.groups.values.filter { group in
+            group.venueIds.contains { id in venue(id: id).map { VenueCluster.same($0, target) } ?? false }
+        })
     }
 
     /// 附近的球群（按真实活跃度排序）
     func groups(near center: Coordinate, radiusKm: Double) -> [PlayGroup] {
+        sortedByActivity(nearestGroups(to: center, radiusKm: radiusKm))
+    }
+
+    /// 附近的球群，近的在前：群里任何一个球馆在范围内就算，按最近的那个球馆算距离（正式后端由服务器排好）
+    func nearestGroups(to center: Coordinate, radiusKm: Double) -> [PlayGroup] {
         if isRemote {
             loadRemoteGroupsNear(center, radiusKm: radiusKm)
-            return sortedByActivity((remoteNearbyGroups?.ids ?? []).compactMap { db.groups[$0] })
+            return (remoteNearbyGroups?.ids ?? []).compactMap { db.groups[$0] }
         }
         let blocked = blockedIds()
-        return sortedByActivity(db.groups.values.filter { group in
-            guard !blocked.contains(group.ownerId), let venue = venue(id: group.venueId) else { return false }
-            return venue.distance(from: center) <= radiusKm
-        })
+        let matches: [(group: PlayGroup, distance: Double)] = db.groups.values.compactMap { group -> (group: PlayGroup, distance: Double)? in
+            guard !blocked.contains(group.ownerId), let distance = distanceKm(of: group, from: center), distance <= radiusKm else { return nil }
+            return (group: group, distance: distance)
+        }
+        return matches.sorted { $0.distance < $1.distance }.map { $0.group }
+    }
+
+    /// 球群离某处多远：取最近的一个球馆（公里）
+    func distanceKm(of group: PlayGroup, from center: Coordinate) -> Double? {
+        group.venueIds.compactMap { venue(id: $0)?.distance(from: center) }.min()
     }
 
     /// 按近 30 天场次数降序（每个群只统计一次）
@@ -92,16 +105,27 @@ extension MockBackend {
     @discardableResult
     func createGroup(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
                      joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool = false, now: Date = Date()) throws -> PlayGroup {
+        try createGroup(name: name, venueIds: [venueId], schedules: schedules, levelRange: levelRange, joinPolicy: joinPolicy,
+                        summary: summary, coached: coached, now: now)
+    }
+
+    /// 建群：venueIds 是 1–5 个球馆，第一个是主球馆；场次的球馆必须是其中之一
+    @discardableResult
+    func createGroup(name: String, venueIds: [String], schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+                     joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool = false, now: Date = Date()) throws -> PlayGroup {
         let me = try requireUser()
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard PlayGroup.nameLimit.contains(trimmed.count) else { throw BackendError.groupNameInvalid }
-        guard let venue = venue(id: venueId) else { throw BackendError.venueNotFound }
+        let courts = try validGroupVenueIds(venueIds)
         guard GroupSchedule.areValid(schedules, coached: coached) else { throw BackendError.groupScheduleInvalid }
+        guard schedules.allSatisfy({ schedule in schedule.venueId.map { courts.contains($0) } ?? true }) else {
+            throw BackendError.groupScheduleInvalid
+        }
         let existingCodes = Set(db.groups.values.map(\.inviteCode)).union(db.rooms.values.map(\.code))
         let group = PlayGroup(
             id: "grp-" + UUID().uuidString.prefix(8).lowercased(),
             name: trimmed,
-            venueId: venue.id,
+            venueId: courts[0],
             ownerId: me.id,
             organizerIds: [me.id],
             memberIds: [me.id],
@@ -112,7 +136,8 @@ extension MockBackend {
             joinPolicy: joinPolicy,
             inviteCode: Room.generateCode(excluding: existingCodes),
             createdAt: now,
-            coached: coached
+            coached: coached,
+            otherVenueIds: courts.count > 1 ? Array(courts.dropFirst()) : nil
         )
         db.groups[group.id] = group
         ensureGroupThread(for: group, at: now)
@@ -179,24 +204,53 @@ extension MockBackend {
         emit(.threadsChanged)
     }
 
-    /// 群主编辑球群（演示环境：直接改，以后的场次按新的每周安排生成）
+    /// 群主编辑球群（演示环境：直接改，以后的场次按新的每周安排生成）。
+    /// venueIds 为 nil 时球馆不变；删掉的球馆上的场次回到主球馆
     func updateGroup(id: String, name: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                     joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool? = nil) throws {
+                     joinPolicy: PlayGroup.JoinPolicy, summary: String, coached: Bool? = nil, venueIds: [String]? = nil,
+                     now: Date = Date()) throws {
         let me = try requireUser()
         guard var group = db.groups[id] else { throw BackendError.groupNotFound }
         guard group.ownerId == me.id else { throw BackendError.notOrganizer }
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard PlayGroup.nameLimit.contains(trimmed.count) else { throw BackendError.groupNameInvalid }
+        let oldCourts = group.venueIds
+        var courts = oldCourts
+        if let venueIds { courts = try validGroupVenueIds(venueIds) }
         guard GroupSchedule.areValid(schedules, coached: coached ?? group.isCoached) else { throw BackendError.groupScheduleInvalid }
+        var schedules = schedules
+        for index in schedules.indices {
+            guard let court = schedules[index].venueId, !courts.contains(court) else { continue }
+            // 删掉的球馆：回到主球馆；从来不是这个群的球馆：不行
+            guard oldCourts.contains(court) else { throw BackendError.groupScheduleInvalid }
+            schedules[index].venueId = nil
+        }
         group.coached = coached ?? group.coached
         group.name = trimmed
         group.summary = String(summary.trimmingCharacters(in: .whitespacesAndNewlines).prefix(120))
         group.levelRange = levelRange
         group.joinPolicy = joinPolicy
+        group.venueIds = courts
         group.schedules = schedules
         db.groups[id] = group
+        // 已经生成的场次跟着场次的球馆走
+        for session in db.groupSessions.values where session.groupId == id && session.isUpcoming(now: now) {
+            guard let schedule = schedules.first(where: { $0.id == session.scheduleId }) else { continue }
+            db.groupSessions[session.id]?.venueId = schedule.effectiveVenueId(in: group)
+        }
         scheduleSave()
         emit(.groupsChanged)
+    }
+
+    /// 球群的球馆：去掉重复后 1–5 个，都在球馆库里（合并过的换成合并后的那家）。第一个是主球馆
+    private func validGroupVenueIds(_ ids: [String]) throws -> [String] {
+        var courts: [String] = []
+        for id in ids {
+            guard let court = venue(id: id) else { throw BackendError.venueNotFound }
+            if !courts.contains(court.id) { courts.append(court.id) }
+        }
+        guard (1...PlayGroup.maxVenues).contains(courts.count) else { throw BackendError.groupVenuesInvalid }
+        return courts
     }
 
     /// 群主解散球群
@@ -339,7 +393,8 @@ extension MockBackend {
                 let signed = Array(bots.prefix(schedule.capacity))
                 let waitlist = Array(bots.dropFirst(schedule.capacity))
                 db.groupSessions[id] = GroupSession(id: id, groupId: group.id, scheduleId: schedule.id, slot: slot,
-                                                    capacity: schedule.capacity, signedUp: signed, waitlist: waitlist)
+                                                    capacity: schedule.capacity, signedUp: signed, waitlist: waitlist,
+                                                    venueId: schedule.effectiveVenueId(in: group))
             }
         }
     }
@@ -374,7 +429,7 @@ extension MockBackend {
         for (index, template) in templates.enumerated() {
             let members = template.members.filter { db.bots[$0] != nil }
             guard let owner = members.first else { continue }
-            let group = PlayGroup(
+            var group = PlayGroup(
                 id: "grp-world-\(index)-\(template.venue.id)",
                 name: template.name,
                 venueId: template.venue.id,
@@ -389,6 +444,11 @@ extension MockBackend {
                 inviteCode: Room.generateCode(excluding: Set(db.groups.values.map(\.inviteCode))),
                 createdAt: now.addingTimeInterval(-90 * 86400)
             )
+            // 第一个群周日在另一家球馆打
+            if index == 0, venues.count > 2, group.schedules.count > 1 {
+                group.otherVenueIds = [venues[2].id]
+                group.schedules[1].venueId = venues[2].id
+            }
             db.groups[group.id] = group
             // 过去 30 天的场次（用于展示真实活跃度）
             if let past = Calendar.current.date(byAdding: .day, value: -30, to: now) {

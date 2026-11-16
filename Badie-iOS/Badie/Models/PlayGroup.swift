@@ -3,6 +3,7 @@ import Foundation
 // MARK: - 球群（固定局）
 //
 // 绑定球馆的每周固定场次：一键报名、满员候补、有人退出自动递补。
+// 一个群最多 5 个球馆：第一个是主球馆（venueId，旧版本只认这个），每个场次可以选在哪个球馆。
 // 对外只显示近 30 天的活跃度，不显示成员总数。见 docs/DESIGN.md §12。
 
 struct PlayGroup: Identifiable, Codable, Hashable {
@@ -24,6 +25,7 @@ struct PlayGroup: Identifiable, Codable, Hashable {
 
     let id: String
     var name: String
+    /// 主球馆
     var venueId: String
     var ownerId: String
     /// 组织者（含群主），可以审批、取消场次
@@ -42,8 +44,11 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     var audience: Gender? = nil
     /// 教练带课：每场 1–40 人，水平范围只作提示（旧数据里没有这一项）
     var coached: Bool? = nil
+    /// 主球馆以外的球馆（按顺序；旧数据里没有这一项）
+    var otherVenueIds: [String]? = nil
 
     static let maxSchedules = 7
+    static let maxVenues = 5
     static let nameLimit = 2...20
 
     func isMember(_ userId: String) -> Bool { memberIds.contains(userId) }
@@ -55,6 +60,17 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     var levelText: String { "Lv.\(levelRange.lowerBound)–\(levelRange.upperBound)" }
 
     var isCoached: Bool { coached ?? false }
+
+    /// 所有球馆，主球馆在前；改的时候第一个当主球馆
+    var venueIds: [String] {
+        get { [venueId] + (otherVenueIds ?? []).filter { $0 != venueId } }
+        set {
+            guard let first = newValue.first else { return }
+            venueId = first
+            let rest = newValue.dropFirst().filter { $0 != first }
+            otherVenueIds = rest.isEmpty ? nil : Array(rest)
+        }
+    }
 
     /// 收费说明：各场一样就只留一条，不一样就写明是哪一场
     var feeLines: [String] {
@@ -83,8 +99,15 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
     var capacity: Int
     /// 费用说明，如“每人 $15”
     var feeNote: String?
+    /// 在哪个球馆（群里的球馆之一）；nil = 主球馆
+    var venueId: String? = nil
 
     static let feeNoteLimit = 120
+
+    /// 这个场次实际在哪个球馆：不是群里的球馆（比如被删掉了）就回到主球馆
+    func effectiveVenueId(in group: PlayGroup) -> String {
+        venueId.flatMap { group.venueIds.contains($0) ? $0 : nil } ?? group.venueId
+    }
 
     /// 名额 4–40；教练带课的群 1–40（教练不报名，人数指学员）
     static func capacityRange(coached: Bool) -> ClosedRange<Int> { coached ? 1...40 : 4...40 }
@@ -132,6 +155,8 @@ struct GroupSession: Identifiable, Codable, Hashable {
     var signedUp: [String]
     var waitlist: [String]
     var isCancelled = false
+    /// 在哪个球馆；nil = 球群的主球馆
+    var venueId: String? = nil
 
     /// 开场前多久内退出算临时取消（与球局规则一致）
     static let lateCancellationWindow: TimeInterval = 2 * 3600
@@ -145,6 +170,8 @@ struct GroupSession: Identifiable, Codable, Hashable {
     }
 
     var isFull: Bool { signedUp.count >= capacity }
+
+    func effectiveVenueId(in group: PlayGroup) -> String { venueId ?? group.venueId }
 
     func status(of userId: String) -> Status {
         if signedUp.contains(userId) { return .signedUp }

@@ -3,14 +3,28 @@ import SwiftUI
 /// 第一个标签“发现”：一张大卡片，左滑跳过、右滑约。
 /// 最上面一行左边是附近范围（点开选 5 / 10 / 20 / 50 公里），右边是球馆、通知、筛选（选哪天也在筛选里）；
 /// 下面一排圆头像是这叠卡里的人（DayCandidatesView）。谁约了我、谁想加我这类待办在通知里。
-/// 原来首页的球局、快速约球、附近球局、排行在“球局”标签里
+/// 原来首页的球局、快速约球、附近球局、排行在“球局”标签里。
+/// 最上面可以切换“球友 / 球群”：球群是附近的球群列表，近的在前（记住上次选的）
 struct DiscoverView: View {
+    enum Mode: String, CaseIterable {
+        case players
+        case groups
+
+        var title: String {
+            switch self {
+            case .players: return String(localized: "球友")
+            case .groups: return String(localized: "球群")
+            }
+        }
+    }
+
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
     @EnvironmentObject private var locationManager: LocationManager
     @EnvironmentObject private var matchManager: MatchManager
     @EnvironmentObject private var inboxManager: InboxManager
 
+    @AppStorage("discoverMode") private var mode: Mode = .players
     @State private var filter = DayCardFilter.load()
     @State private var showsFilter = false
     /// 下拉刷新时加一，卡片跟着重新拉
@@ -46,6 +60,7 @@ struct DiscoverView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                     header
+                    SegmentedSticker(options: Mode.allCases, selection: $mode, title: { $0.title })
                     if showsLocationBanner {
                         NoticeBanner(icon: "location.slash.fill", text: LocationError.permissionDenied.message,
                                      actionTitle: String(localized: "去设置")) { openSettings() }
@@ -62,11 +77,16 @@ struct DiscoverView: View {
                 await loadInvites()
             }
 
-            DayCandidatesView(day: selectedDay, filter: $filter, showsFilter: $showsFilter, reloadToken: reloadToken)
-                .id(deckKey)
-                .frame(maxHeight: .infinity)
-                // ✕ ♥ ★ 停在标签栏上面（中间的“+”比标签栏高出一截）
-                .padding(.bottom, AppTheme.Spacing.tabBarClearance - AppTheme.Spacing.md)
+            if mode == .groups {
+                NearbyGroupsList()
+                    .frame(maxHeight: .infinity)
+            } else {
+                DayCandidatesView(day: selectedDay, filter: $filter, showsFilter: $showsFilter, reloadToken: reloadToken)
+                    .id(deckKey)
+                    .frame(maxHeight: .infinity)
+                    // ✕ ♥ ★ 停在标签栏上面（中间的“+”比标签栏高出一截）
+                    .padding(.bottom, AppTheme.Spacing.tabBarClearance - AppTheme.Spacing.md)
+            }
         }
         .sheet(isPresented: $appState.showsInvites, onDismiss: {
             // 点了好：半屏收起后打开球局
@@ -110,7 +130,7 @@ struct DiscoverView: View {
                 }
             } label: {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(selectedDay.map { String(localized: "附近 · \(dayTitle($0))") } ?? String(localized: "附近"))
+                    Text(headerCaption)
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .lineLimit(1)
@@ -137,11 +157,20 @@ struct DiscoverView: View {
             IconButton(systemName: "bell.fill", accessibilityLabel: String(localized: "通知"), badge: inboxManager.unreadCount) {
                 router.open(.notifications)
             }
-            IconButton(systemName: "line.3.horizontal.decrease", accessibilityLabel: String(localized: "筛选"),
-                       badge: filter.activeCount + (selectedDay == nil ? 0 : 1)) {
-                showsFilter = true
+            // 筛选只管球友卡片
+            if mode == .players {
+                IconButton(systemName: "line.3.horizontal.decrease", accessibilityLabel: String(localized: "筛选"),
+                           badge: filter.activeCount + (selectedDay == nil ? 0 : 1)) {
+                    showsFilter = true
+                }
             }
         }
+    }
+
+    /// “附近”，球友卡片选了哪天时带上那天
+    private var headerCaption: String {
+        guard mode == .players, let day = selectedDay else { return String(localized: "附近") }
+        return String(localized: "附近 · \(dayTitle(day))")
     }
 
     /// 5 / 10 / 20 / 50 公里（用英里的地区：3 / 5 / 10 / 30 英里），存的都是公里
@@ -198,5 +227,43 @@ struct DiscoverView: View {
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url)
         }
+    }
+}
+
+// MARK: - 球群：附近的球群，近的在前
+
+private struct NearbyGroupsList: View {
+    @EnvironmentObject private var groupManager: GroupManager
+    @EnvironmentObject private var locationManager: LocationManager
+    @EnvironmentObject private var router: Router
+
+    var body: some View {
+        let _ = groupManager.revision
+        let groups = groupManager.nearestGroups(to: locationManager.coordinate, radiusKm: locationManager.preferences.travelRadiusKm)
+        ScrollView {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                if groups.isEmpty {
+                    EmptyStateView(icon: "person.3", title: String(localized: "附近还没有球群"),
+                                   tint: AppTheme.Colors.lavender, actionTitle: String(localized: "建群")) {
+                        router.open(.createGroup(venueId: nil))
+                    }
+                    .card()
+                } else {
+                    ForEach(groups) { group in
+                        Button {
+                            router.open(.group(id: group.id))
+                        } label: {
+                            GroupCard(group: group, venue: groupManager.venue(of: group), activity: groupManager.activity(of: group.id),
+                                      status: groupManager.currentUserId.map { group.isPending($0) } == true ? String(localized: "待审核") : nil)
+                        }
+                        .buttonStyle(PressableStyle(scale: 0.98))
+                    }
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.screen)
+            .padding(.top, AppTheme.Spacing.xs)
+            .padding(.bottom, AppTheme.Spacing.tabBarClearance)
+        }
+        .refreshesEverything()
     }
 }
