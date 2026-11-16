@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.badie.app",
+      "sha256_cert_fingerprints": [
+        "C8:C4:9B:6A:50:45:6F:C1:57:53:73:C0:5D:F8:FA:5B:68:F1:F6:0C:6D:D3:F0:93:B8:00:1C:D7:E6:6F:BB:97"
+      ]
+    }
+  }
+]
