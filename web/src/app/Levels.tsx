@@ -1,6 +1,7 @@
 import { tier } from './assessment';
 import { t } from './i18n';
 import { Icon } from './icons';
+import { androidApp } from './androidApp';
 import { GetTheApp } from './install';
 import { IconTile, LargeTitle, Notice, Tag, fill, type Tint } from './kit';
 import { faq } from './faq';
@@ -161,7 +162,11 @@ export function About() {
       </section>
       <section className="sticker grid gap-3 bg-[#17140f] p-5 text-[#f5f0e6]">
         <h2 className="text-title3">{t('Play from any browser')}</h2>
-        <p className="text-subhead">{t('Badie works in the browser on any phone or computer, no download needed. There’s also an iPhone app.')}</p>
+        <p className="text-subhead">
+          {androidApp
+            ? t('Badie works in the browser on any phone or computer, no download needed. There are also apps for iPhone and Android.')
+            : t('Badie works in the browser on any phone or computer, no download needed. There’s also an iPhone app.')}
+        </p>
         <div className="flex flex-wrap gap-2">
           <Link to="/" className="button">{t('Open Badie')}</Link>
           <GetTheApp noteClassName="text-footnote text-[#f5f0e6]/70" />

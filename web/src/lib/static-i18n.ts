@@ -1,7 +1,7 @@
 // 静态页面的各语言版本（/zh/…、/ja/…）：搜索引擎和 AI 只读得到服务器给的文字，浏览器里切语言它们看不到，所以译文要在构建时就写进页面。
 // 页面照常用英文写，要翻译的文字标 data-t（和浏览器里切语言用的是同一套标记和译文），构建时由 middleware 换成这种语言；
 // 标题、描述这类不在正文里的文字用 translator() 翻。
-// 首页、等级表和每一档的页面有 10 种语言；关于页和球馆目录只有英文和简体中文
+// 首页、等级表、每一档的页面和安卓下载页有 10 种语言；关于页和球馆目录只有英文和简体中文
 import { everyLanguage, format, pathPrefixes, type Locale } from '../app/i18n';
 import zhHans from '../app/locales/zh-Hans.json';
 import zhHant from '../app/locales/zh-Hant.json';
@@ -96,7 +96,9 @@ const attributes = (tag: string) => Object.fromEntries([...tag.matchAll(/\sdata-
  */
 export function localizeHtml(html: string, locale: Locale) {
   const t = (key: string, params?: Record<string, string>) => format(catalogs[locale][key] || key, params, locale);
-  const sections = locale === 'zh-Hans' ? 'courts\\/|about\\/|levels\\/' : 'levels\\/';
+  // 安卓下载页只换页面本身的地址（/android/），不换安装包和 version.json 的地址
+  const android = 'android\\/(?="|&quot;)';
+  const sections = locale === 'zh-Hans' ? `courts\\/|about\\/|levels\\/|${android}` : `levels\\/|${android}`;
   return html
     .replace(/<(\w+)(\s[^>]*?(?<=\s)data-t="[^"]*"[^>]*)>([^<]*)<\/\1>/g, (_, tag: string, attrs: string) => {
       const { t: key, ...rest } = attributes(attrs);

@@ -15,6 +15,15 @@
 /.well-known/apple-app-site-association
   Content-Type: application/json
 
+# 安卓 App 的安装包和版本信息（构建前从 GitHub Release 下载来的，见 web.yml）：按安卓安装包下载，每次都检查有没有新的
+/android/badie.apk
+  Content-Type: application/vnd.android.package-archive
+  Content-Disposition: attachment; filename="badie.apk"
+  Cache-Control: no-cache
+/android/version.json
+  Content-Type: application/json
+  Cache-Control: no-cache
+
 # 个人页面不进搜索引擎
 /signin/*
   X-Robots-Tag: noindex

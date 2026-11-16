@@ -26,8 +26,8 @@ const keys = new Set([
     .map((m) => unescape(m[1])),
   // 静态页面（球馆目录）在浏览器里按 data-t 翻译
   ...pages.flatMap((code) => [...code.matchAll(/\bdata-t(?:-placeholder|-label)?="([^"]+)"/g)].map((m) => m[1])),
-  // 首页、等级表、每一档的页面和分享预览图有 10 种语言，构建时用 t('…') 翻译
-  ...['[lang]/index.astro', '[lang]/levels/index.astro', '[...lang]/levels/[tier].astro', 'og/levels/[lang]/[tier].png.ts']
+  // 首页、等级表、每一档的页面、安卓下载页和分享预览图有 10 种语言，构建时用 t('…') 翻译
+  ...['[lang]/index.astro', '[lang]/levels/index.astro', '[...lang]/levels/[tier].astro', '[...lang]/android/index.astro', 'og/levels/[lang]/[tier].png.ts']
     .map((file) => readFileSync(new URL(`../src/pages/${file}`, import.meta.url), 'utf8'))
     .flatMap((code) => [...code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)].map((m) => unescape(m[1]))),
   // 每一档页面上 −、基础、+ 的意思
@@ -68,6 +68,9 @@ test('静态页面上换语言：有那种语言的版本就去那一版，没�
   // 关于、球馆目录只有英文和简体中文
   assert.equal(pathInLanguage('/zh/courts/us/', 'zh-Hans', 'ja'), '/courts/us/');
   assert.equal(pathInLanguage('/zh/about/', 'zh-Hans', 'en'), '/about/');
+  // 安卓下载页有 10 种语言
+  assert.equal(pathInLanguage('/android/', 'en', 'ja'), '/ja/android/');
+  assert.equal(pathInLanguage('/zh/android/', 'zh-Hans', 'en'), '/android/');
 });
 
 test('去掉地址开头的语言前缀', () => {
