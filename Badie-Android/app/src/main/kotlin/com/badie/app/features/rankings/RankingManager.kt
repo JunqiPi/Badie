@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.badie.app.backend.Backend
 import com.badie.app.backend.RankingsApi
+import com.badie.app.features.venues.LocationManager
 import com.badie.app.l10n.L10n.tr
 import com.badie.app.models.Challenge
 import com.badie.app.models.ChallengeStatus
@@ -99,21 +100,21 @@ class RankingManager(private val backend: Backend, private val now: () -> Long =
     private val challengeMap = mutableStateMapOf<String, Challenge>()
     private var myWinRate by mutableStateOf<Rankings.WinRate?>(null)
 
-    /** 我的球友（挑战带搭档用）；还没读到时为 null */
-    var friends by mutableStateOf<List<User>?>(null)
-        private set
-
     /** 我资料里的国家/地区（“本国榜”）；读到之前先用设备地区 */
     var countryCode by mutableStateOf(CountryInfo.deviceCountry.code)
         private set
 
-    /** 附近的球馆，按距离排 */
-    var nearbyVenues by mutableStateOf<List<Venue>>(emptyList())
-        private set
+    /** 位置、附近的球馆、附近范围（和 iPhone 一样看 LocationManager）；[rememberRankingManager] 接上 */
+    var locationManager: LocationManager? = null
 
-    /** 现在的位置（没开定位为 null） */
-    var location by mutableStateOf<Coordinate?>(null)
-        private set
+    /** 附近的球馆，按距离排 */
+    val nearbyVenues: List<Venue> get() = locationManager?.nearbyCourts.orEmpty()
+
+    /** 算距离用的坐标：有定位用定位，没有用默认城市（和 iPhone 的 locationManager.coordinate 一样） */
+    val location: Coordinate? get() = locationManager?.coordinate
+
+    /** 附近范围（公里） */
+    val radiusKm: Double get() = locationManager?.preferences?.travelRadiusKm ?: Venue.DEFAULT_TRAVEL_RADIUS_KM
 
     val me: User? get() = backend.currentUser
 
@@ -346,12 +347,6 @@ class RankingManager(private val backend: Backend, private val now: () -> Long =
 
     // MARK: 球友、球馆
 
-    suspend fun loadFriends() {
-        val list = api.friends()
-        list.forEach(::cache)
-        friends = list.mapNotNull { user(it.id) }
-    }
-
     /** 被挑战的人：没见过就读一下昵称和等级 */
     suspend fun loadPlayer(id: String) {
         if (user(id) != null) return
@@ -370,17 +365,15 @@ class RankingManager(private val backend: Backend, private val now: () -> Long =
 
     fun isFavorite(id: String): Boolean = id in backend.favoriteVenueIds
 
-    /** 读常去球馆和另外要显示名字的球馆；位置知道时再读附近的 */
-    suspend fun loadVenues(location: Coordinate?, extra: List<String> = emptyList()) {
-        if (location != null) this.location = location
+    /** 读常去球馆和另外要显示名字的球馆，再让 LocationManager 取位置、拉附近的 */
+    suspend fun loadVenues(extra: List<String> = emptyList()) {
         val missing = (backend.favoriteVenueIds + extra).distinct().filter { venue(it) == null }
         if (missing.isNotEmpty()) api.venues(missing).forEach { venues[it.id] = it }
-        val center = this.location ?: return
-        nearbyVenues = backend.venuesNear(center, Venue.DEFAULT_TRAVEL_RADIUS_KM).sortedBy { it.distanceKm(center) }
+        locationManager?.start()
     }
 
     suspend fun searchVenues(query: String): List<Venue> {
-        val center = location ?: favoriteVenues.firstOrNull()?.location
+        val center = locationManager?.currentLocation ?: favoriteVenues.firstOrNull()?.location
         val found = backend.searchVenues(query)
         found.forEach { venues[it.id] = it }
         return if (center == null) found else found.sortedBy { it.distanceKm(center) }
@@ -398,11 +391,10 @@ class RankingManager(private val backend: Backend, private val now: () -> Long =
         venueBoards.putAll(venue)
     }
 
-    internal fun preload(challenges: List<Challenge>, people: List<User>, friends: List<User>? = null, places: List<Venue> = emptyList()) {
+    internal fun preload(challenges: List<Challenge>, people: List<User>, places: List<Venue> = emptyList()) {
         challenges.forEach { challengeMap[it.id] = it }
         people.forEach { users[it.id] = it }
         places.forEach { venues[it.id] = it }
-        if (friends != null) this.friends = friends
     }
 
     companion object {
@@ -448,7 +440,7 @@ class RankingManager(private val backend: Backend, private val now: () -> Long =
 fun rememberRankingManager(): RankingManager {
     val env = LocalEnv.current
     val userId = env.appState.currentUser?.id
-    return remember(env, userId) { RankingManager.of(env.appState.backend) }
+    return remember(env, userId) { RankingManager.of(env.appState.backend).also { it.locationManager = env.locationManager } }
 }
 
 /** 拉取出错时不打断界面（下次再拉） */

@@ -85,9 +85,6 @@ class RankingsApi(private val remote: SupabaseClient) {
     }
 
     @Serializable
-    data class Friends(val friends: List<Player> = emptyList())
-
-    @Serializable
     private class CountryRow(val countryCode: String? = null)
 
     // MARK: 榜单
@@ -132,9 +129,6 @@ class RankingsApi(private val remote: SupabaseClient) {
     /** 举报榜单上的人（刷榜 = other，广告 = scam），说明写“来自排行榜” */
     suspend fun report(userId: String, reason: String, details: String) =
         remote.call("report_user", json("p_user" to userId, "p_reason" to reason, "p_details" to details.take(500)))
-
-    /** 我的球友（挑战带搭档时从里面选） */
-    suspend fun friends(): List<Player> = remote.rpc<Friends>("my_friends").friends
 
     /** 被挑战的人的昵称（只拿名字，资料卡的其余部分归球友资料页） */
     suspend fun player(id: String): Player? = remote.rpc("player_card", json("p_user" to id))

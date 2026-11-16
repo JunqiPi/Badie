@@ -3,7 +3,6 @@ package com.badie.app.backend
 import android.content.Context
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,9 +10,7 @@ import androidx.core.content.edit
 import com.badie.app.l10n.L10n.tr
 import com.badie.app.models.CardColor
 import com.badie.app.models.ContactInfoDetector
-import com.badie.app.models.DISTANT_FUTURE
 import com.badie.app.models.Gender
-import com.badie.app.models.MyStrikes
 import com.badie.app.models.PrivacySettings
 import com.badie.app.models.Rankings
 import com.badie.app.models.RecurringTimeSlot
@@ -21,14 +18,12 @@ import com.badie.app.models.ServerUsualTime
 import com.badie.app.models.SkillTier
 import com.badie.app.models.TimeSlotConstants
 import com.badie.app.models.User
-import com.badie.app.models.UserPreferences
 import com.badie.app.models.VerificationRequest
 import com.badie.app.models.VerificationStatus
 import com.badie.app.models.activeSlots
 import com.badie.app.models.serverJSON
 import com.badie.app.remote.InstantSerializer
 import com.badie.app.remote.RemoteError
-import com.badie.app.remote.RemoteJSON
 import com.badie.app.remote.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -40,7 +35,7 @@ import kotlinx.serialization.json.Json
 import java.time.Instant
 import java.util.WeakHashMap
 
-/** 本机存的小东西（按键存字符串）：常用时间、附近范围、问过哪些权限。测试里用 [memory] */
+/** 本机存的小东西（按键存字符串）：常用时间、问过哪些权限。测试里用 [memory] */
 class ProfileStore(val load: (String) -> String?, val save: (String, String?) -> Unit) {
     companion object {
         val memory: ProfileStore
@@ -60,9 +55,6 @@ class ProfileStore(val load: (String) -> String?, val save: (String, String?) ->
 /** 球馆的名字和城市（“我的”页、等级卡片上用） */
 @Serializable
 data class VenueName(val id: String, val name: String, val city: String? = null)
-
-/** 我的爽约：近 180 天算数的次数，和暂停约球到什么时候（永久是 [DISTANT_FUTURE]） */
-data class StrikeSummary(val recent: Int, val suspendedUntil: Long?)
 
 /**
  * “我的”、编辑资料、设置、认证、反馈要调的接口和本机的设置。
@@ -147,20 +139,6 @@ class ProfileApi(
         val fromServer = server.mapNotNull(RecurringTimeSlot::ofServer)
         val inactive = local.filter { !it.isActive && it.serverValue !in server }
         keepSlots(id, (fromServer + inactive).take(TimeSlotConstants.MAXIMUM_RECURRING_SLOTS))
-    }
-
-    // MARK: 附近范围（只存在本机）
-
-    var travelRadiusKm by mutableDoubleStateOf(
-        store.load(TRAVEL_RADIUS_KEY)?.toDoubleOrNull()?.takeIf { UserPreferences.default.isValidTravelRadius(it) }
-            ?: UserPreferences.DEFAULT_TRAVEL_RADIUS,
-    )
-        private set
-
-    fun updateTravelRadius(km: Double) {
-        val clamped = km.coerceIn(UserPreferences.MINIMUM_TRAVEL_RADIUS, UserPreferences.MAXIMUM_TRAVEL_RADIUS)
-        travelRadiusKm = clamped
-        store.save(TRAVEL_RADIUS_KEY, clamped.toString())
     }
 
     /** 记一下问过某个系统权限（设置页据此区分“未设置”和“已关闭”） */
@@ -252,14 +230,6 @@ class ProfileApi(
         winRate = Rankings.WinRate(record.games, record.wins, record.opponents, record.gap, record.rounds, record.roundWins)
     }
 
-    var strikes by mutableStateOf<StrikeSummary?>(null)
-        private set
-
-    suspend fun refreshStrikes() {
-        val raw = remote.rpc<RemoteMyStrikes>("my_strikes")
-        strikes = StrikeSummary(raw.recent, raw.suspendedUntil?.let(::suspension))
-    }
-
     // MARK: 高水平认证
 
     /** 我最近的一次申请（撤回的不算） */
@@ -320,7 +290,6 @@ class ProfileApi(
         store.save(slotsKey(me), null)
         slotsByUser.remove(me)
         winRate = null
-        strikes = null
         verification = null
         backend.signOut()
     }
@@ -341,9 +310,6 @@ class ProfileApi(
     )
 
     @Serializable
-    private class RemoteMyStrikes(val suspendedUntil: String? = null, val recent: Int)
-
-    @Serializable
     private class RemoteVerification(
         val id: String,
         val kind: String,
@@ -359,7 +325,6 @@ class ProfileApi(
     )
 
     companion object {
-        private const val TRAVEL_RADIUS_KEY = "travelRadiusKm"
         private val storeJson = Json { ignoreUnknownKeys = true }
         private val instances = WeakHashMap<Backend, ProfileApi>()
 
@@ -372,12 +337,5 @@ class ProfileApi(
 
         /** 昵称、简介里留了联系方式或链接 */
         fun advertises(text: String): Boolean = ContactInfoDetector.mentionsOffPlatformContact(text) || ContactInfoDetector.containsLink(text)
-
-        /** “infinity” 是永久 */
-        fun suspension(value: String): Long? =
-            if (value == "infinity") DISTANT_FUTURE else RemoteJSON.parseDate(value)?.toEpochMilli()
     }
 }
-
-/** 爽约胶囊上的字：“暂停约球至 …”或“已暂停约球” */
-fun StrikeSummary.suspensionText(): String? = suspendedUntil?.let { MyStrikes.suspensionText(it) }

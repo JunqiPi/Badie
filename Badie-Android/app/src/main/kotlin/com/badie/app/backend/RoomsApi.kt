@@ -180,8 +180,3 @@ suspend fun Backend.updateRoom(roomId: String, court: Venue?, slot: TimeSlot?) =
 /** 开局：服务器生成正式球局，返回球局 ID */
 suspend fun Backend.startRoom(roomId: String): String = remote.rpc("start_room", json("p_room" to roomId))
 
-/** 我的球友（邀请进房间时选） */
-@Serializable
-class RemoteRoomFriends(val friends: List<RemoteRoom.Person> = emptyList())
-
-suspend fun Backend.myFriends(): List<RemoteRoom.Person> = remote.rpc<RemoteRoomFriends>("my_friends").friends

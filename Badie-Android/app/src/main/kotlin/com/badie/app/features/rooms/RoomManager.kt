@@ -15,7 +15,6 @@ import com.badie.app.backend.joinRoom
 import com.badie.app.backend.joinRoomCode
 import com.badie.app.backend.leaveRoom
 import com.badie.app.backend.myRooms
-import com.badie.app.backend.myFriends
 import com.badie.app.backend.removeRoomMember
 import com.badie.app.backend.roomPage
 import com.badie.app.backend.roomsNear
@@ -23,13 +22,12 @@ import com.badie.app.backend.startRoom
 import com.badie.app.backend.updateRoom
 import com.badie.app.features.games.GameBook
 import com.badie.app.l10n.L10n.tr
-import com.badie.app.location.LocationProvider
+import com.badie.app.features.venues.LocationManager
 import com.badie.app.models.Coordinate
 import com.badie.app.models.Room
 import com.badie.app.models.RoomParticipant
 import com.badie.app.models.RoomStatus
 import com.badie.app.models.TimeSlot
-import com.badie.app.models.UserPreferences
 import com.badie.app.models.Venue
 import com.badie.app.remote.RemoteError
 import com.badie.app.shell.ManagerContext
@@ -41,7 +39,12 @@ import kotlinx.coroutines.sync.withLock
  * 我的球局（iPhone 在 MatchManager 里）和待评价在 [book]，SurveyManager 也用同一份
  */
 @Stable
-class RoomManager(private val context: ManagerContext, private val now: () -> Long = System::currentTimeMillis) {
+class RoomManager(
+    private val context: ManagerContext,
+    private val now: () -> Long = System::currentTimeMillis,
+    /** 位置和附近范围（iPhone 由 MainTabView 把 LocationManager 的范围同步过来） */
+    val location: LocationManager = LocationManager(context),
+) {
     private val backend get() = context.backend
 
     /** 页面关掉以后还要接着做完的事（交了赛果再跳转这类）在这里跑 */
@@ -54,13 +57,13 @@ class RoomManager(private val context: ManagerContext, private val now: () -> Lo
 
     /** 附近公开局的 ID（按服务器给的顺序） */
     private var nearbyIds by mutableStateOf<List<String>>(emptyList())
-    private var nearbyAt: Pair<Coordinate, Long>? = null
+    private var nearbyAt: Triple<Coordinate, Long, Double>? = null
 
     /** 被移出或房间关闭时的提示（界面弹出后清掉） */
     var notice by mutableStateOf<String?>(null)
 
-    /** 附近范围（公里） */
-    var radiusKm: Double = UserPreferences.DEFAULT_TRAVEL_RADIUS
+    /** 附近范围（公里），跟着 LocationManager */
+    val radiusKm: Double get() = location.preferences.travelRadiusKm
 
     private var owner: String? = null
     private val refreshing = Mutex()
@@ -140,29 +143,17 @@ class RoomManager(private val context: ManagerContext, private val now: () -> Lo
         val me = me ?: return
         val where = center ?: center()
         val last = nearbyAt
-        if (last != null && now() - last.second < 60_000 && last.first.distanceKm(where) < 2) return
-        nearbyAt = where to now()
+        if (last != null && now() - last.second < 60_000 && last.first.distanceKm(where) < 2 && last.third == radiusKm) return
+        nearbyAt = Triple(where, now(), radiusKm)
         val found = backend.roomsNear(where, radiusKm)
         for (room in found) cache(room, me)
         nearbyIds = found.map { it.id }
     }
 
     /** 找附近的球局从哪找：当前位置，没有就用资料里的位置、第一家常去球馆，再没有用默认的中心 */
-    suspend fun center(): Coordinate {
-        val android = context.android
-        val located = if (android != null) {
-            try {
-                LocationProvider(android).takeIf { it.isAuthorized }?.current()
-            } catch (_: SecurityException) {
-                null
-            }
-        } else {
-            null
-        }
-        return located ?: backend.currentUser?.location
-            ?: backend.favoriteVenueIds.firstNotNullOfOrNull { backend.venue(it)?.location }
-            ?: Coordinate.fallbackCenter
-    }
+    fun center(): Coordinate = location.currentLocation ?: backend.currentUser?.location
+        ?: backend.favoriteVenueIds.firstNotNullOfOrNull { backend.venue(it)?.location }
+        ?: Coordinate.fallbackCenter
 
     private fun cache(info: RemoteRoom, me: String): Room {
         val venue = info.venue?.let { it.venue(backend.venue(it.id)) }
@@ -248,13 +239,6 @@ class RoomManager(private val context: ManagerContext, private val now: () -> Lo
         } catch (_: RemoteError) {
         }
         return gameId
-    }
-
-    /** 我的球友（邀请进房间时选）。TODO：球友列表归 FriendManager，搬好后改用那边的 */
-    suspend fun friends(): List<com.badie.app.models.User> = backend.myFriends().map { person ->
-        com.badie.app.backend.GameMapping.player(
-            com.badie.app.backend.RemotePlayer(person.id, person.nickname, person.rating, 0, false), book.user(person.id),
-        )
     }
 
     private suspend fun reloaded(id: String): Room {

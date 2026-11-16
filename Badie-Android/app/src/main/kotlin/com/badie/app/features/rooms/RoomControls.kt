@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -351,17 +350,18 @@ fun FriendPickerSheet(title: String, maxSelection: Int, excluded: Set<String>, o
     val colors = AppTheme.colors
     val haptics = rememberHaptics()
     var query by remember { mutableStateOf("") }
-    var friends by remember { mutableStateOf<List<User>?>(null) }
+    val friendManager = env.friendManager
+    var loaded by remember { mutableStateOf(friendManager.friends.isNotEmpty()) }
     var selection by remember { mutableStateOf(listOf<String>()) }
     LaunchedEffect(Unit) {
-        // TODO：球友列表归 FriendManager（features/social），搬好后改用那边的；现在直接读 my_friends
-        friends = try {
-            env.roomManager.friends()
+        try {
+            friendManager.refreshFriends()
         } catch (_: RemoteError) {
-            emptyList()
         }
+        loaded = true
     }
-    val shown = friends.orEmpty().filter { it.id !in excluded && (query.isBlank() || it.nickname.contains(query.trim(), ignoreCase = true)) }
+    val friends = friendManager.friends
+    val shown = friends.filter { it.id !in excluded && (query.isBlank() || it.nickname.contains(query.trim(), ignoreCase = true)) }
     Column(
         Modifier.fillMaxWidth().fillMaxHeight(0.92f).padding(horizontal = AppTheme.Spacing.screen),
         verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
@@ -377,7 +377,7 @@ fun FriendPickerSheet(title: String, maxSelection: Int, excluded: Set<String>, o
         )
         Text(tr("已选 %lld/%lld", selection.size, maxSelection), style = AppTheme.Typography.footnoteBold, color = colors.inkSecondary)
         LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
-            if (friends != null && shown.isEmpty()) item { EmptyStateView(Sym.person2, tr("没有可邀请的球友")) }
+            if (loaded && shown.isEmpty()) item { EmptyStateView(Sym.person2, tr("没有可邀请的球友")) }
             items(shown, key = { it.id }) { friend ->
                 val chosen = friend.id in selection
                 val full = !chosen && selection.size >= maxSelection

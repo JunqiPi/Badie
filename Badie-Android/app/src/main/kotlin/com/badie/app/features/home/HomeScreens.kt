@@ -38,6 +38,7 @@ import com.badie.app.design.pressable
 import com.badie.app.design.rememberHaptics
 import com.badie.app.features.matching.MatchManager
 import com.badie.app.l10n.tr
+import com.badie.app.remote.RemoteError
 import com.badie.app.models.DateText
 import com.badie.app.models.DistanceFormatter
 import com.badie.app.models.isSameDay
@@ -72,12 +73,19 @@ fun DiscoverScreen() {
     // 轮到我回的邀请（从通知打开的半屏里一个一个回）
     val answering = manager.invites.filter { it.invite?.awaitingId == me && it.status.isOpen }
 
+    val location = env.locationManager
     LaunchedEffect(Unit) {
-        if (manager.coordinate == null) manager.locate()
+        if (location.currentLocation == null) {
+            try {
+                location.start()
+            } catch (_: RemoteError) {
+            }
+        }
         manager.loadInvites()
     }
-    LaunchedEffect(manager.nearbyCourts) {
-        manager.prepareDraft(env.appState.currentUser, manager.nearbyCourts, emptyList(), env.appState.backend.favoriteVenueIds)
+    LaunchedEffect(location.nearbyCourts) {
+        val recurring = com.badie.app.backend.ProfileApi.of(env.appState.backend, context).recurringSlots()
+        manager.prepareDraft(env.appState.currentUser, location.nearbyCourts, recurring, location.favoriteCourts.map { it.id })
     }
     LaunchedEffect(manager.showsInvites) {
         if (manager.showsInvites) {
@@ -153,11 +161,11 @@ fun DiscoverScreen() {
 @Composable
 private fun Header(selectedDay: Long?, filterCount: Int, onFilter: () -> Unit) {
     val env = LocalEnv.current
-    val manager = env.matchManager
+    val location = env.locationManager
     val colors = AppTheme.colors
     val haptics = rememberHaptics()
     var menu by remember { mutableStateOf(false) }
-    val radiusText = tr("%@内", DistanceFormatter.radius(manager.radiusKm))
+    val radiusText = location.radiusText
     val radiusLabel = tr("附近范围")
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
         Box(Modifier.weight(1f)) {
@@ -183,17 +191,17 @@ private fun Header(selectedDay: Long?, filterCount: Int, onFilter: () -> Unit) {
                         text = { Text(DistanceFormatter.radius(km), style = AppTheme.Typography.bodyBold) },
                         onClick = {
                             haptics.selection()
-                            manager.updateRadius(km)
+                            location.updateTravelRadius(km)
                             menu = false
                         },
                         // 现在的范围不在几个选项里（以前用滑块选的）时，菜单里不打勾
-                        trailingIcon = if (km == manager.radiusKm) ({ Symbol(Sym.checkmark, size = 14) }) else null,
+                        trailingIcon = if (km == location.preferences.travelRadiusKm) ({ Symbol(Sym.checkmark, size = 14) }) else null,
                     )
                 }
             }
         }
         IconButton(Sym.building2, tr("附近球馆")) { env.router.open(Route.Courts) }
-        IconButton(Sym.bellFill, tr("通知")) { env.router.open(Route.Notifications) }
+        IconButton(Sym.bellFill, tr("通知"), badge = env.inboxManager.unreadCount) { env.router.open(Route.Notifications) }
         IconButton(Sym.line3HorizontalDecrease, tr("筛选"), badge = filterCount, onClick = onFilter)
     }
 }

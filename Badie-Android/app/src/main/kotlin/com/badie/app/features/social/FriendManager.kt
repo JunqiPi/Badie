@@ -4,9 +4,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.badie.app.backend.MessagesApi
 import com.badie.app.backend.RemoteFriends
 import com.badie.app.backend.SocialApi
+import com.badie.app.features.games.GameBook
 import com.badie.app.models.CardColor
 import com.badie.app.models.FriendRequest
 import com.badie.app.models.FriendRequestStatus
@@ -16,6 +16,7 @@ import com.badie.app.models.RecurringTimeSlot
 import com.badie.app.models.SkillTier
 import com.badie.app.models.SurveyTag
 import com.badie.app.models.User
+import com.badie.app.models.Venue
 import com.badie.app.models.VerificationStatus
 import com.badie.app.remote.RemoteError
 import com.badie.app.shell.ManagerContext
@@ -32,7 +33,6 @@ import kotlinx.coroutines.launch
 @Stable
 class FriendManager(private val context: ManagerContext) {
     private val api = SocialApi(context.backend.remote)
-    private val games = MessagesApi(context.backend.remote)
     private val now: () -> Long = System::currentTimeMillis
 
     /** 和私信、球群共用的缓存 */
@@ -110,6 +110,17 @@ class FriendManager(private val context: ManagerContext) {
             .mapNotNull(cache::user)
     }
 
+    /** 同馆常客常去的哪家（按用户 ID） */
+    private var regularVenueIds by mutableStateOf<Map<String, String>>(emptyMap())
+
+    /** 同馆常客和共同常去的那家球馆（球局页用；球馆读不到的不列，和 iPhone 一样） */
+    fun venueRegulars(limit: Int = 20, venue: (String) -> Venue?): List<Pair<User, Venue>> =
+        regularIds.mapNotNull { id ->
+            val user = cache.user(id) ?: return@mapNotNull null
+            val place = regularVenueIds[id]?.let(venue) ?: return@mapNotNull null
+            user to place
+        }.take(limit)
+
     /** 同馆常客里还不是球友的 */
     val regulars: List<User> get() = regularIds.mapNotNull(cache::user).filter { !cache.isFriend(it.id) }
 
@@ -142,16 +153,16 @@ class FriendManager(private val context: ManagerContext) {
         if (cache.outgoingRequests != outgoing) cache.outgoingRequests = outgoing
     }
 
-    /** 我的球局（资料卡上的“一起打过”、私信规则）；不强制时 60 秒内只拉一次 */
+    /** 我的球局（资料卡上的“一起打过”、私信规则）：和球局页同一份（GameBook）；不强制时 60 秒内只拉一次 */
     suspend fun refreshGames(force: Boolean = false) {
         cache.syncAccount()
-        if (cache.me == null) return
-        if (!force && now() - cache.gamesLoadedAt < 60_000) return
-        cache.gamesLoadedAt = now()
-        val remote = games.myGames()
-        for (game in remote) for (player in game.players.orEmpty()) cache.cache(player.id, player.nickname, player.rating)
-        val briefs = remote.map(GameBrief::of)
-        if (briefs != cache.games) cache.games = briefs
+        val me = cache.me ?: return
+        val book = GameBook.of(context.backend)
+        book.refresh(ifOlderThan = if (force) GameBook.SHARED_REFRESH_MILLIS else 60_000)
+        // 同局的人也记进球友的缓存（资料卡、“一起打过”的名单按 ID 找人）
+        for (id in book.games.flatMap { it.playerIds }.toSet() - me) {
+            book.user(id)?.let { cache.cache(id, it.nickname, it.selfReportedRating) }
+        }
     }
 
     /** 同馆常客（5 分钟内不重复拉） */
@@ -163,6 +174,7 @@ class FriendManager(private val context: ManagerContext) {
         val rows = api.venueRegulars()
         for (row in rows) cache.cache(row.id, row.nickname, row.rating)
         regularIds = rows.map { it.id }
+        regularVenueIds = rows.associate { it.id to it.venue.id }
     }
 
     /** 打开球友资料前拉取最新的昵称、等级、印象标签这些（只有打过交道的人才拉得到） */

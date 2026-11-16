@@ -35,7 +35,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.badie.app.backend.ProfileApi
-import com.badie.app.backend.suspensionText
 import com.badie.app.design.AppTheme
 import com.badie.app.design.BrutalButton
 import com.badie.app.design.ButtonKind
@@ -64,6 +63,14 @@ import com.badie.app.models.TimeSlotConstants
 import com.badie.app.models.User
 import com.badie.app.remote.RemoteError
 import com.badie.app.shell.BadieSheet
+import com.badie.app.shell.AppEnvironment
+import com.badie.app.design.SheetScaffold
+import com.badie.app.features.rankings.RankingManager
+import com.badie.app.features.rankings.rememberRankingManager
+import com.badie.app.features.social.FriendLinkSheet
+import com.badie.app.features.venues.TravelRadiusSheet
+import com.badie.app.models.ChallengeStatus
+import com.badie.app.models.MyStrikes
 import com.badie.app.shell.LocalEnv
 import com.badie.app.shell.RefreshEverything
 import com.badie.app.shell.Route
@@ -84,17 +91,23 @@ fun ProfileScreen() {
     val api = rememberProfileApi()
     val context = LocalContext.current
     var showRadius by remember { mutableStateOf(false) }
+    var showFriendLink by remember { mutableStateOf(false) }
     var showHelp by remember { mutableStateOf(false) }
     var showTips by remember { mutableStateOf(false) }
     var showReputation by remember { mutableStateOf(false) }
     var showsCardPreview by remember { mutableStateOf(false) }
     var showsLevelCard by remember { mutableStateOf(false) }
     val showsSupport = remember { TipJar.isAvailable(context) }
-    // 空闲时间、胜率、爽约、常去球馆：进来时读一遍
-    LaunchedEffect(appState.currentUser?.id) { refreshProfilePage(api) }
+    val location = env.locationManager
+    val friendManager = env.friendManager
+    val rankings = rememberRankingManager()
+    val book = env.roomManager.book
+    // 空闲时间、胜率、爽约、常去球馆、收到的挑战、历史球局：进来时读一遍
+    LaunchedEffect(appState.currentUser?.id) { refreshProfilePage(env, api, rankings) }
     val user = appState.currentUser
+    val strikes = friendManager.strikes
 
-    RefreshEverything(Modifier.fillMaxSize(), extra = { refreshProfilePage(api) }) {
+    RefreshEverything(Modifier.fillMaxSize(), extra = { refreshProfilePage(env, api, rankings) }) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -109,10 +122,10 @@ fun ProfileScreen() {
                 val slots = api.recurringSlots()
                 val venue = api.favoriteVenues().firstOrNull()
                 Column(Modifier.padding(horizontal = AppTheme.Spacing.screen), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xl)) {
-                    TodoPills(user, api)
+                    TodoPills(user, strikes)
                     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md)) {
                         // 和发现页同一张卡；点了全屏看别人刷到的样子
-                        MyCard(user, slots, venue, api.strikes?.recent ?: 0, Modifier.fillMaxWidth().aspectRatio(0.82f)) { showsCardPreview = true }
+                        MyCard(user, slots, venue, strikes?.recent ?: 0, Modifier.fillMaxWidth().aspectRatio(0.82f)) { showsCardPreview = true }
                         // 编辑资料 + 分享等级卡片（定过级才有卡片可分享）
                         Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
                             BrutalButton(tr("编辑资料"), { router.open(Route.EditProfile) }, Modifier.weight(1f), size = ButtonSize.Medium)
@@ -129,30 +142,47 @@ fun ProfileScreen() {
                             showReputation = true
                         }
                         InsetDivider()
-                        // 球友数、待处理的申请在球友那一块（FriendManager）里，这里先不写数字
-                        MenuRow(Sym.person2Fill, tr("我的球友"), tint = AppTheme.colors.sky) { router.open(Route.Friends) }
+                        MenuRow(
+                            Sym.person2Fill, tr("我的球友"), tint = AppTheme.colors.sky,
+                            value = "${friendManager.friends.size}", badge = friendManager.incomingRequestCount,
+                        ) { router.open(Route.Friends) }
                         InsetDivider()
                         MenuRow(Sym.trophyFill, tr("排行榜"), tint = AppTheme.colors.butter) { router.open(Route.Leaderboard) }
+                        val incomingChallenges = rankings.challenges().count { it.targetId == user.id && it.status == ChallengeStatus.Pending }
+                        if (incomingChallenges > 0) {
+                            InsetDivider()
+                            MenuRow(Sym.flag2CrossedFill, tr("挑战"), tint = AppTheme.colors.pink, badge = incomingChallenges) {
+                                router.open(Route.Challenges)
+                            }
+                        }
+                        if (user.friendLink != null) {
+                            InsetDivider()
+                            MenuRow(Sym.qrcode, tr("加球友链接"), tint = AppTheme.colors.peach) { showFriendLink = true }
+                        }
                     }
                     MenuCard {
-                        MenuRow(Sym.clockArrowCirclepath, tr("历史球局"), tint = AppTheme.colors.peach) { router.open(Route.GameHistory) }
+                        MenuRow(Sym.clockArrowCirclepath, tr("历史球局"), tint = AppTheme.colors.peach, value = "${book.pastGames.size}") {
+                            router.open(Route.GameHistory)
+                        }
                         InsetDivider()
                         MenuRow(
                             Sym.calendarBadgeClock, tr("常用时间"), tint = AppTheme.colors.butter,
                             value = "${slots.size}/${TimeSlotConstants.MAXIMUM_RECURRING_SLOTS}",
                         ) { router.open(Route.RecurringSlots) }
                         InsetDivider()
-                        MenuRow(Sym.locationCircleFill, tr("附近范围"), tint = AppTheme.colors.sky, value = DistanceFormatter.radius(api.travelRadiusKm)) {
+                        MenuRow(Sym.locationCircleFill, tr("附近范围"), tint = AppTheme.colors.sky, value = DistanceFormatter.radius(location.preferences.travelRadiusKm)) {
                             showRadius = true
                         }
                         InsetDivider()
-                        MenuRow(Sym.heartFill, tr("球馆与收藏"), tint = AppTheme.colors.pink, value = "${appState.backend.favoriteVenueIds.size}") {
+                        MenuRow(Sym.heartFill, tr("球馆与收藏"), tint = AppTheme.colors.pink, value = "${location.favoriteCourtIds.size}") {
                             router.open(Route.Courts)
                         }
                         InsetDivider()
                         MenuRow(Sym.listNumber, tr("等级对照表"), tint = AppTheme.colors.lime) { router.open(Route.LevelGuide) }
                         InsetDivider()
-                        MenuRow(Sym.handRaisedFill, tr("屏蔽名单"), tint = AppTheme.colors.surfaceMuted) { router.open(Route.BlockedUsers) }
+                        MenuRow(Sym.handRaisedFill, tr("屏蔽名单"), tint = AppTheme.colors.surfaceMuted, value = "${env.messageManager.blockedUsers.size}") {
+                            router.open(Route.BlockedUsers)
+                        }
                     }
                     MenuCard {
                         MenuRow(Sym.questionmarkBubbleFill, tr("帮助与反馈"), tint = AppTheme.colors.mint) { showHelp = true }
@@ -167,18 +197,23 @@ fun ProfileScreen() {
     }
 
     if (showsCardPreview && user != null) {
-        MyCardPreview(user, api.recurringSlots(), api.favoriteVenues().firstOrNull(), api.strikes?.recent ?: 0) { showsCardPreview = false }
+        MyCardPreview(user, api.recurringSlots(), api.favoriteVenues().firstOrNull(), strikes?.recent ?: 0) { showsCardPreview = false }
     }
     if (showsLevelCard) BadieSheet(onDismiss = { showsLevelCard = false }) { dismiss -> LevelCardSheet(null, dismiss) }
-    if (showRadius) BadieSheet(onDismiss = { showRadius = false }) { dismiss -> TravelRadiusSheet(api, dismiss) }
+    if (showRadius) BadieSheet(onDismiss = { showRadius = false }) { dismiss -> TravelRadiusSheet(dismiss) }
+    if (showFriendLink) SheetScaffold(onDismiss = { showFriendLink = false }, fullHeight = true) { FriendLinkSheet() }
     if (showHelp) BadieSheet(onDismiss = { showHelp = false }) { dismiss -> HelpSheet(api, dismiss) }
     if (showTips) BadieSheet(onDismiss = { showTips = false }) { dismiss -> TipJarSheet(dismiss) }
     if (showReputation) BadieSheet(onDismiss = { showReputation = false }) { ReputationSheet() }
 }
 
 /** 读“我的”页要的几样；哪样没读到不影响别的 */
-private suspend fun refreshProfilePage(api: ProfileApi) {
-    for (job in listOf<suspend () -> Unit>({ api.syncUsualTimes() }, { api.refreshRecord() }, { api.refreshStrikes() }, { api.refreshFavoriteVenues() })) {
+private suspend fun refreshProfilePage(env: AppEnvironment, api: ProfileApi, rankings: RankingManager) {
+    val jobs = listOf<suspend () -> Unit>(
+        { api.syncUsualTimes() }, { api.refreshRecord() }, { env.friendManager.refreshStrikes() }, { api.refreshFavoriteVenues() },
+        { rankings.refreshChallenges() }, { env.roomManager.book.refresh(ifOlderThan = 60_000) },
+    )
+    for (job in jobs) {
         try {
             job()
         } catch (_: RemoteError) {
@@ -189,14 +224,14 @@ private suspend fun refreshProfilePage(api: ProfileApi) {
 /** 待处理（没定级、爽约） */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TodoPills(user: User, api: ProfileApi) {
+private fun TodoPills(user: User, myStrikes: MyStrikes?) {
     val env = LocalEnv.current
-    val strikes = api.strikes?.takeIf { it.recent > 0 || it.suspendedUntil != null }
+    val strikes = myStrikes?.takeIf { it.recent > 0 || it.suspendedUntil != null }
     if (!user.needsAssessment && strikes == null) return
     FlowRow(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
         if (user.needsAssessment) CountPill(Sym.checklist, tr("去定级"), 0) { env.router.open(Route.EditProfile) }
         if (strikes != null) {
-            CountPill(Sym.exclamationmarkTriangleFill, strikes.suspensionText() ?: tr("爽约"), if (strikes.suspendedUntil == null) strikes.recent else 0) {
+            CountPill(Sym.exclamationmarkTriangleFill, strikes.suspendedUntil?.let { MyStrikes.suspensionText(it) } ?: tr("爽约"), if (strikes.suspendedUntil == null) strikes.recent else 0) {
                 env.appState.showsStrikes = true
             }
         }

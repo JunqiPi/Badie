@@ -1,6 +1,5 @@
 package com.badie.app.features.matching
 
-import androidx.core.content.edit
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -11,7 +10,7 @@ import com.badie.app.backend.MatchApi
 import com.badie.app.backend.NearbyApi
 import com.badie.app.design.Toast
 import com.badie.app.l10n.L10n.tr
-import com.badie.app.location.LocationProvider
+import com.badie.app.features.venues.LocationManager
 import com.badie.app.models.Coordinate
 import com.badie.app.models.DistanceUnit
 import com.badie.app.models.MatchOffer
@@ -31,11 +30,11 @@ import kotlinx.coroutines.launch
  * 快速约球是一个“请求”：提交后挂在后台持续匹配，找到人发提议，所有人确认才成局。
  * 全屏流程只是查看某个请求的窗口，关掉不影响请求。
  *
- * 发现页和这里共用的东西也放在这：卡片上的人（[user]）、位置和附近范围、选的哪天。
- * iPhone 上位置和范围在 LocationManager 里，安卓的 LocationManager 做好以后再搬过去
+ * 发现页和这里共用的东西也放在这：卡片上的人（[user]）、选的哪天。
+ * 位置、附近范围、附近的球馆和 iPhone 一样在 [location]（features/venues 的 LocationManager）
  */
 @Stable
-class MatchManager(private val context: ManagerContext) {
+class MatchManager(private val context: ManagerContext, val location: LocationManager = LocationManager(context)) {
     sealed interface Phase {
         data object Idle : Phase
         /** 正在提交请求（搜索动画） */
@@ -141,60 +140,12 @@ class MatchManager(private val context: ManagerContext) {
         }
     }
 
-    // MARK: 位置、附近范围
-
-    private val locationProvider = context.android?.let { LocationProvider(it) }
-    private val settings = context.android?.getSharedPreferences("discover", android.content.Context.MODE_PRIVATE)
-
-    /** 当前位置；还没拿到是 null（没开定位时不按默认城市找人，会约到别的城市） */
-    var coordinate by mutableStateOf<Coordinate?>(null)
-
-    /** 给了定位权限 */
-    val isLocationAuthorized: Boolean get() = locationProvider?.isAuthorized ?: false
-
-    /** 正在等位置 */
-    var isLocating by mutableStateOf(false)
-        private set
-
-    /** 附近范围（公里），记在本机 */
-    var radiusKm by mutableStateOf(settings?.getFloat(RADIUS_KEY, 0f)?.takeIf { it > 0 }?.toDouble() ?: UserPreferences.DEFAULT_TRAVEL_RADIUS)
-        private set
-
-    /** 附近的球馆（近的在前） */
-    var nearbyCourts by mutableStateOf<List<Venue>>(emptyList())
-        private set
+    // MARK: 球馆
 
     /** 读过的球馆（快速匹配选的、请求里的） */
     private val venues = mutableStateMapOf<String, Venue>()
 
-    fun updateRadius(km: Double) {
-        val clamped = km.coerceIn(UserPreferences.MINIMUM_TRAVEL_RADIUS, UserPreferences.MAXIMUM_TRAVEL_RADIUS)
-        if (clamped == radiusKm) return
-        radiusKm = clamped
-        settings?.edit { putFloat(RADIUS_KEY, clamped.toFloat()) }
-        poolByDay = null
-        context.scope.launch { loadNearbyCourts() }
-    }
-
-    /** 取一次位置（打开 App、刚给了权限、下拉刷新） */
-    suspend fun locate() {
-        val provider = locationProvider ?: return
-        if (!provider.isAuthorized) return
-        isLocating = true
-        provider.current()?.let { coordinate = it }
-        isLocating = false
-        loadNearbyCourts()
-    }
-
-    private suspend fun loadNearbyCourts() {
-        val center = coordinate ?: return
-        try {
-            nearbyCourts = backend.venuesNear(center, radiusKm)
-        } catch (_: RemoteError) {
-        }
-    }
-
-    fun court(id: String): Venue? = venues[id] ?: backend.venue(id) ?: nearbyCourts.firstOrNull { it.id == id }
+    fun court(id: String): Venue? = venues[id] ?: location.court(id) ?: location.nearbyCourts.firstOrNull { it.id == id }
 
     fun courts(ids: List<String>): List<Venue> = ids.mapNotNull(::court)
 
@@ -245,7 +196,8 @@ class MatchManager(private val context: ManagerContext) {
 
     /** 日期条：某天附近有多少人在找。同一片区域 1 分钟内只拉一次 */
     fun availableCount(day: Long): Int {
-        val center = coordinate ?: return 0
+        val center = location.currentLocation ?: return 0
+        val radiusKm = location.preferences.travelRadiusKm
         val cached = poolByDay
         val now = System.currentTimeMillis()
         val stale = cached == null || now - cached.at > 60_000 || cached.radiusKm != radiusKm || cached.center.distanceKm(center) > 2
@@ -275,7 +227,7 @@ class MatchManager(private val context: ManagerContext) {
         val previous = tickets.associate { it.id to it.status }
         val created = tickets.associate { it.id to it.createdAt }
         val now = System.currentTimeMillis()
-        val origin = coordinate ?: Coordinate.fallbackCenter
+        val origin = location.coordinate
         val fresh = remote.map { it.ticket(me.id, origin, created[it.id] ?: now) }.sortedBy { it.slot.startTime }
         val map = HashMap<String, MatchOffer>()
         for (item in remote) {
@@ -309,7 +261,6 @@ class MatchManager(private val context: ManagerContext) {
     suspend fun refresh() {
         poolByDay = poolByDay?.let { DayPool(it.center, it.radiusKm, 0, it.counts) }
         poolLoadedAt.clear()
-        locate()
         reloadMatchmaking()
     }
 
@@ -453,7 +404,10 @@ class MatchManager(private val context: ManagerContext) {
         // 定时刷新请求和提议（单元测试、截图里没有 Android 的 Context，不跑）
         if (context.android != null) {
             context.scope.launch {
-                locate()
+                try {
+                    location.start()
+                } catch (_: RemoteError) {
+                }
                 while (true) {
                     reloadMatchmaking(announce = true)
                     delay(PROCESSING_INTERVAL)
@@ -465,7 +419,6 @@ class MatchManager(private val context: ManagerContext) {
     companion object {
         /** 定时刷新请求和提议的间隔 */
         const val PROCESSING_INTERVAL = 15_000L
-        private const val RADIUS_KEY = "radius_km"
 
         /** 5 / 10 / 20 / 50 公里（用英里的地区：3 / 5 / 10 / 30 英里），存的都是公里 */
         fun radiusChoices(unit: DistanceUnit = DistanceUnit.current): List<Double> {

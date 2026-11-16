@@ -168,8 +168,9 @@ class SocialScreenshotTest {
         val env = environment().apply { loadSocial() }
         server.on(
             "POST /rest/v1/rpc/my_games",
-            """[{"id":"g1","starts_at":"${ago(3000)}","ends_at":"${ago(2900)}","status":"scheduled","venue":{"id":"v1","name":"Pasadena Badminton"},"my_report":{"outcome":"win"},""" +
-                """"players":[{"id":"$me","nickname":"Alex","rating":4},{"id":"$casey","nickname":"Casey","rating":3}]}]""",
+            """[{"id":"g1","mode":"singles","starts_at":"${ago(3000)}","ends_at":"${ago(2900)}","status":"scheduled","venue":{"id":"v1","name":"Pasadena Badminton"},""" +
+                """"my_team":1,"review_until":"${ago(100)}","my_report":{"outcome":"team1"},""" +
+                """"players":[{"id":"$me","nickname":"Alex","rating":4,"team":1,"me":true},{"id":"$casey","nickname":"Casey","rating":3,"team":2,"me":false}]}]""",
         )
         server.on("POST /rest/v1/rpc/venue_regulars", """[{"id":"6f1c2c3e-0000-4000-8000-000000000005","nickname":"Jordan","rating":5,"venue":{"id":"v1"}}]""")
         shot("social-add-friend", environment = env) { AddFriendScreen() }

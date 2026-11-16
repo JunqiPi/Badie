@@ -40,7 +40,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -75,7 +74,6 @@ import com.badie.app.design.rememberHaptics
 import com.badie.app.design.sticker
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
-import com.badie.app.location.LocationProvider
 import com.badie.app.models.Challenge
 import com.badie.app.models.ChallengeStatus
 import com.badie.app.models.CountryInfo
@@ -108,7 +106,6 @@ fun LeaderboardScreen(venueId: String? = null) {
     val manager = rememberRankingManager()
     val colors = AppTheme.colors
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
     var selectedVenue by rememberSaveable { mutableStateOf(venueId) }
     var boardScope by rememberSaveable { mutableStateOf(Scope.Global) }
@@ -130,8 +127,8 @@ fun LeaderboardScreen(venueId: String? = null) {
     LaunchedEffect(Unit) {
         launch { quietly { manager.prefetchWeekly() } }
         launch { quietly { manager.loadCountry() } }
-        val location = if (LocationProvider(context).isAuthorized) LocationProvider(context).current() else null
-        quietly { manager.loadVenues(location, listOfNotNull(selectedVenue)) }
+        launch { quietly { env.roomManager.book.refresh(ifOlderThan = 60_000) } }
+        quietly { manager.loadVenues(listOfNotNull(selectedVenue)) }
     }
     LaunchedEffect(week, country, boardGender) { quietly { manager.loadWeekly(week, country, boardGender) } }
 
@@ -244,14 +241,16 @@ private fun venueRules() = listOf(
 
 // MARK: 球馆下拉
 
-/** 可选的球馆：当前选的、常去的、附近的 */
+/** 可选的球馆：当前选的、常去的、打过球的（新的在前）、附近的 */
 @Composable
 private fun VenueFilter(manager: RankingManager, selected: String?, onSelect: (String?) -> Unit) {
     val colors = AppTheme.colors
     var open by remember { mutableStateOf(false) }
+    val games = LocalEnv.current.roomManager.book.games
     val choices = buildList {
         selected?.let(manager::venue)?.let(::add)
         addAll(manager.favoriteVenues)
+        addAll(games.sortedByDescending { it.slot.startTime }.map { it.court })
         addAll(manager.nearbyVenues.take(10))
     }.distinctBy { it.id }.take(15)
     val title = selected?.let { manager.venue(it)?.name } ?: tr("全部球馆")
@@ -740,10 +739,11 @@ internal fun InfoLabel(icon: SymbolId, text: String, color: Color = AppTheme.col
 private fun AcceptDoublesSheet(manager: RankingManager, challenge: Challenge, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {
     val colors = AppTheme.colors
     var partnerId by remember { mutableStateOf<String?>(null) }
-    LaunchedEffect(Unit) { quietly { manager.loadFriends() } }
+    val friendManager = LocalEnv.current.friendManager
+    LaunchedEffect(Unit) { quietly { friendManager.refreshFriends() } }
     // 不能选对方两人
     val taken = listOfNotNull(challenge.challengerId, challenge.challengerPartnerId)
-    val options = (manager.friends ?: emptyList()).filter { it.id !in taken }
+    val options = friendManager.friends.filter { it.id !in taken }
 
     Column(
         Modifier.fillMaxWidth().padding(horizontal = AppTheme.Spacing.screen).padding(top = AppTheme.Spacing.xl, bottom = AppTheme.Spacing.lg),
@@ -755,7 +755,7 @@ private fun AcceptDoublesSheet(manager: RankingManager, challenge: Challenge, on
             Spacer(Modifier.weight(1f))
             IconButton(Sym.xmark, tr("关闭"), onClick = onDismiss)
         }
-        if (manager.friends != null && options.isEmpty()) {
+        if (options.isEmpty()) {
             NoticeBanner(Sym.person2Fill, tr("先加球友，才能接受双打挑战"))
         } else {
             PartnerPicker(options, partnerId) { partnerId = it }

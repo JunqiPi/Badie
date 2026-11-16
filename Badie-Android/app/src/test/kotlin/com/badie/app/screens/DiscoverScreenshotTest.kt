@@ -78,7 +78,7 @@ class DiscoverScreenshotTest {
         server.serveProfile("[${TestSupport.profile(""","preferred_mode":"singles","show_as_regular":true""")}]")
         runBlocking { backend.refreshProfile() }
         val environment = AppEnvironment(CoroutineScope(Dispatchers.Unconfined), backend)
-        environment.matchManager.coordinate = Coordinate.fallbackCenter
+        environment.locationManager.currentLocation = Coordinate.fallbackCenter
         setup(environment)
         // 页面里有一直转的动画和定时刷新：不自动走时间，走一段就拍
         compose.mainClock.autoAdvance = false
@@ -159,7 +159,7 @@ class DiscoverScreenshotTest {
 
     @Test
     fun needsLocation() {
-        shot("discover-location-zh", setup = { it.matchManager.coordinate = null }) { DiscoverScreen() }
+        shot("discover-location-zh", setup = { it.locationManager.currentLocation = null }) { DiscoverScreen() }
     }
 
     @Test

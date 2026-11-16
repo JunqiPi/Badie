@@ -274,12 +274,4 @@ class RankingManagerTest {
         assertEquals(ChallengeStatus.Withdrawn, manager.challenges().single().status)
         assertEquals("c2", text(1, "p_challenge"))
     }
-
-    @Test
-    fun friendsBecomePartnerOptions() = runTest {
-        val (_, manager) = signedIn()
-        server.on("POST /rest/v1/rpc/my_friends", """{"friends":[{"id":"$casey","nickname":"Casey","rating":4.0,"created_at":null}],"requests":[]}""")
-        manager.loadFriends()
-        assertEquals(listOf("Casey"), manager.friends?.map { it.nickname })
-    }
 }

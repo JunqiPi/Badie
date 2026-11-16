@@ -375,7 +375,7 @@ private fun InviteVenuePicker(theirVenues: List<DayCandidate.Place>, favorites: 
         currentVenue?.let { add(it.id to it.name) }
         theirVenues.forEach { add(it.id to it.name) }
         favorites.forEach { id -> manager.court(id)?.let { add(id to it.name) } }
-        manager.nearbyCourts.forEach { add(it.id to it.name) }
+        manager.location.nearbyCourts.forEach { add(it.id to it.name) }
     }.distinctBy { it.first }
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen).padding(bottom = AppTheme.Spacing.xl),

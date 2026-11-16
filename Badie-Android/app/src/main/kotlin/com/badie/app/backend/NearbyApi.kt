@@ -253,15 +253,6 @@ class NearbyApi(private val backend: Backend) {
         ),
     )
 
-    /** 发出的邀请撤回（对方不会收到通知）；受邀的人在等对方回时退出 = 不了 */
-    suspend fun withdrawInvite(roomId: String) = remote.call("leave_room", json("p_room" to roomId))
-
-    /** 定时间：在窗口里选一个开始时间（打 2 小时） */
-    suspend fun setGameTime(gameId: String, startsAt: Long) = remote.call("set_game_time", json("p_game" to gameId, "p_starts_at" to iso(startsAt)))
-
-    /** 加球友：TA 也申请过我就直接成为球友。返回成了球友（true）还是发出了申请（false） */
-    suspend fun sendFriendRequest(userId: String): Boolean = remote.rpc<String>("send_friend_request", json("p_user" to userId)) == "friends"
-
     companion object {
         /** 每 24 小时最多发几个邀请（换个时间、加球友不算） */
         const val INVITE_LIMIT = 10

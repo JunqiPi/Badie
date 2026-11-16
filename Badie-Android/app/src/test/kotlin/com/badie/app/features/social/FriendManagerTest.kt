@@ -127,9 +127,9 @@ class FriendManagerTest {
         server.on(
             "POST /rest/v1/rpc/my_games",
             """[{"id":"g1","mode":"singles","starts_at":"2026-10-10T18:00:00+00:00","ends_at":"2026-10-10T20:00:00+00:00","status":"scheduled",""" +
-                """"venue":{"id":"v1","name":"Test Court"},"my_report":{"outcome":"win"},"players":[${player(ME, "Alex")},${player(BLAKE, "Blake")}]},""" +
+                """"venue":{"id":"v1","name":"Test Court"},"my_team":1,"review_until":"2026-10-12T20:00:00+00:00","my_report":{"outcome":"team1"},"players":[${player(ME, "Alex")},${player(BLAKE, "Blake")}]},""" +
                 """{"id":"g2","mode":"singles","starts_at":"2026-10-12T18:00:00+00:00","ends_at":"2026-10-12T20:00:00+00:00","status":"scheduled",""" +
-                """"venue":{"id":"v1","name":"Test Court"},"my_report":null,"players":[${player(ME, "Alex")},${player(CASEY, "Casey")}]}]""",
+                """"venue":{"id":"v1","name":"Test Court"},"my_team":1,"review_until":"2026-10-14T20:00:00+00:00","my_report":null,"players":[${player(ME, "Alex")},${player(CASEY, "Casey")}]}]""",
         )
         env.friendManager.refreshGames(force = true)
         assertEquals(listOf("g1"), env.friendManager.gamesTogether(BLAKE).map { it.id })

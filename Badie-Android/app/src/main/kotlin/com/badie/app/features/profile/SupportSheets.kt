@@ -14,12 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -27,10 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.badie.app.BuildConfig
 import com.badie.app.backend.ProfileApi
@@ -43,27 +38,22 @@ import com.badie.app.design.IconTile
 import com.badie.app.design.LegalLinks
 import com.badie.app.design.LoadingDots
 import com.badie.app.design.PasswordField
-import com.badie.app.design.RulesButton
 import com.badie.app.design.Sym
 import com.badie.app.design.Symbol
 import com.badie.app.design.TextAction
 import com.badie.app.design.Toast
 import com.badie.app.design.card
 import com.badie.app.design.pressable
-import com.badie.app.design.rounded
 import com.badie.app.design.sticker
 import com.badie.app.l10n.AppLanguage
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
-import com.badie.app.models.DistanceUnit
-import com.badie.app.models.UserPreferences
 import com.badie.app.remote.OkHttpTransport
 import com.badie.app.remote.PasswordRules
 import com.badie.app.remote.RemoteError
 import com.badie.app.shell.LocalEnv
 import kotlinx.coroutines.launch
 import java.util.Locale
-import kotlin.math.roundToInt
 
 // MARK: - 帮助与反馈（对应 iPhone 的 Features/Support/HelpSheet.swift）
 
@@ -286,38 +276,3 @@ fun PasswordSheet(api: ProfileApi, onDismiss: () -> Unit) {
     }
 }
 
-// MARK: - 附近范围（对应 iPhone 的 Features/Courts/CourtsView.swift 里的 TravelRadiusSheet）
-
-@Composable
-fun TravelRadiusSheet(api: ProfileApi, onDismiss: () -> Unit) {
-    val unit = DistanceUnit.current
-    val low = maxOf(1.0, kotlin.math.ceil(unit.value(UserPreferences.MINIMUM_TRAVEL_RADIUS)))
-    val high = kotlin.math.floor(unit.value(UserPreferences.MAXIMUM_TRAVEL_RADIUS))
-    var value by remember { mutableFloatStateOf(unit.value(api.travelRadiusKm).roundToInt().toDouble().coerceIn(low, high).toFloat()) }
-    val label = tr("附近范围")
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = AppTheme.Spacing.screen).padding(bottom = AppTheme.Spacing.xxl),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.lg),
-    ) {
-        Row(Modifier.padding(top = AppTheme.Spacing.xl), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, style = AppTheme.Typography.title, color = AppTheme.colors.ink, modifier = Modifier.semantics { heading() })
-            RulesButton(label, listOf(tr("附近的球馆、球局和球群按这个范围显示。"), tr("匹配只看你选的球馆，搜索也不受范围限制。")))
-        }
-        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("${value.roundToInt()}", style = rounded(48, androidx.compose.ui.text.font.FontWeight.Black).copy(fontFeatureSettings = "tnum"), color = AppTheme.colors.ink)
-            Text(tr("%@内", unit.title), style = AppTheme.Typography.headline, color = AppTheme.colors.ink, modifier = Modifier.padding(bottom = 10.dp))
-        }
-        Slider(
-            value, { value = it.roundToInt().toFloat() }, valueRange = low.toFloat()..high.toFloat(), steps = (high - low).toInt() - 1,
-            colors = SliderDefaults.colors(thumbColor = AppTheme.colors.ink, activeTrackColor = AppTheme.colors.ink, inactiveTrackColor = AppTheme.colors.surfaceMuted, activeTickColor = AppTheme.colors.ink.copy(alpha = 0f), inactiveTickColor = AppTheme.colors.ink.copy(alpha = 0f)),
-            modifier = Modifier.semantics {
-                contentDescription = label
-                stateDescription = "${value.roundToInt()} ${unit.title}"
-            },
-        )
-        BrutalButton(tr("完成"), {
-            api.updateTravelRadius(unit.km(value.toDouble()))
-            onDismiss()
-        })
-    }
-}

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -712,8 +711,9 @@ fun CreateRoomScreen(mode: String?, invitee: String?) {
     var start by remember { mutableIntStateOf(initial.start) }
     var end by remember { mutableIntStateOf(initial.end) }
     var court by remember { mutableStateOf<Venue?>(null) }
-    // TODO：约了某个人时 iPhone 按两人的性别定能选的项目（要先拉对方资料，归 FriendManager）；现在按没有对方算
-    val partner: Gender? = null
+    // 约了某个人：按两人的性别定能选的项目（对方的资料还没拉过时，拉到性别再定）
+    LaunchedEffect(invitee) { invitee?.let { env.friendManager.refreshPlayer(it) } }
+    val partner: Gender? = invitee?.let { env.friendManager.user(it)?.gender }
     val gender = user?.gender ?: Gender.Unspecified
     val choices = PlayEvent.choices(gameMode, gender, partner)
     var event by remember { mutableStateOf(choices.firstOrNull()) }
@@ -853,8 +853,8 @@ fun CreateRoomScreen(mode: String?, invitee: String?) {
                     scope.launch {
                         try {
                             val room = env.roomManager.create(draft)
-                            if (invitee != null) {
-                                // 只能邀请球友：不是球友时服务器会拒绝，不提示
+                            if (invitee != null && env.friendManager.isFriend(invitee)) {
+                                // 只能邀请球友
                                 try {
                                     env.roomManager.invite(listOf(invitee), room)
                                 } catch (_: RemoteError) {

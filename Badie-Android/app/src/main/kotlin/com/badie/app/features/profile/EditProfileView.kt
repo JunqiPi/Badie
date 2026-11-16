@@ -303,7 +303,7 @@ fun EditProfileView() {
             }
         } else {
             MyCardPreviewContent(
-                previewUser, slots, api.favoriteVenues().firstOrNull(), api.strikes?.recent ?: 0,
+                previewUser, slots, api.favoriteVenues().firstOrNull(), LocalEnv.current.friendManager.strikes?.recent ?: 0,
                 Modifier.weight(1f).padding(horizontal = AppTheme.Spacing.screen).padding(vertical = AppTheme.Spacing.sm),
             )
         }

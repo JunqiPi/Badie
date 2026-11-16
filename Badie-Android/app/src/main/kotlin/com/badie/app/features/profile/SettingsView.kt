@@ -164,7 +164,7 @@ fun SettingsView() {
                         }
                     }
                     InsetDivider()
-                    MenuRow(Sym.mapFill, tr("附近范围"), tint = AppTheme.colors.mint, value = DistanceFormatter.radius(api.travelRadiusKm)) {
+                    MenuRow(Sym.mapFill, tr("附近范围"), tint = AppTheme.colors.mint, value = DistanceFormatter.radius(LocalEnv.current.locationManager.preferences.travelRadiusKm)) {
                         showRadius = true
                     }
                 }
@@ -265,7 +265,7 @@ fun SettingsView() {
         }
     }
     if (showRadius) {
-        BadieSheet(onDismiss = { showRadius = false }) { dismiss -> TravelRadiusSheet(api, dismiss) }
+        BadieSheet(onDismiss = { showRadius = false }) { dismiss -> com.badie.app.features.venues.TravelRadiusSheet(dismiss) }
     }
     if (showPassword) {
         BadieSheet(onDismiss = { showPassword = false }) { dismiss -> PasswordSheet(api, dismiss) }

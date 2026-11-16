@@ -1,11 +1,11 @@
 package com.badie.app.shell
 
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.badie.app.backend.Backend
 import com.badie.app.features.games.SurveyManager
 import com.badie.app.features.groups.GroupManager
@@ -128,13 +128,13 @@ class AppEnvironment(
     val router = Router()
     private val context = ManagerContext(scope, backend, appState, android)
     val locationManager = LocationManager(context)
-    val matchManager = MatchManager(context)
+    val matchManager = MatchManager(context, locationManager)
     val friendManager = FriendManager(context)
     val messageManager = MessageManager(context)
-    val roomManager = RoomManager(context)
+    val roomManager = RoomManager(context, location = locationManager)
     val surveyManager = SurveyManager(context)
     val inboxManager = InboxManager(context)
-    val groupManager = GroupManager(context)
+    val groupManager = GroupManager(context, locationManager)
 }
 
 val LocalEnv = staticCompositionLocalOf<AppEnvironment> { error("没有提供 AppEnvironment") }

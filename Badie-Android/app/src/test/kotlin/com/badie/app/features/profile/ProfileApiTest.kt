@@ -6,12 +6,10 @@ import com.badie.app.backend.BackendError
 import com.badie.app.backend.ProfileApi
 import com.badie.app.backend.ProfileStore
 import com.badie.app.models.ChallengePolicy
-import com.badie.app.models.DISTANT_FUTURE
 import com.badie.app.models.GameMode
 import com.badie.app.models.Gender
 import com.badie.app.models.RecurringTimeSlot
 import com.badie.app.models.SkillTier
-import com.badie.app.models.UserPreferences
 import com.badie.app.models.VerificationRequest
 import com.badie.app.models.VerificationStatus
 import com.badie.app.remote.FakeServer
@@ -206,16 +204,12 @@ class ProfileApiTest {
     }
 
     @Test
-    fun recordAndStrikes() = runTest {
+    fun record() = runTest {
         val api = signedIn()
         server.on("POST /rest/v1/rpc/my_record", """{"games":6,"wins":4,"draws":0,"rounds":14,"round_wins":9,"opponents":3,"gap":0.42,"public":true,"losses":2}""")
         api.refreshRecord()
         assertEquals(true, api.winRate?.isPublic)
         assertEquals("胜率按局算", 64, api.winRate?.percentage)
-        server.on("POST /rest/v1/rpc/my_strikes", """{"suspended_until":"infinity","recent":3,"strikes":[]}""")
-        api.refreshStrikes()
-        assertEquals(DISTANT_FUTURE, api.strikes?.suspendedUntil)
-        assertEquals(3, api.strikes?.recent)
     }
 
     @Test
@@ -238,15 +232,6 @@ class ProfileApiTest {
         assertNull(store.load("recurringSlots-${TestSupport.USER_ID}"))
     }
 
-    @Test
-    fun travelRadiusIsClampedAndKept() = runTest {
-        val api = signedIn()
-        assertEquals(UserPreferences.DEFAULT_TRAVEL_RADIUS, api.travelRadiusKm, 0.0)
-        api.updateTravelRadius(500.0)
-        assertEquals(UserPreferences.MAXIMUM_TRAVEL_RADIUS, api.travelRadiusKm, 0.0)
-        api.updateTravelRadius(16.09)
-        assertEquals(16.09, ProfileApi(api.backend, store, CoroutineScope(Dispatchers.Unconfined)).travelRadiusKm, 0.001)
-    }
 
     @Test
     fun favoriteVenueNames() = runTest {

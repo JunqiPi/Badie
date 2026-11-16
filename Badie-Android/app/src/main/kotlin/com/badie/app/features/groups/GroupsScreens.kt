@@ -142,9 +142,9 @@ private fun IconLine(icon: SymbolId, text: String, style: androidx.compose.ui.te
 fun GroupsScreen() {
     val env = LocalEnv.current
     val groupManager = env.groupManager
-    LaunchedEffect(Unit) {
+    LaunchedEffect(groupManager.radiusKm, groupManager.location.currentLocation) {
         try {
-            groupManager.loadNearby(groupManager.currentCenter(), Venue.DEFAULT_TRAVEL_RADIUS_KM)
+            groupManager.loadNearby(groupManager.currentCenter(), groupManager.radiusKm)
         } catch (_: RemoteError) {
         }
     }
@@ -155,7 +155,7 @@ fun GroupsScreen() {
                 IconButton(Sym.plus, tr("建一个球群")) { env.router.open(Route.CreateGroup()) }
             }
         }
-        RefreshEverything(Modifier.fillMaxSize(), extra = { groupManager.loadNearby(groupManager.currentCenter(), Venue.DEFAULT_TRAVEL_RADIUS_KM) }) {
+        RefreshEverything(Modifier.fillMaxSize(), extra = { groupManager.loadNearby(groupManager.currentCenter(), groupManager.radiusKm) }) {
             Column(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen).padding(bottom = AppTheme.Spacing.xxl),
                 verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xl),
@@ -937,7 +937,7 @@ private fun GroupVenuePicker(selectedId: String?, onPick: (Venue) -> Unit) {
     LaunchedEffect(Unit) {
         center = env.groupManager.currentCenter()
         nearby = try {
-            backend.venuesNear(center, Venue.DEFAULT_TRAVEL_RADIUS_KM)
+            backend.venuesNear(center, env.groupManager.radiusKm)
         } catch (_: RemoteError) {
             emptyList()
         }

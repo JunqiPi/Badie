@@ -10,12 +10,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,23 +37,19 @@ import com.badie.app.design.NicknameText
 import com.badie.app.design.NoShowPill
 import com.badie.app.design.ReliableBadge
 import com.badie.app.design.RoundActionLabel
-import com.badie.app.design.RulesButton
 import com.badie.app.design.Sym
 import com.badie.app.design.TagPill
 import com.badie.app.design.Toast
 import com.badie.app.design.pressable
 import com.badie.app.design.rememberHaptics
-import com.badie.app.design.rounded
 import com.badie.app.design.sticker
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
 import com.badie.app.models.DateText
 import com.badie.app.models.DistanceFormatter
-import com.badie.app.models.DistanceUnit
 import com.badie.app.models.RecurringTimeSlot
 import com.badie.app.models.Room
 import com.badie.app.models.User
-import com.badie.app.models.UserPreferences
 import com.badie.app.models.UsualTimeText
 import com.badie.app.models.WindowText
 import com.badie.app.remote.RemoteError
@@ -64,9 +57,6 @@ import com.badie.app.shell.LocalEnv
 import com.badie.app.shell.MainTab
 import com.badie.app.shell.Route
 import kotlinx.coroutines.launch
-import kotlin.math.ceil
-import kotlin.math.floor
-import kotlin.math.roundToInt
 
 // 对应 iPhone 的 Features/Home/NearbyViews.swift（邀请局的页面 InviteRoomView、定时间 SetGameTimeSheet 归房间和球局那两块）
 
@@ -133,20 +123,21 @@ fun UsualTimeChips(slots: List<RecurringTimeSlot>, onTap: ((RecurringTimeSlot) -
 
 /**
  * ★ 加球友：不占每天约人的名额，也不翻到下一张。已是球友就发消息，TA 申请过我就同意，已申请就说一声。
- * 安卓的球友页还没搬：关系只看服务器给的（[isFriend]、[request]）和这里点过的
+ * 关系看 FriendManager，缓存里还没有时用服务器给的（[isFriend]、[request]）
  */
 @Composable
 fun FriendStarButton(userId: String, isFriend: Boolean = false, request: FriendRequestState? = null) {
     val env = LocalEnv.current
+    val friendManager = env.friendManager
     val haptics = rememberHaptics()
     val scope = rememberCoroutineScope()
     var requested by remember(userId) { mutableStateOf(false) }
     var becameFriends by remember(userId) { mutableStateOf(false) }
     var isWorking by remember(userId) { mutableStateOf(false) }
     val status = when {
-        isFriend || becameFriends -> 0
-        requested || request == FriendRequestState.Sent -> 1
-        request == FriendRequestState.Received -> 2
+        isFriend || becameFriends || friendManager.isFriend(userId) -> 0
+        requested || request == FriendRequestState.Sent || friendManager.hasPendingRequest(userId) -> 1
+        request == FriendRequestState.Received || friendManager.incomingRequest(userId) != null -> 2
         else -> 3
     }
     val label = when (status) {
@@ -168,13 +159,20 @@ fun FriendStarButton(userId: String, isFriend: Boolean = false, request: FriendR
                         isWorking = true
                         scope.launch {
                             try {
-                                val friends = env.matchManager.nearbyApi.sendFriendRequest(userId)
-                                if (friends || request == FriendRequestState.Received) {
+                                val incoming = friendManager.incomingRequest(userId)
+                                if (incoming != null) {
+                                    friendManager.respond(incoming, accept = true)
                                     becameFriends = true
                                     env.appState.showToast(L10n.tr("已添加为球友"), Toast.Style.Success)
                                 } else {
-                                    requested = true
-                                    env.appState.showToast(L10n.tr("申请已发送"), Toast.Style.Success)
+                                    friendManager.sendRequest(userId)
+                                    if (friendManager.isFriend(userId) || request == FriendRequestState.Received) {
+                                        becameFriends = true
+                                        env.appState.showToast(L10n.tr("已添加为球友"), Toast.Style.Success)
+                                    } else {
+                                        requested = true
+                                        env.appState.showToast(L10n.tr("申请已发送"), Toast.Style.Success)
+                                    }
                                 }
                                 haptics.success()
                             } catch (error: RemoteError) {
@@ -364,38 +362,3 @@ fun InviteAnswerSheet(invites: List<Room>, onAnswered: (Room, String?) -> Unit, 
     }
 }
 
-// MARK: - 附近范围（公里/英里跟随设备地区）：只管“附近”显示多远，不影响匹配
-
-/** 对应 iPhone CourtsView.swift 的 TravelRadiusSheet（“扩大范围”打开） */
-@Composable
-fun TravelRadiusSheet(onDismiss: () -> Unit) {
-    val manager = LocalEnv.current.matchManager
-    val colors = AppTheme.colors
-    val unit = DistanceUnit.current
-    val low = maxOf(1f, ceil(unit.value(UserPreferences.MINIMUM_TRAVEL_RADIUS)).toFloat())
-    val high = floor(unit.value(UserPreferences.MAXIMUM_TRAVEL_RADIUS)).toFloat()
-    var value by remember { mutableFloatStateOf(unit.value(manager.radiusKm).roundToInt().toFloat().coerceIn(low, high)) }
-    Column(
-        Modifier.fillMaxWidth().padding(horizontal = AppTheme.Spacing.screen).padding(bottom = AppTheme.Spacing.lg),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.lg),
-    ) {
-        Row(Modifier.padding(top = AppTheme.Spacing.xl), verticalAlignment = Alignment.CenterVertically) {
-            Text(tr("附近范围"), style = AppTheme.Typography.title, color = colors.ink, modifier = Modifier.semantics { heading() })
-            RulesButton(tr("附近范围"), listOf(tr("附近的球馆、球局和球群按这个范围显示。"), tr("匹配只看你选的球馆，搜索也不受范围限制。")))
-        }
-        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(value.roundToInt().toString(), style = rounded(48, androidx.compose.ui.text.font.FontWeight.Black), color = colors.ink)
-            Text(tr("%@内", unit.title), style = AppTheme.Typography.headline, color = colors.ink, modifier = Modifier.padding(bottom = 10.dp))
-        }
-        val label = tr("附近范围")
-        Slider(
-            value, { value = it.roundToInt().toFloat() }, valueRange = low..high, steps = (high - low).toInt() - 1,
-            modifier = Modifier.semantics { contentDescription = label },
-            colors = SliderDefaults.colors(thumbColor = colors.ink, activeTrackColor = colors.ink, inactiveTrackColor = colors.surfaceMuted, activeTickColor = colors.ink, inactiveTickColor = colors.surfaceMuted),
-        )
-        BrutalButton(tr("完成"), {
-            manager.updateRadius(unit.km(value.toDouble()))
-            onDismiss()
-        })
-    }
-}

@@ -663,7 +663,7 @@ fun TicketSummaryCard(ticket: MatchTicket) {
         else -> names.first()
     }
     // 服务器不给请求的范围，用现在的附近范围
-    val radius = DistanceFormatter.radius(if (ticket.radiusKm > 0) ticket.radiusKm else manager.radiusKm)
+    val radius = DistanceFormatter.radius(if (ticket.radiusKm > 0) ticket.radiusKm else manager.location.preferences.travelRadiusKm)
     val rangeTitle = if (ticket.skillTolerance >= MatchRequest.ANY_SKILL) tr("%@ · 实力不限", radius) else tr("%@ · 实力差 ±%lld 级", radius, ticket.skillTolerance)
     Column(Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.lg).padding(horizontal = AppTheme.Spacing.lg)) {
         InfoRow(ticket.mode.icon, "${ticket.event.title(ticket.mode)} · ${ticket.slot.formattedFull()}", tint = colors.lavender)

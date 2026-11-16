@@ -15,7 +15,7 @@ import com.badie.app.backend.RemoteGroupVenue
 import com.badie.app.backend.RemoteSchedule
 import com.badie.app.features.social.SocialCache
 import com.badie.app.l10n.L10n.tr
-import com.badie.app.location.LocationProvider
+import com.badie.app.features.venues.LocationManager
 import com.badie.app.models.Coordinate
 import com.badie.app.models.Gender
 import com.badie.app.models.GroupActivity
@@ -49,7 +49,11 @@ sealed interface SignupResult {
  * 我的球群和场次每 15 秒拉一次；别的球群在打开、看附近、输群号时按需拉
  */
 @Stable
-class GroupManager(private val context: ManagerContext) {
+class GroupManager(
+    private val context: ManagerContext,
+    /** 位置和附近范围（和 iPhone 一样看 LocationManager） */
+    val location: LocationManager = LocationManager(context),
+) {
     private val api = GroupsApi(context.backend.remote)
     private val cache = SocialCache.of(context.backend)
     private val now: () -> Long = System::currentTimeMillis
@@ -63,6 +67,7 @@ class GroupManager(private val context: ManagerContext) {
 
     /** 附近的球群：在哪找的、找到哪些、什么时候 */
     private var nearby by mutableStateOf<Triple<Coordinate, List<String>, Long>?>(null)
+    private var nearbyRadius = 0.0
 
     /** 变化计数（球群详情等页面据此刷新） */
     var revision by mutableIntStateOf(0)
@@ -107,6 +112,9 @@ class GroupManager(private val context: ManagerContext) {
 
     /** 附近的球群（按近 30 天场次数排），不含已加入的由页面自己去掉 */
     fun nearbyGroups(): List<PlayGroup> = sortedByActivity(nearby?.second.orEmpty().mapNotNull { groups[it] })
+
+    /** 这家球馆的球群（按活跃度排）；先调 [loadAtVenue] 拉一次 */
+    fun groups(atVenue: String): List<PlayGroup> = sortedByActivity(groups.values.filter { it.venueId == atVenue })
 
     private fun sortedByActivity(list: List<PlayGroup>): List<PlayGroup> =
         list.sortedWith(compareByDescending<PlayGroup> { activity(it.id).sessionsLast30Days }.thenBy { it.name })
@@ -173,22 +181,31 @@ class GroupManager(private val context: ManagerContext) {
     /** 附近的球群（同一位置 60 秒内只拉一次） */
     suspend fun loadNearby(center: Coordinate, radiusKm: Double) {
         val me = syncAccount() ?: return
-        nearby?.let { (place, _, at) -> if (now() - at < 60_000 && place.distanceKm(center) < 2) return }
+        nearby?.let { (place, _, at) -> if (now() - at < 60_000 && place.distanceKm(center) < 2 && nearbyRadius == radiusKm) return }
         nearby = Triple(center, nearby?.second.orEmpty(), now())
+        nearbyRadius = radiusKm
         val found = api.groupsNear(center, radiusKm)
         for (summary in found) cacheGroup(summary, me)
         nearby = Triple(center, found.map { it.id }, now())
         revision += 1
     }
 
+    /** 球馆页：拉这家球馆附近 5 公里的球群（不影响“附近的球群”那份列表） */
+    suspend fun loadAtVenue(venue: Venue) {
+        val me = syncAccount() ?: return
+        for (summary in api.groupsNear(venue.location, 5.0)) cacheGroup(summary, me)
+        revision += 1
+    }
+
     /** 看附近用的位置：开了定位用当前位置，否则用第一家常去球馆，都没有就用默认的地方 */
-    suspend fun currentCenter(): Coordinate {
-        context.android?.let { android ->
-            LocationProvider(android).takeIf { it.isAuthorized }?.current()?.let { return it }
-        }
+    fun currentCenter(): Coordinate {
+        location.currentLocation?.let { return it }
         context.backend.favoriteVenueIds.firstNotNullOfOrNull { context.backend.venue(it) }?.let { return it.location }
         return Coordinate.fallbackCenter
     }
+
+    /** 附近范围（公里） */
+    val radiusKm: Double get() = location.preferences.travelRadiusKm
 
     // MARK: 操作（都等服务器）
 

@@ -76,7 +76,10 @@ class RankingsScreenshotTest {
     private fun entry(id: String, name: String, rating: Double, rank: Int, points: Int?, games: Int, wins: Int) =
         RankingsApi.BoardEntry(id, name, rating, rank, points, games, wins)
 
-    private fun shot(name: String, qualifiers: String = "b+zh+Hans", appearance: Appearance = Appearance.Light, setUp: (RankingManager) -> Unit, content: @Composable () -> Unit) {
+    private fun shot(
+        name: String, qualifiers: String = "b+zh+Hans", appearance: Appearance = Appearance.Light, setUp: (RankingManager) -> Unit,
+        friends: List<Pair<String, String>> = emptyList(), content: @Composable () -> Unit,
+    ) {
         RuntimeEnvironment.setQualifiers("+$qualifiers")
         L10n.attach(RuntimeEnvironment.getApplication())
         val backend = backend()
@@ -84,6 +87,10 @@ class RankingsScreenshotTest {
         val manager = RankingManager.of(backend)
         manager.preload(challenges = emptyList(), people = emptyList(), places = listOf(labc, orange))
         setUp(manager)
+        // 球友在 FriendManager 里（挑战带搭档时选）
+        environment.friendManager.cache.syncAccount()
+        friends.forEach { (id, name) -> environment.friendManager.cache.cache(id, name, 4.0) }
+        environment.friendManager.cache.friendIds = friends.map { it.first }
         compose.setContent {
             CompositionLocalProvider(LocalEnv provides environment) {
                 BadieTheme(appearance) {
@@ -163,9 +170,6 @@ class RankingsScreenshotTest {
 
     @Test
     fun composerDoublesJapanese() = shot("rankings-composer-ja", qualifiers = "ja", setUp = { manager ->
-        manager.preload(
-            challenges = emptyList(), people = listOf(User.create("u2", "Kevin", selfReportedLevel = 5)),
-            friends = listOf(User.create("u8", "Casey", selfReportedLevel = 4), User.create("u9", "美玲", selfReportedLevel = 4)),
-        )
-    }) { ChallengeComposer("u2", {}, initialMode = GameMode.Doubles) }
+        manager.preload(challenges = emptyList(), people = listOf(User.create("u2", "Kevin", selfReportedLevel = 5)))
+    }, friends = listOf("u8" to "Casey", "u9" to "美玲")) { ChallengeComposer("u2", {}, initialMode = GameMode.Doubles) }
 }

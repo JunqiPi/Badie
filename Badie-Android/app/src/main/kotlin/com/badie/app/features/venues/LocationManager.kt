@@ -114,8 +114,9 @@ class LocationManager internal constructor(
     /** 问过、没给 */
     val isDenied: Boolean get() = hasAskedPermission && !isAuthorized
 
+    /** 真实定位；还没拿到是 null（找人、找局时不按默认城市猜）。测试和截图里直接放 */
     var currentLocation by mutableStateOf<Coordinate?>(null)
-        private set
+        internal set
     private var locatedAt = 0L
 
     /** 附近范围内的球馆（服务器的球馆库），按距离排 */

@@ -88,8 +88,10 @@ fun MatchSetupSheet(onDismiss: () -> Unit) {
     val env = LocalEnv.current
     val manager = env.matchManager
     val user = env.appState.currentUser
+    val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(Unit) {
-        manager.prepareDraft(user, manager.nearbyCourts, recurring = emptyList(), favorites = env.appState.backend.favoriteVenueIds)
+        val recurring = com.badie.app.backend.ProfileApi.of(env.appState.backend, context).recurringSlots()
+        manager.prepareDraft(user, env.locationManager.nearbyCourts, recurring, env.locationManager.favoriteCourts.map { it.id })
     }
     LaunchedEffect(manager.draftVenueIds.toList()) { manager.loadVenues(manager.draftVenueIds.toList()) }
     MatchSetupContent(
@@ -323,7 +325,7 @@ private fun CourtRow(court: Venue) {
                 }
             }
         }
-        manager.coordinate?.let {
+        manager.location.coordinate.let {
             Text(court.formattedDistance(it), style = AppTheme.Typography.footnoteBold, color = colors.inkSecondary, modifier = Modifier.padding(start = AppTheme.Spacing.sm))
         }
         val label = tr("移除%@", court.name)

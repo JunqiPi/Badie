@@ -184,21 +184,23 @@ fun DayCandidatesView(
     // 后面露出来的那张：下一张，到底了是第一张
     val nextCard = if (deck.size > 1) deck[(currentIndex + 1) % deck.size] else null
     // 没开定位：不能按默认城市找人（会约到别的城市）
-    val needsLocation = manager.coordinate == null
+    val location = env.locationManager
+    val needsLocation = location.currentLocation == null
 
     suspend fun load(showsErrors: Boolean) {
         // 位置还没回来：先不按默认城市找人，位置一到会再调一次
-        val center = manager.coordinate ?: return
+        val center = location.currentLocation ?: return
+        val radiusKm = location.preferences.travelRadiusKm
         val later: (suspend () -> Unit) -> Unit = { block -> scope.launch { block() } }
         try {
             if (day == null) {
-                val (fresh, users) = manager.nearbyApi.nearbyPlayers(center, manager.radiusKm, manager::user, later)
+                val (fresh, users) = manager.nearbyApi.nearbyPlayers(center, radiusKm, manager::user, later)
                 manager.remember(users)
                 fresh.forEach { manager.rememberUsualTimes(it.userId, it.usualTimes) }
                 val focused = (currentCard as? DeckCard.Nearby)?.player?.id
                 nearby = DayCards.merge(nearby, fresh, nearbySeen, focused) { it.id }
             } else {
-                val (fresh, users) = manager.api.dayCandidates(day, center, manager.radiusKm, known = manager::user, later = later)
+                val (fresh, users) = manager.api.dayCandidates(day, center, radiusKm, known = manager::user, later = later)
                 manager.remember(users)
                 val focused = (currentCard as? DeckCard.Day)?.card?.id
                 cards = DayCards.merge(cards, fresh, seen, focused) { it.id }
@@ -210,7 +212,7 @@ fun DayCandidatesView(
         isLoading = false
     }
 
-    LaunchedEffect(needsLocation, manager.radiusKm, reloadToken) { load(showsErrors = true) }
+    LaunchedEffect(needsLocation, location.preferences.travelRadiusKm, reloadToken) { load(showsErrors = true) }
     // 某天的卡片每 30 秒拉一次（在别的标签页时不拉）；附近的人变得慢，只在打开、下拉、开定位、改范围时拉
     LaunchedEffect(day) {
         if (day == null) return@LaunchedEffect
@@ -359,7 +361,7 @@ fun DayCandidatesView(
 
     val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
         if (result.values.any { it }) {
-            scope.launch { manager.locate() }
+            location.permissionAnswered(true)
         } else {
             // 以前拒绝过、系统不再弹窗：去系统设置里打开
             context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)))
@@ -369,7 +371,7 @@ fun DayCandidatesView(
     Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.lg)) {
         when {
             // 已经允许定位，位置还没回来：等一下，不提示“开启定位”
-            needsLocation && manager.isLocationAuthorized -> Spinner()
+            needsLocation && location.isAuthorized -> Spinner()
             needsLocation -> Centered {
                 EmptyStateView(Sym.location, tr("开启定位"), actionTitle = tr("开启定位")) {
                     locationLauncher.launch(com.badie.app.location.LocationProvider.PERMISSIONS)
@@ -575,7 +577,7 @@ fun DayCandidatesView(
     }
 
     if (showsRadius) {
-        SheetScaffold(onDismiss = { showsRadius = false }) { TravelRadiusSheet { showsRadius = false } }
+        SheetScaffold(onDismiss = { showsRadius = false }) { com.badie.app.features.venues.TravelRadiusSheet { showsRadius = false } }
     }
 }
 

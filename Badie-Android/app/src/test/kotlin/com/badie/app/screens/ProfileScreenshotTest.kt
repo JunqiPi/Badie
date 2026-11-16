@@ -40,7 +40,7 @@ import com.badie.app.features.profile.RecurringSlotsView
 import com.badie.app.features.profile.ReassessSheet
 import com.badie.app.features.profile.SettingsView
 import com.badie.app.features.profile.TipJarSheet
-import com.badie.app.features.profile.TravelRadiusSheet
+import com.badie.app.features.venues.TravelRadiusSheet
 import com.badie.app.features.profile.VerificationView
 import com.badie.app.l10n.L10n
 import com.badie.app.models.AttendanceRecord
@@ -83,7 +83,7 @@ class ProfileScreenshotTest {
 
     private val me: User = User(
         id = "6f1c2c3e-0000-4000-8000-000000000001", nickname = "阿杰", phone = "alex@example.com", selfReportedLevel = 4,
-        gender = Gender.Male, tag = 3400, preferredMode = GameMode.Doubles, totalGames = 12,
+        gender = Gender.Male, tag = 3400, preferredMode = GameMode.Doubles, totalGames = 12, friendCode = "k7Qm2x",
         attendance = AttendanceRecord(12, 0, 1), selfReportedRating = 4.33,
         assessment = SkillAssessmentSummary(4, false, false, assessedAt = 1_700_000_000_000, rating = 4.33, answers = SkillAssessment.levelCardDemoAnswers),
     ).let { it.copy(avatar = it.avatar.copy(cardColor = CardColor.Sky)) }
@@ -180,7 +180,7 @@ class ProfileScreenshotTest {
         Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
             TipJarSheet {}
             PasswordSheet(api) {}
-            TravelRadiusSheet(api) {}
+            TravelRadiusSheet {}
         }
     }
 

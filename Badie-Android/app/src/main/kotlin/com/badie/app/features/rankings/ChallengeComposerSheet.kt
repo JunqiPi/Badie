@@ -38,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -54,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import com.badie.app.design.AppTheme
 import com.badie.app.design.AvatarView
 import com.badie.app.design.BrutalButton
-import com.badie.app.design.ButtonSize
 import com.badie.app.design.ChoiceChip
 import com.badie.app.design.EmptyStateView
 import com.badie.app.design.IconButton
@@ -78,7 +76,6 @@ import com.badie.app.design.rounded
 import com.badie.app.design.sticker
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
-import com.badie.app.location.LocationProvider
 import com.badie.app.models.Challenge
 import com.badie.app.models.DateText
 import com.badie.app.models.DistanceFormatter
@@ -113,7 +110,6 @@ internal fun ChallengeComposer(targetId: String, onDismiss: () -> Unit, initialM
     val appState = env.appState
     val manager = rememberRankingManager()
     val colors = AppTheme.colors
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val haptics = rememberHaptics()
 
@@ -134,15 +130,14 @@ internal fun ChallengeComposer(targetId: String, onDismiss: () -> Unit, initialM
         startMinutes = start.hour * 60 + start.minute
         endMinutes = minOf(24 * 60, startMinutes + 120)
         launch { quietly { manager.loadPlayer(targetId) } }
-        launch { quietly { manager.loadFriends() } }
-        val location = if (LocationProvider(context).isAuthorized) LocationProvider(context).current() else null
-        quietly { manager.loadVenues(location) }
+        launch { quietly { env.friendManager.refreshFriends() } }
+        quietly { manager.loadVenues() }
         if (courtId == null) courtId = manager.favoriteVenues.firstOrNull()?.id ?: manager.nearbyVenues.firstOrNull()?.id
     }
 
     val target = manager.user(targetId)
     // 搭档只能是我的球友，且不能是被挑战的人
-    val partnerOptions = (manager.friends ?: emptyList()).filter { it.id != targetId }
+    val partnerOptions = env.friendManager.friends.filter { it.id != targetId }
     val court = courtId?.let(manager::venue)
     val slot = TimeSlot.on(day, startMinutes / 60, startMinutes % 60, endMinutes / 60, endMinutes % 60)
     val slotError = slot?.validate()?.errorMessage
@@ -198,7 +193,7 @@ internal fun ChallengeComposer(targetId: String, onDismiss: () -> Unit, initialM
 
             if (mode == GameMode.Doubles) {
                 Group(tr("你的搭档")) {
-                    if (manager.friends != null && partnerOptions.isEmpty()) {
+                    if (partnerOptions.isEmpty()) {
                         NoticeBanner(Sym.person2Fill, tr("先加球友，才能带搭档发起双打挑战"))
                     } else {
                         PartnerPicker(partnerOptions, partnerId) { partnerId = it }
@@ -466,7 +461,7 @@ private fun CourtPickerSheet(manager: RankingManager, selectedId: String?, onDis
             emptyList()
         }
     }
-    val radius = tr("%@内", DistanceFormatter.radius(Venue.DEFAULT_TRAVEL_RADIUS_KM))
+    val radius = tr("%@内", DistanceFormatter.radius(manager.radiusKm))
     val favorites = manager.favoriteVenues
     val nearby = manager.nearbyVenues.filter { !manager.isFavorite(it.id) }
 

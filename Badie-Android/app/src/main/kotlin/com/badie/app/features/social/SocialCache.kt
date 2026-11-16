@@ -8,7 +8,9 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.badie.app.backend.Backend
-import com.badie.app.backend.RemoteGameBrief
+import com.badie.app.features.games.GameBook
+import com.badie.app.models.Game
+import com.badie.app.models.GameStatus
 import com.badie.app.backend.RemoteMessageOption
 import com.badie.app.models.BlockedUser
 import com.badie.app.models.FriendRequest
@@ -37,10 +39,9 @@ data class GameBrief(
     fun isChatOpen(now: Long): Boolean = !isCancelled && now <= endsAt + MessageThread.GAME_CHAT_OPEN_AFTER_END
 
     companion object {
-        fun of(remote: RemoteGameBrief): GameBrief = GameBrief(
-            id = remote.id, startsAt = remote.startsAt.toEpochMilli(), endsAt = remote.endsAt.toEpochMilli(), venueName = remote.venue.name,
-            playerIds = remote.players.orEmpty().map { it.id }, isCancelled = remote.status == "cancelled",
-            isCompleted = remote.status != "cancelled" && remote.myReport != null && remote.myReport !is kotlinx.serialization.json.JsonNull,
+        fun of(game: Game): GameBrief = GameBrief(
+            id = game.id, startsAt = game.slot.startTime, endsAt = game.slot.endTime, venueName = game.court.name,
+            playerIds = game.playerIds, isCancelled = game.status == GameStatus.Cancelled, isCompleted = game.status == GameStatus.Completed,
         )
     }
 }
@@ -78,8 +79,8 @@ class SocialCache private constructor(private val backend: Backend) {
     val winRates = mutableStateMapOf<String, Rankings.WinRate>()
     val usualTimes = mutableStateMapOf<String, List<RecurringTimeSlot>>()
 
-    var games by mutableStateOf<List<GameBrief>>(emptyList())
-    var gamesLoadedAt = 0L
+    /** 我的球局：和球局页同一份（GameBook，一次 my_games 拉齐） */
+    val games: List<GameBrief> get() = GameBook.of(backend).games.map(GameBrief::of)
 
     /** 球友有变化后，会话列表也重拉（新球友、屏蔽）；由 MessageManager 接上 */
     var refreshThreads: (suspend () -> Unit)? = null
@@ -103,8 +104,6 @@ class SocialCache private constructor(private val backend: Backend) {
         challengeStatus.clear()
         winRates.clear()
         usualTimes.clear()
-        games = emptyList()
-        gamesLoadedAt = 0
         val stored = id?.let { load(it) } ?: Stored()
         blocked = stored.blocked
         clearedAt = stored.cleared

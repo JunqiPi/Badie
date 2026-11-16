@@ -6,7 +6,6 @@ import com.badie.app.remote.InstantSerializer
 import com.badie.app.remote.SupabaseClient
 import com.badie.app.remote.json
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 import java.time.Instant
 
 // 正式后端：会话、消息、站内通知，以及资料卡、私信规则要用的“我的球局”简表。
@@ -50,24 +49,6 @@ class RemoteNotification(
     @Serializable(InstantSerializer::class) val readAt: Instant? = null,
 )
 
-/** my_games 里资料卡和私信规则用得到的几项（一起打过几场、正在进行的球局群聊） */
-@Serializable
-class RemoteGameBrief(
-    val id: String,
-    @Serializable(InstantSerializer::class) val startsAt: Instant,
-    @Serializable(InstantSerializer::class) val endsAt: Instant,
-    val status: String,
-    val venue: Venue,
-    val myReport: JsonElement? = null,
-    val players: List<Player>? = null,
-) {
-    @Serializable
-    class Venue(val id: String, val name: String)
-
-    @Serializable
-    class Player(val id: String, val nickname: String, val rating: Double)
-}
-
 class MessagesApi(private val remote: SupabaseClient) {
     suspend fun myThreads(): List<RemoteThreadSummary> = remote.rpc("my_threads")
 
@@ -86,8 +67,6 @@ class MessagesApi(private val remote: SupabaseClient) {
 
     /** 服务器一次把通知全部记为已读 */
     suspend fun markNotificationsRead() = remote.call("mark_notifications_read")
-
-    suspend fun myGames(): List<RemoteGameBrief> = remote.rpc("my_games")
 
     companion object {
         /** 本地会话 ID ↔ 服务器的 (kind, id) */
