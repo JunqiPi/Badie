@@ -41,6 +41,7 @@ import com.badie.app.features.onboarding.GenderPromptView
 import com.badie.app.features.onboarding.OnboardingFlow
 import com.badie.app.features.onboarding.OnboardingModel
 import com.badie.app.features.onboarding.OnboardingStep
+import com.badie.app.features.onboarding.VenuePicker
 import com.badie.app.features.profile.LanguagePicker
 import com.badie.app.features.profile.SettingsView
 import com.badie.app.models.Avatar
@@ -171,6 +172,13 @@ class ScreenshotTest {
     @Test
     fun preferences() = shot("onboarding-6-preferences") {
         OnboardingFlow(onboarding(OnboardingStep.Preferences, LocalEnv.current) { preferredMode = GameMode.Doubles })
+    }
+
+    @Test
+    fun venuePicker() = shot("onboarding-6-venue-picker") {
+        val model = onboarding(OnboardingStep.Preferences, LocalEnv.current)
+        androidx.compose.runtime.LaunchedEffect(Unit) { model.locationUpdated(null) }
+        VenuePicker(model) {}
     }
 
     @Test

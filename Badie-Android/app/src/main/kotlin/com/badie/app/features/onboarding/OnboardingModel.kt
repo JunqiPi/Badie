@@ -3,6 +3,7 @@ package com.badie.app.features.onboarding
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -11,11 +12,13 @@ import com.badie.app.backend.Backend
 import com.badie.app.design.Toast
 import com.badie.app.l10n.L10n.tr
 import com.badie.app.models.Avatar
+import com.badie.app.models.Coordinate
 import com.badie.app.models.GameMode
 import com.badie.app.models.Gender
 import com.badie.app.models.SkillAssessment
 import com.badie.app.models.SkillAssessmentResult
 import com.badie.app.models.SkillAssessmentSummary
+import com.badie.app.models.Venue
 import com.badie.app.remote.PasswordRules
 import com.badie.app.remote.RemoteError
 import com.badie.app.remote.Transport
@@ -33,6 +36,9 @@ enum class OnboardingStep {
 }
 
 /** 邮件里的 6 位码用来做什么：确认注册的邮箱、验证码登录、重设密码（就是服务器校验时的 type） */
+/** 常去球馆最多选几家 */
+const val MAX_FAVORITE_VENUES = 3
+
 enum class CodePurpose(val rawValue: String) { Signup("signup"), Email("email"), Recovery("recovery") }
 
 /**
@@ -72,8 +78,16 @@ class OnboardingModel(
     var skippedAssessment by mutableStateOf(false)
         private set
     var preferredMode by mutableStateOf<GameMode?>(null)
-    /** 在附近的人里显示我（默认开） */
-    var showsInLobby by mutableStateOf(true)
+    /** 常去球馆（必选，最多 3 家；注册后设为收藏，快速匹配默认选中，附近的人也按它找人） */
+    val favoriteVenueIds = mutableStateListOf<String>()
+    /** 真实的位置；没开定位时为空（列表的距离按默认城市算，但不替人选最近的球馆） */
+    var location by mutableStateOf<Coordinate?>(null)
+        private set
+    /** 附近的球馆，按距离排 */
+    var nearbyVenues by mutableStateOf<List<Venue>>(emptyList())
+        private set
+    /** 已经替用户选过最近的球馆（只选一次，用户删掉后不再选回来） */
+    private var venuePreselected = false
 
     var isWorking by mutableStateOf(false)
         private set
@@ -104,7 +118,7 @@ class OnboardingModel(
             OnboardingStep.Code -> code.length == 6 && (!isResettingPassword || password.isNotEmpty())
             OnboardingStep.Profile -> Backend.isValidNickname(nickname) && gender != Gender.Unspecified
             OnboardingStep.Level -> level != null
-            OnboardingStep.Preferences -> true
+            OnboardingStep.Preferences -> favoriteVenueIds.isNotEmpty()
         }
 
     fun toggleNewAccount() {
@@ -146,6 +160,39 @@ class OnboardingModel(
             OnboardingStep.Level -> step = OnboardingStep.Preferences
             OnboardingStep.Preferences -> finish()
         }
+    }
+
+    // MARK: 常去球馆
+
+    /** 拿到（或拿不到）位置以后：读附近的球馆；知道真实位置时先替用户选上最近的一家（可以改） */
+    suspend fun locationUpdated(coordinate: Coordinate?) {
+        if (coordinate != null) location = coordinate
+        val center = location ?: Coordinate.fallbackCenter
+        nearbyVenues = try {
+            backend.venuesNear(center, Venue.DEFAULT_TRAVEL_RADIUS_KM).sortedBy { it.distanceKm(center) }
+        } catch (_: RemoteError) {
+            nearbyVenues
+        }
+        val here = location ?: return
+        if (venuePreselected || favoriteVenueIds.isNotEmpty()) return
+        val nearest = Venue.nearest(nearbyVenues, here, Venue.DEFAULT_TRAVEL_RADIUS_KM) ?: return
+        venuePreselected = true
+        favoriteVenueIds.add(nearest.id)
+    }
+
+    /** 选或取消一家；最多 3 家 */
+    fun toggleVenue(id: String) {
+        if (id in favoriteVenueIds) favoriteVenueIds.remove(id)
+        else if (favoriteVenueIds.size < MAX_FAVORITE_VENUES) favoriteVenueIds.add(id)
+    }
+
+    fun venue(id: String): Venue? = backend.venue(id)
+
+    suspend fun searchVenues(query: String): List<Venue> = try {
+        val center = location ?: Coordinate.fallbackCenter
+        backend.searchVenues(query).sortedBy { it.distanceKm(center) }
+    } catch (_: RemoteError) {
+        emptyList()
     }
 
     fun skipAssessment() {
@@ -272,6 +319,7 @@ class OnboardingModel(
 
     private suspend fun finish() {
         val level = level ?: return
+        if (favoriteVenueIds.isEmpty()) return
         val result = assessmentResult
         working {
             try {
@@ -286,9 +334,11 @@ class OnboardingModel(
                 appState.showError(error)
                 return@working
             }
-            // 资料建好就算注册成功；下面两项没存上不拦着进 App，以后在设置里能改
+            // 资料建好就算注册成功；下面几项没存上不拦着进 App，以后在设置里能改。
+            // 注册后默认在附近的人里显示（就是设置里的“在同馆常客里显示我”，之后可以在设置里关）
             try {
-                if (backend.currentUser?.privacy?.showsAsRegular != showsInLobby) backend.updateShowsAsRegular(showsInLobby)
+                if (backend.currentUser?.privacy?.showsAsRegular == false) backend.updateShowsAsRegular(true)
+                backend.saveFavoriteVenues(favoriteVenueIds.toList())
                 if (preferredMode != null) backend.updatePreferredMode(preferredMode)
             } catch (_: RemoteError) {
             }

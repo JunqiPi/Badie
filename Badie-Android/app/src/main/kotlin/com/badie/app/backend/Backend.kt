@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import com.badie.app.l10n.L10n.tr
 import com.badie.app.models.Avatar
 import com.badie.app.models.CardColor
+import com.badie.app.models.Coordinate
 import com.badie.app.models.ChallengePolicy
 import com.badie.app.models.GameMode
 import com.badie.app.models.Gender
@@ -16,6 +17,7 @@ import com.badie.app.models.SkillAssessmentSummary
 import com.badie.app.models.SkillLevel
 import com.badie.app.models.SkillTier
 import com.badie.app.models.User
+import com.badie.app.models.Venue
 import com.badie.app.models.VerificationStatus
 import com.badie.app.remote.InstantSerializer
 import com.badie.app.remote.RemoteError
@@ -261,6 +263,42 @@ class Backend(
         }
     }
 
+    // MARK: 球馆
+
+    /** 读过的球馆（按 id），常去球馆和选球馆时显示名字用 */
+    private val venues = HashMap<String, Venue>()
+
+    fun venue(id: String): Venue? = venues[id]
+
+    /** 附近的球馆，按距离排；坐标只是大概的不要 */
+    suspend fun venuesNear(center: Coordinate, radiusKm: Double): List<Venue> {
+        val rows = remote.rpc<List<NearbyVenueRow>>(
+            "venues_near", json("lat" to center.latitude, "lng" to center.longitude, "radius_km" to radiusKm, "max_results" to 200),
+        )
+        return rows.map { it.venue }.filter { it.locationApproximate != true }.onEach { venues[it.id] = it }
+    }
+
+    /** 按名字或地址找球馆（没开定位、或者附近列表里没有的时候用） */
+    suspend fun searchVenues(query: String): List<Venue> {
+        val text = query.trim().replace(Regex("""[,()*%\\]"""), " ").trim()
+        if (text.isEmpty()) return emptyList()
+        val pattern = java.net.URLEncoder.encode("*$text*", "UTF-8")
+        val found = remote.select<List<Venue>>(
+            "venues",
+            "select=$VENUE_COLUMNS&merged_into=is.null&or=(name.ilike.$pattern,street.ilike.$pattern,city.ilike.$pattern)&limit=30",
+        )
+        return found.onEach { venues[it.id] = it }
+    }
+
+    /** 常去球馆：服务器上的收藏换成这几家（注册最后一步用） */
+    suspend fun saveFavoriteVenues(ids: List<String>) {
+        val userId = state.user?.id ?: throw RemoteError.NotSignedIn
+        for (id in ids.filter { it !in state.favoriteVenueIds }) {
+            remote.insert("favorite_venues", json("user_id" to userId, "venue_id" to id))
+            state = state.copy(favoriteVenueIds = state.favoriteVenueIds + id)
+        }
+    }
+
     /** 以前注册、还没选性别的人补选 */
     suspend fun updateGender(gender: Gender) = updateProfile(json("gender" to gender.serverJSON)) { it.copy(gender = gender) }
 
@@ -332,3 +370,8 @@ class RemoteProfile(
 
 @Serializable
 private class FavoriteRow(val venueId: String)
+
+@Serializable
+private class NearbyVenueRow(val venue: Venue)
+
+private const val VENUE_COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,country_code,status,location_approximate"

@@ -25,6 +25,8 @@ object Sym {
     val chevronLeft = SymbolId(R.drawable.sym_chevron_left)
     /** chevron.right */
     val chevronRight = SymbolId(R.drawable.sym_chevron_right)
+    /** circle */
+    val circle = SymbolId(R.drawable.sym_radio_button_unchecked)
     /** exclamationmark.triangle.fill */
     val exclamationmarkTriangleFill = SymbolId(R.drawable.sym_warning_fill)
     /** eye.fill */
@@ -45,6 +47,14 @@ object Sym {
     val infoCircleFill = SymbolId(R.drawable.sym_info_fill)
     /** list.number */
     val listNumber = SymbolId(R.drawable.sym_format_list_numbered)
+    /** location */
+    val location = SymbolId(R.drawable.sym_near_me)
+    /** location.fill */
+    val locationFill = SymbolId(R.drawable.sym_near_me_fill)
+    /** magnifyingglass */
+    val magnifyingglass = SymbolId(R.drawable.sym_search)
+    /** mappin.slash */
+    val mappinSlash = SymbolId(R.drawable.sym_location_off)
     /** number */
     val number = SymbolId(R.drawable.sym_tag)
     /** person.2.fill */
@@ -75,4 +85,6 @@ object Sym {
     val ticketFill = SymbolId(R.drawable.sym_confirmation_number_fill)
     /** xmark */
     val xmark = SymbolId(R.drawable.sym_close)
+    /** xmark.circle.fill */
+    val xmarkCircleFill = SymbolId(R.drawable.sym_cancel_fill)
 }

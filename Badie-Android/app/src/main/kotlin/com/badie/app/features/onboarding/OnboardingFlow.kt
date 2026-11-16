@@ -29,8 +29,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -56,12 +54,25 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import com.badie.app.design.AppLogo
+import com.badie.app.design.IconTile
+import com.badie.app.design.SheetScaffold
+import com.badie.app.design.card
+import com.badie.app.design.pressable
+import com.badie.app.location.LocationProvider
 import com.badie.app.design.AppTheme
 import com.badie.app.design.AvatarView
 import com.badie.app.design.BrutalButton
 import com.badie.app.design.BrutalTextField
 import com.badie.app.design.ButtonKind
+import com.badie.app.design.ButtonSize
 import com.badie.app.design.ChoiceChip
 import com.badie.app.design.CodeField
 import com.badie.app.design.GenderPicker
@@ -396,18 +407,80 @@ private fun PreferencesStep(model: OnboardingModel) {
             ChoiceChip(tr("都行"), model.preferredMode == null) { model.preferredMode = null }
         }
     }
+    FavoriteVenuesCard(model)
+    LocationCard(model)
+}
+
+/** 常去球馆：选一次，以后快速匹配默认就是它们（选同一家的人才会被匹配到一起），附近的人也按它找到你 */
+@Composable
+private fun FavoriteVenuesCard(model: OnboardingModel) {
+    val colors = AppTheme.colors
+    var showPicker by remember { mutableStateOf(false) }
+    val venues = model.favoriteVenueIds.mapNotNull(model::venue)
+    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(tr("常去球馆"), style = AppTheme.Typography.footnoteBold, color = colors.inkSecondary)
+            RulesButton(
+                tr("常去球馆"),
+                listOf(tr("选好后，快速匹配默认用这几家。"), tr("选了同一家球馆的人才会被匹配到一起。"), tr("附近的人按常去球馆找到你。")),
+            )
+        }
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .pressable(scale = 0.98f) { showPicker = true }
+                .sticker(colors.surface, radius = AppTheme.Radius.lg)
+                .padding(AppTheme.Spacing.lg)
+                .semantics(mergeDescendants = true) {},
+            horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
+        ) {
+            IconTile(Sym.figureBadminton, fill = colors.lime, size = 48.dp)
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                if (venues.isEmpty()) {
+                    Text(tr("添加球馆"), style = AppTheme.Typography.headline, color = colors.ink)
+                    Text(tr("至少选一家"), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
+                } else {
+                    for (venue in venues) Text(venue.name, style = AppTheme.Typography.headline, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            Symbol(Sym.chevronRight, size = 13, tint = colors.inkTertiary, modifier = Modifier.padding(top = 4.dp))
+        }
+    }
+    if (showPicker) {
+        SheetScaffold(onDismiss = { showPicker = false }, fullHeight = true) { VenuePicker(model) { showPicker = false } }
+    }
+}
+
+/** 定位：找附近的球馆和球友，只在用 App 时取。给了以后读附近的球馆，并替人选上最近的一家 */
+@Composable
+private fun LocationCard(model: OnboardingModel) {
+    val colors = AppTheme.colors
+    val context = LocalContext.current
+    val provider = remember { LocationProvider(context) }
+    val scope = rememberCoroutineScope()
+    var authorized by remember { mutableStateOf(provider.isAuthorized) }
+    var asked by remember { mutableStateOf(false) }
+    val refresh: () -> Unit = { scope.launch { model.locationUpdated(provider.current()) } }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+        asked = true
+        authorized = result.values.any { it }
+        refresh()
+    }
+    LaunchedEffect(Unit) { refresh() }
     Row(
-        Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.md, shadow = AppTheme.Elevation.none).padding(AppTheme.Spacing.md),
+        Modifier.card(),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
     ) {
-        Text(tr("在附近的人里显示我"), style = AppTheme.Typography.bodyBold, color = colors.ink, modifier = Modifier.weight(1f))
-        Switch(
-            model.showsInLobby, { model.showsInLobby = it },
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = colors.success, checkedThumbColor = Color.White,
-                uncheckedTrackColor = colors.surfaceMuted, uncheckedThumbColor = Color.White, uncheckedBorderColor = colors.inkTertiary,
-            ),
-        )
+        IconTile(if (authorized) Sym.locationFill else Sym.location, fill = colors.sky, size = 48.dp)
+        Text(if (authorized) tr("已开启定位") else tr("开启定位"), style = AppTheme.Typography.headline, color = colors.ink)
+        RulesButton(tr("定位"), listOf(tr("用于找附近的球馆和球友，只在使用 App 时获取")))
+        Spacer(Modifier.weight(1f))
+        when {
+            authorized -> Symbol(Sym.checkmarkCircleFill, size = 24, tint = colors.success)
+            // 拒绝过一次以后系统不再弹窗，这时不放按钮（和 iPhone 一样）
+            !asked -> BrutalButton(tr("允许"), { launcher.launch(LocationProvider.PERMISSIONS) }, size = ButtonSize.Small, fullWidth = false)
+        }
     }
 }
 

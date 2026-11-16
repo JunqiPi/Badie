@@ -9,6 +9,7 @@
   "checkmark.square.fill": "check_box-fill",
   "chevron.left": "chevron_left",
   "chevron.right": "chevron_right",
+  "circle": "radio_button_unchecked",
   "exclamationmark.triangle.fill": "warning-fill",
   "eye.fill": "visibility-fill",
   "eye.slash.fill": "visibility_off-fill",
@@ -19,6 +20,10 @@
   "heart.fill": "favorite-fill",
   "info.circle.fill": "info-fill",
   "list.number": "format_list_numbered",
+  "location": "near_me",
+  "location.fill": "near_me-fill",
+  "magnifyingglass": "search",
+  "mappin.slash": "location_off",
   "number": "tag",
   "person.2.fill": "group-fill",
   "person.3.fill": "groups-fill",
@@ -33,5 +38,6 @@
   "star.fill": "star-fill",
   "ticket": "confirmation_number",
   "ticket.fill": "confirmation_number-fill",
-  "xmark": "close"
+  "xmark": "close",
+  "xmark.circle.fill": "cancel-fill"
 }
