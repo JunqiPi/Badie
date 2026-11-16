@@ -31,7 +31,9 @@ class LocationProvider(private val context: Context) {
     suspend fun current(): Coordinate? {
         if (!isAuthorized) return null
         val manager = manager
-        val provider = listOf(LocationManager.FUSED_PROVIDER, LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER)
+        // 合并定位（fused）Android 12 起才有
+        val fused = if (android.os.Build.VERSION.SDK_INT >= 31) listOf(LocationManager.FUSED_PROVIDER) else emptyList()
+        val provider = (fused + listOf(LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER))
             .firstOrNull { runCatching { manager.isProviderEnabled(it) }.getOrDefault(false) } ?: return lastKnown(manager)
         val fresh = withTimeoutOrNull(15_000) {
             suspendCancellableCoroutine<Location?> { continuation ->
