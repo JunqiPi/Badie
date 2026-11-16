@@ -5,6 +5,12 @@
     <!-- 找附近的球馆和球友，只在用 App 时取。用户可以只给大概位置 -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- 球局提醒（Android 13 起要问） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 等级卡片存到相册：Android 10 起不用权限，以前的系统要 -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <application
         android:name=".BadieApplication"
@@ -24,6 +30,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 分享等级卡片：把缓存里的图片给别的 App 读 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <!-- Android 13 以前：App 里选的语言由这个服务记住，下次启动接着用 -->
         <service
