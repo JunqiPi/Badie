@@ -19,6 +19,45 @@ import org.junit.runner.RunWith
  * 账号固定用 push-a / push-b（带这一轮的编号）：e2e/run.sh 在两段之间要以 B 的身份发私信
  */
 abstract class PushBase : E2ETest() {
+    /** 设置 → 球局提醒 → 系统的通知权限框点“允许”：马上向 Firebase 要令牌，登记成这个人的 fcm 设备 */
+    fun allowNotificationsInSettings(player: Harness.Player) {
+        openTab("我的")
+        tap(desc(t("设置")))
+        tapText("球局提醒")
+        val allow = device.wait(Until.findObject(By.res("com.android.permissioncontroller:id/permission_allow_button")), 15_000)
+            ?: throw AssertionError("没有弹出通知权限框")
+        allow.click()
+        waitFor(text(t("已开启")), what = "球局提醒：已开启")
+        Harness.eventually("设备登记成 fcm", 90_000) { Harness.pushDevices(player.id).any { it["kind"]?.jsonPrimitive?.content == "fcm" } }
+    }
+}
+
+/**
+ * 推送登记（不用 FCM_SERVICE_ACCOUNT 也能跑：令牌是 App 向 Firebase 要的）：允许通知后服务器有这台设备；
+ * 有新私信时数据库叫本机的推送服务，排队的推送被取走；退出登录删掉登记
+ */
+@RunWith(AndroidJUnit4::class)
+class PushRegistrationTest : PushBase() {
+    @Test
+    fun allowingNotificationsRegistersAndSignOutRemoves() {
+        val a = Harness.createPlayer("reg-a", "Arden")
+        val b = Harness.createPlayer("reg-b", "Bailey")
+        Harness.befriend(a, b)
+        launch()
+        signInWithPassword(a.email)
+        allowNotificationsInSettings(a)
+
+        // 数据库 → pg_net → /functions/v1/send-push：给 A 排队的聊天推送被推送服务取走（没配 FCM 时算没送达，但会取走）
+        Harness.sendDm(b, a, "Queued ${Harness.run}")
+        Harness.eventually("推送服务取走排队的聊天推送", 60_000) { Harness.serviceSelect("chat_pushes", "user_id=eq.${a.id}&select=id").isEmpty() }
+
+        signOut()
+        Harness.eventually("退出登录后删掉设备登记") { Harness.pushDevices(a.id).isEmpty() }
+    }
+}
+
+/** 真的收推送：要 FCM_SERVICE_ACCOUNT */
+abstract class PushDeliveryBase : PushBase() {
     @Before
     fun requirePush() {
         if (!Harness.pushEnabled) Log.w(TAG, "没有配 FCM_SERVICE_ACCOUNT，跳过推送测试")
@@ -46,7 +85,7 @@ abstract class PushBase : E2ETest() {
 }
 
 @RunWith(AndroidJUnit4::class)
-class PushTest : PushBase() {
+class PushTest : PushDeliveryBase() {
     @Test
     fun notificationsInBackgroundAndQuietInOpenChat() {
         val a = Harness.createPlayer("push-a", "Avery")
@@ -56,15 +95,7 @@ class PushTest : PushBase() {
         launch()
         signInWithPassword(a.email)
 
-        // 设置 → 球局提醒 → 系统的通知权限框点“允许”：马上登记这台设备
-        openTab("我的")
-        tap(desc(t("设置")))
-        tapText("球局提醒")
-        val allow = device.wait(Until.findObject(By.res("com.android.permissioncontroller:id/permission_allow_button")), 15_000)
-            ?: throw AssertionError("没有弹出通知权限框")
-        allow.click()
-        waitFor(text(t("已开启")), what = "球局提醒：已开启")
-        Harness.eventually("A 的设备登记成 fcm", 60_000) { Harness.pushDevices(a.id).any { it["kind"]?.jsonPrimitive?.content == "fcm" } }
+        allowNotificationsInSettings(a)
 
         // 回到桌面，B 发私信：通知栏里有 B 的名字和这句话，点开就是和 B 的聊天
         pressHome()
@@ -90,7 +121,7 @@ class PushTest : PushBase() {
  * 最后退出登录，服务器上这台设备的登记要删掉
  */
 @RunWith(AndroidJUnit4::class)
-class PushKilledTest : PushBase() {
+class PushKilledTest : PushDeliveryBase() {
     @Test
     fun notificationAfterProcessKilledOpensChat() {
         val text = "Killed ${Harness.run}"

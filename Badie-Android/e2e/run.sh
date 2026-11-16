@@ -84,7 +84,8 @@ phase cold-start ColdStartTest
 phase chat-dm ChatTest#directMessagesArriveWithoutRefreshing clear
 phase chat-game ChatTest#gameGroupChatArrivesWithoutRefreshing clear
 
-# 3. 推送（要 FCM_SERVICE_ACCOUNT）
+# 3. 推送：登记和退出时注销不用 FCM_SERVICE_ACCOUNT；真的收通知要
+phase push-registration PushRegistrationTest clear
 if [ "$PUSH" = 1 ]; then
   phase push PushTest clear
   # 被杀掉以后：打开 App（登录状态还在），回桌面，杀掉进程，B 发私信，等通知出来再点
