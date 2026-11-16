@@ -85,6 +85,7 @@ import com.badie.app.features.messages.ChatScreen
 import com.badie.app.features.messages.GroupChatScreen
 import com.badie.app.features.messages.MessagesScreen
 import com.badie.app.features.messages.NotificationsScreen
+import com.badie.app.features.messages.SocialOverlays
 import com.badie.app.features.profile.EditProfileScreen
 import com.badie.app.features.profile.LevelGuideScreen
 import com.badie.app.features.profile.ProfileScreen
@@ -163,6 +164,8 @@ fun MainTabView() {
         MatchFlowOverlay()
     }
     LaunchedEffect(router.navigations) { env.matchManager.isFlowPresented = false }
+    // 在前台时轮询私信和通知、爽约记录、紧急通知
+    SocialOverlays()
 
     if (router.isMatchSetupPresented) {
         BadieSheet(onDismiss = { router.isMatchSetupPresented = false }) { dismiss -> MatchSetupSheet(onDismiss = dismiss) }
