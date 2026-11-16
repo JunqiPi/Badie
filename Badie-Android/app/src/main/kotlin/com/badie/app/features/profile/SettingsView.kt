@@ -69,6 +69,7 @@ import com.badie.app.l10n.AppLanguage
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
 import com.badie.app.location.LocationProvider
+import com.badie.app.push.PushRegistry
 import com.badie.app.models.ChallengePolicy
 import com.badie.app.models.DistanceFormatter
 import com.badie.app.models.Gender
@@ -102,7 +103,11 @@ fun SettingsView() {
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { resumed++ }
     val permissions = remember(resumed) { PermissionState.read(context, api) }
 
-    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { resumed++ }
+    // 在这里允许了通知：马上要推送令牌报给服务器（不然要等下次打开 App 才收得到推送）
+    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        resumed++
+        if (granted) PushRegistry.refresh(context)
+    }
     val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resumed++ }
 
     val user = appState.currentUser
