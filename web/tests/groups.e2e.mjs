@@ -41,8 +41,9 @@ const code = (await alex.locator('p.font-mono').innerText()).trim();
 await alex.getByRole('heading', { name: 'Los Angeles Badminton Club' }).waitFor();
 await alex.getByRole('article').first().getByText('San Gabriel Valley Badminton Club').waitFor();
 
-// 发现页最上面切到“球群”，附近能看到这个群（任何一个球馆在范围内都算）
+// 发现页的筛选里选“球群”，附近能看到这个群（任何一个球馆在范围内都算）
 await blake.goto(`${base}/`);
+await blake.getByRole('button', { name: /^Filters/ }).click();
 await blake.getByRole('button', { name: 'Groups', exact: true }).click();
 // 注册时可能已经用定位选好了位置；没选就点“用我的位置”
 const locate = blake.getByRole('button', { name: 'Use my location' });
@@ -50,7 +51,7 @@ if (await locate.waitFor({ timeout: 3000 }).then(() => true, () => false)) await
 await blake.getByRole('link', { name: /Thu doubles/ }).getByText('Also at San Gabriel Valley Badminton Club').waitFor();
 // 记住选择：刷新后还是球群
 await blake.reload();
-await blake.getByRole('button', { name: 'Groups', exact: true, pressed: true }).waitFor();
+await blake.getByRole('button', { name: 'Remove Groups' }).waitFor();
 
 // Blake 凭群号加入（“输入房间码 / 群号”页）、报名
 await blake.goto(`${base}/join/`);

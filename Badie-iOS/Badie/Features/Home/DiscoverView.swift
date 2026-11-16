@@ -27,6 +27,8 @@ struct DiscoverView: View {
     @AppStorage("discoverMode") private var mode: Mode = .players
     @State private var filter = DayCardFilter.load()
     @State private var showsFilter = false
+    /// 看球群时的筛选（只有“显示：球友 / 球群”）
+    @State private var showsGroupFilter = false
     /// 下拉刷新时加一，卡片跟着重新拉
     @State private var reloadToken = 0
     /// 附近的人里的邀请（我发的、收到的，还没结束的），和点了“好”之后要打开的球局
@@ -60,7 +62,6 @@ struct DiscoverView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
                     header
-                    SegmentedSticker(options: Mode.allCases, selection: $mode, title: { $0.title })
                     if showsLocationBanner {
                         NoticeBanner(icon: "location.slash.fill", text: LocationError.permissionDenied.message,
                                      actionTitle: String(localized: "去设置")) { openSettings() }
@@ -102,6 +103,12 @@ struct DiscoverView: View {
             .presentationDetents([.medium])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(28)
+        }
+        .sheet(isPresented: $showsGroupFilter) {
+            GroupsFilterSheet()
+                .presentationDetents([.height(220)])
+                .presentationDragIndicator(.visible)
+                .presentationCornerRadius(28)
         }
         .task {
             await loadInvites()
@@ -158,10 +165,8 @@ struct DiscoverView: View {
                 router.open(.notifications)
             }
             IconButton(systemName: "line.3.horizontal.decrease", accessibilityLabel: String(localized: "筛选"),
-                       badge: filter.activeCount + (selectedDay == nil ? 0 : 1)) {
-                // 筛选是给球友卡片的：在球群里点，先回到球友
-                mode = .players
-                showsFilter = true
+                       badge: mode == .groups ? 1 : filter.activeCount + (selectedDay == nil ? 0 : 1)) {
+                if mode == .groups { showsGroupFilter = true } else { showsFilter = true }
             }
         }
     }
@@ -224,6 +229,35 @@ struct DiscoverView: View {
 }
 
 // MARK: - 球群：附近的球群，近的在前
+
+/// 看球群时点筛选：只有“显示：球友 / 球群”，选球友就回到卡片
+private struct GroupsFilterSheet: View {
+    @AppStorage("discoverMode") private var discoverMode = "players"
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            Text("筛选")
+                .font(AppTheme.Typography.title)
+                .foregroundStyle(AppTheme.Colors.ink)
+            Text("显示")
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                .accessibilityAddTraits(.isHeader)
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ChoiceChip(title: String(localized: "球友"), isSelected: false) {
+                    discoverMode = "players"
+                    dismiss()
+                }
+                ChoiceChip(title: String(localized: "球群"), isSelected: true) {}
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, AppTheme.Spacing.screen)
+        .padding(.top, AppTheme.Spacing.xl)
+    }
+}
 
 private struct NearbyGroupsList: View {
     @EnvironmentObject private var groupManager: GroupManager

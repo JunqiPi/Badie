@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { activeCount, emptyFilter, eventLabels, inviteVenue, loadFilter, matches, matchesNearby, saveFilter, timeLabels, type DayFilter, type TimeOfDay } from './dayFilter';
 import { AvatarCrop, decode } from './AvatarCrop';
 import { uploadCardPhoto } from './CardBackground';
@@ -61,7 +61,7 @@ type Composing = { card: NearbyPlayer; slot?: UsualTime };
  *  这天的卡片就是对方的约球请求（项目、时间都定好了），右滑直接约：单打发约球邀请，双打替我开一个公开的双打局并邀请 TA。
  *  附近的人右滑打开约 TA 的半屏（项目、哪天、几点到几点、球馆），发出一个邀请。
  *  上面：左边附近范围，右边球馆和筛选；下面一排圆头像是这叠卡片里的人，点一个就翻到 TA */
-export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
+export function Deck({ date, days, onDate, profile, onProfile, onGroups }: {
   date?: string;
   /** 筛选里能选的日子（接下来 30 天） */
   days: string[];
@@ -69,7 +69,8 @@ export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
   profile: Profile;
   onProfile: (p: Profile) => void;
   /** 最上面的“球友 / 球群”切换 */
-  toggle?: ReactNode;
+  /** 筛选里选了“球群”：发现页换成附近的球群 */
+  onGroups?: () => void;
 }) {
   const area = useArea();
   const km = useNearbyKm();
@@ -387,7 +388,6 @@ export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
   return (
     // 附近范围、一排头像在上面，卡片占满剩下的高度，三个按钮在标签栏上面
     <div className="mx-auto flex min-h-[calc(100dvh-4rem-1.25rem-var(--tabbar)-1.5rem)] w-full max-w-md flex-col gap-3 lg:min-h-[calc(100dvh-4rem-2rem-4rem)]">
-      {toggle}
       <header className="flex items-center gap-2.5">
         <h1 className="sr-only">{t('Discover')}</h1>
         <RangePicker open={ranging} onOpen={() => setRanging(true)} onClose={() => setRanging(false)} />
@@ -415,7 +415,7 @@ export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
         </div>
       )}
 
-      <div className={`relative flex flex-1 flex-col ${toggle ? 'min-h-[21rem]' : 'min-h-[24rem]'}`}>
+      <div className="relative flex min-h-[24rem] flex-1 flex-col">
         {!area ? (
           <div className="grid flex-1 content-center"><AreaPrompt /></div>
         ) : !loaded ? (
@@ -442,7 +442,7 @@ export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
                 <p className="text-footnote font-bold text-ink-secondary">{t('Next: players who often play nearby')}</p>
               </div>
             )}
-            <div className={`relative flex-1 ${toggle ? 'min-h-[19rem]' : 'min-h-[22rem]'}`}>
+            <div className="relative min-h-[22rem] flex-1">
               {second && (
                 <div aria-hidden="true" inert className="pointer-events-none absolute inset-0 translate-y-2.5 scale-[0.96]">
                   <Card item={second} filter={filter} />
@@ -489,7 +489,8 @@ export function Deck({ date, days, onDate, profile, onProfile, toggle }: {
       >
         {editing && (
           <FilterSheet initial={filter} date={date} days={days} cards={cards ?? []} nearby={nearby?.filter((c) => !dayPeople.has(c.user.id)) ?? []}
-                       onDone={(next, day) => { setFilter(next); if (day !== date) onDate(day); setEditing(false); }} onCancel={() => setEditing(false)} />
+                       onDone={(next, day) => { setFilter(next); if (day !== date) onDate(day); setEditing(false); }} onCancel={() => setEditing(false)}
+                       onGroups={onGroups && (() => { setEditing(false); onGroups(); })} />
         )}
       </dialog>
 
@@ -621,7 +622,7 @@ function chips(f: DayFilter, cards: Places): [string, (f: DayFilter) => DayFilte
   return list;
 }
 
-function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
+function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel, onGroups }: {
   initial: DayFilter;
   date?: string;
   days: string[];
@@ -629,6 +630,7 @@ function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
   nearby: NearbyPlayer[];
   onDone: (f: DayFilter, date?: string) => void;
   onCancel: () => void;
+  onGroups?: () => void;
 }) {
   const [draft, setDraft] = useState(initial);
   const [day, setDay] = useState(date);
@@ -650,6 +652,7 @@ function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
         <IconButton icon="x" label={t('Close')} onClick={onCancel} />
       </div>
       <div className="grid content-start gap-5 overflow-y-auto px-5 py-4">
+        {onGroups && <ShowChoice value="players" onPick={(v) => v === 'groups' && onGroups()} />}
         {/* 哪天：任何时间（附近的人），或者某一天在找人的；一周以后只列有人的天 */}
         <div className={section} role="group" aria-labelledby="f-date">
           <span id="f-date" className={label}>{t('Date')}</span>
@@ -732,6 +735,19 @@ function FilterSheet({ initial, date, days, cards, nearby, onDone, onCancel }: {
         <Button className="w-full">{day === date ? t('Show {n} player|Show {n} players', { n: count }) : t('Done')}</Button>
       </div>
     </form>
+  );
+}
+
+/** 筛选最上面：看球友还是看球群（选了就换，不用再点“完成”） */
+export function ShowChoice({ value, onPick }: { value: 'players' | 'groups'; onPick: (v: 'players' | 'groups') => void }) {
+  return (
+    <div className="grid gap-2" role="group" aria-labelledby="f-show">
+      <span id="f-show" className="text-footnote font-bold text-ink-secondary">{t('Show')}</span>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className="toggle" aria-pressed={value === 'players'} onClick={() => onPick('players')}>{t('Players')}</button>
+        <button type="button" className="toggle" aria-pressed={value === 'groups'} onClick={() => onPick('groups')}>{t('Groups')}</button>
+      </div>
+    </div>
   );
 }
 

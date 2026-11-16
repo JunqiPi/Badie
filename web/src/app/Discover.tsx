@@ -1,11 +1,13 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { useArea, useNearbyKm } from './area';
 import { km as distance } from './Courts';
-import { Deck, RangePicker } from './DayCards';
+import { Deck, RangePicker, ShowChoice } from './DayCards';
 import { GroupCard } from './Groups';
 import { AreaPrompt } from './Home';
 import { t } from './i18n';
-import { Empty, IconButton, Segmented } from './kit';
+import { Empty, IconButton } from './kit';
+import { Icon } from './icons';
+import { Sheet } from './Nearby';
 import { supabase, type NearbyGroup, type Profile } from './supabase';
 import { nextDays } from './time';
 import { Skeleton } from './ui';
@@ -13,7 +15,7 @@ import { ensureUsualCourt } from './usualCourt';
 
 type View = 'players' | 'groups';
 
-// 上面选的“球友 / 球群”记在这个浏览器里，读不到就是球友
+// 筛选里选的“球友 / 球群”记在这个浏览器里，读不到就是球友
 const viewKey = 'badie-discover-view';
 function loadView(): View {
   try {
@@ -23,7 +25,7 @@ function loadView(): View {
   }
 }
 
-/** 发现（登录后的第一个 tab，iOS 的 DiscoverView）：最上面切换球友和球群。
+/** 发现（登录后的第一个 tab，iOS 的 DiscoverView）：筛选里可以换成看附近的球群。
  *  球友：左上角附近范围，右上角球馆和筛选，一排附近的人的圆头像，下面是一叠卡片。
  *  筛选里选的哪天记在地址里（/?day=2026-11-14）；旧地址 /day/…/ 和 /nearby/ 跳到这里 */
 export function Discover({ profile, onProfile }: { profile: Profile; onProfile: (p: Profile) => void }) {
@@ -50,19 +52,16 @@ export function Discover({ profile, onProfile }: { profile: Profile; onProfile: 
       // 存不下就只在这次打开时生效
     }
   }
-  const toggle = (
-    <Segmented label={t('Discover')} value={view} onChange={setView}
-               options={[{ value: 'players', label: t('Players') }, { value: 'groups', label: t('Groups') }]} />
-  );
-  if (view === 'groups') return <NearbyGroups toggle={toggle} />;
-  return <Deck date={day} days={days} onDate={pick} profile={profile} onProfile={onProfile} toggle={toggle} />;
+  if (view === 'groups') return <NearbyGroups onPlayers={() => setView('players')} />;
+  return <Deck date={day} days={days} onDate={pick} profile={profile} onProfile={onProfile} onGroups={() => setView('groups')} />;
 }
 
 /** 附近的球群：附近范围和球友一样，任何一个球馆在范围内都算，近的在前 */
-function NearbyGroups({ toggle }: { toggle: ReactNode }) {
+function NearbyGroups({ onPlayers }: { onPlayers: () => void }) {
   const area = useArea();
   const km = useNearbyKm();
   const [ranging, setRanging] = useState(false);
+  const [filtering, setFiltering] = useState(false);
   const [groups, setGroups] = useState<NearbyGroup[]>();
 
   useEffect(() => {
@@ -79,12 +78,26 @@ function NearbyGroups({ toggle }: { toggle: ReactNode }) {
 
   return (
     <div className="mx-auto grid w-full max-w-md content-start gap-3">
-      {toggle}
+      {/* 和看球友时同一个头：附近范围、球馆、筛选；选了球群的筛选条件像其他条件一样，点 ✕ 回到球友 */}
       <header className="flex items-center gap-2.5">
         <h1 className="sr-only">{t('Nearby groups')}</h1>
         <RangePicker open={ranging} onOpen={() => setRanging(true)} onClose={() => setRanging(false)} />
-        <IconButton icon="plus" label={t('Start a group')} to="/groups/new/" />
+        <IconButton icon="building" label={t('Courts')} to="/courts/" />
+        <IconButton icon="filter" label={t('Filters · {n}', { n: 1 })} badge={1} onClick={() => setFiltering(true)} />
       </header>
+      <div className="rail gap-2! py-0!">
+        <button type="button" onClick={onPlayers} aria-label={t('Remove {name}', { name: t('Groups') })}
+                className="press flex min-h-9 items-center gap-1 rounded-full border-2 border-stroke bg-lime px-3 text-footnote font-bold text-on-accent">
+          {t('Groups')} <Icon name="x" className="size-3" />
+        </button>
+      </div>
+      <Sheet open={filtering} onClose={() => setFiltering(false)} labelledBy="groups-filter-title">
+        <div className="flex items-center gap-3">
+          <h2 id="groups-filter-title" className="flex-1 text-title3">{t('Filters')}</h2>
+          <IconButton icon="x" label={t('Close')} onClick={() => setFiltering(false)} />
+        </div>
+        <ShowChoice value="groups" onPick={(v) => { setFiltering(false); if (v === 'players') onPlayers(); }} />
+      </Sheet>
       {!area ? (
         <AreaPrompt />
       ) : !groups ? (
