@@ -31,6 +31,14 @@
 - 跑：`cd Badie-Android && ./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`。Android CI 跑同样三步，并把调试包（`badie-debug-apk`）和界面截图（`screenshots`）传成产物。
 - 没有模拟器也能看界面：`src/test/.../screens/ScreenshotTest.kt` 把页面渲染成图，在 `app/build/outputs/roborazzi/`。搬一个页面加一张，对着 iPhone 的截图看。
 
+**端到端测试（模拟器，2026-11-16）**：没有安卓手机，发版前靠它确认 App 真的能用。
+
+- CI：`.github/workflows/android-e2e.yml`（改了 `Badie-Android/`、`supabase/` 就跑，也能手动跑，约 20 分钟）。起本机的 Supabase 和推送服务，调试包用 `-Pbadie.supabaseUrl=http://10.0.2.2:54321 -Pbadie.supabaseKey=…` 连它（不传就连正式后端，正式包不能换），在 Android 14（Google APIs，带 Play 服务）的模拟器上跑。没通过时把截图、录屏、界面结构和 logcat 传成产物 `android-e2e`。
+- 测试在 `app/src/androidTest/.../e2e/`（Compose 测试 + UiAutomator 点系统的权限框和通知栏），按界面上的字找（字用 App 的文字表取，跟模拟器的语言走）。“另一个人”由测试直接调本机 Supabase（`Harness.kt`）。`e2e/run.sh` 一段段跑（每段新的进程、清掉数据），段和段之间可以杀进程、替别人发消息。
+- 覆盖：邮箱注册（验证码从本机收件箱取）→ 填资料 → 主界面、退出、密码登录、冷启动直接进主界面；私信和球局群聊不刷新就收到（会话列表、角标、打开的聊天），回复对方收得到；收到好友申请时“消息”角标和铃铛；别人发来的邀请出现在球局页；别人用房间码进房间，房间页自己更新；快速匹配两人都确认后球局页出现球局；通知中心点好友申请打开资料卡并通过；球局页下拉刷新；允许通知后登记推送、数据库叫推送服务、退出时删登记。
+- 真的收推送（在后台、被杀掉后收到、点通知进聊天、开着那个聊天不弹）要在 GitHub Secrets 里加 `FCM_SERVICE_ACCOUNT`（和 Supabase 里那份一样）；没有时这几项跳过，日志里会写。
+- 刚成为球友、还没聊过的人不在会话列表里（iPhone 也这样，服务器其实返回了，见 `MessagesView.swift` 里用不到的“已是球友”）。
+
 **做完的**
 
 1. 工程和 CI；App 图标；系统设置里的 App 语言（10 种）。
@@ -66,6 +74,7 @@
 
 **和 iPhone 不一样的地方**
 
+- 推送：在设置里点“球局提醒”允许通知后，安卓马上登记推送；iPhone 要等下次打开 App 才登记（iPhone 也该改，等用户定）。
 - 推送：注销账号前安卓先注销推送登记（iPhone 靠服务器删账号时一起删）；Android 13 以前的系统不问通知权限（默认就能发）；聊天通知没有登记成系统的“对话”（没做快捷方式），Android 11 起不进通知栏最上面的“对话”区。
 - 注册最后一步选的“常打”（单打 / 双打）：iPhone 连正式后端时没有存（`OnboardingFlow.finish()` 的正式后端那一路没传 `preferredMode`），安卓存了。要不要把 iPhone 也改掉，等用户定。
 
