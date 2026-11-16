@@ -19,7 +19,7 @@ class BadieApplication : Application() {
         val remote = SupabaseClient(KeystoreSessionStorage.create(this), OkHttpTransport.transport)
         val backend = Backend(remote, cacheStore(), deviceCountry = { Locale.getDefault().country }, serverLocale = { AppLanguage.current })
         val settings = getSharedPreferences("settings", MODE_PRIVATE)
-        AppEnvironment(MainScope(), backend, settings.getString("appearance", null)) { settings.edit().putString("appearance", it).apply() }
+        AppEnvironment(MainScope(), backend, settings.getString("appearance", null), { settings.edit().putString("appearance", it).apply() }, this)
             .also { it.appState.start() }
     }
 

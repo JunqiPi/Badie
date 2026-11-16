@@ -5,7 +5,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import android.content.Context
 import com.badie.app.backend.Backend
+import com.badie.app.features.games.SurveyManager
+import com.badie.app.features.groups.GroupManager
+import com.badie.app.features.matching.MatchManager
+import com.badie.app.features.messages.InboxManager
+import com.badie.app.features.messages.MessageManager
+import com.badie.app.features.rooms.RoomManager
+import com.badie.app.features.social.FriendManager
+import com.badie.app.features.venues.LocationManager
 import com.badie.app.design.Appearance
 import com.badie.app.design.Toast
 import com.badie.app.l10n.L10n.tr
@@ -31,6 +40,16 @@ class AppState(
     var toast by mutableStateOf<Toast?>(null)
 
     /** 外观（跟随系统、浅色、深色）；改了就记到本机 */
+    /** 正在看的球友资料（弹层） */
+    var presentedPlayer by mutableStateOf<String?>(null)
+
+    /** 新记了一次爽约，弹说明 */
+    var showsStrikes by mutableStateOf(false)
+
+    fun showPlayer(userId: String) {
+        presentedPlayer = userId
+    }
+
     var appearance: Appearance
         get() = appearanceState
         set(value) {
@@ -94,10 +113,28 @@ class AppState(
     }
 }
 
+/** 管理器都拿这些：在哪跑协程、后端、全局状态、Android 的 Context（单元测试里为空） */
+class ManagerContext(val scope: CoroutineScope, val backend: Backend, val appState: AppState, val android: Context?)
+
 /** 整个 App 共用的状态和管理器，对应 iPhone 的 AppEnvironment */
-class AppEnvironment(scope: CoroutineScope, backend: Backend, savedAppearance: String? = null, saveAppearance: (String) -> Unit = {}) {
+class AppEnvironment(
+    scope: CoroutineScope,
+    backend: Backend,
+    savedAppearance: String? = null,
+    saveAppearance: (String) -> Unit = {},
+    android: Context? = null,
+) {
     val appState = AppState(scope, backend, savedAppearance, saveAppearance)
     val router = Router()
+    private val context = ManagerContext(scope, backend, appState, android)
+    val locationManager = LocationManager(context)
+    val matchManager = MatchManager(context)
+    val friendManager = FriendManager(context)
+    val messageManager = MessageManager(context)
+    val roomManager = RoomManager(context)
+    val surveyManager = SurveyManager(context)
+    val inboxManager = InboxManager(context)
+    val groupManager = GroupManager(context)
 }
 
 val LocalEnv = staticCompositionLocalOf<AppEnvironment> { error("没有提供 AppEnvironment") }
