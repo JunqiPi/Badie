@@ -374,4 +374,5 @@ private class FavoriteRow(val venueId: String)
 @Serializable
 private class NearbyVenueRow(val venue: Venue)
 
-private const val VENUE_COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,country_code,status,location_approximate"
+private const val VENUE_COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,postal_code,country_code,status,location_approximate," +
+    "time_zone_id,apple_place_id,court_count,pricing,pricing_note,currency_code,phone,website,entrance_note,source,created_at,play_times"
