@@ -7,6 +7,7 @@ import com.badie.app.models.GameMode
 import com.badie.app.models.Gender
 import com.badie.app.models.SkillAssessment
 import com.badie.app.models.SkillTier
+import com.badie.app.models.VenueStatus
 import com.badie.app.remote.FakeServer
 import com.badie.app.remote.HttpResponse
 import com.badie.app.shell.AppState
@@ -291,9 +292,9 @@ class OnboardingModelTest {
 
     @Test
     fun nearestPrefersListedVenuesInRange() {
-        fun venue(id: String, km: Double, status: String = "confirmed") =
+        fun venue(id: String, km: Double, status: VenueStatus = VenueStatus.Confirmed) =
             com.badie.app.models.Venue(id, id, lat = here.latitude + km / 111.0, lon = here.longitude, countryCode = "US", status = status)
-        val venues = listOf(venue("close-unconfirmed", 0.5, "unconfirmed"), venue("listed", 2.0), venue("too-far", 30.0))
+        val venues = listOf(venue("close-unconfirmed", 0.5, VenueStatus.Unconfirmed), venue("listed", 2.0), venue("too-far", 30.0))
         assertEquals("listed", com.badie.app.models.Venue.nearest(venues, here, 10.0)?.id)
         assertEquals("范围里只有没核实的也选它", "close-unconfirmed", com.badie.app.models.Venue.nearest(venues.take(1), here, 10.0)?.id)
         assertNull(com.badie.app.models.Venue.nearest(venues.drop(2), here, 10.0))
