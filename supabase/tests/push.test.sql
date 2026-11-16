@@ -1,7 +1,7 @@
 -- 推送通知：登记设备的校验、客户端看不到设备、推送服务取活和回报；约球邮件要自己打开
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(25);
+select plan(28);
 
 insert into auth.users (id, email)
   select ('00000000-0000-0000-0000-0000000007' || lpad(n::text, 2, '0'))::uuid, 'p' || n || '@test.local' from generate_series(1, 3) n;
@@ -22,13 +22,17 @@ $$;
 -- 登记设备：要登录，格式要对，浏览器只接受各家浏览器的推送服务地址
 select throws_ok($$ select public.register_push('apns', repeat('a', 64)) $$, '42501', null, '没登录不能登记');
 select pg_temp.login(1);
-select throws_ok($$ select public.register_push('fax', repeat('a', 64)) $$, '23514', null, '只有 apns / apns_sandbox / web');
+select throws_ok($$ select public.register_push('fax', repeat('a', 64)) $$, '23514', null, '只有 apns / apns_sandbox / web / fcm');
+select throws_ok($$ select public.register_push('fcm', 'short:token') $$, '22023', null, '安卓（FCM）的令牌太短');
+select throws_ok($$ select public.register_push('fcm', repeat('a', 120) || ' x') $$, '22023', null, '安卓的令牌不能有空格');
 select throws_ok($$ select public.register_push('apns', 'not-a-token') $$, '22023', null, 'iOS 令牌是十六进制');
 select throws_ok($$ select public.register_push('web', 'https://evil.example.com/push/1', '{"p256dh": "k", "auth": "a"}') $$,
                  '22023', null, '浏览器推送地址只能是浏览器厂商的');
 select throws_ok($$ select public.register_push('web', 'https://fcm.googleapis.com/fcm/send/abc123', '{"p256dh": "k"}') $$,
                  '22023', null, '浏览器推送要带两把公钥');
 select lives_ok($$ select public.register_push('apns', repeat('a', 64)) $$, '登记 iPhone');
+select lives_ok($$ select public.register_push('fcm', 'dQw4w9WgXcQ:APA91b' || repeat('Xy_-9', 30)) $$, '登记安卓手机');
+select public.unregister_push('dQw4w9WgXcQ:APA91b' || repeat('Xy_-9', 30));
 select lives_ok($$ select public.register_push('web', 'https://fcm.googleapis.com/fcm/send/abc123', '{"p256dh": "k", "auth": "a"}') $$,
                 '登记 Chrome');
 select lives_ok($$ select public.register_push('apns', repeat('a', 64)) $$, '重复登记同一台不出错');
