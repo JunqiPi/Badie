@@ -96,7 +96,8 @@ abstract class E2ETest {
     /** 等它出现（界面上任何一层），返回第一个 */
     fun waitFor(matcher: SemanticsMatcher, timeoutMillis: Long = 20_000, what: String = matcher.description): SemanticsNodeInteraction {
         try {
-            compose.waitUntil(timeoutMillis) { exists(matcher) }
+            // 模拟器的桌面偶尔“没有响应”，弹窗会挡住 App：等的时候顺手关掉
+            compose.waitUntil(timeoutMillis) { dismissSystemAnr(); exists(matcher) }
         } catch (e: Throwable) {
             throw AssertionError("等了 ${timeoutMillis / 1000} 秒，界面上还没有：$what", e)
         }
@@ -170,6 +171,7 @@ abstract class E2ETest {
     /** 推进去的页面（聊天、设置这些）没有标签栏：按返回直到标签栏出来 */
     fun backToTabs() {
         repeat(5) {
+            dismissSystemAnr()
             if (exists(tab("发现"))) return
             device.pressBack()
             compose.waitForIdle()

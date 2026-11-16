@@ -23,6 +23,8 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk >/dev/null
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >/dev/null
 # 动画关掉（等待更稳），位置放在洛杉矶（种子数据里的球馆在那）
 for key in window_animation_scale transition_animation_scale animator_duration_scale; do adb shell settings put global $key 0; done
+# 模拟器在 CI 上慢，桌面（Pixel Launcher）偶尔“没有响应”，弹窗会挡住 App：不弹这类错误框
+adb shell settings put global hide_error_dialogs 1
 adb emu geo fix -118.29 34.03 >/dev/null 2>&1 || true
 
 adb logcat -c
