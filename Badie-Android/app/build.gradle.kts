@@ -21,6 +21,10 @@ val uploadKeyAlias = providers.environmentVariable("BADIE_UPLOAD_KEY_ALIAS")
 val uploadKeyPassword = providers.environmentVariable("BADIE_UPLOAD_KEY_PASSWORD")
 val signsRelease = listOf(uploadKeystore, uploadStorePassword, uploadKeyAlias, uploadKeyPassword).all { it.isPresent }
 
+// 端到端测试跑压缩过的包：-Pbadie.minify=true。调试包（测试用的那个）照正式包一样用 R8 压缩、混淆、去资源，
+// 还连本机的 Supabase、用调试的网络配置和签名。见 android-e2e.yml 的 minified 那一组
+val minifyForE2E = providers.gradleProperty("badie.minify").map { it == "true" }.getOrElse(false)
+
 android {
     namespace = "com.badie.app"
     compileSdk = 37
@@ -52,6 +56,14 @@ android {
         debug {
             buildConfigField("String", "SUPABASE_URL_OVERRIDE", "\"${providers.gradleProperty("badie.supabaseUrl").getOrElse("")}\"")
             buildConfigField("String", "SUPABASE_KEY_OVERRIDE", "\"${providers.gradleProperty("badie.supabaseKey").getOrElse("")}\"")
+            if (minifyForE2E) {
+                // 可调试的包 R8 只按调试模式压（不做优化），和正式包不一样，所以关掉
+                isDebuggable = false
+                isMinifyEnabled = true
+                isShrinkResources = true
+                // 前两个和正式包一样；e2e-keep.pro 只留测试 APK 直接调的类（测试用的库和 App 里的几个类），正式包不用
+                proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro", "e2e-keep.pro")
+            }
         }
         release {
             buildConfigField("String", "SUPABASE_URL_OVERRIDE", "\"\"")
