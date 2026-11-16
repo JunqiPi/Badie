@@ -77,21 +77,22 @@ class Geocoder:
         params = {"q": query, "format": "jsonv2", "addressdetails": 1, "limit": 1}
         if country:
             params["countrycodes"] = country.lower()
-        wait = 1.1 - (time.time() - self.last)
+        # 每秒最多 1 次：从上一次发出算起（不是从收到回复算起，不然一次要 2 秒多）
+        wait = 1.05 - (time.time() - self.last)
         if wait > 0:
             time.sleep(wait)
-        for attempt in range(4):
+        self.last = time.time()
+        result = []
+        for attempt in range(2):
             try:
                 req = urllib.request.Request(NOMINATIM + "?" + urllib.parse.urlencode(params),
                                              headers={"User-Agent": "BadieVenueImport/1.0 (+https://badie.rsvp)"})
-                result = json.loads(urllib.request.urlopen(req, timeout=60).read().decode("utf-8"))
+                result = json.loads(urllib.request.urlopen(req, timeout=30).read().decode("utf-8"))
                 break
-            except Exception as e:  # 网络抖动：等一会儿再试
-                if attempt == 3:
-                    raise
+            except Exception as e:  # 有的地址 Nominatim 算不过来（503 超时）：再试一次，还不行就当查不到
                 print(f"retry {query!r}: {e}", file=sys.stderr)
-                time.sleep(10 * (attempt + 1))
-        self.last = time.time()
+                time.sleep(2)
+                self.last = time.time()
         self.calls += 1
         hit = result[0] if result else None
         self.known[key] = hit
