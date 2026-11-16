@@ -465,14 +465,12 @@ final class GroupManager: ObservableObject {
 
     func venue(of group: PlayGroup) -> BadmintonCourt? { backend.venue(id: group.venueId) }
 
-    /// 球群的所有球馆，主球馆在前
-    func venues(of group: PlayGroup) -> [BadmintonCourt] { group.venueIds.compactMap { backend.venue(id: $0) } }
+    /// 主球馆以外的球馆（按顺序）
+    func otherVenues(of group: PlayGroup) -> [BadmintonCourt] { group.venueIds.dropFirst().compactMap { backend.venue(id: $0) } }
 
-    func venue(id: String) -> BadmintonCourt? { backend.venue(id: id) }
-
-    /// 球群有几个球馆时，这一场在哪个球馆；只有一个球馆时不用写
-    func sessionVenueName(_ session: GroupSession, in group: PlayGroup) -> String? {
-        guard group.venueIds.count > 1 else { return nil }
+    /// 球群有几个球馆时，这一场在哪个球馆；只有一个球馆时是 nil（界面和以前一样）
+    func sessionVenueName(_ session: GroupSession) -> String? {
+        guard let group = backend.db.groups[session.groupId], group.venueIds.count > 1 else { return nil }
         return backend.venue(id: session.effectiveVenueId(in: group))?.name
     }
 
@@ -480,10 +478,12 @@ final class GroupManager: ObservableObject {
 
     // 正式后端的操作要等服务器，所以都是 async；演示环境直接在本地完成
 
-    /// venueIds：1–5 个球馆，第一个是主球馆
+    /// venueId 是主球馆，otherVenueIds 是其他球馆（一共最多 5 个）
     @discardableResult
-    func create(name: String, venueIds: [String], schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
-                joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil, coached: Bool = false) async throws -> PlayGroup {
+    func create(name: String, venueId: String, schedules: [GroupSchedule], levelRange: ClosedRange<Int>,
+                joinPolicy: PlayGroup.JoinPolicy, summary: String, audience: Gender? = nil, coached: Bool = false,
+                otherVenueIds: [String] = []) async throws -> PlayGroup {
+        let venueIds = [venueId] + otherVenueIds
         let group = backend.isRemote
             ? try await backend.remoteCreateGroup(name: name, venueIds: venueIds, schedules: schedules, levelRange: levelRange,
                                                   joinPolicy: joinPolicy, summary: summary, audience: audience, coached: coached)

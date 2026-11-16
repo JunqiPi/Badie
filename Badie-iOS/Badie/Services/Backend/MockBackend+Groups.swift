@@ -429,7 +429,7 @@ extension MockBackend {
         for (index, template) in templates.enumerated() {
             let members = template.members.filter { db.bots[$0] != nil }
             guard let owner = members.first else { continue }
-            var group = PlayGroup(
+            let group = PlayGroup(
                 id: "grp-world-\(index)-\(template.venue.id)",
                 name: template.name,
                 venueId: template.venue.id,
@@ -444,11 +444,6 @@ extension MockBackend {
                 inviteCode: Room.generateCode(excluding: Set(db.groups.values.map(\.inviteCode))),
                 createdAt: now.addingTimeInterval(-90 * 86400)
             )
-            // 第一个群周日在另一家球馆打
-            if index == 0, venues.count > 2, group.schedules.count > 1 {
-                group.otherVenueIds = [venues[2].id]
-                group.schedules[1].venueId = venues[2].id
-            }
             db.groups[group.id] = group
             // 过去 30 天的场次（用于展示真实活跃度）
             if let past = Calendar.current.date(byAdding: .day, value: -30, to: now) {

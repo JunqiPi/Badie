@@ -180,8 +180,7 @@ struct GamesView: View {
                                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                             }
                             .buttonStyle(.plain)
-                            SessionRow(session: session, userId: appState.currentUser?.id ?? "",
-                                       venueName: groupManager.sessionVenueName(session, in: group)) {
+                            SessionRow(session: session, userId: appState.currentUser?.id ?? "") {
                                 router.open(.group(id: group.id))
                             }
                         }
