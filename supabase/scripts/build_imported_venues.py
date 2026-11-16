@@ -30,13 +30,14 @@ from pathlib import Path
 from timezonefinder import TimezoneFinder
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_osm_venues import PREFIX, QLEVER, generic, grid, literal, metres, osm_id, rows, same_name  # noqa: E402
+from build_osm_venues import PREFIX, QLEVER, STORE, generic, grid, literal, metres, osm_id, rows, same_name  # noqa: E402
 
 root = Path(__file__).resolve().parents[2]
 NOMINATIM = "https://nominatim.openstreetmap.org/search"
 SKIP_COUNTRIES = {"CN", "KP"}
 UNCONFIRMED = re.compile(r"could not be confirmed", re.I)
 OSM_NUMBERED = re.compile(r"#\d+$")
+SHOP = re.compile(r"\bshop|\bstore\b|cửa hàng|toko\b", re.I)  # 商店不收（和 OSM 那批一样）
 # Nominatim 的 place_rank：26 以上是街道、门牌、具体的地方；以下是区、城市、邮编
 EXACT_RANK = 26
 
@@ -238,6 +239,9 @@ def main():
                 continue
             if OSM_NUMBERED.search(name):
                 counts["osm_numbered"] += 1
+                continue
+            if STORE.search(name) or SHOP.search(name):
+                counts["shop"] = counts.get("shop", 0) + 1
                 continue
             if (norm(name), norm(address)) in seen:
                 counts["duplicate_row"] += 1
