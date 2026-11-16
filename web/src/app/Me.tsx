@@ -305,7 +305,7 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Switch checked={profile.discoverable} onChange={(v) => save({ discoverable: v })} title={t('Let players find me by nickname')}
                 text={t('They see your nickname and level, and can send a friend request.')} />
         <Divider />
-        <Switch checked={profile.show_as_regular} onChange={(v) => (v ? save({ show_as_regular: true }) : setHiding(true))} title={t('Show me as a regular at my courts')}
+        <Switch checked={profile.show_as_regular} onChange={(v) => (v ? save({ show_as_regular: true }) : setHiding(true))} title={t('Show me in Discover')}
                 text={t('Shows your card, level and free times in People nearby and to players who starred the same court. Never where you are.')} />
         <Divider />
         <Switch checked={profile.allow_message_requests} onChange={(v) => save({ allow_message_requests: v })} title={t('Allow message requests from my groups')}
