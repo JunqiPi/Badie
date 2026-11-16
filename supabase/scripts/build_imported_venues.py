@@ -1,13 +1,15 @@
-"""把我们自己整理的球馆表（CSV，两列：name,address）转成 Badie 的球馆目录：supabase/data/badie-venues.json。
+"""把我们自己整理的球馆表（CSV，两列：name,address）转成 Badie 的球馆目录：--cache 目录里的 badie-venues.json。
+这份数据不进公开仓库（防止被一次拿走），直接写进线上数据库。
 
 - 名字是“This centre listing could not be confirmed”的不收（网上收集、确认不了的）；
 - 名字是“Badminton pitch in 某地 #123”这种 OSM 编号的不收：OpenStreetMap 的球场由 build_osm_venues.py 管；
 - 和已有目录（App 自带的、supabase/data 里的）同名同城、或 60 米内、或 1 公里内同名的跳过；
 - 中国大陆、朝鲜不收。
 
-坐标用 Nominatim（OpenStreetMap 的地址搜索，每秒最多 1 次）按地址查；地址只查到街道以上的，再按“名字 + 城市”找一次；
-都只查到城市 / 邮编一级的，标成位置大概（approx，状态“待确认”）。查过的结果存在 --cache 目录，重跑不重复查。
-只进数据库，不打包进 App；坐标署名 © OpenStreetMap contributors（ODbL）。id 由名字和地址算出，重跑不会换。
+坐标先按名字到 OpenStreetMap 里批量找（QLever，一次 500 个名字）：同名的地方所在的市 / 区 / 省、邮编或 addr:city
+出现在表里的地址中，就用它的位置。找不到的再用 Nominatim（OpenStreetMap 的地址搜索，每秒最多 1 次）按地址查，每条最多 3 次；
+只查到城市 / 邮编一级的，标成位置大概（approx，状态“待确认”）。查过的结果存在 --cache 目录，重跑不重复查。
+不打包进 App；坐标署名 © OpenStreetMap contributors（ODbL）。id 由名字和地址算出，重跑不会换。
 
 用法（在仓库根目录；需要 pip install timezonefinder==6.5.9）:
     python3 supabase/scripts/build_imported_venues.py 球馆表.csv --cache 某个目录
@@ -28,10 +30,9 @@ from pathlib import Path
 from timezonefinder import TimezoneFinder
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_osm_venues import generic, grid, metres, same_name  # noqa: E402
+from build_osm_venues import PREFIX, QLEVER, generic, grid, literal, metres, osm_id, rows, same_name  # noqa: E402
 
 root = Path(__file__).resolve().parents[2]
-OUT = root / "supabase/data/badie-venues.json"
 NOMINATIM = "https://nominatim.openstreetmap.org/search"
 SKIP_COUNTRIES = {"CN", "KP"}
 UNCONFIRMED = re.compile(r"could not be confirmed", re.I)
@@ -69,10 +70,10 @@ class Geocoder:
         self.last = 0.0
         self.calls = 0
 
-    def search(self, query, country=None):
+    def search(self, query, country=None, cached_only=False):
         key = f"{query}|{country or ''}"
-        if key in self.known:
-            return self.known[key]
+        if key in self.known or cached_only:
+            return self.known.get(key)
         params = {"q": query, "format": "jsonv2", "addressdetails": 1, "limit": 1}
         if country:
             params["countrycodes"] = country.lower()
@@ -113,6 +114,80 @@ def fallbacks(query):
     return result, core
 
 
+def sparql(query, cache, name):
+    path = cache / f"qlever-{hashlib.sha1(query.encode()).hexdigest()[:16]}-{name}.tsv"
+    if path.exists():
+        return path.read_text(encoding="utf-8")
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request(QLEVER, data=urllib.parse.urlencode({"query": PREFIX + query}).encode(),
+                                         headers={"Accept": "text/tab-separated-values", "User-Agent": "BadieVenueImport/1.0"})
+            text = urllib.request.urlopen(req, timeout=600).read().decode("utf-8")
+            break
+        except Exception as e:
+            if attempt == 3:
+                raise
+            print(f"qlever retry: {e}", file=sys.stderr)
+            time.sleep(10 * (attempt + 1))
+    path.write_text(text, encoding="utf-8")
+    return text
+
+
+def osm_matches(todo, cache):
+    """按名字在 OSM 里找同名的地方，核对它在不在地址写的城市里。返回 {(name, address): 像 Nominatim 结果的 dict}"""
+    names = sorted({name for name, _ in todo if not generic(name)})
+    quote = lambda s: '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
+    objects = {}
+    for i in range(0, len(names), 500):
+        values = " ".join(quote(n) for n in names[i:i + 500])
+        text = sparql(f"""SELECT ?n ?o (geof:centroid(?w) AS ?c) ?city ?pc ?street ?hn WHERE {{ VALUES ?n {{ {values} }}
+            ?o osmkey:name ?n . ?o geo:hasGeometry/geo:asWKT ?w .
+            OPTIONAL {{ ?o osmkey:addr:city ?city }} OPTIONAL {{ ?o osmkey:addr:postcode ?pc }}
+            OPTIONAL {{ ?o osmkey:addr:street ?street }} OPTIONAL {{ ?o osmkey:addr:housenumber ?hn }} }}""", cache, f"names{i}")
+        for n, o, c, city, pc, street, hn in rows(text, 7):
+            m = re.search(r"POINT\(([-\d.]+) ([-\d.]+)\)", c)
+            if m:
+                objects.setdefault(osm_id(o), {"name": n, "point": (float(m.group(2)), float(m.group(1))),
+                                               "city": city, "postcode": pc, "street": street, "hn": hn, "areas": []})
+    ids = sorted(objects)
+    for i in range(0, len(ids), 500):
+        values = " ".join(f"<https://www.openstreetmap.org/{x}>" for x in ids[i:i + 500])
+        text = sparql(f"""SELECT ?o ?bn ?lvl ?iso WHERE {{ VALUES ?o {{ {values} }}
+            ?b ogc:sfContains ?o . ?b osmkey:boundary "administrative" . ?b osmkey:name ?bn . ?b osmkey:admin_level ?lvl .
+            OPTIONAL {{ ?b osmkey:ISO3166-1:alpha2 ?iso }} }}""", cache, f"areas{i}")
+        for o, name, level, iso in rows(text, 4):
+            if osm_id(o) in objects and level.isdigit():
+                objects[osm_id(o)]["areas"].append((int(level), name, iso))
+    by_name = {}
+    for oid, obj in objects.items():
+        by_name.setdefault(obj["name"], []).append(obj)
+
+    found = {}
+    for name, address in todo:
+        words = plain_words(address)
+        fits = []
+        for obj in by_name.get(name, []):
+            country = next((iso for level, _, iso in obj["areas"] if level == 2 and iso), "")
+            places = sorted(((level, n) for level, n, _ in obj["areas"] if level >= 4 and plain_words(n) <= words), reverse=True)
+            ok = places or (obj["postcode"] and norm(obj["postcode"]) in norm(address)) or \
+                (obj["city"] and plain_words(obj["city"]) <= words)
+            if country and ok:
+                fits.append((obj, country, places))
+        # 同名的好几处都对得上、又离得远：分不清是哪一家，交给地址查
+        if not fits or any(metres(fits[0][0]["point"], f[0]["point"]) > 2000 for f in fits):
+            continue
+        obj, country, places = fits[0]
+        region = next((n for level, n, _ in sorted(obj["areas"]) if level == 4), "")
+        city = obj["city"] or (places[0][1] if places else next((n for level, n, _ in sorted(obj["areas"], reverse=True) if level <= 8), ""))
+        found[(name, address)] = {
+            "lat": obj["point"][0], "lon": obj["point"][1], "place_rank": 30, "name": name,
+            "display_name": ", ".join(n for _, n, _ in sorted(obj["areas"], reverse=True)),
+            "address": {"country_code": country.lower(), "city": city, "state": region, "postcode": obj["postcode"],
+                        "road": obj["street"], "house_number": obj["hn"]},
+        }
+    return found
+
+
 def plain_words(text):
     """不分大小写、不分声调的词（Đ 当 D）。"""
     text = unicodedata.normalize("NFKD", text.replace("đ", "d").replace("Đ", "D").lower())
@@ -130,8 +205,6 @@ def existing_venues():
     out = []
     paths = sorted((root / "Badie-iOS/Badie/Resources").glob("*.json")) + sorted((root / "supabase/data").glob("*.json"))
     for path in paths:
-        if path == OUT:
-            continue
         for v in json.loads(path.read_text(encoding="utf-8"))["venues"]:
             out.append({"point": (v["lat"], v["lon"]), "names": [v["name"], *v.get("aliases", [])],
                         "places": {norm(x) for x in (v.get("city"), v.get("postcode")) if x}})
@@ -178,15 +251,22 @@ def main():
     if args.dry_run:
         return
 
+    matched = osm_matches(todo, args.cache)
+    print(f"{len(matched)} matched by name in OpenStreetMap", flush=True)
     geo = Geocoder(args.cache)
     found = []
     for i, (name, address) in enumerate(todo):
         if i % 200 == 0:
             print(f"{i}/{len(todo)} ({geo.calls} requests)", flush=True)
         query, country = clean_address(address)
-        hit, exact = None, False
         queries, core = fallbacks(query)
-        for q, whole in queries[:4]:
+        if (name, address) in matched:
+            hit = matched[(name, address)]
+            found.append({"name": name, "address": address, "hit": hit, "approx": False, "core": core,
+                          "point": (hit["lat"], hit["lon"])})
+            continue
+        hit, exact = None, False
+        for q, whole in queries[:3]:
             hit = geo.search(q, country)
             # Nominatim 会模糊匹配：“P. Bình Thắng, Dĩ An”给出别的省的“Lãnh Binh Thăng”。查到的地方得在我们写的城市里
             if hit and plain_words(q.split(", ")[-1]) <= plain_words(hit["display_name"]):
@@ -198,8 +278,9 @@ def main():
         if not exact and not generic(name):
             # 按名字在附近找这家馆
             where = locality(hit) if hit else (query.split(", ")[-1] if query else "")
+            # 名字在 OSM 里已经批量找过了：只用以前查过的结果，不再一条条查
             byname = geo.search(f"{name}, {where}" if where else name,
-                                country or (hit["address"].get("country_code") if hit else None))
+                                country or (hit["address"].get("country_code") if hit else None), cached_only=True)
             if byname and byname["place_rank"] >= EXACT_RANK and same_name(name, byname.get("name") or "") and (
                     not hit or metres((float(hit["lat"]), float(hit["lon"])),
                                       (float(byname["lat"]), float(byname["lon"]))) < 30_000):
@@ -270,8 +351,8 @@ def main():
     catalog = {"source": "Badie research: venues we collected; coordinates from OpenStreetMap (Nominatim)",
                "kind": "curated", "status": "unconfirmed",
                "attribution": "Coordinates © OpenStreetMap contributors, ODbL 1.0", "venues": venues}
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    out = args.cache / "badie-venues.json"
+    out.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     by_country = {}
     for v in venues:
         by_country[v["country"]] = by_country.get(v["country"], 0) + 1
