@@ -378,7 +378,10 @@ export interface Thread {
 
 // 球群
 
-export type Schedule = { weekday: number; start: number; end: number; capacity: number; fee: string | null };
+/** venue：在球群的哪个球馆（id），null = 主球馆 */
+export type Schedule = { weekday: number; start: number; end: number; capacity: number; fee: string | null; venue?: string | null };
+
+export type GroupCourt = { id: string; name: string; city: string; tz: string | null };
 
 export interface GroupSummary {
   id: string;
@@ -391,7 +394,10 @@ export interface GroupSummary {
   gender: Gender | null;
   /** 教练带课：每场 1–40 人，水平范围只作提示 */
   coached?: boolean;
-  venue: { id: string; name: string; city: string; tz: string | null };
+  /** 主球馆（venues 的第一个） */
+  venue: GroupCourt;
+  /** 全部球馆（1–5 个），第一个是主球馆 */
+  venues: GroupCourt[];
   schedules: Schedule[];
   activity: { sessions: number; average: number };
   my_role: 'owner' | 'organizer' | 'member' | 'pending' | null;
@@ -402,6 +408,8 @@ export interface GroupSession {
   starts_at: string;
   ends_at: string;
   capacity: number;
+  /** 这一场在哪个球馆（id） */
+  venue: string;
   cancelled: boolean;
   confirmed: number;
   waitlist: number;
@@ -419,8 +427,12 @@ export interface GroupDetail extends GroupSummary {
 
 export interface MyGroups {
   groups: GroupSummary[];
-  sessions: { id: string; group_id: string; group: string; venue: string; tz: string | null; starts_at: string; ends_at: string; waitlisted: boolean }[];
+  /** venue 是这一场实际的球馆名字 */
+  sessions: { id: string; group_id: string; group: string; venue: string; venue_id: string; tz: string | null; starts_at: string; ends_at: string; waitlisted: boolean }[];
 }
+
+/** 附近的球群（groups_near）：distance_m 是到最近那个球馆的距离 */
+export type NearbyGroup = GroupSummary & { distance_m: number };
 
 // 球局（房间）：有场地缺人时发起
 

@@ -11,6 +11,9 @@ import { supabase, useLive, type GroupSummary, type MyGroups, type Schedule } fr
 import { clock, dayName, hours, weekday } from './time';
 import { Skeleton } from './ui';
 
+/** 球群的全部球馆，第一个是主球馆（旧数据没有 venues 时只有主球馆） */
+export const courtsOf = (g: GroupSummary) => (g.venues?.length ? g.venues : [g.venue]);
+
 export const scheduleText = (s: Schedule) => `${t('Every {day}', { day: weekday(s.weekday) })} · ${clock(s.start)} – ${clock(s.end)}`;
 
 export const activityText = (a: GroupSummary['activity']) =>
@@ -18,8 +21,9 @@ export const activityText = (a: GroupSummary['activity']) =>
     ? t('No sessions in the last 30 days')
     : `${t('{n} session in the last 30 days|{n} sessions in the last 30 days', { n: a.sessions })} · ${t('about {n} player each|about {n} players each', { n: Math.round(a.average) })}`;
 
-/** 球群卡片（iOS 的 GroupCard）：图标、群名、球馆、每周时间、水平、最近活跃度 */
-export function GroupCard({ group: g }: { group: GroupSummary }) {
+/** 球群卡片（iOS 的 GroupCard）：图标、群名、球馆（主球馆在前）、每周时间、水平、最近活跃度。distance：发现页上离你多远 */
+export function GroupCard({ group: g, distance }: { group: GroupSummary; distance?: number }) {
+  const [main, ...more] = courtsOf(g);
   return (
     <Link to={`/groups/${g.id}/`} className="sticker lift grid content-start gap-3 p-4">
       <span className="flex items-start gap-3">
@@ -27,11 +31,13 @@ export function GroupCard({ group: g }: { group: GroupSummary }) {
         {/* 状态标签放在球馆下面：放在右边时窄屏上群名只剩很窄的一条 */}
         <span className="min-w-0 flex-1">
           <span className="block text-headline">{g.name}</span>
-          <span className="block truncate text-footnote text-ink-secondary">{g.venue.name}, {g.venue.city}</span>
+          <span className="block truncate text-footnote text-ink-secondary">{main.name}, {main.city}</span>
+          {more.length > 0 && <span className="block truncate text-footnote text-ink-secondary">{t('Also at {courts}', { courts: more.map((c) => c.name).join(' · ') })}</span>}
           {g.my_role && <span className="mt-1 flex">{g.my_role === 'pending' ? <Tag tint="peach">{t('Requested')}</Tag> : <Tag icon="check" tint="mint">{t('Joined')}</Tag>}</span>}
         </span>
       </span>
       <span className="flex flex-wrap gap-1.5">
+        {distance !== undefined && <Tag icon="pin" tint="sky">{km(distance)}</Tag>}
         {g.schedules.map((sc, i) => <Tag key={i} icon="calendar">{scheduleText(sc)}</Tag>)}
         {g.coached && <Tag icon="user" tint="sky">{t('Coach-led')}</Tag>}
         <Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag>

@@ -180,6 +180,17 @@
 - 更新：装 `reverse_geocoder==1.5.1 timezonefinder==6.5.9`，跑这个脚本再跑 `build_venue_seed.py`
 - 噪音还有一些（小区、学校里的场地外人进不去，偶尔把整个体育场算进来），靠球友确认 / 举报
 
+## 一个球群几个球馆、发现页找球群（2026-11-16，网站和数据库，没推 main）
+
+- 迁移 `20261221000000_group_venues.sql`，测试 `supabase/tests/group_venues.test.sql`：
+  - 新表 `group_venues` 存球群全部球馆（1–5 个，position 0 是主球馆）；`play_groups.venue_id` 一直等于主球馆，旧版 App 只认它，照常能用
+  - 每周场次可以选在哪个球馆（`group_schedules.venue_id`，空 = 主球馆）；生成场次时把球馆写进 `group_sessions.venue_id`，以后换主球馆、删球馆，已经生成的场次不会悄悄换地方。删掉的球馆上的场次回到主球馆（报名不丢）；某一场换球馆和改时间一样：原来的取消（通知报了名的人），按新的生成
+  - `create_group` / `update_group` 多一个 `p_venues`（按顺序，第一个是主球馆；编辑时 null = 不变），场次 jsonb 可带 `"venue"`。旧版 App 编辑时不带 `"venue"`，沿用原来的球馆
+  - `group_summary` 多 `venues`，每周场次多 `venue`；`group_page` 每一场多 `venue`；`my_groups` 的场次写实际球馆；取消、递补的通知也写实际球馆
+  - `groups_near`：任何一个球馆在范围内都算，多 `distance_m`（到最近的球馆），近的在前
+- 网站：建群、编辑可以加到 5 个球馆，多于一个时每周场次能选球馆；球群页和卡片列出所有球馆；发现页最上面多了“球友 / 球群”切换（记在浏览器里），球群按附近范围列出
+- iPhone 另外在做；**安卓还没跟上**（`Badie-Android/` 还只有单个球馆的球群）
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。
