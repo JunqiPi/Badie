@@ -54,6 +54,7 @@ import com.badie.app.design.sticker
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
 import com.badie.app.models.DateText
+import com.badie.app.features.groups.GroupCard
 import com.badie.app.models.User
 import com.badie.app.models.Venue
 import com.badie.app.models.VenueSource
@@ -180,11 +181,7 @@ fun VenueDetailView(court: Venue) {
         TrustSection(venue) { showReport = true }
 
         // 这里的固定局
-        Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
-            SectionTitle(tr("这里的固定局"), actionTitle = tr("建一个")) { router.open(Route.CreateGroup(venue.id)) }
-            // TODO(球群)：iPhone 在这里列出这家球馆的球群（groupManager.groups(atVenue:)），没有时写“还没有球群”。
-            // 球群那一块（features/groups）搬好以后接上；现在只放“建一个”
-        }
+        GroupsSection(venue)
 
         // 本馆排行
         InfoRow(
@@ -366,6 +363,34 @@ fun ChoiceSheet(title: String, message: String?, options: List<String>, onDismis
                     onChoose(index)
                 }, kind = ButtonKind.Secondary, size = ButtonSize.Medium)
             }
+        }
+    }
+}
+
+/** 这里的固定局：这家球馆的球群，没有时写“还没有球群” */
+@Composable
+private fun GroupsSection(venue: Venue) {
+    val env = LocalEnv.current
+    val groupManager = env.groupManager
+    val me = env.appState.currentUser?.id
+    LaunchedEffect(venue.id) {
+        try {
+            groupManager.loadAtVenue(venue)
+        } catch (_: RemoteError) {
+        }
+    }
+    val groups = groupManager.groups(atVenue = venue.id)
+    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        SectionTitle(
+            tr("这里的固定局"), detail = if (groups.isEmpty()) null else tr("%lld 个球群", groups.size), actionTitle = tr("建一个"),
+        ) { env.router.open(Route.CreateGroup(venue.id)) }
+        if (groups.isEmpty()) Text(tr("还没有球群"), style = AppTheme.Typography.footnote, color = AppTheme.colors.inkSecondary)
+        for (group in groups) {
+            GroupCard(
+                group, null, groupManager.activity(group.id),
+                Modifier.pressable(scale = 0.98f) { env.router.open(Route.Group(group.id)) },
+                status = if (me != null && group.isMember(me)) tr("已加入") else null,
+            )
         }
     }
 }

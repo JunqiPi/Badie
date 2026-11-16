@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.badie.app.TestSupport
-import com.badie.app.TestSupport.serveProfile
 import com.badie.app.design.AppTheme
 import com.badie.app.design.Appearance
 import com.badie.app.design.BadieTheme
@@ -122,6 +121,12 @@ class VenuesScreenshotTest {
             "POST /rest/v1/rpc/venue_people",
             """{"recent":[{"id":"u-1","nickname":"欣然","rating":4.33},{"id":"u-2","nickname":"阿杰","rating":3.67},{"id":"u-3","nickname":"Mia","rating":5.0}],""" +
                 """"regulars":[{"id":"u-4","nickname":"小林","rating":4.0},{"id":"u-1","nickname":"欣然","rating":4.33}]}""",
+        )
+        // 这里的固定局
+        server.on(
+            "POST /rest/v1/rpc/groups_near",
+            """[{"id":"grp1","name":"周四晚双打","level_min":3,"level_max":5,"join_policy":"approval","venue":{"id":"v-labc","name":"Los Angeles Badminton Club"},""" +
+                """"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":"AA"}],"activity":{"sessions":6,"average":7.5},"my_role":"member"}]""",
         )
         environment.matchManager.draftVenueIds.add("v-labc")
         return environment

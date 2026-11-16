@@ -16,10 +16,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,6 +26,29 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.badie.app.design.AppTheme
+import com.badie.app.design.AvatarView
+import com.badie.app.design.ButtonSize
+import com.badie.app.design.IconTile
+import com.badie.app.design.LevelBadge
+import com.badie.app.design.rememberHaptics
+import com.badie.app.features.groups.GroupCard
+import com.badie.app.features.groups.SessionRow
+import com.badie.app.features.matching.MatchRequest
+import com.badie.app.features.matching.TicketStatusCard
+import com.badie.app.features.rankings.RankingManager
+import com.badie.app.features.rankings.quietly
+import com.badie.app.features.rankings.rememberRankingManager
+import com.badie.app.features.venues.VenueSearch
+import com.badie.app.models.ChallengeStatus
+import com.badie.app.models.DateText
+import com.badie.app.models.Rankings
+import com.badie.app.models.isSameDay
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.style.TextOverflow
+import kotlinx.coroutines.launch
 import com.badie.app.design.ArrowButtonLabel
 import com.badie.app.design.BrutalButton
 import com.badie.app.design.ButtonKind
@@ -70,14 +91,23 @@ fun GamesScreen() {
     val router = env.router
     val me = env.appState.currentUser?.id
     var segment by rememberSaveable { mutableStateOf(Segment.Upcoming) }
+    val rankings = rememberRankingManager()
     LaunchedEffect(me) {
         try {
             rooms.refresh()
         } catch (_: RemoteError) {
         }
     }
+    LaunchedEffect(me) {
+        launch { quietly { env.friendManager.refreshRegulars() } }
+        launch { quietly { rankings.refreshChallenges() } }
+        launch { quietly { rankings.loadWeekly(Rankings.week(System.currentTimeMillis()), country = false) } }
+    }
     RoomNotice()
-    RefreshEverything(Modifier.fillMaxSize()) {
+    RefreshEverything(Modifier.fillMaxSize(), extra = {
+        quietly { rankings.refreshChallenges() }
+        quietly { rankings.loadWeekly(Rankings.week(System.currentTimeMillis()), country = false, force = true) }
+    }) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -91,20 +121,23 @@ fun GamesScreen() {
                     IconButton(Sym.clockArrowCirclepath, tr("历史球局")) { router.open(Route.GameHistory) }
                 }
             }
-            TodoPills()
+            TodoPills(rankings)
             book.nextGame?.let { game ->
                 GameTicketCard(
                     game, book.players(game), me, compact = true,
                     modifier = Modifier.padding(horizontal = AppTheme.Spacing.screen).pressable(scale = 0.98f) { router.open(Route.Game(game.id)) },
                 )
             }
-            // TODO：约球请求（“约球请求 · N 个进行中”）在 MatchManager 里，等快速匹配那边搬好再接上
+            TicketsSection()
             MyRoomsSection()
             QuickMatchCard(Modifier.padding(horizontal = AppTheme.Spacing.screen))
             QuickActions(Modifier.padding(horizontal = AppTheme.Spacing.screen))
             PublicGamesSection()
-            // TODO：我的球群、我报名的固定局（GroupManager）、本周排行（排行榜）、同馆常客（FriendManager）、附近球馆小地图（要地图的 key），
-            // 等这几块搬好再接上；顺序照 iPhone：球局入口 → 附近球局 → 球群 → 固定局 → 本周排行 → 同馆常客 → 列表 → 小地图
+            MyGroupsSection()
+            MySessionsSection()
+            WeeklyCard(rankings, Modifier.padding(horizontal = AppTheme.Spacing.screen))
+            RegularsSection()
+            // iPhone 列表下面还有附近球馆的小地图：要等 Google 地图的 key
             Column(Modifier.padding(horizontal = AppTheme.Spacing.screen), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md)) {
                 SegmentedSticker(
                     Segment.entries, segment, { segment = it },
@@ -132,14 +165,170 @@ internal fun RoomNotice() {
 // MARK: 待办
 
 @Composable
-private fun TodoPills() {
+private fun TodoPills(rankings: RankingManager) {
     val env = LocalEnv.current
     val pending = env.surveyManager.pendingSurveys
-    // TODO：别人发给我、还没回应的挑战（挑战 N）归排行榜那边，搬好后加在前面
-    if (pending.isEmpty()) return
+    // 别人发给我、还没回应的挑战
+    val me = env.appState.currentUser?.id
+    val challenges = rankings.challenges().count { it.targetId == me && it.status == ChallengeStatus.Pending }
+    if (pending.isEmpty() && challenges == 0) return
     Flow(Modifier.padding(horizontal = AppTheme.Spacing.screen)) {
-        CountPill(Sym.starBubbleFill, tr("待评价"), pending.size) { env.router.open(Route.Surveys) }
-        RulesButton(tr("待评价"), listOf(tr("打完 48 小时内可以评价")))
+        if (challenges > 0) CountPill(Sym.flag2CrossedFill, tr("挑战"), challenges) { env.router.open(Route.Challenges) }
+        if (pending.isNotEmpty()) {
+            CountPill(Sym.starBubbleFill, tr("待评价"), pending.size) { env.router.open(Route.Surveys) }
+            RulesButton(tr("待评价"), listOf(tr("打完 48 小时内可以评价")))
+        }
+    }
+}
+
+// MARK: 约球请求
+
+@Composable
+private fun TicketsSection() {
+    val manager = LocalEnv.current.matchManager
+    val open = manager.openTickets
+    if (open.isEmpty()) return
+    Column(Modifier.padding(horizontal = AppTheme.Spacing.screen), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        SectionTitle(tr("约球请求"), detail = tr("%lld 个进行中", open.size))
+        for (ticket in open) {
+            TicketStatusCard(ticket, manager.offer(ticket)) { manager.openTicket(ticket.id) }
+        }
+    }
+}
+
+// MARK: 球群
+
+@Composable
+private fun MyGroupsSection() {
+    val env = LocalEnv.current
+    val groups = env.groupManager
+    val mine = groups.myGroups
+    if (mine.isEmpty()) return
+    Column(Modifier.padding(horizontal = AppTheme.Spacing.screen), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        SectionTitle(tr("我的球群"), detail = "${mine.size}")
+        for (group in mine) {
+            GroupCard(
+                group, groups.venue(group), groups.activity(group.id),
+                Modifier.pressable(scale = 0.98f) { env.router.open(Route.Group(group.id)) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun MySessionsSection() {
+    val env = LocalEnv.current
+    val groups = env.groupManager
+    val sessions = groups.mySessions
+    if (sessions.isEmpty()) return
+    val colors = AppTheme.colors
+    Column(Modifier.padding(horizontal = AppTheme.Spacing.screen), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs)) {
+            Text(tr("我报名的固定局"), style = AppTheme.Typography.title3, color = colors.ink, modifier = Modifier.semantics { heading() })
+            RulesButton(tr("我报名的固定局"), listOf(tr("开场前 2 小时内退出算临时取消")))
+        }
+        for (session in sessions) {
+            val group = groups.group(session.groupId) ?: continue
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(
+                    Modifier.pressable { env.router.open(Route.Group(group.id)) },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Symbol(Sym.person3Fill, size = 12, tint = colors.inkSecondary)
+                    Text(group.name, style = AppTheme.Typography.footnoteBold, color = colors.inkSecondary, maxLines = 1)
+                }
+                SessionRow(session, env.appState.currentUser?.id ?: "") { env.router.open(Route.Group(group.id)) }
+            }
+        }
+    }
+}
+
+// MARK: 本周排行
+
+@Composable
+private fun WeeklyCard(rankings: RankingManager, modifier: Modifier = Modifier) {
+    val env = LocalEnv.current
+    val colors = AppTheme.colors
+    val week = Rankings.week(System.currentTimeMillis())
+    // 榜还没拉回来时不显示（不先写“还差几场”）
+    if (env.appState.currentUser == null || rankings.isWeeklyLoading(week, country = false)) return
+    val standing = rankings.standing(week, country = false, rankings.weeklyLeaderboard(week, country = false)) ?: return
+    // 还没达到上榜门槛：只说差几场，门槛写在排行榜的规则里
+    val text = if (standing.absenceReason == null && standing.rank == null && !standing.isQualified && standing.isCurrentWeek) {
+        tr("差 %lld 场上榜", standing.gamesNeeded)
+    } else {
+        standing.summary
+    }
+    Row(
+        modifier.fillMaxWidth().pressable(scale = 0.98f) { env.router.open(Route.Leaderboard) }
+            .sticker(colors.surface, radius = AppTheme.Radius.lg).padding(AppTheme.Spacing.lg)
+            .semantics(mergeDescendants = true) {},
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
+    ) {
+        IconTile(Sym.trophyFill, fill = colors.butter, size = 44.dp)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(tr("本周排行"), style = AppTheme.Typography.overline, color = colors.inkSecondary)
+            Text(text, style = AppTheme.Typography.headline, color = colors.ink)
+        }
+        Symbol(Sym.chevronRight, size = 13, tint = colors.inkTertiary)
+    }
+}
+
+// MARK: 同馆常客
+
+/** 同馆常客：和我常去同一家球馆、并且本人开启了展示的球友（不按距离、不显示在线状态） */
+@Composable
+private fun RegularsSection() {
+    val env = LocalEnv.current
+    val colors = AppTheme.colors
+    val location = env.locationManager
+    val regulars = env.friendManager.venueRegulars(limit = 12) { location.court(it) }
+    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        Row(
+            Modifier.padding(horizontal = AppTheme.Spacing.screen),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs),
+        ) {
+            Text(tr("同馆常客"), style = AppTheme.Typography.title3, color = colors.ink, modifier = Modifier.semantics { heading() })
+            if (regulars.isNotEmpty()) Text(tr("%lld 人", regulars.size), style = AppTheme.Typography.footnoteBold, color = colors.inkSecondary)
+            RulesButton(
+                tr("同馆常客"),
+                listOf(tr("设置常去球馆后，这里显示也常去那里的球友"), tr("对方开启了展示才会出现"), tr("不按距离排，也不显示在线状态")),
+            )
+        }
+        when {
+            location.favoriteCourtIds.isEmpty() -> BrutalButton(
+                onClick = { env.router.open(Route.Courts) }, Modifier.padding(horizontal = AppTheme.Spacing.screen),
+                kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false,
+            ) {
+                Symbol(Sym.heartFill, size = 13)
+                Text(tr("设置常去球馆"))
+            }
+            regulars.isEmpty() -> Text(
+                tr("暂时没有常客"), style = AppTheme.Typography.footnote, color = colors.inkSecondary,
+                modifier = Modifier.padding(horizontal = AppTheme.Spacing.screen),
+            )
+            else -> Row(
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md), verticalAlignment = Alignment.Top,
+            ) {
+                for ((user, venue) in regulars) {
+                    val acronym = VenueSearch.acronym(venue.name).uppercase()
+                    val label = tr("%@，%@，常去%@", user.nickname, user.displayLevelText, venue.name)
+                    Column(
+                        Modifier.width(72.dp).pressable { env.appState.showPlayer(user.id) }.clearAndSetSemantics { contentDescription = label },
+                        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        AvatarView(user, size = 58.dp)
+                        Text(user.nickname, style = AppTheme.Typography.footnoteBold, color = colors.ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        LevelBadge(user.displayTier, showsName = false, compact = true)
+                        Text(
+                            acronym.ifEmpty { venue.name }, style = AppTheme.Typography.caption, color = colors.inkSecondary,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -174,24 +363,28 @@ private fun MyRoomsSection() {
     }
 }
 
-/** 到球馆的距离：只有资料里有位置时才写（安卓的定位在 LocationManager 那边，还没搬） */
+/** 到球馆的距离：从当前位置算（没开定位按默认城市，和 iPhone 的 locationManager.coordinate 一样） */
 @Composable
 internal fun distanceText(location: Coordinate): String? {
-    val here = LocalEnv.current.appState.currentUser?.location ?: return null
+    val here = LocalEnv.current.locationManager.coordinate
     return com.badie.app.models.DistanceFormatter.string(location.distanceKm(here))
 }
 
 // MARK: 快速约球
 
-/**
- * 快速约球卡。iPhone 上四个摘要（模式、时间、几个球馆、水平）来自 MatchManager 的草稿；
- * 安卓的 MatchManager 归快速匹配那边，现在只有选的球馆，其余三项等那边搬好再接（TODO）
- */
+/** 快速约球卡：四个摘要（模式、时间、几个球馆、水平）来自 MatchManager 的草稿 */
 @Composable
 private fun QuickMatchCard(modifier: Modifier = Modifier) {
     val env = LocalEnv.current
     val router = env.router
+    val haptics = rememberHaptics()
     val ink = AppTheme.colors.onAccent
+    val draft = env.matchManager.draft
+    val timeText = draft.slot()?.let { slot ->
+        val day = if (isSameDay(slot.startTime, System.currentTimeMillis())) tr("今天") else DateText.weekday(slot.startTime)
+        "$day ${slot.formattedTimeRange()}"
+    } ?: tr("选择时间")
+    val toleranceText = if (draft.skillTolerance >= MatchRequest.ANY_SKILL) tr("不限水平") else tr("水平 ±%lld", draft.skillTolerance)
     Column(modifier.card(AppTheme.colors.lime, padding = AppTheme.Spacing.xl), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(tr("快速约球"), style = AppTheme.Typography.title2, color = ink, modifier = Modifier.weight(1f).semantics { heading() })
@@ -201,10 +394,21 @@ private fun QuickMatchCard(modifier: Modifier = Modifier) {
             )
         }
         Flow(Modifier.pressable(scale = 1f) { router.isMatchSetupPresented = true }, spacing = 6.dp) {
-            SummaryChip(tr("%lld 个球馆", env.matchManager.draftVenueIds.size), Sym.mappin)
+            SummaryChip(draft.mode.title, draft.mode.icon)
+            SummaryChip(timeText, Sym.clockFill)
+            SummaryChip(tr("%lld 个球馆", draft.courtIds.size), Sym.mappin)
+            SummaryChip(toleranceText, Sym.chartBarFill)
         }
-        // 草稿还不能直接搜（没有时间这些）：和 iPhone 一样先打开设置页
-        BrutalButton(onClick = { router.isMatchSetupPresented = true }, kind = ButtonKind.Inverse) {
+        // 草稿能直接搜就开始匹配，不能（时间过了、没选球馆）先打开设置页
+        BrutalButton(onClick = {
+            if (env.appState.currentUser == null) return@BrutalButton
+            if (!draft.canSearch()) {
+                router.isMatchSetupPresented = true
+            } else {
+                haptics.impact()
+                env.matchManager.startSearch()
+            }
+        }, kind = ButtonKind.Inverse) {
             ArrowButtonLabel(tr("开始匹配"))
         }
     }

@@ -85,6 +85,21 @@ class GamesScreenshotTest {
         """[{"id":"r-near","mode":"singles","visibility":"public","status":"open","starts_at":"${iso(30 * 3_600_000L)}","ends_at":"${iso(32 * 3_600_000L)}","level_min":4,"level_max":6,"tags":["competitive"],"note":"","going":1,"waitlist":0,"owner":{"id":"u-9","nickname":"Kai","rating":5},"venue":$venue,"my_status":null,"code":null,"members":null},""" +
             """{"id":"r-near2","mode":"doubles","visibility":"public","status":"open","starts_at":"${iso(50 * 3_600_000L)}","ends_at":"${iso(52 * 3_600_000L)}","level_min":1,"level_max":9,"tags":["casual","women_friendly"],"note":"","gender":"female","going":2,"waitlist":0,"owner":{"id":"u-8","nickname":"Lily","rating":3},"venue":$venue,"my_status":null,"code":null,"members":null}]"""
 
+    private val ticket
+        get() = """{"id":"t1","mode":"singles","starts_at":"${iso(74 * 3_600_000L)}","ends_at":"${iso(76 * 3_600_000L)}","status":"searching",""" +
+            """"skill_tolerance":1,"auto_accept":false,"lock_at":"${iso(72 * 3_600_000L)}","last_minute":false,"venues":[{"id":"v-1","name":"LA Badminton Club"}],"offer":null}"""
+
+    private val groupVenue = """{"id":"v-1","name":"LA Badminton Club","city":"El Monte","tz":"America/Los_Angeles"}"""
+
+    private val groupSummary =
+        """{"id":"grp1","name":"周四晚双打","level_min":3,"level_max":5,"join_policy":"approval","venue":$groupVenue,"schedules":[],"activity":{"sessions":6,"average":7.5},"my_role":"member"}"""
+
+    private val groupPage
+        get() = """{"id":"grp1","name":"周四晚双打","summary":"","level_min":3,"level_max":5,"join_policy":"approval","venue":$groupVenue,""" +
+            """"schedules":[{"weekday":4,"start":1170,"end":1320,"capacity":8,"fee":"${'$'}12"}],"activity":{"sessions":6,"average":7.5},"my_role":"member","invite_code":"ABC2LX",""" +
+            """"sessions":[{"id":"s1","starts_at":"${iso(96 * 3_600_000L)}","ends_at":"${iso(98 * 3_600_000L)}","capacity":8,"cancelled":false,"confirmed":5,"waitlist":0,"my_status":"confirmed","players":[{"id":"$me","nickname":"Alex","waitlisted":false}]}],""" +
+            """"members":[{"id":"$me","nickname":"Alex","rating":4,"role":"member"},{"id":"u-2","nickname":"Kai","rating":4.33,"role":"owner"}],"pending":[]}"""
+
     /** 登录好、拉过球局和房间的环境 */
     private fun environment(withData: Boolean = true): AppEnvironment {
         val server = FakeServer()
@@ -101,6 +116,12 @@ class GamesScreenshotTest {
                 environment.roomManager.book.refresh()
                 environment.roomManager.refreshRooms()
                 environment.roomManager.loadNearby(Coordinate(34.07, -118.03))
+                // 约球请求、我的球群和报名的固定局
+                server.on("POST /rest/v1/rpc/my_matchmaking", "[$ticket]")
+                environment.matchManager.reloadMatchmaking()
+                server.on("POST /rest/v1/rpc/my_groups", """{"groups":[$groupSummary]}""")
+                server.on("POST /rest/v1/rpc/group_page", groupPage)
+                environment.groupManager.refresh()
             } else {
                 server.on("POST /rest/v1/rpc/my_games", "[]")
                 environment.roomManager.book.refresh()
