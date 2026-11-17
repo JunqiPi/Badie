@@ -54,7 +54,7 @@
 7. **登录和注册**（`features/onboarding/`，2026-11-15）：欢迎页、邮箱 + 密码登录和注册、验证码登录、忘记密码、6 位验证码、人机验证、称呼和头像（颜色加表情）、定级问卷和结果卡、最后一步（常打、在附近的人里显示我）、以前没选性别的人补选。流程逻辑在 `OnboardingModel.kt`，有测试。
 8. **全部功能页面**（2026-11-16，六块分头搬完再合起来）：发现页（附近的人、按天的卡片、筛选、约人和回邀请）、快速匹配（设置、找人、确认、结束）；球局（球局页、签到、AA、赛果、互评、再约一次、开赛前本地提醒）、房间（开局、大厅、房间码、公开球局）；球友、球友资料、举报、爽约记录和申诉、私信和群聊、通知中心、球群（找、报名、候补、名单、建群）；球馆（附近、球馆页、选球馆、添加、附近范围）；排行榜、挑战；“我的”、编辑资料（照片头像和卡片背景、裁剪）、设置全部、空闲时间、等级对照表、重新定级、高水平认证、帮助和反馈、等级卡片（生成图片、分享、存相册）。各块的服务器调用在 `backend/*Api.kt`。
 9. 各块已经接起来（2026-11-16）：位置和附近范围只有一份（`LocationManager`），球局页有约球请求、球群、本周排行、同馆常客，球馆页列出球群，“我的”有球友数、挑战、加球友链接，发现页的铃铛有角标，日期跟着界面语言。
-10. 测试 464 个，本机过；截图 111 张。
+10. 测试 467 个，本机过；截图 111 张。
 11. **推送**（2026-11-16，Firebase Cloud Messaging，`push/`）：允许了通知就要令牌，登录后、每次启动报给服务器（`register_push`，kind 是 `fcm`），退出登录和注销前先注销；发出约球请求后问一次通知权限；聊天显示成带头像的会话通知，同一会话归在一条；在前台时正开着的会话不弹，并马上拉新消息；点通知（包括本地提醒）打开对应页面，冷启动时等主界面出来再跳。Firebase 配置在 `res/values/firebase.xml`（`google-services.json` 不进仓库）。还没在真机上收过推送。截图里中文的粗体不明显，是测试环境的字体只有一种粗细，真机上要再看。
 12. **跟上 main 上后来的改动**（2026-11-16）：注册时“列表里没有我的球馆”；关“在同馆常客里显示我”前先确认；露天场地（读 `venues.kind`，球馆页显示“露天场地”，自动选常去球馆先选室内）；球馆搜索用 `search_venues`；发现页附近的人每分钟刷新、回到 App 时刷新；球群多球馆（1–5 个，主球馆在前）、每周场次选球馆、球群页和场次写实际球馆、发现页筛选里的“显示：球友 / 球群”（附近的球群，近的在前）。
 13. **上架准备**（2026-11-16，详细步骤见 `Badie-Android/docs/RELEASE.md`）：
@@ -64,6 +64,7 @@
     - Google 登录：系统的凭据管理器，令牌签给网页客户端（Supabase 已认）。Apple 登录：浏览器标签页里走 Supabase 的网页授权（PKCE），跳回 `com.badie.app://auth/callback`。按钮的位置、文字、“Apple 没开时不显示 Google”和 iPhone 一样。
     - 网页链接进 App（App Links）：路径和 iPhone 一样，加球友链接、等级页也接了。网站的 `assetlinks.json` 等第一次发版后拿到运行摘要里的 SHA-256，用 `Badie-Android/scripts/assetlinks.py` 生成。
 14. **从网站直接下载**（2026-11-16，不等 Play）：网站构建前（`web.yml`）下载最新的安卓 Release 放到 `/android/badie.apk`、`/android/version.json`（`_headers` 设成安装包、附件下载）；`astro.config.ts` 读到才显示下载（`src/app/androidApp.ts`），没有时一切照旧（添加到主屏幕）。安卓手机上首页、关于页的按钮是“下载安卓 App”，点了下载并弹出三步安装说明，“添加到主屏幕”退成下面一行小字；登录后的提示也换成下载 App；电脑上 App Store 旁边多一个“下载安卓 App”去 `/android/`。`/android/` 页面 10 种语言，有版本、大小、SHA-256、安装步骤。App 里（`shell/SideloadUpdates.kt`）：从网站装的正式包每天最多查一次 `version.json`，有新版本在标签栏上面提示，点“下载”用浏览器打开安装包；从 Play 装的和调试包不查。新加的两句文字（“Badie %@ 可以更新了”“下载”）在 xcstrings 里标成手动添加，iPhone 不用。
+15. **1.0.6：不再直接读 `venues` 表**（2026-11-16，为服务器的“防整表拿走”）：按 id 读球馆的 5 处（`VenueApi` 的球馆页和查重、`RankingsApi`、`ProfileApi` 常去球馆的名字、`MatchApi`）都改调 `venues_by_ids`（`VenueApi.kt` 的 `venueRowsByIds` / `venuesByIds`，一次 100 家、多了分批，整行用 `venueFromRow` 只读认识的列）；`Backend.searchVenues` 只用 `search_venues`（带位置）。端到端测试冷启动后在“我的”卡片上等常去球馆的名字（走 `venues_by_ids`）。versionName `1.0.6`，还没发版。
 
 **搬的时候没法做、先简化的**（等对应的东西齐了再补）
 
@@ -84,13 +85,13 @@
 - 最后一步里的空闲时间。
 - 结果卡里的六维雷达图、“看对照表”、“分享等级卡片”。
 
-**注册已跟上 iPhone 1.0.6**（main `b5772c9` 的改动，2026-11-16）：最后一步的常去球馆必选（开了定位就先选上离你最近的一家，最多 3 家），注册后默认在附近的人里显示，不再有那个开关。球馆从服务器读（`venues_near`，按名字搜用 `search_venues`，搜不到再按地址直接查 `venues` 表），不像 iPhone 那样把球馆目录打包进 App；定位用系统自带的，不靠 Google 服务。还没做：找不到球馆时自己添加（要等地图）、老用户自动补常去球馆（服务器已经替老用户补过一家）。
+**注册已跟上 iPhone 1.0.6**（main `b5772c9` 的改动，2026-11-16）：最后一步的常去球馆必选（开了定位就先选上离你最近的一家，最多 3 家），注册后默认在附近的人里显示，不再有那个开关。球馆从服务器读（`venues_near`，按名字搜用 `search_venues`，按 id 用 `venues_by_ids`；1.0.6 起不直接读 `venues` 表），不像 iPhone 那样把球馆目录打包进 App；定位用系统自带的，不靠 Google 服务。还没做：找不到球馆时自己添加（要等地图）、老用户自动补常去球馆（服务器已经替老用户补过一家）。
 
 **和 iPhone 不一样的地方**
 
 - 推送：在设置里点“球局提醒”允许通知后，安卓马上登记推送；iPhone 要等下次打开 App 才登记（iPhone 也该改，等用户定）。
 - 推送：注销账号前安卓先注销推送登记（iPhone 靠服务器删账号时一起删）；Android 13 以前的系统不问通知权限（默认就能发）；聊天通知没有登记成系统的“对话”（没做快捷方式），Android 11 起不进通知栏最上面的“对话”区。
-- 球馆搜索：`search_venues` 只搜名字、别名、城市；安卓的搜索框写着“或地址”，所以服务器没搜到时再按街道直接查一次表（iPhone 搜本机的球馆，本来就认地址）。
+- 球馆搜索：`search_venues` 只搜名字、别名、城市，不认街道地址（iPhone 搜本机的球馆，认地址）。1.0.6 起去掉了“没搜到再直接查表”：注册、挑战、房间、球群选球馆的搜索框的提示改成文字表里已有的“搜索球馆”（网站写“Search courts by name”，文字表里没有，按 PORTING 不加新句子）；“搜索球馆”和快速匹配选球馆（`features/venues/VenuePicker.kt`）还把附近、常去的球馆在本机按地址比，所以留着 iPhone 的“球馆名、简称（如 LABC）或地址”。
 - 发现页看球友还是球群记在本机（`SharedPreferences`），和 iPhone 的 `@AppStorage` 一样换手机不带过去。
 - 注册最后一步选的“常打”（单打 / 双打）：iPhone 连正式后端时没有存（`OnboardingFlow.finish()` 的正式后端那一路没传 `preferredMode`），安卓存了。要不要把 iPhone 也改掉，等用户定。
 
@@ -240,7 +241,7 @@
   - **2026-11-16 已写进线上库 1,618 家**（位置精确的，56 个国家；网站已带上）。另外 1,417 家只知道在哪个城市，没写（网站和 App 附近都不显示，用处小）。写法：本地生成每批 150 家的 SQL（带 md5 校验、文字先统一成 NFC），用 Supabase 连接逐批执行；加密后推仓库让数据库下载的办法被安全检查拦了。生成时注意国家代码以 b 开头（BD、BE…）的 id 别拆错
   - 下次导入同类数据：先批量匹配，再一条条查剩下的；装 `timezonefinder==6.5.9`
 - **网站球馆目录**：所有目录（含 `supabase/data` 和上面导出的）都列出来。只有 App 自带的球馆有自己的页面（Cloudflare Pages 一次最多 2 万个文件，现在约 9,500 个）；其余的在列表里，点开是 Google 地图。少于 3 家的城市不单独成页，按省 / 州分组列在国家页上。目录页：球馆最多的 8 个国家大卡片，其余按大洲（时区归大洲，`data-region` 用联合国编码翻译）
-- **防整表拿走**：迁移 `20261224000000_venue_api_guard.sql`（测试 `venue_api_guard.test.sql`）写好了 `check_request`（不让 `anon` / `authenticated` 直接 GET `/venues`），**还没启用**：安卓（`android-v1.0.5-1` 已发布）有 5 处直接 `GET /venues?id=in.(…)`（`VenueApi`、`RankingsApi`、`ProfileApi`、`MatchApi`、`Backend`），接口这一层分不出按 id 查和整表翻页。先让安卓改用新的 `venues_by_ids`（一次最多 100 家），装旧包的人都更新后，加迁移 `alter role authenticator set pgrst.db_pre_request = 'public.check_request'; notify pgrst, 'reload config';`。按位置（`venues_near`，100 公里、200 家）、搜索（`search_venues`，50 家）、按 id（`venue_brief`）照常；网站邀请里已改用 `venue_brief`。Cloudflare 上用户加了限速：`/courts/` 页同一 IP 10 秒超过 30 次拦 10 秒（认证过的搜索引擎不受限）
+- **防整表拿走**：迁移 `20261224000000_venue_api_guard.sql`（测试 `venue_api_guard.test.sql`）写好了 `check_request`（不让 `anon` / `authenticated` 直接 GET `/venues`），**还没启用**：安卓 1.0.5（`android-v1.0.5-1` 已发布）有 5 处直接 `GET /venues?id=in.(…)`（`VenueApi`、`RankingsApi`、`ProfileApi`、`MatchApi`，`Backend` 搜索没搜到时按地址查表），接口这一层分不出按 id 查和整表翻页。**安卓 1.0.6 已改完**（按 id 用 `venues_by_ids`，搜索只用 `search_venues`，不再直接读表），还没发版。发 1.0.6 以后，网站装的旧包会在标签栏上面提示更新；装 1.0.5 的人都更新了（或者不再管旧包）再启用：加迁移 `alter role authenticator set pgrst.db_pre_request = 'public.check_request'; notify pgrst, 'reload config';`。按位置（`venues_near`，100 公里、200 家）、搜索（`search_venues`，50 家）、按 id（`venue_brief`）照常；网站邀请里已改用 `venue_brief`。**启用前先改** `.github/workflows/supabase-keepalive.yml`：它用公开 key 直接 `GET /rest/v1/venues?select=id&limit=1` 数球馆，启用后会失败（可以改调 `rpc/search_venues` 或 `rpc/venues_near`）。Cloudflare 上用户加了限速：`/courts/` 页同一 IP 10 秒超过 30 次拦 10 秒（认证过的搜索引擎不受限）
 - **iPhone 1.0.6**：选球馆时本机搜到不到 5 家，再用 `search_venues` 补，远处城市的球馆也能按名字搜到。安卓还没有选球馆的界面
 
 ## 美国都会区的价格页（2026-11-16，网站，分支 `claude/metro-prices`，没推 main）

@@ -15,6 +15,7 @@ import com.badie.app.models.VenueSource
 import com.badie.app.models.VerificationStatus
 import com.badie.app.remote.RemoteError
 import com.badie.app.remote.RemoteJSON
+import com.badie.app.remote.SupabaseClient
 import com.badie.app.remote.json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -81,8 +82,7 @@ data class VenuePeople(val recent: List<User> = emptyList(), val regulars: List<
 suspend fun Backend.fetchVenue(id: String): Venue? {
     var target = id
     repeat(3) {
-        val row = remote.select<List<JsonObject>>("venues", "select=$VENUE_COLUMNS,merged_into&id=eq.${encode(target)}").firstOrNull()
-            ?: return null
+        val row = remote.venueRowsByIds(listOf(target)).firstOrNull() ?: return null
         val merged = (row["merged_into"] as? kotlinx.serialization.json.JsonPrimitive)?.takeIf { it.isString }?.content
         if (merged == null) return venueFromRow(row)?.also(::cacheVenue)
         target = merged
@@ -126,12 +126,7 @@ suspend fun Backend.venueDuplicates(candidate: VenueCandidate): List<VenueDuplic
     )
     if (rows.isEmpty()) return emptyList()
     val missing = rows.map { it.venueId }.filter { venue(it) == null }
-    if (missing.isNotEmpty()) {
-        val list = missing.joinToString(",") { "\"${it.replace("\"", "")}\"" }
-        remote.select<List<JsonObject>>("venues", "select=$VENUE_COLUMNS&id=in.(${encode(list)})").forEach { row ->
-            venueFromRow(row)?.let(::cacheVenue)
-        }
-    }
+    if (missing.isNotEmpty()) remote.venuesByIds(missing).forEach(::cacheVenue)
     return rows.mapNotNull { row ->
         val kind = DuplicateKind.ofServer(row.kind) ?: return@mapNotNull null
         val venue = venue(row.venueId) ?: return@mapNotNull null
@@ -175,8 +170,26 @@ suspend fun Backend.reportVenue(id: String, issue: VenueIssue, detail: String = 
     remote.call("report_venue", json("target" to id, "issue" to issue.serverValue, "detail" to detail.take(200)))
 }
 
+/** venues_by_ids 一次最多给这么多家（多的服务器不管），多了分批 */
+internal const val VENUES_BY_IDS_LIMIT = 100
+
 /**
- * 服务器 venues 表的一整行（add_venue、confirm_venue 返回的）换成球馆：只读 iPhone 也读的那些列，
+ * 按 id 读球馆的整行：调服务器的 venues_by_ids，不直接读 venues 表（服务器以后只让按位置、搜索、按 id 的函数读，
+ * 防止整表被翻页拿走）。超过 100 家分批；没有的 id 不返回
+ */
+internal suspend fun SupabaseClient.venueRowsByIds(ids: Collection<String>): List<JsonObject> {
+    val rows = ArrayList<JsonObject>()
+    for (batch in ids.distinct().chunked(VENUES_BY_IDS_LIMIT)) {
+        rows += rpc<List<JsonObject>>("venues_by_ids", json("p_ids" to batch))
+    }
+    return rows
+}
+
+/** 按 id 读球馆（[venueRowsByIds]，读不懂的一家跳过） */
+internal suspend fun SupabaseClient.venuesByIds(ids: Collection<String>): List<Venue> = venueRowsByIds(ids).mapNotNull(::venueFromRow)
+
+/**
+ * 服务器 venues 表的一整行（add_venue、confirm_venue、venues_by_ids 返回的）换成球馆：只读 iPhone 也读的那些列，
  * 别的列（营业时间这些服务器上的写法和本机不同）不管
  */
 fun venueFromRow(row: JsonObject): Venue? {

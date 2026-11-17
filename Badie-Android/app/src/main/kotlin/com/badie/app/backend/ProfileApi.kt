@@ -24,6 +24,7 @@ import com.badie.app.models.activeSlots
 import com.badie.app.models.serverJSON
 import com.badie.app.remote.InstantSerializer
 import com.badie.app.remote.RemoteError
+import com.badie.app.remote.RemoteJSON
 import com.badie.app.remote.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
@@ -146,7 +147,7 @@ class ProfileApi(
 
     fun wasAsked(permission: String): Boolean = store.load("asked-$permission") != null
 
-    // MARK: 常去球馆的名字（只有 id 在资料里；名字和城市单独读一次）
+    // MARK: 常去球馆的名字（只有 id 在资料里；名字和城市用 venues_by_ids 单独读一次）
 
     /** 常去球馆：id → 名字和城市 */
     private val venueNames = mutableStateMapOf<String, VenueName>()
@@ -159,8 +160,16 @@ class ProfileApi(
     suspend fun refreshFavoriteVenues() {
         val ids = backend.favoriteVenueIds.filter { it !in venueNames }
         if (ids.isEmpty()) return
-        val rows = remote.select<List<VenueName>>("venues", "id=in.(${ids.joinToString(",")})&select=id,name,city")
-        rows.forEach { venueNames[it.id] = it }
+        for (row in remote.venueRowsByIds(ids)) {
+            val name = try {
+                RemoteJSON.json.decodeFromJsonElement(VenueName.serializer(), row)
+            } catch (_: SerializationException) {
+                continue
+            } catch (_: IllegalArgumentException) {
+                continue
+            }
+            venueNames[name.id] = name
+        }
     }
 
     // MARK: 资料

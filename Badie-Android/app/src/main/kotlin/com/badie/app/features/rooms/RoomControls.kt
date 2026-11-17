@@ -274,7 +274,7 @@ fun VenuePickerSheet(selectedId: String?, onPick: (Venue) -> Unit, onDismiss: ()
             IconButton(Sym.xmark, tr("关闭"), onClick = onDismiss)
         }
         StickerTextField(
-            query, { query = it }, tr("球馆名、简称（如 LABC）或地址"),
+            query, { query = it }, tr("搜索球馆"),
             modifier = Modifier.padding(horizontal = AppTheme.Spacing.screen),
             style = AppTheme.Typography.body,
             keyboardOptions = KeyboardOptions(autoCorrectEnabled = false, imeAction = ImeAction.Search),

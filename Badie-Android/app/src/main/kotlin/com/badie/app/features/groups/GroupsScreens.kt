@@ -1082,7 +1082,7 @@ private fun GroupVenuePicker(selectedId: String?, onPick: (Venue) -> Unit) {
             tr("选择球馆"), style = AppTheme.Typography.title, color = colors.ink,
             modifier = Modifier.padding(horizontal = AppTheme.Spacing.screen).padding(top = AppTheme.Spacing.lg, bottom = AppTheme.Spacing.md).semantics { heading() },
         )
-        StickerTextField(query, { query = it }, tr("球馆名、简称（如 LABC）或地址"), Modifier.padding(horizontal = AppTheme.Spacing.screen), style = AppTheme.Typography.body)
+        StickerTextField(query, { query = it }, tr("搜索球馆"), Modifier.padding(horizontal = AppTheme.Spacing.screen), style = AppTheme.Typography.body)
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(AppTheme.Spacing.screen),
             verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm),

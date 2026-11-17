@@ -6,7 +6,6 @@ import com.badie.app.remote.EpochMillisSerializer
 import com.badie.app.remote.SupabaseClient
 import com.badie.app.remote.json
 import kotlinx.serialization.Serializable
-import java.net.URLEncoder
 import java.time.Instant
 
 /**
@@ -138,14 +137,5 @@ class RankingsApi(private val remote: SupabaseClient) {
         remote.select<List<CountryRow>>("profiles", "id=eq.$userId&select=country_code").firstOrNull()?.countryCode
 
     /** 按 ID 读球馆（常去球馆、榜单页带进来的球馆） */
-    suspend fun venues(ids: List<String>): List<Venue> {
-        if (ids.isEmpty()) return emptyList()
-        val list = URLEncoder.encode(ids.joinToString(",", "(", ")") { "\"$it\"" }, "UTF-8")
-        return remote.select("venues", "select=$COLUMNS&id=in.$list")
-    }
-
-    companion object {
-        private const val COLUMNS = "id,name,aliases,lat,lon,street,unit,city,region,postal_code,country_code,status,location_approximate," +
-            "time_zone_id,apple_place_id,court_count,pricing,pricing_note,currency_code,phone,website,entrance_note,source,created_at,play_times"
-    }
+    suspend fun venues(ids: List<String>): List<Venue> = remote.venuesByIds(ids)
 }

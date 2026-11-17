@@ -169,7 +169,6 @@ class VenuesScreenshotTest {
     fun searchNothingFound() {
         val environment = environment()
         server.on("POST /rest/v1/rpc/search_venues", "[]")
-        server.on("GET /rest/v1/venues", "[]")
         shot("venues-4-search-empty", environment) {
             VenuePickerView(VenuePickerMode.Single, emptyList(), {}, {}, Modifier.fillMaxSize(), initialQuery = "pickleball")
         }

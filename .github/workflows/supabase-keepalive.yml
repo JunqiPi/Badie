@@ -16,7 +16,8 @@ jobs:
           KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
         run: |
           if [ -z "$SUPABASE_URL" ]; then echo "未配置 Supabase，跳过"; exit 0; fi
-          range=$(curl -sSf -o /dev/null -D - "$SUPABASE_URL/rest/v1/venues?select=id&limit=1" \
-            -H "apikey: $KEY" -H "Prefer: count=exact" | grep -i '^content-range' | tr -d '\r')
-          echo "$range"
-          [[ "$range" == */[1-9]* ]] || { echo "公开 API 读不到球馆"; exit 1; }
+          # 走 venues_near（球馆表不让客户端直接读，见 STATUS“防整表拿走”）：洛杉矶 50 公里内取 1 家
+          body=$(curl -sSf "$SUPABASE_URL/rest/v1/rpc/venues_near" -H "apikey: $KEY" -H "Content-Type: application/json" \
+            -d '{"lat": 34.0522, "lng": -118.2437, "radius_km": 50, "max_results": 1}')
+          [[ "$body" == \[\{* ]] || { echo "公开 API 读不到球馆"; exit 1; }
+          echo "能读到球馆"

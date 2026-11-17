@@ -268,15 +268,9 @@ class MatchApi(private val backend: Backend) {
     }
 
     /** 按 ID 读球馆（快速匹配选的球馆、请求里的球馆显示名字和距离用） */
-    suspend fun venues(ids: List<String>): List<Venue> {
-        if (ids.isEmpty()) return emptyList()
-        return remote.select("venues", "select=$VENUE_FIELDS&id=in.(${ids.joinToString(",")})")
-    }
+    suspend fun venues(ids: List<String>): List<Venue> = remote.venuesByIds(ids)
 
     companion object {
-        private const val VENUE_FIELDS = "id,name,aliases,lat,lon,street,unit,city,region,postal_code,country_code,status,location_approximate," +
-            "time_zone_id,apple_place_id,court_count,pricing,pricing_note,currency_code,phone,website,entrance_note,source,created_at,play_times"
-
         /** 服务器按本机时区分天：yyyy-MM-dd */
         fun dayKey(day: Long, zone: ZoneId = ZoneId.systemDefault()): String =
             Instant.ofEpochMilli(day).atZone(zone).toLocalDate().toString()

@@ -442,7 +442,7 @@ private fun clock(minutes: Int): String = String.format(Locale.ROOT, "%02d:%02d"
 
 // MARK: - 选球馆（“其他球馆”）
 
-/** 单选球馆：上面是常去的和附近的，打字就按名字或地址搜。对应 iPhone 的 CourtPickerSheet（VenuePickerView 的单选模式） */
+/** 单选球馆：上面是常去的和附近的，打字就按名字搜（服务器的 search_venues，不认街道地址）。对应 iPhone 的 CourtPickerSheet（VenuePickerView 的单选模式） */
 @Composable
 private fun CourtPickerSheet(manager: RankingManager, selectedId: String?, onDismiss: () -> Unit, onSelect: (Venue) -> Unit) {
     val colors = AppTheme.colors
@@ -474,7 +474,7 @@ private fun CourtPickerSheet(manager: RankingManager, selectedId: String?, onDis
             IconButton(Sym.xmark, tr("关闭"), onClick = onDismiss)
         }
         StickerTextField(
-            query, { query = it }, tr("球馆名、简称（如 LABC）或地址"),
+            query, { query = it }, tr("搜索球馆"),
             modifier = Modifier.padding(horizontal = AppTheme.Spacing.screen),
             style = AppTheme.Typography.body,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, imeAction = ImeAction.Search),
