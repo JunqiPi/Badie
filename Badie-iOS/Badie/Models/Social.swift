@@ -116,6 +116,8 @@ struct InboxItem: Identifiable, Codable, Hashable {
         case inviteCounter
         case inviteDeclined
         case gameTimeSet
+        /// 比赛：开始、请你记分、结束（点开是比赛页）
+        case matchEvent
         case system
 
         /// 不认识的种类（旧版本存下的）读成系统通知，不让整个缓存读不出来

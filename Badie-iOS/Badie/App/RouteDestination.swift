@@ -66,6 +66,16 @@ struct RouteDestination: View {
             WeeklyLeaderboardView(venueId: venueId)
         case .challenges:
             ChallengesView()
+        case .night(let sessionId, let pay):
+            NightView(sessionId: sessionId, opensPay: pay)
+        case .createMatch(let sessionId):
+            MatchCreateView(sessionId: sessionId)
+        case .match(let id):
+            MatchPage(matchId: id)
+        case .myMatches:
+            MyMatchesView()
+        case .paymentHandles:
+            PaymentHandlesView()
         }
     }
 }

@@ -8,6 +8,7 @@ final class PushTests: XCTestCase {
         XCTAssertEqual(PushRegistry.route(for: "/games/g-1/").tab, .games)
         XCTAssertEqual(PushRegistry.route(for: "/rooms/r-1/").route, .room(id: "r-1"))
         XCTAssertEqual(PushRegistry.route(for: "/app/groups/p-1/").route, .group(id: "p-1"))
+        XCTAssertEqual(PushRegistry.route(for: "/app/matches/m-1/").route, .match(id: "m-1"))
         XCTAssertEqual(PushRegistry.route(for: "/app/challenges/").route, .challenges)
         XCTAssertEqual(PushRegistry.route(for: "/app/games/").route, .notifications, "没有具体球局就打开通知列表")
         XCTAssertEqual(PushRegistry.route(for: "").route, .notifications)

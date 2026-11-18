@@ -268,6 +268,16 @@ struct ProfileView: View {
                     value: "\(matchManager.pastGames.count)") {
                 router.open(.gameHistory)
             }
+            if appState.isRemote {
+                InsetDivider()
+                MenuRow(icon: "medal.fill", tint: AppTheme.Colors.butter, title: String(localized: "比赛")) {
+                    router.open(.myMatches)
+                }
+                InsetDivider()
+                MenuRow(icon: "dollarsign.circle.fill", tint: AppTheme.Colors.mint, title: String(localized: "收款方式")) {
+                    router.open(.paymentHandles)
+                }
+            }
             InsetDivider()
             MenuRow(icon: "calendar.badge.clock", tint: AppTheme.Colors.butter, title: String(localized: "常用时间"),
                     value: "\(appState.backend.recurringSlots().count)/\(TimeSlotConstants.maximumRecurringSlots)") {

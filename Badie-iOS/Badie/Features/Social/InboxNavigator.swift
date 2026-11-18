@@ -22,6 +22,7 @@ extension InboxItem.Kind {
         case .inviteCounter: return "clock.arrow.circlepath"
         case .inviteDeclined: return "hand.raised.fill"
         case .gameTimeSet: return "clock.badge.checkmark"
+        case .matchEvent: return "trophy.fill"
         }
     }
 
@@ -41,6 +42,7 @@ extension InboxItem.Kind {
         case .inviteCounter: return AppTheme.Colors.peach
         case .inviteDeclined: return AppTheme.Colors.surfaceMuted
         case .gameTimeSet: return AppTheme.Colors.lime
+        case .matchEvent: return AppTheme.Colors.butter
         }
     }
 }
@@ -114,6 +116,8 @@ struct InboxNavigator {
             router.showRoot(.home)
         case .gameTimeSet:
             if let id = item.relatedId { router.open(.game(id: id)) }
+        case .matchEvent:
+            if let id = item.relatedId { router.open(.match(id: id)) }
         case .kicked, .roomClosed, .system:
             break
         }

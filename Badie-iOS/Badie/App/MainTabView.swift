@@ -48,7 +48,7 @@ struct MainTabView: View {
                 pendingCreateAction = action
                 router.isCreateMenuPresented = false
             }
-            .presentationDetents([.height(520)])
+            .presentationDetents([.height(616)])
             .presentationDragIndicator(.visible)
             .presentationCornerRadius(28)
         }
@@ -166,6 +166,8 @@ struct MainTabView: View {
             router.open(.createRoom(nil, invitee: nil), in: .games)
         case .groups:
             router.open(.groups, in: .games)
+        case .match:
+            router.open(.createMatch(sessionId: nil), in: .games)
         case .joinRoom:
             router.open(.joinRoom(code: nil), in: .games)
         }
@@ -264,7 +266,7 @@ struct FloatingTabBar: View {
 // MARK: - “+”创建菜单
 
 enum CreateAction {
-    case quickMatch, createRoom, groups, joinRoom
+    case quickMatch, createRoom, groups, match, joinRoom
 }
 
 struct CreateMenuSheet: View {
@@ -279,6 +281,7 @@ struct CreateMenuSheet: View {
             option(icon: "bolt.fill", tint: AppTheme.Colors.lime, title: String(localized: "快速匹配"), action: .quickMatch)
             option(icon: "sportscourt.fill", tint: AppTheme.Colors.peach, title: String(localized: "发起球局"), action: .createRoom)
             option(icon: "person.3.fill", tint: AppTheme.Colors.sky, title: String(localized: "固定局 · 球群"), action: .groups)
+            option(icon: "trophy.fill", tint: AppTheme.Colors.butter, title: String(localized: "比赛 · 循环赛"), action: .match)
             option(icon: "number", tint: AppTheme.Colors.lavender, title: String(localized: "输入房间码 / 群号"), action: .joinRoom)
             Spacer(minLength: 0)
         }

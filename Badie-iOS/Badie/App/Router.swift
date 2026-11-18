@@ -81,6 +81,14 @@ enum Route: Hashable {
     case venueLeaderboard(venueId: String)
     /// 收到和发出的挑战
     case challenges
+    /// 当晚：排场、比赛、收款（球群某一场的组织者和帮手）；pay 是直接打开收款
+    case night(sessionId: String, pay: Bool)
+    /// 新建比赛（从“当晚”开时带上那一场）、比赛页
+    case createMatch(sessionId: String?)
+    case match(id: String)
+    /// 我的 → 比赛、收款方式
+    case myMatches
+    case paymentHandles
 }
 
 /// 添加球馆的预填内容（地图链接、演示截图）

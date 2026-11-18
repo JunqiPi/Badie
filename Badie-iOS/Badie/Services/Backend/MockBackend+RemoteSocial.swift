@@ -218,6 +218,7 @@ extension MockBackend {
         case "invite_counter": return .inviteCounter
         case "invite_declined": return .inviteDeclined
         case "game_time_set": return .gameTimeSet
+        case "match": return .matchEvent
         default: return .system
         }
     }

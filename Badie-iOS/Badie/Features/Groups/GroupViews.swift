@@ -126,6 +126,8 @@ struct GroupDetailView: View {
     @State private var confirmsLeave = false
     @State private var confirmsDisband = false
     @State private var sessionDetail: GroupSession?
+    /// 当天的场次（排场、看排场、付钱），见 TonightViews.swift
+    @State private var tonight: [GroupTonight] = []
 
     private var group: PlayGroup? {
         _ = groupManager.revision
@@ -231,6 +233,9 @@ struct GroupDetailView: View {
             SessionSheet(sessionId: session.id)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+        }
+        .task(id: groupManager.revision) {
+            if let list = try? await appState.backend.remoteGroupTonight(groupId) { tonight = list }
         }
     }
 
@@ -388,8 +393,12 @@ struct GroupDetailView: View {
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
+            // 已经结束、还在收款的场次
+            ForEach(tonight.filter { item in !sessions.contains { $0.id == item.id } }) { item in
+                TonightPastRow(item: item, groupId: group.id)
+            }
             ForEach(sessions) { session in
-                SessionRow(session: session, userId: me ?? "") {
+                SessionRow(session: session, userId: me ?? "", tonight: tonight.first { $0.id == session.id }) {
                     sessionDetail = session
                 }
             }
@@ -458,6 +467,8 @@ struct GroupDetailView: View {
 struct SessionRow: View {
     let session: GroupSession
     let userId: String
+    /// 当天的场次：白底加阴影，多一个排场 / 看排场 / 付钱的按钮
+    var tonight: GroupTonight? = nil
     let onOpen: () -> Void
 
     @EnvironmentObject private var appState: AppState
@@ -465,48 +476,63 @@ struct SessionRow: View {
 
     var body: some View {
         let status = session.status(of: userId)
-        HStack(spacing: AppTheme.Spacing.md) {
-            Button(action: onOpen) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(session.slot.formattedFull)
-                        .font(AppTheme.Typography.bodyBold)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    if let venueName = groupManager.sessionVenueName(session) {
-                        Label(venueName, systemImage: "mappin.and.ellipse")
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            .lineLimit(1)
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(spacing: AppTheme.Spacing.md) {
+                Button(action: onOpen) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(session.slot.formattedFull)
+                            .font(AppTheme.Typography.bodyBold)
+                            .foregroundStyle(AppTheme.Colors.ink)
+                        if let venueName = groupManager.sessionVenueName(session) {
+                            Label(venueName, systemImage: "mappin.and.ellipse")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
+                        }
+                        HStack(spacing: 6) {
+                            Text("已报 \(session.signedUp.count)/\(session.capacity)")
+                            if !session.waitlist.isEmpty { Text("· 候补 \(session.waitlist.count)") }
+                        }
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        ProgressBar(progress: Double(session.signedUp.count) / Double(max(1, session.capacity)))
+                            .frame(maxWidth: 160)
                     }
-                    HStack(spacing: 6) {
-                        Text("已报 \(session.signedUp.count)/\(session.capacity)")
-                        if !session.waitlist.isEmpty { Text("· 候补 \(session.waitlist.count)") }
-                    }
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    ProgressBar(progress: Double(session.signedUp.count) / Double(max(1, session.capacity)))
-                        .frame(maxWidth: 160)
+                    .contentShape(Rectangle())
                 }
-                .contentShape(Rectangle())
+                .buttonStyle(.plain)
+                Spacer(minLength: 0)
+                // 开场后：看排场、付钱换掉报名按钮（一行只有一个按钮）
+                if let tonight, TonightPlayerButton.replacesSignup(tonight) {
+                    TonightPlayerButton(item: tonight, groupId: session.groupId)
+                } else {
+                    switch status {
+                    case .signedUp:
+                        Button("已报名 ✓") { cancel() }
+                            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                            .accessibilityHint("取消报名")
+                    case .waitlisted(let position):
+                        Button("候补第 \(position)") { cancel() }
+                            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                            .accessibilityHint("取消候补")
+                    case .none:
+                        Button(session.isFull ? String(localized: "候补") : String(localized: "报名")) { signUp() }
+                            .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
+                    }
+                }
             }
-            .buttonStyle(.plain)
-            Spacer(minLength: 0)
-            switch status {
-            case .signedUp:
-                Button("已报名 ✓") { cancel() }
-                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
-                    .accessibilityHint("取消报名")
-            case .waitlisted(let position):
-                Button("候补第 \(position)") { cancel() }
-                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
-                    .accessibilityHint("取消候补")
-            case .none:
-                Button(session.isFull ? String(localized: "候补") : String(localized: "报名")) { signUp() }
-                    .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
+            if let tonight {
+                TonightRunButton(item: tonight)
             }
         }
         .padding(AppTheme.Spacing.md)
-        .sticker(status == .signedUp ? AppTheme.Colors.lime.opacity(0.35) : AppTheme.Colors.surface,
-                 radius: AppTheme.Radius.md, shadow: .zero)
+        .sticker(rowFill(status), radius: AppTheme.Radius.md, shadow: tonight != nil ? AppTheme.Elevation.card : .zero)
+    }
+
+    /// 当天的场次白底加阴影；报了名的其他场次淡柠檬绿
+    private func rowFill(_ status: GroupSession.Status) -> Color {
+        if tonight == nil, status == .signedUp { return AppTheme.Colors.lime.opacity(0.35) }
+        return AppTheme.Colors.surface
     }
 
     private func signUp() {
