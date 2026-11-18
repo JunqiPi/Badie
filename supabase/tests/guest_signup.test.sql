@@ -69,6 +69,7 @@ select pg_temp.login(1);
 select is(public.group_page(pg_temp.id('group')) ->> 'guests_allowed', 'false', '默认关');
 select lives_ok($$ select public.set_guest_signup(pg_temp.id('group'), true) $$, '群主打开访客报名');
 select ok(char_length(public.group_page(pg_temp.id('group')) ->> 'guest_code') = 8, '打开后有一个 8 位的链接');
+reset role;
 select isnt(pg_temp.code(), (select invite_code::text from public.play_groups where id = pg_temp.id('group')), '链接和群号分开');
 
 -- 公开页：不用登录；只有名字，没有 id、邮箱

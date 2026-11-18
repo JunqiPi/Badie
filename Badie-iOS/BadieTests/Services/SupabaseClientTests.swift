@@ -776,6 +776,7 @@ final class SupabaseClientTests: XCTestCase {
 
         server.requests = []
         server.on("POST /rest/v1/rpc/set_guest_signup", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
         try await backend.remoteSetGuestSignup("grp1", allowed: true, limit: 6)
         XCTAssertEqual(server.json(0)["p_allowed"] as? Bool, true)
         XCTAssertEqual(server.json(0)["p_limit"] as? Int, 6)

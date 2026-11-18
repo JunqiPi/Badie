@@ -64,8 +64,12 @@ export function GuestSignup({ code, signedIn }: { code: string; signedIn: boolea
     store(TOKENS, JSON.stringify(next));
   }
 
-  const cancel = new URLSearchParams(location.search).get('cancel');
-  const closeCancel = () => navigate(`/g/${code}/`, true);
+  // 从确认邮件的取消链接来的（?cancel=<凭证>）
+  const [cancel, setCancel] = useState(() => new URLSearchParams(location.search).get('cancel'));
+  const closeCancel = () => {
+    setCancel(null);
+    navigate(`/g/${code}/`, true);
+  };
   const cancelNotice = cancel && (
     <CancelFromEmail token={cancel} onClose={closeCancel} onCancelled={() => {
       const session = Object.keys(tokens).find((id) => tokens[id] === cancel);

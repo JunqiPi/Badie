@@ -254,6 +254,25 @@
 - 入口：美国的国家页（“各都会区的散客价”）、都会区里的城市页和球馆页各有一个链接。页面进站点地图，带 ItemList 和面包屑的结构化数据。
 - 其他国家没有价格数据，先不做。
 
+## 球群的访客报名（iPhone 1.0.7，2026-11-18，分支 `claude/guest-signup-spec`，没推 main）
+
+需求在 `Badie-iOS/docs/GUEST_SIGNUP.md`（“要用户定的”都按建议定了），设计稿（用户已同意）是 https://claude.ai/artifact/NQRCGsWTAMYgsyhxnnkirw 的 1.0.7 那一行。组织者把链接发到原来的群里，没装 App 的人在网页上填名字就能报名或候补。
+
+- 数据库：迁移 `20261225000000_guest_signup.sql`，测试 `supabase/tests/guest_signup.test.sql`
+  - 访客也是 `session_signups` 的一行（`user_id` 空，有 `guest_name`、`guest_email`、`guest_locale`、`guest_token_hash`），主键改成 `id`、`(session_id, user_id)` 唯一。名额、候补、递补只有一份逻辑
+  - `play_groups` 多 `guests_allowed`、`guest_limit`（空 = 每场名额的一半）、`guest_code`（报名链接 `badie.rsvp/g/<码>/`，8 位，和群号分开，可以重置）。关掉后链接打不开，已经报上的访客保留
+  - 访客上限把候补里的访客也算上，所以递补时排第一的直接补，不用跳过谁
+  - 新函数：`guest_group_page`（不登录；报名的人只给名字，注册用户给昵称，不给 id、头像、邮箱）、`guest_sign_up`（只有服务端密钥能调）、`guest_set_email`、`guest_cancel`（凭证）、`set_guest_signup`、`reset_guest_link`、`remove_guest`（组织者）
+  - `promote_waitlist`、`cancel_session`、`disband_group` 认访客：留了邮箱的发邮件（沿用通知的译文，语言按报名时的网页）。报名或补填邮箱时发一封带取消链接的确认邮件（库里只存凭证的哈希，只有这时有明文）。场次结束一天后清掉访客邮箱
+  - `group_page` 的 `players` 里也有访客（`guest: true`、`signed_up_at`，id 是那一行报名的 id）：旧版 App 照样解得开，人数照算（点访客会打开一个找不到的资料页）。组织者多看到 `guests_allowed`、`guest_limit`、`guest_code`
+  - 防乱填：Turnstile（无感模式）；每个 IP 每小时 10 次（`guest_signup_ips`，存 IP 的哈希，一小时后删）；名字 2–20 字、不能留电话和链接、过不当词；同一场有同名的，网页上先问一句
+- 服务器函数 `guest-signup`：先向 Cloudflare 核对 Turnstile，再用服务端密钥调 `guest_sign_up`，带上 IP。已加进 `supabase-deploy.yml`，`config.toml` 里不验 JWT
+- 网站：`/g/<码>/` 报名页（9 种语言；场次展开看名单、填名字、可选邮箱，报了以后显示“候补第几位”、补填邮箱、取消；确认邮件里的取消链接 `?cancel=`）；已登录的人打开时让他去球群页报名。编辑球群里多“访客报名”（开关、每场上限、复制和重置链接）；球群页名单里访客标“访客”，组织者可以移出，可以复制报名链接
+- iPhone 1.0.7：编辑球群里的“访客报名”（同上）、球群页“复制报名链接”、场次名单里的“访客”和组织者的“移出这一场”
+- 比需求简单的地方：不另设 `guest_id`（用报名那一行的 id）；不做“注册后把这台设备上的访客报名转成自己的”，登录的人直接在球群页报名；注册用户“只显示名字首字母”的隐私设置现在没有，先显示昵称
+- **还没做**：安卓（同样四样，照 iPhone 搬）；组织者移出访客不发邮件；邮件只有纯文字
+- **上线前用户要做**：Supabase → Edge Functions → Secrets 加 `TURNSTILE_SECRET_KEY`（Cloudflare → Turnstile 里网站那个组件的 Secret Key，和登录用的是同一个）。没配时函数不核对人机验证。发件人沿用约球邮件的 `games@badie.rsvp`，不用另配
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。
@@ -267,5 +286,6 @@
 
 ## 用户那边的待办
 
+- 访客报名上线前：Supabase → Edge Functions → Secrets 加 `TURNSTILE_SECRET_KEY`（见上面“球群的访客报名”）。
 - Cloudflare 打开 Web Analytics（网站已经接好代码）。
 - 删掉不用的环境变量 `SUPABASE_READONLY_DB_URL`。
