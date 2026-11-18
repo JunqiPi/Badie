@@ -261,3 +261,38 @@
 - 8 人双打轮换搭档比赛：球员在 App 里输自己那场的比分，另一个人再打开只能点“不对”；组织者改了以后积分榜重算。有人受伤退赛，后面的轮次自动重排。
 - 打完一局，付钱的人点 Venmo 打开 Venmo 且金额正确；组织者点“提醒没付的”，没付的注册用户收到推送、留了邮箱的访客收到邮件（结束后第 3 天也能收到）。
 - 1.0.7 的 App 收到“轮到你了”推送，点开是球群页，不崩。
+
+## 接口（迁移 `20261228000000_club_night.sql`）
+
+都是 `rpc`，出错时 `message` 是下面括号里的错误码。时间都是 ISO 字符串，金额是数字（美元）。“报名 id”是 `session_signups.id`（访客也有）。
+
+**当晚（组织者、帮手）**
+- `night_state(p_session)` → `null`（没权限）或 `{session_id, group_id, group, venue, tz, starts_at, ends_at, role: organizer|helper, open, started, courts, doubles, balance, board_code, match_id, match_live, helpers: [{id, nickname}], undo_until, people: [{id, name, user_id, guest, status: absent|here|resting|left, waitlisted, games, on_court, next_up}], games: [{id, court, players: [报名 id], started_at}], next: [[报名 id ×4], …]}`。双打 `players` 前两个一队。名字同名的已经加了数字。
+- `night_settings(p_session, p_courts, p_doubles, p_balance)`、`night_start(p_session)`、`night_resume(p_session)`（比赛打完回到排场）
+- `night_mark(p_session, p_signups uuid[] | null = 全到了, p_status: here|resting|left|null)`
+- `night_add(p_session, p_name)` → 报名 id（30 秒内同名不重复加）
+- `night_finish(p_game, p_score?)`、`night_swap(p_game, p_out, p_in)`、`night_bump(p_signup, p_next)`、`night_undo(p_session)`
+- `night_helpers(p_session, p_users uuid[])`（只有组织者；最多 3 个到场的注册用户）
+- 错误：`not_allowed`、`not_organizer`、`night_closed`、`court_changed`（这片场地已经换过了）、`not_waiting`、`nothing_to_undo`、`too_many_helpers`、`not_attending`、`invalid_courts`、`invalid_guest_name`、`no_contact_info`、`objectionable_content`、`invalid_score`
+
+**收款**
+- `night_pay(p_session)`（组织者）→ `{amount, amount_set, payee, payee_is_me, has_handles, reminded_at, can_remind, people: [{id, name, guest, status, email, owes, paid, paid_self}]}`
+- `set_session_fee(p_session, p_amount | null)`、`mark_signup_paid(p_signup, p_paid)`、`set_signup_owes(p_signup, p_owes: true 加回来 | false 不用付 | null 按规则)`、`remind_unpaid(p_session)` → 提醒了几人（`reminded_recently`、`night_closed`）
+- `my_payment_handles()` → `{venmo?, cashapp?, paypal?, zelle?}`；`set_payment_handles(p_venmo, p_cashapp, p_paypal, p_zelle)`（空字符串 = 不填；`invalid_venmo` / `invalid_cashapp` / `invalid_paypal` / `invalid_zelle`）
+- `i_paid(p_session, p_paid = true)`（注册用户自己标；false 撤回自己标的）
+- 访客（不登录）：`guest_payment(p_tokens text[])` → `[{token, session_id, group, starts_at, ends_at, venue, tz, to, amount, handles: {venmo?, cashapp?, paypal?}, paid}]`；`guest_i_paid(p_token, p_paid = true)`。凭证是报名时存在设备上的，或者提醒邮件里 `badie.rsvp/pay/<凭证>/` 的那一段
+- 付款链接：Venmo `https://venmo.com/<名>?txn=pay&amount=<数>&note=<备注>`，Cash App `https://cash.app/$<名>/<数>`，PayPal `https://paypal.me/<名>/<数>USD`，Zelle 只复制
+
+**球群页、球员**
+- `group_tonight(p_group)` → 开场前 1 小时到结束后 24 小时（组织者 7 天）的场次 `[{id, starts_at, ends_at, can_run, board, pay: {to, amount, handles, paid, paid_self} | null, unpaid}]`。`can_run`：显示“排场”；`board`：开始排场后成员的“看排场”；`pay`：我要付的钱
+- `my_tonight()` → `[{kind: night, session_id, group_id, name, board_code, status: court|next|waiting|resting, court, games} | {kind: match, match_id, name, board_code, status: court|next|waiting, court, round, games}]`
+- `live_board(p_code, p_tokens = '{}')`（不登录）→ 排场 `{kind: night, group, venue, tz, starts_at, ends_at, started, doubles, courts: [{court, players, started_at}], next, people: [{id, name, status, games, on_court}]（按排队顺序）, me, match: 比赛（同下）| null, now}`，或者比赛 `{kind: match, …match_view, me, now}`。码不对或过期返回 `null`
+
+**比赛**
+- `match_preview(p_format, p_players, p_courts, p_points, p_best_of, p_doubles, p_pools, p_advance, p_rounds)` → `{full_rounds, rounds, minutes}`
+- `create_match(p_name, p_venue, p_courts, p_format: singles|fixed|rotating|groups, p_points: 21|15|11, p_best_of: 1|3, p_win_by_two, p_players: [{user_id} | {signup_id} | {name}, 可带 team], p_rounds?, p_pools? 2–4, p_advance? 1|2（2 只能 2 组）, p_doubles?（分组循环两人一队）, p_session?（从当晚开）, p_helpers?)` → id
+- `match_state(p_match)` → `null` 或 `{kind, id, name, format, doubles, points, best_of, win_by_two, courts, rounds, round, pools, advance, status: live|done, created_at, ended_at, board_code, session_id, venue, tie_at_cut, players: [{id, name, team, pool, withdrawn}], games: [{id, round, stage: pool|semi|final, pool, a: [球员 id], b, court, status: queued|playing|done|cancelled|skipped, scores: [a1, b1, a2, b2…], winner: 1|2, walkover, version, scored_by, edited_by, flagged}], standings: [{key, name, members, pool, played, wins, losses, pf, pa, diff, rank, tied, withdrawn}], ranking: 最终排名（结束后）, role: organizer|helper|player, me, helpers, undo_until}`
+- `match_score(p_game, p_scores int[], p_version, p_force = false)`：`score_invalid`（组织者、帮手可以问一句再带 `p_force` 存）、`score_taken`（球员：已经有人填了）、`score_changed`（版本旧了）
+- `match_flag(p_game)`、`match_undo(p_match)`、`match_withdraw(p_player, p_game?, p_forfeit = false)`、`match_add_player(p_match, p_user?, p_name?)`（只有轮换搭档）、`match_courts(p_match, p_courts)`、`match_helpers(p_match, p_users)`、`match_qualify(p_match, p_keys text[])`、`match_end(p_match)`、`match_delete(p_match)`（后三个只有组织者）
+- `my_matches()` → `[{id, name, format, status, created_at, ended_at, players, rank}]`
+- 推送和通知的链接：排场 `/app/groups/<球群>/`，比赛 `/app/matches/<id>/`（通知类型 `match`）
