@@ -14,8 +14,9 @@ import { Button, Field, Skeleton, toast } from './ui';
 const TOKENS = 'badie.guestSignups';
 const NAME = 'badie.guestName';
 
-/** 这台设备上的报名凭证：{ 场次 id: 凭证 }。浏览器不让存时只在这次打开里有效 */
-function loadTokens(): Record<string, string> {
+/** 这台设备上的报名凭证：{ 场次 id: 凭证 }。浏览器不让存时只在这次打开里有效。
+ *  注册以后在球群页报名时也用它：带上这一场的凭证，服务器把那一行访客报名改成自己的 */
+export function loadTokens(): Record<string, string> {
   try {
     return JSON.parse(localStorage.getItem(TOKENS) ?? '{}') ?? {};
   } catch {
@@ -28,6 +29,15 @@ function store(key: string, value: string) {
     localStorage.setItem(key, value);
   } catch {}
 }
+
+/** 这一场不用再记访客凭证了（注册后报了这一场） */
+export function forgetToken(session: string) {
+  const tokens = loadTokens();
+  delete tokens[session];
+  store(TOKENS, JSON.stringify(tokens));
+}
+
+const ended = (s: GuestSession) => Date.parse(s.ends_at) <= Date.now();
 
 function savedName() {
   try {
@@ -53,7 +63,7 @@ export function GuestSignup({ code, signedIn }: { code: string; signedIn: boolea
     args: { p_code: code, p_tokens: Object.values(tokens).slice(-50) },
     every: 60_000,
   });
-  // 展开的那一场：没点过时是我报了的那场，或者第一场还能报的
+  // 展开的那一场：没点过时是我报了的那场（还没结束的优先），或者第一场还能报的
   const [open, setOpen] = useState<string | null>();
 
   function remember(session: string, token?: string) {
@@ -91,8 +101,9 @@ export function GuestSignup({ code, signedIn }: { code: string; signedIn: boolea
     );
   }
 
+  const mine = page.sessions.filter((s) => s.players.some((p) => p.me));
   const expanded = open === undefined
-    ? (page.sessions.find((s) => s.players.some((p) => p.me)) ?? page.sessions.find((s) => !s.cancelled))?.id
+    ? (mine.find((s) => !ended(s)) ?? mine[0] ?? page.sessions.find((s) => !s.cancelled && !ended(s)))?.id
     : open;
   return (
     <div className="mx-auto grid max-w-xl gap-4">
@@ -120,7 +131,7 @@ export function GuestSignup({ code, signedIn }: { code: string; signedIn: boolea
                 {t('You have a Badie account. Sign up from the group page.')}
               </Notice>
             ) : (
-              <GuestActions session={s} code={code} token={tokens[s.id]} onChange={(token) => {
+              <GuestActions session={s} code={code} organizer={page.organizer} token={tokens[s.id]} onChange={(token) => {
                 remember(s.id, token);
                 refresh();
               }} />
@@ -149,14 +160,17 @@ function SessionCard({ session: s, mainVenue, expanded, onToggle, children }: {
   const waiting = s.players.filter((p) => p.waitlisted);
   const counts = [t('{n}/{total} signed up', { n: going.length, total: s.capacity }), waiting.length > 0 && t('{n} on waitlist', { n: waiting.length })]
     .filter(Boolean).join(' · ');
-  const badge = s.cancelled ? t('Cancelled') : going.length >= s.capacity ? t('Full') : null;
+  const over = ended(s);
+  const badge = s.cancelled ? t('Cancelled') : over ? t('Ended') : going.length >= s.capacity ? t('Full') : null;
   return (
-    <article className={`grid ${expanded ? 'sticker' : 'rounded-[14px] border-2 border-stroke bg-surface'}`}>
+    <article className={`grid ${expanded ? 'sticker' : 'rounded-[14px] border-2 border-stroke'} ${over ? 'bg-surface-muted' : expanded ? '' : 'bg-surface'}`}>
       <button type="button" onClick={onToggle} aria-expanded={expanded} className="press flex min-h-15 items-center gap-3 px-3.5 py-3 text-left">
         <span className="grid min-w-0 flex-1 gap-0.5">
           <span className="font-black">{dayName(s.starts_at, s.tz)} · {hours(s.starts_at, s.ends_at, s.tz)}</span>
           {s.venue !== mainVenue && <span className="truncate text-footnote font-bold">{s.venue}</span>}
-          <span className="text-footnote font-bold text-ink-secondary tabular-nums">{s.cancelled ? t('Cancelled by the organizer') : counts}</span>
+          <span className="text-footnote font-bold text-ink-secondary tabular-nums">
+            {s.cancelled ? t('Cancelled by the organizer') : over ? t('This session has ended.') : counts}
+          </span>
         </span>
         {badge && <Tag tint="muted">{badge}</Tag>}
         <Icon name="chevronDown" className={`size-5 shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
@@ -173,7 +187,7 @@ function SessionCard({ session: s, mainVenue, expanded, onToggle, children }: {
               <Names players={waiting} numbered />
             </div>
           )}
-          {children}
+          {!over && children}
         </div>
       )}
     </article>
@@ -203,16 +217,17 @@ function Names({ players, numbered = false }: { players: GuestSession['players']
 }
 
 /** 没报：填名字报名；报了：我的位置、留邮箱、取消 */
-function GuestActions({ session: s, code, token, onChange }: {
+function GuestActions({ session: s, code, organizer, token, onChange }: {
   session: GuestSession;
   code: string;
+  organizer: string | null;
   /** 这台设备上这一场的凭证 */
   token?: string;
   onChange: (token?: string) => void;
 }) {
   const mine = s.players.filter((p) => p.waitlisted).findIndex((p) => p.me) + 1;
   const signedUp = token && s.players.some((p) => p.me);
-  if (signedUp) return <MySpot session={s} token={token} position={mine} onLeft={() => onChange()} />;
+  if (signedUp) return <MySpot session={s} token={token} position={mine} organizer={organizer} onLeft={() => onChange()} />;
   if (Date.parse(s.starts_at) <= Date.now()) return null;
   if (s.guest_spots <= 0) return <p className="text-footnote font-bold text-ink-secondary">{t('Guest spots for this day are taken. Ask the organizer.')}</p>;
   return <SignUpForm session={s} code={code} onDone={onChange} />;
@@ -279,7 +294,13 @@ function SignUpForm({ session: s, code, onDone }: { session: GuestSession; code:
 }
 
 /** 我报了这一场：报上了还是候补第几、留邮箱、取消 */
-function MySpot({ session: s, token, position, onLeft }: { session: GuestSession; token: string; position: number; onLeft: () => void }) {
+function MySpot({ session: s, token, position, organizer, onLeft }: {
+  session: GuestSession;
+  token: string;
+  position: number;
+  organizer: string | null;
+  onLeft: () => void;
+}) {
   const [email, setEmail] = useState('');
   const [saved, setSaved] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -333,6 +354,12 @@ function MySpot({ session: s, token, position, onLeft }: { session: GuestSession
           {position ? t('Leave the waitlist') : t('Can’t make it')}
         </button>
       ))}
+      {/* 凭证只在这台设备上：换了手机又没留邮箱，只能找组织者 */}
+      {!started && (
+        <p className="text-center text-footnote text-ink-secondary">
+          {organizer ? t('If you switch phones, ask {name} to take you off.', { name: organizer }) : t('If you switch phones, ask the organizer to take you off.')}
+        </p>
+      )}
     </div>
   );
 }

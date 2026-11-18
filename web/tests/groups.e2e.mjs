@@ -78,6 +78,13 @@ await visitor.getByRole('heading', { name: 'Thu doubles', level: 1 }).waitFor();
 await visitor.getByText('2/8 signed up').first().waitFor();
 await visitor.getByText('Tina').waitFor();
 await visitor.getByLabel('Your name').waitFor();
+// Tina 这台设备上存着凭证：看到自己报上了，换了手机要找组织者
+const sessionId = sql(`select id from group_sessions where group_id = '${groupId}' order by starts_at limit 1`);
+sql(`update session_signups set guest_token_hash = guest_token_hash('tina-token') where guest_name = 'Tina'`);
+await visitor.evaluate((id) => localStorage.setItem('badie.guestSignups', JSON.stringify({ [id]: 'tina-token' })), sessionId);
+await visitor.reload();
+await visitor.getByText('You’re signed up', { exact: true }).waitFor();
+await visitor.getByText('If you switch phones, ask Alex to take you off.').waitFor();
 await alex.reload();
 await alex.getByText('Who’s going').first().click();
 await alex.getByRole('button', { name: 'Remove Tina from this session' }).click();

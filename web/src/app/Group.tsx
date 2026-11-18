@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { activityText, courtsOf, scheduleText } from './Groups';
-import { guestLink } from './GuestSignup';
+import { forgetToken, guestLink, loadTokens } from './GuestSignup';
 import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
@@ -248,7 +248,10 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
   const full = s.confirmed >= s.capacity;
 
   async function signUp() {
-    const status = await act(`sign-${s.id}`, 'sign_up_session', { p_session: s.id });
+    // 这台设备上以访客报过这一场：带上凭证，服务器把那一行改成我的，不占两个位子
+    const token = loadTokens()[s.id];
+    const status = await act(`sign-${s.id}`, 'sign_up_session', token ? { p_session: s.id, p_guest_token: token } : { p_session: s.id });
+    if (status && token) forgetToken(s.id);
     if (status === 'confirmed') toast(t('You’re signed up.'));
     else if (status === 'waitlisted') toast(t('You’re on the waitlist. You’ll get a notification if a spot opens.'));
   }
@@ -284,6 +287,10 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
               <li key={p.id} className="flex flex-wrap items-center gap-1.5">
                 {p.guest ? p.nickname : <Link to={`/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>}
                 {p.guest && <Tag tint="mint">{t('Guest')}</Tag>}
+                {/* 访客和报了名的成员同名：可能是同一个人注册后又报了一次，组织者看一眼 */}
+                {organizer && p.guest && s.players!.some((q) => !q.guest && q.nickname.toLowerCase() === p.nickname.toLowerCase()) && (
+                  <Tag tint="muted">{t('Same name')}</Tag>
+                )}
                 {p.waitlisted && t('(waiting)')}
                 {/* 组织者可以把访客移出这一场（和移出成员一样，候补递补） */}
                 {organizer && p.guest && !s.cancelled && (confirm === `guest-${p.id}` ? (
@@ -298,6 +305,12 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
               </li>
             ))}
           </ul>
+          {/* 开场前 2 小时内退出的（组织者才有） */}
+          {s.late_cancels && s.late_cancels.length > 0 && (
+            <p className="mt-2 text-footnote text-ink-secondary">
+              {t('Dropped out late: {names}', { names: s.late_cancels.map((p) => (p.guest ? `${p.nickname} (${t('Guest')})` : p.nickname)).join(', ') })}
+            </p>
+          )}
         </details>
       )}
 

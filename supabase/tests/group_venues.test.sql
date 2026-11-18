@@ -126,13 +126,13 @@ select is(pg_temp.session_venue('multi', 1080), 'v-us-ca-21-badminton-club-21bc'
 select is((select jsonb_agg(x -> 'venue') from jsonb_array_elements(public.group_page(pg_temp.id('multi')) -> 'schedules') x),
           '["v-us-ca-21-badminton-club-21bc", "v-us-ca-21-badminton-club-21bc"]'::jsonb, '每周场次记下原来的球馆');
 
--- 场次换到另一个球馆：原来的取消（报了名的人收到通知），按新球馆生成
+-- 场次换到另一个球馆：还是同一场，报名保留，报了名的人收到“场次有变”，写的是新球馆
 select lives_ok($$ select public.update_group(pg_temp.id('multi'), 'Three courts', '', 1, 9, 'open',
                    jsonb_build_array(pg_temp.slot(1080, 'v-us-ca-21-badminton-club-21bc'), pg_temp.slot(1200, 'v-us-ca-monterey-sports-center'))) $$,
                 '场次可以换球馆');
 reset role;
-select is((select count(*)::int from public.notifications where user_id = pg_temp.u(2) and kind = 'group' and body like '%21 Badminton Club%'), 1,
-          '报了名的人收到取消通知，写的是原来的球馆');
+select is((select count(*)::int from public.notifications where user_id = pg_temp.u(2) and title = 'Session changed: Three courts'
+           and body like '%Monterey%'), 1, '报了名的人收到通知，写的是新球馆');
 
 select * from finish();
 rollback;

@@ -46,12 +46,16 @@ Deno.test('验证通过：用服务端密钥调 guest_sign_up，带上 IP', asyn
   assert.ok(calls[0].body.includes('remoteip=203.0.113.5'));
 });
 
-Deno.test('数据库报的错原样转给网页', async () => {
+Deno.test('数据库报的错原样转给网页；没配人机验证的密钥时在日志里警告', async () => {
   Deno.env.delete('TURNSTILE_SECRET_KEY');
+  const warnings: string[] = [];
+  const warn = console.warn;
+  console.warn = (message: string) => warnings.push(message);
   network({ database: [400, { code: '54000', message: 'guest_spots_full' }] });
-  const response = await signUp(fields);
+  const response = await signUp(fields).finally(() => (console.warn = warn));
   assert.equal(response.status, 400);
   assert.deepEqual(await response.json(), { message: 'guest_spots_full' });
+  assert.ok(warnings.some((w) => w.includes('TURNSTILE_SECRET_KEY')));
 });
 
 Deno.test('网页先发的 OPTIONS 预检', async () => {

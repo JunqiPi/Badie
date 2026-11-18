@@ -70,6 +70,13 @@ extension MockBackend {
             let players: [Player]?
             /// 这一场在哪个球馆（旧服务器没有这一项）
             let venue: String?
+            /// 开场前 2 小时内退出的人（只有组织者拿得到；旧服务器没有这一项）
+            let lateCancels: [LateCancel]?
+
+            struct LateCancel: Decodable {
+                let nickname: String
+                let guest: Bool
+            }
         }
 
         struct Member: Decodable {
@@ -338,7 +345,8 @@ extension MockBackend {
                 id: session.id, groupId: detail.id, scheduleId: schedule?.id ?? "",
                 slot: TimeSlot(date: session.startsAt, startTime: session.startsAt, endTime: session.endsAt),
                 capacity: session.capacity, signedUp: signedUp, waitlist: waitlist, isCancelled: session.cancelled,
-                venueId: session.venue ?? schedule?.effectiveVenueId(in: group), guests: guests.isEmpty ? nil : guests
+                venueId: session.venue ?? schedule?.effectiveVenueId(in: group), guests: guests.isEmpty ? nil : guests,
+                lateCancels: session.lateCancels?.map { GroupLateCancel(name: $0.nickname, guest: $0.guest) }
             )
         }
     }

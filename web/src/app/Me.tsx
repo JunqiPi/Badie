@@ -268,7 +268,7 @@ const policies = [
   ['nobody', 'No one'],
 ] as const;
 
-type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'show_searching' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts' | 'gender'>;
+type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'show_searching' | 'allow_message_requests' | 'show_on_boards' | 'public_initials' | 'challenge_policy' | 'email_alerts' | 'gender'>;
 
 /** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
 export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
@@ -313,6 +313,9 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Divider />
         <Switch checked={profile.show_on_boards} onChange={(v) => save({ show_on_boards: v })} title={t('Show me on leaderboards')}
                 text={t('Weekly and court boards show your nickname, level and games.')} />
+        <Divider />
+        <Switch checked={profile.public_initials ?? false} onChange={(v) => save({ public_initials: v })} title={t('Show only my initials on sign-up links')}
+                text={t('Anyone with a group’s sign-up link sees who’s going. Turn this on to show “T.” instead of your nickname.')} />
       </Group>
 
       {/* 关掉之前说清楚：别人就约不了你了 */}
