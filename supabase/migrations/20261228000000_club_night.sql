@@ -494,8 +494,12 @@ begin
     'undo_until', case when n.undo_until > now() then n.undo_until end,
     'people', (select coalesce(jsonb_agg(jsonb_build_object(
                  'id', p.id, 'name', p.name, 'user_id', p.user_id, 'guest', p.guest, 'status', coalesce(p.attendance, 'absent'),
-                 'waitlisted', p.waitlisted, 'games', p.games, 'on_court', p.on_court, 'next_up', p.next_up)
-               order by p.waitlisted, p.signed_up_at), '[]') from public.night_people(p_session) p),
+                 'waitlisted', p.waitlisted, 'games', p.games, 'on_court', p.on_court, 'next_up', p.next_up, 'queue', q.queue)
+               order by p.waitlisted, p.signed_up_at), '[]')
+               from public.night_people(p_session) p
+               -- 等候的人排第几（和排人的顺序一样）
+               left join (select x.id, row_number() over (order by x.next_up desc, x.eff, x.queued_at nulls first, x.signed_up_at) as queue
+                          from public.night_people(p_session) x where x.attendance = 'here' and x.on_court is null) q on q.id = p.id),
     'games', (select coalesce(jsonb_agg(jsonb_build_object('id', g.id, 'court', g.court, 'players', g.players, 'started_at', g.started_at)
                                         order by g.court), '[]')
               from public.night_games g where g.session_id = p_session and g.ended_at is null),
@@ -683,7 +687,7 @@ begin
   p_users := array(select distinct x from unnest(coalesce(p_users, '{}')) x);
   if cardinality(p_users) > 3 then raise exception 'too_many_helpers' using errcode = '22023'; end if;
   if exists (select 1 from unnest(p_users) x where not exists (select 1 from public.session_signups
-                                                              where session_id = p_session and user_id = x)) then
+                                                              where session_id = p_session and user_id = x and attendance is not null)) then
     raise exception 'not_attending' using errcode = '22023';
   end if;
   insert into public.club_nights (session_id) values (p_session) on conflict (session_id) do nothing;
@@ -929,10 +933,10 @@ $$;
 create function public.guest_payment(p_tokens text[])
 returns jsonb language sql stable security definer set search_path = '' as $$
   select coalesce(jsonb_agg(jsonb_build_object(
-      'token', t.token, 'session_id', gs.id, 'group', g.name, 'starts_at', gs.starts_at, 'ends_at', gs.ends_at,
+      'token', t.token, 'session_id', gs.id, 'group_id', g.id, 'group', g.name, 'starts_at', gs.starts_at, 'ends_at', gs.ends_at,
       'venue', v.name, 'tz', v.time_zone_id, 'to', (select nickname from public.profiles where id = public.session_payee(gs.id)),
       'amount', public.session_fee(gs.id), 'handles', coalesce(public.payee_handles(public.session_payee(gs.id), false), '{}'),
-      'paid', su.paid_at is not null) order by gs.starts_at), '[]')
+      'paid', su.paid_at is not null, 'paid_self', su.paid_self) order by gs.starts_at), '[]')
   from unnest(p_tokens[1:50]) t(token)
   join public.session_signups su on su.user_id is null
     and (su.guest_token_hash = public.guest_token_hash(t.token) or su.pay_token_hash = public.guest_token_hash(t.token))
@@ -1473,7 +1477,7 @@ revoke execute on function public.match_role(uuid), public.match_entries(uuid), 
   public.match_guard(uuid, boolean) from public, anon, authenticated;
 grant execute on function public.match_preview(text, int, int, int, int, boolean, int, int, int) to anon, authenticated;
 
--- 比赛页的数据（组织者、帮手、参赛的人和公开看板共用）。p_full：加上比分的版本号、谁填的、谁点了“不对”
+-- 比赛页的数据（组织者、帮手、参赛的人和公开看板共用）。p_full：加上比分的版本号、谁点了“不对”、参赛的人是不是注册用户
 create function public.match_view(p_match uuid, p_full boolean)
 returns jsonb language sql stable security definer set search_path = '' as $$
   select jsonb_build_object(
@@ -1483,15 +1487,16 @@ returns jsonb language sql stable security definer set search_path = '' as $$
     'venue', (select v.name from public.venues v where v.id = m.venue_id), 'tie_at_cut', m.tie_at_cut,
     'round', coalesce((select min(round) from public.match_games where match_id = m.id and status in ('queued', 'playing')),
                       (select max(round) from public.match_games where match_id = m.id)),
-    'players', (select coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name, 'team', p.team, 'pool', p.pool,
-                                                             'withdrawn', p.withdrawn_at is not null) order by p.seq), '[]')
+    'players', (select coalesce(jsonb_agg(jsonb_strip_nulls(jsonb_build_object('id', p.id, 'name', p.name, 'team', p.team, 'pool', p.pool,
+                                                             'withdrawn', p.withdrawn_at is not null,
+                                                             'user_id', case when p_full then p.user_id end)) order by p.seq), '[]')
                 from public.match_players p where p.match_id = m.id),
     'games', (select coalesce(jsonb_agg(jsonb_strip_nulls(jsonb_build_object(
                 'id', g.id, 'round', g.round, 'stage', g.stage, 'pool', g.pool, 'a', g.side_a, 'b', g.side_b, 'court', g.court,
                 'status', g.status, 'scores', g.scores, 'winner', g.winner, 'walkover', nullif(g.walkover, false),
                 'version', case when p_full then g.version end,
-                'scored_by', case when p_full then (select nickname from public.profiles where id = g.scored_by) end,
-                'edited_by', case when p_full then (select nickname from public.profiles where id = g.edited_by) end,
+                'scored_by', (select nickname from public.profiles where id = g.scored_by),
+                'edited_by', (select nickname from public.profiles where id = g.edited_by),
                 'flagged', case when p_full and g.flagged then true end)) order by g.round, g.seq), '[]')
               from public.match_games g where g.match_id = m.id),
     'standings', public.match_standings(m.id),
@@ -1780,7 +1785,9 @@ begin
   if m.format <> 'rotating' or m.status <> 'live' then raise exception 'cannot_add_player' using errcode = '22023'; end if;
   if p_user is not null then
     select nickname, rating into v_name, v_rating from public.profiles where id = p_user;
-    if v_name is null or public.blocked_between(auth.uid(), p_user) or not public.related(auth.uid(), p_user) then
+    if v_name is null or public.blocked_between(auth.uid(), p_user)
+       or not (public.related(auth.uid(), p_user)
+               or exists (select 1 from public.session_signups where session_id = m.session_id and user_id = p_user)) then
       raise exception 'player_not_found' using errcode = 'P0002';
     end if;
     if exists (select 1 from public.match_players where match_id = p_match and user_id = p_user) then
@@ -1861,7 +1868,11 @@ begin
   if cardinality(p_users) > 3 then raise exception 'too_many_helpers' using errcode = '22023'; end if;
   select * into m from public.matches where id = p_match for update;
   foreach helper in array p_users loop
-    if public.blocked_between(auth.uid(), helper) or not public.related(auth.uid(), helper) then
+    -- 球友、球群里的人，或者参赛的人、这一晚报了名的人
+    if public.blocked_between(auth.uid(), helper)
+       or not (public.related(auth.uid(), helper)
+               or exists (select 1 from public.match_players where match_id = p_match and user_id = helper)
+               or exists (select 1 from public.session_signups where session_id = m.session_id and user_id = helper)) then
       raise exception 'player_not_found' using errcode = 'P0002';
     end if;
   end loop;
