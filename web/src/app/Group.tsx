@@ -9,9 +9,13 @@ import { Link, navigate } from './router';
 import { problem, supabase, useLive, type GroupCourt, type GroupDetail, type GroupSession, type Schedule } from './supabase';
 import { dayName, hours } from './time';
 import { Button, Skeleton, toast } from './ui';
+// 当晚（排场、看排场、付钱、收款）的入口
+import type { TonightSession } from './club';
+import { PastTonight, TonightAction } from './Tonight';
 
 export function GroupPage({ id }: { id: string }) {
   const { data: g, refresh } = useLive<GroupDetail | null>('group_page', { args: { p_group: id }, every: 30_000 });
+  const { data: tonight, refresh: refreshTonight } = useLive<TonightSession[]>('group_tonight', { args: { p_group: id }, every: 60_000 });
   const [busy, setBusy] = useState<string>();
   const [confirm, setConfirm] = useState<string>();
 
@@ -119,10 +123,12 @@ export function GroupPage({ id }: { id: string }) {
 
           <section aria-labelledby="sessions" className="grid gap-2">
             <SectionTitle id="sessions" title={t('Upcoming sessions')} detail={t('Leaving within 2 hours of start counts as a late cancellation')} />
+            <PastTonight tonight={tonight} shown={g.sessions.map((s) => s.id)} group={g.name} tz={courts[0].tz} onChange={refreshTonight} />
             {g.sessions.length === 0 && <p className="text-footnote text-ink-secondary">{t('No sessions scheduled.')}</p>}
             {g.sessions.map((s) => (
               <Session key={s.id} session={s} courts={courts} member={member} organizer={organizer} busy={busy}
-                       confirm={confirm} setConfirm={setConfirm} act={act} />
+                       confirm={confirm} setConfirm={setConfirm} act={act}
+                       tonight={tonight?.find((x) => x.id === s.id)} group={g.name} onTonight={refreshTonight} />
             ))}
           </section>
 
@@ -227,7 +233,7 @@ export function GroupPage({ id }: { id: string }) {
 
 const roles: Record<string, string> = { owner: 'Owner', organizer: 'Organizer' };
 
-function Session({ session: s, courts, member, organizer, busy, confirm, setConfirm, act }: {
+function Session({ session: s, courts, member, organizer, busy, confirm, setConfirm, act, tonight, group, onTonight }: {
   session: GroupSession;
   /** 球群的球馆：几个球馆时写这一场在哪个，时间按这个球馆的时区 */
   courts: GroupCourt[];
@@ -238,6 +244,10 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
   confirm?: string;
   setConfirm: (key?: string) => void;
   act: (name: string, fn: string, args: Record<string, unknown>, done?: string) => Promise<unknown>;
+  /** 当天的场次（开场前 1 小时起）：白底加阴影，多一个当晚的按钮 */
+  tonight?: TonightSession;
+  group: string;
+  onTonight: () => void;
 }) {
   const court = courts.find((c) => c.id === s.venue) ?? courts[0];
   const tz = court.tz;
@@ -254,7 +264,7 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
   }
 
   return (
-    <article className={`sticker grid gap-3 p-4 ${s.cancelled ? 'bg-surface-muted' : going ? 'bg-lime/45' : waiting ? 'bg-butter/50' : ''}`}>
+    <article className={`sticker grid gap-3 p-4 ${s.cancelled ? 'bg-surface-muted' : tonight ? '' : going ? 'bg-lime/45' : waiting ? 'bg-butter/50' : ''}`}>
       <div className="flex items-start gap-3">
         <div className="grid min-w-0 flex-1 gap-1">
           <h3 className="text-headline">{dayName(s.starts_at, tz)} · {hours(s.starts_at, s.ends_at, tz)}</h3>
@@ -323,6 +333,7 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
           ))}
         </div>
       )}
+      {tonight && !s.cancelled && <TonightAction tonight={tonight} group={group} tz={tz} onChange={onTonight} />}
     </article>
   );
 }

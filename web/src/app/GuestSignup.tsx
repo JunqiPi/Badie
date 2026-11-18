@@ -3,6 +3,7 @@ import { useCaptcha } from './captcha';
 import { t, useLocale } from './i18n';
 import { Icon } from './icons';
 import { Empty, IconTile, Notice, Tag } from './kit';
+import { GuestPayCard } from './Pay';
 import { Link, navigate } from './router';
 import { problem, supabase, useLive, type GuestGroup, type GuestSession } from './supabase';
 import { dayName, hours } from './time';
@@ -15,7 +16,7 @@ const TOKENS = 'badie.guestSignups';
 const NAME = 'badie.guestName';
 
 /** 这台设备上的报名凭证：{ 场次 id: 凭证 }。浏览器不让存时只在这次打开里有效 */
-function loadTokens(): Record<string, string> {
+export function loadTokens(): Record<string, string> {
   try {
     return JSON.parse(localStorage.getItem(TOKENS) ?? '{}') ?? {};
   } catch {
@@ -97,6 +98,7 @@ export function GuestSignup({ code, signedIn }: { code: string; signedIn: boolea
   return (
     <div className="mx-auto grid max-w-xl gap-4">
       {cancelNotice}
+      <GuestPayCard group={page.group_id} />
       <section className="sticker grid gap-3 p-4">
         <h1 className="text-display max-[379px]:text-[1.75rem]">{page.name}</h1>
         <div className="flex items-center gap-3">

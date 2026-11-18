@@ -451,6 +451,7 @@ const updateIcons: Record<string, [IconName, Tint]> = {
   message_request: ['chat', 'sky'],
   challenge: ['challenge', 'peach'],
   group: ['group', 'sky'],
+  match: ['trophy', 'butter'],
   room: ['court', 'peach'],
   room_closed: ['court', 'muted'],
   room_promoted: ['court', 'lime'],

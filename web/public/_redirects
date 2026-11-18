@@ -9,6 +9,10 @@
 /rooms/* / 200
 /groups/* / 200
 /g/* / 200
+/live/* / 200
+/pay/* / 200
+/night/* / 200
+/matches/* / 200
 /join/* / 200
 /add/* / 200
 /challenges/* / 200

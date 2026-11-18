@@ -239,6 +239,7 @@ const createOptions: { to: string; icon: IconName; tint: Tint; title: string; su
   { to: '/play/', icon: 'bolt', tint: 'lime', title: 'Quick Match', subtitle: 'Finds buddies by level, time and distance' },
   { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Fill a court you’ve booked, or play with friends' },
   { to: '/groups/', icon: 'group', tint: 'sky', title: 'Groups', subtitle: 'Same time and venue weekly. One-tap sign-up, auto-waitlist' },
+  { to: '/matches/new/', icon: 'trophy', tint: 'butter', title: 'Match · round robin', subtitle: 'Scores, standings and the next game, worked out for you' },
   { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Enter a room or group code', subtitle: '6-character room or group code from a friend' },
 ];
 

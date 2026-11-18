@@ -7,6 +7,7 @@ import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Divider, Group, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile } from './kit';
 import { passwordProblem } from './password';
+import { PaymentHandles } from './Pay';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
 import { cleanPhotoFolder, friendLink, problem, supabase, winPercent, suspendedText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
@@ -73,6 +74,10 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
             <Row icon="trophy" tint="butter" title={t('Leaderboard')} to="/rankings/" />
             <Divider />
             <Row icon="challenge" tint="pink" title={t('Challenges')} to="/challenges/" />
+            <Divider />
+            <Row icon="medal" tint="butter" title={t('Matches')} to="/matches/" />
+            <Divider />
+            <Row icon="coins" tint="mint" title={t('Payment methods')} to="/settings/#payment" />
             <Divider />
             <Row icon="heart" tint="pink" title={t('Venues & favorites')} to="/courts/" />
             <Divider />
@@ -339,6 +344,8 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       <Group title={t('Level verification')}>
         <Row icon="verified" tint="mint" title={t('Verify a high level')} subtitle={t('Tournament results, a national ranking or a BWF profile.')} to="/verification/" />
       </Group>
+
+      <PaymentHandles />
 
       <PasswordSettings email={email} />
 

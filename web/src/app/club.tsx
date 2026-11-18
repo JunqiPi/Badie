@@ -1,0 +1,337 @@
+// 当晚（排场 / 比赛 / 收款）几个页面共用的：接口的类型、小工具和小组件。接口见 Badie-iOS/docs/CLUB_NIGHT.md 最后一节
+import qrcode from 'qrcode-generator';
+import { useEffect, useMemo, useState } from 'react';
+import { loadTokens } from './GuestSignup';
+import { t } from './i18n';
+import { Icon } from './icons';
+import { Sheet } from './Nearby';
+import { problem } from './supabase';
+import { Button, toast } from './ui';
+
+// MARK: 类型
+
+export type Attendance = 'absent' | 'here' | 'resting' | 'left';
+export type Handles = { venmo?: string; cashapp?: string; paypal?: string; zelle?: string };
+
+export interface NightPerson {
+  /** 报名那一行的 id（访客也有） */
+  id: string;
+  name: string;
+  user_id: string | null;
+  guest: boolean;
+  status: Attendance;
+  waitlisted: boolean;
+  games: number;
+  on_court: number | null;
+  next_up: boolean;
+  /** 等候的人排第几（从 1 起，和排人的顺序一样）；不在等候的为 null */
+  queue: number | null;
+}
+
+export interface NightState {
+  session_id: string;
+  group_id: string;
+  group: string;
+  venue: string;
+  tz: string | null;
+  starts_at: string;
+  ends_at: string;
+  role: 'organizer' | 'helper';
+  /** 开场前 1 小时到结束后 3 小时 */
+  open: boolean;
+  started: boolean;
+  courts: number;
+  doubles: boolean;
+  balance: boolean;
+  board_code: string | null;
+  match_id: string | null;
+  match_live: boolean;
+  helpers: { id: string; nickname: string }[];
+  undo_until: string | null;
+  people: NightPerson[];
+  /** 双打 players 前两个一队 */
+  games: { id: number; court: number; players: string[]; started_at: string }[];
+  next: string[][];
+}
+
+export interface NightPay {
+  amount: number | null;
+  amount_set: boolean;
+  payee: string | null;
+  payee_is_me: boolean;
+  has_handles: boolean;
+  reminded_at: string | null;
+  can_remind: boolean;
+  people: { id: string; name: string; guest: boolean; status: Attendance; email: boolean; owes: boolean; paid: boolean; paid_self: boolean }[];
+}
+
+/** 球群页的当天场次（group_tonight） */
+export interface TonightSession {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  can_run: boolean;
+  board: string | null;
+  pay: { to: string; amount: number | null; handles: Handles; paid: boolean; paid_self: boolean } | null;
+  unpaid: number | null;
+}
+
+/** 球局页的“今晚”卡（my_tonight） */
+export type MyTonight =
+  | { kind: 'night'; session_id: string; group_id: string; name: string; board_code: string; status: 'court' | 'next' | 'waiting' | 'resting'; court: number | null; games: number }
+  | { kind: 'match'; match_id: string; name: string; board_code: string; status: 'court' | 'next' | 'waiting'; court: number | null; round: number | null; games: number };
+
+/** 访客的付款（guest_payment） */
+export interface GuestPayment {
+  token: string;
+  session_id: string;
+  group_id: string;
+  group: string;
+  starts_at: string;
+  ends_at: string;
+  venue: string;
+  tz: string | null;
+  to: string;
+  amount: number | null;
+  handles: Handles;
+  paid: boolean;
+  paid_self: boolean;
+}
+
+export type MatchFormat = 'singles' | 'fixed' | 'rotating' | 'groups';
+
+export interface MatchGame {
+  id: number;
+  round: number;
+  stage: 'pool' | 'semi' | 'final';
+  pool?: number;
+  a: string[];
+  b: string[];
+  court?: number;
+  status: 'queued' | 'playing' | 'done' | 'cancelled' | 'skipped';
+  /** 每局两个数 [a1, b1, a2, b2…] */
+  scores?: number[];
+  winner?: 1 | 2;
+  walkover?: boolean;
+  /** 谁填的、谁改的（名字） */
+  scored_by?: string;
+  edited_by?: string;
+  /** 下面两项只有组织者、帮手看得到 */
+  version?: number;
+  flagged?: boolean;
+}
+
+export interface Standing {
+  key: string;
+  name: string;
+  members: string[];
+  pool: number | null;
+  played: number;
+  wins: number;
+  losses: number;
+  pf: number;
+  pa: number;
+  diff: number;
+  rank: number;
+  tied: boolean;
+  withdrawn: boolean;
+}
+
+export interface MatchView {
+  kind: 'match';
+  id: string;
+  name: string;
+  format: MatchFormat;
+  doubles: boolean;
+  points: 11 | 15 | 21;
+  best_of: 1 | 3;
+  win_by_two: boolean;
+  courts: number;
+  rounds: number;
+  round: number | null;
+  pools: number | null;
+  advance: number | null;
+  status: 'live' | 'done';
+  created_at: string;
+  ended_at: string | null;
+  board_code: string;
+  session_id: string | null;
+  venue: string | null;
+  tie_at_cut: boolean;
+  players: { id: string; name: string; team: number | null; pool: number | null; withdrawn: boolean }[];
+  games: MatchGame[];
+  standings: Standing[];
+  ranking: Standing[] | null;
+  /** 看板：这台设备或登录的人对上的那一个；比赛页：我的参赛 id */
+  me?: string | null;
+}
+
+export interface MatchState extends MatchView {
+  /** 组织者、帮手看到的参赛的人多一个 user_id（注册用户才有） */
+  players: (MatchView['players'][number] & { user_id?: string | null })[];
+  role: 'organizer' | 'helper' | 'player';
+  helpers: { id: string; nickname: string }[];
+  undo_until: string | null;
+}
+
+// MARK: 小工具
+
+/** 这台设备上访客报名的凭证（报名页存的，最多 50 个） */
+export const deviceTokens = () => Object.values(loadTokens()).slice(-50);
+
+/** $12 / $12.50 */
+export const money = (amount: number) => `$${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
+
+/** 看板的链接（二维码也是它） */
+export const boardLink = (code: string) => `${location.origin}/live/${code}/`;
+
+/** 一队的名字：“Kevin · Amy” */
+export const teamName = (ids: string[], names: Map<string, string>) => ids.map((id) => names.get(id) ?? '?').join(' · ');
+
+/** 双打的一场拆成两队（前两个一队），单打一人一边 */
+export const sides = (players: string[]) => (players.length === 4 ? [players.slice(0, 2), players.slice(2)] : [players.slice(0, 1), players.slice(1)]);
+
+/** 比分 [21, 18, 19, 21] → “21–18 19–21” */
+export const scoreText = (scores: number[] | undefined) =>
+  (scores ?? []).reduce<string[]>((games, n, i) => (i % 2 ? [...games.slice(0, -1), `${games.at(-1)}–${n}`] : [...games, String(n)]), []).join(' ');
+
+export const formatName = (format: MatchFormat) =>
+  ({ singles: t('Singles round robin'), fixed: t('Doubles, fixed partners'), rotating: t('Doubles, rotating partners'), groups: t('Groups + final') })[format];
+
+/** 当晚页、比赛页的错误：not_allowed 在这里是没权限，不是约球里的意思 */
+export const clubProblem = (error: { message: string }) =>
+  error.message === 'not_allowed' ? t('Only the organizer and helpers can do this.') : problem(error);
+
+/** 复制一段文字；浏览器不让复制时直接显示出来 */
+export async function copyText(text: string, done: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(done);
+  } catch {
+    toast(text);
+  }
+}
+
+/** 每隔一会儿重新渲染（“几分钟”“几分钟前更新”） */
+export function useNow(every = 15_000) {
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), every);
+    return () => clearInterval(timer);
+  }, [every]);
+  return now;
+}
+
+/** 上一次拿到数据的时间（useLive 每次成功都给一份新对象） */
+export function useUpdatedAt(data: unknown) {
+  const [at, setAt] = useState(Date.now);
+  useEffect(() => {
+    if (data !== undefined) setAt(Date.now());
+  }, [data]);
+  return at;
+}
+
+// MARK: 小组件
+
+/** “1 分钟前更新”：网差时保留上一份，超过 1 分钟变成提示色 */
+export function Updated({ at }: { at: number }) {
+  const now = useNow();
+  const minutes = Math.floor((now - at) / 60_000);
+  return (
+    <p role="status" className={`justify-self-center text-caption font-bold ${minutes >= 1 ? 'chip bg-butter' : 'text-ink-tertiary'}`}>
+      {minutes < 1 ? t('Updated just now') : t('Updated {n} min ago', { n: minutes })}
+    </p>
+  );
+}
+
+/** 撤销：undo_until 之前底部出一条，到时间消失 */
+export function UndoBar({ until, onUndo }: { until: string | null; onUndo: () => Promise<unknown> }) {
+  const now = useNow(1000);
+  const [busy, setBusy] = useState(false);
+  if (!until || new Date(until).getTime() <= now) return null;
+  return (
+    <div className="fixed inset-x-0 bottom-[calc(var(--tabbar)+0.75rem)] z-40 flex justify-center px-5 lg:bottom-6">
+      <div className="flex items-center gap-3 rounded-[16px] border-2 border-stroke bg-inverse py-2 pr-2 pl-4 text-on-inverse shadow-low">
+        <span className="text-subhead font-bold">{t('Done. Tapped by mistake?')}</span>
+        <Button className="button-sm button-quiet" busy={busy} onClick={async () => {
+          setBusy(true);
+          await onUndo();
+          setBusy(false);
+        }}>{t('Undo')}</Button>
+      </div>
+    </div>
+  );
+}
+
+/** 加减数字（场地数、只打几轮） */
+export function Stepper({ label, value, min, max, onChange, text }: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (value: number) => void;
+  /** 中间显示的字（“2 片”） */
+  text: string;
+}) {
+  const button = 'press grid size-10 place-items-center rounded-[12px] border-2 border-stroke bg-surface disabled:opacity-40';
+  return (
+    <div className="flex min-h-14 items-center gap-3">
+      <span className="flex-1 font-bold">{label}</span>
+      <button type="button" className={button} disabled={value <= min} onClick={() => onChange(value - 1)} aria-label={t('Fewer')}>
+        <Icon name="minus" className="size-4" />
+      </button>
+      <span className="min-w-14 text-center text-headline tabular-nums" aria-live="polite">{text}</span>
+      <button type="button" className={button} disabled={value >= max} onClick={() => onChange(value + 1)} aria-label={t('More')}>
+        <Icon name="plus" className="size-4" />
+      </button>
+    </div>
+  );
+}
+
+/** 开关（和设置页的一样） */
+export function Switch({ checked, onChange, title, text }: { checked: boolean; onChange: (value: boolean) => void; title: string; text?: string }) {
+  return (
+    <label className="flex min-h-14 cursor-pointer items-center gap-3 py-2">
+      <span className="min-w-0 flex-1">
+        <span className="block font-bold">{title}</span>
+        {text && <span className="block text-footnote text-ink-secondary">{text}</span>}
+      </span>
+      <input type="checkbox" role="switch" checked={checked} onChange={(e) => onChange(e.target.checked)}
+             className="relative h-7 w-12 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-stroke bg-surface-muted transition-colors duration-[var(--dur-1)] before:absolute before:top-0.5 before:left-0.5 before:size-5 before:rounded-full before:border-2 before:border-stroke before:bg-white before:transition-transform before:duration-[var(--dur-2)] checked:bg-lime checked:before:translate-x-5" />
+    </label>
+  );
+}
+
+/** 二维码：白底黑块（深色模式下也是白底，扫得出来） */
+export function QrCode({ text, className = 'size-56' }: { text: string; className?: string }) {
+  const { size, path } = useMemo(() => {
+    const qr = qrcode(0, 'M');
+    qr.addData(text);
+    qr.make();
+    const n = qr.getModuleCount();
+    let d = '';
+    for (let row = 0; row < n; row++) for (let col = 0; col < n; col++) if (qr.isDark(row, col)) d += `M${col},${row}h1v1h-1z`;
+    return { size: n, path: d };
+  }, [text]);
+  return (
+    <svg viewBox={`-3 -3 ${size + 6} ${size + 6}`} className={`rounded-[12px] bg-white ${className}`} role="img" aria-label={t('QR code')} shapeRendering="crispEdges">
+      <path d={path} fill="#17140f" />
+    </svg>
+  );
+}
+
+/** 看板的二维码和链接（半屏） */
+export function QrSheet({ open, onClose, code, title }: { open: boolean; onClose: () => void; code: string; title: string }) {
+  const link = boardLink(code);
+  return (
+    <Sheet open={open} onClose={onClose} labelledBy="qr-title">
+      <h2 id="qr-title" className="text-title3">{title}</h2>
+      <p className="text-subhead text-ink-secondary">{t('Anyone can scan this to see the courts. No account needed.')}</p>
+      <div className="grid justify-items-center rounded-[16px] border-2 border-stroke bg-white p-4">
+        <QrCode text={link} className="size-64 max-w-full" />
+      </div>
+      <p className="text-center text-footnote font-bold break-all">{link}</p>
+      <Button variant="quiet" onClick={() => copyText(link, t('Link copied'))}><Icon name="copy" className="size-4" />{t('Copy link')}</Button>
+    </Sheet>
+  );
+}
