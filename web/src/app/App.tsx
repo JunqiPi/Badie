@@ -5,6 +5,7 @@ import { Contact, Support } from './Contact';
 import { Discover } from './Discover';
 import { Challenges, GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
+import { GuestSignup } from './GuestSignup';
 import { startLocale, t, useLocale } from './i18n';
 import { Groups } from './Groups';
 import { Home } from './Home';
@@ -117,6 +118,9 @@ export default function App() {
   if (path.startsWith('/about/')) return shell(<About />);
   if (path.startsWith('/contact/')) return shell(<Contact signedIn={Boolean(profile)} />);
   if (path.startsWith('/support/')) return shell(<Support />);
+  // 球群的报名链接：不注册也能报名
+  const guestCode = path.match(/^\/g\/([\w-]+)\/?$/)?.[1];
+  if (guestCode) return shell(<GuestSignup key={guestCode} code={guestCode} signedIn={Boolean(profile)} />);
 
   if (!profile) return shell(<SignInPage path={path} />);
 

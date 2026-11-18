@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { activityText, courtsOf, scheduleText } from './Groups';
+import { guestLink } from './GuestSignup';
 import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
@@ -65,6 +66,15 @@ export function GroupPage({ id }: { id: string }) {
       toast(t('Invite copied. Paste it into your chat.'));
     } catch {
       toast(t('Group code: {code}', { code: g!.invite_code ?? '' }));
+    }
+  }
+
+  async function copyGuestLink() {
+    try {
+      await navigator.clipboard.writeText(guestLink(g!.guest_code!));
+      toast(t('Sign-up link copied.'));
+    } catch {
+      toast(guestLink(g!.guest_code!));
     }
   }
 
@@ -162,6 +172,9 @@ export function GroupPage({ id }: { id: string }) {
                   <p className="mt-1 font-mono text-[1.75rem] font-black tracking-[0.3em]">{g.invite_code}</p>
                 </div>
                 <Button onClick={copyInvite}><Icon name="copy" className="size-4" />{t('Copy invite')}</Button>
+                {organizer && g.guests_allowed && g.guest_code && (
+                  <Button variant="quiet" onClick={copyGuestLink}><Icon name="link" className="size-4" />{t('Copy sign-up link')}</Button>
+                )}
                 {g.my_role === 'owner' && (
                   <>
                     <Link to={`/groups/${g.id}/edit/`} className="button button-quiet"><Icon name="pencil" className="size-4" />{t('Edit group and sessions')}</Link>
@@ -266,11 +279,25 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
       {member && s.players && s.players.length > 0 && (
         <details>
           <summary className="cursor-pointer text-footnote font-bold underline underline-offset-4">{t('Who’s going')}</summary>
-          <p className="mt-2 text-footnote">
-            {s.players.map((p, i) => (
-              <span key={p.id}>{i > 0 && ', '}<Link to={`/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>{p.waitlisted && ` ${t('(waiting)')}`}</span>
+          <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-footnote">
+            {s.players.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-1.5">
+                {p.guest ? p.nickname : <Link to={`/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>}
+                {p.guest && <Tag tint="mint">{t('Guest')}</Tag>}
+                {p.waitlisted && t('(waiting)')}
+                {/* 组织者可以把访客移出这一场（和移出成员一样，候补递补） */}
+                {organizer && p.guest && !s.cancelled && (confirm === `guest-${p.id}` ? (
+                  <Button variant="danger" className="button-sm" busy={busy === `guest-${p.id}`}
+                          onClick={() => act(`guest-${p.id}`, 'remove_guest', { p_signup: p.id }, t('Removed'))}>{t('Remove from this session')}</Button>
+                ) : (
+                  <button type="button" onClick={() => setConfirm(`guest-${p.id}`)} aria-label={t('Remove {name} from this session', { name: p.nickname })}
+                          className="press grid size-8 place-items-center rounded-full text-ink-tertiary hover:bg-surface-muted hover:text-ink">
+                    <Icon name="xCircle" className="size-4" />
+                  </button>
+                ))}
+              </li>
             ))}
-          </p>
+          </ul>
         </details>
       )}
 

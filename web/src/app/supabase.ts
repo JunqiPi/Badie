@@ -415,7 +415,8 @@ export interface GroupSession {
   waitlist: number;
   /** 'confirmed' 或 'waitlisted:2' */
   my_status: string | null;
-  players: { id: string; nickname: string; waitlisted: boolean }[] | null;
+  /** 访客的 id 是这一行报名的 id（移出时用） */
+  players: { id: string; nickname: string; waitlisted: boolean; guest?: boolean; signed_up_at?: string }[] | null;
 }
 
 export interface GroupDetail extends GroupSummary {
@@ -423,6 +424,37 @@ export interface GroupDetail extends GroupSummary {
   sessions: GroupSession[];
   members: { id: string; nickname: string; rating: number; role: 'owner' | 'organizer' | 'member' }[] | null;
   pending: { id: string; nickname: string; rating: number }[] | null;
+  /** 访客报名（只有组织者能看到）：开没开、每场最多几个（null = 名额的一半）、报名链接的码 */
+  guests_allowed?: boolean | null;
+  guest_limit?: number | null;
+  guest_code?: string | null;
+}
+
+/** 不用注册的报名页（guest_group_page）：报名的人只有名字 */
+export interface GuestSession {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  capacity: number;
+  cancelled: boolean;
+  /** 这一场在哪个球馆（名字） */
+  venue: string;
+  city: string;
+  tz: string | null;
+  /** 还能报几个访客 */
+  guest_spots: number;
+  /** me：这台设备上报的 */
+  players: { name: string; guest: boolean; waitlisted: boolean; me: boolean }[];
+}
+
+export interface GuestGroup {
+  group_id: string;
+  name: string;
+  summary: string;
+  organizer: string | null;
+  /** 主球馆 */
+  venue: { name: string; city: string };
+  sessions: GuestSession[];
 }
 
 export interface MyGroups {
@@ -598,6 +630,14 @@ const problems: Record<string, string> = {
   time_already_set: 'The time is already set.',
   invalid_window: 'That time doesn’t leave 2 hours to play. Pick another.',
   not_visible: 'Let players nearby see you too',
+  guests_off: 'This link doesn’t work anymore. Ask the organizer for the new link.',
+  guest_spots_full: 'Guest spots for this day are taken. Ask the organizer.',
+  too_many_signups: 'Too many sign-ups from this network. Try again in an hour.',
+  invalid_guest_name: 'Enter your name (2–20 characters).',
+  invalid_email: 'Check the email address.',
+  captcha_failed: 'The security check didn’t go through. Refresh the page and try again.',
+  signup_not_found: 'You’re not on this list anymore.',
+  invalid_guest_limit: 'Pick 1 to 40 guests.',
 };
 /** 一次爽约：第 1 次警告、第 2 次 7 天不能约球、第 3 次永久；48 小时内可以申诉 */
 export interface Strike {
