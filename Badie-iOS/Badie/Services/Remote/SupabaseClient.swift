@@ -99,6 +99,8 @@ enum RemoteError: LocalizedError, Equatable {
         case "not_organizer": return String(localized: "只有组织者才能这样操作。")
         case "not_member": return String(localized: "请先加入球群。")
         case "session_closed": return String(localized: "本场已关闭。")
+        case "signup_not_found": return String(localized: "已经不在这一场的名单上了。")
+        case "invalid_guest_limit": return String(localized: "每场访客最多 1–40 人。")
         // 挑战
         case "challenge_closed": return String(localized: "这个挑战已失效。")
         case "friends_only": return String(localized: "TA 只接受球友的挑战。")

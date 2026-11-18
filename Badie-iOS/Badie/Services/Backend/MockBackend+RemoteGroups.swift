@@ -50,9 +50,13 @@ extension MockBackend {
     struct RemoteGroupDetail: Decodable {
         struct Session: Decodable {
             struct Player: Decodable {
+                /// 访客是那一行报名的 id
                 let id: String
                 let nickname: String
                 let waitlisted: Bool
+                /// 不注册、在网页上报名的人（旧服务器没有这两项）
+                let guest: Bool?
+                let signedUpAt: Date?
             }
 
             let id: String
@@ -92,6 +96,10 @@ extension MockBackend {
         let sessions: [Session]?
         let members: [Member]?
         let pending: [Member]?
+        /// 访客报名的设置（只有组织者拿得到）
+        let guestsAllowed: Bool?
+        let guestLimit: Int?
+        let guestCode: String?
     }
 
     private struct RemoteMyGroups: Decodable {
@@ -254,6 +262,25 @@ extension MockBackend {
         try await loadRemoteGroup(groupId)
     }
 
+    /// 访客报名：开关、每场上限（nil = 名额的一半）
+    func remoteSetGuestSignup(_ groupId: String, allowed: Bool, limit: Int?) async throws {
+        try await requireRemote().call("set_guest_signup", ["p_group": groupId, "p_allowed": allowed, "p_limit": limit.map { $0 as Any } ?? NSNull()])
+        try await loadRemoteGroup(groupId)
+    }
+
+    /// 换一个报名链接，旧的马上失效
+    func remoteResetGuestLink(_ groupId: String) async throws {
+        try await requireRemote().call("reset_guest_link", ["p_group": groupId])
+        try await loadRemoteGroup(groupId)
+    }
+
+    /// 组织者把访客移出某一场（guestId 是那一行报名的 id）
+    func remoteRemoveGuest(_ guestId: String, sessionId: String) async throws {
+        guard let groupId = db.groupSessions[sessionId]?.groupId else { throw BackendError.sessionClosed }
+        try await requireRemote().call("remove_guest", ["p_signup": guestId])
+        try await loadRemoteGroup(groupId)
+    }
+
     func remoteCancelSession(_ sessionId: String) async throws {
         guard let groupId = db.groupSessions[sessionId]?.groupId else { throw BackendError.sessionClosed }
         try await requireRemote().call("cancel_session", ["p_session": sessionId])
@@ -274,12 +301,21 @@ extension MockBackend {
                    joinPolicy: detail.joinPolicy, audience: detail.gender, coached: detail.coached, venue: detail.venue, venues: detail.venues,
                    schedules: detail.schedules ?? [], activity: detail.activity,
                    myRole: detail.myRole, inviteCode: detail.inviteCode, members: detail.members, pending: detail.pending, me: me)
+        db.groups[detail.id]?.guestSignup = detail.guestsAllowed.map { GuestSignup(allowed: $0, limit: detail.guestLimit, code: detail.guestCode) }
         guard let group = db.groups[detail.id] else { return }
         let calendar = venue(id: group.venueId)?.calendar ?? .current
         // 这个群的场次以服务器为准
         db.groupSessions = db.groupSessions.filter { $0.value.groupId != detail.id }
         for session in detail.sessions ?? [] {
-            for player in session.players ?? [] { cacheRemoteUser(id: player.id, nickname: player.nickname, rating: nil) }
+            // 访客不是用户：记在这一场的名单里，不进用户缓存
+            var guests: [String: GroupGuest] = [:]
+            for player in session.players ?? [] {
+                if player.guest == true {
+                    guests[player.id] = GroupGuest(name: player.nickname, signedUpAt: player.signedUpAt ?? session.startsAt)
+                } else {
+                    cacheRemoteUser(id: player.id, nickname: player.nickname, rating: nil)
+                }
+            }
             var signedUp = session.players.map { $0.filter { !$0.waitlisted }.map(\.id) }
                 ?? (0..<session.confirmed).map { "spot-\(session.id)-\($0)" }
             var waitlist = session.players.map { $0.filter(\.waitlisted).map(\.id) }
@@ -302,7 +338,7 @@ extension MockBackend {
                 id: session.id, groupId: detail.id, scheduleId: schedule?.id ?? "",
                 slot: TimeSlot(date: session.startsAt, startTime: session.startsAt, endTime: session.endsAt),
                 capacity: session.capacity, signedUp: signedUp, waitlist: waitlist, isCancelled: session.cancelled,
-                venueId: session.venue ?? schedule?.effectiveVenueId(in: group)
+                venueId: session.venue ?? schedule?.effectiveVenueId(in: group), guests: guests.isEmpty ? nil : guests
             )
         }
     }
@@ -346,7 +382,9 @@ extension MockBackend {
             joinPolicy: joinPolicy == "approval" ? .approval : .open,
             inviteCode: inviteCode ?? existing?.inviteCode ?? "", createdAt: existing?.createdAt ?? Date(),
             audience: audience.flatMap(Gender.init(rawValue:)), coached: coached,
-            otherVenueIds: courts.count > 1 ? courts.dropFirst().map(\.id) : nil
+            otherVenueIds: courts.count > 1 ? courts.dropFirst().map(\.id) : nil,
+            // 列表里的球群信息不带访客设置：沿用上次球群页拿到的
+            guestSignup: existing?.guestSignup
         )
         remoteGroupActivity[id] = GroupActivity(sessionsLast30Days: activity.sessions, averageTurnout: activity.average)
     }

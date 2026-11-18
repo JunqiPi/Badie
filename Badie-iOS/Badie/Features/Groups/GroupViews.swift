@@ -166,6 +166,16 @@ struct GroupDetailView: View {
                                 .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
                                 .frame(maxWidth: .infinity)
                         }
+                        if let me, group.isOrganizer(me), group.guestSignup?.allowed == true, let link = group.guestSignup?.link {
+                            Button {
+                                UIPasteboard.general.string = link.absoluteString
+                                appState.showToast(String(localized: "已复制报名链接"), style: .success)
+                            } label: {
+                                Label("复制报名链接", systemImage: "link")
+                            }
+                            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+                            .frame(maxWidth: .infinity)
+                        }
                         if group.ownerId == me {
                             VStack(spacing: AppTheme.Spacing.sm) {
                                 Button("编辑球群和场次") { router.open(.editGroup(id: group.id)) }
@@ -555,11 +565,13 @@ struct SessionSheet: View {
                         IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
                     }
                     .padding(.top, AppTheme.Spacing.xl)
-                    roster(title: String(localized: "已报名 \(session.signedUp.count)/\(session.capacity)"), ids: session.signedUp)
+                    let organizer = appState.currentUser.map { group.isOrganizer($0.id) } ?? false
+                    roster(title: String(localized: "已报名 \(session.signedUp.count)/\(session.capacity)"), ids: session.signedUp,
+                           session: session, organizer: organizer)
                     if !session.waitlist.isEmpty {
-                        roster(title: String(localized: "候补 \(session.waitlist.count)"), ids: session.waitlist)
+                        roster(title: String(localized: "候补 \(session.waitlist.count)"), ids: session.waitlist, session: session, organizer: organizer)
                     }
-                    if let me = appState.currentUser?.id, group.isOrganizer(me), !session.isCancelled {
+                    if organizer, !session.isCancelled {
                         Button("取消这一场") {
                             Task {
                                 do {
@@ -581,14 +593,16 @@ struct SessionSheet: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
 
-    private func roster(title: String, ids: [String]) -> some View {
+    private func roster(title: String, ids: [String], session: GroupSession, organizer: Bool) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Text(title)
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(Array(ids.enumerated()), id: \.element) { index, userId in
-                    if let user = groupManager.user(userId) {
+                    if let guest = session.guests?[userId] {
+                        guestChip(guest, id: userId, session: session, canRemove: organizer && !session.isCancelled)
+                    } else if let user = groupManager.user(userId) {
                         HStack(spacing: 6) {
                             AvatarView(user: user, size: 28)
                             Text(userId == appState.currentUser?.id ? String(localized: "我") : user.nickname)
@@ -603,6 +617,61 @@ struct SessionSheet: View {
                         .accessibilityLabel("\(index + 1). \(user.nickname)")
                     }
                 }
+            }
+        }
+    }
+
+    /// 访客：名字后面标“访客”；组织者点开可以移出这一场（和移出成员一样，候补递补）
+    @ViewBuilder
+    private func guestChip(_ guest: GroupGuest, id: String, session: GroupSession, canRemove: Bool) -> some View {
+        let chip = HStack(spacing: 6) {
+            Text(guest.name.prefix(1).uppercased())
+                .font(.system(size: 12, weight: .black))
+                .foregroundStyle(AppTheme.Colors.ink)
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(AppTheme.Colors.surfaceMuted))
+                .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+                .accessibilityHidden(true)
+            Text(guest.name)
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.ink)
+            Text("访客")
+                .font(.system(size: 11, weight: .heavy))
+                .foregroundStyle(AppTheme.Colors.onAccent)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 1)
+                .background(Capsule().fill(AppTheme.Colors.mint))
+                .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+        }
+        .padding(.leading, 4)
+        .padding(.trailing, AppTheme.Spacing.sm)
+        .padding(.vertical, 4)
+        .background(Capsule().fill(AppTheme.Colors.surface))
+        .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1))
+        if canRemove {
+            Menu {
+                Section(String(localized: "\(guest.name) · 访客 · 报名于 \(guest.signedUpAt.formatted(.dateTime.month().day()))")) {
+                    Button(role: .destructive) {
+                        removeGuest(id, from: session.id)
+                    } label: {
+                        Label("移出这一场", systemImage: "minus.circle")
+                    }
+                }
+            } label: {
+                chip
+            }
+        } else {
+            chip
+        }
+    }
+
+    private func removeGuest(_ guestId: String, from sessionId: String) {
+        Task {
+            do {
+                try await groupManager.removeGuest(guestId, from: sessionId)
+                appState.showToast(String(localized: "已移出这一场"))
+            } catch {
+                appState.showError(error)
             }
         }
     }
@@ -640,8 +709,20 @@ struct CreateGroupView: View {
     @State private var showVenuePicker = false
     @State private var didSetup = false
     @State private var isSaving = false
+    /// 访客报名（只在编辑时有）：开关和每场上限随“保存”一起存；复制、重置链接马上生效
+    @State private var guestsAllowed = false
+    /// nil = 每场名额的一半
+    @State private var guestLimit: Int?
+    @State private var confirmsResetLink = false
 
     private var isEditing: Bool { editingGroupId != nil }
+
+    private var editingGroup: PlayGroup? { editingGroupId.flatMap { groupManager.group(id: $0) } }
+
+    /// 名额最多的那一场：访客上限不超过它
+    private var maxCapacity: Int { schedules.map(\.capacity).max() ?? 4 }
+
+    private var shownGuestLimit: Int { min(maxCapacity, guestLimit ?? GuestSignup.defaultLimit(capacity: maxCapacity)) }
 
     private let weekdays = [
         (2, String(localized: "一", comment: "星期一（简写）")),
@@ -732,6 +813,9 @@ struct CreateGroupView: View {
                     }
                     section(String(localized: "加入方式")) {
                         SegmentedSticker(options: PlayGroup.JoinPolicy.allCases, selection: $joinPolicy) { $0.title }
+                    }
+                    if let group = editingGroup {
+                        section(String(localized: "访客报名")) { guestSignupEditor(group) }
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -938,6 +1022,84 @@ struct CreateGroupView: View {
         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
     }
 
+    /// 允许不注册的人报名：每场访客上限、报名链接（复制、重置）
+    private func guestSignupEditor(_ group: PlayGroup) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            VStack(spacing: 0) {
+                Toggle(isOn: $guestsAllowed.animation(AppTheme.Motion.standard)) {
+                    Text("允许不注册的人报名")
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                }
+                .tint(AppTheme.Colors.success)
+                .padding(.horizontal, AppTheme.Spacing.md)
+                .frame(minHeight: 60)
+                if guestsAllowed {
+                    InsetDivider()
+                    Stepper(value: Binding(get: { shownGuestLimit }, set: { guestLimit = $0 }), in: 1...maxCapacity) {
+                        Text("每场访客最多 \(shownGuestLimit) 人")
+                            .font(AppTheme.Typography.bodyBold)
+                            .foregroundStyle(AppTheme.Colors.ink)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .frame(minHeight: 60)
+                    InsetDivider()
+                    // 链接在第一次打开、保存后才有
+                    if group.guestSignup?.allowed == true, let link = group.guestSignup?.link {
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                            HStack(spacing: AppTheme.Spacing.sm) {
+                                IconTile(systemName: "link", fill: AppTheme.Colors.sky, size: 36)
+                                Text(link.absoluteString.replacingOccurrences(of: "https://", with: ""))
+                                    .font(AppTheme.Typography.bodyBold)
+                                    .foregroundStyle(AppTheme.Colors.ink)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+                            HStack(spacing: AppTheme.Spacing.sm) {
+                                Button {
+                                    UIPasteboard.general.string = link.absoluteString
+                                    appState.showToast(String(localized: "已复制报名链接"), style: .success)
+                                } label: {
+                                    Label("复制报名链接", systemImage: "doc.on.doc")
+                                }
+                                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: true))
+                                Button("重置链接") { confirmsResetLink = true }
+                                    .buttonStyle(TextActionStyle())
+                            }
+                        }
+                        .padding(AppTheme.Spacing.md)
+                    } else {
+                        Text("保存后就有报名链接")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(AppTheme.Spacing.md)
+                    }
+                }
+            }
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+            Text("关掉后链接失效")
+                .font(AppTheme.Typography.footnote)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+        }
+        .confirmationDialog("重置报名链接？", isPresented: $confirmsResetLink, titleVisibility: .visible) {
+            Button("重置链接", role: .destructive) { resetGuestLink(group.id) }
+        } message: {
+            Text("旧链接会马上失效")
+        }
+    }
+
+    private func resetGuestLink(_ groupId: String) {
+        Task {
+            do {
+                try await groupManager.resetGuestLink(groupId)
+                appState.showToast(String(localized: "已换新链接，旧链接已失效"), style: .success)
+            } catch {
+                appState.showError(error)
+            }
+        }
+    }
+
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             Text(title)
@@ -961,6 +1123,8 @@ struct CreateGroupView: View {
             coached = group.isCoached
             venueId = group.venueId
             extraVenueIds = Array(group.venueIds.dropFirst())
+            guestsAllowed = group.guestSignup?.allowed ?? false
+            guestLimit = group.guestSignup?.limit
             return
         }
         venueId = initialVenueId ?? locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil }
@@ -975,8 +1139,12 @@ struct CreateGroupView: View {
             defer { isSaving = false }
             do {
                 if let editingGroupId {
+                    let guestsBefore = editingGroup?.guestSignup
                     try await groupManager.update(editingGroupId, name: name, schedules: schedules, levelRange: lowerLevel...upperLevel,
                                                   joinPolicy: joinPolicy, summary: summary, coached: coached, venueIds: allVenueIds)
+                    if guestsAllowed != (guestsBefore?.allowed ?? false) || guestLimit != guestsBefore?.limit {
+                        try await groupManager.setGuestSignup(editingGroupId, allowed: guestsAllowed, limit: guestLimit)
+                    }
                     appState.showToast(String(localized: "已保存"), style: .success)
                     router.pop()
                     return
