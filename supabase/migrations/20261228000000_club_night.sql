@@ -418,7 +418,10 @@ declare
   link text := '/app/groups/' || (select group_id from public.group_sessions where id = p_session) || '/';
 begin
   select * into n from public.club_nights where session_id = p_session for update;
-  if n.started_at is null or exists (select 1 from public.matches m where m.id = n.match_id and m.status = 'live') then
+  if n.started_at is null then return started; end if;
+  -- 在打比赛：空出来的场地给比赛
+  if exists (select 1 from public.matches m where m.id = n.match_id and m.status = 'live') then
+    perform public.match_fill(n.match_id);
     return started;
   end if;
   for c in 1..n.courts loop

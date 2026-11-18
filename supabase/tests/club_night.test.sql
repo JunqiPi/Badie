@@ -1,7 +1,7 @@
 -- 当晚：排场（谁能用、开始、公平、晚到、重复按、撤销、减场地、换人、帮手、推送、看板）和收款
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(67);
+select plan(71);
 
 -- 14 个注册用户：1 是群主，2–13 是成员，14 不是成员
 insert into auth.users (id, email)
@@ -231,6 +231,17 @@ select ok((select s ->> 'board' from jsonb_array_elements(public.group_tonight(p
            where (s ->> 'id')::uuid = pg_temp.id('night')) is not null, '成员能看排场的看板');
 select ok((select e ->> 'status' from jsonb_array_elements(public.my_tonight()) e where e ->> 'kind' = 'night') in ('court', 'next', 'waiting'),
           '今晚卡写着我在场上、下一场或者等候中');
+
+-- 用今晚的名单开一场比赛：排场先停，场上的打完以后场地给比赛
+select pg_temp.login(1);
+insert into ids select 'match', public.create_match('Tonight', null, 2, 'singles', 21, 1, true,
+  (select jsonb_agg(jsonb_build_object('signup_id', pg_temp.signup(n))) from generate_series(5, 8) n), null, null, null, false, pg_temp.id('night'));
+select is((select count(*)::int from public.match_games where match_id = pg_temp.id('match') and status = 'playing'), 0, '排场的场地还在打，比赛先等');
+select public.night_finish(pg_temp.game_on(1));
+select is(pg_temp.game_on(1), null, '比赛时排场不再排人');
+select is((select count(*)::int from public.match_games where match_id = pg_temp.id('match') and status = 'playing' and court = 1), 1,
+          '空出来的场地上了比赛');
+select is(public.night_state(pg_temp.id('night')) ->> 'match_live', 'true', '当晚页知道在打比赛');
 
 select * from finish();
 rollback;
