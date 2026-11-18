@@ -19,6 +19,8 @@ extension MockBackend {
         let showSearching: Bool?
         let allowMessageRequests: Bool?
         let emailAlerts: Bool?
+        /// 公开报名页上只显示首字母（旧服务器没有这一项）
+        let publicInitials: Bool?
         let verifiedKind: String?
         let verifiedRating: Double?
         let avatarPath: String?
@@ -264,6 +266,7 @@ extension MockBackend {
         user.privacy.allowsMessageRequests = profile.allowMessageRequests ?? true
         user.privacy.emailAlerts = profile.emailAlerts ?? false
         user.privacy.showsWhenSearching = profile.showSearching ?? true
+        user.privacy.initialsOnPublicPages = profile.publicInitials ?? false
         user.gender = Gender(server: profile.gender)
         if let mode = profile.preferredMode { user.preferredMode = GameMode(server: mode) }
         user.avatar.cardColor = profile.cardColor.flatMap(CardColor.init(rawValue:))

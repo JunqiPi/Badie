@@ -597,6 +597,9 @@ struct SessionSheet: View {
                     if !session.waitlist.isEmpty {
                         roster(title: String(localized: "候补 \(session.waitlist.count)"), ids: session.waitlist, session: session, organizer: organizer)
                     }
+                    if organizer, let dropped = session.lateCancels, !dropped.isEmpty {
+                        lateCancels(dropped)
+                    }
                     if organizer, !session.isCancelled {
                         Button("取消这一场") {
                             Task {
@@ -620,14 +623,18 @@ struct SessionSheet: View {
     }
 
     private func roster(title: String, ids: [String], session: GroupSession, organizer: Bool) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+        // 访客和报了名的成员同名：可能是同一个人注册后又报了一次，给组织者标出来
+        let memberNames = Set((session.signedUp + session.waitlist).filter { session.guests?[$0] == nil }
+            .compactMap { groupManager.user($0)?.nickname.lowercased() })
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Text(title)
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(Array(ids.enumerated()), id: \.element) { index, userId in
                     if let guest = session.guests?[userId] {
-                        guestChip(guest, id: userId, session: session, canRemove: organizer && !session.isCancelled)
+                        guestChip(guest, id: userId, session: session, canRemove: organizer && !session.isCancelled,
+                                  sameName: organizer && memberNames.contains(guest.name.lowercased()))
                     } else if let user = groupManager.user(userId) {
                         HStack(spacing: 6) {
                             AvatarView(user: user, size: 28)
@@ -649,7 +656,7 @@ struct SessionSheet: View {
 
     /// 访客：名字后面标“访客”；组织者点开可以移出这一场（和移出成员一样，候补递补）
     @ViewBuilder
-    private func guestChip(_ guest: GroupGuest, id: String, session: GroupSession, canRemove: Bool) -> some View {
+    private func guestChip(_ guest: GroupGuest, id: String, session: GroupSession, canRemove: Bool, sameName: Bool) -> some View {
         let chip = HStack(spacing: 6) {
             Text(guest.name.prefix(1).uppercased())
                 .font(.system(size: 12, weight: .black))
@@ -661,13 +668,10 @@ struct SessionSheet: View {
             Text(guest.name)
                 .font(AppTheme.Typography.footnoteBold)
                 .foregroundStyle(AppTheme.Colors.ink)
-            Text("访客")
-                .font(.system(size: 11, weight: .heavy))
-                .foregroundStyle(AppTheme.Colors.onAccent)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 1)
-                .background(Capsule().fill(AppTheme.Colors.mint))
-                .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+            pill(String(localized: "访客"), fill: AppTheme.Colors.mint)
+            if sameName {
+                pill(String(localized: "同名"), fill: AppTheme.Colors.surfaceMuted, color: AppTheme.Colors.ink)
+            }
         }
         .padding(.leading, 4)
         .padding(.trailing, AppTheme.Spacing.sm)
@@ -688,6 +692,40 @@ struct SessionSheet: View {
             }
         } else {
             chip
+        }
+    }
+
+    private func pill(_ text: String, fill: Color, color: Color = AppTheme.Colors.onAccent) -> some View {
+        Text(text)
+            .font(.system(size: 11, weight: .heavy))
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 1)
+            .background(Capsule().fill(fill))
+            .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+    }
+
+    /// 开场前 2 小时内退出的人（只有组织者看得到）
+    private func lateCancels(_ people: [GroupLateCancel]) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            Text("临时退出 \(people.count)")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.ink)
+            FlowLayout(spacing: AppTheme.Spacing.sm) {
+                ForEach(Array(people.enumerated()), id: \.offset) { _, person in
+                    HStack(spacing: 6) {
+                        Text(person.name)
+                            .font(AppTheme.Typography.footnoteBold)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        if person.guest {
+                            pill(String(localized: "访客"), fill: AppTheme.Colors.mint)
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(AppTheme.Colors.surfaceMuted))
+                }
+            }
         }
     }
 

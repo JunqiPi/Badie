@@ -65,6 +65,8 @@ export interface Profile {
   show_searching: boolean;
   /** 同球群的人可以给我发消息请求 */
   allow_message_requests: boolean;
+  /** 公开的报名页上只显示名字首字母 */
+  public_initials?: boolean;
   /** 约球消息也发邮件（默认关，主要靠推送） */
   email_alerts: boolean;
   /** 照片头像在 avatars 桶里的位置（App 里上传） */
@@ -417,6 +419,8 @@ export interface GroupSession {
   my_status: string | null;
   /** 访客的 id 是这一行报名的 id（移出时用） */
   players: { id: string; nickname: string; waitlisted: boolean; guest?: boolean; signed_up_at?: string }[] | null;
+  /** 开场前 2 小时内退出的人（只有组织者拿得到） */
+  late_cancels?: { nickname: string; guest: boolean }[] | null;
 }
 
 export interface GroupDetail extends GroupSummary {

@@ -329,6 +329,8 @@ struct PrivacySettings: Codable, Hashable {
     var emailAlerts = false
     /// 发了约球请求时，附近的人在首页能看到我（默认开启）
     var showsWhenSearching = true
+    /// 球群公开的报名页（访客报名链接）上只显示我名字的首字母（默认关闭）
+    var initialsOnPublicPages = false
 }
 
 extension PrivacySettings {
@@ -343,6 +345,7 @@ extension PrivacySettings {
         findableByNickname = try container.decodeIfPresent(Bool.self, forKey: .findableByNickname) ?? defaults.findableByNickname
         emailAlerts = try container.decodeIfPresent(Bool.self, forKey: .emailAlerts) ?? defaults.emailAlerts
         showsWhenSearching = try container.decodeIfPresent(Bool.self, forKey: .showsWhenSearching) ?? defaults.showsWhenSearching
+        initialsOnPublicPages = try container.decodeIfPresent(Bool.self, forKey: .initialsOnPublicPages) ?? defaults.initialsOnPublicPages
     }
 }
 

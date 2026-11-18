@@ -175,6 +175,8 @@ struct GroupSession: Identifiable, Codable, Hashable {
     var venueId: String? = nil
     /// 名单里的访客（不注册、在网页上报名的人）：id 是那一行报名的 id，不是用户
     var guests: [String: GroupGuest]? = nil
+    /// 开场前 2 小时内退出的人（只有组织者拿得到）
+    var lateCancels: [GroupLateCancel]? = nil
 
     /// 开场前多久内退出算临时取消（与球局规则一致）
     static let lateCancellationWindow: TimeInterval = 2 * 3600
@@ -204,6 +206,12 @@ struct GroupSession: Identifiable, Codable, Hashable {
 struct GroupGuest: Codable, Hashable {
     let name: String
     let signedUpAt: Date
+}
+
+/// 开场前 2 小时内退出的人
+struct GroupLateCancel: Codable, Hashable {
+    let name: String
+    let guest: Bool
 }
 
 /// 球群的真实活跃度（对外展示用，不显示成员总数）

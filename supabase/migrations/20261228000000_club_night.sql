@@ -895,14 +895,11 @@ begin
       update public.session_signups set pay_token_hash = public.guest_token_hash(token) where id = person.id;
       emails := emails || jsonb_build_array(public.guest_email(person.id, 'Court fee: {group}',
         case when params ->> 'amount' = '' then '{when} · {court}. Pay {name} here:' else '{when} · {court}. {amount} each, paid to {name}. Pay here:' end,
-        'https://badie.rsvp/pay/' || token || '/'));
+        'https://badie.rsvp/pay/' || token || '/', params - 'when' - 'court'));
       reminded := reminded + 1;
     end if;
   end loop;
-  -- guest_email 只填 {when}、{court}、{group}：金额和收钱的人这里补上
-  perform public.send_guest_emails((select jsonb_agg(jsonb_build_object('to', e ->> 'to', 'subject', e ->> 'subject',
-                                                                         'text', replace(replace(e ->> 'text', '{amount}', params ->> 'amount'), '{name}', params ->> 'name')))
-                                    from jsonb_array_elements(emails) e));
+  perform public.send_guest_emails(emails);
   update public.group_sessions set fee_reminded_at = now() where id = p_session;
   return reminded;
 end
@@ -962,12 +959,14 @@ revoke execute on function public.i_paid(uuid, boolean), public.guest_payment(te
 grant execute on function public.i_paid(uuid, boolean) to authenticated;
 grant execute on function public.guest_payment(text[]), public.guest_i_paid(text, boolean) to anon, authenticated;
 
--- 访客邮箱：开了收款（填了金额）的场次留到付清或结束后 7 天（先到为准），其余照旧结束一天后删
-select cron.schedule('guest-emails', '27 * * * *', $$
+-- 访客邮箱：开了收款（填了金额）的场次，要付钱的人留到付清或结束后 7 天（先到为准），其余照旧结束一天后删
+create or replace function public.forget_guest_emails()
+returns void language sql security definer set search_path = '' as $$
   update public.session_signups su set guest_email = null from public.group_sessions gs
   where gs.id = su.session_id and su.guest_email is not null and gs.ends_at < now() - interval '1 day'
-    and (su.paid_at is not null or public.session_fee(gs.id) is null or gs.ends_at < now() - interval '7 days'
-         or su.owes is false or (su.owes is null and su.attendance is null and su.waitlisted))$$);
+    and (su.paid_at is not null or gs.ends_at < now() - interval '7 days' or public.session_fee(gs.id) is null
+         or not (select py.owes from public.session_payers(gs.id) py where py.id = su.id))
+$$;
 
 -- ---------------------------------------------------------------------------
 -- 球员和球群页

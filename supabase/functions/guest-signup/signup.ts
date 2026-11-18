@@ -2,7 +2,7 @@
 // 名额、上限、每个 IP 每小时 10 次都在数据库里查；数据库报的错原样转给网页（{ message: 'guest_spots_full' }）。
 //
 // Secrets：TURNSTILE_SECRET_KEY（Cloudflare → Turnstile 里网站那个组件的 Secret Key，和登录用的同一个）。
-// 没配时不核对（本机、CI），正式环境一定要配。SUPABASE_URL 和服务端密钥是平台自带的
+// 没配时不核对（本机、CI），每次报名在日志里写一条警告；正式环境一定要配。SUPABASE_URL 和服务端密钥是平台自带的
 
 const env = (name: string) => Deno.env.get(name) ?? '';
 
@@ -20,7 +20,10 @@ export const clientIp = (request: Request) => request.headers.get('x-forwarded-f
 /** Turnstile 的 token 是真的（没配密钥时不查） */
 export async function human(token: unknown, ip: string) {
   const secret = env('TURNSTILE_SECRET_KEY');
-  if (!secret) return true;
+  if (!secret) {
+    console.warn('TURNSTILE_SECRET_KEY 没配：访客报名没有核对人机验证。到 Supabase → Edge Functions → Secrets 加上');
+    return true;
+  }
   if (typeof token !== 'string' || !token) return false;
   const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
     method: 'POST',
