@@ -6,7 +6,7 @@ select json_build_object(
   'kind', 'curated', 'status', 'unconfirmed',
   'attribution', 'Coordinates © OpenStreetMap contributors, ODbL 1.0',
   'venues', coalesce(json_agg(json_build_object(
-    'id', v.id, 'name', v.name,
+    'id', v.id, 'name', v.name, 'aliases', v.aliases,
     'lat', round(extensions.st_y(v.location::extensions.geometry)::numeric, 6),
     'lon', round(extensions.st_x(v.location::extensions.geometry)::numeric, 6),
     'street', v.street, 'city', v.city, 'region', v.region, 'postcode', v.postal_code,
