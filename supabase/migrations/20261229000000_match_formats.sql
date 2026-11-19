@@ -165,7 +165,7 @@ $$;
 create function public.match_preview(p_format text, p_play text, p_players int, p_courts int, p_points int, p_best_of int,
                                      p_pools int default null, p_advance int default null, p_rounds int default null,
                                      p_third_place boolean default false)
-returns jsonb language plpgsql immutable set search_path = '' as $$
+returns jsonb language plpgsql stable set search_path = '' as $$
 declare
   plan record;
   courts int := greatest(coalesce(p_courts, 1), 1);
@@ -449,7 +449,7 @@ declare
   q int := coalesce(cardinality(p_seeds), 0);
   size int := 2;
   ord int[];
-  pos jsonb[] := '{}';
+  pos jsonb[] := '{}'::jsonb[];
   t jsonb;
   x jsonb;
   y jsonb;
