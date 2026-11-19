@@ -1,6 +1,17 @@
 import SwiftUI
 import SafariServices
 
+extension AppState {
+    /// 当晚页和比赛页的报错：not_allowed 在别处是约球的意思，这里说清楚是谁能做
+    func showClubError(_ error: Error) {
+        if let remote = error as? RemoteError, remote == .server("not_allowed") {
+            showToast(String(localized: "只有组织者和帮手能做这一步。"), style: .error)
+        } else {
+            showError(error)
+        }
+    }
+}
+
 // MARK: - 球群页场次行上的当天按钮
 // 组织者、帮手：“排场”（柠檬绿，进当晚页）；结束后还有人没付：“收款 · n 人没付”。
 // 球员：开场后“报名 / 已报名”换成“看排场”，要付钱的人换成“付给 Kevin · $12”（一行只有一个按钮）

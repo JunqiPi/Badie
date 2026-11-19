@@ -279,9 +279,25 @@
   - 隐私设置“报名链接上只显示我的首字母”（`profiles.public_initials`，网站和 iPhone）
   - 改每周场次的时间、名额、费用、球馆：同一个星期几的改在原来那一场上，报名保留，报了名的人收到“场次有变”（以前是取消再重新报）。换星期几、删掉的照旧取消
   - 同一场同名的访客，后报的记成 “Tony 2”
-  - 清访客邮箱改成函数 `forget_guest_emails()`（1.0.8 收款时只改它：开了收款的留到付清或 7 天）
+  - 清访客邮箱改成函数 `forget_guest_emails()`（收款迁移已经改了它：开了收款的留到付清或 7 天）
 - **还没做**：安卓（同样四样加上面的修补，照 iPhone 搬，不在这次范围）；邮件只有纯文字；旧版 App 点访客会打开找不到的资料页（旧版改不了，新版不能点）；同一个访客收到几封带链接的邮件时，只有最新一封的取消链接有效
 - **上线前用户要做**：Supabase → Edge Functions → Secrets 加 `TURNSTILE_SECRET_KEY`（Cloudflare → Turnstile 里网站那个组件的 Secret Key，和登录用的是同一个）。没配时函数不核对人机验证，每次报名在函数日志里写一条警告。发件人沿用约球邮件的 `games@badie.rsvp`，不用另配
+
+## 球群当晚的排场、比赛和收款（iPhone 1.0.7，2026-11-19，分支 `claude/club-night`，没推 main）
+
+需求、接口、做完的和比需求简单的地方都在 `Badie-iOS/docs/CLUB_NIGHT.md`；设计稿是 https://claude.ai/artifact/NQRCGsWTAMYgsyhxnnkirw 的“1.0.8 当晚与比赛”那一行（按用户定的改放 1.0.7）。和访客报名一起在 1.0.7 里，目标 2026-12-05 提交审核。已合并 `claude/guest-signup-fixes`。
+
+- 数据库：迁移 `20261228000000_club_night.sql`，测试 `club_night.test.sql`、`matches.test.sql`
+  - 排场：到场、已付记在 `session_signups` 上（现场加的人也是一行访客报名）；`club_nights`、`night_games`。排人只在 `night_pick`：场数少的先、等得久的先，晚到和休息回来的从在场最少的场数算起，尽量不重复搭档和同一组人，可按实力分队；同一片场地按两次只算一次（`court_changed`），10 秒撤销，减场地时打完再收，在打比赛时空出来的场地给比赛
+  - 比赛：`matches`、`match_players`、`match_games`；四种赛制，对阵开始时排好，哪片场地空了上下一场；球员自己输一次、先存的算，组织者改要带版本；积分榜按胜率、净胜分、总得分、两人之间胜负，三人以上写并列
+  - 收款：`group_sessions.fee`（默认同一个每周场次上次的数）、`payment_handles`；要付的是标了到场的人（没用排场就是报上名的），收钱的人自己不用付；“我付了”记 `paid_self`；提醒 12 小时一次、结束 7 天内，访客邮件带 `badie.rsvp/pay/<凭证>/`；`forget_guest_emails()` 改成开了收款的留到付清或 7 天
+  - 帮手：每晚（每场比赛）最多 3 个，结束 3 小时后失效，不能收款、结束、删除
+  - “轮到你了”只推送：新表 `live_pushes`，`send-push` 带 `collapse`（同一晚互相替换）。比赛的通知是新类型 `match`，旧版 App 显示成系统通知
+  - 公开看板 `live_board`（排场结束后 24 小时、比赛 7 天，只有名字）；球员的 `my_tonight`；球群页的 `group_tonight`（没改 `group_page`，旧版 App 不受影响）
+- 网站：`/night/<场次>/`、`/matches/…`、`/live/<码>/`、`/pay/<凭证>/`，球群页的按钮、球局页“今晚”卡、“+”菜单“比赛 · 循环赛”（英文 Match · round robin）、设置里的收款方式；二维码用 `qrcode-generator` 2.0.4。端到端测试 `night.e2e.mjs`。隐私政策加了收款方式和访客邮箱的保留时间
+- iPhone 1.0.7（版本号已改）：同样几样，看板用 App 里的 Safari 打开；`/app/matches/<id>/` 的通知打开比赛页
+- **还没做**：安卓（同样几样，照 iPhone 搬，这次没动 `Badie-Android/`）；比需求简单的地方见 `CLUB_NIGHT.md`
+- **上线前用户要做**：没有新的密钥。提交审核时 Notes 写一句“收款只是给出 Venmo / Cash App / PayPal 链接，钱不经过 App，是线下场地费，不走内购”（和打赏的说明分开）
 
 ## 已知、没修的
 

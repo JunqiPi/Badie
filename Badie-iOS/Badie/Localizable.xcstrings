@@ -40815,6 +40815,64 @@
         }
       }
     },
+    "加不了这个人。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That player can’t be added."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह खिलाड़ी नहीं जोड़ा जा सकता।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain ini tidak bisa ditambahkan."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この選手は追加できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 선수는 추가할 수 없어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain ini tidak boleh ditambah."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่มผู้เล่นคนนี้ไม่ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không thêm được người này."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加不了這個人。"
+          }
+        }
+      }
+    },
     "加个球友，下次直接约。" : {
       "localizations" : {
         "en" : {
@@ -49471,6 +49529,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "只有符合條件的人能看到和加入。"
+          }
+        }
+      }
+    },
+    "只有组织者和帮手能做这一步。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only organizers and helpers can do this."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह सिर्फ़ आयोजक और मददगार कर सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya penyelenggara dan pembantu yang bisa melakukan ini."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この操作は主催者とお手伝いの人だけができます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 작업은 주최자와 도우미만 할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hanya penganjur dan pembantu boleh melakukan ini."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เฉพาะผู้จัดและผู้ช่วยเท่านั้นที่ทำขั้นนี้ได้"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ người tổ chức và người phụ mới làm được bước này."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只有組織者和幫手能做這一步。"
           }
         }
       }
@@ -73524,6 +73640,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開始配對"
+          }
+        }
+      }
+    },
+    "开始后只有双打轮换搭档能加人。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only rotating partners can add players after the start."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "शुरू होने के बाद सिर्फ़ बदलती जोड़ी में खिलाड़ी जोड़ सकते हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setelah mulai, hanya pasangan bergilir yang bisa menambah pemain."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始後に選手を追加できるのはペア交代だけです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시작 후에는 파트너 교체 방식만 선수를 추가할 수 있어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selepas bermula, hanya pasangan bergilir boleh menambah pemain."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "หลังเริ่มแล้ว เพิ่มผู้เล่นได้เฉพาะแบบสลับคู่"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sau khi bắt đầu, chỉ thể thức đổi cặp mới thêm người được."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始後只有雙打輪換搭檔能加人。"
           }
         }
       }
@@ -103775,6 +103949,64 @@
         }
       }
     },
+    "每队要正好 2 个人。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each pair needs exactly 2 players."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "हर जोड़ी में ठीक 2 खिलाड़ी चाहिए।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setiap pasangan harus tepat 2 pemain."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各ペアは 2 人ちょうどにしてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "각 팀은 정확히 2명이어야 해요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Setiap pasangan mesti tepat 2 pemain."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แต่ละคู่ต้องมี 2 คนพอดี"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mỗi cặp phải có đúng 2 người."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每隊要正好 2 個人。"
+          }
+        }
+      }
+    },
     "比分不对。" : {
       "localizations" : {
         "en" : {
@@ -104815,6 +105047,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "賽果"
+          }
+        }
+      }
+    },
+    "比赛设置不对，检查一下。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check the match settings."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मुकाबले की सेटिंग जाँचें।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Periksa pengaturan turnamen."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試合の設定を確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대회 설정을 확인하세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Semak tetapan kejohanan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตรวจการตั้งค่าการแข่ง"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra cài đặt giải."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "比賽設定不對，檢查一下。"
           }
         }
       }
@@ -109017,6 +109307,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "淋浴"
+          }
+        }
+      }
+    },
+    "淘汰赛已经开始了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The knockout games have already started."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "नॉकआउट मैच शुरू हो चुके हैं।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Babak gugur sudah dimulai."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "決勝トーナメントはすでに始まっています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "토너먼트가 이미 시작됐어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pusingan kalah mati sudah bermula."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "รอบน็อกเอาต์เริ่มแล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vòng loại trực tiếp đã bắt đầu."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淘汰賽已經開始了。"
           }
         }
       }
@@ -125403,6 +125751,64 @@
         }
       }
     },
+    "给比赛起个名字（最多 40 字）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Give the match a name (up to 40 characters)."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "मुकाबले का नाम दें (40 अक्षर तक)।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beri nama turnamen (maks. 40 karakter)."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試合名を入力してください（40 文字まで）。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "대회 이름을 입력하세요(40자까지)."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beri nama kejohanan (maksimum 40 aksara)."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ตั้งชื่อการแข่ง (ไม่เกิน 40 ตัวอักษร)"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt tên giải (tối đa 40 ký tự)."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "給比賽取個名字（最多 40 字）。"
+          }
+        }
+      }
+    },
     "给球友的话" : {
       "localizations" : {
         "en" : {
@@ -141325,6 +141731,64 @@
         }
       }
     },
+    "这一场取消了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This game was cancelled."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह गेम रद्द हो गया।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pertandingan ini dibatalkan."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この試合は取り消されました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 경기는 취소됐어요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perlawanan ini dibatalkan."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "แมตช์นี้ถูกยกเลิก"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trận này đã bị hủy."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這一場取消了。"
+          }
+        }
+      }
+    },
     "这一场已经结束或取消了" : {
       "localizations" : {
         "en" : {
@@ -141611,6 +142075,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這個人已經不在等候裡了，已重新整理。"
+          }
+        }
+      }
+    },
+    "这个人已经在里面了。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That player is already in."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "यह खिलाड़ी पहले से है।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain ini sudah ikut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この選手はすでに入っています。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미 들어 있는 선수예요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pemain ini sudah ada."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ผู้เล่นคนนี้อยู่แล้ว"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Người này đã có trong danh sách."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這個人已經在裡面了。"
           }
         }
       }
@@ -145811,6 +146333,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選你的搭檔"
+          }
+        }
+      }
+    },
+    "选出线的人。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pick who goes through."
+          }
+        },
+        "hi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "चुनें कौन आगे जाएगा।"
+          }
+        },
+        "id" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih siapa yang lolos."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "勝ち上がる人を選んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "진출할 사람을 고르세요."
+          }
+        },
+        "ms" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pilih siapa yang layak."
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เลือกคนที่ผ่านเข้ารอบ"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn người đi tiếp."
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選出線的人。"
           }
         }
       }

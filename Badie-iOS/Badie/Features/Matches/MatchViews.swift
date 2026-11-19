@@ -478,7 +478,7 @@ struct MatchPanel: View {
             do {
                 try await work()
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
             await load()
         }
@@ -498,7 +498,7 @@ struct MatchPanel: View {
                 appState.showToast(String(localized: "已删除"))
                 if !embedded { router.pop() }
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
         }
     }
@@ -880,7 +880,7 @@ struct MatchScoreSheet: View {
                 dismiss()
             } catch {
                 // 没存上：数字留在原处，可以再点一次
-                appState.showError(error)
+                appState.showClubError(error)
             }
         }
     }
@@ -893,7 +893,7 @@ struct MatchScoreSheet: View {
                 await onDone()
                 dismiss()
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
         }
     }
@@ -905,7 +905,7 @@ struct MatchScoreSheet: View {
                 await onDone()
                 dismiss()
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
         }
     }

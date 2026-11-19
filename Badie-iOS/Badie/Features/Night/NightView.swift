@@ -781,7 +781,7 @@ struct NightView: View {
             do {
                 try await work()
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
             await load()
         }
@@ -792,7 +792,7 @@ struct NightView: View {
             do {
                 try await work()
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
             await loadPay()
         }
@@ -838,7 +838,7 @@ struct NightView: View {
                 let count = try await backend.remoteRemindUnpaid(sessionId)
                 appState.showToast(String(localized: "已提醒 \(count) 人"), style: .success)
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
             await loadPay()
         }

@@ -454,7 +454,7 @@ struct MatchCreateView: View {
             } catch RemoteError.server(let code) where code == "invalid_player_count" {
                 appState.showToast(format.playerCountRule, style: .error)
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
         }
     }

@@ -172,7 +172,7 @@ struct PaySheet: View {
                     dismiss()
                 }
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
         }
     }
@@ -234,7 +234,7 @@ struct PaymentHandlesView: View {
                 appState.showToast(String(localized: "已保存"), style: .success)
                 router.pop()
             } catch {
-                appState.showError(error)
+                appState.showClubError(error)
             }
         }
     }
