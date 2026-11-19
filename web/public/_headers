@@ -37,6 +37,16 @@
   X-Robots-Tag: noindex
 /groups/*
   X-Robots-Tag: noindex
+/g/*
+  X-Robots-Tag: noindex
+/live/*
+  X-Robots-Tag: noindex
+/pay/*
+  X-Robots-Tag: noindex
+/night/*
+  X-Robots-Tag: noindex
+/matches/*
+  X-Robots-Tag: noindex
 /join/*
   X-Robots-Tag: noindex
 /add/*

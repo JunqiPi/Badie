@@ -119,6 +119,10 @@ struct SettingsView: View {
                             Toggle(isOn: privacyBinding(\.showsOnLeaderboards)) {
                                 toggleTitle(String(localized: "出现在排行榜上"))
                             }
+                            InsetDivider()
+                            Toggle(isOn: privacyBinding(\.initialsOnPublicPages)) {
+                                toggleTitle(String(localized: "报名链接上只显示我的首字母"))
+                            }
                         }
                         .tint(AppTheme.Colors.success)
                         .card(AppTheme.Colors.surface, shadow: .zero)

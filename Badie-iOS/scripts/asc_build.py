@@ -3,9 +3,12 @@
 用法：
   python3 asc_build.py list <版本号>     只看：这个版本的构建、挂上了哪个、审核备注有没有填。不改任何东西
   python3 asc_build.py attach <版本号>   等最新的构建处理完（最多等 25 分钟），挂到这个版本上。
-                                         还没有这个版本就先建（描述等文字苹果会从上一版带过来），审核信息没填就从上一版复制
+                                         还没有这个版本就先建（描述等文字苹果会从上一版带过来），审核信息没填就从上一版复制；
+                                         review_notes.json 里这个版本有新段落的，接在审核备注后面（已经有的不重复加）
 环境变量同 asc_signing.py。日志只打印版本号、构建号和状态（仓库是公开的）
 """
+import json
+import os
 import sys
 import time
 import urllib.parse
@@ -39,6 +42,23 @@ def copy_review_detail(version, versions):
         print(f"审核信息从版本 {other['attributes']['versionString']} 复制过来了")
         return created
     return None
+
+
+def add_review_notes(review, number):
+    """把 review_notes.json 里这个版本的段落接在审核备注后面，已经有的跳过。不打印内容"""
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "review_notes.json"), encoding="utf-8") as file:
+        paragraphs = json.load(file).get(number, [])
+    notes = review["attributes"].get("notes") or ""
+    missing = [p for p in paragraphs if p not in notes]
+    if not missing:
+        return review
+    notes = "\n\n".join([notes.rstrip()] + missing) if notes.strip() else "\n\n".join(missing)
+    if len(notes) > 4000:
+        sys.exit(f"审核备注加上新段落有 {len(notes)} 字，超过 4000，没改")
+    updated = asc.api("PATCH", f"/appStoreReviewDetails/{review['id']}", {"data": {
+        "type": "appStoreReviewDetails", "id": review["id"], "attributes": {"notes": notes}}})["data"]
+    print(f"审核备注加了 {len(missing)} 段")
+    return updated
 
 
 def main():
@@ -86,6 +106,8 @@ def main():
     review = (asc.api("GET", f"/appStoreVersions/{version['id']}/appStoreReviewDetail", missing_ok=True) or {}).get("data")
     if review is None and mode == "attach":
         review = copy_review_detail(version, versions)
+    if review and mode == "attach":
+        review = add_review_notes(review, number)
     if review:
         attributes = review["attributes"]
         print(f"审核信息：备注 {len(attributes.get('notes') or '')} 字，演示账号{'已填' if attributes.get('demoAccountName') else '没填'}")

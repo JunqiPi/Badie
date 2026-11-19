@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { activityText, courtsOf, scheduleText } from './Groups';
+import { forgetToken, guestLink, loadTokens } from './GuestSignup';
 import { audienceLabel } from './gender';
 import { t } from './i18n';
 import { Icon } from './icons';
@@ -8,9 +9,13 @@ import { Link, navigate } from './router';
 import { problem, supabase, useLive, type GroupCourt, type GroupDetail, type GroupSession, type Schedule } from './supabase';
 import { dayName, hours } from './time';
 import { Button, Skeleton, toast } from './ui';
+// 当晚（排场、看排场、付钱、收款）的入口
+import type { TonightSession } from './club';
+import { PastTonight, TonightAction } from './Tonight';
 
 export function GroupPage({ id }: { id: string }) {
   const { data: g, refresh } = useLive<GroupDetail | null>('group_page', { args: { p_group: id }, every: 30_000 });
+  const { data: tonight, refresh: refreshTonight } = useLive<TonightSession[]>('group_tonight', { args: { p_group: id }, every: 60_000 });
   const [busy, setBusy] = useState<string>();
   const [confirm, setConfirm] = useState<string>();
 
@@ -68,6 +73,15 @@ export function GroupPage({ id }: { id: string }) {
     }
   }
 
+  async function copyGuestLink() {
+    try {
+      await navigator.clipboard.writeText(guestLink(g!.guest_code!));
+      toast(t('Sign-up link copied.'));
+    } catch {
+      toast(guestLink(g!.guest_code!));
+    }
+  }
+
   return (
     <div className="grid gap-6">
       <ScreenHeader title={g.name} back="/groups/">
@@ -109,10 +123,12 @@ export function GroupPage({ id }: { id: string }) {
 
           <section aria-labelledby="sessions" className="grid gap-2">
             <SectionTitle id="sessions" title={t('Upcoming sessions')} detail={t('Leaving within 2 hours of start counts as a late cancellation')} />
+            <PastTonight tonight={tonight} shown={g.sessions.map((s) => s.id)} group={g.name} tz={courts[0].tz} onChange={refreshTonight} />
             {g.sessions.length === 0 && <p className="text-footnote text-ink-secondary">{t('No sessions scheduled.')}</p>}
             {g.sessions.map((s) => (
               <Session key={s.id} session={s} courts={courts} member={member} organizer={organizer} busy={busy}
-                       confirm={confirm} setConfirm={setConfirm} act={act} />
+                       confirm={confirm} setConfirm={setConfirm} act={act}
+                       tonight={tonight?.find((x) => x.id === s.id)} group={g.name} onTonight={refreshTonight} />
             ))}
           </section>
 
@@ -162,6 +178,9 @@ export function GroupPage({ id }: { id: string }) {
                   <p className="mt-1 font-mono text-[1.75rem] font-black tracking-[0.3em]">{g.invite_code}</p>
                 </div>
                 <Button onClick={copyInvite}><Icon name="copy" className="size-4" />{t('Copy invite')}</Button>
+                {organizer && g.guests_allowed && g.guest_code && (
+                  <Button variant="quiet" onClick={copyGuestLink}><Icon name="link" className="size-4" />{t('Copy sign-up link')}</Button>
+                )}
                 {g.my_role === 'owner' && (
                   <>
                     <Link to={`/groups/${g.id}/edit/`} className="button button-quiet"><Icon name="pencil" className="size-4" />{t('Edit group and sessions')}</Link>
@@ -214,7 +233,7 @@ export function GroupPage({ id }: { id: string }) {
 
 const roles: Record<string, string> = { owner: 'Owner', organizer: 'Organizer' };
 
-function Session({ session: s, courts, member, organizer, busy, confirm, setConfirm, act }: {
+function Session({ session: s, courts, member, organizer, busy, confirm, setConfirm, act, tonight, group, onTonight }: {
   session: GroupSession;
   /** 球群的球馆：几个球馆时写这一场在哪个，时间按这个球馆的时区 */
   courts: GroupCourt[];
@@ -225,6 +244,10 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
   confirm?: string;
   setConfirm: (key?: string) => void;
   act: (name: string, fn: string, args: Record<string, unknown>, done?: string) => Promise<unknown>;
+  /** 当天的场次（开场前 1 小时起）：白底加阴影，多一个当晚的按钮 */
+  tonight?: TonightSession;
+  group: string;
+  onTonight: () => void;
 }) {
   const court = courts.find((c) => c.id === s.venue) ?? courts[0];
   const tz = court.tz;
@@ -235,13 +258,16 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
   const full = s.confirmed >= s.capacity;
 
   async function signUp() {
-    const status = await act(`sign-${s.id}`, 'sign_up_session', { p_session: s.id });
+    // 这台设备上以访客报过这一场：带上凭证，服务器把那一行改成我的，不占两个位子
+    const token = loadTokens()[s.id];
+    const status = await act(`sign-${s.id}`, 'sign_up_session', token ? { p_session: s.id, p_guest_token: token } : { p_session: s.id });
+    if (status && token) forgetToken(s.id);
     if (status === 'confirmed') toast(t('You’re signed up.'));
     else if (status === 'waitlisted') toast(t('You’re on the waitlist. You’ll get a notification if a spot opens.'));
   }
 
   return (
-    <article className={`sticker grid gap-3 p-4 ${s.cancelled ? 'bg-surface-muted' : going ? 'bg-lime/45' : waiting ? 'bg-butter/50' : ''}`}>
+    <article className={`sticker grid gap-3 p-4 ${s.cancelled ? 'bg-surface-muted' : tonight ? '' : going ? 'bg-lime/45' : waiting ? 'bg-butter/50' : ''}`}>
       <div className="flex items-start gap-3">
         <div className="grid min-w-0 flex-1 gap-1">
           <h3 className="text-headline">{dayName(s.starts_at, tz)} · {hours(s.starts_at, s.ends_at, tz)}</h3>
@@ -266,11 +292,35 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
       {member && s.players && s.players.length > 0 && (
         <details>
           <summary className="cursor-pointer text-footnote font-bold underline underline-offset-4">{t('Who’s going')}</summary>
-          <p className="mt-2 text-footnote">
-            {s.players.map((p, i) => (
-              <span key={p.id}>{i > 0 && ', '}<Link to={`/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>{p.waitlisted && ` ${t('(waiting)')}`}</span>
+          <ul className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-footnote">
+            {s.players.map((p) => (
+              <li key={p.id} className="flex flex-wrap items-center gap-1.5">
+                {p.guest ? p.nickname : <Link to={`/players/${p.id}/`} className="hover:underline">{p.nickname}</Link>}
+                {p.guest && <Tag tint="mint">{t('Guest')}</Tag>}
+                {/* 访客和报了名的成员同名：可能是同一个人注册后又报了一次，组织者看一眼 */}
+                {organizer && p.guest && s.players!.some((q) => !q.guest && q.nickname.toLowerCase() === p.nickname.toLowerCase()) && (
+                  <Tag tint="muted">{t('Same name')}</Tag>
+                )}
+                {p.waitlisted && t('(waiting)')}
+                {/* 组织者可以把访客移出这一场（和移出成员一样，候补递补） */}
+                {organizer && p.guest && !s.cancelled && (confirm === `guest-${p.id}` ? (
+                  <Button variant="danger" className="button-sm" busy={busy === `guest-${p.id}`}
+                          onClick={() => act(`guest-${p.id}`, 'remove_guest', { p_signup: p.id }, t('Removed'))}>{t('Remove from this session')}</Button>
+                ) : (
+                  <button type="button" onClick={() => setConfirm(`guest-${p.id}`)} aria-label={t('Remove {name} from this session', { name: p.nickname })}
+                          className="press grid size-8 place-items-center rounded-full text-ink-tertiary hover:bg-surface-muted hover:text-ink">
+                    <Icon name="xCircle" className="size-4" />
+                  </button>
+                ))}
+              </li>
             ))}
-          </p>
+          </ul>
+          {/* 开场前 2 小时内退出的（组织者才有） */}
+          {s.late_cancels && s.late_cancels.length > 0 && (
+            <p className="mt-2 text-footnote text-ink-secondary">
+              {t('Dropped out late: {names}', { names: s.late_cancels.map((p) => (p.guest ? `${p.nickname} (${t('Guest')})` : p.nickname)).join(', ') })}
+            </p>
+          )}
         </details>
       )}
 
@@ -296,6 +346,7 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
           ))}
         </div>
       )}
+      {tonight && !s.cancelled && <TonightAction tonight={tonight} group={group} tz={tz} onChange={onTonight} />}
     </article>
   );
 }

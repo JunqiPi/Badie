@@ -50,6 +50,7 @@ final class PushRegistry {
         case ("games", let id?): return (.game(id: id), .games)
         case ("rooms", let id?): return (.room(id: id), .games)
         case ("groups", let id?): return (.group(id: id), .games)
+        case ("matches", let id?): return (.match(id: id), .games)
         case ("join", _): return (.joinRoom(code: components?.queryItems?.first { $0.name == "code" }?.value), .games)
         case ("challenges", _): return (.challenges, .games)
         default: return (.notifications, .home)

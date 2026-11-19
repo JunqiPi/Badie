@@ -353,6 +353,44 @@ extension MockBackend {
         db.groupSessions[sessionId] = session
     }
 
+    // MARK: 访客报名（演示环境：直接改，链接码随机生成）
+
+    func setGuestSignup(groupId: String, allowed: Bool, limit: Int?) throws {
+        let me = try requireUser()
+        guard var group = db.groups[groupId] else { throw BackendError.groupNotFound }
+        guard group.isOrganizer(me.id) else { throw BackendError.notOrganizer }
+        let code = group.guestSignup?.code ?? (allowed ? Self.newGuestCode() : nil)
+        group.guestSignup = GuestSignup(allowed: allowed, limit: limit, code: code)
+        db.groups[groupId] = group
+        scheduleSave()
+        emit(.groupsChanged)
+    }
+
+    func resetGuestLink(groupId: String) throws {
+        let me = try requireUser()
+        guard let group = db.groups[groupId], var guests = group.guestSignup else { throw BackendError.groupNotFound }
+        guard group.isOrganizer(me.id) else { throw BackendError.notOrganizer }
+        guests.code = Self.newGuestCode()
+        db.groups[groupId]?.guestSignup = guests
+        scheduleSave()
+        emit(.groupsChanged)
+    }
+
+    /// 组织者把访客移出某一场：和移出成员一样，候补递补
+    func removeGuest(_ guestId: String, sessionId: String, now: Date = Date()) throws {
+        let me = try requireUser()
+        guard let session = db.groupSessions[sessionId], session.isUpcoming(now: now) else { throw BackendError.sessionClosed }
+        guard db.groups[session.groupId]?.isOrganizer(me.id) == true else { throw BackendError.notOrganizer }
+        removeFromSession(sessionId, userId: guestId, now: now, countsAsLate: false)
+        db.groupSessions[sessionId]?.guests?[guestId] = nil
+        scheduleSave()
+        emit(.groupsChanged)
+    }
+
+    private static func newGuestCode() -> String {
+        String((0..<8).map { _ in "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789".randomElement()! })
+    }
+
     /// 组织者取消某一场
     func cancelSession(_ sessionId: String) throws {
         let me = try requireUser()

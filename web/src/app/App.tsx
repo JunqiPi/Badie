@@ -5,6 +5,7 @@ import { Contact, Support } from './Contact';
 import { Discover } from './Discover';
 import { Challenges, GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
+import { GuestSignup } from './GuestSignup';
 import { startLocale, t, useLocale } from './i18n';
 import { Groups } from './Groups';
 import { Home } from './Home';
@@ -19,6 +20,10 @@ import { Me, Settings } from './Me';
 import { EditGroup, NewGroup } from './NewGroup';
 import { NewRoom } from './NewRoom';
 import { AddByLink, Messages, Notifications } from './Messages';
+import { LiveBoard } from './Board';
+import { MatchPage, MyMatches, NewMatch } from './Match';
+import { NightPage } from './Night';
+import { GuestPayPage } from './Pay';
 import { GenderPrompt, Onboarding } from './Onboarding';
 import { Play } from './Play';
 import { PlayerPage } from './Player';
@@ -117,6 +122,14 @@ export default function App() {
   if (path.startsWith('/about/')) return shell(<About />);
   if (path.startsWith('/contact/')) return shell(<Contact signedIn={Boolean(profile)} />);
   if (path.startsWith('/support/')) return shell(<Support />);
+  // 球群的报名链接：不注册也能报名
+  const guestCode = path.match(/^\/g\/([\w-]+)\/?$/)?.[1];
+  if (guestCode) return shell(<GuestSignup key={guestCode} code={guestCode} signedIn={Boolean(profile)} />);
+  // 当晚的公开看板（场边的二维码）和访客的付款链接（提醒邮件里）：不用登录
+  const boardCode = path.match(/^\/live\/([\w-]+)\/?$/)?.[1];
+  if (boardCode) return shell(<LiveBoard key={boardCode} code={boardCode} />);
+  const payToken = path.match(/^\/pay\/([\w-]+)\/?$/)?.[1];
+  if (payToken) return shell(<GuestPayPage key={payToken} token={payToken} />);
 
   if (!profile) return shell(<SignInPage path={path} />);
 
@@ -125,6 +138,8 @@ export default function App() {
   const player = id('players');
   const group = id('groups');
   const room = id('rooms');
+  const night = id('night');
+  const match = id('matches');
   const chat = path.match(/^\/messages\/(game|group|dm)\/([0-9a-f-]{36})\//);
   const editing = path.match(/^\/groups\/([0-9a-f-]{36})\/edit\//)?.[1];
   const day = path.match(/^\/day\/(\d{4}-\d{2}-\d{2})\//)?.[1];
@@ -137,6 +152,10 @@ export default function App() {
     : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />
     : group ? <GroupPage key={group} id={group} />
     : room ? <RoomPage key={room} id={room} gender={profile?.gender ?? null} />
+    : night ? <NightPage key={night} id={night} />
+    : match ? <MatchPage key={match} id={match} />
+    : path.startsWith('/matches/new/') ? <NewMatch key={location.search} profile={profile} />
+    : path.startsWith('/matches/') ? <MyMatches />
     : game ? <GameDetail id={game} />
     : path.startsWith('/rooms/new/') ? <NewRoom profile={profile} />
     : path.startsWith('/rooms/') ? <Rooms />

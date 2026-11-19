@@ -7,6 +7,7 @@ import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
 import { Divider, Group, IconButton, LargeTitle, LevelBadge, Notice, Row, ScreenHeader, StatTile } from './kit';
 import { passwordProblem } from './password';
+import { PaymentHandles } from './Pay';
 import { disablePush, enablePush, pushState, type PushState } from './push';
 import { Link } from './router';
 import { cleanPhotoFolder, friendLink, problem, supabase, winPercent, suspendedText, useLive, type Friend, type MyStrikes, type PlayerCard, type PlayRecord, type Profile, type Strike } from './supabase';
@@ -73,6 +74,10 @@ export function Me({ profile, onChange }: { profile: Profile; onChange: (p: Prof
             <Row icon="trophy" tint="butter" title={t('Leaderboard')} to="/rankings/" />
             <Divider />
             <Row icon="challenge" tint="pink" title={t('Challenges')} to="/challenges/" />
+            <Divider />
+            <Row icon="medal" tint="butter" title={t('Matches')} to="/matches/" />
+            <Divider />
+            <Row icon="coins" tint="mint" title={t('Payment methods')} to="/settings/#payment" />
             <Divider />
             <Row icon="heart" tint="pink" title={t('Venues & favorites')} to="/courts/" />
             <Divider />
@@ -268,7 +273,7 @@ const policies = [
   ['nobody', 'No one'],
 ] as const;
 
-type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'show_searching' | 'allow_message_requests' | 'show_on_boards' | 'challenge_policy' | 'email_alerts' | 'gender'>;
+type Toggles = Pick<Profile, 'discoverable' | 'show_as_regular' | 'show_searching' | 'allow_message_requests' | 'show_on_boards' | 'public_initials' | 'challenge_policy' | 'email_alerts' | 'gender'>;
 
 /** 设置（iOS 的 SettingsView）：资料、隐私、约战、等级、账号 */
 export function Settings({ profile, email, onChange }: { profile: Profile; email?: string; onChange: (p: Profile) => void }) {
@@ -313,6 +318,9 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
         <Divider />
         <Switch checked={profile.show_on_boards} onChange={(v) => save({ show_on_boards: v })} title={t('Show me on leaderboards')}
                 text={t('Weekly and court boards show your nickname, level and games.')} />
+        <Divider />
+        <Switch checked={profile.public_initials ?? false} onChange={(v) => save({ public_initials: v })} title={t('Show only my initials on sign-up links')}
+                text={t('Anyone with a group’s sign-up link sees who’s going. Turn this on to show “T.” instead of your nickname.')} />
       </Group>
 
       {/* 关掉之前说清楚：别人就约不了你了 */}
@@ -339,6 +347,8 @@ export function Settings({ profile, email, onChange }: { profile: Profile; email
       <Group title={t('Level verification')}>
         <Row icon="verified" tint="mint" title={t('Verify a high level')} subtitle={t('Tournament results, a national ranking or a BWF profile.')} to="/verification/" />
       </Group>
+
+      <PaymentHandles />
 
       <PasswordSettings email={email} />
 

@@ -191,6 +191,8 @@ App 里「我的 → 支持 Badie」有三档打赏，代码里的商品 ID 是 
    Ko-fi 主页是 https://ko-fi.com/badie，已经填在 `Badie/DesignSystem/LegalLinks.swift` 的 `kofi` 和 `web/src/app/Contact.tsx` 的 `DONATE_URL`（`kofi` 改回 nil 就是美国区也走内购）。Ko-fi 要连好 PayPal 和 Stripe（刷卡）才能收钱；连好后把 `Contact.tsx` 的 `DONATIONS_OPEN` 改成 true，网站上才出现「支持 Badie」入口。
    提交时 Notes 里写一句：“Tips are consumable in-app purchases and don't unlock anything. On the US storefront the tip page links to Ko-fi instead, as allowed by guideline 3.1.1.”
    1.0.3 起有教练带课的球群，Notes 里再加一句：“Coach-led groups: the fee note is plain text written by the organizer about court or lesson fees, which are paid in person. Badie doesn't process payments and takes no commission.”
+   1.0.7 起有收款，Notes 里再加一段（和打赏那句分开）：“Court fees (new in 1.0.7): organizers can add their Venmo, Cash App, PayPal or Zelle username under Me → Payment methods. Players who haven't paid see a button that opens that payment app or website. The money never goes through Badie, Badie takes no cut, and it is for court fees at a physical venue, so it doesn't use in-app purchase (guideline 3.1.3(e)).”
+   试新功能的步骤也写上：“To try a match: tap + → Match · round robin, add players with Type a name, then Start. Guest sign-up and Run courts are on groups you organize (Edit group → Guest sign-up; Run courts shows on a session from 1 hour before it starts).”
 
 ## 参考
 

@@ -13,6 +13,7 @@
 | iPhone 1.0.3 | 苹果已批准（教练带课的球群、费用说明，Build `20261111.21`） |
 | iPhone 1.0.4 | 已上线（全 App 少字改版，Build `20261111.2236`） |
 | iPhone 1.0.6 | 2026-11-16 Build `20261116.1533`（main `5e9cf59`）已上传并挂到 1.0.6，10 种语言的更新说明已写入（审核信息、截图沿用上一版）。内容：注册必填常去球馆、发现页自动刷新、筛选里看附近的球群、球群多球馆、球馆库加 OSM、约球默认不限等级、关“显示我”前提醒。1.0.5 已上架 |
+| iPhone 1.0.7 | 2026-11-19 Build `20261119.1923`（main `a67e2e4`，**Xcode 27.1 / iOS 27 SDK**）已上传并挂到 1.0.7：访客报名、当晚排场 / 比赛 / 收款、别的城市的球馆能按名字搜到。10 种语言的更新说明（`store_text.json`）已写入；审核信息从 1.0.6 复制，审核备注后面自动加了 `review_notes.json` 里收款和试用比赛的两段；截图沿用。等用户在 App Store Connect 提交。之前用 Xcode 26.6 打的 `20261119.1842`（iOS 26.5 SDK）苹果要求换 27，作废 |
 | iPhone 1.0.5 | 2026-11-13 准备提交：附近的人（发现页刷卡：顶部选距离、附近的人头像排、照片为主的卡片；右滑发邀请，具体日期时间、单双打，双打答应后变公开局）、原首页并进球局、右上角进附近球馆（球馆详情有最近在这打过和常客）、等级卡片和打法分析（插画占位）、不用注册测级。Build `20261113.0517`（main `94d4274`，加了“我的”页卡片和编辑资料的编辑 / 预览）已挂上；更新说明、中文副标题“羽你一起进步”、商店截图（App Store screenshots 运行 `43371772036`，演示球友欣然/子轩用了用户给的照片）已写入。提交前复查（2026-11-13）又修了一轮，见下面“1.0.5 提交前复查”：新 Build `20261113.1632`（main `8870985`）已上传并挂到 1.0.5：在上一版的基础上，等级卡片改成一张可翻面的卡、打法换了新称呼、用上正式剪影。**用户 2026-11-13 已提交审核**。注意：挂构建的工作流在上传刚结束时跑会挂回旧构建（苹果还没列出新的），要等几分钟再跑，并看日志里“挂在版本上的构建”是不是新的 |
 | 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261217000000_nearby_review_fixes.sql`） |
 
@@ -126,7 +127,7 @@
 
 1. 改动先推开发分支，等 CI 全绿（iOS、Web、Supabase）。开发分支的 iOS CI 不截图，约 15 分钟。
 2. 用户说“推到 main”才推 main：先确认 main 没有别人新推的提交（有就先合进开发分支），再 `git push origin <sha>:main`。推 main 会自动部署数据库（Supabase deploy）和网站。
-3. 上传 TestFlight 要先问用户：`gh workflow run testflight.yml --ref main`，build 号是 UTC 时间（如 `20261108.2349`）。
+3. 上传 TestFlight 要先问用户：`gh workflow run testflight.yml --ref main`，build 号是 UTC 时间（如 `20261108.2349`）。iOS 的工作流都在 `xcode-27` 镜像上、写死 Xcode 27.1（2026-11-19 苹果要求 iOS 27 的 SDK；默认的 `macos-26` 只有 Xcode 26）。
 4. 只改文档时，提交信息里加 `[skip ci]`，不跑 CI。
 
 ## 最近做的功能（1.0.2）
@@ -254,6 +255,51 @@
 - 入口：美国的国家页（“各都会区的散客价”）、都会区里的城市页和球馆页各有一个链接。页面进站点地图，带 ItemList 和面包屑的结构化数据。
 - 其他国家没有价格数据，先不做。
 
+## 球群的访客报名（iPhone 1.0.7，2026-11-18；数据库和网站在 main `989bc7b` 已上线，走查后的修补在分支 `claude/guest-signup-fixes`，没推 main）
+
+需求在 `Badie-iOS/docs/GUEST_SIGNUP.md`（“要用户定的”都按建议定了），设计稿（用户已同意）是 https://claude.ai/artifact/NQRCGsWTAMYgsyhxnnkirw 的 1.0.7 那一行。组织者把链接发到原来的群里，没装 App 的人在网页上填名字就能报名或候补。
+
+- 数据库：迁移 `20261225000000_guest_signup.sql`，测试 `supabase/tests/guest_signup.test.sql`
+  - 访客也是 `session_signups` 的一行（`user_id` 空，有 `guest_name`、`guest_email`、`guest_locale`、`guest_token_hash`），主键改成 `id`、`(session_id, user_id)` 唯一。名额、候补、递补只有一份逻辑
+  - `play_groups` 多 `guests_allowed`、`guest_limit`（空 = 每场名额的一半）、`guest_code`（报名链接 `badie.rsvp/g/<码>/`，8 位，和群号分开，可以重置）。关掉后链接打不开，已经报上的访客保留
+  - 访客上限把候补里的访客也算上，所以递补时排第一的直接补，不用跳过谁
+  - 新函数：`guest_group_page`（不登录；报名的人只给名字，注册用户给昵称，不给 id、头像、邮箱）、`guest_sign_up`（只有服务端密钥能调）、`guest_set_email`、`guest_cancel`（凭证）、`set_guest_signup`、`reset_guest_link`、`remove_guest`（组织者）
+  - `promote_waitlist`、`cancel_session`、`disband_group` 认访客：留了邮箱的发邮件（沿用通知的译文，语言按报名时的网页）。报名或补填邮箱时发一封带取消链接的确认邮件（库里只存凭证的哈希，只有这时有明文）。场次结束一天后清掉访客邮箱
+  - `group_page` 的 `players` 里也有访客（`guest: true`、`signed_up_at`，id 是那一行报名的 id）：旧版 App 照样解得开，人数照算（点访客会打开一个找不到的资料页）。组织者多看到 `guests_allowed`、`guest_limit`、`guest_code`
+  - 防乱填：Turnstile（无感模式）；每个 IP 每小时 10 次（`guest_signup_ips`，存 IP 的哈希，一小时后删）；名字 2–20 字、不能留电话和链接、过不当词；同一场有同名的，网页上先问一句
+- 服务器函数 `guest-signup`：先向 Cloudflare 核对 Turnstile，再用服务端密钥调 `guest_sign_up`，带上 IP。已加进 `supabase-deploy.yml`，`config.toml` 里不验 JWT
+- 网站：`/g/<码>/` 报名页（9 种语言；场次展开看名单、填名字、可选邮箱，报了以后显示“候补第几位”、补填邮箱、取消；确认邮件里的取消链接 `?cancel=`）；已登录的人打开时让他去球群页报名。编辑球群里多“访客报名”（开关、每场上限、复制和重置链接）；球群页名单里访客标“访客”，组织者可以移出，可以复制报名链接
+- iPhone 1.0.7：编辑球群里的“访客报名”（同上）、球群页“复制报名链接”、场次名单里的“访客”和组织者的“移出这一场”
+- 比需求简单的地方：不另设 `guest_id`（用报名那一行的 id）
+- **走查后的修补**（迁移 `20261226000000_guest_signup_fixes.sql`，测试 `guest_signup_fixes.test.sql`，和 iPhone 1.0.7 一起上；逐条见 `GUEST_SIGNUP.md` 最后一节）：
+  - 网页上注册后在球群页报名，带上这台设备的访客凭证，那一行改成自己的（不占两个位子）；App 里组织者看到和成员同名的访客标“同名”
+  - 组织者移出访客，留了邮箱的收到邮件；递补、改时间的邮件带取消链接（发信时换新凭证 `guest_mail_token_hash`，设备上的凭证照样能用）
+  - 开场前 24 小时内有人退出、候补没人：组织者收到“有空位”（推送 + 通知）
+  - 访客开场前 2 小时内退出也记临时取消；组织者在名单下面看到“临时退出”（`group_page` 每场多 `late_cancels`，只有组织者有）
+  - 报名页：“换了手机就找 {组织者} 取消”；结束的场次多留 1 天、写“已结束”
+  - 隐私设置“报名链接上只显示我的首字母”（`profiles.public_initials`，网站和 iPhone）
+  - 改每周场次的时间、名额、费用、球馆：同一个星期几的改在原来那一场上，报名保留，报了名的人收到“场次有变”（以前是取消再重新报）。换星期几、删掉的照旧取消
+  - 同一场同名的访客，后报的记成 “Tony 2”
+  - 清访客邮箱改成函数 `forget_guest_emails()`（收款迁移已经改了它：开了收款的留到付清或 7 天）
+- **还没做**：安卓（同样四样加上面的修补，照 iPhone 搬，不在这次范围）；邮件只有纯文字；旧版 App 点访客会打开找不到的资料页（旧版改不了，新版不能点）；同一个访客收到几封带链接的邮件时，只有最新一封的取消链接有效
+- **上线前用户要做**：Supabase → Edge Functions → Secrets 加 `TURNSTILE_SECRET_KEY`（Cloudflare → Turnstile 里网站那个组件的 Secret Key，和登录用的是同一个）。没配时函数不核对人机验证，每次报名在函数日志里写一条警告。发件人沿用约球邮件的 `games@badie.rsvp`，不用另配
+
+## 球群当晚的排场、比赛和收款（iPhone 1.0.7，2026-11-19，分支 `claude/club-night`，没推 main）
+
+需求、接口、做完的和比需求简单的地方都在 `Badie-iOS/docs/CLUB_NIGHT.md`；设计稿是 https://claude.ai/artifact/NQRCGsWTAMYgsyhxnnkirw 的“1.0.8 当晚与比赛”那一行（按用户定的改放 1.0.7）。和访客报名一起在 1.0.7 里，目标 2026-12-05 提交审核。已合并 `claude/guest-signup-fixes`。
+
+- 数据库：迁移 `20261228000000_club_night.sql`，测试 `club_night.test.sql`、`matches.test.sql`
+  - 排场：到场、已付记在 `session_signups` 上（现场加的人也是一行访客报名）；`club_nights`、`night_games`。排人只在 `night_pick`：场数少的先、等得久的先，晚到和休息回来的从在场最少的场数算起，尽量不重复搭档和同一组人，可按实力分队；同一片场地按两次只算一次（`court_changed`），10 秒撤销，减场地时打完再收，在打比赛时空出来的场地给比赛
+  - 比赛：`matches`、`match_players`、`match_games`；四种赛制，对阵开始时排好，哪片场地空了上下一场；球员自己输一次、先存的算，组织者改要带版本；积分榜按胜率、净胜分、总得分、两人之间胜负，三人以上写并列
+  - 收款：`group_sessions.fee`（默认同一个每周场次上次的数）、`payment_handles`；要付的是标了到场的人（没用排场就是报上名的），收钱的人自己不用付；“我付了”记 `paid_self`；提醒 12 小时一次、结束 7 天内，访客邮件带 `badie.rsvp/pay/<凭证>/`；`forget_guest_emails()` 改成开了收款的留到付清或 7 天
+  - 帮手：每晚（每场比赛）最多 3 个，结束 3 小时后失效，不能收款、结束、删除
+  - “轮到你了”只推送：新表 `live_pushes`，`send-push` 带 `collapse`（同一晚互相替换）。比赛的通知是新类型 `match`，旧版 App 显示成系统通知
+  - 公开看板 `live_board`（排场结束后 24 小时、比赛 7 天，只有名字）；球员的 `my_tonight`；球群页的 `group_tonight`（没改 `group_page`，旧版 App 不受影响）
+- 网站：`/night/<场次>/`、`/matches/…`、`/live/<码>/`、`/pay/<凭证>/`，球群页的按钮、球局页“今晚”卡、“+”菜单“比赛 · 循环赛”（英文 Match · round robin）、设置里的收款方式；二维码用 `qrcode-generator` 2.0.4。端到端测试 `night.e2e.mjs`。隐私政策加了收款方式和访客邮箱的保留时间
+- iPhone 1.0.7（版本号已改）：同样几样，看板用 App 里的 Safari 打开；`/app/matches/<id>/` 的通知打开比赛页
+- **还没做**：安卓（同样几样，照 iPhone 搬，这次没动 `Badie-Android/`）；比需求简单的地方见 `CLUB_NIGHT.md`
+- **上线前用户要做**：没有新的密钥。提交审核时 Notes 写一句“收款只是给出 Venmo / Cash App / PayPal 链接，钱不经过 App，是线下场地费，不走内购”（和打赏的说明分开）
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。
@@ -267,5 +313,6 @@
 
 ## 用户那边的待办
 
+- 访客报名上线前：Supabase → Edge Functions → Secrets 加 `TURNSTILE_SECRET_KEY`（见上面“球群的访客报名”）。
 - Cloudflare 打开 Web Analytics（网站已经接好代码）。
 - 删掉不用的环境变量 `SUPABASE_READONLY_DB_URL`。

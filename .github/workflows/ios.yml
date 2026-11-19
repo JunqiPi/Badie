@@ -18,12 +18,15 @@ concurrency:
 jobs:
   build-test:
     name: Build, test & screenshots
-    # 和上传 TestFlight 用同一个 Xcode（26），iOS 26 的外观和编译问题在这里就能看到
-    runs-on: macos-26
+    # 和上传 TestFlight 用同一个 Xcode（27），iOS 27 的外观和编译问题在这里就能看到
+    # App Store 要求用 iOS 27 的 SDK 构建：Xcode 27 在单独的镜像上，版本写死
+    runs-on: xcode-27
     timeout-minutes: 60
     defaults:
       run:
         working-directory: Badie-iOS
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
 

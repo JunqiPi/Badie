@@ -68,13 +68,13 @@ select throws_ok($$ select public.update_group(pg_temp.id('g'), 'Weeknights', ''
                  '42501', 'not_organizer', '成员不能编辑');
 select throws_ok($$ select public.disband_group(pg_temp.id('g')) $$, '42501', 'not_organizer', '成员不能解散');
 
--- 群主改时间：旧场次取消，按新时间生成；名字一起改
+-- 群主改时间：同一天的旧场次改到新时间（报名保留），多出来的时间另外生成；名字一起改
 select pg_temp.login(1);
 select lives_ok($$ select public.update_group(pg_temp.id('g'), 'Weeknight doubles', 'Bring shoes', 2, 6, 'open',
                                              pg_temp.schedule(20, 22) || pg_temp.schedule(18, 20)) $$, '群主可以编辑');
 reset role;
 select is((select name from public.play_groups where id = pg_temp.id('g')), 'Weeknight doubles', '名字改了');
-select is(pg_temp.future_sessions(pg_temp.id('g')), 4, '旧场次取消，两个新时间各两场');
+select is(pg_temp.future_sessions(pg_temp.id('g')), 4, '两个新时间各两场，没有取消的');
 
 -- 解散：成员收到通知，球群没了
 select pg_temp.login(1);

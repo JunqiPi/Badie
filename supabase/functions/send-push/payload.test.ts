@@ -43,3 +43,9 @@ Deno.test('安卓：只发数据，聊天信息转成字符串，球群的推送
   assert.equal(parsed.thread, 'group:p');
   assert.ok(Object.values(payload.message.data).every((value) => typeof value === 'string'), 'data 里只能是文字');
 });
+
+Deno.test('轮到你了：同一晚的推送互相替换', () => {
+  const turn: Item = { ...base, id: null, title: 'Your turn: Court 2', collapse: 'night:s1' };
+  assert.equal(collapseId(turn), 'night:s1');
+  assert.equal(fcmPayload({ ...turn, kind: 'fcm' }, 'https://x.supabase.co').message.android.collapse_key, 'night:s1');
+});

@@ -550,4 +550,28 @@ final class GroupManager: ObservableObject {
         if backend.isRemote { try await backend.remoteCancelSession(sessionId) } else { try backend.cancelSession(sessionId) }
         reload()
     }
+
+    /// 允许不注册的人报名；limit 为 nil 是每场名额的一半
+    func setGuestSignup(_ groupId: String, allowed: Bool, limit: Int?) async throws {
+        if backend.isRemote {
+            try await backend.remoteSetGuestSignup(groupId, allowed: allowed, limit: limit)
+        } else {
+            try backend.setGuestSignup(groupId: groupId, allowed: allowed, limit: limit)
+        }
+        reload()
+    }
+
+    func resetGuestLink(_ groupId: String) async throws {
+        if backend.isRemote { try await backend.remoteResetGuestLink(groupId) } else { try backend.resetGuestLink(groupId: groupId) }
+        reload()
+    }
+
+    func removeGuest(_ guestId: String, from sessionId: String) async throws {
+        if backend.isRemote {
+            try await backend.remoteRemoveGuest(guestId, sessionId: sessionId)
+        } else {
+            try backend.removeGuest(guestId, sessionId: sessionId)
+        }
+        reload()
+    }
 }

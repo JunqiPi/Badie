@@ -126,6 +126,8 @@ struct GroupDetailView: View {
     @State private var confirmsLeave = false
     @State private var confirmsDisband = false
     @State private var sessionDetail: GroupSession?
+    /// 当天的场次（排场、看排场、付钱），见 TonightViews.swift
+    @State private var tonight: [GroupTonight] = []
 
     private var group: PlayGroup? {
         _ = groupManager.revision
@@ -165,6 +167,16 @@ struct GroupDetailView: View {
                             Button("退出球群") { confirmsLeave = true }
                                 .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
                                 .frame(maxWidth: .infinity)
+                        }
+                        if let me, group.isOrganizer(me), group.guestSignup?.allowed == true, let link = group.guestSignup?.link {
+                            Button {
+                                UIPasteboard.general.string = link.absoluteString
+                                appState.showToast(String(localized: "已复制报名链接"), style: .success)
+                            } label: {
+                                Label("复制报名链接", systemImage: "link")
+                            }
+                            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+                            .frame(maxWidth: .infinity)
                         }
                         if group.ownerId == me {
                             VStack(spacing: AppTheme.Spacing.sm) {
@@ -221,6 +233,9 @@ struct GroupDetailView: View {
             SessionSheet(sessionId: session.id)
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+        }
+        .task(id: groupManager.revision) {
+            if let list = try? await appState.backend.remoteGroupTonight(groupId) { tonight = list }
         }
     }
 
@@ -378,8 +393,12 @@ struct GroupDetailView: View {
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
             }
+            // 已经结束、还在收款的场次
+            ForEach(tonight.filter { item in !sessions.contains { $0.id == item.id } }) { item in
+                TonightPastRow(item: item, groupId: group.id)
+            }
             ForEach(sessions) { session in
-                SessionRow(session: session, userId: me ?? "") {
+                SessionRow(session: session, userId: me ?? "", tonight: tonight.first { $0.id == session.id }) {
                     sessionDetail = session
                 }
             }
@@ -448,6 +467,8 @@ struct GroupDetailView: View {
 struct SessionRow: View {
     let session: GroupSession
     let userId: String
+    /// 当天的场次：白底加阴影，多一个排场 / 看排场 / 付钱的按钮
+    var tonight: GroupTonight? = nil
     let onOpen: () -> Void
 
     @EnvironmentObject private var appState: AppState
@@ -455,48 +476,63 @@ struct SessionRow: View {
 
     var body: some View {
         let status = session.status(of: userId)
-        HStack(spacing: AppTheme.Spacing.md) {
-            Button(action: onOpen) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(session.slot.formattedFull)
-                        .font(AppTheme.Typography.bodyBold)
-                        .foregroundStyle(AppTheme.Colors.ink)
-                    if let venueName = groupManager.sessionVenueName(session) {
-                        Label(venueName, systemImage: "mappin.and.ellipse")
-                            .font(AppTheme.Typography.footnote)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            .lineLimit(1)
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(spacing: AppTheme.Spacing.md) {
+                Button(action: onOpen) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(session.slot.formattedFull)
+                            .font(AppTheme.Typography.bodyBold)
+                            .foregroundStyle(AppTheme.Colors.ink)
+                        if let venueName = groupManager.sessionVenueName(session) {
+                            Label(venueName, systemImage: "mappin.and.ellipse")
+                                .font(AppTheme.Typography.footnote)
+                                .foregroundStyle(AppTheme.Colors.inkSecondary)
+                                .lineLimit(1)
+                        }
+                        HStack(spacing: 6) {
+                            Text("已报 \(session.signedUp.count)/\(session.capacity)")
+                            if !session.waitlist.isEmpty { Text("· 候补 \(session.waitlist.count)") }
+                        }
+                        .font(AppTheme.Typography.footnote)
+                        .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        ProgressBar(progress: Double(session.signedUp.count) / Double(max(1, session.capacity)))
+                            .frame(maxWidth: 160)
                     }
-                    HStack(spacing: 6) {
-                        Text("已报 \(session.signedUp.count)/\(session.capacity)")
-                        if !session.waitlist.isEmpty { Text("· 候补 \(session.waitlist.count)") }
-                    }
-                    .font(AppTheme.Typography.footnote)
-                    .foregroundStyle(AppTheme.Colors.inkSecondary)
-                    ProgressBar(progress: Double(session.signedUp.count) / Double(max(1, session.capacity)))
-                        .frame(maxWidth: 160)
+                    .contentShape(Rectangle())
                 }
-                .contentShape(Rectangle())
+                .buttonStyle(.plain)
+                Spacer(minLength: 0)
+                // 开场后：看排场、付钱换掉报名按钮（一行只有一个按钮）
+                if let tonight, TonightPlayerButton.replacesSignup(tonight) {
+                    TonightPlayerButton(item: tonight, groupId: session.groupId)
+                } else {
+                    switch status {
+                    case .signedUp:
+                        Button("已报名 ✓") { cancel() }
+                            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                            .accessibilityHint("取消报名")
+                    case .waitlisted(let position):
+                        Button("候补第 \(position)") { cancel() }
+                            .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                            .accessibilityHint("取消候补")
+                    case .none:
+                        Button(session.isFull ? String(localized: "候补") : String(localized: "报名")) { signUp() }
+                            .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
+                    }
+                }
             }
-            .buttonStyle(.plain)
-            Spacer(minLength: 0)
-            switch status {
-            case .signedUp:
-                Button("已报名 ✓") { cancel() }
-                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
-                    .accessibilityHint("取消报名")
-            case .waitlisted(let position):
-                Button("候补第 \(position)") { cancel() }
-                    .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
-                    .accessibilityHint("取消候补")
-            case .none:
-                Button(session.isFull ? String(localized: "候补") : String(localized: "报名")) { signUp() }
-                    .buttonStyle(BrutalButtonStyle(kind: .primary, size: .small, fullWidth: false))
+            if let tonight {
+                TonightRunButton(item: tonight)
             }
         }
         .padding(AppTheme.Spacing.md)
-        .sticker(status == .signedUp ? AppTheme.Colors.lime.opacity(0.35) : AppTheme.Colors.surface,
-                 radius: AppTheme.Radius.md, shadow: .zero)
+        .sticker(rowFill(status), radius: AppTheme.Radius.md, shadow: tonight != nil ? AppTheme.Elevation.card : .zero)
+    }
+
+    /// 当天的场次白底加阴影；报了名的其他场次淡柠檬绿
+    private func rowFill(_ status: GroupSession.Status) -> Color {
+        if tonight == nil, status == .signedUp { return AppTheme.Colors.lime.opacity(0.35) }
+        return AppTheme.Colors.surface
     }
 
     private func signUp() {
@@ -555,11 +591,16 @@ struct SessionSheet: View {
                         IconButton(systemName: "xmark", accessibilityLabel: String(localized: "关闭")) { dismiss() }
                     }
                     .padding(.top, AppTheme.Spacing.xl)
-                    roster(title: String(localized: "已报名 \(session.signedUp.count)/\(session.capacity)"), ids: session.signedUp)
+                    let organizer = appState.currentUser.map { group.isOrganizer($0.id) } ?? false
+                    roster(title: String(localized: "已报名 \(session.signedUp.count)/\(session.capacity)"), ids: session.signedUp,
+                           session: session, organizer: organizer)
                     if !session.waitlist.isEmpty {
-                        roster(title: String(localized: "候补 \(session.waitlist.count)"), ids: session.waitlist)
+                        roster(title: String(localized: "候补 \(session.waitlist.count)"), ids: session.waitlist, session: session, organizer: organizer)
                     }
-                    if let me = appState.currentUser?.id, group.isOrganizer(me), !session.isCancelled {
+                    if organizer, let dropped = session.lateCancels, !dropped.isEmpty {
+                        lateCancels(dropped)
+                    }
+                    if organizer, !session.isCancelled {
                         Button("取消这一场") {
                             Task {
                                 do {
@@ -581,14 +622,20 @@ struct SessionSheet: View {
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
     }
 
-    private func roster(title: String, ids: [String]) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+    private func roster(title: String, ids: [String], session: GroupSession, organizer: Bool) -> some View {
+        // 访客和报了名的成员同名：可能是同一个人注册后又报了一次，给组织者标出来
+        let memberNames = Set((session.signedUp + session.waitlist).filter { session.guests?[$0] == nil }
+            .compactMap { groupManager.user($0)?.nickname.lowercased() })
+        return VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
             Text(title)
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
             FlowLayout(spacing: AppTheme.Spacing.sm) {
                 ForEach(Array(ids.enumerated()), id: \.element) { index, userId in
-                    if let user = groupManager.user(userId) {
+                    if let guest = session.guests?[userId] {
+                        guestChip(guest, id: userId, session: session, canRemove: organizer && !session.isCancelled,
+                                  sameName: organizer && memberNames.contains(guest.name.lowercased()))
+                    } else if let user = groupManager.user(userId) {
                         HStack(spacing: 6) {
                             AvatarView(user: user, size: 28)
                             Text(userId == appState.currentUser?.id ? String(localized: "我") : user.nickname)
@@ -603,6 +650,92 @@ struct SessionSheet: View {
                         .accessibilityLabel("\(index + 1). \(user.nickname)")
                     }
                 }
+            }
+        }
+    }
+
+    /// 访客：名字后面标“访客”；组织者点开可以移出这一场（和移出成员一样，候补递补）
+    @ViewBuilder
+    private func guestChip(_ guest: GroupGuest, id: String, session: GroupSession, canRemove: Bool, sameName: Bool) -> some View {
+        let chip = HStack(spacing: 6) {
+            Text(guest.name.prefix(1).uppercased())
+                .font(.system(size: 12, weight: .black))
+                .foregroundStyle(AppTheme.Colors.ink)
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(AppTheme.Colors.surfaceMuted))
+                .overlay(Circle().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+                .accessibilityHidden(true)
+            Text(guest.name)
+                .font(AppTheme.Typography.footnoteBold)
+                .foregroundStyle(AppTheme.Colors.ink)
+            pill(String(localized: "访客"), fill: AppTheme.Colors.mint)
+            if sameName {
+                pill(String(localized: "同名"), fill: AppTheme.Colors.surfaceMuted, color: AppTheme.Colors.ink)
+            }
+        }
+        .padding(.leading, 4)
+        .padding(.trailing, AppTheme.Spacing.sm)
+        .padding(.vertical, 4)
+        .background(Capsule().fill(AppTheme.Colors.surface))
+        .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1))
+        if canRemove {
+            Menu {
+                Section(String(localized: "\(guest.name) · 访客 · 报名于 \(guest.signedUpAt.formatted(.dateTime.month().day()))")) {
+                    Button(role: .destructive) {
+                        removeGuest(id, from: session.id)
+                    } label: {
+                        Label("移出这一场", systemImage: "minus.circle")
+                    }
+                }
+            } label: {
+                chip
+            }
+        } else {
+            chip
+        }
+    }
+
+    private func pill(_ text: String, fill: Color, color: Color = AppTheme.Colors.onAccent) -> some View {
+        Text(text)
+            .font(.system(size: 11, weight: .heavy))
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 1)
+            .background(Capsule().fill(fill))
+            .overlay(Capsule().strokeBorder(AppTheme.Colors.stroke, lineWidth: 1.5))
+    }
+
+    /// 开场前 2 小时内退出的人（只有组织者看得到）
+    private func lateCancels(_ people: [GroupLateCancel]) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            Text("临时退出 \(people.count)")
+                .font(AppTheme.Typography.headline)
+                .foregroundStyle(AppTheme.Colors.ink)
+            FlowLayout(spacing: AppTheme.Spacing.sm) {
+                ForEach(Array(people.enumerated()), id: \.offset) { _, person in
+                    HStack(spacing: 6) {
+                        Text(person.name)
+                            .font(AppTheme.Typography.footnoteBold)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                        if person.guest {
+                            pill(String(localized: "访客"), fill: AppTheme.Colors.mint)
+                        }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.sm)
+                    .padding(.vertical, 4)
+                    .background(Capsule().fill(AppTheme.Colors.surfaceMuted))
+                }
+            }
+        }
+    }
+
+    private func removeGuest(_ guestId: String, from sessionId: String) {
+        Task {
+            do {
+                try await groupManager.removeGuest(guestId, from: sessionId)
+                appState.showToast(String(localized: "已移出这一场"))
+            } catch {
+                appState.showError(error)
             }
         }
     }
@@ -640,8 +773,20 @@ struct CreateGroupView: View {
     @State private var showVenuePicker = false
     @State private var didSetup = false
     @State private var isSaving = false
+    /// 访客报名（只在编辑时有）：开关和每场上限随“保存”一起存；复制、重置链接马上生效
+    @State private var guestsAllowed = false
+    /// nil = 每场名额的一半
+    @State private var guestLimit: Int?
+    @State private var confirmsResetLink = false
 
     private var isEditing: Bool { editingGroupId != nil }
+
+    private var editingGroup: PlayGroup? { editingGroupId.flatMap { groupManager.group(id: $0) } }
+
+    /// 名额最多的那一场：访客上限不超过它
+    private var maxCapacity: Int { schedules.map(\.capacity).max() ?? 4 }
+
+    private var shownGuestLimit: Int { min(maxCapacity, guestLimit ?? GuestSignup.defaultLimit(capacity: maxCapacity)) }
 
     private let weekdays = [
         (2, String(localized: "一", comment: "星期一（简写）")),
@@ -732,6 +877,9 @@ struct CreateGroupView: View {
                     }
                     section(String(localized: "加入方式")) {
                         SegmentedSticker(options: PlayGroup.JoinPolicy.allCases, selection: $joinPolicy) { $0.title }
+                    }
+                    if let group = editingGroup {
+                        section(String(localized: "访客报名")) { guestSignupEditor(group) }
                     }
                 }
                 .padding(.horizontal, AppTheme.Spacing.screen)
@@ -938,6 +1086,84 @@ struct CreateGroupView: View {
         .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.md, shadow: .zero)
     }
 
+    /// 允许不注册的人报名：每场访客上限、报名链接（复制、重置）
+    private func guestSignupEditor(_ group: PlayGroup) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            VStack(spacing: 0) {
+                Toggle(isOn: $guestsAllowed.animation(AppTheme.Motion.standard)) {
+                    Text("允许不注册的人报名")
+                        .font(AppTheme.Typography.bodyBold)
+                        .foregroundStyle(AppTheme.Colors.ink)
+                }
+                .tint(AppTheme.Colors.success)
+                .padding(.horizontal, AppTheme.Spacing.md)
+                .frame(minHeight: 60)
+                if guestsAllowed {
+                    InsetDivider()
+                    Stepper(value: Binding(get: { shownGuestLimit }, set: { guestLimit = $0 }), in: 1...maxCapacity) {
+                        Text("每场访客最多 \(shownGuestLimit) 人")
+                            .font(AppTheme.Typography.bodyBold)
+                            .foregroundStyle(AppTheme.Colors.ink)
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.md)
+                    .frame(minHeight: 60)
+                    InsetDivider()
+                    // 链接在第一次打开、保存后才有
+                    if group.guestSignup?.allowed == true, let link = group.guestSignup?.link {
+                        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                            HStack(spacing: AppTheme.Spacing.sm) {
+                                IconTile(systemName: "link", fill: AppTheme.Colors.sky, size: 36)
+                                Text(link.absoluteString.replacingOccurrences(of: "https://", with: ""))
+                                    .font(AppTheme.Typography.bodyBold)
+                                    .foregroundStyle(AppTheme.Colors.ink)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+                            HStack(spacing: AppTheme.Spacing.sm) {
+                                Button {
+                                    UIPasteboard.general.string = link.absoluteString
+                                    appState.showToast(String(localized: "已复制报名链接"), style: .success)
+                                } label: {
+                                    Label("复制报名链接", systemImage: "doc.on.doc")
+                                }
+                                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: true))
+                                Button("重置链接") { confirmsResetLink = true }
+                                    .buttonStyle(TextActionStyle())
+                            }
+                        }
+                        .padding(AppTheme.Spacing.md)
+                    } else {
+                        Text("保存后就有报名链接")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(AppTheme.Spacing.md)
+                    }
+                }
+            }
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+            Text("关掉后链接失效")
+                .font(AppTheme.Typography.footnote)
+                .foregroundStyle(AppTheme.Colors.inkSecondary)
+        }
+        .confirmationDialog("重置报名链接？", isPresented: $confirmsResetLink, titleVisibility: .visible) {
+            Button("重置链接", role: .destructive) { resetGuestLink(group.id) }
+        } message: {
+            Text("旧链接会马上失效")
+        }
+    }
+
+    private func resetGuestLink(_ groupId: String) {
+        Task {
+            do {
+                try await groupManager.resetGuestLink(groupId)
+                appState.showToast(String(localized: "已换新链接，旧链接已失效"), style: .success)
+            } catch {
+                appState.showError(error)
+            }
+        }
+    }
+
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
             Text(title)
@@ -961,6 +1187,8 @@ struct CreateGroupView: View {
             coached = group.isCoached
             venueId = group.venueId
             extraVenueIds = Array(group.venueIds.dropFirst())
+            guestsAllowed = group.guestSignup?.allowed ?? false
+            guestLimit = group.guestSignup?.limit
             return
         }
         venueId = initialVenueId ?? locationManager.favoriteCourtIds.first { locationManager.court(id: $0) != nil }
@@ -975,8 +1203,12 @@ struct CreateGroupView: View {
             defer { isSaving = false }
             do {
                 if let editingGroupId {
+                    let guestsBefore = editingGroup?.guestSignup
                     try await groupManager.update(editingGroupId, name: name, schedules: schedules, levelRange: lowerLevel...upperLevel,
                                                   joinPolicy: joinPolicy, summary: summary, coached: coached, venueIds: allVenueIds)
+                    if guestsAllowed != (guestsBefore?.allowed ?? false) || guestLimit != guestsBefore?.limit {
+                        try await groupManager.setGuestSignup(editingGroupId, allowed: guestsAllowed, limit: guestLimit)
+                    }
                     appState.showToast(String(localized: "已保存"), style: .success)
                     router.pop()
                     return

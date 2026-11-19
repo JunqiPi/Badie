@@ -746,6 +746,42 @@ final class SupabaseClientTests: XCTestCase {
         XCTAssertEqual(backend.venue(id: "v-second")?.name, "Second Court", "别的球馆也进本地库")
     }
 
+    /// 访客（不注册、在网页上报名）：在名单里、算人数、不进用户缓存；组织者看到访客报名的设置，可以移出访客
+    func testGuestsComeFromServerAndCanBeRemoved() async throws {
+        let backend = try await signedInBackend()
+        let guestId = "6f1c2c3e-0000-4000-8000-0000000000aa"
+        let guest = #"{"id":"\#(guestId)","nickname":"Tina","waitlisted":false,"guest":true,"signed_up_at":"2026-11-16T03:00:00Z"}"#
+        let page = groupPage(myStatus: "confirmed")
+            .replacingOccurrences(of: #""confirmed":1"#, with: #""confirmed":2"#)
+            .replacingOccurrences(of: #""waitlisted":false}]"#, with: #""waitlisted":false},\#(guest)]"#)
+            .replacingOccurrences(of: #""invite_code":"ABC2LX""#,
+                                  with: #""invite_code":"ABC2LX","guests_allowed":true,"guest_limit":null,"guest_code":"7fQk2Rx9""#)
+        server.on("POST /rest/v1/rpc/group_page", page)
+        try await backend.loadRemoteGroup("grp1")
+
+        let session = try XCTUnwrap(backend.session(id: "s1"))
+        XCTAssertEqual(session.signedUp, [userId, guestId], "访客也算报上的人")
+        XCTAssertEqual(session.guests?[guestId]?.name, "Tina")
+        XCTAssertNil(backend.user(id: guestId), "访客不是用户，不进用户缓存")
+        let group = try XCTUnwrap(backend.group(id: "grp1"))
+        XCTAssertEqual(group.guestSignup, GuestSignup(allowed: true, limit: nil, code: "7fQk2Rx9"))
+        XCTAssertEqual(group.guestSignup?.link?.absoluteString, "https://badie.rsvp/g/7fQk2Rx9/")
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/remove_guest", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
+        try await backend.remoteRemoveGuest(guestId, sessionId: "s1")
+        XCTAssertEqual(server.json(0)["p_signup"] as? String, guestId)
+        XCTAssertNil(backend.group(id: "grp1")?.guestSignup, "旧服务器（没有这几项）：没有访客报名的设置")
+
+        server.requests = []
+        server.on("POST /rest/v1/rpc/set_guest_signup", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage(myStatus: "confirmed"))
+        try await backend.remoteSetGuestSignup("grp1", allowed: true, limit: 6)
+        XCTAssertEqual(server.json(0)["p_allowed"] as? Bool, true)
+        XCTAssertEqual(server.json(0)["p_limit"] as? Int, 6)
+    }
+
     func testNearbyGroupsDecodeWithAndWithoutCourts() async throws {
         let backend = try await signedInBackend()
         let base = #""summary":null,"level_min":3,"level_max":5,"join_policy":"open","gender":null,"coached":false,"venue":{"id":"v-test-court","name":"Test Court","city":"Irvine","tz":"America/Los_Angeles"},"activity":{"sessions":2,"average":6},"my_role":null"#

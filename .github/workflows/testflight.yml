@@ -1,6 +1,6 @@
 name: TestFlight
 
-# 手动运行：Actions → TestFlight → Run workflow。在云端的 Mac（Xcode 26）上构建、签名并上传到 App Store Connect，不需要自己的 Mac。
+# 手动运行：Actions → TestFlight → Run workflow。在云端的 Mac（Xcode 27）上构建、签名并上传到 App Store Connect，不需要自己的 Mac。
 # 需要 3 个 Secrets（Settings → Secrets and variables → Actions，直接粘进去，不要发到聊天里）：
 #   ASC_KEY_ID、ASC_ISSUER_ID、ASC_PRIVATE_KEY（.p8 文件的全部内容）—— App Store Connect 的 Team API 密钥，权限 Admin
 # 准备步骤见 Badie-iOS/docs/APP_STORE.md 第 3 节
@@ -17,12 +17,14 @@ concurrency:
 jobs:
   upload:
     name: Build and upload to TestFlight
-    runs-on: macos-26
+    # App Store 要求用 iOS 27 的 SDK 构建：Xcode 27 在单独的镜像上，版本写死
+    runs-on: xcode-27
     timeout-minutes: 45
     defaults:
       run:
         working-directory: Badie-iOS
     env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
       # App 和它的通知扩展（第一个要先在网页上注册，扩展由脚本自动注册）
       BUNDLE_IDS: com.badie.app com.badie.app.NotificationService
       PROFILE_NAME: Badie GitHub Actions

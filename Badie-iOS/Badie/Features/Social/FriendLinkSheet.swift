@@ -82,7 +82,7 @@ struct FriendLinkSheet: View {
 }
 
 /// 黑白二维码（放大时不模糊）；链接变了才重新生成
-private struct QRCodeView: View {
+struct QRCodeView: View {
     let text: String
     @State private var image: UIImage?
 

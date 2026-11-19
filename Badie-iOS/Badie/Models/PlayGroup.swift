@@ -46,6 +46,8 @@ struct PlayGroup: Identifiable, Codable, Hashable {
     var coached: Bool? = nil
     /// 主球馆以外的球馆（按顺序；旧数据里没有这一项）
     var otherVenueIds: [String]? = nil
+    /// 访客报名的设置（只有组织者拿得到；旧数据里没有这一项）
+    var guestSignup: GuestSignup? = nil
 
     static let maxSchedules = 7
     static let maxVenues = 5
@@ -85,6 +87,20 @@ struct PlayGroup: Identifiable, Codable, Hashable {
         return String(localized: "来「\(name)」一起打羽毛球。\(venueName) · \(times) · \(levelText)。在 Badie App 输入群号 \(inviteCode) 加入，报名、候补都在 App 里。")
             + "\n" + Room.joinLink(inviteCode)
     }
+}
+
+/// 允许不注册的人报名：组织者打开后有一个报名链接（和群号分开，可以重置），访客在网页上填名字报名
+struct GuestSignup: Codable, Hashable {
+    var allowed: Bool
+    /// 每场最多几个访客；nil = 每场名额的一半
+    var limit: Int?
+    /// 报名链接的码（第一次打开后才有）
+    var code: String?
+
+    var link: URL? { code.flatMap { URL(string: "https://badie.rsvp/g/\($0)/") } }
+
+    /// 没设上限时，按名额最多的那一场算一半
+    static func defaultLimit(capacity: Int) -> Int { max(1, capacity / 2) }
 }
 
 /// 每周固定场次
@@ -157,6 +173,10 @@ struct GroupSession: Identifiable, Codable, Hashable {
     var isCancelled = false
     /// 在哪个球馆；nil = 球群的主球馆
     var venueId: String? = nil
+    /// 名单里的访客（不注册、在网页上报名的人）：id 是那一行报名的 id，不是用户
+    var guests: [String: GroupGuest]? = nil
+    /// 开场前 2 小时内退出的人（只有组织者拿得到）
+    var lateCancels: [GroupLateCancel]? = nil
 
     /// 开场前多久内退出算临时取消（与球局规则一致）
     static let lateCancellationWindow: TimeInterval = 2 * 3600
@@ -180,6 +200,18 @@ struct GroupSession: Identifiable, Codable, Hashable {
     }
 
     func isUpcoming(now: Date = Date()) -> Bool { !isCancelled && slot.endTime > now }
+}
+
+/// 场次名单里的访客
+struct GroupGuest: Codable, Hashable {
+    let name: String
+    let signedUpAt: Date
+}
+
+/// 开场前 2 小时内退出的人
+struct GroupLateCancel: Codable, Hashable {
+    let name: String
+    let guest: Bool
 }
 
 /// 球群的真实活跃度（对外展示用，不显示成员总数）

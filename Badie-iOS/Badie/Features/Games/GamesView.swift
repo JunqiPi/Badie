@@ -25,6 +25,8 @@ struct GamesView: View {
     @State private var segment: Segment = .upcoming
     @State private var regulars: [VenueRegular] = []
     @State private var weeklyStanding: WeeklyStanding?
+    /// 今晚的排场、比赛（my_tonight）：有内容才显示
+    @State private var tonight: [TonightItem] = []
 
     var body: some View {
         ScrollView {
@@ -41,6 +43,11 @@ struct GamesView: View {
                 }
 
                 todoPills
+
+                if !tonight.isEmpty {
+                    TonightCard(items: tonight)
+                        .padding(.horizontal, AppTheme.Spacing.screen)
+                }
 
                 if let game = matchManager.nextGame {
                     Button {
@@ -96,6 +103,13 @@ struct GamesView: View {
         .task {
             await friendManager.refreshRegulars()
             reloadPlayers()
+        }
+        // 在这一页时每 30 秒看一次今晚的场地
+        .task(id: router.selectedTab) {
+            while router.selectedTab == .games && !Task.isCancelled {
+                if let items = try? await appState.backend.remoteMyTonight() { tonight = items }
+                try? await Task.sleep(nanoseconds: 30_000_000_000)
+            }
         }
         .onAppear {
             reloadPlayers()

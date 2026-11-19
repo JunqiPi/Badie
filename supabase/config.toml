@@ -446,3 +446,7 @@ verify_jwt = false
 # 发邮件：只接受 Auth Hook 签过名的、或数据库带暗号的请求（见 functions/send-email）
 [functions.send-email]
 verify_jwt = false
+
+# 访客报名：不用登录的网页调，函数里先核对人机验证（见 functions/guest-signup）
+[functions.guest-signup]
+verify_jwt = false

@@ -63,6 +63,34 @@ await blake.getByRole('button', { name: 'Sign up' }).first().click();
 await blake.getByText('Signed up', { exact: true }).first().waitFor();
 await blake.getByText('1/8 signed up').first().waitFor();
 
+// 访客报名：Alex 在编辑页打开，没登录的人打开报名链接能看到场次和报名的人；Alex 能把访客移出这一场。
+// 报名本身走 guest-signup 函数（人机验证），本机不跑函数，这里直接按函数那样写库
+const groupId = new URL(alex.url()).pathname.split('/')[2];
+await alex.goto(`${base}/groups/${groupId}/edit/`);
+await alex.getByRole('button', { name: 'Let people sign up without an account' }).click();
+await alex.getByRole('button', { name: 'Save' }).click();
+await alex.getByRole('button', { name: 'Copy sign-up link' }).waitFor();
+const guestCode = sql(`select guest_code from play_groups where id = '${groupId}'`);
+sql(`select guest_sign_up('${guestCode}', (select id from group_sessions where group_id = '${groupId}' order by starts_at limit 1), 'Tina', null, 'en', '192.0.2.1')`);
+const visitor = await (await browser.newContext({ viewport: { width: 390, height: 844 }, timezoneId: 'America/Los_Angeles' })).newPage();
+await visitor.goto(`${base}/g/${guestCode}/`);
+await visitor.getByRole('heading', { name: 'Thu doubles', level: 1 }).waitFor();
+await visitor.getByText('2/8 signed up').first().waitFor();
+await visitor.getByText('Tina').waitFor();
+await visitor.getByLabel('Your name').waitFor();
+// Tina 这台设备上存着凭证：看到自己报上了，换了手机要找组织者
+const sessionId = sql(`select id from group_sessions where group_id = '${groupId}' order by starts_at limit 1`);
+sql(`update session_signups set guest_token_hash = guest_token_hash('tina-token') where guest_name = 'Tina'`);
+await visitor.evaluate((id) => localStorage.setItem('badie.guestSignups', JSON.stringify({ [id]: 'tina-token' })), sessionId);
+await visitor.reload();
+await visitor.getByText('You’re signed up', { exact: true }).waitFor();
+await visitor.getByText('If you switch phones, ask Alex to take you off.').waitFor();
+await alex.reload();
+await alex.getByText('Who’s going').first().click();
+await alex.getByRole('button', { name: 'Remove Tina from this session' }).click();
+await alex.getByRole('button', { name: 'Remove from this session' }).click();
+await alex.getByText('1/8 signed up').first().waitFor();
+
 // 群聊
 await blake.getByRole('link', { name: 'Group chat' }).click();
 await blake.getByRole('textbox', { name: 'Message' }).fill('Bringing new shuttles');

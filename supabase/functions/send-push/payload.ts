@@ -5,6 +5,8 @@ export type Chat = { thread: string; sender: string; name: string | null; avatar
 export type Item = {
   id: number | null; kind: 'apns' | 'apns_sandbox' | 'web' | 'fcm'; token: string; keys?: { p256dh: string; auth: string };
   title: string; body: string; link?: string; chat?: Chat;
+  // 只推送的消息（“轮到你了”）：同一个 collapse 的在锁屏上互相替换
+  collapse?: string;
 };
 
 // 发给 Apple 的内容。聊天推送：App 的通知扩展（mutable-content）下载头像，显示成带头像的聊天通知；
@@ -20,8 +22,9 @@ export function apnsPayload(item: Item, supabaseUrl: string) {
   };
 }
 
-// 球群人多，同一个群在锁屏上只留最新一条；私信和球局群聊每条都留
-export const collapseId = (item: Item) => (item.chat?.thread.startsWith('group:') ? item.chat.thread : undefined);
+// 球群人多，同一个群在锁屏上只留最新一条；私信和球局群聊每条都留。排场和比赛的“轮到你了”同一晚只留最新一条
+export const collapseId = (item: Item) =>
+  item.collapse ?? (item.chat?.thread.startsWith('group:') ? item.chat.thread : undefined);
 
 // 发给安卓（Firebase Cloud Messaging）的内容：只发数据，由 App 自己显示通知（聊天显示成带头像的会话通知）。
 // FCM 的 data 里只能放文字，聊天信息整个转成 JSON 字符串；头像给完整地址
