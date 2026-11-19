@@ -32,14 +32,15 @@ from pathlib import Path
 from timezonefinder import TimezoneFinder
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_osm_venues import PREFIX, QLEVER, STORE, generic, grid, literal, metres, osm_id, rows, same_name  # noqa: E402
+from build_osm_venues import PREFIX, QLEVER, generic, grid, literal, metres, osm_id, rows, same_name  # noqa: E402
 
 root = Path(__file__).resolve().parents[2]
 NOMINATIM = "https://nominatim.openstreetmap.org/search"
 SKIP_COUNTRIES = {"CN", "KP"}
 UNCONFIRMED = re.compile(r"could not be confirmed", re.I)
 OSM_NUMBERED = re.compile(r"#\d+$")
-SHOP = re.compile(r"\bshop|\bstore\b|cửa hàng|toko\b", re.I)  # 商店不收（和 OSM 那批一样）
+# 商店不收（和 OSM 那批一样）。OSM 那边的 STORE 还排除“テニス”（网球学校），这里不用：“テニス&バドミントンスクール”能打羽毛球
+SHOP = re.compile(r"\bshop|\bstore\b|decathlon|superstore|cửa hàng|toko\b", re.I)
 # Nominatim 的 place_rank：26 以上是街道、门牌、具体的地方；以下是区、城市、邮编
 EXACT_RANK = 26
 
@@ -144,15 +145,17 @@ def osm_matches(todo, cache):
     objects = {}
     for i in range(0, len(names), 500):
         values = " ".join(quote(n) for n in names[i:i + 500])
-        text = sparql(f"""SELECT ?n ?o (geof:centroid(?w) AS ?c) ?city ?pc ?street ?hn WHERE {{ VALUES ?n {{ {values} }}
+        text = sparql(f"""SELECT ?n ?o (geof:centroid(?w) AS ?c) ?city ?pc ?street ?hn ?en WHERE {{ VALUES ?n {{ {values} }}
             ?o osmkey:name ?n . ?o geo:hasGeometry/geo:asWKT ?w .
             OPTIONAL {{ ?o osmkey:addr:city ?city }} OPTIONAL {{ ?o osmkey:addr:postcode ?pc }}
-            OPTIONAL {{ ?o osmkey:addr:street ?street }} OPTIONAL {{ ?o osmkey:addr:housenumber ?hn }} }}""", cache, f"names{i}")
-        for n, o, c, city, pc, street, hn in rows(text, 7):
+            OPTIONAL {{ ?o osmkey:addr:street ?street }} OPTIONAL {{ ?o osmkey:addr:housenumber ?hn }}
+            OPTIONAL {{ ?o osmkey:name:en ?en }} }}""", cache, f"names{i}")
+        for n, o, c, city, pc, street, hn, en in rows(text, 8):
             m = re.search(r"POINT\(([-\d.]+) ([-\d.]+)\)", c)
             if m:
                 objects.setdefault(osm_id(o), {"name": n, "point": (float(m.group(2)), float(m.group(1))),
-                                               "city": city, "postcode": pc, "street": street, "hn": hn, "areas": []})
+                                               "city": city, "postcode": pc, "street": street, "hn": hn, "en": en,
+                                               "areas": []})
     ids = sorted(objects)
     for i in range(0, len(ids), 500):
         values = " ".join(f"<https://www.openstreetmap.org/{x}>" for x in ids[i:i + 500])
@@ -168,13 +171,12 @@ def osm_matches(todo, cache):
 
     found = {}
     for name, address in todo:
-        words = plain_words(address)
         fits = []
         for obj in by_name.get(name, []):
             country = next((iso for level, _, iso in obj["areas"] if level == 2 and iso), "")
-            places = sorted(((level, n) for level, n, _ in obj["areas"] if level >= 4 and plain_words(n) <= words), reverse=True)
+            places = sorted(((level, n) for level, n, _ in obj["areas"] if level >= 4 and in_text(n, address)), reverse=True)
             ok = places or (obj["postcode"] and norm(obj["postcode"]) in norm(address)) or \
-                (obj["city"] and plain_words(obj["city"]) <= words)
+                (obj["city"] and in_text(obj["city"], address))
             if country and ok:
                 fits.append((obj, country, places))
         # 同名的好几处都对得上、又离得远：分不清是哪一家，交给地址查
@@ -184,12 +186,22 @@ def osm_matches(todo, cache):
         region = next((n for level, n, _ in sorted(obj["areas"]) if level == 4), "")
         city = obj["city"] or (places[0][1] if places else next((n for level, n, _ in sorted(obj["areas"], reverse=True) if level <= 8), ""))
         found[(name, address)] = {
-            "lat": obj["point"][0], "lon": obj["point"][1], "place_rank": 30, "name": name,
+            "lat": obj["point"][0], "lon": obj["point"][1], "place_rank": 30, "name": name, "alias": obj["en"],
             "display_name": ", ".join(n for _, n, _ in sorted(obj["areas"], reverse=True)),
             "address": {"country_code": country.lower(), "city": city, "state": region, "postcode": obj["postcode"],
                         "road": obj["street"], "house_number": obj["hn"]},
         }
     return found
+
+
+CJK = re.compile(r"[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]")
+
+
+def in_text(name, text):
+    """name 出现在 text 里：西文按词比；中日韩没有空格分词，按包含关系比（“札幌市”在“北海道札幌市豊平区…”里）"""
+    if plain_words(name) <= plain_words(text):
+        return True
+    return bool(CJK.search(name)) and len(norm(name)) >= 2 and norm(name) in norm(text)
 
 
 def plain_words(text):
@@ -203,6 +215,12 @@ def streets(core):
     """地址里去掉门牌号后的街道名（“493 Mountain Hwy”→“Mountain Hwy”，“Jl. Sudirman No.12”→“Jl. Sudirman”）"""
     out = []
     for part in core[:-1]:
+        if CJK.search(part):  # 日本没有街名：去掉番地，留到“丁目”或第一个数字之前（“南千住六丁目45番5号”→“南千住六丁目”）
+            m = re.match(r"^(.+?丁目)", part)
+            street = m.group(1) if m else re.split(r"[0-9０-９]", part)[0]
+            if street != part and len(street) >= 2 and street not in out:
+                out.append(street)
+            continue
         street = re.sub(r"^\d+[\w/-]*\s+|\s+(?:no\.?|nr\.?|#)\s*\d+\w*.*$|\s+\d+[\w/-]*$", "", part, flags=re.I).strip()
         if street != part and len(re.findall(r"[^\W\d_]", street)) >= 4 and street not in out:
             out.append(street)
@@ -260,7 +278,7 @@ def main():
             if OSM_NUMBERED.search(name):
                 counts["osm_numbered"] += 1
                 continue
-            if STORE.search(name) or SHOP.search(name):
+            if SHOP.search(name):
                 counts["shop"] = counts.get("shop", 0) + 1
                 continue
             if (norm(name), norm(address)) in seen:
@@ -294,7 +312,7 @@ def main():
         for q, whole in queries[:3]:
             hit = geo.search(q, country)
             # Nominatim 会模糊匹配：“P. Bình Thắng, Dĩ An”给出别的省的“Lãnh Binh Thăng”。查到的地方得在我们写的城市里
-            if hit and plain_words(q.split(", ")[-1]) <= plain_words(hit["display_name"]):
+            if hit and in_text(q.split(", ")[-1], hit["display_name"]):
                 # 去掉楼名后查到的，门牌号对得上才算精确；不然只能说明在哪个城市
                 number = hit.get("address", {}).get("house_number", "")
                 exact = hit["place_rank"] >= EXACT_RANK and (whole or (number and number in re.findall(r"\w+", q)))
@@ -314,8 +332,9 @@ def main():
         if not exact and len(core) > 1:
             # OSM 里没有这个门牌号，但街道有（“493 Mountain Hwy”）：查这条街，查到的一段不长（外框对角线 1.2 公里内）就算准
             for street in streets(core)[:1]:
-                h = geo.search(f"{street}, {core[-1]}", country)
-                if h and h["place_rank"] >= EXACT_RANK and plain_words(core[-1]) <= plain_words(h["display_name"]) \
+                where = ", ".join(core[-2:]) if CJK.search(street) else core[-1]  # 日本带上市区町村，免得查到同县同名的町
+                h = geo.search(f"{street}, {where}", country)
+                if h and h["place_rank"] >= EXACT_RANK and all(in_text(w, h["display_name"]) for w in where.split(", ")) \
                         and span(h) < 1200:
                     hit, exact, on_street = h, True, True
                     break
@@ -394,6 +413,8 @@ def main():
         }
         if c["approx"]:
             venue["approx"] = True
+        if c["hit"].get("alias") and c["hit"]["alias"] != c["name"]:  # OSM 里的英文名：搜英文也能搜到
+            venue["aliases"] = [c["hit"]["alias"]]
         if c.get("overture"):  # 位置来自 Overture Maps；城市、省还是 OpenStreetMap 的
             o = c["overture"]
             venue["street"] = o["street"] or venue["street"]
