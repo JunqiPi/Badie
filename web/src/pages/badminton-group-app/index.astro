@@ -1,0 +1,108 @@
+---
+// 给组织者看的页面（只有英文）：对准 “badminton group app”。只写已经做到的事（Badie-iOS/docs/STORY.md），细节见 GUEST_SIGNUP.md、CLUB_NIGHT.md
+import Base from '../../layouts/Base.astro';
+import { APP_STORE_URL } from '../../app/Contact';
+
+const site = Astro.site ?? new URL('http://localhost');
+const faq = [
+  {
+    q: 'Does everyone need to download an app?',
+    a: 'No. Turn on guest sign-up and share the link in your group chat. Players sign up on a web page with just their name. Badie works in any browser and on iPhone.',
+  },
+  {
+    q: 'Does the money go through Badie?',
+    a: 'No. Badie shows your Venmo, Cash App, PayPal or Zelle details so players can pay you directly, and keeps track of who has paid.',
+  },
+  {
+    q: 'What does it cost?',
+    a: 'Nothing. Badie is free for organizers and players, with no ads.',
+  },
+  {
+    q: 'Can coaches use it?',
+    a: 'Yes. Mark the group as coached and add the price, so people know it’s a class before they sign up.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'SoftwareApplication',
+      name: 'Badie',
+      url: new URL('/badminton-group-app/', site).href,
+      applicationCategory: 'SportsApplication',
+      operatingSystem: 'iOS, Web',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      description: 'A free app for badminton groups: weekly sign-ups with a waitlist, guest sign-up without the app, court rotation on the night, round robins and court fee tracking.',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    },
+  ],
+};
+
+const steps = [
+  ['Weekly sessions and sign-ups', 'Set the day, time, venue and number of spots. Players sign up for each session. When it’s full, they join the waitlist, and the next person moves up if someone drops out.'],
+  ['Guests sign up without the app', 'Share one link in your WhatsApp or WeChat group. People type their name to sign up. They can add an email to hear when they get a spot.'],
+  ['Court rotation on the night', 'Mark who’s here and Badie picks who plays next. People with the fewest games and the longest wait go first, and it avoids the same partners. Late arrivals start level with everyone else.'],
+  ['Round robins and brackets', 'Run a round robin, rotating doubles or a knockout with the people who turned up. Games go to the next free court and the standings update as scores come in.'],
+  ['Court fees', 'Set the fee for the session. Players see your payment details and tap “I paid”. You see who still owes, and can send a reminder.'],
+  ['Help on the night', 'Add up to 3 helpers who can mark arrivals and enter scores. Everyone can follow the courts on a shared screen or their phone, no account needed.'],
+];
+---
+
+<Base
+  title="Badminton group app for weekly sessions — free | Badie"
+  description="Run your weekly badminton group in one place: sign-ups and waitlist, guest sign-up from a link, court rotation, round robins and court fees. Free."
+  jsonLd={jsonLd}
+>
+  <div class="mx-auto grid max-w-3xl gap-10">
+    <header class="grid justify-items-start gap-4">
+      <h1 class="text-display lg:text-[2.75rem]">A free app for your badminton group</h1>
+      <p class="max-w-prose text-[1.0625rem] leading-relaxed text-ink-secondary">
+        Run your weekly sessions without asking everyone to download an app. Sign-ups, the court rotation and court fees are in one place.
+      </p>
+      <div class="flex flex-wrap gap-2">
+        <a href="/groups/new/" class="button button-lg">Start a group</a>
+        <a href={APP_STORE_URL} class="button button-lg button-quiet">Get the iPhone app</a>
+      </div>
+    </header>
+
+    <section aria-labelledby="what" class="grid gap-3">
+      <h2 id="what" class="text-title2">What organizers use it for</h2>
+      <ol class="grid gap-3">
+        {steps.map(([title, text], i) => (
+          <li class="sticker flex items-start gap-3 p-4">
+            <span class="grid size-7 shrink-0 place-items-center rounded-full bg-[#17140f] text-footnote font-black text-lime">{i + 1}</span>
+            <div>
+              <h3 class="text-headline">{title}</h3>
+              <p class="mt-1 text-subhead">{text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p class="text-footnote text-ink-secondary">
+        Only need a schedule for tonight? <a class="link" href="/badminton-tournament-maker/">Make one here without signing up</a>.
+      </p>
+    </section>
+
+    <section aria-labelledby="players" class="grid gap-2">
+      <h2 id="players" class="text-title2">New players find you</h2>
+      <p class="max-w-prose text-subhead">
+        Your group shows up for players nearby in Badie, so people new to the area can find it and sign up.
+        People who play alone can also <a class="link" href="/badminton-partner-app/">find partners at their level</a>.
+      </p>
+    </section>
+
+    <section aria-labelledby="faq" class="grid gap-3">
+      <h2 id="faq" class="text-title2">Questions</h2>
+      {faq.map((f) => (
+        <details class="sticker p-4">
+          <summary class="cursor-pointer text-headline">{f.q}</summary>
+          <p class="mt-2 text-subhead">{f.a}</p>
+        </details>
+      ))}
+    </section>
+  </div>
+</Base>

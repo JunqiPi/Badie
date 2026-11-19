@@ -180,8 +180,9 @@ struct MatchPanel: View {
     }
 
     private func subtitle(_ state: MatchState) -> String {
-        let format = MatchFormat.title(state.format)
-        if state.isLive, let round = state.round, round <= state.rounds {
+        let format = MatchFormat.title(state.format, play: state.play)
+        // 循环、瑞士轮写第几轮；有淘汰赛的不写
+        if state.isLive, state.matchFormat.byRounds, let round = state.round, round <= state.rounds {
             return String(localized: "\(format) · 第 \(round)/\(state.rounds) 轮")
         }
         return format
@@ -194,7 +195,7 @@ struct MatchPanel: View {
             if state.isOrganizer {
                 Button { showsHelpers = true } label: { Label("帮手", systemImage: "person.2") }
             }
-            if state.format == MatchFormat.rotating.rawValue {
+            if state.play == MatchPlay.rotating.rawValue {
                 Button { showsAddPlayer = true } label: { Label("加人", systemImage: "person.badge.plus") }
             }
             Button { showsWithdraw = true } label: { Label("退赛", systemImage: "figure.walk") }
@@ -233,13 +234,14 @@ struct MatchPanel: View {
         }
         playingSection(state)
         nextSection(state)
-        standingsSection(state)
+        // 单淘汰没有积分榜
+        if state.matchFormat != .knockout { standingsSection(state) }
         allGamesSection(state)
     }
 
     @ViewBuilder
     private func playingSection(_ state: MatchState) -> some View {
-        let playing = state.games.filter { $0.status == "playing" }.sorted { ($0.court ?? 0) < ($1.court ?? 0) }
+        let playing = state.realGames.filter { $0.status == "playing" }.sorted { ($0.court ?? 0) < ($1.court ?? 0) }
         if !playing.isEmpty {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 sectionTitle(String(localized: "正在打"))
@@ -274,7 +276,7 @@ struct MatchPanel: View {
 
     @ViewBuilder
     private func nextSection(_ state: MatchState) -> some View {
-        let queued = Array(state.games.filter { $0.status == "queued" }.prefix(max(2, state.courts)))
+        let queued = Array(state.realGames.filter { $0.status == "queued" }.prefix(max(2, state.courts)))
         if !queued.isEmpty {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 sectionTitle(String(localized: "下一场"))
@@ -326,9 +328,9 @@ struct MatchPanel: View {
             }
             .buttonStyle(.plain)
             if showsAllGames {
-                let rounds = Array(Set(state.games.map(\.round))).sorted()
+                let rounds = Array(Set(state.realGames.map(\.round))).sorted()
                 ForEach(rounds, id: \.self) { round in
-                    let games = state.games.filter { $0.round == round }
+                    let games = state.realGames.filter { $0.round == round }
                     Text(verbatim: roundTitle(round, games: games))
                         .font(AppTheme.Typography.footnoteBold)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -342,8 +344,9 @@ struct MatchPanel: View {
     }
 
     private func roundTitle(_ round: Int, games: [MatchState.Game]) -> String {
-        if games.contains(where: { $0.stage == "final" }) { return String(localized: "决赛") }
-        if games.contains(where: { $0.stage == "semi" }) { return String(localized: "半决赛") }
+        // 决赛和三四名同一轮：写“决赛”
+        if let game = games.first(where: { $0.stage == "ko" }) { return MatchRules.stageTitle(game) }
+        if let game = games.first { return MatchRules.stageTitle(game) }
         return String(localized: "第 \(round) 轮")
     }
 
@@ -466,7 +469,7 @@ struct MatchPanel: View {
 
     /// 最终排名画成图片（和等级卡同一套样式，4:5）
     private func renderShare(_ state: MatchState) {
-        let card = MatchShareCard(name: state.name, subtitle: MatchFormat.title(state.format), date: state.endedAt ?? state.createdAt,
+        let card = MatchShareCard(name: state.name, subtitle: MatchFormat.title(state.format, play: state.play), date: state.endedAt ?? state.createdAt,
                                   rows: state.ranking ?? state.standings)
         let image = MatchShareRenderer.render(card)
         shareImage = image
@@ -524,11 +527,28 @@ enum MatchRules {
         stride(from: 0, to: scores.count - 1, by: 2).map { "\(scores[$0])–\(scores[$0 + 1])" }.joined(separator: " ")
     }
 
+    /// 这一场叫什么：第几轮、四分之一决赛、半决赛、决赛、三四名决赛、16 强
+    static func stageTitle(_ game: MatchState.Game) -> String {
+        if game.stage == "third" { return String(localized: "三四名决赛") }
+        if game.stage == "ko" {
+            switch game.koSize ?? 0 {
+            case 2: return String(localized: "决赛")
+            case 4: return String(localized: "半决赛")
+            case 8: return String(localized: "四分之一决赛")
+            default: return String(localized: "\(game.koSize ?? 0) 强")
+            }
+        }
+        return String(localized: "第 \(game.round) 轮")
+    }
+
     /// 全部对阵里右边那一格
     static func result(_ game: MatchState.Game) -> String {
         switch game.status {
         case "done":
             if game.walkover == true { return String(localized: "已退赛") }
+            if game.retired != nil {
+                return [scoreText(game.scores ?? []), String(localized: "中途退赛")].filter { !$0.isEmpty }.joined(separator: " · ")
+            }
             return scoreText(game.scores ?? [])
         case "playing": return game.court.map { String(localized: "场地 \($0)") } ?? ""
         case "cancelled": return String(localized: "取消")
@@ -625,7 +645,7 @@ struct StandingsTable: View {
 // MARK: - 输比分（半屏）
 // 两边大数字，加减，点数字直接输；三局两胜一局一局填。
 // 球员只能在打的时候输自己那场，先存的算；别人再打开看到“Amy 填的：21–18”，只能点“不对”。
-// 组织者、帮手随时能改（写“Kevin 改的”）；不合规则时问一句“比分不对，确定吗？”再坚持保存
+// 组织者、帮手随时能改（写“Kevin 改的”）；不合规的比分存不了，写明哪里不对；中途退赛单独记
 
 struct MatchScoreSheet: View {
     let match: MatchState
@@ -639,7 +659,7 @@ struct MatchScoreSheet: View {
     @State private var scores: [Int]
     @State private var setIndex = 0
     @State private var saving = false
-    @State private var confirmsForce = false
+    @State private var confirmsRetire = false
     @State private var typingIndex = 0
     @State private var typedText = ""
     @State private var showsTyping = false
@@ -658,11 +678,15 @@ struct MatchScoreSheet: View {
     private var editable: Bool { match.canScore(game) }
 
     private var title: String {
-        if game.stage == "final" { return String(localized: "决赛") }
-        if game.stage == "semi" { return String(localized: "半决赛") }
-        if let court = game.court { return String(localized: "场地 \(court) · 第 \(game.round) 轮") }
-        return String(localized: "第 \(game.round) 轮")
+        let stage = MatchRules.stageTitle(game)
+        if let court = game.court { return String(localized: "场地 \(court) · \(stage)") }
+        return stage
     }
+
+    /// 要存的比分：去掉后面没填的局
+    private var entered: [Int] { MatchScoring.played(scores) }
+    private var check: MatchScoring.Check { MatchScoring.check(entered, match.scoring) }
+    private var retireProblem: String? { MatchScoring.retireProblem(entered, match.scoring) }
 
     private var rulesText: String {
         let sets = match.bestOf == 3 ? String(localized: "三局两胜") : String(localized: "一局")
@@ -706,8 +730,12 @@ struct MatchScoreSheet: View {
             }
             Button("取消", role: .cancel) {}
         }
-        .confirmationDialog("比分不对，确定吗？", isPresented: $confirmsForce, titleVisibility: .visible) {
-            Button("确定") { save(force: true) }
+        .confirmationDialog("谁中途退赛了？", isPresented: $confirmsRetire, titleVisibility: .visible) {
+            ForEach([1, 2], id: \.self) { side in
+                Button(String(localized: "\(match.sideName(side == 1 ? game.a : game.b)) 中途退赛")) { retire(side: side) }
+            }
+        } message: {
+            Text("按退赛时的比分填，没打完的那局也填上。对方赢。")
         }
         .confirmationDialog("谁退赛了？", isPresented: $confirmsWithdraw, titleVisibility: .visible) {
             ForEach(game.a + game.b, id: \.self) { playerId in
@@ -742,14 +770,39 @@ struct MatchScoreSheet: View {
                 sideColumn(side: 0)
                 sideColumn(side: 1)
             }
-            Spacer(minLength: 0)
-            Button("保存") { save(force: false) }
-                .buttonStyle(.brutalPrimary)
-                .disabled(saving)
-            if match.canManage && game.status != "done" {
-                Button("退赛") { confirmsWithdraw = true }
-                    .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
+            if match.bestOf == 3 && !entered.isEmpty {
+                Text(verbatim: MatchRules.scoreText(entered))
+                    .font(AppTheme.Typography.headline)
+                    .monospacedDigit()
+                    .foregroundStyle(AppTheme.Colors.ink)
                     .frame(maxWidth: .infinity)
+            }
+            if case .problem(let text) = check {
+                Text(verbatim: text)
+                    .font(AppTheme.Typography.footnoteBold)
+                    .foregroundStyle(AppTheme.Colors.danger)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            Spacer(minLength: 0)
+            // 不合规的比分存不了
+            Button("保存") { save() }
+                .buttonStyle(.brutalPrimary)
+                .disabled(saving || !isValid)
+            if match.canManage {
+                HStack(spacing: AppTheme.Spacing.lg) {
+                    Button("有人中途退赛") {
+                        if let problem = retireProblem {
+                            appState.showToast(problem, style: .error)
+                        } else {
+                            confirmsRetire = true
+                        }
+                    }
+                    if game.status != "done" {
+                        Button("退赛") { confirmsWithdraw = true }
+                    }
+                }
+                .buttonStyle(TextActionStyle(color: AppTheme.Colors.danger))
+                .frame(maxWidth: .infinity)
             }
         }
     }
@@ -851,28 +904,28 @@ struct MatchScoreSheet: View {
         return String(localized: "\(by) 填的：\(score)")
     }
 
-    /// 要存的比分：一局；三局两胜时填了的那几局
-    private var entered: [Int] {
-        var result: [Int] = []
-        for index in 0..<(scores.count / 2) where index == 0 || scores[index * 2] + scores[index * 2 + 1] > 0 {
-            result.append(scores[index * 2])
-            result.append(scores[index * 2 + 1])
-        }
-        return result
+    private var isValid: Bool {
+        if case .winner = check { return true }
+        return false
     }
 
-    private func save(force: Bool) {
+    private func save() {
+        send { try await appState.backend.remoteMatchScore(game: game.id, scores: entered, version: game.version ?? 0) }
+    }
+
+    private func retire(side: Int) {
+        send { try await appState.backend.remoteMatchRetire(game: game.id, side: side, scores: entered, version: game.version ?? 0) }
+    }
+
+    private func send(_ call: @escaping () async throws -> Void) {
         saving = true
-        let values = entered
         Task {
             defer { saving = false }
             do {
-                try await appState.backend.remoteMatchScore(game: game.id, scores: values, version: game.version ?? 0, force: force)
+                try await call()
                 Haptics.success()
                 await onDone()
                 dismiss()
-            } catch RemoteError.server(let code) where code == "score_invalid" && match.canManage {
-                confirmsForce = true
             } catch RemoteError.server(let code) where code == "score_taken" || code == "score_changed" {
                 // 有人先存了：提示一句，关掉重看
                 appState.showError(RemoteError.server(code))
@@ -1007,9 +1060,7 @@ private struct MatchQualifySheet: View {
 
     /// 出线的名额：每组前几名；3 组时再加一个最好的第 2 名
     private var needed: Int {
-        let pools = match.pools ?? 2
-        let advance = match.advance ?? 1
-        return pools == 3 && advance == 1 ? 4 : pools * advance
+        (match.pools ?? 2) * (match.advance ?? 1)
     }
 
     var body: some View {
@@ -1229,7 +1280,7 @@ struct MyMatchesView: View {
                     .font(AppTheme.Typography.bodyBold)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .lineLimit(1)
-                Text("\(MatchFormat.title(match.format)) · \(match.players) 人 · \(match.createdAt.formatted(.dateTime.month().day()))")
+                Text("\(MatchFormat.title(match.format, play: match.play)) · \(match.players) 人 · \(match.createdAt.formatted(.dateTime.month().day()))")
                     .font(AppTheme.Typography.footnote)
                     .foregroundStyle(AppTheme.Colors.inkSecondary)
                     .lineLimit(1)

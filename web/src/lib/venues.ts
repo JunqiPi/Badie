@@ -116,6 +116,67 @@ function uniqueSlug(base: string, taken: Set<string>): string {
 
 const mapLink = (venue: CatalogEntry) => `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lon}`;
 
+// 州 / 省有的写缩写、有的写全名（“CA”和“California”），统一成缩写，不然同一个城市会拆成两页
+const stateNames: Record<string, Record<string, string>> = {
+  US: {
+    AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
+    DC: 'District of Columbia', FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa',
+    KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland', MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota',
+    MS: 'Mississippi', MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey',
+    NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma', OR: 'Oregon',
+    PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina', SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah',
+    VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming', PR: 'Puerto Rico',
+  },
+  CA: {
+    AB: 'Alberta', BC: 'British Columbia', MB: 'Manitoba', NB: 'New Brunswick', NL: 'Newfoundland and Labrador', NS: 'Nova Scotia',
+    NT: 'Northwest Territories', NU: 'Nunavut', ON: 'Ontario', PE: 'Prince Edward Island', QC: 'Quebec', SK: 'Saskatchewan', YT: 'Yukon',
+  },
+  AU: {
+    ACT: 'Australian Capital Territory', NSW: 'New South Wales', NT: 'Northern Territory', QLD: 'Queensland', SA: 'South Australia',
+    TAS: 'Tasmania', VIC: 'Victoria', WA: 'Western Australia',
+  },
+};
+const plain = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const stateCodes = new Map(
+  Object.entries(stateNames).map(([country, names]) => [
+    country,
+    new Map(Object.entries(names).flatMap(([code, name]) => [[plain(code), code], [plain(name), code]])),
+  ]),
+);
+
+function normalRegion(country: string, region: string): string {
+  if (['HK', 'SG'].includes(country)) return '';
+  return stateCodes.get(country)?.get(plain(region ?? '')) ?? region ?? '';
+}
+
+/** 国家页按州 / 省分组时的标题：缩写换回全名 */
+export const regionLabel = (country: string, region: string) => stateNames[country.toUpperCase()]?.[region] ?? region;
+
+/**
+ * 同一个城市的球馆在数据里地区写法不一样（英国常写成所在的区，比如曼彻斯特的球馆有的写 Trafford、有的写 Salford），
+ * 会拆成好几页“Badminton courts in Manchester”，每页都不够 3 家、不让收录。
+ * 同一国家、同名、离第一家 25 公里以内的算一个城市，地区用其中最多的写法
+ */
+function cityRegions(venues: CatalogEntry[]): Map<CatalogEntry, string> {
+  const byName = Map.groupBy(venues, (v) => `${v.country}|${plain(v.city)}`);
+  const result = new Map<CatalogEntry, string>();
+  for (const group of byName.values()) {
+    const clusters: CatalogEntry[][] = [];
+    for (const venue of group) {
+      const cluster = clusters.find(([seed]) => distanceKm(seed, venue) <= 25);
+      if (cluster) cluster.push(venue);
+      else clusters.push([venue]);
+    }
+    for (const cluster of clusters) {
+      const counts = new Map<string, number>();
+      for (const v of cluster) counts.set(normalRegion(v.country, v.region), (counts.get(normalRegion(v.country, v.region)) ?? 0) + 1);
+      const region = [...counts].sort((a, b) => b[1] - a[1])[0][0];
+      for (const v of cluster) result.set(v, region);
+    }
+  }
+  return result;
+}
+
 function load(): Country[] {
   const venues = catalogDirs.flatMap(({ dir, pages }) =>
     readdirSync(dir)
@@ -139,6 +200,7 @@ function load(): Country[] {
   const cities = new Map<string, City>();
   const citySlugs = new Map<string, Set<string>>();
   const venueSlugs = new Map<City, Set<string>>();
+  const regionOf = cityRegions(venues);
 
   for (const entry of venues) {
     const code = entry.country.toLowerCase();
@@ -148,8 +210,8 @@ function load(): Country[] {
       countries.set(code, country);
     }
 
-    const region = ['HK', 'SG'].includes(entry.country) ? '' : entry.region;
-    const cityKey = `${code}|${region}|${entry.city}`;
+    const region = regionOf.get(entry)!;
+    const cityKey = `${code}|${region}|${plain(entry.city)}`;
     let city = cities.get(cityKey);
     if (!city) {
       const label = region && !entry.city.includes(region) ? `${entry.city} ${region}` : entry.city;

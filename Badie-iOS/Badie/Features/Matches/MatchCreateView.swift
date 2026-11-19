@@ -1,8 +1,8 @@
 import SwiftUI
 
 // MARK: - 比赛 · 新建
-// “+”菜单的“比赛 · 循环赛”，或者当晚页的“用今晚的名单开一场”（到场的人预先填好，用报名 id）。
-// 一屏往下填：名字、球馆、场地数、参赛的人、赛制、每局几分；底部是预计几轮几分钟和“开始”
+// “+”菜单的“比赛 · 循环赛、淘汰赛”，或者当晚页的“用今晚的名单开一场”（到场的人预先填好，用报名 id）。
+// 一屏往下填：名字、球馆、场地数、参赛的人、单打还是双打、赛制、打几轮、每局几分；底部是预计几轮几分钟和“开始”
 
 /// 参赛的一个人：球友、当晚的报名，或者输的名字（访客）
 struct MatchEntry: Identifiable, Equatable {
@@ -34,19 +34,20 @@ struct MatchCreateView: View {
     @State private var showsVenuePicker = false
     @State private var courts = 2
     @State private var entries: [MatchEntry] = []
-    @State private var format: MatchFormat = .rotating
+    @State private var play: MatchPlay = .rotating
+    @State private var chosenFormat: MatchFormat = .roundRobin
     @State private var pools = 2
     @State private var advance = 1
+    @State private var thirdPlace = false
     @State private var points = 21
     @State private var bestOf = 1
     @State private var winByTwo = true
-    /// 只打几轮（nil = 完整循环）
-    @State private var rounds: Int?
+    /// 打几轮（没选过 = 默认）
+    @State private var chosenRounds: Int?
     @State private var preview: MatchPreview?
     @State private var showsPicker = false
     @State private var showsNameEntry = false
     @State private var typedName = ""
-    @State private var showsRounds = false
     @State private var saving = false
     @State private var didSetup = false
 
@@ -57,21 +58,22 @@ struct MatchCreateView: View {
 
     private var venueName: String? { venueId.flatMap { locationManager.court(id: $0)?.name } }
 
+    /// 轮换搭档只有循环
+    private var format: MatchFormat { play == .rotating ? .roundRobin : chosenFormat }
+
     /// 人数不对时的提示（服务器还会再查一次）
     private var countProblem: String? {
-        let count = entries.count
-        let ok: Bool
-        switch format {
-        case .singles: ok = (2...64).contains(count)
-        case .fixed: ok = (4...64).contains(count) && count % 2 == 0
-        case .rotating: ok = (4...64).contains(count)
-        case .groups: ok = count >= pools * 2 && count <= 64
-        }
-        return ok ? nil : format.playerCountRule
+        MatchSetup.countProblem(format: format, play: play, players: entries.count, pools: pools, advance: advance)
+    }
+
+    /// 打几轮：没选过用默认，超出能选的收回来
+    private var rounds: Int? {
+        guard format.byRounds, let preview else { return nil }
+        return min(chosenRounds ?? preview.defaultRounds, preview.maxRounds)
     }
 
     private var previewKey: String {
-        "\(format.rawValue)-\(entries.count)-\(courts)-\(points)-\(bestOf)-\(pools)-\(advance)-\(rounds ?? 0)"
+        "\(format.rawValue)-\(play.rawValue)-\(entries.count)-\(courts)-\(points)-\(bestOf)-\(pools)-\(advance)-\(chosenRounds ?? 0)-\(thirdPlace)"
     }
 
     var body: some View {
@@ -91,20 +93,17 @@ struct MatchCreateView: View {
         }
         .background(AppTheme.Colors.canvas.ignoresSafeArea())
         .onAppear(perform: setup)
-        .onChange(of: pools) { _, value in
-            if value != 2 { advance = 1 }
-        }
         .task(id: previewKey) {
-            guard entries.count >= 2 else {
+            guard countProblem == nil else {
                 preview = nil
                 return
             }
             try? await Task.sleep(nanoseconds: 300_000_000)
             if Task.isCancelled { return }
             preview = try? await appState.backend.remoteMatchPreview(
-                format: format, players: entries.count, courts: courts, points: points, bestOf: bestOf,
+                format: format, play: play, players: entries.count, courts: courts, points: points, bestOf: bestOf,
                 pools: format == .groups ? pools : nil, advance: format == .groups ? advance : nil,
-                rounds: format == .groups ? nil : rounds)
+                rounds: format.byRounds ? chosenRounds : nil, thirdPlace: format.hasKnockout && thirdPlace)
         }
         .sheet(isPresented: $showsVenuePicker) {
             CourtPickerSheet(selectedId: $venueId, slot: nil)
@@ -122,15 +121,6 @@ struct MatchCreateView: View {
             TextField("名字", text: $typedName)
             Button("加") { addTyped() }
             Button("取消", role: .cancel) { typedName = "" }
-        }
-        .confirmationDialog("只打几轮", isPresented: $showsRounds, titleVisibility: .visible) {
-            if let full = preview?.fullRounds, full > 1 {
-                ForEach(Array(1...full), id: \.self) { count in
-                    Button(count == full ? String(localized: "全部 \(count) 轮") : String(localized: "只打 \(count) 轮")) {
-                        rounds = count == full ? nil : count
-                    }
-                }
-            }
         }
     }
 
@@ -265,25 +255,36 @@ struct MatchCreateView: View {
                 .font(AppTheme.Typography.headline)
                 .foregroundStyle(AppTheme.Colors.ink)
                 .accessibilityAddTraits(.isHeader)
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: AppTheme.Spacing.sm), GridItem(.flexible(), spacing: AppTheme.Spacing.sm)],
-                      spacing: AppTheme.Spacing.sm) {
-                ForEach(MatchFormat.allCases) { option in
-                    formatButton(option)
+            HStack(spacing: AppTheme.Spacing.sm) {
+                ForEach(MatchPlay.allCases) { option in
+                    choiceButton(option.title, selected: option == play) {
+                        play = option
+                        chosenRounds = nil
+                    }
                 }
             }
-            if format == .groups {
-                VStack(spacing: 0) {
-                    HStack(spacing: AppTheme.Spacing.sm) {
-                        Text("几组")
-                            .font(AppTheme.Typography.bodyBold)
-                            .foregroundStyle(AppTheme.Colors.ink)
-                        Spacer(minLength: 0)
-                        ForEach([2, 3, 4], id: \.self) { count in
-                            ChoiceChip(title: "\(count)", isSelected: pools == count) { pools = count }
+            if play != .rotating {
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: AppTheme.Spacing.sm), GridItem(.flexible(), spacing: AppTheme.Spacing.sm)],
+                          spacing: AppTheme.Spacing.sm) {
+                    ForEach(MatchFormat.allCases) { option in
+                        choiceButton(option.title, selected: option == format) {
+                            chosenFormat = option
+                            chosenRounds = nil
                         }
                     }
-                    .padding(.horizontal, AppTheme.Spacing.lg)
-                    .frame(minHeight: 56)
+                }
+            }
+            options
+        }
+    }
+
+    /// 赛制下面的设置：分几组、每组前几名、打几轮、三四名
+    @ViewBuilder
+    private var options: some View {
+        if format.hasKnockout || rounds != nil {
+            VStack(spacing: 0) {
+                if format == .groups {
+                    stepperRow(String(localized: "几组"), value: pools, range: 2...8) { pools = $0 }
                     InsetDivider()
                     HStack(spacing: AppTheme.Spacing.sm) {
                         Text("每组前几名出线")
@@ -291,30 +292,70 @@ struct MatchCreateView: View {
                             .foregroundStyle(AppTheme.Colors.ink)
                         Spacer(minLength: 0)
                         ChoiceChip(title: "1", isSelected: advance == 1) { advance = 1 }
-                        // 每组前 2 名只能 2 组
                         ChoiceChip(title: "2", isSelected: advance == 2) { advance = 2 }
-                            .disabled(pools != 2)
                     }
                     .padding(.horizontal, AppTheme.Spacing.lg)
                     .frame(minHeight: 56)
                 }
-                .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
+                if let rounds, let preview {
+                    stepperRow(String(localized: "打几轮"), value: rounds, range: 1...max(1, preview.maxRounds)) { chosenRounds = $0 }
+                    if format == .roundRobin && play != .rotating && preview.fullRounds > 0 {
+                        Text("循环打满一遍是 \(preview.fullRounds) 轮。")
+                            .font(AppTheme.Typography.footnote)
+                            .foregroundStyle(AppTheme.Colors.inkSecondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+                            .padding(.bottom, AppTheme.Spacing.md)
+                    }
+                }
+                if format.hasKnockout {
+                    if format == .groups { InsetDivider() }
+                    toggleRow(String(localized: "打三四名"), isOn: $thirdPlace)
+                }
             }
+            .sticker(AppTheme.Colors.surface, radius: AppTheme.Radius.lg, shadow: .zero)
         }
     }
 
-    private func formatButton(_ option: MatchFormat) -> some View {
-        let selected = option == format
+    private func stepperRow(_ title: String, value: Int, range: ClosedRange<Int>, onChange: @escaping (Int) -> Void) -> some View {
+        Stepper(value: Binding(get: { value }, set: { onChange(min(max($0, range.lowerBound), range.upperBound)) }), in: range) {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                Text(verbatim: title)
+                    .font(AppTheme.Typography.bodyBold)
+                    .foregroundStyle(AppTheme.Colors.ink)
+                Spacer(minLength: 0)
+                Text(verbatim: "\(value)")
+                    .font(AppTheme.Typography.bodyBold)
+                    .monospacedDigit()
+                    .foregroundStyle(AppTheme.Colors.ink)
+            }
+        }
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .frame(minHeight: 56)
+    }
+
+    private func toggleRow(_ title: String, isOn: Binding<Bool>) -> some View {
+        Toggle(isOn: isOn) {
+            Text(verbatim: title)
+                .font(AppTheme.Typography.bodyBold)
+                .foregroundStyle(AppTheme.Colors.ink)
+        }
+        .tint(AppTheme.Colors.success)
+        .padding(.horizontal, AppTheme.Spacing.lg)
+        .frame(minHeight: 56)
+    }
+
+    private func choiceButton(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
         let shape = RoundedRectangle(cornerRadius: 14, style: .continuous)
         return Button {
             Haptics.selection()
-            format = option
-            rounds = nil
+            action()
         } label: {
-            Text(option.title)
+            Text(verbatim: title)
                 .font(AppTheme.Typography.subheadlineBold)
                 .foregroundStyle(selected ? AppTheme.Colors.onInverse : AppTheme.Colors.ink)
                 .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.8)
                 .padding(.horizontal, AppTheme.Spacing.sm)
                 .frame(maxWidth: .infinity, minHeight: 52)
                 .background(shape.fill(selected ? AppTheme.Colors.inverse : AppTheme.Colors.surface))
@@ -348,7 +389,7 @@ struct MatchCreateView: View {
         }
     }
 
-    // MARK: 底部：预计、只打几轮、开始
+    // MARK: 底部：预计、开始
 
     private var bottomBar: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
@@ -358,12 +399,6 @@ struct MatchCreateView: View {
                         .font(AppTheme.Typography.subheadlineBold)
                         .foregroundStyle(AppTheme.Colors.ink)
                     Spacer(minLength: 0)
-                    if format != .groups && preview.fullRounds > 1 {
-                        Button(rounds.map { String(localized: "只打 \($0) 轮") } ?? String(localized: "只打几轮")) { showsRounds = true }
-                            .font(AppTheme.Typography.footnoteBold)
-                            .foregroundStyle(AppTheme.Colors.inkSecondary)
-                            .underline()
-                    }
                 }
             }
             if let problem = countProblem, !entries.isEmpty {
@@ -443,16 +478,16 @@ struct MatchCreateView: View {
             defer { saving = false }
             do {
                 let id = try await appState.backend.remoteCreateMatch(
-                    name: title.isEmpty ? defaultName : title, venueId: venueId, courts: courts, format: format,
+                    name: title.isEmpty ? defaultName : title, venueId: venueId, courts: courts, format: format, play: play,
                     points: points, bestOf: bestOf, winByTwo: winByTwo, players: entries.map(\.payload),
-                    rounds: format == .groups ? nil : rounds, pools: format == .groups ? pools : nil,
-                    advance: format == .groups ? advance : nil, sessionId: sessionId)
+                    rounds: rounds, pools: format == .groups ? pools : nil,
+                    advance: format == .groups ? advance : nil, thirdPlace: format.hasKnockout && thirdPlace, sessionId: sessionId)
                 Haptics.success()
                 router.pop()
                 // 从当晚开的：回到当晚页的“比赛”
                 if sessionId == nil { router.open(.match(id: id)) }
             } catch RemoteError.server(let code) where code == "invalid_player_count" {
-                appState.showToast(format.playerCountRule, style: .error)
+                appState.showToast(countProblem ?? String(localized: "要 2–64 人。"), style: .error)
             } catch {
                 appState.showClubError(error)
             }

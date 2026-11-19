@@ -1,9 +1,9 @@
-// 比赛（“+”菜单的“比赛 · 循环赛”，也能从当晚页开）：新建、进行中、输比分、最终排名、我的 → 比赛。
+// 比赛（“+”菜单的“比赛 · 循环赛、淘汰赛”，也能从当晚页开）：新建、进行中、输比分、最终排名、我的 → 比赛。
 // 对阵和排名都是服务器排的；进行中的部分（MatchBody）公开看板也用，只是不能点
 import { useEffect, useState, type SubmitEvent } from 'react';
 import {
-  clubProblem, formatName, QrSheet, scoreText, Stepper, Switch, UndoBar, Updated, useUpdatedAt,
-  type MatchFormat, type MatchGame, type MatchState, type MatchView, type NightState, type Standing,
+  capOf, checkScore, clubProblem, formatName, playedGames, playName, QrSheet, retireProblem, scoreText, Stepper, structureName, Switch, UndoBar,
+  Updated, useUpdatedAt, type MatchFormat, type MatchGame, type MatchPlay, type MatchState, type MatchView, type NightState, type Standing,
 } from './club';
 import { currentLocale, t } from './i18n';
 import { Icon } from './icons';
@@ -13,6 +13,7 @@ import { CourtSearch, type Court } from './pickers';
 import { navigate } from './router';
 import { problem, supabase, useLive, type Friend, type Profile } from './supabase';
 import { renderStandings } from './standingsCard';
+import { makerKey, type Plan } from '../lib/tournament';
 import { day } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 
@@ -25,13 +26,19 @@ const namesOf = (m: MatchView) => new Map(m.players.map((p) => [p.id, p.name]));
 const side = (ids: string[], names: Map<string, string>) => ids.map((id) => names.get(id) ?? '?').join(' · ');
 
 function gameLabel(g: MatchGame) {
-  if (g.stage === 'final') return t('Final');
-  if (g.stage === 'semi') return t('Semifinal');
+  if (g.stage === 'third') return t('Third place');
+  if (g.stage === 'ko') {
+    if (g.ko_size === 2) return t('Final');
+    if (g.ko_size === 4) return t('Semifinal');
+    if (g.ko_size === 8) return t('Quarterfinal');
+    return t('Round of {n}', { n: g.ko_size ?? 0 });
+  }
   return t('Round {n}', { n: g.round });
 }
 
 function statusLabel(g: MatchGame) {
   if (g.walkover) return t('Walkover');
+  if (g.retired) return [scoreText(g.scores), t('Retired')].filter(Boolean).join(' · ');
   if (g.status === 'done') return scoreText(g.scores);
   if (g.status === 'playing') return t('Court {n}', { n: g.court ?? '' });
   if (g.status === 'cancelled') return t('Cancelled');
@@ -64,9 +71,11 @@ export function MatchLive({ id, embedded = false }: { id: string; embedded?: boo
   }
   const manage = m.role !== 'player';
   const live = m.status === 'live';
+  // 循环、瑞士轮写第几轮；有淘汰赛的不写
+  const byRounds = m.format === 'round_robin' || m.format === 'swiss';
   const subtitle = live
-    ? [formatName(m.format), m.round && t('Round {n}/{total}', { n: m.round, total: m.rounds })].filter(Boolean).join(' · ')
-    : `${m.name} · ${formatName(m.format)}`;
+    ? [formatName(m.format, m.play), byRounds && m.round && t('Round {n}/{total}', { n: m.round, total: m.rounds })].filter(Boolean).join(' · ')
+    : `${m.name} · ${formatName(m.format, m.play)}`;
   const game = m.games.find((g) => g.id === scoring);
   const canScore = (g: MatchGame) =>
     manage ? g.status === 'playing' || g.status === 'done' : g.status === 'playing' && Boolean(m.me) && [...g.a, ...g.b].includes(m.me!);
@@ -94,7 +103,7 @@ export function MatchLive({ id, embedded = false }: { id: string; embedded?: boo
         </div>
       )}
 
-      {live && m.role === 'organizer' && m.tie_at_cut && !m.games.some((g) => g.stage !== 'pool' && g.status !== 'queued') && (
+      {live && m.role === 'organizer' && m.tie_at_cut && !m.games.some((g) => g.stage !== 'pool' && g.status !== 'queued' && !g.bye) && (
         <Notice icon="info" tint="butter" action={{ label: t('Choose'), onClick: () => setQualify(true) }}>
           {t('There’s a tie at the cut. You can choose who goes through.')}
         </Notice>
@@ -134,8 +143,10 @@ export function MatchBody({ m, me, canScore, onScore, onFlag, manage = false }: 
   manage?: boolean;
 }) {
   const names = namesOf(m);
-  const playing = m.games.filter((g) => g.status === 'playing').sort((a, b) => (a.court ?? 0) - (b.court ?? 0));
-  const queued = m.games.filter((g) => g.status === 'queued').slice(0, 3);
+  // 轮空不是一场球
+  const games = m.games.filter((g) => !g.bye);
+  const playing = games.filter((g) => g.status === 'playing').sort((a, b) => (a.court ?? 0) - (b.court ?? 0));
+  const queued = games.filter((g) => g.status === 'queued').slice(0, 3);
   const mine = (g: MatchGame) => Boolean(me) && [...g.a, ...g.b].includes(me!);
   return (
     <>
@@ -168,12 +179,12 @@ export function MatchBody({ m, me, canScore, onScore, onFlag, manage = false }: 
         </section>
       )}
 
-      <Standings m={m} me={me} />
+      {m.format !== 'knockout' && <Standings m={m} me={me} />}
 
       <details className="tile bg-surface px-4 py-3">
-        <summary className="cursor-pointer font-black">{t('All games ({n})', { n: m.games.length })}</summary>
+        <summary className="cursor-pointer font-black">{t('All games ({n})', { n: games.length })}</summary>
         <ul className="mt-2 grid divide-y-[1.5px] divide-divider">
-          {m.games.map((g) => {
+          {games.map((g) => {
             const open = canScore?.(g) && (manage || g.status === 'playing');
             return (
               <li key={g.id} className="flex flex-wrap items-center gap-2 py-2.5">
@@ -271,7 +282,7 @@ export function Final({ m, share = true }: { m: MatchView; share?: boolean }) {
     try {
       const blob = await renderStandings({
         title: m.name,
-        subtitle: [formatName(m.format), m.venue, day(m.ended_at ?? m.created_at)].filter(Boolean).join(' · '),
+        subtitle: [formatName(m.format, m.play), m.venue, day(m.ended_at ?? m.created_at)].filter(Boolean).join(' · '),
         championLabel: t('Champion'),
         rows: ranking.map((s) => ({ rank: s.tied ? `=${s.rank}` : String(s.rank), name: s.name, record: `${s.wins}–${s.losses}`, diff: signed(s.diff) })),
         footer: 'BADIE.RSVP',
@@ -321,26 +332,26 @@ function ScoreSheet({ m, game: g, onClose, onSaved }: { m: MatchState; game: Mat
   });
   const [set, setSet] = useState(0);
   const [typing, setTyping] = useState<number>();
-  const [force, setForce] = useState(false);
   const [busy, setBusy] = useState<string>();
   const [leaving, setLeaving] = useState<string>();
   // 球员打开已经有比分的一场：只能看、点“不对”
   const readOnly = !manage && g.status === 'done';
-  const cap = { 21: 30, 15: 21, 11: 15 }[m.points];
+  const cap = capOf(m.points);
+  // 只送填了的局；不合规的比分存不了，下面写哪里不对
+  const played = playedGames(scores);
+  const check = checkScore(played, m);
+  const retireText = retireProblem(played, m);
 
   const change = (i: number, value: number) => setScores(scores.map((x, j) => (j === i ? Math.max(0, Math.min(99, value)) : x)));
 
-  async function save(confirmed = false) {
-    // 三局两胜：只送打了的局
-    const played = m.best_of === 1 ? scores : scores.filter((_, i) => scores[i - (i % 2)] + scores[i - (i % 2) + 1] > 0);
-    setBusy('save');
-    const { error } = await supabase!.rpc('match_score', { p_game: g.id, p_scores: played, p_version: g.version ?? 0, p_force: confirmed });
+  async function send(fn: string, args: Record<string, unknown>) {
+    setBusy(fn);
+    const { error } = await supabase!.rpc(fn, { p_game: g.id, p_scores: played, p_version: g.version ?? 0, ...args });
     setBusy(undefined);
     if (!error) {
       await onSaved();
       return onClose();
     }
-    if (error.message === 'score_invalid' && manage) return setForce(true);
     if (error.message === 'score_taken' || error.message === 'score_changed') {
       toast(problem(error), 'error');
       await onSaved();
@@ -370,7 +381,7 @@ function ScoreSheet({ m, game: g, onClose, onSaved }: { m: MatchState; game: Mat
 
       {readOnly ? (
         <>
-          <p className="text-title tabular-nums">{scoreText(g.scores) || t('Walkover')}</p>
+          <p className="text-title tabular-nums">{statusLabel(g) || t('Walkover')}</p>
           {(g.edited_by || g.scored_by) && (
             <p className="font-bold">{g.edited_by ? t('Edited by {name}', { name: g.edited_by }) : t('Entered by {name}', { name: g.scored_by! })}</p>
           )}
@@ -406,16 +417,23 @@ function ScoreSheet({ m, game: g, onClose, onSaved }: { m: MatchState; game: Mat
               );
             })}
           </div>
-          {force ? (
-            <div role="alert" className="tile grid gap-2 bg-butter p-3 text-on-accent">
-              <p className="font-black">{t('That score doesn’t look right. Save it anyway?')}</p>
-              <div className="flex flex-wrap gap-2">
-                <Button className="button-sm" busy={busy === 'save'} onClick={() => save(true)}>{t('Save anyway')}</Button>
-                <Button variant="quiet" className="button-sm" onClick={() => setForce(false)}>{t('Fix it')}</Button>
+          {m.best_of === 3 && played.length > 0 && <p className="text-center font-black tabular-nums">{scoreText(played)}</p>}
+          {check && 'problem' in check && <p role="status" className="text-footnote font-bold text-danger">{check.problem}</p>}
+          <Button className="button-lg" busy={busy === 'match_score'} disabled={!check || !('winner' in check)} onClick={() => send('match_score', {})}>{t('Save')}</Button>
+          {manage && (
+            <details>
+              <summary className="cursor-pointer text-footnote font-bold">{t('Someone retired')}</summary>
+              <p className="mt-2 text-footnote text-ink-secondary">{t('Enter the score when they stopped, including the unfinished game. The other side wins.')}</p>
+              {retireText && played.length > 0 && <p role="status" className="mt-2 text-footnote font-bold text-danger">{retireText}</p>}
+              <div className="mt-2 flex flex-wrap gap-2">
+                {[g.a, g.b].map((team, k) => (
+                  <Button key={k} variant="quiet" className="button-sm" disabled={Boolean(retireText)} busy={busy === 'match_retire'}
+                          onClick={() => send('match_retire', { p_side: k + 1 })}>
+                    {t('{name} retired', { name: side(team, names) })}
+                  </Button>
+                ))}
               </div>
-            </div>
-          ) : (
-            <Button className="button-lg" busy={busy === 'save'} onClick={() => save()}>{t('Save')}</Button>
+            </details>
           )}
           {manage && g.status !== 'done' && (
             <details>
@@ -445,7 +463,7 @@ function MatchMenu({ open, onClose, m, refresh }: { open: boolean; onClose: () =
   const live = m.status === 'live';
   const { data: friends } = useLive<{ friends: Friend[] }>(open && organizer ? 'my_friends' : '', { every: 300_000 });
   // 从当晚开的轮换搭档：加人时可以选这一晚报了名的注册用户
-  const { data: night } = useLive<NightState | null>(open && live && m.format === 'rotating' && m.session_id ? 'night_state' : '', {
+  const { data: night } = useLive<NightState | null>(open && live && m.play === 'rotating' && m.session_id ? 'night_state' : '', {
     args: { p_session: m.session_id }, every: 300_000,
   });
   const [courts, setCourts] = useState(m.courts);
@@ -518,7 +536,7 @@ function MatchMenu({ open, onClose, m, refresh }: { open: boolean; onClose: () =
         </section>
       )}
 
-      {live && m.format === 'rotating' && signedUp.length > 0 && (
+      {live && m.play === 'rotating' && signedUp.length > 0 && (
         <ul className="flex flex-wrap gap-2" aria-label={t('Signed up tonight')}>
           {signedUp.map((p) => (
             <li key={p.id}>
@@ -530,7 +548,7 @@ function MatchMenu({ open, onClose, m, refresh }: { open: boolean; onClose: () =
           ))}
         </ul>
       )}
-      {live && m.format === 'rotating' && (
+      {live && m.play === 'rotating' && (
         <form onSubmit={addPlayer} className="grid gap-2">
           <Field label={t('Add a player')} hint={t('They join from the next round.')}>
             {(props) => <input {...props} className="field" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} />}
@@ -538,7 +556,7 @@ function MatchMenu({ open, onClose, m, refresh }: { open: boolean; onClose: () =
           <Button type="submit" variant="quiet" busy={busy === 'add'} disabled={!name.trim()}>{t('Add')}</Button>
         </form>
       )}
-      {live && m.format !== 'rotating' && <p className="text-footnote text-ink-secondary">{t('Only rotating partners can add players after the start. For drop-ins, use the rotation.')}</p>}
+      {live && m.play !== 'rotating' && <p className="text-footnote text-ink-secondary">{t('Only rotating partners can add players after the start. For drop-ins, use the rotation.')}</p>}
 
       {live && (
         <details>
@@ -549,7 +567,7 @@ function MatchMenu({ open, onClose, m, refresh }: { open: boolean; onClose: () =
                 <button key={p.id} type="button" className="toggle" aria-pressed={leaving === p.id} onClick={() => setLeaving(p.id)}>{p.name}</button>
               ))}
             </div>
-            {m.format !== 'rotating' && (
+            {m.play !== 'rotating' && m.format !== 'knockout' && (
               <Switch checked={forfeit} onChange={setForfeit} title={t('Count their unplayed games as losses')} text={t('Otherwise those games are cancelled.')} />
             )}
             {leaving && (
@@ -584,7 +602,7 @@ function MatchMenu({ open, onClose, m, refresh }: { open: boolean; onClose: () =
 
 /** 分组出线卡在并列上：组织者点选谁出线（按小组名次排好种子） */
 function QualifySheet({ open, onClose, m, refresh }: { open: boolean; onClose: () => void; m: MatchView; refresh: () => Promise<void> }) {
-  const need = (m.pools ?? 2) * (m.advance ?? 1) === 2 ? 2 : 4;
+  const need = (m.pools ?? 2) * (m.advance ?? 1);
   const [picked, setPicked] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const rows = m.standings.filter((s) => !s.withdrawn);
@@ -625,35 +643,62 @@ function QualifySheet({ open, onClose, m, refresh }: { open: boolean; onClose: (
 type Entry = { key: string; label: string; guest: boolean; user_id?: string; signup_id?: string; name?: string };
 
 /** 人数够不够这个赛制：不够时返回给人看的话 */
-function countProblem(format: MatchFormat, n: number, pools: number) {
+function countProblem(format: MatchFormat, play: MatchPlay, n: number, pools: number, advance: number) {
+  const per = play === 'fixed' ? 2 : 1;
+  const entries = Math.floor(n / per);
   if (n > 64) return t('Up to 64 players.');
-  if (format === 'singles' && n < 2) return t('Add at least 2 players.');
-  if (format === 'rotating' && n < 4) return t('Rotating partners need at least 4 players.');
-  if (format === 'fixed' && n < 4) return t('Fixed partners need at least 4 players.');
-  if (format === 'fixed' && n % 2) return t('Fixed partners need an even number. Add 1 more player.');
-  if (format === 'groups' && n < pools * 2) return t('{pools} groups need at least {n} players.', { pools, n: pools * 2 });
+  if (n < 2) return t('Add at least 2 players.');
+  if (play === 'rotating' && n < 4) return t('Rotating partners need at least 4 players.');
+  if (play === 'fixed' && n < 4) return t('Fixed partners need at least 4 players.');
+  if (play === 'fixed' && n % 2) return t('Fixed partners need an even number. Add 1 more player.');
+  if (format === 'swiss' && entries < 3) return t('Swiss needs at least {n} players.', { n: 3 * per });
+  if (format === 'groups' && entries < pools * (advance + 1)) return t('{pools} groups need at least {n} players.', { pools, n: pools * (advance + 1) * per });
   return undefined;
+}
+
+type Preview = { full_rounds: number; default_rounds: number; max_rounds: number; rounds: number; minutes: number };
+
+/** 从排表页（/badminton-tournament-maker/）带过来的名单和设置：一小时内有效，读一次就删 */
+function fromMaker(): Plan | undefined {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(makerKey) ?? 'null') as (Plan & { at: number }) | null;
+    sessionStorage.removeItem(makerKey);
+    return saved && Date.now() - saved.at < 3_600_000 && Array.isArray(saved.players) ? saved : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function NewMatch({ profile }: { profile: Profile }) {
   const session = new URLSearchParams(location.search).get('session');
+  const [maker] = useState(() => (session ? undefined : fromMaker()));
   const { data: night } = useLive<NightState | null>(session ? 'night_state' : '', { args: { p_session: session }, every: 600_000 });
   const [name, setName] = useState('');
   const [venue, setVenue] = useState<Court>();
-  const [courts, setCourts] = useState(2);
-  const [players, setPlayers] = useState<Entry[]>(() => (session ? [] : [{ key: profile.id, label: profile.nickname, guest: false, user_id: profile.id }]));
-  const [format, setFormat] = useState<MatchFormat>('rotating');
-  const [points, setPoints] = useState<21 | 15 | 11>(21);
-  const [bestOf, setBestOf] = useState<1 | 3>(1);
+  const [courts, setCourts] = useState(maker?.courts ?? 2);
+  const [players, setPlayers] = useState<Entry[]>(() =>
+    session ? []
+    : maker ? maker.players.slice(0, 64).map((name, i) => ({ key: `name-${i}`, label: name, guest: true, name }))
+    : [{ key: profile.id, label: profile.nickname, guest: false, user_id: profile.id }]);
+  const [play, setPlay] = useState<MatchPlay>(maker?.play ?? 'rotating');
+  const [chosenFormat, setFormat] = useState<MatchFormat>(maker?.format ?? 'round_robin');
+  const [points, setPoints] = useState<21 | 15 | 11>(maker?.points ?? 21);
+  const [bestOf, setBestOf] = useState<1 | 3>(maker?.bestOf ?? 1);
   const [winByTwo, setWinByTwo] = useState(true);
-  const [pools, setPools] = useState(2);
-  const [advance, setAdvance] = useState(1);
-  const [autoPairs, setAutoPairs] = useState(true);
-  const [rounds, setRounds] = useState<number>();
+  const [pools, setPools] = useState(maker?.pools ?? 2);
+  const [advance, setAdvance] = useState(maker?.advance ?? 1);
+  const [thirdPlace, setThirdPlace] = useState(maker?.thirdPlace ?? false);
+  // 排表页的固定搭档是按名单两两一队
+  const [autoPairs, setAutoPairs] = useState(maker?.play !== 'fixed');
+  const [chosenRounds, setRounds] = useState<number | undefined>(maker?.rounds);
   const [picking, setPicking] = useState(false);
   const [guest, setGuest] = useState('');
   const [busy, setBusy] = useState(false);
   const fallbackName = t('{date} match', { date: new Intl.DateTimeFormat(currentLocale(), { month: 'short', day: 'numeric' }).format(new Date()) });
+  // 轮换搭档只有循环
+  const format: MatchFormat = play === 'rotating' ? 'round_robin' : chosenFormat;
+  const byRounds = format === 'round_robin' || format === 'swiss';
+  const knockout = format === 'groups' || format === 'knockout';
 
   // 从当晚开：参赛的人预先填好到场的人，场地数用当晚的
   useEffect(() => {
@@ -662,12 +707,16 @@ export function NewMatch({ profile }: { profile: Profile }) {
     setCourts(night.courts);
   }, [Boolean(night)]);
 
-  const problemText = countProblem(format, players.length, pools);
-  const { data: preview } = useLive<{ full_rounds: number; rounds: number; minutes: number }>(problemText ? '' : 'match_preview', {
-    args: { p_format: format, p_players: players.length, p_courts: courts, p_points: points, p_best_of: bestOf, p_doubles: false,
-            p_pools: format === 'groups' ? pools : null, p_advance: format === 'groups' ? advance : null, p_rounds: format === 'groups' ? null : (rounds ?? null) },
+  const problemText = countProblem(format, play, players.length, pools, advance);
+  // 打几轮：没选过用默认；服务器按能选的最多轮数收回来
+  const { data: preview } = useLive<Preview>(problemText ? '' : 'match_preview', {
+    args: { p_format: format, p_play: play, p_players: players.length, p_courts: courts, p_points: points, p_best_of: bestOf,
+            p_pools: format === 'groups' ? pools : null, p_advance: format === 'groups' ? advance : null,
+            p_rounds: byRounds ? (chosenRounds ?? null) : null, p_third_place: knockout && thirdPlace },
     every: 600_000,
   });
+  const plan = preview;
+  const rounds = plan && byRounds ? Math.min(chosenRounds ?? plan.default_rounds, plan.max_rounds) : undefined;
 
   const add = (entry: Entry) => setPlayers((list) => (list.some((p) => p.key === entry.key) ? list : [...list, entry]));
   const remove = (key: string) => setPlayers((list) => list.filter((p) => p.key !== key));
@@ -687,25 +736,28 @@ export function NewMatch({ profile }: { profile: Profile }) {
       p_venue: venue?.id ?? null,
       p_courts: courts,
       p_format: format,
+      p_play: play,
       p_points: points,
       p_best_of: bestOf,
       p_win_by_two: winByTwo,
       // 固定搭档、不自动配：按名单顺序两两一队
       p_players: players.map((p, i) => ({
         ...(p.signup_id ? { signup_id: p.signup_id } : p.user_id ? { user_id: p.user_id } : { name: p.name }),
-        ...(format === 'fixed' && !autoPairs ? { team: Math.floor(i / 2) + 1 } : {}),
+        ...(play === 'fixed' && !autoPairs ? { team: Math.floor(i / 2) + 1 } : {}),
       })),
-      p_rounds: format === 'groups' ? null : (rounds ?? null),
+      p_rounds: rounds ?? null,
       p_pools: format === 'groups' ? pools : null,
       p_advance: format === 'groups' ? advance : null,
+      p_third_place: knockout && thirdPlace,
       p_session: session,
     });
     setBusy(false);
-    if (error) return toast(error.message === 'invalid_player_count' ? (countProblem(format, players.length, pools) ?? problem(error)) : clubProblem(error), 'error');
+    if (error) return toast(error.message === 'invalid_player_count' ? (problemText ?? problem(error)) : clubProblem(error), 'error');
     navigate(session ? `/night/${session}/?tab=match` : `/matches/${data}/`, true);
   }
 
-  const formats: MatchFormat[] = ['singles', 'fixed', 'rotating', 'groups'];
+  const plays: MatchPlay[] = ['singles', 'fixed', 'rotating'];
+  const formats: MatchFormat[] = ['round_robin', 'groups', 'swiss', 'knockout'];
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-6 pb-24">
       <ScreenHeader title={t('Match')} back={session ? `/night/${session}/?tab=match` : '/matches/'} />
@@ -740,7 +792,7 @@ export function NewMatch({ profile }: { profile: Profile }) {
           <ul className="flex flex-wrap gap-2">
             {players.map((p, i) => (
               <li key={p.key} className="flex h-10 items-center gap-1.5 rounded-full border-[1.5px] border-stroke bg-surface pr-1 pl-3">
-                {format === 'fixed' && !autoPairs && <span className="text-caption font-bold text-ink-secondary">{Math.floor(i / 2) + 1}</span>}
+                {play === 'fixed' && !autoPairs && <span className="text-caption font-bold text-ink-secondary">{Math.floor(i / 2) + 1}</span>}
                 <span className="font-bold">{p.label}</span>
                 {p.guest && <Tag tint="mint">{t('Guest')}</Tag>}
                 <button type="button" onClick={() => remove(p.key)} aria-label={t('Remove {name}', { name: p.label })}
@@ -763,27 +815,42 @@ export function NewMatch({ profile }: { profile: Profile }) {
 
       <section aria-labelledby="format" className="grid gap-3">
         <h2 id="format" className="text-title3">{t('Match format')}</h2>
-        <div className="grid grid-cols-2 gap-2">
-          {formats.map((f) => (
-            <button key={f} type="button" aria-pressed={format === f} className="toggle min-h-12 whitespace-normal" onClick={() => setFormat(f)}>{formatName(f)}</button>
+        <div className="grid grid-cols-3 gap-2" role="group" aria-label={t('Singles or doubles')}>
+          {plays.map((p) => (
+            <button key={p} type="button" aria-pressed={play === p} className="toggle min-h-12 whitespace-normal" onClick={() => setPlay(p)}>{playName(p)}</button>
           ))}
         </div>
-        {format === 'groups' && (
-          <div className="sticker grid gap-3 p-4">
-            <Segmented label={t('Number of groups')} value={String(pools)} onChange={(v) => {
-              setPools(Number(v));
-              if (v !== '2') setAdvance(1);
-            }} options={[2, 3, 4].map((n) => ({ value: String(n), label: t('{n} groups', { n }) }))} />
-            {pools === 2 ? (
-              <Segmented label={t('Who goes through')} value={String(advance)} onChange={(v) => setAdvance(Number(v))}
-                         options={[{ value: '1', label: t('Top 1 of each group') }, { value: '2', label: t('Top 2 of each group') }]} />
-            ) : <p className="text-footnote text-ink-secondary">{pools === 3 ? t('Group winners and the best runner-up play the semifinals.') : t('Group winners play the semifinals.')}</p>}
+        {play !== 'rotating' && (
+          <div className="grid grid-cols-2 gap-2" role="group" aria-label={t('Match format')}>
+            {formats.map((f) => (
+              <button key={f} type="button" aria-pressed={format === f} className="toggle min-h-12 whitespace-normal" onClick={() => setFormat(f)}>{structureName(f)}</button>
+            ))}
           </div>
         )}
-        {format === 'fixed' && (
+        {(format === 'groups' || knockout || play === 'fixed') && (
+          <div className="sticker grid px-4">
+            {format === 'groups' && (
+              <>
+                <Stepper label={t('Number of groups')} value={pools} min={2} max={8} text={t('{n} groups', { n: pools })} onChange={setPools} />
+                <div className="pb-3">
+                  <Segmented label={t('Who goes through')} value={String(advance)} onChange={(v) => setAdvance(Number(v))}
+                             options={[{ value: '1', label: t('Top 1 of each group') }, { value: '2', label: t('Top 2 of each group') }]} />
+                </div>
+              </>
+            )}
+            {knockout && <Switch checked={thirdPlace} onChange={setThirdPlace} title={t('Play for third place')} />}
+            {play === 'fixed' && (
+              <Switch checked={autoPairs} onChange={setAutoPairs} title={t('Pair by level')}
+                      text={autoPairs ? t('Strongest plays with weakest.') : t('Pairs follow the list: 1st with 2nd, 3rd with 4th.')} />
+            )}
+          </div>
+        )}
+        {byRounds && plan && rounds !== undefined && (
           <div className="sticker px-4">
-            <Switch checked={autoPairs} onChange={setAutoPairs} title={t('Pair by level')}
-                    text={autoPairs ? t('Strongest plays with weakest.') : t('Pairs follow the list: 1st with 2nd, 3rd with 4th.')} />
+            <Stepper label={t('Rounds')} value={rounds} min={1} max={plan.max_rounds} text={String(rounds)} onChange={setRounds} />
+            {format === 'round_robin' && play !== 'rotating' && plan.full_rounds > 0 && (
+              <p className="pb-3 text-footnote text-ink-secondary">{t('One full round robin is {n} rounds.', { n: plan.full_rounds })}</p>
+            )}
           </div>
         )}
       </section>
@@ -797,7 +864,7 @@ export function NewMatch({ profile }: { profile: Profile }) {
                      options={[{ value: '1', label: t('One game') }, { value: '3', label: t('Best of 3') }]} />
         </div>
         <div className="sticker px-4">
-          <Switch checked={winByTwo} onChange={setWinByTwo} title={t('Win by 2')} text={t('Capped at {n}.', { n: { 21: 30, 15: 21, 11: 15 }[points] })} />
+          <Switch checked={winByTwo} onChange={setWinByTwo} title={t('Win by 2')} text={winByTwo ? t('Capped at {n}.', { n: capOf(points) }) : undefined} />
         </div>
       </section>
 
@@ -806,15 +873,6 @@ export function NewMatch({ profile }: { profile: Profile }) {
           <div className="flex flex-wrap items-center gap-2 text-footnote font-bold">
             <Icon name="clock" className="size-4" />
             <span className="flex-1">{t('About {n} round, {minutes} min|About {n} rounds, {minutes} min', { n: preview.rounds, minutes: preview.minutes })}</span>
-            {format !== 'groups' && preview.full_rounds > 1 && rounds === undefined && (
-              <button type="button" className="link" onClick={() => setRounds(Math.max(1, preview.full_rounds - 1))}>{t('Play fewer rounds')}</button>
-            )}
-          </div>
-        )}
-        {rounds !== undefined && format !== 'groups' && preview && (
-          <div className="sticker px-4">
-            <Stepper label={t('Rounds')} value={rounds} min={1} max={preview.full_rounds} text={String(rounds)} onChange={setRounds} />
-            <button type="button" className="link mb-3 text-footnote" onClick={() => setRounds(undefined)}>{t('Play every round')}</button>
           </div>
         )}
         <Button className="button-lg" busy={busy} disabled={Boolean(problemText)} onClick={start}>{t('Start')}</Button>
@@ -855,7 +913,7 @@ function FriendPicker({ open, onClose, chosen, onPick, onRemove }: {
 
 // MARK: 我的 → 比赛
 
-type MyMatch = { id: string; name: string; format: MatchFormat; status: 'live' | 'done'; created_at: string; ended_at: string | null; players: number; rank: number | null };
+type MyMatch = { id: string; name: string; format: MatchFormat; play: MatchPlay; status: 'live' | 'done'; created_at: string; ended_at: string | null; players: number; rank: number | null };
 
 export function MyMatches() {
   const { data } = useLive<MyMatch[]>('my_matches', { every: 60_000 });
@@ -874,7 +932,7 @@ export function MyMatches() {
             <div key={m.id}>
               {i > 0 && <Divider />}
               <Row icon="trophy" tint={m.status === 'live' ? 'lime' : 'butter'} title={m.name} to={`/matches/${m.id}/`}
-                   subtitle={[formatName(m.format), day(m.created_at), t('{n} player|{n} players', { n: m.players })].join(' · ')}
+                   subtitle={[formatName(m.format, m.play), day(m.created_at), t('{n} player|{n} players', { n: m.players })].join(' · ')}
                    value={m.status === 'live' ? t('Live') : m.rank ? `#${m.rank}` : undefined} />
             </div>
           ))}

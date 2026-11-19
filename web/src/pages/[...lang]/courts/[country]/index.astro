@@ -2,7 +2,7 @@
 import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
 import { PinsMap } from '../../../../app/PinsMap';
-import { cityName, countries, formatAddress, inCountry, type City, type Country } from '../../../../lib/venues';
+import { cityName, countries, formatAddress, inCountry, regionLabel, type City, type Country } from '../../../../lib/venues';
 import { metros as allMetros } from '../../../../lib/metros';
 import { languages, pageLocale, regionName, translator } from '../../../../lib/static-i18n';
 
@@ -108,7 +108,7 @@ const zh = pageLocale(Astro.url.pathname) === 'zh-Hans';
             <details data-region-group open={openAll || !grouped} class="group/region sticker overflow-hidden open:col-span-full">
               <summary class:list={['flex cursor-pointer items-center justify-between gap-3 px-4 py-3', !grouped && 'sr-only']}>
                 <span class="min-w-0">
-                  <span class="block truncate text-headline">{region.name}</span>
+                  <span class="block truncate text-headline">{regionLabel(country.code, region.name)}</span>
                   <span class="block text-footnote font-bold text-ink-secondary" data-t="{n} courts in {areas} areas" data-n={region.count} data-areas={region.cities.length}>
                     {region.count.toLocaleString('en')} courts in {region.cities.length} areas
                   </span>

@@ -16,6 +16,9 @@ on:
       version:
         description: 版本号
         default: "1.0.7"
+      build:
+        description: 挂哪个构建（Build 号，如 20261119.2245；不填就挂最新的。刚上传完苹果还没列出来时，填了会等它）
+        default: ""
 
 permissions:
   contents: read
@@ -23,6 +26,7 @@ permissions:
 env:
   MODE: ${{ inputs.mode || 'list' }}
   VERSION: ${{ inputs.version || '1.0.7' }}
+  BUILD: ${{ inputs.build || '' }}
 
 jobs:
   build:

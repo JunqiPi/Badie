@@ -163,9 +163,9 @@ function translateStatic() {
 /** 页脚：真正的页面链接（不是本页的锚点） */
 function Footer() {
   const columns: [string, [string, string][]][] = [
-    ['Play', [['Discover', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Groups', '/groups/']]],
+    ['Play', [['Discover', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Groups', '/groups/'], ['Tournament maker', '/badminton-tournament-maker/']]],
     ['Courts', [['Nearby venues', '/courts/'], ['Level chart', '/levels/'], ['Leaderboard', '/rankings/']]],
-    ['Badie', [['About Badie', '/about/'], ['Contact us', '/contact/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
+    ['Badie', [['About Badie', '/about/'], ['Find a badminton partner', '/badminton-partner-app/'], ['Run a badminton group', '/badminton-group-app/'], ['Contact us', '/contact/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
   ];
   return (
     <footer className="hidden border-t-2 border-stroke/10 lg:block">
@@ -239,7 +239,7 @@ const createOptions: { to: string; icon: IconName; tint: Tint; title: string; su
   { to: '/play/', icon: 'bolt', tint: 'lime', title: 'Quick Match', subtitle: 'Finds buddies by level, time and distance' },
   { to: '/rooms/new/', icon: 'court', tint: 'peach', title: 'Start a game', subtitle: 'Fill a court you’ve booked, or play with friends' },
   { to: '/groups/', icon: 'group', tint: 'sky', title: 'Groups', subtitle: 'Same time and venue weekly. One-tap sign-up, auto-waitlist' },
-  { to: '/matches/new/', icon: 'trophy', tint: 'butter', title: 'Match · round robin', subtitle: 'Scores, standings and the next game, worked out for you' },
+  { to: '/matches/new/', icon: 'trophy', tint: 'butter', title: 'Match · round robin, knockout', subtitle: 'Scores, standings and the next game, worked out for you' },
   { to: '/join/', icon: 'hash', tint: 'lavender', title: 'Enter a room or group code', subtitle: '6-character room or group code from a friend' },
 ];
 

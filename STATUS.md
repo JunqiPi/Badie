@@ -13,7 +13,7 @@
 | iPhone 1.0.3 | 苹果已批准（教练带课的球群、费用说明，Build `20261111.21`） |
 | iPhone 1.0.4 | 已上线（全 App 少字改版，Build `20261111.2236`） |
 | iPhone 1.0.6 | 2026-11-16 Build `20261116.1533`（main `5e9cf59`）已上传并挂到 1.0.6，10 种语言的更新说明已写入（审核信息、截图沿用上一版）。内容：注册必填常去球馆、发现页自动刷新、筛选里看附近的球群、球群多球馆、球馆库加 OSM、约球默认不限等级、关“显示我”前提醒。1.0.5 已上架 |
-| iPhone 1.0.7 | 2026-11-19 Build `20261119.1923`（main `a67e2e4`，**Xcode 27.1 / iOS 27 SDK**）已上传并挂到 1.0.7：访客报名、当晚排场 / 比赛 / 收款、别的城市的球馆能按名字搜到。10 种语言的更新说明（`store_text.json`）已写入；审核信息从 1.0.6 复制，审核备注后面自动加了 `review_notes.json` 里收款和试用比赛的两段；截图沿用。等用户在 App Store Connect 提交。之前用 Xcode 26.6 打的 `20261119.1842`（iOS 26.5 SDK）苹果要求换 27，作废 |
+| iPhone 1.0.7 | 2026-11-19 第一次的 Build `20261119.1923` 已挂上，**用户试了以后改比赛**（见 `CLUB_NIGHT.md` 第二节开头：赛制和参赛方式分开、打几轮、淘汰签表、瑞士轮、三四名、只收合规比分、中途退赛、计入胜率），要重新打包挂上再提交。更新说明（`store_text.json`）和审核备注（`review_notes.json`）已跟着改。iOS 的工作流都在 `xcode-27` 镜像、写死 Xcode 27.1（苹果要求 iOS 27 的 SDK） |
 | iPhone 1.0.5 | 2026-11-13 准备提交：附近的人（发现页刷卡：顶部选距离、附近的人头像排、照片为主的卡片；右滑发邀请，具体日期时间、单双打，双打答应后变公开局）、原首页并进球局、右上角进附近球馆（球馆详情有最近在这打过和常客）、等级卡片和打法分析（插画占位）、不用注册测级。Build `20261113.0517`（main `94d4274`，加了“我的”页卡片和编辑资料的编辑 / 预览）已挂上；更新说明、中文副标题“羽你一起进步”、商店截图（App Store screenshots 运行 `43371772036`，演示球友欣然/子轩用了用户给的照片）已写入。提交前复查（2026-11-13）又修了一轮，见下面“1.0.5 提交前复查”：新 Build `20261113.1632`（main `8870985`）已上传并挂到 1.0.5：在上一版的基础上，等级卡片改成一张可翻面的卡、打法换了新称呼、用上正式剪影。**用户 2026-11-13 已提交审核**。注意：挂构建的工作流在上传刚结束时跑会挂回旧构建（苹果还没列出新的），要等几分钟再跑，并看日志里“挂在版本上的构建”是不是新的 |
 | 数据库 | Supabase 项目 `yeffnjdpjejlplqryjfx`，推 main 后自动跑迁移（最新 `20261217000000_nearby_review_fixes.sql`） |
 
@@ -304,6 +304,14 @@
 - iPhone 1.0.7（版本号已改）：同样几样，看板用 App 里的 Safari 打开；`/app/matches/<id>/` 的通知打开比赛页
 - **还没做**：安卓（同样几样，照 iPhone 搬，这次没动 `Badie-Android/`）；比需求简单的地方见 `CLUB_NIGHT.md`
 - **上线前用户要做**：没有新的密钥。提交审核时 Notes 写一句“收款只是给出 Venmo / Cash App / PayPal 链接，钱不经过 App，是线下场地费，不走内购”（和打赏的说明分开）
+
+## 搜索：对准的词和落地页（2026-11-19，网站，已推 main）
+
+- 主要对准两个词：**badminton partner / group app**、**badminton tournament maker**。“badminton courts” 这种通用词结果是场地尺寸文章和 Google 地图，不作为目标；球馆目录对准“城市 + badminton courts”。
+- 三个只有英文的静态页（`Base` 布局，内容在 HTML 里，带 JSON-LD 和常见问题）：`/badminton-partner-app/`、`/badminton-group-app/`、`/badminton-tournament-maker/`。页脚、首页的静态内容、三页之间互相链接；首页标题改成 “Badie — free badminton partner app and court finder”。
+- **排表工具**（`src/app/TournamentMaker.tsx`，排法在 `src/lib/tournament.ts`，测试 `tests/tournament.test.ts`）：不登录，填名字、选参赛方式（单打、固定搭档、轮换搭档）和赛制（循环、小组赛 + 淘汰赛、瑞士轮、单淘汰，可选三四名），排出对阵，能打印、复制链接（设置在 `#` 后面）。排法照搬服务器（`20261229000000_match_formats.sql` 的 `match_plan`、`match_preview`、`match_schedule_rr`、`match_swiss_round` 第 1 轮、`bracket_order`、`match_bracket`，和 `match_schedule_rotating`）；瑞士轮第 2 轮起、淘汰赛第 2 轮起要看比分，只写出有哪几轮。没有等级：名单顺序就是种子顺序，固定搭档按名单两两一队。“Run it live in Badie” 把名单和设置存进 sessionStorage（`badie.maker`，一小时内有效），新建比赛页（`Match.tsx` 的 `NewMatch`）读一次就删。服务器对名字要求 2–20 个字，排表这边截到 20 个字，1 个字的名字到新建比赛时才会报错。**比赛的规则再改时，这里要跟着改**（小组赛出线的同组错开这一步没搬，因为排表页不排淘汰赛的对阵）。
+- 球馆目录：州 / 省统一成缩写（US、CA、AU），同一国家同名、25 公里以内的城市并成一个（以前 “Chicago, IL” 和 “Chicago, Illinois”、曼彻斯特的 6 个区各成一页）。被并掉的城市页地址没有做跳转。
+- 用户要做：Search Console 看收录（Pages 报告）、对新页面请求编入索引；Bing Webmaster Tools 导入；Cloudflare 打开 Crawler Hints；争取进 “best badminton apps” 类文章、AlternativeTo、Product Hunt。
 
 ## 已知、没修的
 

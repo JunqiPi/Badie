@@ -2,9 +2,9 @@
 
 用法：
   python3 asc_build.py list <版本号>     只看：这个版本的构建、挂上了哪个、审核备注有没有填。不改任何东西
-  python3 asc_build.py attach <版本号>   等最新的构建处理完（最多等 25 分钟），挂到这个版本上。
+  python3 asc_build.py attach <版本号>   等最新的构建（或环境变量 BUILD 给的那个）处理完（最多等 25 分钟），挂到这个版本上。
                                          还没有这个版本就先建（描述等文字苹果会从上一版带过来），审核信息没填就从上一版复制；
-                                         review_notes.json 里这个版本有新段落的，接在审核备注后面（已经有的不重复加）
+                                         review_notes.json 里这个版本有新段落的，接在审核备注后面（已经有的不重复加，drop 里的旧段落去掉）
 环境变量同 asc_signing.py。日志只打印版本号、构建号和状态（仓库是公开的）
 """
 import json
@@ -47,17 +47,20 @@ def copy_review_detail(version, versions):
 def add_review_notes(review, number):
     """把 review_notes.json 里这个版本的段落接在审核备注后面，已经有的跳过。不打印内容"""
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "review_notes.json"), encoding="utf-8") as file:
-        paragraphs = json.load(file).get(number, [])
-    notes = review["attributes"].get("notes") or ""
-    missing = [p for p in paragraphs if p not in notes]
-    if not missing:
+        entry = json.load(file).get(number, {})
+    paragraphs, dropped = (entry, []) if isinstance(entry, list) else (entry.get("add", []), entry.get("drop", []))
+    original = review["attributes"].get("notes") or ""
+    # 改过的段落：先去掉旧的那段
+    kept = [p for p in original.split("\n\n") if p.strip() and p.strip() not in dropped]
+    missing = [p for p in paragraphs if p not in kept]
+    notes = "\n\n".join(kept + missing)
+    if notes == original.strip():
         return review
-    notes = "\n\n".join([notes.rstrip()] + missing) if notes.strip() else "\n\n".join(missing)
     if len(notes) > 4000:
         sys.exit(f"审核备注加上新段落有 {len(notes)} 字，超过 4000，没改")
     updated = asc.api("PATCH", f"/appStoreReviewDetails/{review['id']}", {"data": {
         "type": "appStoreReviewDetails", "id": review["id"], "attributes": {"notes": notes}}})["data"]
-    print(f"审核备注加了 {len(missing)} 段")
+    print(f"审核备注加了 {len(missing)} 段，去掉了 {len(original.split(chr(10) * 2)) - len(kept) if dropped else 0} 段旧的")
     return updated
 
 
@@ -78,10 +81,12 @@ def main():
     if version is None:
         sys.exit(f"还没有版本 {number}")
 
+    wanted = os.environ.get("BUILD", "").strip()
     builds = builds_of(app_id, number)
     if mode == "attach":
         for _ in range(50):
-            if builds and builds[0]["attributes"]["processingState"] != "PROCESSING":
+            target = next((b for b in builds if b["attributes"]["version"] == wanted), None) if wanted else (builds[0] if builds else None)
+            if target and target["attributes"]["processingState"] != "PROCESSING":
                 break
             print("构建还没处理完，等 30 秒" if builds else "还没有看到构建，等 30 秒")
             time.sleep(30)
@@ -94,12 +99,13 @@ def main():
         print(f"版本 {number} 还没有构建")
 
     if mode == "attach":
-        if not builds or builds[0]["attributes"]["processingState"] != "VALID":
-            sys.exit("最新的构建不能用，没有挂")
+        target = next((b for b in builds if b["attributes"]["version"] == wanted), None) if wanted else (builds[0] if builds else None)
+        if not target or target["attributes"]["processingState"] != "VALID":
+            sys.exit(f"构建 {wanted or '（最新的）'} 还不能用，没有挂")
         if shots.state_of(version) not in shots.EDITABLE:
-            sys.exit(f"版本 {number} 的状态是 {shots.state_of(version)}，改不了")
+            sys.exit(f"版本 {number} 的状态是 {shots.state_of(version)}，改不了（在 App Store Connect 里把它从待提交的审核里移出来再跑）")
         asc.api("PATCH", f"/appStoreVersions/{version['id']}/relationships/build",
-                {"data": {"type": "builds", "id": builds[0]["id"]}})
+                {"data": {"type": "builds", "id": target["id"]}})
 
     attached = (asc.api("GET", f"/appStoreVersions/{version['id']}/build", missing_ok=True) or {}).get("data")
     print(f"挂在版本 {number} 上的构建：{attached['attributes']['version'] if attached else '没有'}")
