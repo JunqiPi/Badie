@@ -15,11 +15,14 @@ on:
 jobs:
   screenshots:
     name: Screenshots
-    runs-on: macos-26
+    # App Store 要求用 iOS 27 的 SDK 构建：Xcode 27 在单独的镜像上，版本写死
+    runs-on: xcode-27
     timeout-minutes: 75
     defaults:
       run:
         working-directory: Badie-iOS
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
 
