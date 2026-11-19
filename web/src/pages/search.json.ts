@@ -22,6 +22,7 @@ export const GET: APIRoute = () => {
     n: [venue.name, englishName(venue)].filter(Boolean).join(' · '),
     s: venue.city,
     p: venue.path,
+    i: venue.id,
   }));
   return new Response(JSON.stringify([...cities, ...courts]), { headers: { 'Content-Type': 'application/json' } });
 };
