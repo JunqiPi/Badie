@@ -1,0 +1,499 @@
+{
+ "source": "OpenStreetMap (gymnasiums in TH)",
+ "kind": "openStreetMap",
+ "status": "unconfirmed",
+ "attribution": "© OpenStreetMap contributors, ODbL 1.0",
+ "venues": [
+  {
+   "id": "v-th-osmg-w1216846796",
+   "name": "โรงยิมเนเซียม",
+   "lat": 13.817666,
+   "lon": 100.698064,
+   "street": "",
+   "city": "เขตคลองสามวา",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1216846796"
+  },
+  {
+   "id": "v-th-osmg-w1434428281",
+   "name": "ศูนย์กีฬาประชานิเวศน์",
+   "lat": 13.838004,
+   "lon": 100.546705,
+   "street": "",
+   "city": "เขตจตุจักร",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1434428281",
+   "aliases": [
+    "Pracha Niwet Sport Centre"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w1132103363",
+   "name": "ศูนย์กีฬาวชิรเบญจทัศ",
+   "lat": 13.813639,
+   "lon": 100.556731,
+   "street": "",
+   "city": "เขตจตุจักร",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1132103363",
+   "aliases": [
+    "Wrenchatat Sport Center"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w294293837",
+   "name": "ศูนย์กีฬาวชิรเบญจทัศ (สวนรถไฟ)",
+   "lat": 13.811932,
+   "lon": 100.556113,
+   "street": "",
+   "city": "เขตจตุจักร",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/294293837",
+   "aliases": [
+    "Bangkok sport center"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w1484721076",
+   "name": "ศูนย์กีฬาพณิชยการราชดำเนิน",
+   "lat": 13.759294,
+   "lon": 100.367076,
+   "street": "",
+   "city": "เขตทวีวัฒนา",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1484721076"
+  },
+  {
+   "id": "v-th-osmg-w1236542044",
+   "name": "ศูนย์กีฬาเฉลิมพระเกียรติ บางมด",
+   "lat": 13.647111,
+   "lon": 100.492331,
+   "street": "",
+   "city": "เขตทุ่งครุ",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1236542044",
+   "aliases": [
+    "Chalerm Phrakiat Bang Mod Sport Center"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w1284561808",
+   "name": "ศูนย์กีฬาชุมชนบิ๊กซีรวมน้ำใจพระราม 3",
+   "lat": 13.702345,
+   "lon": 100.490319,
+   "street": "",
+   "city": "เขตธนบุรี",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1284561808",
+   "aliases": [
+    "Big C Ruamnamjai Phra Ram III Sport Centre"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w1341004620",
+   "name": "ศูนย์กีฬาเฉลิมพระเกียรติ 84 พรรษา (บางบอน)",
+   "lat": 13.644442,
+   "lon": 100.396999,
+   "street": "",
+   "city": "เขตบางบอน",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1341004620",
+   "aliases": [
+    "Chaloem Phrakiat 84th Anniversary Sports Center"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w234366102",
+   "name": "อาคารยิมเนเซียม",
+   "lat": 13.757663,
+   "lon": 100.490891,
+   "street": "",
+   "city": "เขตพระนคร",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/234366102",
+   "aliases": [
+    "Gymnasium"
+   ]
+  },
+  {
+   "id": "v-th-osmg-n1875803463",
+   "name": "ศูนย์กีฬากันอริ",
+   "lat": 13.713614,
+   "lon": 100.442246,
+   "street": "",
+   "city": "เขตภาษีเจริญ",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "node/1875803463",
+   "aliases": [
+    "Kan-Ari Sport Club"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w1216802733",
+   "name": "โรงยิมเนเซียม",
+   "lat": 13.8144,
+   "lon": 100.714953,
+   "street": "",
+   "city": "เขตมีนบุรี",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1216802733"
+  },
+  {
+   "id": "v-th-osmg-w1222688012",
+   "name": "ศูนย์ฝึกแบดมินตันและวิทยาศาสตร์การกีฬา",
+   "lat": 13.709509,
+   "lon": 100.543755,
+   "street": "",
+   "city": "เขตยานนาวา",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1222688012"
+  },
+  {
+   "id": "v-th-osmg-w1123528413",
+   "name": "Ascot Gymnasium",
+   "lat": 13.762184,
+   "lon": 100.686798,
+   "street": "",
+   "city": "เขตสะพานสูง",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1123528413"
+  },
+  {
+   "id": "v-th-osmg-w1217277328",
+   "name": "ศูนย์กีฬา สำนักงานเขตสาทร",
+   "lat": 13.714702,
+   "lon": 100.534715,
+   "street": "",
+   "city": "เขตสาทร",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1217277328",
+   "aliases": [
+    "Sathon District Office Sports Center"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w1005706643",
+   "name": "อาคารพลศึกษาเอนกประสงค์ (โรงยิมเก่า)",
+   "lat": 16.476981,
+   "lon": 102.818594,
+   "street": "",
+   "city": "อำเภอเมืองขอนแก่น",
+   "region": "จังหวัดขอนแก่น",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1005706643"
+  },
+  {
+   "id": "v-th-osmg-w761769536",
+   "name": "โรงยิมเทศบาลเมืองศรีราชา",
+   "lat": 13.174032,
+   "lon": 100.926705,
+   "street": "",
+   "city": "อำเภอศรีราชา",
+   "region": "จังหวัดชลบุรี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/761769536"
+  },
+  {
+   "id": "v-th-osmg-w1314590426",
+   "name": "ศูนย์กีฬาเทศบาลตำบลองครักษ์",
+   "lat": 14.12262,
+   "lon": 101.005475,
+   "street": "",
+   "city": "อำเภอองครักษ์",
+   "region": "จังหวัดนครนายก",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1314590426"
+  },
+  {
+   "id": "v-th-osmg-w1390697685",
+   "name": "ศูนย์กีฬาเฉลิมพระเกียรติ 80 พรรษา",
+   "lat": 14.926767,
+   "lon": 102.047452,
+   "street": "",
+   "city": "อำเภอเมืองนครราชสีมา",
+   "region": "จังหวัดนครราชสีมา",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1390697685"
+  },
+  {
+   "id": "v-th-osmg-w198298616",
+   "name": "Gymnasium 7",
+   "lat": 14.069685,
+   "lon": 100.600594,
+   "street": "",
+   "city": "อำเภอคลองหลวง",
+   "region": "จังหวัดปทุมธานี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/198298616"
+  },
+  {
+   "id": "v-th-osmg-w198308452",
+   "name": "อาคารยิมเนเซียม 4",
+   "lat": 14.066131,
+   "lon": 100.603392,
+   "street": "",
+   "city": "อำเภอคลองหลวง",
+   "region": "จังหวัดปทุมธานี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/198308452",
+   "aliases": [
+    "Gymnasium 4"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w228366256",
+   "name": "อาคารยิมเนเซียม 6",
+   "lat": 14.067049,
+   "lon": 100.604505,
+   "street": "",
+   "city": "อำเภอคลองหลวง",
+   "region": "จังหวัดปทุมธานี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/228366256",
+   "aliases": [
+    "Gymnasium 6"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w153000042",
+   "name": "อาคารศูนย์กีฬาทางน้ำ",
+   "lat": 14.066588,
+   "lon": 100.601879,
+   "street": "",
+   "city": "อำเภอคลองหลวง",
+   "region": "จังหวัดปทุมธานี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/153000042",
+   "aliases": [
+    "Aquatic Sport Centre"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w518190345",
+   "name": "โรงยิมอเนกประสงค์",
+   "lat": 14.16336,
+   "lon": 101.347208,
+   "street": "",
+   "city": "อำเภอเมืองปราจีนบุรี",
+   "region": "จังหวัดปราจีนบุรี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/518190345",
+   "aliases": [
+    "Multipurpose Gym"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w475818966",
+   "name": "ยิมเนเซียม 4000 ที่นั่ง สะพานหิน",
+   "lat": 7.865675,
+   "lon": 98.395787,
+   "street": "",
+   "city": "อำเภอเมืองภูเก็ต",
+   "region": "จังหวัดภูเก็ต",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/475818966",
+   "aliases": [
+    "Saphan Hin Municipal Gymnasium",
+    "Saphan Hin 4000 Seat Municipal Gymnasium"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w934588368",
+   "name": "โรงยิมสนามกีฬาวอลเลย์บอลจังหวัดราชบุรี",
+   "lat": 13.529869,
+   "lon": 99.813222,
+   "street": "",
+   "city": "อำเภอเมืองราชบุรี",
+   "region": "จังหวัดราชบุรี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/934588368",
+   "aliases": [
+    "Ratchaburi volleyball stadium"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w666060548",
+   "name": "โรงยิมเนเซี่ยมจังหวัดราชบุรี",
+   "lat": 13.536981,
+   "lon": 99.825205,
+   "street": "",
+   "city": "อำเภอเมืองราชบุรี",
+   "region": "จังหวัดราชบุรี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/666060548"
+  },
+  {
+   "id": "v-th-osmg-w593435201",
+   "name": "โรงยิมเนเซี่ยม",
+   "lat": 15.102854,
+   "lon": 104.315276,
+   "street": "",
+   "city": "อำเภอเมืองศรีสะเกษ",
+   "region": "จังหวัดศรีสะเกษ",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/593435201",
+   "aliases": [
+    "Gymnasium"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w181103784",
+   "name": "Indoor Badminton",
+   "lat": 13.616096,
+   "lon": 100.833631,
+   "street": "",
+   "city": "อำเภอบางเสาธง",
+   "region": "จังหวัดสมุทรปราการ",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/181103784"
+  },
+  {
+   "id": "v-th-osmg-w1533020603",
+   "name": "ศูนย์กีฬาซีคอมเพล็กซ์บางปู",
+   "lat": 13.540845,
+   "lon": 100.615823,
+   "street": "",
+   "city": "อำเภอเมืองสมุทรปราการ",
+   "region": "จังหวัดสมุทรปราการ",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1533020603",
+   "aliases": [
+    "Sea Complex Sport Center Bangpu",
+    "ศูนย์กีฬาบางปู"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w458229916",
+   "name": "โรงยิมเนเซียม1",
+   "lat": 18.868737,
+   "lon": 99.137685,
+   "street": "",
+   "city": "อำเภอดอยสะเก็ด",
+   "region": "จังหวัดเชียงใหม่",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/458229916",
+   "aliases": [
+    "Gymnasium 1"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w97699140",
+   "name": "อาคารยิมเนเซียม",
+   "lat": 18.798572,
+   "lon": 99.006086,
+   "street": "",
+   "city": "อำเภอเมืองเชียงใหม่",
+   "region": "จังหวัดเชียงใหม่",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/97699140",
+   "aliases": [
+    "PRC Gymnasium"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w237479465",
+   "name": "โรงยิมนีเซียม",
+   "lat": 18.797005,
+   "lon": 98.957742,
+   "street": "",
+   "city": "อำเภอเมืองเชียงใหม่",
+   "region": "จังหวัดเชียงใหม่",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/237479465",
+   "aliases": [
+    "Main Gymnasium"
+   ]
+  },
+  {
+   "id": "v-th-osmg-w272383284",
+   "name": "Prem Gymnasium",
+   "lat": 18.964997,
+   "lon": 98.916144,
+   "street": "",
+   "city": "อำเภอแม่ริม",
+   "region": "จังหวัดเชียงใหม่",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/272383284"
+  }
+ ]
+}

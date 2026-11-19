@@ -244,8 +244,11 @@
     - 都道府县（位置准）：東京都 194、富山 69、大阪府 67、神奈川 49、石川 47、愛知 45、兵庫 44、鹿児島 42、新潟 39、岩手 35、福岡 35、埼玉 33；主要城市：東京 23 区 139、大阪市 26、横浜市 21、名古屋市 20、京都市 17、札幌市 15、神戸市 14、福岡市 11、千葉市 8、さいたま市 8、川崎市 7
     - 表里的地址都道府県 + 市区町村写了两遍、有的夹着“〒邮编”，先整理成“门牌, 市区町村, 都道府县, JP, 都道府县”再导入（转换脚本没进仓库，很短：去掉邮编，找“市区町村”后面紧跟着的重复）
     - 日本的门牌 OSM 几乎没有：`--gsi` 用国土地理院的住所検索（`msearch.gsi.go.jp`，每秒 1 次，查得到番地；查到的地址要在同一个市区町村里并带番地号码），署名“出典：国土地理院”。中日韩地名按包含关系核对，门牌、城市、省用表里自己写的
-    - **日本的体育馆（OSM，`build_osm_gyms_jp.py` → `supabase/data/osm-gyms-JP.json`，走种子同步）1,253 家**：OSM 里日本的体育馆很少标 sport=badminton，之前東京体育館都没有。按名字收（体育館 / アリーナ / スポーツセンター…），不收武道館、学校、园区里的楼、单位自用、只叫“体育館”的；英文名、alt_name 做别名（“Tokyo Metropolitan Gymnasium”能搜到）。重跑时用 `--exclude` 给线上库导出的我们整理的球馆，免得重复。日本现在一共 2,918 家
-    - 韩国（营销那边也要补）还没做
+    - **日本的体育馆（OSM，`build_osm_gyms.py JP` → `supabase/data/osm-gyms-JP.json`，走种子同步）1,253 家**：OSM 里日本的体育馆很少标 sport=badminton，之前東京体育館都没有。按名字收（体育館 / アリーナ / スポーツセンター…），不收武道館、学校、园区里的楼、单位自用、只叫“体育館”的；英文名、alt_name 做别名（“Tokyo Metropolitan Gymnasium”能搜到）。重跑时用 `--exclude` 给线上库导出的我们整理的球馆，免得重复。日本现在一共 2,918 家
+- **各国的体育馆（OSM，2026-11-19）**：`supabase/scripts/build_osm_gyms.py <国家…>` → `supabase/data/osm-gyms-<国家>.json`，走种子同步（推 main 就进库）。每个国家一套当地叫法（names）、不收的词（skip：学校、武道館、泳池、冰场、篮球场、单位自用……）、通称（generic）、行政区划级别，见脚本里的 COUNTRIES；`--count` 只数不写。查询结果按名字缓存，改了规则要清掉 `--cache` 目录
+  - 新增：美国 1,214（Recreation Center、Gymnasium，不收 Community Center）、菲律宾 791、英国 581（苏格兰、威尔士等 Sport England 没有的）、印尼 280、澳大利亚 235、加拿大 233、韩国 168、印度 150、越南 107、台湾 81、马来西亚 74、泰国 33、香港 18（加日本 1,253）
+  - 德国（3,948）、法国（4,554）只数没收：Sporthalle / Gymnase 主要是学校和俱乐部的，散客去不了，而且网站城市页会多出一大截
+  - 韩国 OSM 里体育馆少，要补全得用韩国政府的公共数据（全国体育设施标准数据）或我们自己收集的表
   - 写法：本地生成每批 150 家的 SQL（带 md5 校验、文字先统一成 NFC、id 原样带上），用 Supabase 连接逐批执行；加密后推仓库让数据库下载的办法被安全检查拦了。名字匹配别太松：只看共同词会把“Badminton Power”配给花店“Flower Power”
   - Overture 署名：坐标来自它的，`attribution` 是“Coordinates © Overture Maps Foundation (CDLA Permissive 2.0); address © OpenStreetMap contributors”，导出时带上，网站页脚按它署名。网络要放行 `overturemaps-us-west-2.s3.us-west-2.amazonaws.com`，装 `pyarrow==21.0.0`
   - 下次导入同类数据：先批量匹配，再一条条查剩下的；装 `timezonefinder==6.5.9`
