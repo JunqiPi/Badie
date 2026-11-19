@@ -1,0 +1,124 @@
+---
+// 排表工具（只有英文）：搜 “badminton tournament maker” 的人要的是马上能用的工具，所以不登录就能排出全部对阵、打印、复制链接。
+// 排法和登录后的“比赛”一样；要输比分、看实时看板，点“在 Badie 里开始”
+import Base from '../../layouts/Base.astro';
+import { TournamentMaker } from '../../app/TournamentMaker';
+
+const site = Astro.site ?? new URL('http://localhost');
+const faq = [
+  {
+    q: 'Is it free?',
+    a: 'Yes. Making a schedule needs no account. Running the tournament live in Badie is free too, with no ads.',
+  },
+  {
+    q: 'How many players can I add?',
+    a: 'Up to 64. Singles needs at least 2 players, doubles at least 4. Fixed partners need an even number.',
+  },
+  {
+    q: 'How are rotating partners picked?',
+    a: 'Each round you play with someone you haven’t partnered yet, against people you’ve faced the least. If the number of players isn’t a multiple of 4, a few people rest each round, and rests are spread evenly.',
+  },
+  {
+    q: 'How are players ranked?',
+    a: 'By wins. If people played a different number of games, by win rate. Then point difference, points scored, and the game between the two. If it’s still even, it’s a tie.',
+  },
+  {
+    q: 'Can players see the schedule on their phones?',
+    a: 'Copy the link and send it to your group. To show who’s on which court and the live standings, start the tournament in Badie and share its link or QR code. Nobody needs an account to watch.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      name: 'Badie tournament maker',
+      url: new URL('/badminton-tournament-maker/', site).href,
+      applicationCategory: 'SportsApplication',
+      operatingSystem: 'Any',
+      browserRequirements: 'Requires JavaScript',
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      description: 'Make a badminton round robin or group-and-final schedule for singles or doubles, with rotating or fixed partners.',
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+    },
+  ],
+};
+---
+
+<Base
+  title="Badminton tournament maker — free round robin schedule | Badie"
+  description="Type the names, pick a format and get every game, round by round. Singles, fixed or rotating doubles, or groups and a final. Free, no sign-up."
+  jsonLd={jsonLd}
+>
+  <div class="mx-auto grid max-w-3xl gap-10">
+    <header class="grid gap-3 print:hidden">
+      <h1 class="text-display lg:text-[2.75rem]">Badminton tournament maker</h1>
+      <p class="max-w-prose text-[1.0625rem] leading-relaxed text-ink-secondary">
+        Type the names, pick a format and get every game, round by round. Print it or send the link. Free, and no sign-up.
+      </p>
+    </header>
+
+    <TournamentMaker client:load />
+
+    <section aria-labelledby="formats" class="grid gap-3 print:hidden">
+      <h2 id="formats" class="text-title2">Four formats</h2>
+      <dl class="grid gap-3 sm:grid-cols-2">
+        <div class="sticker p-4">
+          <dt class="text-headline">Doubles, rotating partners</dt>
+          <dd class="mt-1 text-subhead">A new partner every round. Good for club nights where people come on their own. Ranked by each player’s wins.</dd>
+        </div>
+        <div class="sticker p-4">
+          <dt class="text-headline">Singles round robin</dt>
+          <dd class="mt-1 text-subhead">Everyone plays everyone once. With an odd number of players, one person rests each round.</dd>
+        </div>
+        <div class="sticker p-4">
+          <dt class="text-headline">Doubles, fixed partners</dt>
+          <dd class="mt-1 text-subhead">Pairs stay together and every pair plays every other pair once. List partners next to each other.</dd>
+        </div>
+        <div class="sticker p-4">
+          <dt class="text-headline">Groups + final</dt>
+          <dd class="mt-1 text-subhead">2 to 4 groups play a round robin. The top players go through to semifinals and a final.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section aria-labelledby="live" class="grid gap-3 print:hidden">
+      <h2 id="live" class="text-title2">Run it live in Badie</h2>
+      <p class="max-w-prose text-subhead">
+        Start the same schedule in Badie when you want scores and standings on the night. Your names and settings come with you.
+      </p>
+      <ul class="grid gap-2 text-subhead">
+        <li class="sticker p-4">Games go to whichever court is free. If someone is still playing, the next game that can start goes on.</li>
+        <li class="sticker p-4">You, up to 3 helpers, or players with a Badie account enter scores. The standings update as you go.</li>
+        <li class="sticker p-4">Players open a link or scan a QR code to see who’s on court, what’s next and the standings. No account needed to watch.</li>
+        <li class="sticker p-4">If someone has to leave, mark them as withdrawn. With rotating partners you can also add a player who turns up late.</li>
+        <li class="sticker p-4">When it’s over, share the final standings as an image.</li>
+      </ul>
+      <p class="text-footnote text-ink-secondary">
+        Running the same group every week? <a class="link" href="/badminton-group-app/">Badie also handles sign-ups, the court rotation and court fees</a>.
+      </p>
+    </section>
+
+    <section aria-labelledby="faq" class="grid gap-3 print:hidden">
+      <h2 id="faq" class="text-title2">Questions</h2>
+      {faq.map((f) => (
+        <details class="sticker group p-4">
+          <summary class="cursor-pointer text-headline">{f.q}</summary>
+          <p class="mt-2 text-subhead">{f.a}</p>
+        </details>
+      ))}
+    </section>
+  </div>
+</Base>
+
+<style is:global>
+  /* 打印时只留对阵表 */
+  @media print {
+    header, footer, nav, [data-shell-chrome] { display: none !important; }
+    body { background: white; }
+  }
+</style>

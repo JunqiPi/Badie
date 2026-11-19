@@ -163,9 +163,9 @@ function translateStatic() {
 /** 页脚：真正的页面链接（不是本页的锚点） */
 function Footer() {
   const columns: [string, [string, string][]][] = [
-    ['Play', [['Discover', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Groups', '/groups/']]],
+    ['Play', [['Discover', '/'], ['Quick Match', '/play/'], ['Nearby games', '/rooms/'], ['Groups', '/groups/'], ['Tournament maker', '/badminton-tournament-maker/']]],
     ['Courts', [['Nearby venues', '/courts/'], ['Level chart', '/levels/'], ['Leaderboard', '/rankings/']]],
-    ['Badie', [['About Badie', '/about/'], ['Contact us', '/contact/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
+    ['Badie', [['About Badie', '/about/'], ['Find a badminton partner', '/badminton-partner-app/'], ['Run a badminton group', '/badminton-group-app/'], ['Contact us', '/contact/'], ['Me', '/me/'], ['Privacy Policy', '/privacy/'], ['Terms of Service', '/terms/']]],
   ];
   return (
     <footer className="hidden border-t-2 border-stroke/10 lg:block">

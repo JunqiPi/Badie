@@ -300,6 +300,14 @@
 - **还没做**：安卓（同样几样，照 iPhone 搬，这次没动 `Badie-Android/`）；比需求简单的地方见 `CLUB_NIGHT.md`
 - **上线前用户要做**：没有新的密钥。提交审核时 Notes 写一句“收款只是给出 Venmo / Cash App / PayPal 链接，钱不经过 App，是线下场地费，不走内购”（和打赏的说明分开）
 
+## 搜索：对准的词和落地页（2026-11-19，网站，分支 `claude/upbeat-davinci-69u4pi`，没推 main）
+
+- 主要对准两个词：**badminton partner / group app**、**badminton tournament maker**。“badminton courts” 这种通用词结果是场地尺寸文章和 Google 地图，不作为目标；球馆目录对准“城市 + badminton courts”。
+- 三个只有英文的静态页（`Base` 布局，内容在 HTML 里，带 JSON-LD 和常见问题）：`/badminton-partner-app/`、`/badminton-group-app/`、`/badminton-tournament-maker/`。页脚、首页的静态内容、三页之间互相链接；首页标题改成 “Badie — free badminton partner app and court finder”。
+- **排表工具**（`src/app/TournamentMaker.tsx`，排法在 `src/lib/tournament.ts`，测试 `tests/tournament.test.ts`）：不登录，填名字、选赛制，排出全部对阵，能打印、复制链接（设置在 `#` 后面）。排法照搬服务器的 `round_robin_pairs`、`match_schedule_rr`、`match_schedule_rotating`、蛇形分组和 `match_preview` 的时间；没有等级，固定搭档按名单两两一队、分组按名单顺序。“Run it live in Badie” 把名单和设置存进 sessionStorage（`badie.maker`，一小时内有效），新建比赛页（`Match.tsx` 的 `NewMatch`）读一次就删。服务器对名字要求 2–20 个字，排表这边截到 20 个字，1 个字的名字到新建比赛时才会报错。
+- 球馆目录：州 / 省统一成缩写（US、CA、AU），同一国家同名、25 公里以内的城市并成一个（以前 “Chicago, IL” 和 “Chicago, Illinois”、曼彻斯特的 6 个区各成一页）。被并掉的城市页地址没有做跳转。
+- 用户要做：Search Console 看收录（Pages 报告）、对新页面请求编入索引；Bing Webmaster Tools 导入；Cloudflare 打开 Crawler Hints；争取进 “best badminton apps” 类文章、AlternativeTo、Product Hunt。
+
 ## 已知、没修的
 
 1. 在找人的人对能约 TA 的人都可见，改了定位的人也能看到（这是按天看人的设计；不想被看到可以在设置里关）。

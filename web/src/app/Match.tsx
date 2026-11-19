@@ -13,6 +13,7 @@ import { CourtSearch, type Court } from './pickers';
 import { navigate } from './router';
 import { problem, supabase, useLive, type Friend, type Profile } from './supabase';
 import { renderStandings } from './standingsCard';
+import { makerKey, type Plan } from '../lib/tournament';
 import { day } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 
@@ -635,21 +636,37 @@ function countProblem(format: MatchFormat, n: number, pools: number) {
   return undefined;
 }
 
+/** 从排表页（/badminton-tournament-maker/）带过来的名单和设置：一小时内有效，读一次就删 */
+function fromMaker(): Plan | undefined {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(makerKey) ?? 'null') as (Plan & { at: number }) | null;
+    sessionStorage.removeItem(makerKey);
+    return saved && Date.now() - saved.at < 3_600_000 && Array.isArray(saved.players) ? saved : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function NewMatch({ profile }: { profile: Profile }) {
   const session = new URLSearchParams(location.search).get('session');
+  const [maker] = useState(() => (session ? undefined : fromMaker()));
   const { data: night } = useLive<NightState | null>(session ? 'night_state' : '', { args: { p_session: session }, every: 600_000 });
   const [name, setName] = useState('');
   const [venue, setVenue] = useState<Court>();
-  const [courts, setCourts] = useState(2);
-  const [players, setPlayers] = useState<Entry[]>(() => (session ? [] : [{ key: profile.id, label: profile.nickname, guest: false, user_id: profile.id }]));
-  const [format, setFormat] = useState<MatchFormat>('rotating');
-  const [points, setPoints] = useState<21 | 15 | 11>(21);
-  const [bestOf, setBestOf] = useState<1 | 3>(1);
+  const [courts, setCourts] = useState(maker?.courts ?? 2);
+  const [players, setPlayers] = useState<Entry[]>(() =>
+    session ? []
+    : maker ? maker.players.slice(0, 64).map((name, i) => ({ key: `name-${i}`, label: name, guest: true, name }))
+    : [{ key: profile.id, label: profile.nickname, guest: false, user_id: profile.id }]);
+  const [format, setFormat] = useState<MatchFormat>(maker?.format ?? 'rotating');
+  const [points, setPoints] = useState<21 | 15 | 11>(maker?.points ?? 21);
+  const [bestOf, setBestOf] = useState<1 | 3>(maker?.bestOf ?? 1);
   const [winByTwo, setWinByTwo] = useState(true);
-  const [pools, setPools] = useState(2);
-  const [advance, setAdvance] = useState(1);
-  const [autoPairs, setAutoPairs] = useState(true);
-  const [rounds, setRounds] = useState<number>();
+  const [pools, setPools] = useState(maker?.pools ?? 2);
+  const [advance, setAdvance] = useState(maker?.advance ?? 1);
+  // 排表页的固定搭档是按名单两两一队
+  const [autoPairs, setAutoPairs] = useState(maker?.format !== 'fixed');
+  const [rounds, setRounds] = useState<number | undefined>(maker?.rounds);
   const [picking, setPicking] = useState(false);
   const [guest, setGuest] = useState('');
   const [busy, setBusy] = useState(false);
