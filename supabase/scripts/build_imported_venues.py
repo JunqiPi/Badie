@@ -254,6 +254,8 @@ def main():
     parser.add_argument("csv", type=Path)
     parser.add_argument("--cache", type=Path, required=True)
     parser.add_argument("--dry-run", action="store_true", help="只数一数，不查坐标")
+    parser.add_argument("--gsi", action="store_true",
+                        help="日本的：只查到城市或町丁目的，用国土地理院的住所検索查到番地（出典：国土地理院）")
     parser.add_argument("--overture", action="store_true",
                         help="只查到城市或街道的，再到 Overture Maps 里按名字找（overture_places.py），找到就用它的位置")
     args = parser.parse_args()
@@ -343,6 +345,38 @@ def main():
         found.append({"name": name, "address": address, "hit": hit, "approx": not exact, "core": core, "on_street": on_street,
                       "point": (float(hit["lat"]), float(hit["lon"]))})
 
+    if args.gsi:  # 日本的门牌 OSM 几乎没有：用国土地理院的住所検索（查得到番地），每秒 1 次
+        gsi_cache = args.cache / "gsi.jsonl"
+        gsi_known = {}
+        if gsi_cache.exists():
+            for line in gsi_cache.read_text(encoding="utf-8").splitlines():
+                item = json.loads(line)
+                gsi_known[item["q"]] = item["r"]
+        last = 0.0
+        for c in found:
+            if not (c["approx"] or c.get("on_street")) or len(c["core"]) < 3 or not CJK.search(c["core"][-1]):
+                continue
+            pref, city, rest = c["core"][-1], c["core"][-2], c["core"][0]
+            q = pref + city + rest
+            if q not in gsi_known:
+                time.sleep(max(0.0, 1.05 - (time.time() - last)))
+                last = time.time()
+                try:
+                    url = "https://msearch.gsi.go.jp/address-search/AddressSearch?" + urllib.parse.urlencode({"q": q})
+                    gsi_known[q] = json.loads(urllib.request.urlopen(url, timeout=30).read().decode("utf-8"))[:1]
+                except Exception as e:
+                    print(f"gsi retry later {q!r}: {e}", file=sys.stderr)
+                    continue
+                with gsi_cache.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps({"q": q, "r": gsi_known[q]}, ensure_ascii=False) + "\n")
+            hit = (gsi_known[q] or [None])[0]
+            title = unicodedata.normalize("NFKC", hit["properties"]["title"]) if hit else ""
+            # 查到的地址得在同一个都道府县、市区町村里，而且查到了番地（带数字），不然只说明在哪个町
+            if hit and title.startswith(unicodedata.normalize("NFKC", pref + city)) and re.search(r"\d", title[len(pref + city):]):
+                lon, lat = hit["geometry"]["coordinates"]
+                c.update(approx=False, on_street=False, point=(lat, lon), gsi=True)
+        print(f"{sum(1 for c in found if c.get('gsi'))} placed by GSI (Japan)", flush=True)
+
     if args.overture:  # 只查到城市或街道的：到 Overture Maps 里按名字找，找到就用场馆本身的位置
         import overture_places
         cache_file = args.cache / f"overture-{overture_places.RELEASE}.json"
@@ -415,6 +449,10 @@ def main():
             venue["approx"] = True
         if c["hit"].get("alias") and c["hit"]["alias"] != c["name"]:  # OSM 里的英文名：搜英文也能搜到
             venue["aliases"] = [c["hit"]["alias"]]
+        if CJK.search(c["address"]) and len(c["core"]) >= 3:  # 中日韩：门牌、城市、省用表里自己写的（OSM 的常常是区名、町名、路名）
+            venue["street"], venue["city"], venue["region"] = c["core"][0], c["core"][-2], c["core"][-1]
+        if c.get("gsi"):
+            venue["attr"] = "Coordinates: 出典：国土地理院 (Geospatial Information Authority of Japan)"
         if c.get("overture"):  # 位置来自 Overture Maps；城市、省还是 OpenStreetMap 的
             o = c["overture"]
             venue["street"] = o["street"] or venue["street"]
