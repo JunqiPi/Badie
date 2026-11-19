@@ -74,7 +74,7 @@ await visitor.getByText(/Tina/).first().waitFor();
 await olivia.getByRole('button', { name: 'Match', exact: true }).click();
 await olivia.getByRole('button', { name: 'Start a match with tonight’s list' }).click();
 await olivia.getByText('4 players').waitFor();
-await olivia.getByRole('button', { name: 'Singles round robin' }).click();
+await olivia.getByRole('button', { name: 'Singles', exact: true }).click();
 await olivia.getByRole('button', { name: 'Start', exact: true }).click();
 await olivia.getByRole('heading', { name: 'Playing now' }).waitFor();
 await olivia.getByRole('button', { name: 'Enter score' }).first().click();

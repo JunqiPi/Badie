@@ -98,13 +98,23 @@ export interface GuestPayment {
   paid_self: boolean;
 }
 
-export type MatchFormat = 'singles' | 'fixed' | 'rotating' | 'groups';
+/** 赛制：循环 / 小组赛 + 淘汰赛 / 瑞士轮 / 单淘汰 */
+export type MatchFormat = 'round_robin' | 'groups' | 'swiss' | 'knockout';
+/** 参赛方式：单打 / 双打固定搭档 / 双打轮换搭档（只配循环） */
+export type MatchPlay = 'singles' | 'fixed' | 'rotating';
 
 export interface MatchGame {
   id: number;
   round: number;
-  stage: 'pool' | 'semi' | 'final';
+  /** 淘汰赛是 ko（ko_size：这一轮几个签位，2 = 决赛），三四名决赛是 third */
+  stage: 'pool' | 'ko' | 'third';
   pool?: number;
+  ko_size?: number;
+  slot?: number;
+  /** 轮空：不是一场球，不显示 */
+  bye?: boolean;
+  /** 中途退赛的一边 */
+  retired?: 1 | 2;
   a: string[];
   b: string[];
   court?: number;
@@ -142,6 +152,8 @@ export interface MatchView {
   id: string;
   name: string;
   format: MatchFormat;
+  play: MatchPlay;
+  third_place: boolean;
   doubles: boolean;
   points: 11 | 15 | 21;
   best_of: 1 | 3;
@@ -195,8 +207,75 @@ export const sides = (players: string[]) => (players.length === 4 ? [players.sli
 export const scoreText = (scores: number[] | undefined) =>
   (scores ?? []).reduce<string[]>((games, n, i) => (i % 2 ? [...games.slice(0, -1), `${games.at(-1)}–${n}`] : [...games, String(n)]), []).join(' ');
 
-export const formatName = (format: MatchFormat) =>
-  ({ singles: t('Singles round robin'), fixed: t('Doubles, fixed partners'), rotating: t('Doubles, rotating partners'), groups: t('Groups + final') })[format];
+export const structureName = (format: MatchFormat) =>
+  ({ round_robin: t('Round robin'), groups: t('Groups + knockout'), swiss: t('Swiss'), knockout: t('Knockout') })[format];
+
+export const playName = (play: MatchPlay) =>
+  ({ singles: t('Singles'), fixed: t('Doubles, fixed partners'), rotating: t('Doubles, rotating partners') })[play];
+
+/** “循环 · 单打”；轮换搭档只有循环，就写“双打轮换搭档” */
+export const formatName = (format: MatchFormat, play: MatchPlay) => (play === 'rotating' ? playName(play) : `${structureName(format)} · ${playName(play)}`);
+
+// MARK: 比分规则（和服务器的 score_winner、retire_scores_ok 一样）
+
+/** 加分时打到几封顶：21 → 30、15 → 21、11 → 15 */
+export const capOf = (points: number) => ({ 21: 30, 15: 21, 11: 15 } as Record<number, number>)[points] ?? points;
+
+const gameDone = (hi: number, lo: number, points: number, winByTwo: boolean) =>
+  lo >= 0 && hi > lo && (!winByTwo ? hi === points
+    : (hi === points && lo <= points - 2) || (hi > points && hi <= capOf(points) && (hi - lo === 2 || (hi === capOf(points) && lo === hi - 1))));
+
+/** 打得出来、但还没打完的一局 */
+const unfinished = (hi: number, lo: number, points: number, winByTwo: boolean) =>
+  hi < points || (winByTwo && lo >= points - 1 && hi - lo <= 1 && hi < capOf(points));
+
+/** 打得出来的比分不合规时说哪里不对 */
+function gameProblem(a: number, b: number, n: number, rules: { points: number; best_of: number; win_by_two: boolean }) {
+  const hi = Math.max(a, b);
+  const lo = Math.min(a, b);
+  const score = `${a}–${b}`;
+  const text = unfinished(hi, lo, rules.points, rules.win_by_two) ? t('{score} isn’t finished yet.', { score })
+    : rules.win_by_two ? t('{score} can’t happen: games go to {points}, win by 2, up to {cap}.', { score, points: rules.points, cap: capOf(rules.points) })
+    : t('{score} can’t happen: games end at {points}.', { score, points: rules.points });
+  return rules.best_of === 1 ? text : t('Game {n}: {text}', { n, text });
+}
+
+/** 去掉后面没填的局（0–0） */
+export const playedGames = (scores: number[]) => {
+  let end = scores.length;
+  while (end >= 2 && scores[end - 1] === 0 && scores[end - 2] === 0) end -= 2;
+  return scores.slice(0, end);
+};
+
+/** 输的比分：合规返回赢的一边；不合规返回哪里不对；还没填返回 null */
+export function checkScore(scores: number[], rules: { points: number; best_of: number; win_by_two: boolean }): { winner: 1 | 2 } | { problem: string } | null {
+  if (scores.length === 0) return null;
+  const need = Math.floor(rules.best_of / 2) + 1;
+  const wins = [0, 0];
+  for (let i = 0; i < scores.length / 2; i++) {
+    if (wins[0] === need || wins[1] === need) return { problem: t('Game 3 isn’t needed. The first two decide it.') };
+    const [a, b] = [scores[2 * i], scores[2 * i + 1]];
+    if (!gameDone(Math.max(a, b), Math.min(a, b), rules.points, rules.win_by_two)) return { problem: gameProblem(a, b, i + 1, rules) };
+    wins[a > b ? 0 : 1] += 1;
+  }
+  if (wins[0] < need && wins[1] < need) return { problem: t('Best of 3: someone has to win 2 games.') };
+  return { winner: wins[0] === need ? 1 : 2 };
+}
+
+/** 中途退赛的比分：前面的局打完了、还没分出胜负，最后一局可以没打完。合规返回 undefined */
+export function retireProblem(scores: number[], rules: { points: number; best_of: number; win_by_two: boolean }) {
+  const need = Math.floor(rules.best_of / 2) + 1;
+  const wins = [0, 0];
+  const games = scores.length / 2;
+  for (let i = 0; i < games; i++) {
+    const [a, b] = [scores[2 * i], scores[2 * i + 1]];
+    const [hi, lo] = [Math.max(a, b), Math.min(a, b)];
+    if (gameDone(hi, lo, rules.points, rules.win_by_two)) wins[a > b ? 0 : 1] += 1;
+    else if (i < games - 1 || !unfinished(hi, lo, rules.points, rules.win_by_two)) return gameProblem(a, b, i + 1, rules);
+  }
+  if (wins[0] >= need || wins[1] >= need) return t('That match is already decided. Save it as a normal score.');
+  return undefined;
+}
 
 /** 当晚页、比赛页的错误：not_allowed 在这里是没权限，不是约球里的意思 */
 export const clubProblem = (error: { message: string }) =>

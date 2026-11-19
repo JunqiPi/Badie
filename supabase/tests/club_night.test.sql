@@ -234,7 +234,7 @@ select ok((select e ->> 'status' from jsonb_array_elements(public.my_tonight()) 
 
 -- 用今晚的名单开一场比赛：排场先停，场上的打完以后场地给比赛
 select pg_temp.login(1);
-insert into ids select 'match', public.create_match('Tonight', null, 2, 'singles', 21, 1, true,
+insert into ids select 'match', public.create_match('Tonight', null, 2, 'round_robin', 'singles', 21, 1, true,
   (select jsonb_agg(jsonb_build_object('signup_id', pg_temp.signup(n))) from generate_series(5, 8) n), null, null, null, false, pg_temp.id('night'));
 select is((select count(*)::int from public.match_games where match_id = pg_temp.id('match') and status = 'playing'), 0, '排场的场地还在打，比赛先等');
 select public.night_finish(pg_temp.game_on(1));
