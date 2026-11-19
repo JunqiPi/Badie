@@ -1,6 +1,11 @@
 {
-  "1.0.7": [
-    "Court fees (new in 1.0.7): organizers can add their Venmo, Cash App, PayPal or Zelle username under Me → Payment methods. Players who haven't paid see a button that opens that payment app or website. The money never goes through Badie, Badie takes no cut, and it is for court fees at a physical venue, so it doesn't use in-app purchase (guideline 3.1.3(e)).",
-    "To try a match: tap + → Match, add players with Type a name, pick a format (round robin, groups + knockout, Swiss or knockout), then Start. Only valid badminton scores can be saved; a mid-game retirement is recorded separately. Guest sign-up and Run courts are on groups you organize (Edit group → Guest sign-up; Run courts shows on a session from 1 hour before it starts)."
-  ]
+  "1.0.7": {
+    "add": [
+      "Court fees (new in 1.0.7): organizers can add their Venmo, Cash App, PayPal or Zelle username under Me → Payment methods. Players who haven't paid see a button that opens that payment app or website. The money never goes through Badie, Badie takes no cut, and it is for court fees at a physical venue, so it doesn't use in-app purchase (guideline 3.1.3(e)).",
+      "To try a match: tap + → Match, add players with Type a name, pick a format (round robin, groups + knockout, Swiss or knockout), then Start. Only valid badminton scores can be saved; a mid-game retirement is recorded separately. Guest sign-up and Run courts are on groups you organize (Edit group → Guest sign-up; Run courts shows on a session from 1 hour before it starts)."
+    ],
+    "drop": [
+      "To try a match: tap + → Match · round robin, add players with Type a name, then Start. Guest sign-up and Run courts are on groups you organize (Edit group → Guest sign-up; Run courts shows on a session from 1 hour before it starts)."
+    ]
+  }
 }
