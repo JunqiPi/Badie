@@ -174,31 +174,149 @@ struct TonightItem: Decodable, Equatable, Identifiable {
 
 // MARK: - 比赛
 
+/// 赛制：循环 / 小组赛 + 淘汰赛 / 瑞士轮 / 单淘汰
 enum MatchFormat: String, CaseIterable, Identifiable {
-    case singles, fixed, rotating, groups
+    case roundRobin = "round_robin", groups, swiss, knockout
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .singles: return String(localized: "单打循环")
+        case .roundRobin: return String(localized: "循环赛")
+        case .groups: return String(localized: "小组赛 + 淘汰赛")
+        case .swiss: return String(localized: "瑞士轮")
+        case .knockout: return String(localized: "单淘汰")
+        }
+    }
+
+    /// 自己定打几轮的：循环、瑞士轮
+    var byRounds: Bool { self == .roundRobin || self == .swiss }
+    /// 有淘汰赛的：可以打三四名
+    var hasKnockout: Bool { self == .groups || self == .knockout }
+
+    /// “循环赛 · 单打”；轮换搭档只有循环，就写“双打轮换搭档”
+    static func title(_ format: String, play: String?) -> String {
+        if play == MatchPlay.rotating.rawValue { return MatchPlay.rotating.title }
+        let name = MatchFormat(rawValue: format)?.title ?? format
+        guard let play = play.flatMap(MatchPlay.init(rawValue:)) else { return name }
+        return "\(name) · \(play.title)"
+    }
+}
+
+/// 参赛方式：单打 / 双打固定搭档 / 双打轮换搭档（只配循环）
+enum MatchPlay: String, CaseIterable, Identifiable {
+    case singles, fixed, rotating
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .singles: return String(localized: "单打")
         case .fixed: return String(localized: "双打固定搭档")
         case .rotating: return String(localized: "双打轮换搭档")
-        case .groups: return String(localized: "分组循环 + 决赛")
         }
     }
+}
 
-    /// 人数不对时（invalid_player_count）
-    var playerCountRule: String {
-        switch self {
-        case .singles: return String(localized: "单打循环要 2–64 人。")
-        case .fixed: return String(localized: "双打固定搭档要 4–64 人，而且是双数。")
-        case .rotating: return String(localized: "双打轮换搭档要 4–64 人。")
-        case .groups: return String(localized: "分组循环每组至少要 2 人。")
+enum MatchSetup {
+    /// 人数够不够这个赛制：不够时返回给人看的话（服务器还会再查一次）
+    static func countProblem(format: MatchFormat, play: MatchPlay, players: Int, pools: Int, advance: Int) -> String? {
+        let per = play == .fixed ? 2 : 1
+        let entries = players / per
+        if players > 64 || players < 2 { return String(localized: "要 2–64 人。") }
+        if play == .rotating && players < 4 { return String(localized: "双打轮换搭档要 4–64 人。") }
+        if play == .fixed && (players < 4 || players % 2 == 1) { return String(localized: "双打固定搭档要 4–64 人，而且是双数。") }
+        if format == .swiss && entries < 3 { return String(localized: "瑞士轮至少要 \(3 * per) 人。") }
+        if format == .groups && entries < pools * (advance + 1) {
+            return String(localized: "\(pools) 组至少要 \(pools * (advance + 1) * per) 人。")
         }
+        return nil
+    }
+}
+
+/// 比分规则（和服务器的 score_winner、retire_scores_ok 一样）
+enum MatchScoring {
+    enum Check: Equatable {
+        /// 还没填
+        case empty
+        case winner(Int)
+        case problem(String)
     }
 
-    static func title(_ raw: String) -> String { MatchFormat(rawValue: raw)?.title ?? raw }
+    struct Rules {
+        let points: Int
+        let bestOf: Int
+        let winByTwo: Bool
+    }
+
+    /// 加分时打到几封顶：21 → 30、15 → 21、11 → 15
+    static func cap(_ points: Int) -> Int { [21: 30, 15: 21, 11: 15][points] ?? points }
+
+    static func gameDone(_ hi: Int, _ lo: Int, _ rules: Rules) -> Bool {
+        guard lo >= 0, hi > lo else { return false }
+        if !rules.winByTwo { return hi == rules.points }
+        let top = cap(rules.points)
+        return (hi == rules.points && lo <= rules.points - 2) || (hi > rules.points && hi <= top && (hi - lo == 2 || (hi == top && lo == hi - 1)))
+    }
+
+    /// 打得出来、但还没打完的一局
+    static func unfinished(_ hi: Int, _ lo: Int, _ rules: Rules) -> Bool {
+        hi < rules.points || (rules.winByTwo && lo >= rules.points - 1 && hi - lo <= 1 && hi < cap(rules.points))
+    }
+
+    /// 去掉后面没填的局（0–0）
+    static func played(_ scores: [Int]) -> [Int] {
+        var end = scores.count
+        while end >= 2 && scores[end - 1] == 0 && scores[end - 2] == 0 { end -= 2 }
+        return Array(scores.prefix(end))
+    }
+
+    /// 一局不合规时说哪里不对
+    static func gameProblem(_ a: Int, _ b: Int, game: Int, _ rules: Rules) -> String {
+        let hi = max(a, b), lo = min(a, b)
+        let score = "\(a)–\(b)"
+        let text: String
+        if unfinished(hi, lo, rules) {
+            text = String(localized: "\(score) 还没打完。")
+        } else if rules.winByTwo {
+            text = String(localized: "\(score) 打不出来：\(rules.points) 分一局，要领先 2 分，最多到 \(cap(rules.points))。")
+        } else {
+            text = String(localized: "\(score) 打不出来：一局打到 \(rules.points) 分就结束。")
+        }
+        return rules.bestOf == 1 ? text : String(localized: "第 \(game) 局：\(text)")
+    }
+
+    /// 输的比分（已经去掉了后面没填的局）：合规就是赢的一边
+    static func check(_ scores: [Int], _ rules: Rules) -> Check {
+        if scores.isEmpty { return .empty }
+        let need = rules.bestOf / 2 + 1
+        var wins = [0, 0]
+        for game in 0..<(scores.count / 2) {
+            if wins[0] == need || wins[1] == need { return .problem(String(localized: "前两局已经分出胜负，第 3 局不用填。")) }
+            let a = scores[game * 2], b = scores[game * 2 + 1]
+            guard gameDone(max(a, b), min(a, b), rules) else { return .problem(gameProblem(a, b, game: game + 1, rules)) }
+            wins[a > b ? 0 : 1] += 1
+        }
+        if wins[0] < need && wins[1] < need { return .problem(String(localized: "三局两胜，要有一边赢满两局。")) }
+        return .winner(wins[0] == need ? 1 : 2)
+    }
+
+    /// 中途退赛的比分：前面的局打完了、还没分出胜负，最后一局可以没打完。合规是 nil
+    static func retireProblem(_ scores: [Int], _ rules: Rules) -> String? {
+        let need = rules.bestOf / 2 + 1
+        var wins = [0, 0]
+        let games = scores.count / 2
+        for game in 0..<games {
+            let a = scores[game * 2], b = scores[game * 2 + 1]
+            if gameDone(max(a, b), min(a, b), rules) {
+                wins[a > b ? 0 : 1] += 1
+            } else if game < games - 1 || !unfinished(max(a, b), min(a, b), rules) {
+                return gameProblem(a, b, game: game + 1, rules)
+            }
+        }
+        if wins[0] >= need || wins[1] >= need { return String(localized: "已经分出胜负了，直接保存比分就行。") }
+        return nil
+    }
 }
 
 /// 比赛页（match_state）
@@ -216,9 +334,15 @@ struct MatchState: Decodable, Equatable {
     struct Game: Decodable, Equatable, Identifiable {
         let id: Int
         let round: Int
-        /// pool | semi | final
+        /// pool | ko（淘汰赛，koSize 是这一轮的签位数：2 = 决赛）| third（三四名）
         let stage: String
         let pool: Int?
+        let koSize: Int?
+        let slot: Int?
+        /// 轮空：不是一场球，不显示
+        let bye: Bool?
+        /// 中途退赛的一边（1 / 2）
+        let retired: Int?
         let a: [String]
         let b: [String]
         let court: Int?
@@ -256,6 +380,8 @@ struct MatchState: Decodable, Equatable {
     let id: String
     let name: String
     let format: String
+    let play: String?
+    let thirdPlace: Bool?
     let doubles: Bool
     let points: Int
     let bestOf: Int
@@ -285,6 +411,10 @@ struct MatchState: Decodable, Equatable {
     let undoUntil: Date?
 
     var isLive: Bool { status == "live" }
+    /// 轮空不是一场球
+    var realGames: [Game] { games.filter { $0.bye != true } }
+    var matchFormat: MatchFormat { MatchFormat(rawValue: format) ?? .roundRobin }
+    var scoring: MatchScoring.Rules { MatchScoring.Rules(points: points, bestOf: bestOf, winByTwo: winByTwo) }
     var canManage: Bool { role == "organizer" || role == "helper" }
     var isOrganizer: Bool { role == "organizer" }
 
@@ -294,7 +424,7 @@ struct MatchState: Decodable, Equatable {
 
     /// 能不能输这一场的比分：组织者、帮手随时能改；球员只能在打的时候输自己那场
     func canScore(_ game: Game) -> Bool {
-        if game.status == "cancelled" { return false }
+        if game.status == "cancelled" || game.bye == true { return false }
         if canManage { return isLive || game.status == "done" }
         guard let me else { return false }
         return game.status == "playing" && (game.a.contains(me) || game.b.contains(me))
@@ -311,6 +441,7 @@ struct MyMatch: Decodable, Equatable, Identifiable {
     let id: String
     let name: String
     let format: String
+    let play: String?
     let status: String
     let createdAt: Date
     let endedAt: Date?
@@ -320,7 +451,11 @@ struct MyMatch: Decodable, Equatable, Identifiable {
 
 /// 新建比赛前的预计（match_preview）
 struct MatchPreview: Decodable, Equatable {
+    /// 循环打满一遍的轮数
     let fullRounds: Int
+    /// 能选几轮：默认、最多
+    let defaultRounds: Int
+    let maxRounds: Int
     let rounds: Int
     let minutes: Double
 }

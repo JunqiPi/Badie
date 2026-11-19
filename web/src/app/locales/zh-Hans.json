@@ -798,7 +798,7 @@
  "Match not found": "找不到这场比赛",
  "Match offers, confirmations and cancellations also go to {email}.": "匹配、确认和取消的消息也会发到 {email}。",
  "Match options": "比赛设置",
- "Match · round robin": "比赛 · 循环赛",
+ "Match · round robin, knockout": "比赛 · 循环赛、淘汰赛",
  "Matches": "比赛",
  "Matches, confirmations and friend requests show up here.": "匹配、确认和好友申请都会显示在这里。",
  "Matching in the background": "后台匹配中",

@@ -783,7 +783,7 @@
  "Match not found": "試合が見つかりません",
  "Match offers, confirmations and cancellations also go to {email}.": "マッチ、確定、キャンセルのお知らせを {email} にも送ります。",
  "Match options": "試合の設定",
- "Match · round robin": "試合 · 総当たり",
+ "Match · round robin, knockout": "試合 · 総当たり、トーナメント",
  "Matches": "試合",
  "Matches, confirmations and friend requests show up here.": "マッチ、確定のお知らせ、友達リクエストがここに表示されます。",
  "Matching in the background": "バックグラウンドでマッチング中",

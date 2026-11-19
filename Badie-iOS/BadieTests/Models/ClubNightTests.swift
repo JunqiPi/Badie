@@ -40,7 +40,7 @@ final class ClubNightTests: XCTestCase {
 
     func testDecodesMatchState() throws {
         let json = """
-        {"kind":"match","id":"m-1","name":"11月18日 比赛","format":"rotating","doubles":false,"points":21,"best_of":1,
+        {"kind":"match","id":"m-1","name":"11月18日 比赛","format":"round_robin","play":"rotating","third_place":false,"doubles":false,"points":21,"best_of":1,
          "win_by_two":true,"courts":2,"rounds":7,"pools":null,"advance":null,"status":"live",
          "created_at":"2026-11-18T19:00:00+00:00","ended_at":null,"board_code":"ZX98YW76","session_id":null,
          "venue":null,"tie_at_cut":false,"round":3,
@@ -50,7 +50,10 @@ final class ClubNightTests: XCTestCase {
                     {"id":"p4","name":"Raj","team":null,"pool":null,"withdrawn":true}],
          "games":[{"id":7,"round":1,"stage":"pool","a":["p1","p3"],"b":["p2","p4"],"status":"done","scores":[21,18],
                    "winner":1,"version":2,"scored_by":"Amy","flagged":true},
-                  {"id":8,"round":3,"stage":"pool","a":["p1","p2"],"b":["p3","p4"],"court":1,"status":"playing","version":0}],
+                  {"id":8,"round":3,"stage":"pool","a":["p1","p2"],"b":["p3","p4"],"court":1,"status":"playing","version":0},
+                  {"id":9,"round":4,"stage":"ko","ko_size":8,"slot":1,"bye":true,"a":["p1"],"b":[],"status":"skipped","winner":1},
+                  {"id":10,"round":4,"stage":"ko","ko_size":8,"slot":2,"a":["p2"],"b":["p3"],"status":"done","scores":[21,10,5,3],
+                   "winner":1,"retired":2,"version":1}],
          "standings":[{"key":"p1","name":"Kevin","members":["p1"],"pool":null,"seed":1,"withdrawn":false,"played":1,"wins":1,
                        "losses":0,"pf":21,"pa":18,"diff":3,"rate":1.0,"rank":1,"tied":false}],
          "ranking":null,"role":"player","me":"p1","helpers":[],"undo_until":null}
@@ -67,6 +70,47 @@ final class ClubNightTests: XCTestCase {
         XCTAssertTrue(match.canScore(match.games[1]))
         XCTAssertEqual(match.standings.first?.diff, 3)
         XCTAssertEqual(MatchRules.scoreText([21, 18, 19, 21]), "21–18 19–21")
+        // 轮空不是一场球
+        XCTAssertEqual(match.realGames.count, 3)
+        XCTAssertFalse(match.canScore(match.games[2]))
+        XCTAssertEqual(match.games[3].retired, 2)
+        XCTAssertEqual(MatchFormat.title(match.format, play: match.play), MatchPlay.rotating.title)
+    }
+
+    func testScoreRulesOnlyAcceptRealScores() {
+        let fifteen = MatchScoring.Rules(points: 15, bestOf: 1, winByTwo: false)
+        XCTAssertEqual(MatchScoring.check([15, 9], fifteen), .winner(1))
+        // 15 分封顶：16:1 存不了
+        if case .winner = MatchScoring.check([16, 1], fifteen) { XCTFail("16:1 不该收") }
+        let deuce = MatchScoring.Rules(points: 21, bestOf: 1, winByTwo: true)
+        XCTAssertEqual(MatchScoring.check([22, 24], deuce), .winner(2))
+        XCTAssertEqual(MatchScoring.check([30, 29], deuce), .winner(1))
+        if case .winner = MatchScoring.check([21, 20], deuce) { XCTFail("21:20 没拉开 2 分") }
+        if case .winner = MatchScoring.check([25, 3], deuce) { XCTFail("25:3 打不出来") }
+        XCTAssertEqual(MatchScoring.check([], deuce), .empty)
+        // 三局两胜：只填一局不收，赢满两局才行，第三局多余也不收
+        let bo3 = MatchScoring.Rules(points: 21, bestOf: 3, winByTwo: true)
+        if case .winner = MatchScoring.check([21, 10], bo3) { XCTFail("三局两胜只填一局") }
+        XCTAssertEqual(MatchScoring.check([21, 10, 15, 21, 21, 19], bo3), .winner(1))
+        if case .winner = MatchScoring.check([21, 10, 21, 15, 21, 3], bo3) { XCTFail("前两局已经分出胜负") }
+        XCTAssertEqual(MatchScoring.played([21, 10, 21, 15, 0, 0]), [21, 10, 21, 15])
+        // 中途退赛：前面的局打完、最后一局可以没打完
+        XCTAssertNil(MatchScoring.retireProblem([21, 10, 5, 3], bo3))
+        XCTAssertNil(MatchScoring.retireProblem([], bo3))
+        XCTAssertNotNil(MatchScoring.retireProblem([21, 10, 21, 5], bo3))
+        XCTAssertNotNil(MatchScoring.retireProblem([5, 3, 21, 10], bo3))
+        XCTAssertNotNil(MatchScoring.retireProblem([25, 3], deuce))
+    }
+
+    func testCountRulesPerFormat() {
+        XCTAssertNil(MatchSetup.countProblem(format: .roundRobin, play: .singles, players: 2, pools: 2, advance: 1))
+        XCTAssertNotNil(MatchSetup.countProblem(format: .roundRobin, play: .rotating, players: 3, pools: 2, advance: 1))
+        XCTAssertNotNil(MatchSetup.countProblem(format: .roundRobin, play: .fixed, players: 5, pools: 2, advance: 1))
+        XCTAssertNotNil(MatchSetup.countProblem(format: .swiss, play: .singles, players: 2, pools: 2, advance: 1))
+        XCTAssertNil(MatchSetup.countProblem(format: .knockout, play: .singles, players: 6, pools: 2, advance: 1))
+        // 2 组各出 2 人：每组至少 3 人
+        XCTAssertNotNil(MatchSetup.countProblem(format: .groups, play: .singles, players: 5, pools: 2, advance: 2))
+        XCTAssertNil(MatchSetup.countProblem(format: .groups, play: .singles, players: 6, pools: 2, advance: 2))
     }
 
     func testPayLinksCarryTheAmount() {

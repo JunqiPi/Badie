@@ -783,7 +783,7 @@
  "Match not found": "ไม่พบการแข่งนี้",
  "Match offers, confirmations and cancellations also go to {email}.": "ข่าวการจับคู่ การยืนยัน และการยกเลิกจะส่งไปที่ {email} ด้วย",
  "Match options": "ตัวเลือกการแข่ง",
- "Match · round robin": "การแข่ง · พบกันหมด",
+ "Match · round robin, knockout": "การแข่ง · พบกันหมด, น็อกเอาต์",
  "Matches": "การแข่ง",
  "Matches, confirmations and friend requests show up here.": "การจับคู่ การยืนยัน และคำขอเป็นเพื่อนจะแสดงที่นี่",
  "Matching in the background": "กำลังจับคู่ในเบื้องหลัง",

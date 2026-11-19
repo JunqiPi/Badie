@@ -783,7 +783,7 @@
  "Match not found": "Không tìm thấy giải",
  "Match offers, confirmations and cancellations also go to {email}.": "Thông báo ghép trận, xác nhận và hủy cũng được gửi tới {email}.",
  "Match options": "Tùy chọn giải",
- "Match · round robin": "Giải · vòng tròn",
+ "Match · round robin, knockout": "Giải · vòng tròn, loại trực tiếp",
  "Matches": "Giải đấu",
  "Matches, confirmations and friend requests show up here.": "Các lượt ghép trận, xác nhận và lời mời kết bạn sẽ hiện ở đây.",
  "Matching in the background": "Đang ghép ở chế độ nền",
