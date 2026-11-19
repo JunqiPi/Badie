@@ -1,37 +1,58 @@
-// 不登录也能用的排表（/badminton-tournament-maker/）：和服务器排对阵的规则一样（supabase/migrations/20261228000000_club_night.sql 的
-// round_robin_pairs、match_schedule_rr、match_schedule_rotating、create_match 的分组、match_preview 的时间），只是不记比分。
-// 没有等级可参考：固定搭档按名单两两一队，分组按名单顺序蛇形分
+// 不登录也能用的排表（/badminton-tournament-maker/）：和服务器排对阵的规则一样（supabase/migrations/ 里 20261228000000_club_night.sql 的
+// round_robin_pairs、match_schedule_rotating，20261229000000_match_formats.sql 的 match_plan、match_preview、match_schedule_rr、
+// match_swiss_round 第 1 轮、bracket_order、match_bracket），只是不记比分，所以瑞士轮第 2 轮起和淘汰赛后面的轮次排不出来。
+// 没有等级可参考：名单顺序就是种子顺序，固定搭档按名单两两一队
 /** 排表页点“在 Badie 里开始”时存到 sessionStorage，新建比赛页（Match.tsx 的 NewMatch）读一次，一小时内有效 */
 export const makerKey = 'badie.maker';
 
-export type Format = 'singles' | 'fixed' | 'rotating' | 'groups';
+export type Play = 'singles' | 'fixed' | 'rotating';
+export type Structure = 'round_robin' | 'groups' | 'swiss' | 'knockout';
 
 export interface Plan {
-  format: Format;
+  play: Play;
+  /** 轮换搭档只有循环 */
+  format: Structure;
   players: string[];
   courts: number;
   points: 21 | 15 | 11;
   bestOf: 1 | 3;
-  /** 不填就打满 */
+  /** 循环、瑞士轮、轮换搭档打几轮；不填用默认 */
   rounds?: number;
   pools: number;
   advance: number;
+  thirdPlace: boolean;
 }
 
 export interface Game {
-  round: number;
   pool?: number;
   a: string[];
   b: string[];
 }
 
+export interface Block {
+  /** 第几轮，或者淘汰赛这一轮的签位数（2 = 决赛） */
+  round?: number;
+  ko?: number;
+  games: Game[];
+  resting: string[];
+  /** 淘汰赛第一轮直接晋级的、瑞士轮轮空的（算赢一场） */
+  byes: string[];
+}
+
 export interface Schedule {
-  rounds: { round: number; games: Game[]; resting: string[] }[];
-  /** 分组循环：每组的人 */
+  blocks: Block[];
+  /** 小组赛：每组的人（队） */
   pools: string[][];
-  /** 分组循环之后的淘汰赛：1 场决赛，或 2 场半决赛加决赛 */
-  knockout: ('semi' | 'final')[];
+  /** 瑞士轮第 2 轮起按积分榜配，排不出来：[从第几轮, 到第几轮] */
+  swissLater?: [number, number];
+  /** 还排不出来的淘汰赛轮次（签位数，2 = 决赛）和要不要打三四名 */
+  koLater: number[];
+  third: boolean;
   fullRounds: number;
+  defaultRounds: number;
+  maxRounds: number;
+  /** 一共几轮（含淘汰赛） */
+  rounds: number;
   minutes: number;
 }
 
@@ -47,14 +68,19 @@ export function cleanNames(text: string): string[] {
   return names;
 }
 
+export const effectiveFormat = (play: Play, format: Structure): Structure => (play === 'rotating' ? 'round_robin' : format);
+
 /** 人数不对时的问题（和 Match.tsx 的 countProblem 一样） */
-export function countProblem(format: Format, n: number, pools: number): 'max' | 'min2' | 'rotating4' | 'fixed4' | 'fixedEven' | 'groups' | undefined {
-  if (n > 64) return 'max';
-  if (format === 'singles' && n < 2) return 'min2';
-  if (format === 'rotating' && n < 4) return 'rotating4';
-  if (format === 'fixed' && n < 4) return 'fixed4';
-  if (format === 'fixed' && n % 2) return 'fixedEven';
-  if (format === 'groups' && n < pools * 2) return 'groups';
+export function countProblem(format: Structure, play: Play, n: number, pools: number, advance: number) {
+  const per = play === 'fixed' ? 2 : 1;
+  const entries = Math.floor(n / per);
+  if (n > 64) return { code: 'max' } as const;
+  if (n < 2) return { code: 'min2' } as const;
+  if (play === 'rotating' && n < 4) return { code: 'rotating4' } as const;
+  if (play === 'fixed' && n < 4) return { code: 'fixed4' } as const;
+  if (play === 'fixed' && n % 2) return { code: 'fixedEven' } as const;
+  if (format === 'swiss' && entries < 3) return { code: 'swiss', n: 3 * per } as const;
+  if (format === 'groups' && entries < pools * (advance + 1)) return { code: 'groups', n: pools * (advance + 1) * per } as const;
   return undefined;
 }
 
@@ -65,47 +91,56 @@ export function roundRobinPairs(m: number, round: number): [number, number][] {
   return pairs;
 }
 
-/** 打满是几轮、每轮几场（match_plan） */
-function plan(format: Format, players: number, pools: number) {
-  const entries = format === 'fixed' ? Math.floor(players / 2) : players;
-  const size = Math.floor((entries + pools - 1) / pools);
-  if (format === 'rotating') return { fullRounds: players + (players % 2) - 1, perRound: Math.floor(players / 4) };
-  if (format === 'groups') return { fullRounds: size + (size % 2) - 1, perRound: Math.floor(entries / 2) };
-  return { fullRounds: entries + (entries % 2) - 1, perRound: Math.floor(entries / 2) };
+/** 签位顺序：第 i 个签位放几号种子。4 → 1,4,2,3；8 → 1,8,4,5,2,7,3,6 */
+export function bracketOrder(size: number): number[] {
+  let order = [1];
+  for (let n = 2; n <= size; n *= 2) order = order.flatMap((x) => [x, n + 1 - x]);
+  return order;
 }
 
-/** 预计多少分钟（match_preview）：每轮按场地数分几批，每批 21 分 15 分钟、15 分 10 分钟、11 分 7 分钟，三局两胜乘 2.5 */
-function minutes(p: Plan, rounds: number, perRound: number) {
-  const knockout = p.format !== 'groups' ? 0 : p.pools * p.advance === 2 ? 1 : Math.ceil(2 / Math.max(p.courts, 1)) + 1;
-  const batch = { 21: 15, 15: 10, 11: 7 }[p.points] * (p.bestOf === 3 ? 2.5 : 1);
-  return Math.ceil((rounds * Math.ceil(perRound / Math.max(p.courts, 1)) + knockout) * batch);
+/** match_plan */
+export function matchPlan(format: Structure, play: Play, players: number, pools = 2, advance = 1) {
+  const entries = play === 'fixed' ? Math.floor(players / 2) : players;
+  const perRound = play === 'rotating' ? Math.floor(players / 4) : Math.floor(entries / 2);
+  let fullRounds = 0;
+  let defaultRounds = 0;
+  let maxRounds = 0;
+  let qualifiers = 0;
+  if (play === 'rotating') {
+    fullRounds = players + (players % 2) - 1;
+    defaultRounds = Math.min(fullRounds, 30);
+    maxRounds = 30;
+  } else if (format === 'round_robin') {
+    fullRounds = entries + (entries % 2) - 1;
+    defaultRounds = fullRounds;
+    maxRounds = Math.min(2 * fullRounds, 60);
+  } else if (format === 'swiss') {
+    fullRounds = entries + (entries % 2) - 1;
+    defaultRounds = 1;
+    while (2 ** defaultRounds < entries) defaultRounds++;
+    defaultRounds = Math.min(defaultRounds, fullRounds);
+    maxRounds = fullRounds;
+  } else if (format === 'groups') {
+    const size = Math.floor((entries + pools - 1) / pools);
+    fullRounds = size + (size % 2) - 1;
+    defaultRounds = fullRounds;
+    maxRounds = fullRounds;
+    qualifiers = Math.min(pools * advance, entries);
+  } else {
+    qualifiers = entries;
+  }
+  let bracket = 0;
+  if (qualifiers >= 2) for (bracket = 2; bracket < qualifiers; bracket *= 2);
+  return { entries, fullRounds, defaultRounds, maxRounds, perRound, qualifiers, bracket };
 }
 
-/** 循环赛（单打、固定搭档、小组赛）：每组圆桌法排，单数时每轮一人（一队）轮空 */
-function roundRobin(entries: string[][][], rounds: number) {
-  const out = new Map<number, Game[]>();
-  entries.forEach((pool, p) => {
-    const m = pool.length + (pool.length % 2);
-    for (let r = 0; r <= Math.min(m - 2, rounds - 1); r++) {
-      for (const [a, b] of roundRobinPairs(m, r).sort((x, y) => x[0] - y[0])) {
-        if (a >= pool.length || b >= pool.length) continue;
-        out.set(r + 1, [...(out.get(r + 1) ?? []), { round: r + 1, pool: entries.length > 1 ? p + 1 : undefined, a: pool[a], b: pool[b] }]);
-      }
-    }
-  });
-  return out;
-}
-
-/**
- * 双打轮换搭档（match_schedule_rotating）：人数不是 4 的倍数时，轮空最少的人轮空；
- * 先给“还没搭过的人”最少的人配，挑搭过最少的；两队配成一场时挑交手最少的
- */
-function rotating(names: string[], rounds: number) {
+/** 双打轮换搭档（match_schedule_rotating）：轮空最少的人轮空；先给“还没搭过的人”最少的人配，挑搭过最少的；两队配成一场时挑交手最少的 */
+function rotating(names: string[], rounds: number): Game[][] {
   const n = names.length;
   const partners = Array.from({ length: n }, () => new Array<number>(n).fill(0));
   const rivals = Array.from({ length: n }, () => new Array<number>(n).fill(0));
   const played = new Array<number>(n).fill(0);
-  const out = new Map<number, Game[]>();
+  const out: Game[][] = [];
   for (let r0 = 0; r0 < rounds; r0++) {
     const order = [...names.keys()].sort((x, y) => r0 - played[x] - (r0 - played[y]) || mod(x - r0 * (n % 4), n) - mod(y - r0 * (n % 4), n));
     let left = order.slice(n % 4).sort((x, y) => x - y);
@@ -127,19 +162,33 @@ function rotating(names: string[], rounds: number) {
     }
     const games: Game[] = [];
     while (pairs.length) {
-      const [first] = pairs;
-      const rest = pairs.slice(1);
-      const other = minBy(rest, ([x, y]) => rivals[first[0]][x] + rivals[first[0]][y] + rivals[first[1]][x] + rivals[first[1]][y]);
-      games.push({ round: r0 + 1, a: first.map((i) => names[i]), b: other.map((i) => names[i]) });
+      const first = pairs.shift()!;
+      const other = minBy(pairs, ([x, y]) => rivals[first[0]][x] + rivals[first[0]][y] + rivals[first[1]][x] + rivals[first[1]][y]);
+      games.push({ a: first.map((i) => names[i]), b: other.map((i) => names[i]) });
       for (const i of first) for (const j of other) {
         rivals[i][j]++;
         rivals[j][i]++;
       }
       pairs.splice(pairs.indexOf(other), 1);
-      pairs.shift();
     }
-    out.set(r0 + 1, games);
+    out.push(games);
   }
+  return out;
+}
+
+/** 循环和小组赛（match_schedule_rr）：圆桌法；循环超过一遍时第二遍换边；单数时每轮一个人（一队）轮空 */
+function roundRobin(pools: string[][][], rounds: (m: number) => number): Game[][] {
+  const out: Game[][] = [];
+  pools.forEach((pool, p) => {
+    const m = pool.length + (pool.length % 2);
+    for (let r = 0; r < rounds(m); r++) {
+      const flip = Math.floor(r / (m - 1)) % 2 === 1;
+      for (const [a, b] of roundRobinPairs(m, r % (m - 1)).sort((x, y) => x[0] - y[0])) {
+        if (a >= pool.length || b >= pool.length) continue;
+        (out[r] ??= []).push({ pool: pools.length > 1 ? p + 1 : undefined, a: flip ? pool[b] : pool[a], b: flip ? pool[a] : pool[b] });
+      }
+    }
+  });
   return out;
 }
 
@@ -155,32 +204,81 @@ function minBy<T>(list: T[], key: (item: T) => number): T {
 }
 
 export function schedule(p: Plan): Schedule {
-  const { fullRounds, perRound } = plan(p.format, p.players.length, p.pools);
-  const rounds = Math.max(p.format === 'groups' ? fullRounds : Math.min(fullRounds, p.rounds ?? fullRounds), 1);
-  let pools: string[][] = [];
-  let games: Map<number, Game[]>;
-  if (p.format === 'rotating') {
-    games = rotating(p.players, rounds);
-  } else if (p.format === 'groups') {
+  const format = effectiveFormat(p.play, p.format);
+  const plan = matchPlan(format, p.play, p.players.length, p.pools, p.advance);
+  const byRounds = format === 'round_robin' || format === 'swiss';
+  const rounds = byRounds ? Math.min(Math.max(p.rounds ?? plan.defaultRounds, 1), plan.maxRounds) : plan.fullRounds;
+  const entries = p.play === 'fixed'
+    ? Array.from({ length: plan.entries }, (_, i) => p.players.slice(i * 2, i * 2 + 2))
+    : p.players.map((name) => [name]);
+
+  const blocks: Block[] = [];
+  const everyone = new Set(p.players);
+  const block = (round: number | undefined, ko: number | undefined, games: Game[], byes: string[] = []): Block => {
+    const busy = new Set([...games.flatMap((g) => [...g.a, ...g.b]), ...byes]);
+    return { round, ko, games, byes, resting: ko ? [] : [...everyone].filter((name) => !busy.has(name)) };
+  };
+
+  let pools: string[][][] = [];
+  let swissLater: [number, number] | undefined;
+  let koLater: number[] = [];
+  if (p.play === 'rotating') {
+    rotating(p.players, rounds).forEach((games, i) => blocks.push(block(i + 1, undefined, games)));
+  } else if (format === 'round_robin') {
+    roundRobin([entries], () => rounds).forEach((games, i) => blocks.push(block(i + 1, undefined, games)));
+  } else if (format === 'groups') {
     // 蛇形分组：第 1、4、5、8… 个进第 1 组
     pools = Array.from({ length: p.pools }, () => []);
-    p.players.forEach((name, i) => pools[Math.floor(i / p.pools) % 2 === 0 ? i % p.pools : p.pools - 1 - (i % p.pools)].push(name));
-    games = roundRobin(pools.map((pool) => pool.map((name) => [name])), rounds);
+    entries.forEach((entry, i) => pools[Math.floor(i / p.pools) % 2 === 0 ? i % p.pools : p.pools - 1 - (i % p.pools)].push(entry));
+    roundRobin(pools, (m) => m - 1).forEach((games, i) => blocks.push(block(i + 1, undefined, games)));
+    for (let s = plan.bracket; s >= 2; s /= 2) koLater.push(s);
+  } else if (format === 'swiss') {
+    // 第 1 轮：上半区打下半区；单数时最后一个轮空
+    const order = [...entries];
+    const bye = order.length % 2 ? order.pop()! : undefined;
+    const half = order.length / 2;
+    blocks.push(block(1, undefined, order.slice(0, half).map((a, i) => ({ a, b: order[i + half] })), bye ?? []));
+    if (rounds > 1) swissLater = [2, rounds];
   } else {
-    const entries = p.format === 'fixed'
-      ? Array.from({ length: Math.floor(p.players.length / 2) }, (_, i) => p.players.slice(i * 2, i * 2 + 2))
-      : p.players.map((name) => [name]);
-    games = roundRobin([entries], rounds);
+    // 单淘汰：签位不够的给前几号种子轮空
+    const size = plan.bracket;
+    const slots = bracketOrder(size).map((seed) => entries[seed - 1]);
+    const games: Game[] = [];
+    const byes: string[] = [];
+    for (let k = 0; k < size / 2; k++) {
+      const [x, y] = [slots[2 * k], slots[2 * k + 1]];
+      if (x && y) games.push({ a: x, b: y });
+      else byes.push(...(x ?? y));
+    }
+    blocks.push(block(undefined, size, games, byes));
+    for (let s = size / 2; s >= 2; s /= 2) koLater.push(s);
   }
-  const everyone = new Set(p.players);
+
+  const third = format !== 'round_robin' && format !== 'swiss' && p.thirdPlace && plan.qualifiers >= 4;
   return {
-    rounds: [...games.entries()].map(([round, list]) => {
-      const busy = new Set(list.flatMap((g) => [...g.a, ...g.b]));
-      return { round, games: list, resting: [...everyone].filter((name) => !busy.has(name)) };
-    }),
-    pools,
-    knockout: p.format !== 'groups' ? [] : p.pools * p.advance === 2 ? ['final'] : ['semi', 'semi', 'final'],
-    fullRounds,
-    minutes: minutes(p, rounds, perRound),
+    blocks,
+    pools: pools.map((pool) => pool.map((entry) => entry.join(' · '))),
+    swissLater,
+    koLater,
+    third,
+    fullRounds: plan.fullRounds,
+    defaultRounds: plan.defaultRounds,
+    maxRounds: plan.maxRounds,
+    ...preview(p, plan, rounds),
   };
+}
+
+/** match_preview：每轮按场地数分几批，每批 21 分 15 分钟、15 分 10 分钟、11 分 7 分钟，三局两胜乘 2.5 */
+function preview(p: Plan, plan: ReturnType<typeof matchPlan>, rounds: number) {
+  const courts = Math.max(p.courts, 1);
+  let batches = rounds * Math.ceil(plan.perRound / courts);
+  let koRounds = 0;
+  for (let s = plan.bracket; s >= 2 && plan.bracket >= 2; s /= 2) {
+    let n = s === plan.bracket ? plan.qualifiers - s / 2 : s / 2;
+    if (s === 2 && p.thirdPlace && plan.qualifiers >= 4) n++;
+    batches += Math.ceil(n / courts);
+    koRounds++;
+  }
+  const batch = { 21: 15, 15: 10, 11: 7 }[p.points] * (p.bestOf === 3 ? 2.5 : 1);
+  return { rounds: rounds + koRounds, minutes: Math.ceil(batches * batch) };
 }

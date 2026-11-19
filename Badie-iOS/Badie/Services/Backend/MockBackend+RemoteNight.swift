@@ -122,11 +122,11 @@ extension MockBackend {
 
     // MARK: 比赛
 
-    func remoteMatchPreview(format: MatchFormat, players: Int, courts: Int, points: Int, bestOf: Int,
-                            pools: Int?, advance: Int?, rounds: Int?) async throws -> MatchPreview? {
+    func remoteMatchPreview(format: MatchFormat, play: MatchPlay, players: Int, courts: Int, points: Int, bestOf: Int,
+                            pools: Int?, advance: Int?, rounds: Int?, thirdPlace: Bool) async throws -> MatchPreview? {
         guard let remote else { return nil }
-        var args: [String: Any] = ["p_format": format.rawValue, "p_players": players, "p_courts": courts, "p_points": points,
-                                   "p_best_of": bestOf, "p_doubles": false]
+        var args: [String: Any] = ["p_format": format.rawValue, "p_play": play.rawValue, "p_players": players, "p_courts": courts,
+                                   "p_points": points, "p_best_of": bestOf, "p_third_place": thirdPlace]
         if let pools { args["p_pools"] = pools }
         if let advance { args["p_advance"] = advance }
         if let rounds { args["p_rounds"] = rounds }
@@ -134,13 +134,13 @@ extension MockBackend {
     }
 
     /// players：[{user_id} | {signup_id} | {name}]，按顺序是种子。返回比赛 id
-    func remoteCreateMatch(name: String, venueId: String?, courts: Int, format: MatchFormat, points: Int, bestOf: Int,
-                           winByTwo: Bool, players: [[String: Any]], rounds: Int?, pools: Int?, advance: Int?,
+    func remoteCreateMatch(name: String, venueId: String?, courts: Int, format: MatchFormat, play: MatchPlay, points: Int, bestOf: Int,
+                           winByTwo: Bool, players: [[String: Any]], rounds: Int?, pools: Int?, advance: Int?, thirdPlace: Bool,
                            sessionId: String?) async throws -> String {
         var args: [String: Any] = [
             "p_name": name.trimmingCharacters(in: .whitespacesAndNewlines), "p_venue": venueId.map { $0 as Any } ?? NSNull(),
-            "p_courts": courts, "p_format": format.rawValue, "p_points": points, "p_best_of": bestOf,
-            "p_win_by_two": winByTwo, "p_players": players,
+            "p_courts": courts, "p_format": format.rawValue, "p_play": play.rawValue, "p_points": points, "p_best_of": bestOf,
+            "p_win_by_two": winByTwo, "p_players": players, "p_third_place": thirdPlace,
         ]
         if let rounds { args["p_rounds"] = rounds }
         if let pools { args["p_pools"] = pools }
@@ -155,8 +155,14 @@ extension MockBackend {
         return try await remote.rpc("match_state", ["p_match": matchId], as: MatchState?.self)
     }
 
-    func remoteMatchScore(game: Int, scores: [Int], version: Int, force: Bool) async throws {
-        try await requireRemote().call("match_score", ["p_game": game, "p_scores": scores, "p_version": version, "p_force": force])
+    /// 只收合规的完整比分（不合规报 score_invalid）
+    func remoteMatchScore(game: Int, scores: [Int], version: Int) async throws {
+        try await requireRemote().call("match_score", ["p_game": game, "p_scores": scores, "p_version": version])
+    }
+
+    /// 中途退赛：side 是退赛的一边（1 / 2），scores 是退赛前打完的局加上没打完那局
+    func remoteMatchRetire(game: Int, side: Int, scores: [Int], version: Int) async throws {
+        try await requireRemote().call("match_retire", ["p_game": game, "p_side": side, "p_scores": scores, "p_version": version])
     }
 
     func remoteMatchFlag(game: Int) async throws {

@@ -74,7 +74,7 @@ export function LiveBoard({ code }: { code: string }) {
       <header className="grid gap-1">
         <h1 className="text-title lg:text-display">{b.kind === 'night' ? b.group : b.name}</h1>
         <p className="text-footnote font-bold text-ink-secondary">
-          {b.kind === 'night' ? `${b.venue} · ${hours(b.starts_at, b.ends_at, b.tz)}` : [formatName(b.format), b.venue].filter(Boolean).join(' · ')}
+          {b.kind === 'night' ? `${b.venue} · ${hours(b.starts_at, b.ends_at, b.tz)}` : [formatName(b.format, b.play), b.venue].filter(Boolean).join(' · ')}
         </p>
       </header>
 
