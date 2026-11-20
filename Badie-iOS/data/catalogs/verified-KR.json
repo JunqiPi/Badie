@@ -111,6 +111,26 @@
    "playTimes": "Badminton for monthly members Mon–Fri 9:30 AM–12:30 PM and 6:30–9:30 PM. Closed on the 2nd and 4th Sundays of each month (no closures in July and August)."
   },
   {
+   "id": "v-kr-3b50d4b0",
+   "name": "사하구 국민체육센터",
+   "lat": 35.089413,
+   "lon": 128.998901,
+   "street": "감천로 68",
+   "city": "사하구",
+   "region": "부산광역시",
+   "postcode": "49445",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.sahaksports.or.kr/saha/192",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 3500
+   },
+   "playTimes": "Badminton day passes Sat–Sun 9–10:50 AM and 11 AM–12:50 PM, up to 18 people per session. Weekdays are lessons only.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-46d68666",
    "name": "독산배드민턴체육관",
    "lat": 37.46738,
@@ -130,6 +150,46 @@
    "playTimes": "Day entry in sessions: weekdays 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6–10 PM; weekends and holidays 6–8:50 AM, 9–11:50 AM, 1–3:50 PM and 4–6:50 PM. Closed the first Monday of each month, New Year's Day, Seollal, Chuseok, May 1 and election days."
   },
   {
+   "id": "v-kr-4aba5672",
+   "name": "복사골스포츠센터",
+   "lat": 37.494904,
+   "lon": 126.754349,
+   "street": "원미구 장말로 107 (상1동)",
+   "city": "부천시",
+   "region": "경기도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.best.or.kr/fmcs/56",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 1500
+   },
+   "playTimes": "Badminton day entry (age 13+) Mon–Sat 6–8:55 AM and Mon–Fri 9 AM–12:55 PM.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
+   "id": "v-kr-4e418f73",
+   "name": "부천배드민턴전용체육관",
+   "lat": 37.475037,
+   "lon": 126.790565,
+   "street": "소사구 은성로 2번길 6",
+   "city": "부천시",
+   "region": "경기도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.best.or.kr/fmcs/248",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 2250
+   },
+   "playTimes": "Open badminton Mon–Sat 6 AM–9:30 PM and Sundays and holidays 6 AM–5:30 PM, pay per session (2 hours play). Closed the first and third Sunday of each month.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-55801914",
    "name": "마상배드민턴장",
    "lat": 37.660179,
@@ -147,6 +207,26 @@
     "perPerson": 2000
    },
    "playTimes": "Open to the public Mon–Fri 7 AM–10 PM and Sat, Sun and holidays 7 AM–6 PM. Closed the first Monday and third Tuesday of each month."
+  },
+  {
+   "id": "v-kr-5ce503f3",
+   "name": "열린금호교육문화관",
+   "lat": 37.552643,
+   "lon": 127.0196,
+   "street": "무수막길 69",
+   "city": "성동구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://sports.happysd.or.kr/fmcs/73",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perCourtHour": 15000
+   },
+   "playTimes": "Badminton court rental Mon, Wed and Fri 7:30–8:30 PM and 8:30–9:30 PM, Tue and Thu 8:30–9:30 PM. Closed on Sundays and national holidays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
    "id": "v-kr-6047cc81",
@@ -270,6 +350,23 @@
    "playTimes": "Four sessions daily: 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6:30–9:30 PM. Closed on the 2nd and 4th Mondays, New Year's Day, Seollal, Chuseok and national holidays (except Sundays)."
   },
   {
+   "id": "v-kr-821fd3b6",
+   "name": "염리생활체육관",
+   "lat": 37.542046,
+   "lon": 126.945091,
+   "street": "큰우물로61(염리동 174-3)",
+   "city": "마포구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.mapo.go.kr/site/main/content/mapo05040503",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "Open 6 AM–10 PM; closed on public holidays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-822c8b6c",
    "name": "한마음생활체육관",
    "lat": 36.318976,
@@ -303,6 +400,23 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "Open-play badminton for monthly members Mon–Fri 6–7:50 AM and 10–11:50 AM in the 4th-floor main gym. Closed on public holidays."
+  },
+  {
+   "id": "v-kr-aaa6ba0d",
+   "name": "송내사회체육관",
+   "lat": 37.481895,
+   "lon": 126.76899,
+   "street": "소사구 경인로 120번길 45,송내동",
+   "city": "부천시",
+   "region": "경기도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://snsports.bucheon.go.kr/site/homepage/menu/viewMenu?menuid=090003002",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "No open play listed; badminton lessons run 6 AM–10 PM and the main gym can be rented by groups.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
    "id": "v-kr-ace3d11f",
@@ -356,6 +470,27 @@
    "playTimes": "Badminton lessons Tue–Fri 6–8 AM and 6–9 PM. Open badminton on the first and third Mondays of the month; closed on the second and fourth Mondays."
   },
   {
+   "id": "v-kr-b454b87c",
+   "name": "대현산체육관",
+   "lat": 37.554165,
+   "lon": 127.0299,
+   "street": "독서당로63길 44",
+   "city": "성동구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://sports.happysd.or.kr/fmcs/150",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 3000,
+    "perCourtHour": 15000
+   },
+   "playTimes": "Badminton day passes daily 6–8:50 AM, 10 AM–12:50 PM, 2–4:50 PM, 5–6:20 PM and 7–9:50 PM. Closed on the 2nd and 4th Mondays, New Year's Day, Seollal, Labor Day and Chuseok.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-bffed518",
    "name": "금호스포츠센터",
    "lat": 37.545615,
@@ -375,6 +510,26 @@
    "playTimes": "Badminton day passes daily 6–8:50 AM, 10 AM–12:50 PM, 2–4:50 PM, 5–6:30 PM and 7–9:50 PM; on the 2nd and 4th Sundays 9–11:30 AM, 12–2:30 PM and 3–5:30 PM. Closed on New Year's Day, Seollal, Labor Day and Chuseok."
   },
   {
+   "id": "v-kr-c2ba0efd",
+   "name": "유성종합스포츠센터",
+   "lat": 36.378563,
+   "lon": 127.343231,
+   "street": "대전 유성구 유성대로 978",
+   "city": "유성구",
+   "region": "대전광역시",
+   "postcode": "34128",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://sportsclub.sports.or.kr/club/yssc/FPOD0099C",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 2400
+   },
+   "playTimes": "Badminton day passes Tue–Fri 6 AM–10 PM, Sat 6 AM–6 PM, Sun 9 AM–6 PM. Closed Mondays, national holidays and the New Year, Seollal and Chuseok holidays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-d38e2931",
    "name": "광주광역시체육회관 다목적관",
    "lat": 35.13682,
@@ -392,6 +547,23 @@
     "perPerson": 2000
    },
    "playTimes": "Badminton Mon, Tue, Wed and Fri evenings (sessions 6–8 PM and 7–9 PM), and Sat, Sun and public holidays 9 AM–10 PM. Thursday evenings are for jokgu."
+  },
+  {
+   "id": "v-kr-d7a61393",
+   "name": "신월문화체육센터",
+   "lat": 37.519814,
+   "lon": 126.83506,
+   "street": "지양로 47(신월동)",
+   "city": "양천구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.ycs.or.kr/fmcs/23",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "Adult badminton (monthly sign-up) Mon–Sat 6–8:20 AM. Closed on national holidays and Labor Day.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
    "id": "v-kr-dcbe00d8",
@@ -430,6 +602,26 @@
     "perPerson": 3300
    },
    "playTimes": "Day-entry badminton Mon and Wed 6–8:50 AM and 12–6:50 PM; Tue, Thu and Fri 6 AM–9:50 PM; Sat–Sun 9 AM–12:30 PM and 1–4:50 PM. Each entry is 2 hours, first come first served."
+  },
+  {
+   "id": "v-kr-dd46d282",
+   "name": "은행동 다목적 체육관(배드민턴)",
+   "lat": 37.454117,
+   "lon": 127.169815,
+   "street": "중원구 순환로 357(은행공원 내)",
+   "city": "성남시",
+   "region": "경기도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://spo.isdc.co.kr/oderFacGuide.do",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 2200
+   },
+   "playTimes": "Open daily 6 AM-10 PM; one ticket covers 3 hours. Closed on the 1st and 3rd Monday of each month, New Year's Day, Lunar New Year, Chuseok and public holidays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
    "id": "v-kr-e70293a2",
@@ -516,6 +708,26 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "No open badminton sessions. The gym, with badminton nets, can be rented any day in 2-hour blocks; ask for available times."
+  },
+  {
+   "id": "v-kr-fa69d552",
+   "name": "강북웰빙스포츠센터",
+   "lat": 37.630413,
+   "lon": 127.037804,
+   "street": "오현로31길 51 (번동)",
+   "city": "강북구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.gbcmc.or.kr/fmcs/72",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 3000
+   },
+   "playTimes": "Drop-in badminton Mon–Fri 6–8:50 AM and 9:30–11:50 AM, ages 13 and up. Closed on public holidays and on the first and third Sundays of each month.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
    "id": "v-kr-fda69388",
