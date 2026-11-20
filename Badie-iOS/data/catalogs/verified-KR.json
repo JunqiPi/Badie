@@ -6,6 +6,23 @@
  "attribution": "Coordinates © OpenStreetMap contributors, ODbL 1.0",
  "venues": [
   {
+   "id": "v-kr-0b17a8c4",
+   "name": "울주군국민체육센터",
+   "lat": 35.574387,
+   "lon": 129.24469,
+   "street": "범서읍 구영로 101-16",
+   "city": "울주군",
+   "region": "울산광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.uljusiseol.or.kr/uljusports/guide/guide1_1",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "Badminton is through a monthly membership (three coached sessions and one open session a week). The centre is open weekdays 6 AM–10 PM and weekends and public holidays 9 AM–6 PM, closed Mondays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-1251768a",
    "name": "불암산배드민턴장",
    "lat": 37.638514,
@@ -60,6 +77,43 @@
    "playTimes": "Open daily 6 AM-10 PM; one ticket covers 3 hours. Closed on the 2nd and 4th Monday of each month, New Year's Day, Lunar New Year, Chuseok and Labor Day."
   },
   {
+   "id": "v-kr-19650fc4",
+   "name": "오토밸리복지센터",
+   "lat": 35.582306,
+   "lon": 129.360977,
+   "street": "산업로 1020",
+   "city": "북구",
+   "region": "울산광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.ubimc.or.kr/pageCont.do?menuNo=4040000",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "The gym can be rented Tue–Fri 7 AM–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
+   "id": "v-kr-1a2bed81",
+   "name": "올림픽기념국민생활관",
+   "lat": 37.457619,
+   "lon": 126.718758,
+   "street": "구월로 251",
+   "city": "남동구",
+   "region": "인천광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.icsports.or.kr/fmcs/30",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 4000
+   },
+   "playTimes": "Badminton sessions Mon–Fri 6–7:50 AM, 1–2:50 PM and 7–8:50 PM, and Sat 7–8:50 AM (Saturday is daily entry only). Closed Sundays and public holidays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-1a36e43c",
    "name": "구즉국민체육센터",
    "lat": 36.435037,
@@ -95,6 +149,25 @@
    "playTimes": "Badminton day use Mon–Fri 6 AM–10 PM and Sat 6 AM–6 PM. Closed on Sundays and public holidays."
   },
   {
+   "id": "v-kr-28061be9",
+   "name": "무학봉체육관",
+   "lat": 37.562208,
+   "lon": 127.024613,
+   "street": "서울 중구 난계로6길 8 (무학봉 근린공원 내)",
+   "city": "중구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.e-junggu.or.kr/fmcs/235",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 4800
+   },
+   "playTimes": "Badminton day entry Sat–Sun 6–9 AM and 7–9:50 PM. Closed on the second Monday of each month and on public holidays."
+  },
+  {
    "id": "v-kr-299c17d8",
    "name": "서재문화체육센터",
    "lat": 35.884034,
@@ -109,6 +182,42 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "Badminton for monthly members Mon–Fri 9:30 AM–12:30 PM and 6:30–9:30 PM. Closed on the 2nd and 4th Sundays of each month (no closures in July and August)."
+  },
+  {
+   "id": "v-kr-2a7b1b97",
+   "name": "전하체육센터",
+   "lat": 35.512093,
+   "lon": 129.422195,
+   "street": "봉수로 285(전하동)",
+   "city": "동구",
+   "region": "울산광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.donggu.ulsan.kr/donggu/contents/contents.do?mId=7040205",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 3500
+   },
+   "playTimes": "Daily-entry badminton during opening hours, Mon–Fri 9 AM–10 PM and Sat and public holidays 9 AM–7 PM; closed Sundays. Events or full capacity can stop daily entry, so call before going.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
+   "id": "v-kr-32d7ad91",
+   "name": "서해구국민체육센터",
+   "lat": 37.566288,
+   "lon": 126.677862,
+   "street": "서해구 승학로 525 (검암동)",
+   "city": "서구",
+   "region": "인천광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.issi.or.kr/sub/contents/default_page.asp?mNo=MD040010040",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "Badminton is a monthly coached program Mon, Wed and Fri 6–7:50 AM, 8–9:50 AM, 12:30–2:20 PM and 7–8:50 PM. The gym is rented out on Saturdays and public holidays."
   },
   {
    "id": "v-kr-3b50d4b0",
@@ -190,6 +299,26 @@
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
+   "id": "v-kr-523a2c02",
+   "name": "중랑문화체육관",
+   "lat": 37.579254,
+   "lon": 127.095757,
+   "street": "서울시 중랑구 사가정로72길 47(면목동)",
+   "city": "중랑구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.jungnangimc.or.kr/html/01020300",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 2700
+   },
+   "playTimes": "Open badminton Mon–Sat 6–7:50 AM, plus Sat 7–8:50 PM. Closed on the second, fourth and fifth Sunday of each month and on public holidays.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-55801914",
    "name": "마상배드민턴장",
    "lat": 37.660179,
@@ -261,6 +390,25 @@
    "playTimes": "Badminton courts are booked in 90-minute slots Mon-Sat 9 AM-10 PM and Sun and holidays 9 AM-6 PM. Closed on the third Monday of each month."
   },
   {
+   "id": "v-kr-627cfb12",
+   "name": "화정체육관",
+   "lat": 35.495877,
+   "lon": 129.422568,
+   "street": "대송로 140(화정동)",
+   "city": "동구",
+   "region": "울산광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.donggu.ulsan.kr/donggu/contents/contents.do?mId=7040202",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 3000
+   },
+   "playTimes": "Open Mon–Fri 9 AM–10 PM and Sat and public holidays 9 AM–7 PM; closed Sundays."
+  },
+  {
    "id": "v-kr-62d3fb11",
    "name": "성동구민종합체육센터",
    "lat": 37.545804,
@@ -275,6 +423,25 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "No open badminton sessions. Groups can rent the main hall Mon/Wed/Fri 8–10 PM, Tue/Thu 7–8 PM, Sat 5:30–7:30 PM and Sun 9 AM–5 PM. Closed on Sundays for regular programs."
+  },
+  {
+   "id": "v-kr-71ad49ae",
+   "name": "은평다목적체육관",
+   "lat": 37.631187,
+   "lon": 126.925259,
+   "street": "진관1로 52",
+   "city": "은평구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.efmc.or.kr/fmcs/12",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 3000
+   },
+   "playTimes": "Day entry for badminton or table tennis in 2-hour slots: Mon–Fri 6 AM–noon and 2–10 PM, Sat noon–8 PM, Sun 10 AM–noon and 1–5 PM."
   },
   {
    "id": "v-kr-73c87597",
@@ -312,6 +479,25 @@
    "playTimes": "Monthly-pass badminton free play Mon–Fri 7–11:50 AM, 2 hours per entry. Group classes Mon–Thu 7–8:20 PM."
   },
   {
+   "id": "v-kr-75547542",
+   "name": "중랑구민체육센터",
+   "lat": 37.615145,
+   "lon": 127.087735,
+   "street": "서울시 중랑구 신내로15길 189(묵동)",
+   "city": "중랑구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.jungnangimc.or.kr/html/01010300",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 2700
+   },
+   "playTimes": "Open badminton Mon–Fri 6–7:50 AM and 8–9:50 PM, Sat 6–7:50 AM and 7–8:50 PM. Closed on the first, third and fifth Sunday of each month and on public holidays."
+  },
+  {
    "id": "v-kr-78724a8c",
    "name": "수원종합운동장 국민체육센터",
    "lat": 37.297106,
@@ -329,6 +515,23 @@
     "perCourtHour": 2500
    },
    "playTimes": "Badminton court booking Mon-Fri 6 AM-10 PM, Sat, Sun and holidays 6 AM-5 PM."
+  },
+  {
+   "id": "v-kr-7ca801eb",
+   "name": "송림체육관",
+   "lat": 37.484337,
+   "lon": 126.647766,
+   "street": "제물포구 염전로 30",
+   "city": "동구",
+   "region": "인천광역시",
+   "postcode": "22534",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.insiseol.or.kr/sport/songnim/program/center.jsp",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "Badminton is a monthly program by lottery sign-up; no drop-in times are listed.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
    "id": "v-kr-7f0785f9",
@@ -386,6 +589,39 @@
    "playTimes": "Open daily 6 AM–10 PM. Closed on the first and third Monday of each month and on New Year’s Day, Seollal, Chuseok, Buddha’s Birthday and Christmas."
   },
   {
+   "id": "v-kr-8de08539",
+   "name": "북구국민체육센터",
+   "lat": 35.175217,
+   "lon": 126.912373,
+   "street": "호계로 416-31 (신천동)",
+   "city": "북구",
+   "region": "울산광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.ubimc.or.kr/pageCont.do?menuNo=4040000",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "The gym can be rented Tue–Fri 12–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays."
+  },
+  {
+   "id": "v-kr-a3821c85",
+   "name": "울주군민체육관",
+   "lat": 35.555447,
+   "lon": 129.183655,
+   "street": "언양읍 샘소3길25",
+   "city": "울주군",
+   "region": "울산광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.uljusiseol.or.kr/portal/facility/facilityTab1.do?classId=SPORTS&itemId=T0000016",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "The gym (9 badminton courts) is rented by online booking; staffed hours are 9 AM–6 PM with no closing days. Ask the booking office about other times.",
+   "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
+  },
+  {
    "id": "v-kr-a80cb7f6",
    "name": "강남스포츠문화센터",
    "lat": 37.488989,
@@ -436,6 +672,25 @@
     "perPerson": 3000
    },
    "playTimes": "Badminton Mon–Fri 9:30 AM–12 PM. Closed Saturdays, Sundays and public holidays."
+  },
+  {
+   "id": "v-kr-adcd39bd",
+   "name": "묵동다목적체육관",
+   "lat": 37.614297,
+   "lon": 127.084233,
+   "street": "숙선옹주로 66(묵동)",
+   "city": "중랑구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.jungnangimc.or.kr/html/01080200",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "price": {
+    "perPerson": 3000
+   },
+   "playTimes": "Open Mon–Fri 6 AM–10 PM (closed 1–2 PM for cleaning) and weekends and holidays 6 AM–9 PM in 3-hour sessions. Closed on the second Monday and fourth Tuesday of each month and on New Year’s Day, Seollal and Chuseok."
   },
   {
    "id": "v-kr-ae6656ef",
@@ -624,6 +879,22 @@
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
+   "id": "v-kr-e4f0712c",
+   "name": "은평구민체육센터",
+   "lat": 37.630463,
+   "lon": 126.923574,
+   "street": "진관1로 40",
+   "city": "은평구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.efmc.or.kr/fmcs/221",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "Badminton is a monthly class in the main gym, Mon, Wed and Fri 7–8:20 PM and 8:30–9:50 PM (lessons Mon and Wed, games Fri). No badminton day pass is listed."
+  },
+  {
    "id": "v-kr-e70293a2",
    "name": "강남구민체육관",
    "lat": 37.477108,
@@ -708,6 +979,22 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "No open badminton sessions. The gym, with badminton nets, can be rented any day in 2-hour blocks; ask for available times."
+  },
+  {
+   "id": "v-kr-f91ef494",
+   "name": "쇠부리체육센터",
+   "lat": 35.636289,
+   "lon": 129.334513,
+   "street": "천곡남로 86(천곡동)",
+   "city": "북구",
+   "region": "울산광역시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "web": "https://www.ubimc.or.kr/pageCont.do?menuNo=4040000",
+   "facility": "recCenter",
+   "checked": "2026-11-20",
+   "playTimes": "The gym can be rented Tue–Fri 12–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays."
   },
   {
    "id": "v-kr-fa69d552",
