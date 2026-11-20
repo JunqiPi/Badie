@@ -1,0 +1,4 @@
+{
+  "about": "我们对照球馆、运营方或市政府官网核对过的价格和开放时间，按球馆 id。只给网站用（web/src/lib/venues.ts），App 的目录价格只能是整数。badminton=false 表示官网写明不对外开放羽毛球。",
+  "venues": {}
+}

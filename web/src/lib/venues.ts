@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 // 目录和 iOS 共用（Badie-iOS/Badie/Resources），加上只进数据库的（supabase/data：OpenStreetMap、我们整理的）。
@@ -9,6 +9,34 @@ const catalogDirs = [
   { dir: join(process.cwd(), '..', 'supabase', 'data'), pages: false },
 ];
 const MIN_CITY_PAGE = 3;
+
+/**
+ * 我们对照官网核对过的价格和开放时间（按球馆 id，Badie-iOS/data/verified-venues.json，每条带来源链接）。
+ * 只给网站用：App 的目录里价格只能是整数（VenueCatalog.swift），英国这类带小数的价格写进去整份目录会读不出来
+ */
+interface Verified {
+  badminton?: boolean | null;
+  perCourtHour?: number | null;
+  perPerson?: number | null;
+  playTimes?: string | null;
+  web?: string | null;
+  checked: string;
+}
+const verifiedFile = join(process.cwd(), '..', 'Badie-iOS', 'data', 'verified-venues.json');
+const verified: Record<string, Verified> = existsSync(verifiedFile) ? JSON.parse(readFileSync(verifiedFile, 'utf8')).venues : {};
+
+function withVerified<T extends CatalogEntry>(entry: T): T {
+  const v = verified[entry.id];
+  if (!v || v.badminton === false) return entry;
+  const price = { ...(v.perPerson != null && { perPerson: v.perPerson }), ...(v.perCourtHour != null && { perCourtHour: v.perCourtHour }) };
+  return {
+    ...entry,
+    ...(Object.keys(price).length && { price }),
+    ...(v.playTimes && { playTimes: v.playTimes }),
+    ...(v.web && { web: v.web }),
+    ...((Object.keys(price).length || v.playTimes) && { checked: v.checked }),
+  };
+}
 /**
  * 搜索引擎只收录我们自己核对过的（2026-11-20：Google 把几千个只有名字、地址的模板页整站拿出了索引）：
  * 这几个国家里，对照官网核对过价格或开放时间的球馆页、至少有一家这种球馆的城市页、国家页。其余照常能看，只是不让收录
@@ -195,7 +223,7 @@ function load(): Country[] {
         return catalog.venues
           .filter((entry) => !entry.approx) // 位置不准的不上网站
           .map((entry) => ({
-            ...entry,
+            ...withVerified(entry),
             source: catalog.kind ?? 'openData',
             confirmed: (entry.status ?? catalog.status ?? 'verified') !== 'unconfirmed',
             attribution: entry.attr ?? catalog.attribution,
@@ -337,7 +365,7 @@ export function formatPrice(amount: number, country: string): string {
   if (amount === 0) return 'Free';
   const currency = currencies[country];
   if (!currency) return String(amount);
-  return new Intl.NumberFormat('en', { style: 'currency', currency, maximumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat('en', { style: 'currency', currency, minimumFractionDigits: amount % 1 ? 2 : 0, maximumFractionDigits: 2 }).format(amount);
 }
 
 export function formatAddress(venue: CatalogEntry): string {

@@ -51,7 +51,9 @@ const sourceNote = {
     ? t('Checked against the venue’s official pages by the Badie team in {date}.', { date: checked })
     : t('Address checked against at least two public sources by the Badie team.'),
   openStreetMap: t('From OpenStreetMap. Not yet confirmed by players.'),
-  openData: t('From government open data.'),
+  openData: checked
+    ? t('From government open data. Prices and times checked against the venue’s official pages by the Badie team in {date}.', { date: checked })
+    : t('From government open data.'),
 }[venue.source];
 
 const site = Astro.site ?? new URL('http://localhost');
