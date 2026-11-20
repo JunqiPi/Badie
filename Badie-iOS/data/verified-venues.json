@@ -8139,7 +8139,10 @@
       ],
       "note": "Hall 2 reopened 26 May 2026; Hall 1 (8 courts) closed indefinitely. Half of Hall 2 (1 court) 1,980 yen for 9 AM–12 PM, 3,410 yen 6–10 PM (residents; 1.5x others).",
       "checked": "2026-11-20",
-      "name": "S&Dスポーツアリーナ羽村（スポーツセンター）"
+      "name": "S&Dスポーツアリーナ羽村（スポーツセンター）",
+      "playTimesLocal": {
+        "ja": "団体と市民は、市の予約システムで第2体育室（バドミントン2面）を3〜4時間単位で予約できます。第1体育室は当面休止中です。バドミントンの個人利用の案内はありません。"
+      }
     },
     "v-jp-0f6f6338": {
       "badminton": true,
@@ -8153,7 +8156,10 @@
       ],
       "note": "Adult ¥300 per 3-hour slot or ¥200 per 2-hour slot. Hall has 3 badminton courts; group hire of the hall ¥4,800 per 3-hour slot (¥3,200 for 16:00-18:00).",
       "checked": "2026-11-20",
-      "name": "桜台体育館"
+      "name": "桜台体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：月間予定の日にコート3面、2時間または3時間単位。当日に窓口でコートを予約、先着順です。7日前までに予約のない団体枠は個人枠になります。"
+      }
     },
     "v-jp-1e6edae0": {
       "badminton": true,
@@ -8168,7 +8174,10 @@
       ],
       "note": "Esforta Arena Hachioji. 300 yen per 2-hour turn (adults), rackets lent free, no coach. Smallest booking: 1/3 main arena 6,000 yen for 9:30 AM–12 PM. Fees rise from April 2027. [perCourtHour 2400 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "総合体育館"
+      "name": "総合体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：決まった日に9:30から2時間交代（日中にメインアリーナの一部で行うことが多い）。月間の行事・個人開放予定を確認してください。団体はアリーナを区画ごとに2.5時間単位で予約できます。"
+      }
     },
     "v-jp-367e5598": {
       "badminton": true,
@@ -8184,7 +8193,10 @@
       ],
       "note": "Adult ¥400 per individual entry (half price with Musashino resident card); session length set in the monthly notice. Closed on the 15th of each month. Long closure for renovation planned for about 16 months during FY2027-2028.",
       "checked": "2026-11-20",
-      "name": "武蔵野総合体育館・武蔵野陸上競技場"
+      "name": "武蔵野総合体育館・武蔵野陸上競技場",
+      "playTimesLocal": {
+        "ja": "バドミントンはメインアリーナ・サブアリーナでの個人利用の種目の一つです。曜日と時間は毎月変わるため、月ごとの個人利用案内を確認してください。団体は施設予約システムでアリーナを予約できます。"
+      }
     },
     "v-jp-403aa5cf": {
       "badminton": true,
@@ -8199,7 +8211,10 @@
       ],
       "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
       "checked": "2026-11-20",
-      "name": "高円寺体育館"
+      "name": "高円寺体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（予約不要）：第2土曜・第3日曜・第4土曜 9:00〜13:00、2時間交代。変更は区の年間予定で確認してください。団体は区の施設予約システム「さざんかねっと」でコートを予約できます。"
+      }
     },
     "v-jp-440f785c": {
       "badminton": true,
@@ -8212,7 +8227,10 @@
       ],
       "note": "Former Tachibana elementary school gym. 170 yen per 2 hours (max 4 hours). Group rate is for the whole hall: 410 yen per hour for ward groups, 580 yen evenings; 610/870 yen for outside groups. [perCourtHour 410 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "立花体育館"
+      "name": "立花体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン・卓球の個人利用：毎週火・金 9:00〜17:00、予約・登録不要。登録団体はそれ以外の時間に、9:00〜21:00の間で体育室を1時間単位で予約できます。"
+      }
     },
     "v-jp-44a830aa": {
       "badminton": true,
@@ -8225,7 +8243,10 @@
       ],
       "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30). Group hire by session, half hall at half price; no per-court fee.",
       "checked": "2026-11-20",
-      "name": "深川北スポーツセンター"
+      "name": "深川北スポーツセンター",
+      "playTimesLocal": {
+        "ja": "大体育室でバドミントン個人利用：第1・第5日曜の午後と夜間、第3日曜の夜間、月曜の夜間、水曜の午後。月間予定を確認してください。団体は区の予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-45b4864d": {
       "badminton": true,
@@ -8240,7 +8261,10 @@
       ],
       "note": "Fees from April 2026. Individual 120 yen per hour for Akiruno residents/workers (180 yen others; bring ID). Court: 1/8 of main hall = 1 badminton court, 300 yen per 2 hours for city groups (900 yen others). Closed 1st/3rd/5th Tuesdays.",
       "checked": "2026-11-20",
-      "name": "秋川体育館"
+      "name": "秋川体育館",
+      "playTimesLocal": {
+        "ja": "団体予約がない時間は、9:00〜21:30に窓口で受付して個人利用できます。種目は曜日ごとに決まっているため、月間の個人利用予定を確認してください。団体はバドミントンコート1面（大体育室の8分の1）を2時間単位で予約できます。"
+      }
     },
     "v-jp-48c07699": {
       "badminton": true,
@@ -8253,7 +8277,10 @@
       ],
       "note": "Former Ikejiri elementary school gym (667 m2), now part of HOME/WORK VILLAGE. Whole hall 1,640 yen per 4-hour slot (from Oct 2025). Badminton is a listed use. Registration needed. [perCourtHour 410 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "池尻2丁目体育館（複合施設）"
+      "name": "池尻2丁目体育館（複合施設）",
+      "playTimesLocal": {
+        "ja": "団体は世田谷区の「けやきネット」で体育室を4時間単位（9:00〜13:00、13:00〜17:00、17:00〜21:00）で予約できます。施設の主催事業の日を除きます。個人利用の案内はありません。"
+      }
     },
     "v-jp-50204bac": {
       "badminton": true,
@@ -8267,7 +8294,10 @@
       ],
       "note": "Adult ¥300 per session (3 h). Group hire of the hall ¥8,800 morning (3 h), ¥11,600 afternoon or evening.",
       "checked": "2026-11-20",
-      "name": "雑司が谷体育館"
+      "name": "雑司が谷体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：火曜 14:00〜17:00（祝日を除く）。団体は豊島区の施設予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-56feb4b1": {
       "badminton": true,
@@ -8281,7 +8311,10 @@
       ],
       "note": "Kokubunji civic sports centre (first hall has 7 badminton courts). 300 yen per session (adults). Half hall 3,000 yen per 2.5-hour slot (Kokubunji resident rate). Rackets lent. [perCourtHour 1200 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "市民スポーツセンター・けやき運動場"
+      "name": "市民スポーツセンター・けやき運動場",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：金曜 16:30〜21:30、第1体育室（祝日・行事の日を除く）。団体は体育室の半面または全面を2.5時間単位で予約できます。"
+      }
     },
     "v-jp-5ca25129": {
       "badminton": true,
@@ -8295,7 +8328,10 @@
       ],
       "note": "Adult ¥400 per 2 hours. Group hire per 2-hour session: main arena full ¥10,200-15,500, half ¥5,100-7,750; sub arena ¥5,000-7,200.",
       "checked": "2026-11-20",
-      "name": "水元総合スポーツセンター"
+      "name": "水元総合スポーツセンター",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：日曜と第2・第4・第5週の火曜、メインアリーナ・サブアリーナで9:00〜21:00の2時間単位（団体予約がない場合）。団体は葛飾区の施設予約システムで予約できます。"
+      }
     },
     "v-jp-5eac4528": {
       "badminton": true,
@@ -8310,7 +8346,10 @@
       ],
       "note": "Closed since 12 Sep 2025 (ceiling not quake-safe); reopening date not set. Individual 300 yen per session. Half hall 1,600 yen per 2.5-hour slot for city groups (double for others). [perCourtHour 640 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "ひかりスポーツセンター"
+      "name": "ひかりスポーツセンター",
+      "playTimesLocal": {
+        "ja": "第1体育室（バドミントン4面）は天井工事のため2027年1月末ごろまで休止予定で、バドミントンの個人利用も休止中です。休止前は第2・第4土曜 13:00〜17:00に行っていました。"
+      }
     },
     "v-jp-5eea9626": {
       "badminton": true,
@@ -8325,7 +8364,10 @@
       ],
       "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
       "checked": "2026-11-20",
-      "name": "妙正寺体育館"
+      "name": "妙正寺体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（予約不要）：第2土曜 9:00〜13:00、第1・第3水曜 17:00〜21:00、2時間交代。変更は区の年間予定で確認してください。団体は区の施設予約システム「さざんかねっと」でコートを予約できます。"
+      }
     },
     "v-jp-5f18c995": {
       "badminton": true,
@@ -8340,7 +8382,10 @@
       ],
       "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
       "checked": "2026-11-20",
-      "name": "荻窪体育館"
+      "name": "荻窪体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（予約不要）：第1日曜 13:00〜17:00、第2土曜 17:00〜21:00、第1水曜 17:00〜21:00、2時間交代。変更は区の年間予定で確認してください。団体は区の施設予約システム「さざんかねっと」でコートを予約できます。"
+      }
     },
     "v-jp-65ede849": {
       "badminton": true,
@@ -8354,7 +8399,10 @@
       ],
       "note": "Badminton individual use ¥100 per 1 hour (¥50 for 65-74). 6 badminton courts. Group hire: full hall ¥9,300, half ¥4,800 per 3-hour slot.",
       "checked": "2026-11-20",
-      "name": "平和台体育館"
+      "name": "平和台体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：月間予定で決まった日に1時間単位。団体は練馬区の公共施設予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-6a511304": {
       "badminton": true,
@@ -8368,7 +8416,10 @@
       ],
       "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30); ¥100 for residents 65+. Group hire of the main hall is by session, e.g. weekday morning (3 h) ¥16,250 for the whole hall (6 badminton courts), half hall at half price; no per-court fee.",
       "checked": "2026-11-20",
-      "name": "亀戸スポーツセンター"
+      "name": "亀戸スポーツセンター",
+      "playTimesLocal": {
+        "ja": "大体育室でバドミントン個人利用：月曜 9:00〜12:00、第2・第4日曜 13:00〜17:00と18:00〜21:30、第2土曜、教室がない木曜の夜間 18:00〜21:30（半面）。月間予定を確認してください。団体は区の予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-6aaaf0cd": {
       "badminton": true,
@@ -8383,7 +8434,10 @@
       ],
       "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
       "checked": "2026-11-20",
-      "name": "永福体育館"
+      "name": "永福体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（予約不要）：第1日曜 17:00〜21:00、第2土曜・第3日曜 9:00〜13:00、第3水曜 17:00〜21:00、2時間交代。変更は区の年間予定で確認してください。団体は区の施設予約システム「さざんかねっと」でコートを予約できます。"
+      }
     },
     "v-jp-701677ec": {
       "badminton": false,
@@ -8411,7 +8465,10 @@
       ],
       "note": "300 yen per visit (adults). First hall has 6 badminton courts; half hall 1,800 yen for 9–11:50 AM (2,100 yen evening). Fees rise from April 2027. [perCourtHour 635 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "甲の原体育館"
+      "name": "甲の原体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン開放：水曜 15:00〜21:30、第1体育室。初心者向けの指導員がいて、ラケットとシャトルを無料で貸し出しています。団体は体育室を約3時間単位で予約できます。"
+      }
     },
     "v-jp-927f294e": {
       "badminton": true,
@@ -8425,7 +8482,10 @@
       ],
       "note": "Whole floor only: 7,640 yen for 9 AM–12 PM on weekdays/Saturdays (9,170 yen Sun/holidays); evening 9,900 yen. Individual use in principle for ward residents, workers and students. [perCourtHour 2547 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "希望丘地域体育館（複合施設）"
+      "name": "希望丘地域体育館（複合施設）",
+      "playTimesLocal": {
+        "ja": "登録団体は「けやきネット」で3階体育室（バドミントン3面）を9:00〜21:00の枠で予約できます。無料の個人利用（15:00〜16:00）はバスケットボールのシュート練習用です。ほかの種目はスタッフに確認してください。"
+      }
     },
     "v-jp-9913661d": {
       "badminton": true,
@@ -8438,7 +8498,10 @@
       ],
       "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30). Main hall has 6 badminton courts; group hire by session, half hall at half price; no per-court fee.",
       "checked": "2026-11-20",
-      "name": "東砂スポーツセンター"
+      "name": "東砂スポーツセンター",
+      "playTimesLocal": {
+        "ja": "大体育室でバドミントン個人利用：第1・第3・第5日曜の午後と夜間、月曜の午後、火・木の夜間。月間予定を確認してください。団体は区の予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-9cb00241": {
       "badminton": false,
@@ -8479,7 +8542,10 @@
       ],
       "note": "Individual fee 300 yen per 3-hour slot (adults). Smallest booking: half main arena 7,100 yen for 8–11 AM weekdays (larger in later slots). Bring rackets and shuttles (no rental). Parts closed for renovation and school use in FY2026. [perCourtHour 2367 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "総合スポーツセンター"
+      "name": "総合スポーツセンター",
+      "playTimesLocal": {
+        "ja": "指導付きのバドミントン（指導公開）：決まった日の夜間 18:30〜21:30。例として一部の火曜はメインアリーナ、土曜は第2アリーナ。週間予定はセンターのサイトで確認してください。団体は予約システムでアリーナも予約できます。"
+      }
     },
     "v-jp-9f05269a": {
       "badminton": true,
@@ -8493,7 +8559,10 @@
       ],
       "note": "These shorter sessions are half price: adult ¥200 (normal ¥400). Friday badminton rules changed from 17 Jul 2026. Group hire of the hall ¥8,800 morning, ¥11,600 afternoon or evening.",
       "checked": "2026-11-20",
-      "name": "豊島体育館"
+      "name": "豊島体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：金曜 13:15〜15:15、15:30〜17:30（7歳以上、子ども優先コートあり）、17:40〜19:25、19:35〜21:20。祝日は行いません。団体は豊島区の施設予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-a1aec277": {
       "badminton": true,
@@ -8509,7 +8578,10 @@
       ],
       "note": "Individual fee ¥100-300 per slot (1-3 h). Group hire: full hall ¥13,200, half ¥6,600 per 3-hour slot. Main hall was closed for renovation Apr-Sep 2026.",
       "checked": "2026-11-20",
-      "name": "総合体育館"
+      "name": "総合体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：月・水、団体予約がない金・日・祝日。当日8:30から窓口で名前を記入します。団体は練馬区の公共施設予約システムで予約できます。"
+      }
     },
     "v-jp-a2568f6e": {
       "badminton": true,
@@ -8522,7 +8594,10 @@
       ],
       "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30). Group hire by session, half hall at half price; no per-court fee.",
       "checked": "2026-11-20",
-      "name": "深川スポーツセンター"
+      "name": "深川スポーツセンター",
+      "playTimesLocal": {
+        "ja": "大体育室でバドミントン個人利用：第2・第4日曜の午後と夜間、月曜の午後と夜間、火曜の午前、金曜の夜間。月間予定を確認してください。団体は区の予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-a3d60570": {
       "badminton": false,
@@ -8546,7 +8621,10 @@
       ],
       "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30); ¥100 for residents 65+. Group hire of the main hall is by session, e.g. weekday morning (3 h) ¥21,300 for the whole hall (8 badminton courts), half hall at half price; no per-court fee.",
       "checked": "2026-11-20",
-      "name": "有明スポーツセンター"
+      "name": "有明スポーツセンター",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（大体育室の半面）：第1日曜の午前と午後、月曜・火曜（第1・第3週）・木曜の各回、第2土曜。月間予定を確認してください。団体は区の予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-a478ada8": {
       "badminton": false,
@@ -8574,7 +8652,10 @@
       ],
       "note": "In Koganei Park. 400 yen per 2 hours (200 yen per hour). Main hall fits 8 badminton courts. No equipment rental. Group fees not found on the official pages.",
       "checked": "2026-11-20",
-      "name": "総合体育館"
+      "name": "総合体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：月〜土、大体育室のコート1面で9:00〜21:00の枠、先着順。予定は3日前に確定し、行事で変わることがあります。登録団体は市の予約システムで予約します。"
+      }
     },
     "v-jp-a69c7705": {
       "badminton": true,
@@ -8588,7 +8669,10 @@
       ],
       "note": "Adult up to ¥400 per session. Group hire of the hall ¥8,800 morning (3 h), ¥11,600 afternoon or evening.",
       "checked": "2026-11-20",
-      "name": "巣鴨体育館"
+      "name": "巣鴨体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：火曜午前 9:00〜12:00、土曜夜間 17:30〜21:00、第2・第4土曜午後 13:00〜17:15。祝日は行いません。団体は豊島区の施設予約システムで体育室（バドミントン4面）を予約できます。"
+      }
     },
     "v-jp-a816527b": {
       "badminton": true,
@@ -8603,7 +8687,10 @@
       ],
       "note": "Hall has 8 badminton courts. Individual fee ¥100-300 per slot (1-3 h). Group hire per 3-hour slot: full ¥13,200, half ¥6,600, quarter ¥3,300. Manager site hikarigaoka-sp.com did not resolve.",
       "checked": "2026-11-20",
-      "name": "光が丘体育館"
+      "name": "光が丘体育館",
+      "playTimesLocal": {
+        "ja": "個人利用は決まった時間に実施します。月間予定を確認してください。団体は練馬区の公共施設予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-abd17992": {
       "badminton": true,
@@ -8619,7 +8706,10 @@
       ],
       "note": "FSX Arena. 300 yen per 3 hours for residents (350 yen others); extra hour 100 yen. Half of first hall 2,800 yen per 3-hour slot (residents, daytime). No solo entry for badminton. Closed 2nd/4th Thursdays. [perCourtHour 933 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "くにたち市民総合体育館"
+      "name": "くにたち市民総合体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：開館時間（9:00〜22:00）に主に第1体育室B面、先着順、最大3時間。月間の個人利用予定を確認してください。団体は体育室の半面を3時間単位で予約できます。"
+      }
     },
     "v-jp-b1606672": {
       "badminton": true,
@@ -8634,7 +8724,10 @@
       ],
       "note": "Tokyo Dome Sports Center Higashikurume. 400 yen per 2 hours (adults). First hall 13,450 yen per slot on weekdays (2h10m), 1/4 (2 courts) 3,370 yen. Schedule for badminton specifically not confirmed on an official page. [perCourtHour 1555 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "スポーツセンター"
+      "name": "スポーツセンター",
+      "playTimesLocal": {
+        "ja": "決まった日に体育室を2時間交代で個人利用できます。個人開放の予定はセンターのSNSに掲載されます。団体は第1体育室（バドミントン8面）を全面、または2分の1・3分の1・4分の1で予約できます。"
+      }
     },
     "v-jp-b268e36c": {
       "badminton": false,
@@ -8659,7 +8752,10 @@
       ],
       "note": "Adult ¥500 per 2.5-hour session; lottery 15 min before if busy. Group hire of the main hall per 2.5-hour session: full ¥16,000-24,800, 1/3 ¥5,400-8,300.",
       "checked": "2026-11-20",
-      "name": "奥戸総合スポーツセンター（体育館・陸上競技場）"
+      "name": "奥戸総合スポーツセンター（体育館・陸上競技場）",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：大体育室で日曜・土曜、水曜は卓球と合同。9:00〜11:30、12:30〜15:00、15:30〜18:00、18:30〜21:00の各回（団体予約がない場合）。団体は葛飾区の施設予約システムで予約できます。"
+      }
     },
     "v-jp-c67b51c9": {
       "badminton": true,
@@ -8673,7 +8769,10 @@
       ],
       "note": "Smallest booking is half the arena (3 courts): 8,580 yen per 3 hours on weekdays, 10,260 yen weekends/holidays. Individual use is in principle for ward residents, workers and students. [perCourtHour 2860 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "大蔵運動場（総合運動場）（複合施設）"
+      "name": "大蔵運動場（総合運動場）（複合施設）",
+      "playTimesLocal": {
+        "ja": "バドミントンの個人利用の案内はありません。登録団体は世田谷区の「けやきネット」でアリーナ（バドミントン6面、半面または全面）を9:00〜21:00に3時間単位で予約できます。"
+      }
     },
     "v-jp-c87f9b77": {
       "badminton": true,
@@ -8687,7 +8786,10 @@
       ],
       "note": "Annex arena fits 8 badminton courts. Smallest booking: 1/3 (2–3 courts) 1,400 yen for 9–11:50 AM (1,600 yen evening). Fees rise from April 2027. [perCourtHour 494 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "富士森体育館分館競技場"
+      "name": "富士森体育館分館競技場",
+      "playTimesLocal": {
+        "ja": "団体は別館アリーナを約3時間単位で予約できます（9:00〜21:00、21:30まで延長可）。バドミントンの個人開放は別館ではなく、富士森体育館本館で金曜に行っています。"
+      }
     },
     "v-jp-cca9361f": {
       "badminton": true,
@@ -8702,7 +8804,10 @@
       ],
       "note": "300 yen per visit (adults). Smallest booking: half main arena (4 badminton courts) 4,500 yen for 9–11:50 AM. Main arena closed 14 Dec 2026–15 Jan 2027 for floor work. Fees rise from April 2027. [perCourtHour 1588 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "富士森体育館"
+      "name": "富士森体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン開放：金曜 13:00〜21:30、メインアリーナ。スタッフがいて、ラケットを無料で貸し出しています。団体はアリーナを約3時間単位で予約できます。"
+      }
     },
     "v-jp-cf110650": {
       "badminton": true,
@@ -8716,7 +8821,10 @@
       ],
       "note": "Adult ¥300 per 2.5-hour session. Bring your own racket and shuttles.",
       "checked": "2026-11-20",
-      "name": "奥戸総合スポーツセンター（温水プール館・エイトホール）"
+      "name": "奥戸総合スポーツセンター（温水プール館・エイトホール）",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：Eight Hallで火・木 9:00〜11:30、12:30〜15:00。団体は葛飾区の施設予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-d352bdeb": {
       "badminton": true,
@@ -8731,7 +8839,10 @@
       ],
       "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 6 badminton courts; group booking 1/6 of the hall (1 court) is 1,300 yen for 2 hours. Group booking needs prior registration.",
       "checked": "2026-11-20",
-      "name": "上井草スポーツセンター"
+      "name": "上井草スポーツセンター",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（予約不要）：第2土曜 17:00〜21:00（6面）、第3日曜 9:00〜17:00（3面）、2時間交代。変更は区の年間予定で確認してください。団体は区の施設予約システム「さざんかねっと」でコートを予約できます。"
+      }
     },
     "v-jp-d496f519": {
       "badminton": true,
@@ -8745,7 +8856,10 @@
       ],
       "note": "400 yen per 2.5 hours (adults). Second hall 5,000 yen per 2.5 hours; first hall (10 courts) is for public events only. Second hall closed for air-conditioning work Nov 2026 to about Feb 2027. Manager site (sports-kodaira.jp) blocked. [perCourtHour 2000 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "市民総合体育館（駐車場含む）"
+      "name": "市民総合体育館（駐車場含む）",
+      "playTimesLocal": {
+        "ja": "当日券で2.5時間単位の個人利用。種目の予定は指定管理者が掲示しています。団体は市の予約システムで第2体育室（バドミントン4面）を予約できます。"
+      }
     },
     "v-jp-d7947003": {
       "badminton": true,
@@ -8761,7 +8875,10 @@
       ],
       "note": "Higashin Arena. 550 yen per 2 hours (adults), open to anyone. Smallest booking: 1/4 main arena 4,950 yen for 9 AM–12 PM weekdays (ward groups). Racket rental 300 yen. [perCourtHour 1650 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "墨田区総合体育館"
+      "name": "墨田区総合体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（6面）：ほぼ毎日10:00から20:30〜22:00まで、サブアリーナまたはメインアリーナの一部で、1回最大2時間、当日受付のみ。月間の個人利用予定を確認してください。団体はアリーナを区画ごとに予約できます。"
+      }
     },
     "v-jp-d87c65bf": {
       "badminton": true,
@@ -8775,7 +8892,10 @@
       ],
       "note": "Adult ¥400 per session. Group hire of the hall (1 面) ¥8,800 morning (3 h), ¥11,600 afternoon or evening.",
       "checked": "2026-11-20",
-      "name": "南長崎中央公園スポーツセンター"
+      "name": "南長崎中央公園スポーツセンター",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用：木曜夜間 17:45〜21:15（祝日を除く）。団体は豊島区の施設予約システムで体育室（バドミントン4面）を予約できます。"
+      }
     },
     "v-jp-eae44c50": {
       "badminton": true,
@@ -8790,7 +8910,10 @@
       ],
       "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
       "checked": "2026-11-20",
-      "name": "大宮前体育館"
+      "name": "大宮前体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン個人利用（予約不要）：第1日曜 13:00〜17:00、第2土曜 17:00〜21:00、第3日曜 13:00〜17:00、第1水曜 13:00〜17:00、2時間交代。変更は区の年間予定で確認してください。団体は区の施設予約システム「さざんかねっと」でコートを予約できます。"
+      }
     },
     "v-jp-ebdd1cce": {
       "badminton": false,
@@ -8817,7 +8940,10 @@
       ],
       "note": "Higashiyamato S&D Gym. 300 yen per visit 9 AM–9:30 PM, 180 yen 9:30–11 PM (adults); session length not stated. Open until 11 PM on weekdays. Group fees not readable on the site.",
       "checked": "2026-11-20",
-      "name": "市民体育館"
+      "name": "市民体育館",
+      "playTimesLocal": {
+        "ja": "バドミントン・卓球の個人利用：決まった時間に予約不要で利用できます。個人利用予定と行事予定を確認してください。翌日の枠は体育館のSNSに掲載されます。団体は市の予約システムで予約します。"
+      }
     },
     "v-jp-ecd04302": {
       "badminton": false,
@@ -8842,7 +8968,10 @@
       ],
       "note": "Whole hall only: 9,140 yen for 9 AM–1 PM on Sundays/holidays (13,890 yen 5–9 PM); Wednesday 4–6:30 PM 6,200 yen. Entry fee 150 yen covers class programmes, not open badminton. [perCourtHour 2285 dropped: the unit is more than one court]",
       "checked": "2026-11-20",
-      "name": "尾山台地域体育館（複合施設）"
+      "name": "尾山台地域体育館（複合施設）",
+      "playTimesLocal": {
+        "ja": "登録団体は「けやきネット」で体育室（バドミントン3面）を予約できます：第1・第3・第5日曜と祝日 9:00〜21:00、ほとんどの水曜 16:00〜21:00。それ以外の時間は教室を行っていて、バドミントンの個人利用の案内はありません。"
+      }
     },
     "v-jp-fb77cf5b": {
       "badminton": true,
@@ -8857,7 +8986,10 @@
       ],
       "note": "Hall has 6 badminton courts. Individual fee ¥100-300 per slot (1-3 h). Group hire: full hall ¥9,000, half hall ¥4,500 per 3-hour slot. Manager site nerima-kamitai.com did not resolve.",
       "checked": "2026-11-20",
-      "name": "上石神井体育館"
+      "name": "上石神井体育館",
+      "playTimesLocal": {
+        "ja": "個人利用は決まった時間に実施します。月間予定を確認してください。団体は練馬区の公共施設予約システムで体育室を予約できます。"
+      }
     },
     "v-jp-feffa1a6": {
       "badminton": true,
@@ -8872,7 +9004,10 @@
       ],
       "note": "Hall has 6 badminton courts. Individual fee ¥100-300 per slot (1-3 h). Group hire: full hall ¥9,600, half hall ¥4,800 per 3-hour slot. Manager site link did not resolve.",
       "checked": "2026-11-20",
-      "name": "大泉学園町体育館"
+      "name": "大泉学園町体育館",
+      "playTimesLocal": {
+        "ja": "個人利用は決まった時間に実施します。月間予定を確認してください。団体は練馬区の公共施設予約システムで体育室を予約できます。"
+      }
     }
   }
 }

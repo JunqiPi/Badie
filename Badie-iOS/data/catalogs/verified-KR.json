@@ -20,6 +20,9 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "Badminton is through a monthly membership (three coached sessions and one open session a week). The centre is open weekdays 6 AM–10 PM and weekends and public holidays 9 AM–6 PM, closed Mondays.",
+   "playTimesLocal": {
+    "ko": "배드민턴은 월 회원제(주 3회 강습, 주 1회 자유이용). 센터 운영 평일 06:00~22:00, 주말·공휴일 09:00~18:00, 월요일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -39,7 +42,10 @@
    "price": {
     "perPerson": 2300
    },
-   "playTimes": "Day entry in four sessions: 6–9 AM, 10 AM–1 PM, 2–5 PM and 6–9:50 PM. Closed over New Year's Day, Seollal and Chuseok."
+   "playTimes": "Day entry in four sessions: 6–9 AM, 10 AM–1 PM, 2–5 PM and 6–9:50 PM. Closed over New Year's Day, Seollal and Chuseok.",
+   "playTimesLocal": {
+    "ko": "일일입장 4부제: 06:00~09:00, 10:00~13:00, 14:00~17:00, 18:00~21:50. 1월 1일, 설날·추석 연휴 휴관."
+   }
   },
   {
    "id": "v-kr-1316e005",
@@ -55,7 +61,10 @@
    "web": "https://www.ycs.or.kr/fmcs/27",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Adult badminton (monthly sign-up) Mon–Sat 6–8:20 AM. Closed on national holidays and Labor Day."
+   "playTimes": "Adult badminton (monthly sign-up) Mon–Sat 6–8:20 AM. Closed on national holidays and Labor Day.",
+   "playTimesLocal": {
+    "ko": "성인 배드민턴(월 단위 접수) 월~토 06:00~08:20. 공휴일·노동절 휴관."
+   }
   },
   {
    "id": "v-kr-19201bf0",
@@ -74,7 +83,10 @@
    "price": {
     "perPerson": 2200
    },
-   "playTimes": "Open daily 6 AM-10 PM; one ticket covers 3 hours. Closed on the 2nd and 4th Monday of each month, New Year's Day, Lunar New Year, Chuseok and Labor Day."
+   "playTimes": "Open daily 6 AM-10 PM; one ticket covers 3 hours. Closed on the 2nd and 4th Monday of each month, New Year's Day, Lunar New Year, Chuseok and Labor Day.",
+   "playTimesLocal": {
+    "ko": "매일 06:00~22:00 운영, 1회 3시간 이용. 매월 둘째·넷째 월요일, 1월 1일, 설날, 추석, 노동절 휴관."
+   }
   },
   {
    "id": "v-kr-19650fc4",
@@ -91,6 +103,9 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "The gym can be rented Tue–Fri 7 AM–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays.",
+   "playTimesLocal": {
+    "ko": "체육관 대관 화~금 07:00~21:00, 주말·공휴일 08:00~17:00. 월요일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -111,6 +126,9 @@
     "perPerson": 4000
    },
    "playTimes": "Badminton sessions Mon–Fri 6–7:50 AM, 1–2:50 PM and 7–8:50 PM, and Sat 7–8:50 AM (Saturday is daily entry only). Closed Sundays and public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 월~금 06:00~07:50, 13:00~14:50, 19:00~20:50 / 토 07:00~08:50(토요일은 일일입장만). 일요일·공휴일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -130,7 +148,10 @@
    "price": {
     "perPerson": 2400
    },
-   "playTimes": "Badminton day passes Tue–Fri 6 AM–10 PM and Sat–Sun 6 AM–6 PM. Closed Mondays and on national holidays."
+   "playTimes": "Badminton day passes Tue–Fri 6 AM–10 PM and Sat–Sun 6 AM–6 PM. Closed Mondays and on national holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 화~금 06:00~22:00, 토·일 06:00~18:00. 월요일·공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-228f71b9",
@@ -146,7 +167,10 @@
    "web": "https://www.gangseo.seoul.kr/munhwa/mh040203",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Badminton day use Mon–Fri 6 AM–10 PM and Sat 6 AM–6 PM. Closed on Sundays and public holidays."
+   "playTimes": "Badminton day use Mon–Fri 6 AM–10 PM and Sat 6 AM–6 PM. Closed on Sundays and public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일이용 월~금 06:00~22:00, 토 06:00~18:00. 일요일·공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-28061be9",
@@ -165,7 +189,10 @@
    "price": {
     "perPerson": 4800
    },
-   "playTimes": "Badminton day entry Sat–Sun 6–9 AM and 7–9:50 PM. Closed on the second Monday of each month and on public holidays."
+   "playTimes": "Badminton day entry Sat–Sun 6–9 AM and 7–9:50 PM. Closed on the second Monday of each month and on public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 토·일 06:00~09:00, 19:00~21:50. 매월 둘째 월요일·공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-299c17d8",
@@ -181,7 +208,10 @@
    "web": "https://scsc.dpfc.or.kr/01_class/sub10.php?mNum=1&sNum=8",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Badminton for monthly members Mon–Fri 9:30 AM–12:30 PM and 6:30–9:30 PM. Closed on the 2nd and 4th Sundays of each month (no closures in July and August)."
+   "playTimes": "Badminton for monthly members Mon–Fri 9:30 AM–12:30 PM and 6:30–9:30 PM. Closed on the 2nd and 4th Sundays of each month (no closures in July and August).",
+   "playTimesLocal": {
+    "ko": "월 회원 배드민턴 월~금 09:30~12:30, 18:30~21:30. 매월 둘째·넷째 일요일 휴관(7·8월은 휴관 없음)."
+   }
   },
   {
    "id": "v-kr-2a7b1b97",
@@ -201,6 +231,9 @@
     "perPerson": 3500
    },
    "playTimes": "Daily-entry badminton during opening hours, Mon–Fri 9 AM–10 PM and Sat and public holidays 9 AM–7 PM; closed Sundays. Events or full capacity can stop daily entry, so call before going.",
+   "playTimesLocal": {
+    "ko": "운영시간 중 배드민턴 일일입장: 월~금 09:00~22:00, 토·공휴일 09:00~19:00, 일요일 휴관. 행사나 정원 마감으로 일일입장이 안 될 수 있으니 방문 전 전화 문의."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -217,7 +250,10 @@
    "web": "https://www.issi.or.kr/sub/contents/default_page.asp?mNo=MD040010040",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Badminton is a monthly coached program Mon, Wed and Fri 6–7:50 AM, 8–9:50 AM, 12:30–2:20 PM and 7–8:50 PM. The gym is rented out on Saturdays and public holidays."
+   "playTimes": "Badminton is a monthly coached program Mon, Wed and Fri 6–7:50 AM, 8–9:50 AM, 12:30–2:20 PM and 7–8:50 PM. The gym is rented out on Saturdays and public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴은 월 단위 강습 프로그램: 월·수·금 06:00~07:50, 08:00~09:50, 12:30~14:20, 19:00~20:50. 토요일·공휴일은 체육관 대관."
+   }
   },
   {
    "id": "v-kr-3b50d4b0",
@@ -237,6 +273,9 @@
     "perPerson": 3500
    },
    "playTimes": "Badminton day passes Sat–Sun 9–10:50 AM and 11 AM–12:50 PM, up to 18 people per session. Weekdays are lessons only.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 토·일 09:00~10:50, 11:00~12:50, 회당 최대 18명. 평일은 강습만 운영."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -256,7 +295,10 @@
    "price": {
     "perPerson": 3000
    },
-   "playTimes": "Day entry in sessions: weekdays 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6–10 PM; weekends and holidays 6–8:50 AM, 9–11:50 AM, 1–3:50 PM and 4–6:50 PM. Closed the first Monday of each month, New Year's Day, Seollal, Chuseok, May 1 and election days."
+   "playTimes": "Day entry in sessions: weekdays 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6–10 PM; weekends and holidays 6–8:50 AM, 9–11:50 AM, 1–3:50 PM and 4–6:50 PM. Closed the first Monday of each month, New Year's Day, Seollal, Chuseok, May 1 and election days.",
+   "playTimesLocal": {
+    "ko": "일일입장 부제 운영: 평일 06:00~09:00, 09:30~12:30, 14:00~17:00, 18:00~22:00 / 주말·공휴일 06:00~08:50, 09:00~11:50, 13:00~15:50, 16:00~18:50. 매월 첫째 월요일, 1월 1일, 설날, 추석, 5월 1일, 선거일 휴관."
+   }
   },
   {
    "id": "v-kr-4aba5672",
@@ -276,6 +318,9 @@
     "perPerson": 1500
    },
    "playTimes": "Badminton day entry (age 13+) Mon–Sat 6–8:55 AM and Mon–Fri 9 AM–12:55 PM.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장(13세 이상) 월~토 06:00~08:55, 월~금 09:00~12:55."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -296,6 +341,9 @@
     "perPerson": 2250
    },
    "playTimes": "Open badminton Mon–Sat 6 AM–9:30 PM and Sundays and holidays 6 AM–5:30 PM, pay per session (2 hours play). Closed the first and third Sunday of each month.",
+   "playTimesLocal": {
+    "ko": "배드민턴 자유이용 월~토 06:00~21:30, 일요일·공휴일 06:00~17:30, 회당 요금(2시간 이용). 매월 첫째·셋째 일요일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -316,6 +364,9 @@
     "perPerson": 2700
    },
    "playTimes": "Open badminton Mon–Sat 6–7:50 AM, plus Sat 7–8:50 PM. Closed on the second, fourth and fifth Sunday of each month and on public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 자유이용 월~토 06:00~07:50, 토요일은 19:00~20:50 추가. 매월 둘째·넷째·다섯째 일요일, 공휴일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -335,7 +386,10 @@
    "price": {
     "perPerson": 2000
    },
-   "playTimes": "Open to the public Mon–Fri 7 AM–10 PM and Sat, Sun and holidays 7 AM–6 PM. Closed the first Monday and third Tuesday of each month."
+   "playTimes": "Open to the public Mon–Fri 7 AM–10 PM and Sat, Sun and holidays 7 AM–6 PM. Closed the first Monday and third Tuesday of each month.",
+   "playTimesLocal": {
+    "ko": "일반 개방 월~금 07:00~22:00, 토·일·공휴일 07:00~18:00. 매월 첫째 월요일, 셋째 화요일 휴관."
+   }
   },
   {
    "id": "v-kr-5ce503f3",
@@ -355,6 +409,9 @@
     "perCourtHour": 15000
    },
    "playTimes": "Badminton court rental Mon, Wed and Fri 7:30–8:30 PM and 8:30–9:30 PM, Tue and Thu 8:30–9:30 PM. Closed on Sundays and national holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 코트 대관 월·수·금 19:30~20:30, 20:30~21:30 / 화·목 20:30~21:30. 일요일·공휴일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -371,7 +428,10 @@
    "web": "https://cs.sscmc.or.kr/sdmcs/32",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "No open badminton sessions are listed. Groups can rent the main hall or the annex hall, both used for badminton, in 2-hour slots."
+   "playTimes": "No open badminton sessions are listed. Groups can rent the main hall or the annex hall, both used for badminton, in 2-hour slots.",
+   "playTimesLocal": {
+    "ko": "배드민턴 자유이용 시간 안내 없음. 단체는 배드민턴용 주체육관 또는 별관 체육관을 2시간 단위로 대관 가능."
+   }
   },
   {
    "id": "v-kr-62389c60",
@@ -387,7 +447,10 @@
    "web": "https://www.auc.or.kr/hgsports/contents/view?contentsNo=329&menuLevel=2&menuNo=260",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Badminton courts are booked in 90-minute slots Mon-Sat 9 AM-10 PM and Sun and holidays 9 AM-6 PM. Closed on the third Monday of each month."
+   "playTimes": "Badminton courts are booked in 90-minute slots Mon-Sat 9 AM-10 PM and Sun and holidays 9 AM-6 PM. Closed on the third Monday of each month.",
+   "playTimesLocal": {
+    "ko": "배드민턴 코트 예약 90분 단위, 월~토 09:00~22:00, 일요일·공휴일 09:00~18:00. 매월 셋째 월요일 휴관."
+   }
   },
   {
    "id": "v-kr-627cfb12",
@@ -406,7 +469,10 @@
    "price": {
     "perPerson": 3000
    },
-   "playTimes": "Open Mon–Fri 9 AM–10 PM and Sat and public holidays 9 AM–7 PM; closed Sundays."
+   "playTimes": "Open Mon–Fri 9 AM–10 PM and Sat and public holidays 9 AM–7 PM; closed Sundays.",
+   "playTimesLocal": {
+    "ko": "운영 월~금 09:00~22:00, 토·공휴일 09:00~19:00, 일요일 휴관."
+   }
   },
   {
    "id": "v-kr-62d3fb11",
@@ -422,7 +488,10 @@
    "web": "https://sports.happysd.or.kr/fmcs/20",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "No open badminton sessions. Groups can rent the main hall Mon/Wed/Fri 8–10 PM, Tue/Thu 7–8 PM, Sat 5:30–7:30 PM and Sun 9 AM–5 PM. Closed on Sundays for regular programs."
+   "playTimes": "No open badminton sessions. Groups can rent the main hall Mon/Wed/Fri 8–10 PM, Tue/Thu 7–8 PM, Sat 5:30–7:30 PM and Sun 9 AM–5 PM. Closed on Sundays for regular programs.",
+   "playTimesLocal": {
+    "ko": "배드민턴 자유이용 없음. 단체 주체육관 대관 월·수·금 20:00~22:00, 화·목 19:00~20:00, 토 17:30~19:30, 일 09:00~17:00. 정규 프로그램은 일요일 휴강."
+   }
   },
   {
    "id": "v-kr-71ad49ae",
@@ -441,7 +510,10 @@
    "price": {
     "perPerson": 3000
    },
-   "playTimes": "Day entry for badminton or table tennis in 2-hour slots: Mon–Fri 6 AM–noon and 2–10 PM, Sat noon–8 PM, Sun 10 AM–noon and 1–5 PM."
+   "playTimes": "Day entry for badminton or table tennis in 2-hour slots: Mon–Fri 6 AM–noon and 2–10 PM, Sat noon–8 PM, Sun 10 AM–noon and 1–5 PM.",
+   "playTimesLocal": {
+    "ko": "배드민턴·탁구 일일입장 2시간 단위: 월~금 06:00~12:00, 14:00~22:00 / 토 12:00~20:00 / 일 10:00~12:00, 13:00~17:00."
+   }
   },
   {
    "id": "v-kr-73c87597",
@@ -460,7 +532,10 @@
    "price": {
     "perPerson": 2500
    },
-   "playTimes": "Badminton day passes Mon–Fri 12:10–2:10 PM, up to 24 people. No day passes on public holidays or center closure days."
+   "playTimes": "Badminton day passes Mon–Fri 12:10–2:10 PM, up to 24 people. No day passes on public holidays or center closure days.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 월~금 12:10~14:10, 최대 24명. 공휴일과 센터 휴관일에는 일일입장 없음."
+   }
   },
   {
    "id": "v-kr-7484c7b8",
@@ -476,7 +551,10 @@
    "web": "https://sports.idongjak.or.kr/home/44",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Monthly-pass badminton free play Mon–Fri 7–11:50 AM, 2 hours per entry. Group classes Mon–Thu 7–8:20 PM."
+   "playTimes": "Monthly-pass badminton free play Mon–Fri 7–11:50 AM, 2 hours per entry. Group classes Mon–Thu 7–8:20 PM.",
+   "playTimesLocal": {
+    "ko": "월 회원 배드민턴 자유이용 월~금 07:00~11:50, 1회 2시간. 단체 강습 월~목 19:00~20:20."
+   }
   },
   {
    "id": "v-kr-75547542",
@@ -495,7 +573,10 @@
    "price": {
     "perPerson": 2700
    },
-   "playTimes": "Open badminton Mon–Fri 6–7:50 AM and 8–9:50 PM, Sat 6–7:50 AM and 7–8:50 PM. Closed on the first, third and fifth Sunday of each month and on public holidays."
+   "playTimes": "Open badminton Mon–Fri 6–7:50 AM and 8–9:50 PM, Sat 6–7:50 AM and 7–8:50 PM. Closed on the first, third and fifth Sunday of each month and on public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 자유이용 월~금 06:00~07:50, 20:00~21:50 / 토 06:00~07:50, 19:00~20:50. 매월 첫째·셋째·다섯째 일요일, 공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-78724a8c",
@@ -514,7 +595,10 @@
    "price": {
     "perCourtHour": 2500
    },
-   "playTimes": "Badminton court booking Mon-Fri 6 AM-10 PM, Sat, Sun and holidays 6 AM-5 PM."
+   "playTimes": "Badminton court booking Mon-Fri 6 AM-10 PM, Sat, Sun and holidays 6 AM-5 PM.",
+   "playTimesLocal": {
+    "ko": "배드민턴 코트 예약 월~금 06:00~22:00, 토·일·공휴일 06:00~17:00."
+   }
   },
   {
    "id": "v-kr-7ca801eb",
@@ -531,6 +615,9 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "Badminton is a monthly program by lottery sign-up; no drop-in times are listed.",
+   "playTimesLocal": {
+    "ko": "배드민턴은 추첨으로 접수하는 월 단위 프로그램. 자유이용 시간 안내 없음."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -550,7 +637,10 @@
    "price": {
     "perPerson": 3200
    },
-   "playTimes": "Four sessions daily: 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6:30–9:30 PM. Closed on the 2nd and 4th Mondays, New Year's Day, Seollal, Chuseok and national holidays (except Sundays)."
+   "playTimes": "Four sessions daily: 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6:30–9:30 PM. Closed on the 2nd and 4th Mondays, New Year's Day, Seollal, Chuseok and national holidays (except Sundays).",
+   "playTimesLocal": {
+    "ko": "매일 4부제: 06:00~09:00, 09:30~12:30, 14:00~17:00, 18:30~21:30. 둘째·넷째 월요일, 1월 1일, 설날, 추석, 공휴일(일요일 제외) 휴관."
+   }
   },
   {
    "id": "v-kr-821fd3b6",
@@ -567,6 +657,9 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "Open 6 AM–10 PM; closed on public holidays.",
+   "playTimesLocal": {
+    "ko": "운영 06:00~22:00, 공휴일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -586,7 +679,10 @@
    "price": {
     "perPerson": 2800
    },
-   "playTimes": "Open daily 6 AM–10 PM. Closed on the first and third Monday of each month and on New Year’s Day, Seollal, Chuseok, Buddha’s Birthday and Christmas."
+   "playTimes": "Open daily 6 AM–10 PM. Closed on the first and third Monday of each month and on New Year’s Day, Seollal, Chuseok, Buddha’s Birthday and Christmas.",
+   "playTimesLocal": {
+    "ko": "매일 06:00~22:00 운영. 매월 첫째·셋째 월요일, 1월 1일, 설날, 추석, 부처님오신날, 성탄절 휴관."
+   }
   },
   {
    "id": "v-kr-8de08539",
@@ -602,7 +698,10 @@
    "web": "https://www.ubimc.or.kr/pageCont.do?menuNo=4040000",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "The gym can be rented Tue–Fri 12–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays."
+   "playTimes": "The gym can be rented Tue–Fri 12–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays.",
+   "playTimesLocal": {
+    "ko": "체육관 대관 화~금 12:00~21:00, 주말·공휴일 08:00~17:00. 월요일 휴관."
+   }
   },
   {
    "id": "v-kr-a3821c85",
@@ -619,6 +718,9 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "The gym (9 badminton courts) is rented by online booking; staffed hours are 9 AM–6 PM with no closing days. Ask the booking office about other times.",
+   "playTimesLocal": {
+    "ko": "체육관(배드민턴 코트 9면)은 온라인 예약으로 대관. 근무시간 09:00~18:00, 휴관일 없음. 그 외 시간은 예약 담당에 문의."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -635,7 +737,10 @@
    "web": "https://life.gangnam.go.kr/fmcs/104",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Open-play badminton for monthly members Mon–Fri 6–7:50 AM and 10–11:50 AM in the 4th-floor main gym. Closed on public holidays."
+   "playTimes": "Open-play badminton for monthly members Mon–Fri 6–7:50 AM and 10–11:50 AM in the 4th-floor main gym. Closed on public holidays.",
+   "playTimesLocal": {
+    "ko": "월 회원 배드민턴 자유이용 월~금 06:00~07:50, 10:00~11:50, 4층 주체육관. 공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-aaa6ba0d",
@@ -652,6 +757,9 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "No open play listed; badminton lessons run 6 AM–10 PM and the main gym can be rented by groups.",
+   "playTimesLocal": {
+    "ko": "자유이용 안내 없음. 배드민턴 강습 06:00~22:00, 주체육관 단체 대관 가능."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -671,7 +779,10 @@
    "price": {
     "perPerson": 3000
    },
-   "playTimes": "Badminton Mon–Fri 9:30 AM–12 PM. Closed Saturdays, Sundays and public holidays."
+   "playTimes": "Badminton Mon–Fri 9:30 AM–12 PM. Closed Saturdays, Sundays and public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 월~금 09:30~12:00. 토·일요일, 공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-adcd39bd",
@@ -690,7 +801,10 @@
    "price": {
     "perPerson": 3000
    },
-   "playTimes": "Open Mon–Fri 6 AM–10 PM (closed 1–2 PM for cleaning) and weekends and holidays 6 AM–9 PM in 3-hour sessions. Closed on the second Monday and fourth Tuesday of each month and on New Year’s Day, Seollal and Chuseok."
+   "playTimes": "Open Mon–Fri 6 AM–10 PM (closed 1–2 PM for cleaning) and weekends and holidays 6 AM–9 PM in 3-hour sessions. Closed on the second Monday and fourth Tuesday of each month and on New Year’s Day, Seollal and Chuseok.",
+   "playTimesLocal": {
+    "ko": "운영 월~금 06:00~22:00(13:00~14:00 청소), 주말·공휴일 06:00~21:00, 3시간 단위 이용. 매월 둘째 월요일·넷째 화요일, 1월 1일, 설날, 추석 휴관."
+   }
   },
   {
    "id": "v-kr-ae6656ef",
@@ -706,7 +820,10 @@
    "web": "https://www.mapo.go.kr/site/main/content/mapo05040507",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Open 6 AM–10 PM. Closed the last Monday of each month and over New Year's Day, Seollal and Chuseok."
+   "playTimes": "Open 6 AM–10 PM. Closed the last Monday of each month and over New Year's Day, Seollal and Chuseok.",
+   "playTimesLocal": {
+    "ko": "운영 06:00~22:00. 매월 마지막 월요일, 1월 1일, 설날·추석 연휴 휴관."
+   }
   },
   {
    "id": "v-kr-b12da30a",
@@ -722,7 +839,10 @@
    "web": "https://sports.yeonje.go.kr/subpage/index/110",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Badminton lessons Tue–Fri 6–8 AM and 6–9 PM. Open badminton on the first and third Mondays of the month; closed on the second and fourth Mondays."
+   "playTimes": "Badminton lessons Tue–Fri 6–8 AM and 6–9 PM. Open badminton on the first and third Mondays of the month; closed on the second and fourth Mondays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 강습 화~금 06:00~08:00, 18:00~21:00. 매월 첫째·셋째 월요일은 배드민턴 자유이용, 둘째·넷째 월요일 휴관."
+   }
   },
   {
    "id": "v-kr-b454b87c",
@@ -743,6 +863,9 @@
     "perCourtHour": 15000
    },
    "playTimes": "Badminton day passes daily 6–8:50 AM, 10 AM–12:50 PM, 2–4:50 PM, 5–6:20 PM and 7–9:50 PM. Closed on the 2nd and 4th Mondays, New Year's Day, Seollal, Labor Day and Chuseok.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 매일 06:00~08:50, 10:00~12:50, 14:00~16:50, 17:00~18:20, 19:00~21:50. 둘째·넷째 월요일, 1월 1일, 설날, 노동절, 추석 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -762,7 +885,10 @@
    "price": {
     "perPerson": 3500
    },
-   "playTimes": "Badminton day passes daily 6–8:50 AM, 10 AM–12:50 PM, 2–4:50 PM, 5–6:30 PM and 7–9:50 PM; on the 2nd and 4th Sundays 9–11:30 AM, 12–2:30 PM and 3–5:30 PM. Closed on New Year's Day, Seollal, Labor Day and Chuseok."
+   "playTimes": "Badminton day passes daily 6–8:50 AM, 10 AM–12:50 PM, 2–4:50 PM, 5–6:30 PM and 7–9:50 PM; on the 2nd and 4th Sundays 9–11:30 AM, 12–2:30 PM and 3–5:30 PM. Closed on New Year's Day, Seollal, Labor Day and Chuseok.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 매일 06:00~08:50, 10:00~12:50, 14:00~16:50, 17:00~18:30, 19:00~21:50 / 둘째·넷째 일요일 09:00~11:30, 12:00~14:30, 15:00~17:30. 1월 1일, 설날, 노동절, 추석 휴관."
+   }
   },
   {
    "id": "v-kr-c2ba0efd",
@@ -782,6 +908,9 @@
     "perPerson": 2400
    },
    "playTimes": "Badminton day passes Tue–Fri 6 AM–10 PM, Sat 6 AM–6 PM, Sun 9 AM–6 PM. Closed Mondays, national holidays and the New Year, Seollal and Chuseok holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 화~금 06:00~22:00, 토 06:00~18:00, 일 09:00~18:00. 월요일, 공휴일, 1월 1일·설날·추석 연휴 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -801,7 +930,10 @@
    "price": {
     "perPerson": 2000
    },
-   "playTimes": "Badminton Mon, Tue, Wed and Fri evenings (sessions 6–8 PM and 7–9 PM), and Sat, Sun and public holidays 9 AM–10 PM. Thursday evenings are for jokgu."
+   "playTimes": "Badminton Mon, Tue, Wed and Fri evenings (sessions 6–8 PM and 7–9 PM), and Sat, Sun and public holidays 9 AM–10 PM. Thursday evenings are for jokgu.",
+   "playTimesLocal": {
+    "ko": "배드민턴 월·화·수·금 저녁(18:00~20:00, 19:00~21:00), 토·일·공휴일 09:00~22:00. 목요일 저녁은 족구."
+   }
   },
   {
    "id": "v-kr-d7a61393",
@@ -818,6 +950,9 @@
    "facility": "recCenter",
    "checked": "2026-11-20",
    "playTimes": "Adult badminton (monthly sign-up) Mon–Sat 6–8:20 AM. Closed on national holidays and Labor Day.",
+   "playTimesLocal": {
+    "ko": "성인 배드민턴(월 단위 접수) 월~토 06:00~08:20. 공휴일·노동절 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -837,7 +972,10 @@
    "price": {
     "perCourtHour": 2500
    },
-   "playTimes": "Badminton court booking Mon-Fri 6 AM-10 PM, Sat, Sun and holidays 6 AM-7 PM. Closed on the third Friday of each month."
+   "playTimes": "Badminton court booking Mon-Fri 6 AM-10 PM, Sat, Sun and holidays 6 AM-7 PM. Closed on the third Friday of each month.",
+   "playTimesLocal": {
+    "ko": "배드민턴 코트 예약 월~금 06:00~22:00, 토·일·공휴일 06:00~19:00. 매월 셋째 금요일 휴관."
+   }
   },
   {
    "id": "v-kr-dd016198",
@@ -856,7 +994,10 @@
    "price": {
     "perPerson": 3300
    },
-   "playTimes": "Day-entry badminton Mon and Wed 6–8:50 AM and 12–6:50 PM; Tue, Thu and Fri 6 AM–9:50 PM; Sat–Sun 9 AM–12:30 PM and 1–4:50 PM. Each entry is 2 hours, first come first served."
+   "playTimes": "Day-entry badminton Mon and Wed 6–8:50 AM and 12–6:50 PM; Tue, Thu and Fri 6 AM–9:50 PM; Sat–Sun 9 AM–12:30 PM and 1–4:50 PM. Each entry is 2 hours, first come first served.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 월·수 06:00~08:50, 12:00~18:50 / 화·목·금 06:00~21:50 / 토·일 09:00~12:30, 13:00~16:50. 1회 2시간, 선착순."
+   }
   },
   {
    "id": "v-kr-dd46d282",
@@ -876,6 +1017,9 @@
     "perPerson": 2200
    },
    "playTimes": "Open daily 6 AM-10 PM; one ticket covers 3 hours. Closed on the 1st and 3rd Monday of each month, New Year's Day, Lunar New Year, Chuseok and public holidays.",
+   "playTimesLocal": {
+    "ko": "매일 06:00~22:00 운영, 1회 3시간 이용. 매월 첫째·셋째 월요일, 1월 1일, 설날, 추석, 공휴일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -892,7 +1036,10 @@
    "web": "https://www.efmc.or.kr/fmcs/221",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Badminton is a monthly class in the main gym, Mon, Wed and Fri 7–8:20 PM and 8:30–9:50 PM (lessons Mon and Wed, games Fri). No badminton day pass is listed."
+   "playTimes": "Badminton is a monthly class in the main gym, Mon, Wed and Fri 7–8:20 PM and 8:30–9:50 PM (lessons Mon and Wed, games Fri). No badminton day pass is listed.",
+   "playTimesLocal": {
+    "ko": "배드민턴은 주체육관 월 단위 강습: 월·수·금 19:00~20:20, 20:30~21:50(월·수 강습, 금 게임). 배드민턴 일일입장 안내 없음."
+   }
   },
   {
    "id": "v-kr-e70293a2",
@@ -908,7 +1055,10 @@
    "web": "https://life.gangnam.go.kr/fmcs/105",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Badminton classes; the building is open Mon–Fri 6 AM–10 PM and Sat 6 AM–6 PM, closed Sundays and public holidays."
+   "playTimes": "Badminton classes; the building is open Mon–Fri 6 AM–10 PM and Sat 6 AM–6 PM, closed Sundays and public holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 강습 운영. 건물 운영 월~금 06:00~22:00, 토 06:00~18:00, 일요일·공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-e94c4721",
@@ -924,7 +1074,10 @@
    "web": "https://www.sygsports.co.kr/sub/progapp.php?pn=0305",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "Open-play badminton for monthly members Mon–Fri 6–7:20 AM, 5:30–6:50 PM, 7–8:20 PM and 8:30–9:50 PM. Closed Sundays and public holidays."
+   "playTimes": "Open-play badminton for monthly members Mon–Fri 6–7:20 AM, 5:30–6:50 PM, 7–8:20 PM and 8:30–9:50 PM. Closed Sundays and public holidays.",
+   "playTimesLocal": {
+    "ko": "월 회원 배드민턴 자유이용 월~금 06:00~07:20, 17:30~18:50, 19:00~20:20, 20:30~21:50. 일요일·공휴일 휴관."
+   }
   },
   {
    "id": "v-kr-ea2a160b",
@@ -943,7 +1096,10 @@
    "price": {
     "perPerson": 3000
    },
-   "playTimes": "Day entry Mon–Sat 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6:30–9:30 PM; 1st and 3rd Sundays 9 AM–1 PM and 2–6 PM. Closed on the 2nd, 4th and 5th Sundays, national holidays and Labor Day."
+   "playTimes": "Day entry Mon–Sat 6–9 AM, 9:30 AM–12:30 PM, 2–5 PM and 6:30–9:30 PM; 1st and 3rd Sundays 9 AM–1 PM and 2–6 PM. Closed on the 2nd, 4th and 5th Sundays, national holidays and Labor Day.",
+   "playTimesLocal": {
+    "ko": "일일입장 월~토 06:00~09:00, 09:30~12:30, 14:00~17:00, 18:30~21:30 / 첫째·셋째 일요일 09:00~13:00, 14:00~18:00. 둘째·넷째·다섯째 일요일, 공휴일, 노동절 휴관."
+   }
   },
   {
    "id": "v-kr-f464dc8b",
@@ -962,7 +1118,10 @@
    "price": {
     "perPerson": 2000
    },
-   "playTimes": "Badminton day passes Mon, Tue, Thu and Fri 9 AM–4 PM, Wed 9 AM–12:30 PM, Sat–Sun 9 AM–1 PM. Closed on New Year's Day and the Seollal and Chuseok holidays."
+   "playTimes": "Badminton day passes Mon, Tue, Thu and Fri 9 AM–4 PM, Wed 9 AM–12:30 PM, Sat–Sun 9 AM–1 PM. Closed on New Year's Day and the Seollal and Chuseok holidays.",
+   "playTimesLocal": {
+    "ko": "배드민턴 일일입장 월·화·목·금 09:00~16:00, 수 09:00~12:30, 토·일 09:00~13:00. 1월 1일, 설날·추석 연휴 휴관."
+   }
   },
   {
    "id": "v-kr-f51b021c",
@@ -978,7 +1137,10 @@
    "web": "https://www.youth1318.or.kr/y0601.asp",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "No open badminton sessions. The gym, with badminton nets, can be rented any day in 2-hour blocks; ask for available times."
+   "playTimes": "No open badminton sessions. The gym, with badminton nets, can be rented any day in 2-hour blocks; ask for available times.",
+   "playTimesLocal": {
+    "ko": "배드민턴 자유이용 없음. 배드민턴 네트가 있는 체육관을 매일 2시간 단위로 대관 가능, 가능 시간은 문의."
+   }
   },
   {
    "id": "v-kr-f91ef494",
@@ -994,7 +1156,10 @@
    "web": "https://www.ubimc.or.kr/pageCont.do?menuNo=4040000",
    "facility": "recCenter",
    "checked": "2026-11-20",
-   "playTimes": "The gym can be rented Tue–Fri 12–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays."
+   "playTimes": "The gym can be rented Tue–Fri 12–9 PM and on weekends and public holidays 8 AM–5 PM. Closed Mondays.",
+   "playTimesLocal": {
+    "ko": "체육관 대관 화~금 12:00~21:00, 주말·공휴일 08:00~17:00. 월요일 휴관."
+   }
   },
   {
    "id": "v-kr-fa69d552",
@@ -1014,6 +1179,9 @@
     "perPerson": 3000
    },
    "playTimes": "Drop-in badminton Mon–Fri 6–8:50 AM and 9:30–11:50 AM, ages 13 and up. Closed on public holidays and on the first and third Sundays of each month.",
+   "playTimesLocal": {
+    "ko": "배드민턴 자유이용 월~금 06:00~08:50, 09:30~11:50, 13세 이상. 공휴일, 매월 첫째·셋째 일요일 휴관."
+   },
    "attr": "Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)"
   },
   {
@@ -1033,7 +1201,10 @@
    "price": {
     "perPerson": 2200
    },
-   "playTimes": "Badminton and table tennis drop-in Mon–Fri 6 AM–9:40 PM and Sat 6 AM–5:30 PM, one 2-hour visit per day."
+   "playTimes": "Badminton and table tennis drop-in Mon–Fri 6 AM–9:40 PM and Sat 6 AM–5:30 PM, one 2-hour visit per day.",
+   "playTimesLocal": {
+    "ko": "배드민턴·탁구 자유이용 월~금 06:00~21:40, 토 06:00~17:30, 하루 1회 2시간."
+   }
   }
  ]
 }
