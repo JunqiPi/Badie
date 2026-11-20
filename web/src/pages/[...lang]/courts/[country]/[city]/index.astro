@@ -40,7 +40,7 @@ const facts = [
 <Base
   title={fitTitle(t('Badminton courts in {place} — Badie', { place: name }), t('Badminton courts in {place}', { place: name }))}
   description={facts.join(' ').length > 160 ? facts.slice(0, 2).join(' ') : facts.join(' ')}
-  noindex={!city.indexable}
+  noindex={!city.indexable || Astro.url.pathname.startsWith('/zh/')}
 >
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }, { label: country.name, href: country.path, region: country.code }]} />
 

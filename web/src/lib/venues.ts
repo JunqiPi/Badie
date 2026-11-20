@@ -9,6 +9,11 @@ const catalogDirs = [
   { dir: join(process.cwd(), '..', 'supabase', 'data'), pages: false },
 ];
 const MIN_CITY_PAGE = 3;
+/**
+ * 搜索引擎只收录我们自己核对过的（2026-11-20：Google 把几千个只有名字、地址的模板页整站拿出了索引）：
+ * 这几个国家里，对照官网核对过价格或开放时间的球馆页、至少有一家这种球馆的城市页、国家页。其余照常能看，只是不让收录
+ */
+export const FOCUS_COUNTRIES = new Set(['us', 'gb', 'kr', 'jp']);
 
 type Source = 'curated' | 'openStreetMap' | 'openData';
 type Facility = 'dedicated' | 'multiSport' | 'recCenter' | 'school' | 'communityHall' | 'outdoor';
@@ -241,8 +246,8 @@ function load(): Country[] {
     const taken = venueSlugs.get(city) ?? new Set<string>();
     venueSlugs.set(city, taken);
     const slug = entry.hasPage ? uniqueSlug(slugify(englishName(entry) ?? entry.name), taken) : '';
-    // 只有名字和地址的页面对搜索没有价值，先不让收录，等有了场地数、价格或球友贡献再放开
-    const indexable = entry.hasPage && (entry.courts !== undefined || entry.price !== undefined || entry.playTimes !== undefined);
+    // 只收录核对过价格或开放时间的（见 FOCUS_COUNTRIES）
+    const indexable = entry.hasPage && FOCUS_COUNTRIES.has(code) && (entry.price !== undefined || entry.playTimes !== undefined);
     city.venues.push({ ...entry, slug, path: entry.hasPage ? `${city.path}${slug}/` : mapLink(entry), indexable });
     country.venueCount++;
 
@@ -263,8 +268,8 @@ function load(): Country[] {
 
   for (const city of cities.values()) {
     city.venues.sort((a, b) => a.name.localeCompare(b.name));
-    city.indexable = city.venues.length >= MIN_CITY_PAGE;
-    city.hasPage = city.indexable || city.venues.some((v) => v.hasPage);
+    city.hasPage = city.venues.length >= MIN_CITY_PAGE || city.venues.some((v) => v.hasPage);
+    city.indexable = city.hasPage && city.venues.some((v) => v.indexable);
     if (!city.hasPage) city.path = `${countries.get(city.country)!.path}#area-${city.slug}`;
   }
   for (const country of countries.values()) {
@@ -304,8 +309,8 @@ export function movedPaths(): [string, string][] {
 }
 
 export function noindexPaths(): Set<string> {
-  // 只有一个城市的国家（新加坡）：国家页和城市页内容重复，只收录城市页
-  const single = countries.filter((c) => c.cities.length === 1);
+  // 不在 FOCUS_COUNTRIES 里的国家页不收录；只有一个城市的国家（新加坡）国家页和城市页内容重复，也不收录
+  const single = countries.filter((c) => !FOCUS_COUNTRIES.has(c.code) || c.cities.length === 1);
   return new Set([...single, ...cityPages.filter((c) => !c.indexable), ...venuePages.filter((v) => !v.indexable)].map((p) => p.path));
 }
 

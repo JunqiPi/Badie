@@ -4,7 +4,6 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { movedPaths, noindexPaths } from './src/lib/venues';
-import { isVenuePath } from './src/lib/static-i18n';
 
 // 安卓 App 的安装包：web.yml 在构建前从最新的安卓 Release 下载到 public/android/（见 src/app/androidApp.ts）。
 // 有的话把 version.json 交给页面（PUBLIC_ 开头的环境变量浏览器里也能读），没有就不显示下载
@@ -53,13 +52,13 @@ export default defineConfig({
   site: process.env.SITE_URL || 'http://localhost:4321',
   trailingSlash: 'always',
   devToolbar: { enabled: false },
-  // 站点地图不收 noindex 的球馆页和中文版球馆页（各语言前缀和 src/app/i18n.ts 的 pathPrefixes 一致）
+  // 站点地图不收 noindex 的球馆目录页面和中文版球馆目录（各语言前缀和 src/app/i18n.ts 的 pathPrefixes 一致）
   integrations: [react(), movedRedirects(), sitemap({
     filter: (page) => {
       const path = decodeURIComponent(new URL(page).pathname);
       const english = path.replace(/^\/(?:zh-hant|zh|ja|ko|id|ms|th|vi|hi)(?=\/)/, '');
-      // 不收录的球馆页、城市页不进；中文版球馆页也不进（只有英文版收录）
-      return !hidden.has(english) && !(english !== path && isVenuePath(english));
+      // 不收录的球馆页、城市页、国家页不进；球馆目录的中文版也不进（只有英文版收录）
+      return !hidden.has(english) && !(english !== path && english.startsWith('/courts/'));
     },
   })],
   vite: { plugins: [tailwindcss()] },

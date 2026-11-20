@@ -17,6 +17,7 @@ const rest = byContinent(countries.slice(featured.length));
 ---
 
 <Base
+  noindex={Astro.url.pathname.startsWith('/zh/')}
   title={t('Badminton courts by country — Badie')}
   description={t('{n} badminton courts in {countries} countries, from government open data, OpenStreetMap and players.', { n: allVenues.length.toLocaleString('en'), countries: countries.length })}
 >

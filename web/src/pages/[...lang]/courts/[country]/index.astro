@@ -2,7 +2,7 @@
 import Base from '../../../../layouts/Base.astro';
 import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
 import { PinsMap } from '../../../../app/PinsMap';
-import { cityName, countries, formatAddress, inCountry, regionLabel, type City, type Country } from '../../../../lib/venues';
+import { cityName, countries, formatAddress, inCountry, noindexPaths, regionLabel, type City, type Country } from '../../../../lib/venues';
 import { metros as allMetros } from '../../../../lib/metros';
 import { languages, pageLocale, regionName, translator } from '../../../../lib/static-i18n';
 
@@ -11,6 +11,7 @@ export function getStaticPaths() {
 }
 
 const { country } = Astro.props as { country: Country };
+const hidden = noindexPaths();
 const t = translator(Astro.url.pathname);
 const place = pageLocale(Astro.url.pathname) === 'en' ? inCountry(country) : regionName(country.code, pageLocale(Astro.url.pathname), country.name);
 const venues = country.cities.flatMap((c) => c.venues);
@@ -40,7 +41,7 @@ const zh = pageLocale(Astro.url.pathname) === 'zh-Hans';
 
 <Base
   title={t('Badminton courts in {place} — Badie', { place })}
-  noindex={country.cities.length === 1}
+  noindex={hidden.has(country.path) || Astro.url.pathname.startsWith('/zh/')}
   description={t('{n} badminton courts across {areas} areas in {place}.', { n: country.venueCount.toLocaleString('en'), areas: country.cities.length, place })}
 >
   <Breadcrumbs items={[{ label: 'Courts', href: '/courts/' }]} />

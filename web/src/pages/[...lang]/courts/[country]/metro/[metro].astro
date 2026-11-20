@@ -71,6 +71,7 @@ const jsonLd = {
 ---
 
 <Base
+  noindex={Astro.url.pathname.startsWith('/zh/')}
   title={fitTitle(
     t('Badminton in {place}: drop-in prices and courts — Badie', { place }),
     t('Badminton in {place}: drop-in prices and courts', { place }),
