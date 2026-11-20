@@ -177,6 +177,9 @@ function cityRegions(venues: CatalogEntry[]): Map<CatalogEntry, string> {
   return result;
 }
 
+/** 旧分法的城市：地址、里面的球馆、有页面的球馆的旧地址 */
+let oldCityList: { path: string; members: CatalogEntry[]; pages: boolean; venues: { venue: CatalogEntry; slug: string }[] }[] = [];
+
 function load(): Country[] {
   const venues = catalogDirs.flatMap(({ dir, pages }) =>
     readdirSync(dir)
@@ -201,6 +204,9 @@ function load(): Country[] {
   const citySlugs = new Map<string, Set<string>>();
   const venueSlugs = new Map<City, Set<string>>();
   const regionOf = cityRegions(venues);
+  // 2026-11-19 以前的分法（地区按原样、不并同名城市）算出的旧地址，给 movedPaths() 做跳转
+  const oldCities = new Map<string, { path: string; members: CatalogEntry[]; pages: boolean; slugs: Set<string>; venues: { venue: CatalogEntry; slug: string }[] }>();
+  const oldCitySlugs = new Map<string, Set<string>>();
 
   for (const entry of venues) {
     const code = entry.country.toLowerCase();
@@ -239,6 +245,20 @@ function load(): Country[] {
     const indexable = entry.hasPage && (entry.courts !== undefined || entry.price !== undefined || entry.playTimes !== undefined);
     city.venues.push({ ...entry, slug, path: entry.hasPage ? `${city.path}${slug}/` : mapLink(entry), indexable });
     country.venueCount++;
+
+    const oldRegion = ['HK', 'SG'].includes(entry.country) ? '' : entry.region;
+    const oldKey = `${code}|${oldRegion}|${entry.city}`;
+    let old = oldCities.get(oldKey);
+    if (!old) {
+      const taken = oldCitySlugs.get(code) ?? new Set<string>();
+      oldCitySlugs.set(code, taken);
+      const oldSlug = uniqueSlug(slugify(oldRegion && !entry.city.includes(oldRegion) ? `${entry.city} ${oldRegion}` : entry.city), taken);
+      old = { path: `${country.path}${oldSlug}/`, members: [], pages: false, slugs: new Set(), venues: [] };
+      oldCities.set(oldKey, old);
+    }
+    old.members.push(entry);
+    old.pages ||= entry.hasPage;
+    if (entry.hasPage) old.venues.push({ venue: entry, slug: uniqueSlug(slugify(englishName(entry) ?? entry.name), old.slugs) });
   }
 
   for (const city of cities.values()) {
@@ -250,6 +270,7 @@ function load(): Country[] {
   for (const country of countries.values()) {
     country.cities.sort((a, b) => b.venues.length - a.venues.length || a.name.localeCompare(b.name));
   }
+  oldCityList = [...oldCities.values()];
   return [...countries.values()].sort((a, b) => Number(b.code === 'us') - Number(a.code === 'us') || b.venueCount - a.venueCount);
 }
 
@@ -260,6 +281,27 @@ export const cityName = (city: City) => (city.region ? `${city.name}, ${city.reg
 export const allVenues = allCities.flatMap((c) => c.venues);
 export const venuePages = allVenues.filter((v) => v.hasPage);
 export const cityPages = allCities.filter((c) => c.hasPage);
+
+/**
+ * 城市的分法改过（2026-11-19：州 / 省统一成缩写、同名的近处城市并成一个），以前收录的城市页、球馆页地址变了。
+ * 构建时写进 _redirects 做 301（见 astro.config.ts）。只跳以前有页面、现在地址不一样、新地址上没有别的页面的
+ */
+export function movedPaths(): [string, string][] {
+  const current = new Set([...cityPages.map((c) => c.path), ...venuePages.map((v) => v.path)]);
+  const byId = new Map(allVenues.map((v) => [v.id, v]));
+  const cityOf = new Map(allCities.flatMap((c) => c.venues.map((v) => [v.id, c] as const)));
+  const moves = new Map<string, string>();
+  for (const old of oldCityList) {
+    for (const { venue, slug } of old.venues) {
+      const now = byId.get(venue.id);
+      const from = `${old.path}${slug}/`;
+      if (now?.hasPage && now.path !== from && !current.has(from)) moves.set(from, now.path);
+    }
+    const target = cityOf.get(old.members[0].id);
+    if ((old.members.length >= MIN_CITY_PAGE || old.pages) && target && target.path !== old.path && !current.has(old.path)) moves.set(old.path, target.path);
+  }
+  return [...moves];
+}
 
 export function noindexPaths(): Set<string> {
   // 只有一个城市的国家（新加坡）：国家页和城市页内容重复，只收录城市页
