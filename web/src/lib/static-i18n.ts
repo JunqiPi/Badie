@@ -37,7 +37,13 @@ export const englishPath = (pathname: string) => pathname.replace(prefixPattern,
 
 /** 这个页面有哪些语言 */
 export const localesOf = (english: string): Locale[] =>
-  everyLanguage.test(english) ? (Object.keys(pathPrefixes) as Locale[]) : chineseOnly.test(english) ? ['en', 'zh-Hans'] : [];
+  everyLanguage.test(english) ? (Object.keys(pathPrefixes) as Locale[])
+  : /^\/courts\/kr\//.test(english) ? ['en', 'zh-Hans', 'ko']
+  : /^\/courts\/jp\//.test(english) ? ['en', 'zh-Hans', 'ja']
+  : chineseOnly.test(english) ? ['en', 'zh-Hans'] : [];
+
+/** 球馆目录各国页面的语言前缀（[...lang]）：都有英文和中文，韩国加韩文、日本加日文（当地人用本国语言搜） */
+export const courtLanguages = (country: string) => [...languages, ...(country === 'kr' ? ['ko'] : country === 'jp' ? ['ja'] : [])] as (string | undefined)[];
 
 /** 某种语言的地址 */
 export const pathIn = (locale: Locale, english: string) => `${pathPrefixes[locale]}${english}`;
@@ -45,10 +51,9 @@ export const pathIn = (locale: Locale, english: string) => `${pathPrefixes[local
 /** 同一页面的各语言版本（给 hreflang 用）；只有英文的页面为空 */
 export function alternates(pathname: string, site: URL) {
   const english = englishPath(pathname);
-  // 球馆目录的中文版不让收录（只收录英文版，见 src/lib/venues.ts 的 FOCUS_COUNTRIES），不互相标注
-  if (english.startsWith('/courts/')) return [];
-  const locales = localesOf(english);
-  if (!locales.length) return [];
+  // 球馆目录的中文版不让收录（见 src/lib/venues.ts 的 FOCUS_COUNTRIES）：只标英文和当地语言（韩国、日本），其他国家不标
+  const locales = english.startsWith('/courts/') ? localesOf(english).filter((l) => l !== 'zh-Hans') : localesOf(english);
+  if (locales.length < 2) return [];
   return [
     ...locales.map((locale) => ({ hreflang: locale, href: new URL(pathIn(locale, english), site).href })),
     { hreflang: 'x-default', href: new URL(english, site).href },

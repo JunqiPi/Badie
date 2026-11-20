@@ -6,11 +6,11 @@ import { Icon } from '../../../../../app/icons';
 import VenueRow from '../../../../../components/VenueRow.astro';
 import { cityName, countries, englishName, facilityLabel, formatAddress, formatPrice, nearby, type City, type Country, type Venue } from '../../../../../lib/venues';
 import { metroOf } from '../../../../../lib/metros';
-import { fitTitle, languages, localPath, pageLocale, regionName, translator } from '../../../../../lib/static-i18n';
+import { courtLanguages, fitTitle, localPath, pageLocale, regionName, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
-  return languages.flatMap((lang) =>
-    countries.flatMap((country) =>
+  return countries.flatMap((country) =>
+    courtLanguages(country.code).flatMap((lang) =>
       country.cities.flatMap((city) =>
         city.venues.filter((venue) => venue.hasPage).map((venue) => ({
           params: { lang, country: country.code, city: city.slug, venue: venue.slug },
@@ -98,8 +98,8 @@ const jsonLd = {
     ...(locale === 'en' ? [venue.name] : []),
   )}
   description={venue.courts ? t('{name}: badminton with {n} courts at {address}.', { name: venue.name, n: venue.courts, address }) : t('{name}: badminton at {address}.', { name: venue.name, address })}
-  // 中文版球馆页只给浏览的人看，不让收录（2026-11-20：和英文版内容一样，Google 当成重复的模板页）
-  noindex={!venue.indexable || locale !== 'en'}
+  // 中文版球馆页只给浏览的人看，不让收录（2026-11-20：和英文版内容一样，Google 当成重复的模板页）；韩国、日本的韩文、日文版照常收录
+  noindex={!venue.indexable || locale === 'zh-Hans'}
   jsonLd={jsonLd}
 >
   <Breadcrumbs

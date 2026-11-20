@@ -7,6 +7,8 @@ import { join } from 'node:path';
 const catalogDirs = [
   { dir: join(process.cwd(), '..', 'Badie-iOS', 'Badie', 'Resources'), pages: true },
   { dir: join(process.cwd(), '..', 'supabase', 'data'), pages: false },
+  // 我们从头核对的（韩国：开放数据只有名字和所在区，地址、官网、价格都是对照官网补的，坐标按地址查 OpenStreetMap）。只给网站用
+  { dir: join(process.cwd(), '..', 'Badie-iOS', 'data', 'catalogs'), pages: true },
 ];
 const MIN_CITY_PAGE = 3;
 
@@ -214,7 +216,7 @@ function cityRegions(venues: CatalogEntry[]): Map<CatalogEntry, string> {
 let oldCityList: { path: string; members: CatalogEntry[]; pages: boolean; venues: { venue: CatalogEntry; slug: string }[] }[] = [];
 
 function load(): Country[] {
-  const venues = catalogDirs.flatMap(({ dir, pages }) =>
+  const venues = catalogDirs.filter(({ dir }) => existsSync(dir)).flatMap(({ dir, pages }) =>
     readdirSync(dir)
       .filter((file) => file.endsWith('.json'))
       .sort()
@@ -359,7 +361,7 @@ export function nearby(venue: Venue, limit = 5, radiusKm = 30): { venue: Venue; 
     .slice(0, limit);
 }
 
-const currencies: Record<string, string> = { US: 'USD', GB: 'GBP', HK: 'HKD', SG: 'SGD', TW: 'TWD', JP: 'JPY', MY: 'MYR' };
+const currencies: Record<string, string> = { US: 'USD', GB: 'GBP', HK: 'HKD', SG: 'SGD', TW: 'TWD', JP: 'JPY', MY: 'MYR', KR: 'KRW' };
 
 export function formatPrice(amount: number, country: string): string {
   if (amount === 0) return 'Free';

@@ -4,10 +4,10 @@ import Breadcrumbs from '../../../../components/Breadcrumbs.astro';
 import { PinsMap } from '../../../../app/PinsMap';
 import { cityName, countries, formatAddress, inCountry, noindexPaths, regionLabel, type City, type Country } from '../../../../lib/venues';
 import { metros as allMetros } from '../../../../lib/metros';
-import { languages, pageLocale, regionName, translator } from '../../../../lib/static-i18n';
+import { courtLanguages, pageLocale, regionName, translator } from '../../../../lib/static-i18n';
 
 export function getStaticPaths() {
-  return languages.flatMap((lang) => countries.map((country) => ({ params: { lang, country: country.code }, props: { country } })));
+  return countries.flatMap((country) => courtLanguages(country.code).map((lang) => ({ params: { lang, country: country.code }, props: { country } })));
 }
 
 const { country } = Astro.props as { country: Country };

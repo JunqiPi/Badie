@@ -5,11 +5,11 @@ import { PinsMap } from '../../../../../app/PinsMap';
 import VenueRow from '../../../../../components/VenueRow.astro';
 import { cityName, citySummary, countries, formatPrice, nearbyCities, type City, type Country } from '../../../../../lib/venues';
 import { metroOf } from '../../../../../lib/metros';
-import { fitTitle, languages, pageLocale, translator } from '../../../../../lib/static-i18n';
+import { courtLanguages, fitTitle, pageLocale, translator } from '../../../../../lib/static-i18n';
 
 export function getStaticPaths() {
-  return languages.flatMap((lang) =>
-    countries.flatMap((country) =>
+  return countries.flatMap((country) =>
+    courtLanguages(country.code).flatMap((lang) =>
       country.cities.filter((city) => city.hasPage).map((city) => ({ params: { lang, country: country.code, city: city.slug }, props: { country, city } })),
     ),
   );

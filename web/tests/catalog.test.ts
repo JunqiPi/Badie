@@ -26,3 +26,13 @@ test('核对过的球馆：每条都有日期和来源', () => {
     }
   }
 });
+
+test('韩国、日本的球馆目录用到的文字都有韩文、日文', async () => {
+  const pages = readdirSync(new URL('../src/pages/[...lang]/courts/', import.meta.url), { recursive: true, encoding: 'utf8' }).filter((f) => f.endsWith('.astro'))
+    .map((f) => readFileSync(new URL(`../src/pages/[...lang]/courts/${f}`, import.meta.url), 'utf8'));
+  const keys = new Set(pages.flatMap((code) => [...code.matchAll(/\bt\(\s*'((?:[^'\\\n]|\\.)*)'/g)].map((m) => m[1].replace(/\\(.)/g, '$1'))));
+  for (const locale of ['ko', 'ja']) {
+    const catalog = JSON.parse(readFileSync(new URL(`../src/app/locales/${locale}.json`, import.meta.url), 'utf8'));
+    for (const key of keys) assert.ok(catalog[key]?.trim(), `${locale} 缺少：${key}`);
+  }
+});
