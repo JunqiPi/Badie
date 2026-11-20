@@ -137,7 +137,7 @@ const jsonLd = {
             <span aria-hidden="true" class="grid size-11 shrink-0 place-items-center rounded-[13px] border-2 border-stroke bg-peach text-on-accent"><Icon name="clock" /></span>
             <div>
               <p class="text-headline" data-t="Badminton hours">Badminton hours</p>
-              <p class="mt-1 font-bold">{venue.playTimes}</p>
+              <p class="mt-1 font-bold">{venue.playTimesLocal?.[locale] ?? venue.playTimes}</p>
               <p class="mt-1 text-footnote text-ink-secondary" data-t="Times change often. Check the official website before you go.">Times change often. Check the official website before you go.</p>
             </div>
           </div>

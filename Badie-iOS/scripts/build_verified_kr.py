@@ -87,11 +87,17 @@ def add(v, src, point, attr):
         entry['price'] = price
     if v.get('playTimes'):
         entry['playTimes'] = v['playTimes']
+        if v['id'] in local_times:
+            entry['playTimesLocal'] = {'ko': local_times[v['id']]}
     if attr:
         entry['attr'] = attr
     venues.append(entry)
 
 
+
+# 开放时间的韩文版（核对结果是英文，网站的韩文页面用这份）：<目录>/../playtimes-local.json 的 "kr"
+local_file = SRC.parent / 'playtimes-local.json'
+local_times = json.loads(local_file.read_text()).get('kr', {}) if local_file.exists() else {}
 
 venues, skipped = [], []
 later = []

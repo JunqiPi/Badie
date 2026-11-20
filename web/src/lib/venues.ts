@@ -21,6 +21,8 @@ interface Verified {
   perCourtHour?: number | null;
   perPerson?: number | null;
   playTimes?: string | null;
+  /** 韩国、日本的页面用当地语言的开放时间：{ ko: '…' } / { ja: '…' } */
+  playTimesLocal?: Record<string, string>;
   web?: string | null;
   checked: string;
 }
@@ -35,6 +37,7 @@ function withVerified<T extends CatalogEntry>(entry: T): T {
     ...entry,
     ...(Object.keys(price).length && { price }),
     ...(v.playTimes && { playTimes: v.playTimes }),
+    ...(v.playTimesLocal && { playTimesLocal: v.playTimesLocal }),
     ...(v.web && { web: v.web }),
     ...((Object.keys(price).length || v.playTimes) && { checked: v.checked }),
   };
@@ -80,6 +83,8 @@ interface CatalogEntry {
   facility?: Facility;
   /** When badminton is on at places that aren't badminton centres, copied from the official page */
   playTimes?: string;
+  /** 当地语言的开放时间（韩国 ko、日本 ja），按页面语言显示 */
+  playTimesLocal?: Record<string, string>;
   /** Date the Badie team last checked the entry, e.g. "2026-10-16" */
   checked?: string;
 }
