@@ -903,6 +903,755 @@
       "note": "Now Move Southwark (Southwark Council). Prices not published on site; booking via southwarkcouncil.gladstonego.cloud.",
       "checked": "2026-11-20",
       "name": "Canada Water Leisure Centre"
+    },
+    "v-jp-083fd053": {
+      "badminton": true,
+      "perCourtHour": 660,
+      "perPerson": null,
+      "playTimes": "Groups and residents can book Hall 2 (2 badminton courts) in 3–4 hour slots through the city's reservation system. Hall 1 is closed for now. No individual badminton sessions are listed.",
+      "web": "https://www.city.hamura.tokyo.jp/prsite/0000002164.html",
+      "sources": [
+        "https://www.city.hamura.tokyo.jp/prsite/0000002164.html",
+        "https://www.city.hamura.tokyo.jp/prsite/0000002167.html",
+        "https://www.city.hamura.tokyo.jp/0000019660.html",
+        "https://www.city.hamura.tokyo.jp/0000019873.html"
+      ],
+      "note": "Hall 2 reopened 26 May 2026; Hall 1 (8 courts) closed indefinitely. Half of Hall 2 (1 court) 1,980 yen for 9 AM–12 PM, 3,410 yen 6–10 PM (residents; 1.5x others).",
+      "checked": "2026-11-20",
+      "name": "S&Dスポーツアリーナ羽村（スポーツセンター）"
+    },
+    "v-jp-0f6f6338": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Individual badminton on the 3 courts in 2- or 3-hour slots on days in the monthly schedule; book a court in person on the day, first come first served. Group slots not booked 7 days ahead become individual slots.",
+      "web": "https://www.shisetsu-tds.jp/tokyo-nerima-sakuradaitaiikukan/fee/",
+      "sources": [
+        "https://www.shisetsu-tds.jp/tokyo-nerima-sakuradaitaiikukan/fee/",
+        "https://www.shisetsu-tds.jp/tokyo-nerima-sakuradaitaiikukan/news/%e5%80%8b%e4%ba%ba%e5%85%ac%e9%96%8b%e3%81%ae%e3%81%94%e4%ba%88%e7%b4%84%e3%81%ab%e3%81%a4%e3%81%84%e3%81%a6/"
+      ],
+      "note": "Adult ¥300 per 3-hour slot or ¥200 per 2-hour slot. Hall has 3 badminton courts; group hire of the hall ¥4,800 per 3-hour slot (¥3,200 for 16:00-18:00).",
+      "checked": "2026-11-20",
+      "name": "桜台体育館"
+    },
+    "v-jp-1e6edae0": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Individual badminton on set days in 2-hour turns from 9:30 AM (often daytime in part of the main arena); check the monthly event and open-use schedule. Groups can book arena sections in 2.5-hour slots.",
+      "web": "https://www.hachioji.esforta.jp/personal/",
+      "sources": [
+        "https://www.hachioji.esforta.jp/personal/",
+        "https://www.hachioji.esforta.jp/usage-fee/",
+        "https://www.city.hachioji.tokyo.jp/shisetsu/104/p012090.html"
+      ],
+      "note": "Esforta Arena Hachioji. 300 yen per 2-hour turn (adults), rackets lent free, no coach. Smallest booking: 1/3 main arena 6,000 yen for 9:30 AM–12 PM. Fees rise from April 2027. [perCourtHour 2400 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "総合体育館"
+    },
+    "v-jp-367e5598": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 400,
+      "playTimes": "Badminton is one of the sports in individual sessions in the main and sub arenas; days and times change monthly, so check the monthly individual-use notice. Groups can book the halls through the facility reservation system.",
+      "web": "https://www.musashino.or.jp/sports/1001575/1001577.html",
+      "sources": [
+        "https://www.musashino.or.jp/sports/1001575/1001577.html",
+        "https://www.musashino.or.jp/_res/projects/default_project/_page_/001/001/577/1001577-2.pdf",
+        "https://www.musashino.or.jp/sports/1001575/1006517.html",
+        "https://www.city.musashino.lg.jp/shisetsu_annai/bunka_sports/suports_yagaikatsudo/1000606.html"
+      ],
+      "note": "Adult ¥400 per individual entry (half price with Musashino resident card); session length set in the monthly notice. Closed on the 15th of each month. Long closure for renovation planned for about 16 months during FY2027-2028.",
+      "checked": "2026-11-20",
+      "name": "武蔵野総合体育館・武蔵野陸上競技場"
+    },
+    "v-jp-403aa5cf": {
+      "badminton": true,
+      "perCourtHour": 750,
+      "perPerson": 200,
+      "playTimes": "Individual badminton (no booking) on the 2nd Saturday, 3rd Sunday and 4th Saturday 9 AM–1 PM, in 2-hour turns; check the ward's yearly schedule for changes. Groups can book courts through the ward's Sazanka-net reservation system.",
+      "web": "https://www.city.suginami.tokyo.jp/s032/shisetsu/14546.html",
+      "sources": [
+        "https://www.city.suginami.tokyo.jp/s032/shisetsu/14546.html",
+        "https://www.city.suginami.tokyo.jp/s032/611.html",
+        "https://www.city.suginami.tokyo.jp/documents/611/o.pdf"
+      ],
+      "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
+      "checked": "2026-11-20",
+      "name": "高円寺体育館"
+    },
+    "v-jp-440f785c": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 170,
+      "playTimes": "Individual badminton and table tennis every Tuesday and Friday 9 AM–5 PM, walk-in, no registration. Registered groups can book the hall by the hour 9 AM–9 PM outside those times.",
+      "web": "https://www.city.sumida.lg.jp/kurashi/sports/shisetsu-info/tachibanataiikukann.html",
+      "sources": [
+        "https://www.city.sumida.lg.jp/kurashi/sports/shisetsu-info/tachibanataiikukann.html"
+      ],
+      "note": "Former Tachibana elementary school gym. 170 yen per 2 hours (max 4 hours). Group rate is for the whole hall: 410 yen per hour for ward groups, 580 yen evenings; 610/870 yen for outside groups. [perCourtHour 410 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "立花体育館"
+    },
+    "v-jp-44a830aa": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 450,
+      "playTimes": "Individual badminton in the main hall on 1st and 5th Sundays afternoon and evening, 3rd Sunday evening, Monday evening and Wednesday afternoon; check the monthly schedule. Groups can book the hall through the ward reservation system.",
+      "web": "https://www.koto-hsc.or.jp/sports_center6/",
+      "sources": [
+        "https://www.koto-hsc.or.jp/sports_center6/"
+      ],
+      "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30). Group hire by session, half hall at half price; no per-court fee.",
+      "checked": "2026-11-20",
+      "name": "深川北スポーツセンター"
+    },
+    "v-jp-45b4864d": {
+      "badminton": true,
+      "perCourtHour": 150,
+      "perPerson": 120,
+      "playTimes": "Walk-in individual use at the counter 9 AM–9:30 PM when no group has booked; sports are set by day, so check the monthly individual-use schedule. Groups can book a single badminton court (1/8 of the main hall) in 2-hour slots.",
+      "web": "https://akigawa-gymnasium.com/gym/",
+      "sources": [
+        "https://www.city.akiruno.tokyo.jp/0000007656.html",
+        "https://akigawa-gymnasium.com/gym/",
+        "https://akigawa-gymnasium.com/"
+      ],
+      "note": "Fees from April 2026. Individual 120 yen per hour for Akiruno residents/workers (180 yen others; bring ID). Court: 1/8 of main hall = 1 badminton court, 300 yen per 2 hours for city groups (900 yen others). Closed 1st/3rd/5th Tuesdays.",
+      "checked": "2026-11-20",
+      "name": "秋川体育館"
+    },
+    "v-jp-48c07699": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Groups can book the hall in 4-hour slots (9 AM–1 PM, 1–5 PM, 5–9 PM) through Setagaya's Keyaki-net system, except when the facility runs its own events. No individual sessions are listed.",
+      "web": "https://www.city.setagaya.lg.jp/03647/9050.html",
+      "sources": [
+        "https://www.city.setagaya.lg.jp/03647/9050.html"
+      ],
+      "note": "Former Ikejiri elementary school gym (667 m2), now part of HOME/WORK VILLAGE. Whole hall 1,640 yen per 4-hour slot (from Oct 2025). Badminton is a listed use. Registration needed. [perCourtHour 410 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "池尻2丁目体育館（複合施設）"
+    },
+    "v-jp-50204bac": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Individual badminton on Tuesdays 2-5 PM (not on holidays). Groups can book the hall through the Toshima reservation system.",
+      "web": "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003435.html",
+      "sources": [
+        "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003435.html",
+        "https://www.city.toshima.lg.jp/documents/32123/r80601kyougijyouriyouannai.pdf"
+      ],
+      "note": "Adult ¥300 per session (3 h). Group hire of the hall ¥8,800 morning (3 h), ¥11,600 afternoon or evening.",
+      "checked": "2026-11-20",
+      "name": "雑司が谷体育館"
+    },
+    "v-jp-56feb4b1": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Individual badminton on Fridays 4:30–9:30 PM in the first hall, except holidays and event days. Groups can book half or all of the hall in 2.5-hour slots.",
+      "web": "https://www.city.kokubunji.tokyo.jp/shisetsu/sport/shimin/1004197.html",
+      "sources": [
+        "https://www.city.kokubunji.tokyo.jp/shisetsu/sport/shimin/1004197.html",
+        "https://www.city.kokubunji.tokyo.jp/culture-sports-tourism/sports/1011397/1016245/1002614.html"
+      ],
+      "note": "Kokubunji civic sports centre (first hall has 7 badminton courts). 300 yen per session (adults). Half hall 3,000 yen per 2.5-hour slot (Kokubunji resident rate). Rackets lent. [perCourtHour 1200 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "市民スポーツセンター・けやき運動場"
+    },
+    "v-jp-5ca25129": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 400,
+      "playTimes": "Individual badminton in the main and sub arenas on Sundays and on Tuesdays of the 2nd, 4th and 5th weeks, in 2-hour sessions from 9 AM to 9 PM, when not booked by groups. Groups can book through the Katsushika reservation system.",
+      "web": "https://spo.katsushika-web.net/personal_guide/mizumoto/",
+      "sources": [
+        "https://spo.katsushika-web.net/personal_guide/mizumoto/",
+        "https://spo.katsushika-web.net/group_guide/"
+      ],
+      "note": "Adult ¥400 per 2 hours. Group hire per 2-hour session: main arena full ¥10,200-15,500, half ¥5,100-7,750; sub arena ¥5,000-7,200.",
+      "checked": "2026-11-20",
+      "name": "水元総合スポーツセンター"
+    },
+    "v-jp-5eac4528": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "The first hall (4 badminton courts) is closed for ceiling work, expected until about the end of January 2027, so individual badminton is suspended. Before the closure it ran on the 2nd and 4th Saturdays 1–5 PM.",
+      "web": "https://www.city.kokubunji.tokyo.jp/shisetsu/sport/hikari/1004200.html",
+      "sources": [
+        "https://www.city.kokubunji.tokyo.jp/shisetsu/sport/hikari/1004200.html",
+        "https://www.city.kokubunji.tokyo.jp/culture-sports-tourism/sports/1011397/1034920.html",
+        "https://www.city.kokubunji.tokyo.jp/culture-sports-tourism/sports/1011397/1016245/1002614.html"
+      ],
+      "note": "Closed since 12 Sep 2025 (ceiling not quake-safe); reopening date not set. Individual 300 yen per session. Half hall 1,600 yen per 2.5-hour slot for city groups (double for others). [perCourtHour 640 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "ひかりスポーツセンター"
+    },
+    "v-jp-5eea9626": {
+      "badminton": true,
+      "perCourtHour": 750,
+      "perPerson": 200,
+      "playTimes": "Individual badminton (no booking) on the 2nd Saturday 9 AM–1 PM and the 1st and 3rd Wednesdays 5–9 PM, in 2-hour turns; check the ward's yearly schedule for changes. Groups can book courts through the ward's Sazanka-net reservation system.",
+      "web": "https://www.city.suginami.tokyo.jp/s032/shisetsu/14545.html",
+      "sources": [
+        "https://www.city.suginami.tokyo.jp/s032/shisetsu/14545.html",
+        "https://www.city.suginami.tokyo.jp/s032/611.html",
+        "https://www.city.suginami.tokyo.jp/documents/611/o.pdf"
+      ],
+      "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
+      "checked": "2026-11-20",
+      "name": "妙正寺体育館"
+    },
+    "v-jp-5f18c995": {
+      "badminton": true,
+      "perCourtHour": 750,
+      "perPerson": 200,
+      "playTimes": "Individual badminton (no booking) on the 1st Sunday 1–5 PM, 2nd Saturday 5–9 PM and 1st Wednesday 5–9 PM, in 2-hour turns; check the ward's yearly schedule for changes. Groups can book courts through the ward's Sazanka-net reservation system.",
+      "web": "https://www.city.suginami.tokyo.jp/s032/shisetsu/14548.html",
+      "sources": [
+        "https://www.city.suginami.tokyo.jp/s032/shisetsu/14548.html",
+        "https://www.city.suginami.tokyo.jp/s032/611.html",
+        "https://www.city.suginami.tokyo.jp/documents/611/o.pdf"
+      ],
+      "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
+      "checked": "2026-11-20",
+      "name": "荻窪体育館"
+    },
+    "v-jp-65ede849": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 100,
+      "playTimes": "Individual badminton is in 1-hour slots on days set in the monthly schedule. Groups can book the hall through the Nerima public reservation system.",
+      "web": "https://www.shisetsu-tds.jp/tokyo-nerima-heiwadaitaiikukan/fee/",
+      "sources": [
+        "https://www.shisetsu-tds.jp/tokyo-nerima-heiwadaitaiikukan/fee/",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/riyou/shisetushiyouryou.html"
+      ],
+      "note": "Badminton individual use ¥100 per 1 hour (¥50 for 65-74). 6 badminton courts. Group hire: full hall ¥9,300, half ¥4,800 per 3-hour slot.",
+      "checked": "2026-11-20",
+      "name": "平和台体育館"
+    },
+    "v-jp-6a511304": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 450,
+      "playTimes": "Individual badminton in the main hall on Mondays 9 AM-12 PM, 2nd and 4th Sundays 1-5 PM and 6-9:30 PM, 2nd Saturdays, and Thursday evenings 6-9:30 PM (half hall) when no class runs; check the monthly schedule. Groups can book the hall through the ward reservation system.",
+      "web": "https://www.koto-hsc.or.jp/sports_center3/",
+      "sources": [
+        "https://www.koto-hsc.or.jp/sports_center3/",
+        "https://www.koto-hsc.or.jp/single"
+      ],
+      "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30); ¥100 for residents 65+. Group hire of the main hall is by session, e.g. weekday morning (3 h) ¥16,250 for the whole hall (6 badminton courts), half hall at half price; no per-court fee.",
+      "checked": "2026-11-20",
+      "name": "亀戸スポーツセンター"
+    },
+    "v-jp-6aaaf0cd": {
+      "badminton": true,
+      "perCourtHour": 750,
+      "perPerson": 200,
+      "playTimes": "Individual badminton (no booking) on the 1st Sunday 5–9 PM, 2nd Saturday and 3rd Sunday 9 AM–1 PM, and 3rd Wednesday 5–9 PM, in 2-hour turns; check the ward's yearly schedule for changes. Groups can book courts through the ward's Sazanka-net reservation system.",
+      "web": "https://www.city.suginami.tokyo.jp/s032/shisetsu/14544.html",
+      "sources": [
+        "https://www.city.suginami.tokyo.jp/s032/shisetsu/14544.html",
+        "https://www.city.suginami.tokyo.jp/s032/611.html",
+        "https://www.city.suginami.tokyo.jp/documents/611/o.pdf"
+      ],
+      "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
+      "checked": "2026-11-20",
+      "name": "永福体育館"
+    },
+    "v-jp-701677ec": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://www.se-sports.or.jp/facility/sougou-p/",
+      "sources": [
+        "https://www.se-sports.or.jp/facility/sougou-p/"
+      ],
+      "note": "Indoor heated pool only. Badminton is in the sports hall of the same park (Okura sports ground, separate entry).",
+      "checked": "2026-11-20",
+      "name": "大蔵運動場温水プール（総合運動場温水プール）"
+    },
+    "v-jp-7f042c0a": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Open badminton on Wednesdays 3–9:30 PM in the first hall, with a beginner coach and free racket and shuttle loan. Groups can book the hall in about 3-hour slots.",
+      "web": "https://information.konamisportsclub.jp/trust/kounohara/pricing/",
+      "sources": [
+        "https://information.konamisportsclub.jp/trust/kounohara/pricing/",
+        "https://information.konamisportsclub.jp/trust/kounohara/facility/",
+        "https://www.city.hachioji.tokyo.jp/shisetsu/104/p012089.html"
+      ],
+      "note": "300 yen per visit (adults). First hall has 6 badminton courts; half hall 1,800 yen for 9–11:50 AM (2,100 yen evening). Fees rise from April 2027. [perCourtHour 635 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "甲の原体育館"
+    },
+    "v-jp-927f294e": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Registered groups can book the 3rd-floor hall (3 badminton courts) in slots between 9 AM and 9 PM through Keyaki-net. The free individual hour (3–4 PM) is for basketball shooting; ask staff about other sports.",
+      "web": "https://www.se-sports.or.jp/facilityinfo/kibougaoka-gym-3rd-floor/",
+      "sources": [
+        "https://www.se-sports.or.jp/facilityinfo/kibougaoka-gym-3rd-floor/",
+        "https://www.se-sports.or.jp/facility/kibougaoka/"
+      ],
+      "note": "Whole floor only: 7,640 yen for 9 AM–12 PM on weekdays/Saturdays (9,170 yen Sun/holidays); evening 9,900 yen. Individual use in principle for ward residents, workers and students. [perCourtHour 2547 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "希望丘地域体育館（複合施設）"
+    },
+    "v-jp-9913661d": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 450,
+      "playTimes": "Individual badminton in the main hall on Sundays (1st, 3rd and 5th) in the afternoon and evening, Monday afternoon, and Tuesday and Thursday evenings; check the monthly schedule. Groups can book the hall through the ward reservation system.",
+      "web": "https://www.koto-hsc.or.jp/sports_center5/",
+      "sources": [
+        "https://www.koto-hsc.or.jp/sports_center5/"
+      ],
+      "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30). Main hall has 6 badminton courts; group hire by session, half hall at half price; no per-court fee.",
+      "checked": "2026-11-20",
+      "name": "東砂スポーツセンター"
+    },
+    "v-jp-9cb00241": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": null,
+      "sources": [],
+      "note": "Not a badminton venue: children's animal area / pony school in Mizumoto Sports Center Park.",
+      "checked": "2026-11-20",
+      "name": "水元スポーツセンター公園子ども動物広場（ポニースクールかつしか）"
+    },
+    "v-jp-9cdda826": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://sumidacity-ground.com/facility/seminar",
+      "sources": [
+        "https://sumidacity-ground.com/facility/seminar",
+        "https://www.city.sumida.lg.jp/sisetu_info/sports/sougou-undoujou.html"
+      ],
+      "note": "Athletics stadium with artificial-turf infield; indoor space is only a 115 m2 multipurpose room for dance and light exercise. No sports hall.",
+      "checked": "2026-11-20",
+      "name": "フクシ・エンタープライズ墨田フィールド（墨田区総合運動場）"
+    },
+    "v-jp-9d3e13b1": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Coached badminton sessions (shido kokai) in the evening slot 6:30–9:30 PM on set days, for example some Tuesdays in the main arena and Saturdays in the second arena; check the weekly schedule on the centre's site. Groups can also book arenas through the reservation system.",
+      "web": "https://www.chuo-sports.jp/personal/",
+      "sources": [
+        "https://www.chuo-sports.jp/personal/",
+        "https://www.chuo-sports.jp/facility/",
+        "https://www.city.chuo.lg.jp/sisetugaido/supotu/sougousupo-tusennta.html",
+        "https://www.city.chuo.lg.jp/documents/9151/riyouryoukinn.pdf"
+      ],
+      "note": "Individual fee 300 yen per 3-hour slot (adults). Smallest booking: half main arena 7,100 yen for 8–11 AM weekdays (larger in later slots). Bring rackets and shuttles (no rental). Parts closed for renovation and school use in FY2026. [perCourtHour 2367 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "総合スポーツセンター"
+    },
+    "v-jp-9f05269a": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 200,
+      "playTimes": "Individual badminton on Fridays 1:15-3:15 PM, 3:30-5:30 PM (from age 7, children have priority courts), 5:40-7:25 PM and 7:35-9:20 PM; none on holidays. Groups can book the hall through the Toshima reservation system.",
+      "web": "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003420.html",
+      "sources": [
+        "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003420.html",
+        "https://www.city.toshima.lg.jp/documents/32123/r80601kyougijyouriyouannai.pdf"
+      ],
+      "note": "These shorter sessions are half price: adult ¥200 (normal ¥400). Friday badminton rules changed from 17 Jul 2026. Group hire of the hall ¥8,800 morning, ¥11,600 afternoon or evening.",
+      "checked": "2026-11-20",
+      "name": "豊島体育館"
+    },
+    "v-jp-a1aec277": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Individual badminton on Mondays and Wednesdays, and on Fridays, Sundays and holidays when no group has booked; on the day, put your name down from 8:30 AM in person. Groups can book through the Nerima public reservation system.",
+      "web": "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/riyou/gekkannyotei.html",
+      "sources": [
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/riyou/gekkannyotei.files/soutai1203.pdf",
+        "https://www.city.nerima.tokyo.jp/shisetsu/koen/taiku/sogo.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/riyou/shisetushiyouryou.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/oshirase/sportsguide.files/2026.pdf"
+      ],
+      "note": "Individual fee ¥100-300 per slot (1-3 h). Group hire: full hall ¥13,200, half ¥6,600 per 3-hour slot. Main hall was closed for renovation Apr-Sep 2026.",
+      "checked": "2026-11-20",
+      "name": "総合体育館"
+    },
+    "v-jp-a2568f6e": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 450,
+      "playTimes": "Individual badminton in the main hall on 2nd and 4th Sundays afternoon and evening, Monday afternoon and evening, Tuesday morning and Friday evening; check the monthly schedule. Groups can book the hall through the ward reservation system.",
+      "web": "https://www.koto-hsc.or.jp/sports_center2/",
+      "sources": [
+        "https://www.koto-hsc.or.jp/sports_center2/"
+      ],
+      "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30). Group hire by session, half hall at half price; no per-court fee.",
+      "checked": "2026-11-20",
+      "name": "深川スポーツセンター"
+    },
+    "v-jp-a3d60570": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": null,
+      "sources": [],
+      "note": "Not a badminton venue: a disaster-supply storage container at the city gym site.",
+      "checked": "2026-11-20",
+      "name": "市民体育館備蓄コンテナ"
+    },
+    "v-jp-a3e3f33e": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 450,
+      "playTimes": "Individual badminton (half of the main hall) on 1st Sundays morning and afternoon, Monday, Tuesday (1st and 3rd weeks) and Thursday sessions, and 2nd Saturdays; check the monthly schedule. Groups can book the hall through the ward reservation system.",
+      "web": "https://www.koto-hsc.or.jp/sports_center4/",
+      "sources": [
+        "https://www.koto-hsc.or.jp/sports_center4/"
+      ],
+      "note": "Individual ticket ¥450 per session (morning 9:00-12:00, afternoon 13:00-17:00 or evening 18:00-21:30); ¥100 for residents 65+. Group hire of the main hall is by session, e.g. weekday morning (3 h) ¥21,300 for the whole hall (8 badminton courts), half hall at half price; no per-court fee.",
+      "checked": "2026-11-20",
+      "name": "有明スポーツセンター"
+    },
+    "v-jp-a478ada8": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://www.city.chuo.lg.jp/sisetugaido/supotu/sougousupo-tusennta.html",
+      "sources": [
+        "https://www.city.chuo.lg.jp/sisetugaido/supotu/sougousupo-tusennta.html"
+      ],
+      "note": "Disaster supply warehouse inside the Chuo sports centre, not a playing venue. Badminton is at the sports centre entry itself.",
+      "checked": "2026-11-20",
+      "name": "総合スポーツセンター防災備蓄倉庫"
+    },
+    "v-jp-a58b76f1": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 400,
+      "playTimes": "Individual badminton on one court in the main hall Monday to Saturday, in slots between 9 AM and 9 PM, first come first served; the plan is fixed three days ahead and can change with events. Registered groups book through the city's reservation system.",
+      "web": "https://koganei-sports.jp/gymnasium/personal/",
+      "sources": [
+        "https://koganei-sports.jp/gymnasium/personal/",
+        "https://koganei-sports.jp/wp/wp-content/uploads/2025/03/【HP掲載用】総合体育館個人利用スケジュール-1.pdf",
+        "https://www.city.koganei.lg.jp/kurashi/455/shiryo/sougoutaiikukan.html"
+      ],
+      "note": "In Koganei Park. 400 yen per 2 hours (200 yen per hour). Main hall fits 8 badminton courts. No equipment rental. Group fees not found on the official pages.",
+      "checked": "2026-11-20",
+      "name": "総合体育館"
+    },
+    "v-jp-a69c7705": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 400,
+      "playTimes": "Individual badminton on Tuesday mornings 9 AM-12 PM and Saturday evenings 5:30-9 PM, plus 2nd and 4th Saturday afternoons 1-5:15 PM; none on holidays. Groups can book the hall, which has 4 badminton courts, through the Toshima reservation system.",
+      "web": "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003424.html",
+      "sources": [
+        "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003424.html",
+        "https://www.city.toshima.lg.jp/documents/32123/r80601kyougijyouriyouannai.pdf"
+      ],
+      "note": "Adult up to ¥400 per session. Group hire of the hall ¥8,800 morning (3 h), ¥11,600 afternoon or evening.",
+      "checked": "2026-11-20",
+      "name": "巣鴨体育館"
+    },
+    "v-jp-a816527b": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Individual sessions run at set times; check the monthly schedule. Groups can book the hall through the Nerima public reservation system.",
+      "web": "https://www.city.nerima.tokyo.jp/shisetsu/koen/taiku/hikarigaoka.html",
+      "sources": [
+        "https://www.city.nerima.tokyo.jp/shisetsu/koen/taiku/hikarigaoka.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/riyou/shisetushiyouryou.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/oshirase/sportsguide.files/2026.pdf"
+      ],
+      "note": "Hall has 8 badminton courts. Individual fee ¥100-300 per slot (1-3 h). Group hire per 3-hour slot: full ¥13,200, half ¥6,600, quarter ¥3,300. Manager site hikarigaoka-sp.com did not resolve.",
+      "checked": "2026-11-20",
+      "name": "光が丘体育館"
+    },
+    "v-jp-abd17992": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Individual badminton mainly on side B of the first hall during opening hours (9 AM–10 PM), first come first served, up to 3 hours; check the monthly individual-use schedule. Groups can book half of a hall in 3-hour slots.",
+      "web": "https://kuzaidan.or.jp/gym/rule/shisetsu-t1/",
+      "sources": [
+        "https://kuzaidan.or.jp/gym/rule/shisetsu-t1/",
+        "https://kuzaidan.or.jp/gym/rule/riyou-1/",
+        "https://kuzaidan.or.jp/gym/rule/charge/",
+        "https://www.city.kunitachi.tokyo.jp/bunka/sports/1/8479.html"
+      ],
+      "note": "FSX Arena. 300 yen per 3 hours for residents (350 yen others); extra hour 100 yen. Half of first hall 2,800 yen per 3-hour slot (residents, daytime). No solo entry for badminton. Closed 2nd/4th Thursdays. [perCourtHour 933 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "くにたち市民総合体育館"
+    },
+    "v-jp-b1606672": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 400,
+      "playTimes": "Individual use of the halls in 2-hour turns on set days; the open-use schedule is posted on the centre's social media. Groups can book the first hall (8 badminton courts) whole or in halves, thirds or quarters.",
+      "web": "https://www.shisetsu-tds.jp/tokyo-higashikurume-sc/fee/",
+      "sources": [
+        "https://www.shisetsu-tds.jp/tokyo-higashikurume-sc/fee/",
+        "https://www.shisetsu-tds.jp/tokyo-higashikurume-sc/equipment/gym-1/",
+        "https://www.city.higashikurume.lg.jp/shisetsu/sports/1002049.html"
+      ],
+      "note": "Tokyo Dome Sports Center Higashikurume. 400 yen per 2 hours (adults). First hall 13,450 yen per slot on weekdays (2h10m), 1/4 (2 courts) 3,370 yen. Schedule for badminton specifically not confirmed on an official page. [perCourtHour 1555 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "スポーツセンター"
+    },
+    "v-jp-b268e36c": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": null,
+      "sources": [],
+      "note": "Not a badminton venue: part of a walkway used as a temporary children's play area.",
+      "checked": "2026-11-20",
+      "name": "南長崎中央公園スポーツセンター（通路の一部）仮児童遊園"
+    },
+    "v-jp-bf6a96bb": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 500,
+      "playTimes": "Individual badminton in the main hall on Sundays and Saturdays, and with table tennis on Wednesdays, in sessions 9-11:30 AM, 12:30-3 PM, 3:30-6 PM and 6:30-9 PM, when not booked by groups. Groups can book through the Katsushika reservation system.",
+      "web": "https://spo.katsushika-web.net/personal_guide/okudo-gym/",
+      "sources": [
+        "https://spo.katsushika-web.net/personal_guide/okudo-gym/",
+        "https://spo.katsushika-web.net/group_guide/"
+      ],
+      "note": "Adult ¥500 per 2.5-hour session; lottery 15 min before if busy. Group hire of the main hall per 2.5-hour session: full ¥16,000-24,800, 1/3 ¥5,400-8,300.",
+      "checked": "2026-11-20",
+      "name": "奥戸総合スポーツセンター（体育館・陸上競技場）"
+    },
+    "v-jp-c67b51c9": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "No individual badminton sessions listed. Registered groups can book the arena (6 badminton courts, half or whole) in 3-hour slots from 9 AM to 9 PM through Setagaya's Keyaki-net system.",
+      "web": "https://www.se-sports.or.jp/facilityinfo/sougou-gym/",
+      "sources": [
+        "https://www.se-sports.or.jp/facilityinfo/sougou-gym/",
+        "https://www.se-sports.or.jp/facility/sougou/"
+      ],
+      "note": "Smallest booking is half the arena (3 courts): 8,580 yen per 3 hours on weekdays, 10,260 yen weekends/holidays. Individual use is in principle for ward residents, workers and students. [perCourtHour 2860 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "大蔵運動場（総合運動場）（複合施設）"
+    },
+    "v-jp-c87f9b77": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Groups can book the annex arena in about 3-hour slots (9 AM–9 PM, extension to 9:30 PM). Open individual badminton is held at the main Fujimori gym on Fridays, not at the annex.",
+      "web": "https://www.city.hachioji.tokyo.jp/shisetsu/104/p025060.html",
+      "sources": [
+        "https://www.city.hachioji.tokyo.jp/shisetsu/104/p025060.html",
+        "https://www.city.hachioji.tokyo.jp/shisetsu/104/p012094.html"
+      ],
+      "note": "Annex arena fits 8 badminton courts. Smallest booking: 1/3 (2–3 courts) 1,400 yen for 9–11:50 AM (1,600 yen evening). Fees rise from April 2027. [perCourtHour 494 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "富士森体育館分館競技場"
+    },
+    "v-jp-cca9361f": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Open badminton on Fridays 1–9:30 PM in the main arena, with staff on hand and free racket loan. Groups can book the arena in about 3-hour slots.",
+      "web": "https://www.city.hachioji.tokyo.jp/shisetsu/104/p012094.html",
+      "sources": [
+        "https://www.city.hachioji.tokyo.jp/shisetsu/104/p012094.html",
+        "https://www.city.hachioji.tokyo.jp/shisetsu/104/p025060.html",
+        "https://www.city.hachioji.tokyo.jp/shisetsu/104/p012106.html"
+      ],
+      "note": "300 yen per visit (adults). Smallest booking: half main arena (4 badminton courts) 4,500 yen for 9–11:50 AM. Main arena closed 14 Dec 2026–15 Jan 2027 for floor work. Fees rise from April 2027. [perCourtHour 1588 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "富士森体育館"
+    },
+    "v-jp-cf110650": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Individual badminton in the Eight Hall on Tuesdays and Thursdays, 9-11:30 AM and 12:30-3 PM. Groups can book the hall through the Katsushika reservation system.",
+      "web": "https://spo.katsushika-web.net/personal_guide/okudo-pool/",
+      "sources": [
+        "https://spo.katsushika-web.net/personal_guide/okudo-pool/",
+        "https://spo.katsushika-web.net/facility/okudo-pool/"
+      ],
+      "note": "Adult ¥300 per 2.5-hour session. Bring your own racket and shuttles.",
+      "checked": "2026-11-20",
+      "name": "奥戸総合スポーツセンター（温水プール館・エイトホール）"
+    },
+    "v-jp-d352bdeb": {
+      "badminton": true,
+      "perCourtHour": 650,
+      "perPerson": 200,
+      "playTimes": "Individual badminton (no booking) on the 2nd Saturday 5–9 PM (6 courts) and the 3rd Sunday 9 AM–5 PM (3 courts), in 2-hour turns; check the ward's yearly schedule for changes. Groups can book courts through the ward's Sazanka-net reservation system.",
+      "web": "https://www.city.suginami.tokyo.jp/s032/shisetsu/14547.html",
+      "sources": [
+        "https://www.city.suginami.tokyo.jp/s032/shisetsu/14547.html",
+        "https://www.city.suginami.tokyo.jp/s032/611.html",
+        "https://www.city.suginami.tokyo.jp/documents/611/o.pdf"
+      ],
+      "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 6 badminton courts; group booking 1/6 of the hall (1 court) is 1,300 yen for 2 hours. Group booking needs prior registration.",
+      "checked": "2026-11-20",
+      "name": "上井草スポーツセンター"
+    },
+    "v-jp-d496f519": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 400,
+      "playTimes": "Individual use with a same-day ticket in 2.5-hour sessions; the sport schedule is posted by the facility manager. Groups can book the second hall (4 badminton courts) through the city's reservation system.",
+      "web": "https://www.city.kodaira.tokyo.jp/kurashi/030/030995.html",
+      "sources": [
+        "https://www.city.kodaira.tokyo.jp/kurashi/030/030995.html",
+        "https://www.city.kodaira.tokyo.jp/kurashi/130/130389.html"
+      ],
+      "note": "400 yen per 2.5 hours (adults). Second hall 5,000 yen per 2.5 hours; first hall (10 courts) is for public events only. Second hall closed for air-conditioning work Nov 2026 to about Feb 2027. Manager site (sports-kodaira.jp) blocked. [perCourtHour 2000 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "市民総合体育館（駐車場含む）"
+    },
+    "v-jp-d7947003": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 550,
+      "playTimes": "Individual badminton (6 courts) on most days 10 AM to 8:30–10 PM in the sub arena or part of the main arena, in turns of up to 2 hours, walk-in only; check the monthly individual-use schedule. Groups can book arena sections.",
+      "web": "https://sumidacity-gym.com/guide/kojin/",
+      "sources": [
+        "https://sumidacity-gym.com/guide/kojin/",
+        "https://sumidacity-gym.com/guide/kojin/price.php",
+        "https://sumidacity-gym.com/guide/dantai/price.php",
+        "https://www.city.sumida.lg.jp/sisetu_info/sports/sumidacitygym.html"
+      ],
+      "note": "Higashin Arena. 550 yen per 2 hours (adults), open to anyone. Smallest booking: 1/4 main arena 4,950 yen for 9 AM–12 PM weekdays (ward groups). Racket rental 300 yen. [perCourtHour 1650 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "墨田区総合体育館"
+    },
+    "v-jp-d87c65bf": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 400,
+      "playTimes": "Individual badminton on Thursday evenings 5:45-9:15 PM (not on holidays). Groups can book the hall, which has 4 badminton courts, through the Toshima reservation system.",
+      "web": "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/028294.html",
+      "sources": [
+        "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/028294.html",
+        "https://www.city.toshima.lg.jp/documents/32123/r80601kyougijyouriyouannai.pdf"
+      ],
+      "note": "Adult ¥400 per session. Group hire of the hall (1 面) ¥8,800 morning (3 h), ¥11,600 afternoon or evening.",
+      "checked": "2026-11-20",
+      "name": "南長崎中央公園スポーツセンター"
+    },
+    "v-jp-eae44c50": {
+      "badminton": true,
+      "perCourtHour": 750,
+      "perPerson": 200,
+      "playTimes": "Individual badminton (no booking) on the 1st Sunday 1–5 PM, 2nd Saturday 5–9 PM, 3rd Sunday 1–5 PM and 1st Wednesday 1–5 PM, in 2-hour turns; check the ward's yearly schedule for changes. Groups can book courts through the ward's Sazanka-net reservation system.",
+      "web": "https://www.city.suginami.tokyo.jp/s032/shisetsu/14549.html",
+      "sources": [
+        "https://www.city.suginami.tokyo.jp/s032/shisetsu/14549.html",
+        "https://www.city.suginami.tokyo.jp/s032/611.html",
+        "https://www.city.suginami.tokyo.jp/documents/611/o.pdf"
+      ],
+      "note": "Individual fee 200 yen per 2-hour turn (adults); free for registered ward children. Hall has 4 badminton courts; group booking 1/4 of the hall (1 court) is 1,500 yen for 2 hours. Group booking needs prior registration.",
+      "checked": "2026-11-20",
+      "name": "大宮前体育館"
+    },
+    "v-jp-ebdd1cce": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003496.html",
+      "sources": [
+        "https://www.city.toshima.lg.jp/501/bunka/sports/sports/003418/003496.html"
+      ],
+      "note": "No sports hall: pool, training room, studio and martial arts rooms only.",
+      "checked": "2026-11-20",
+      "name": "池袋スポーツセンター"
+    },
+    "v-jp-ec1ac985": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 300,
+      "playTimes": "Walk-in individual badminton and table tennis at set times, no booking; check the individual-use plan and event calendar, and the next day's slots are posted on the gym's social accounts. Groups book through the city's reservation system.",
+      "web": "https://www.higashiyamato-taiikukan.com/個人解放のご案内",
+      "sources": [
+        "https://www.higashiyamato-taiikukan.com/個人解放のご案内",
+        "https://www.city.higashiyamato.lg.jp/shisei/shiyakusho/shisetsu/sports/1006848.html"
+      ],
+      "note": "Higashiyamato S&D Gym. 300 yen per visit 9 AM–9:30 PM, 180 yen 9:30–11 PM (adults); session length not stated. Open until 11 PM on weekdays. Group fees not readable on the site.",
+      "checked": "2026-11-20",
+      "name": "市民体育館"
+    },
+    "v-jp-ecd04302": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": null,
+      "sources": [],
+      "note": "Not a badminton venue: second car park of the Chofu general gym.",
+      "checked": "2026-11-20",
+      "name": "総合体育館第2駐車場"
+    },
+    "v-jp-ee7d8465": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "The hall (3 badminton courts) can be booked by registered groups on the 1st, 3rd and 5th Sundays and holidays 9 AM–9 PM and on most Wednesdays 4–9 PM through Keyaki-net. Other times it runs classes; no individual badminton sessions are listed.",
+      "web": "https://www.se-sports.or.jp/facilityinfo/oyamadai-gym/",
+      "sources": [
+        "https://www.se-sports.or.jp/facilityinfo/oyamadai-gym/",
+        "https://www.se-sports.or.jp/facility/oyamadai/"
+      ],
+      "note": "Whole hall only: 9,140 yen for 9 AM–1 PM on Sundays/holidays (13,890 yen 5–9 PM); Wednesday 4–6:30 PM 6,200 yen. Entry fee 150 yen covers class programmes, not open badminton. [perCourtHour 2285 dropped: the unit is more than one court]",
+      "checked": "2026-11-20",
+      "name": "尾山台地域体育館（複合施設）"
+    },
+    "v-jp-fb77cf5b": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Individual sessions run at set times; check the monthly schedule. Groups can book the hall through the Nerima public reservation system.",
+      "web": "https://www.city.nerima.tokyo.jp/shisetsu/koen/taiku/kamishakujii.html",
+      "sources": [
+        "https://www.city.nerima.tokyo.jp/shisetsu/koen/taiku/kamishakujii.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/riyou/shisetushiyouryou.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/oshirase/sportsguide.files/2026.pdf"
+      ],
+      "note": "Hall has 6 badminton courts. Individual fee ¥100-300 per slot (1-3 h). Group hire: full hall ¥9,000, half hall ¥4,500 per 3-hour slot. Manager site nerima-kamitai.com did not resolve.",
+      "checked": "2026-11-20",
+      "name": "上石神井体育館"
+    },
+    "v-jp-feffa1a6": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Individual sessions run at set times; check the monthly schedule. Groups can book the hall through the Nerima public reservation system.",
+      "web": "https://www.city.nerima.tokyo.jp/shisetsu/koen/taiku/oizumigakuen.html",
+      "sources": [
+        "https://www.city.nerima.tokyo.jp/shisetsu/koen/taiku/oizumigakuen.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/riyou/shisetushiyouryou.html",
+        "https://www.city.nerima.tokyo.jp/kankomoyoshi/sports/oshirase/sportsguide.files/2026.pdf"
+      ],
+      "note": "Hall has 6 badminton courts. Individual fee ¥100-300 per slot (1-3 h). Group hire: full hall ¥9,600, half hall ¥4,800 per 3-hour slot. Manager site link did not resolve.",
+      "checked": "2026-11-20",
+      "name": "大泉学園町体育館"
     }
   }
 }
