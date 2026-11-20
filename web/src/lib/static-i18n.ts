@@ -42,9 +42,14 @@ export const localesOf = (english: string): Locale[] =>
 /** 某种语言的地址 */
 export const pathIn = (locale: Locale, english: string) => `${pathPrefixes[locale]}${english}`;
 
+/** 球馆页：/courts/国家/城市/球馆/ */
+export const isVenuePath = (english: string) => /^\/courts\/[^/]+\/[^/]+\/[^/]+\/$/.test(english) && !english.includes('/metro/');
+
 /** 同一页面的各语言版本（给 hreflang 用）；只有英文的页面为空 */
 export function alternates(pathname: string, site: URL) {
   const english = englishPath(pathname);
+  // 球馆页的中文版不让收录（见 [venue].astro），不互相标注
+  if (isVenuePath(english)) return [];
   const locales = localesOf(english);
   if (!locales.length) return [];
   return [
