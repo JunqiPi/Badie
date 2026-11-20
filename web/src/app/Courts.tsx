@@ -35,6 +35,9 @@ export function Courts() {
 
   useEffect(() => {
     supabase?.auth.getSession().then(({ data }) => setUserId(data.session?.user.id));
+    // 从球馆搜索点进来（?venue=…&at=纬度,经度）：附近的球馆以它为中心，选中它
+    const at = new URLSearchParams(location.search).get('at')?.split(',').map(Number);
+    if (at?.length === 2 && at.every(Number.isFinite)) setArea({ lat: at[0], lon: at[1] });
   }, []);
 
   useEffect(() => {

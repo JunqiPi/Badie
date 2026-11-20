@@ -1,5 +1,5 @@
 {
- "source": "OpenStreetMap (gymnasiums in Japan)",
+ "source": "OpenStreetMap (gymnasiums in JP)",
  "kind": "openStreetMap",
  "status": "unconfirmed",
  "attribution": "© OpenStreetMap contributors, ODbL 1.0",
@@ -57,17 +57,18 @@
    "osm": "way/1443609042"
   },
   {
-   "id": "v-jp-osmg-w544572899",
-   "name": "伊賀市民体育館",
-   "lat": 34.764554,
-   "lon": 136.147675,
+   "id": "v-jp-osmg-w544750775",
+   "name": "伊賀市民体育館　管理棟",
+   "lat": 34.764119,
+   "lon": 136.147544,
    "street": "",
    "city": "伊賀市",
    "region": "三重県",
    "postcode": "",
    "country": "JP",
    "tz": "Asia/Tokyo",
-   "osm": "way/544572899"
+   "osm": "way/544750775",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1213289095",
@@ -133,6 +134,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/473681617"
+  },
+  {
+   "id": "v-jp-osmg-w1009354418",
+   "name": "高校体育館",
+   "lat": 35.031978,
+   "lon": 136.600574,
+   "street": "",
+   "city": "四日市市",
+   "region": "三重県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1009354418",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-n4144563770",
@@ -252,6 +267,20 @@
    "osm": "way/1023069069"
   },
   {
+   "id": "v-jp-osmg-w975136673",
+   "name": "高田短期大学 体育館・介護実習施設",
+   "lat": 34.769622,
+   "lon": 136.509479,
+   "street": "",
+   "city": "津市",
+   "region": "三重県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/975136673",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w425919254",
    "name": "熊野市体育館",
    "lat": 33.878911,
@@ -330,6 +359,20 @@
    "osm": "way/1131156952"
   },
   {
+   "id": "v-jp-osmg-w1131156941",
+   "name": "江陽中学校体育館",
+   "lat": 35.532746,
+   "lon": 135.102866,
+   "street": "",
+   "city": "与謝野町",
+   "region": "京都府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1131156941",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1125982000",
    "name": "野田川体育館",
    "lat": 35.527717,
@@ -393,6 +436,62 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/545015286"
+  },
+  {
+   "id": "v-jp-osmg-w99219190",
+   "name": "山城高等学校　体育館",
+   "lat": 35.022322,
+   "lon": 135.726602,
+   "street": "",
+   "city": "京都市",
+   "region": "京都府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/99219190",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w203241371",
+   "name": "京都産業大学 第二体育館",
+   "lat": 35.072053,
+   "lon": 135.746796,
+   "street": "",
+   "city": "京都市北区",
+   "region": "京都府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/203241371",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w187657229",
+   "name": "洛南高校体育館",
+   "lat": 34.982671,
+   "lon": 135.747397,
+   "street": "",
+   "city": "京都市南区",
+   "region": "京都府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/187657229",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-n3442226120",
+   "name": "立命館大学京都衣笠体育館",
+   "lat": 35.032424,
+   "lon": 135.721063,
+   "street": "",
+   "city": "京都市右京区",
+   "region": "京都府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/3442226120",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w291548936",
@@ -489,6 +588,34 @@
    ]
   },
   {
+   "id": "v-jp-osmg-w560760218",
+   "name": "西舞鶴高校第一体育館",
+   "lat": 35.438132,
+   "lon": 135.328237,
+   "street": "",
+   "city": "舞鶴市",
+   "region": "京都府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/560760218",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w739745824",
+   "name": "西舞鶴高校第二体育館",
+   "lat": 35.438729,
+   "lon": 135.327718,
+   "street": "",
+   "city": "舞鶴市",
+   "region": "京都府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/739745824",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1282926684",
    "name": "大川体育館",
    "lat": 33.304886,
@@ -529,6 +656,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/580420286"
+  },
+  {
+   "id": "v-jp-osmg-w1063460276",
+   "name": "大詫間小学校体育館",
+   "lat": 33.179415,
+   "lon": 130.34376,
+   "street": "",
+   "city": "佐賀市",
+   "region": "佐賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1063460276",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w465107034",
@@ -758,6 +899,20 @@
    "osm": "way/332233571"
   },
   {
+   "id": "v-jp-osmg-w394046148",
+   "name": "桜岡小学校体育館",
+   "lat": 33.290928,
+   "lon": 130.198834,
+   "street": "",
+   "city": "小城市",
+   "region": "佐賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/394046148",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w401773561",
    "name": "牛津体育センター",
    "lat": 33.250364,
@@ -852,6 +1007,34 @@
    ]
   },
   {
+   "id": "v-jp-osmg-w900995259",
+   "name": "六角小学校体育館",
+   "lat": 33.190391,
+   "lon": 130.135175,
+   "street": "",
+   "city": "白石町",
+   "region": "佐賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/900995259",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w901977803",
+   "name": "白石小学校体育館",
+   "lat": 33.184514,
+   "lon": 130.149968,
+   "street": "",
+   "city": "白石町",
+   "region": "佐賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/901977803",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1091987797",
    "name": "白石町総合運動場",
    "lat": 33.183152,
@@ -889,6 +1072,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/916929809"
+  },
+  {
+   "id": "v-jp-osmg-w479987207",
+   "name": "田代中学校体育館",
+   "lat": 33.386124,
+   "lon": 130.517591,
+   "street": "",
+   "city": "鳥栖市",
+   "region": "佐賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/479987207",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1085151990",
@@ -1040,6 +1237,48 @@
    "osm": "way/939355127"
   },
   {
+   "id": "v-jp-osmg-w956108988",
+   "name": "市立志方東小学校 体育館",
+   "lat": 34.832456,
+   "lon": 134.838245,
+   "street": "",
+   "city": "加古川市",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/956108988",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w939234133",
+   "name": "市立東神吉小学校 体育館",
+   "lat": 34.791296,
+   "lon": 134.829889,
+   "street": "",
+   "city": "加古川市",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/939234133",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w706569803",
+   "name": "市立浜の宮小学校　体育館",
+   "lat": 34.737339,
+   "lon": 134.833932,
+   "street": "",
+   "city": "加古川市",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/706569803",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w523150373",
    "name": "神鋼体育館",
    "lat": 34.728333,
@@ -1177,6 +1416,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/1112653396"
+  },
+  {
+   "id": "v-jp-osmg-w347771222",
+   "name": "大阪青山大学　体育館",
+   "lat": 34.880423,
+   "lon": 135.420059,
+   "street": "",
+   "city": "川西市",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/347771222",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w544225927",
@@ -1341,6 +1594,20 @@
    "osm": "way/386802702"
   },
   {
+   "id": "v-jp-osmg-w98624007",
+   "name": "体育館６号館",
+   "lat": 34.680784,
+   "lon": 135.26921,
+   "street": "",
+   "city": "神戸市東灘区",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/98624007",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w870714908",
    "name": "神崎体育センター",
    "lat": 35.073721,
@@ -1407,6 +1674,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/693320332"
+  },
+  {
+   "id": "v-jp-osmg-w749807047",
+   "name": "小学校体育館",
+   "lat": 34.770428,
+   "lon": 135.360623,
+   "street": "",
+   "city": "西宮市",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/749807047",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w749807048",
@@ -1498,6 +1779,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/1123612095"
+  },
+  {
+   "id": "v-jp-osmg-w620855600",
+   "name": "市立荒井小学校 体育館",
+   "lat": 34.760765,
+   "lon": 134.796126,
+   "street": "",
+   "city": "高砂市",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/620855600",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w956288180",
+   "name": "市立阿弥陀小学校 体育館",
+   "lat": 34.797078,
+   "lon": 134.78112,
+   "street": "",
+   "city": "高砂市",
+   "region": "兵庫県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/956288180",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w104384725",
@@ -2653,6 +2962,23 @@
    "osm": "way/364840296"
   },
   {
+   "id": "v-jp-osmg-w1545991538",
+   "name": "太陽小学校体育館",
+   "lat": 44.386253,
+   "lon": 141.884328,
+   "street": "",
+   "city": "羽幌町",
+   "region": "北海道",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1545991538",
+   "aliases": [
+    "Taiyo Elementary School Gymnasium"
+   ],
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w678814918",
    "name": "焼尻体育館",
    "lat": 44.4429,
@@ -3016,6 +3342,37 @@
    "osm": "way/455192994"
   },
   {
+   "id": "v-jp-osmg-w648980371",
+   "name": "八重原小学校体育館",
+   "lat": 35.328242,
+   "lon": 139.929334,
+   "street": "",
+   "city": "君津市",
+   "region": "千葉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/648980371",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w574542003",
+   "name": "南子安小学校体育館",
+   "lat": 35.325463,
+   "lon": 139.916621,
+   "street": "",
+   "city": "君津市",
+   "region": "千葉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/574542003",
+   "aliases": [
+    "Minami-Koyasu Elementary School Gymnasium"
+   ],
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w726866913",
    "name": "君津市民体育館",
    "lat": 35.324392,
@@ -3029,6 +3386,34 @@
    "osm": "way/726866913"
   },
   {
+   "id": "v-jp-osmg-w642789082",
+   "name": "周南中学校体育館",
+   "lat": 35.300517,
+   "lon": 139.927756,
+   "street": "",
+   "city": "君津市",
+   "region": "千葉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/642789082",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w633882709",
+   "name": "周西南中学校体育館",
+   "lat": 35.32702,
+   "lon": 139.897686,
+   "street": "",
+   "city": "君津市",
+   "region": "千葉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/633882709",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w563788531",
    "name": "日本製鉄 君津体育館",
    "lat": 35.341502,
@@ -3040,6 +3425,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/563788531"
+  },
+  {
+   "id": "v-jp-osmg-w622942987",
+   "name": "貞元小学校体育館",
+   "lat": 35.321441,
+   "lon": 139.899983,
+   "street": "",
+   "city": "君津市",
+   "region": "千葉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/622942987",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w898562319",
@@ -3056,6 +3455,20 @@
    "aliases": [
     "Tako Town Gymnasium"
    ]
+  },
+  {
+   "id": "v-jp-osmg-w588001073",
+   "name": "金谷小学校体育館",
+   "lat": 35.168598,
+   "lon": 139.822574,
+   "street": "",
+   "city": "富津市",
+   "region": "千葉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/588001073",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w457217767",
@@ -3346,6 +3759,20 @@
    ]
   },
   {
+   "id": "v-jp-osmg-w616718764",
+   "name": "智辯学園和歌山中学・高等学校体育館",
+   "lat": 34.17413,
+   "lon": 135.212671,
+   "street": "",
+   "city": "",
+   "region": "和歌山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/616718764",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w467760616",
    "name": "かつらぎ体育センター",
    "lat": 34.295268,
@@ -3357,6 +3784,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/467760616"
+  },
+  {
+   "id": "v-jp-osmg-w1408690503",
+   "name": "県立紀北農芸高等学校 第1体育館",
+   "lat": 34.309309,
+   "lon": 135.530479,
+   "street": "",
+   "city": "かつらぎ町",
+   "region": "和歌山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1408690503",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w1408690504",
+   "name": "県立紀北農芸高等学校 第2体育館",
+   "lat": 34.309561,
+   "lon": 135.52984,
+   "street": "",
+   "city": "かつらぎ町",
+   "region": "和歌山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1408690504",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1411236021",
@@ -3398,6 +3853,20 @@
    "osm": "way/460697712"
   },
   {
+   "id": "v-jp-osmg-w998329733",
+   "name": "宮小学校体育館",
+   "lat": 34.226057,
+   "lon": 135.206792,
+   "street": "",
+   "city": "和歌山市",
+   "region": "和歌山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/998329733",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w637112946",
    "name": "河西体育館",
    "lat": 34.247789,
@@ -3409,6 +3878,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/637112946"
+  },
+  {
+   "id": "v-jp-osmg-w995767102",
+   "name": "私立河西中学校体育館",
+   "lat": 34.251446,
+   "lon": 135.130876,
+   "street": "",
+   "city": "和歌山市",
+   "region": "和歌山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/995767102",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w543087530",
@@ -3435,6 +3918,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/554381700"
+  },
+  {
+   "id": "v-jp-osmg-w324504315",
+   "name": "海南中学校体育館",
+   "lat": 34.158105,
+   "lon": 135.220338,
+   "street": "",
+   "city": "海南市",
+   "region": "和歌山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/324504315",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w330180649",
+   "name": "海南高校体育館",
+   "lat": 34.155172,
+   "lon": 135.227778,
+   "street": "",
+   "city": "海南市",
+   "region": "和歌山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/330180649",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w731806038",
@@ -3469,6 +3980,20 @@
    ]
   },
   {
+   "id": "v-jp-osmg-n13514298989",
+   "name": "与野八幡小学校 体育館",
+   "lat": 35.890541,
+   "lon": 139.62203,
+   "street": "",
+   "city": "さいたま市中央区",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/13514298989",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-n14201979137",
    "name": "スイングアリーナ今羽店",
    "lat": 35.947475,
@@ -3480,6 +4005,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/14201979137"
+  },
+  {
+   "id": "v-jp-osmg-w693787590",
+   "name": "淑徳与野高等学校第二体育館",
+   "lat": 35.88505,
+   "lon": 139.604141,
+   "street": "",
+   "city": "さいたま市桜区",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/693787590",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w207404071",
@@ -3496,6 +4035,20 @@
    "aliases": [
     "General Gymnastics"
    ]
+  },
+  {
+   "id": "v-jp-osmg-w1309515720",
+   "name": "木崎中学校体育館",
+   "lat": 35.878908,
+   "lon": 139.660681,
+   "street": "",
+   "city": "さいたま市浦和区",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1309515720",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1052246842",
@@ -3577,6 +4130,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "relation/17344152"
+  },
+  {
+   "id": "v-jp-osmg-w890941518",
+   "name": "原市南小学校 体育館",
+   "lat": 35.959561,
+   "lon": 139.633144,
+   "street": "",
+   "city": "上尾市",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/890941518",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w395035361",
@@ -3900,6 +4467,20 @@
    "osm": "way/1330432983"
   },
   {
+   "id": "v-jp-osmg-w938140491",
+   "name": "川口市立高等学校第2校地体育館",
+   "lat": 35.807949,
+   "lon": 139.749438,
+   "street": "",
+   "city": "川口市",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/938140491",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1023255403",
    "name": "市立鳩ヶ谷スポーツセンター",
    "lat": 35.821618,
@@ -4088,6 +4669,20 @@
    "osm": "way/485325760"
   },
   {
+   "id": "v-jp-osmg-w549351493",
+   "name": "東都大学 体育館",
+   "lat": 36.180496,
+   "lon": 139.298518,
+   "street": "",
+   "city": "深谷市",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/549351493",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w528903870",
    "name": "深谷市民体育館",
    "lat": 36.200481,
@@ -4140,6 +4735,20 @@
    "osm": "way/675749772"
   },
   {
+   "id": "v-jp-osmg-w1305403496",
+   "name": "狭山工業高校体育館",
+   "lat": 35.847706,
+   "lon": 139.420029,
+   "street": "",
+   "city": "狭山市",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1305403496",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w549344403",
    "name": "白岡勤労者体育センター",
    "lat": 36.03138,
@@ -4151,6 +4760,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/549344403"
+  },
+  {
+   "id": "v-jp-osmg-w462268554",
+   "name": "蓮田松韻高校体育館",
+   "lat": 36.000613,
+   "lon": 139.675234,
+   "street": "",
+   "city": "白岡市",
+   "region": "埼玉県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/462268554",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w730436064",
@@ -4619,6 +5242,20 @@
    "osm": "way/93922189"
   },
   {
+   "id": "v-jp-osmg-w1341111479",
+   "name": "庭窪中学校体育館",
+   "lat": 34.7566,
+   "lon": 135.585618,
+   "street": "",
+   "city": "守口市",
+   "region": "大阪府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1341111479",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w331328498",
    "name": "総合体育館",
    "lat": 34.778926,
@@ -4682,6 +5319,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/655520013"
+  },
+  {
+   "id": "v-jp-osmg-w315474616",
+   "name": "藤阪小学校体育館",
+   "lat": 34.81631,
+   "lon": 135.698815,
+   "street": "",
+   "city": "枚方市",
+   "region": "大阪府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/315474616",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w1382874319",
+   "name": "関西外国語大学総合体育館",
+   "lat": 34.833258,
+   "lon": 135.674544,
+   "street": "",
+   "city": "枚方市",
+   "region": "大阪府",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1382874319",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w656442247",
@@ -4989,6 +5654,20 @@
    "osm": "way/169816633"
   },
   {
+   "id": "v-jp-osmg-n8410360256",
+   "name": "川西小学校体育館",
+   "lat": 34.584582,
+   "lon": 135.776628,
+   "street": "",
+   "city": "川西町",
+   "region": "奈良県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/8410360256",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w545146820",
    "name": "川西町中央体育館",
    "lat": 34.586975,
@@ -5169,6 +5848,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/455314355"
+  },
+  {
+   "id": "v-jp-osmg-n12926851771",
+   "name": "中学校体育館",
+   "lat": 34.487118,
+   "lon": 135.716126,
+   "street": "",
+   "city": "葛城市",
+   "region": "奈良県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/12926851771",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w454019563",
@@ -5744,6 +6437,20 @@
    "osm": "way/836825604"
   },
   {
+   "id": "v-jp-osmg-w104804984",
+   "name": "旧石巻市立北上小学校 体育館",
+   "lat": 38.554237,
+   "lon": 141.409283,
+   "street": "",
+   "city": "石巻市",
+   "region": "宮城県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/104804984",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-n12069024263",
    "name": "雄勝体育館",
    "lat": 38.521839,
@@ -5837,6 +6544,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/6060323308"
+  },
+  {
+   "id": "v-jp-osmg-w1319022116",
+   "name": "都井小学校 体育館",
+   "lat": 31.398291,
+   "lon": 131.305125,
+   "street": "",
+   "city": "串間市",
+   "region": "宮崎県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1319022116",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w417773838",
@@ -6281,6 +7002,20 @@
    "osm": "way/288447990"
   },
   {
+   "id": "v-jp-osmg-w1120637427",
+   "name": "宇部西高校体育館",
+   "lat": 33.991373,
+   "lon": 131.236,
+   "street": "",
+   "city": "宇部市",
+   "region": "山口県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1120637427",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-n5501386426",
    "name": "地福体育館",
    "lat": 34.360607,
@@ -6453,6 +7188,34 @@
    "osm": "way/865001469"
   },
   {
+   "id": "v-jp-osmg-w1553110043",
+   "name": "山形市立蔵王第一小学校 体育館",
+   "lat": 38.2067,
+   "lon": 140.317889,
+   "street": "",
+   "city": "山形市",
+   "region": "山形県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1553110043",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w534766421",
+   "name": "山辺小学校の体育館",
+   "lat": 38.297228,
+   "lon": 140.264759,
+   "street": "",
+   "city": "山辺町",
+   "region": "山形県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/534766421",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w405811186",
    "name": "庄内町総合体育館",
    "lat": 38.854888,
@@ -6467,6 +7230,20 @@
    "aliases": [
     "Shonai General Gymnasium"
    ]
+  },
+  {
+   "id": "v-jp-osmg-w1271030127",
+   "name": "旧月楯小学校 体育館",
+   "lat": 38.752593,
+   "lon": 140.496924,
+   "street": "",
+   "city": "最上町",
+   "region": "山形県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1271030127",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1456810660",
@@ -6495,6 +7272,20 @@
    "osm": "node/11620200287"
   },
   {
+   "id": "v-jp-osmg-w1121154755",
+   "name": "山形県酒田西高等学校 定時制 体育館",
+   "lat": 38.923479,
+   "lon": 139.832934,
+   "street": "",
+   "city": "酒田市",
+   "region": "山形県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1121154755",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1239339741",
    "name": "金山町体育センター",
    "lat": 38.877887,
@@ -6519,6 +7310,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/641539400"
+  },
+  {
+   "id": "v-jp-osmg-w338591205",
+   "name": "県立高等学校共用 体育館 (鶴岡)",
+   "lat": 38.735842,
+   "lon": 139.825367,
+   "street": "",
+   "city": "鶴岡市",
+   "region": "山形県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/338591205",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w415528354",
@@ -6576,6 +7381,34 @@
    "osm": "way/987880273"
   },
   {
+   "id": "v-jp-osmg-w987903158",
+   "name": "旧万沢中学校体育館",
+   "lat": 35.224382,
+   "lon": 138.515214,
+   "street": "",
+   "city": "南部町",
+   "region": "山梨県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/987903158",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w987632404",
+   "name": "旧富河中学校体育館",
+   "lat": 35.242886,
+   "lon": 138.483615,
+   "street": "",
+   "city": "南部町",
+   "region": "山梨県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/987632404",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w265355007",
    "name": "丸石荘体育館",
    "lat": 35.419351,
@@ -6613,6 +7446,23 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/499885313"
+  },
+  {
+   "id": "v-jp-osmg-w229374257",
+   "name": "中津高校体育館",
+   "lat": 35.501218,
+   "lon": 137.507752,
+   "street": "",
+   "city": "中津川市",
+   "region": "岐阜県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/229374257",
+   "aliases": [
+    "Nakatsu High School Gym"
+   ],
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w547820074",
@@ -6704,6 +7554,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/1490018438"
+  },
+  {
+   "id": "v-jp-osmg-w166671912",
+   "name": "附属中学校体育館",
+   "lat": 35.362355,
+   "lon": 136.706348,
+   "street": "",
+   "city": "岐阜市",
+   "region": "岐阜県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/166671912",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w579982462",
@@ -6927,6 +7791,20 @@
    "osm": "way/646020848"
   },
   {
+   "id": "v-jp-osmg-w568282612",
+   "name": "上竹荘小学校体育館",
+   "lat": 34.847512,
+   "lon": 133.673029,
+   "street": "",
+   "city": "吉備中央町",
+   "region": "岡山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/568282612",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w429983037",
    "name": "和気町体育館",
    "lat": 34.793983,
@@ -6938,6 +7816,23 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/429983037"
+  },
+  {
+   "id": "v-jp-osmg-w630842846",
+   "name": "奈義町立奈義中学校体育館",
+   "lat": 35.120125,
+   "lon": 134.179055,
+   "street": "",
+   "city": "奈義町",
+   "region": "岡山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/630842846",
+   "aliases": [
+    "Gymnasium inside Nagi junior high school"
+   ],
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w414153444",
@@ -6969,6 +7864,20 @@
    "osm": "way/436640772"
   },
   {
+   "id": "v-jp-osmg-w1358289024",
+   "name": "岡山理科大学加計記念体育館",
+   "lat": 34.705013,
+   "lon": 133.914185,
+   "street": "",
+   "city": "岡山市北区",
+   "region": "岡山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1358289024",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w487373189",
    "name": "清水記念体育館",
    "lat": 34.686058,
@@ -6985,6 +7894,23 @@
    ]
   },
   {
+   "id": "v-jp-osmg-w666806120",
+   "name": "河辺小学校体育館",
+   "lat": 35.049432,
+   "lon": 134.043484,
+   "street": "",
+   "city": "津山市",
+   "region": "岡山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/666806120",
+   "aliases": [
+    "Gymnasium inside Kawanabe Elementary School"
+   ],
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w499773906",
    "name": "津山スポーツセンター",
    "lat": 35.084434,
@@ -6996,6 +7922,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/499773906"
+  },
+  {
+   "id": "v-jp-osmg-n5646916832",
+   "name": "津山中学校体育館",
+   "lat": 35.068451,
+   "lon": 134.000696,
+   "street": "",
+   "city": "津山市",
+   "region": "岡山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/5646916832",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w987562971",
@@ -7037,6 +7977,20 @@
    "osm": "way/580289493"
   },
   {
+   "id": "v-jp-osmg-n5646916833",
+   "name": "津山高校体育館",
+   "lat": 35.068312,
+   "lon": 134.00104,
+   "street": "",
+   "city": "津山市",
+   "region": "岡山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/5646916833",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-n13830618510",
    "name": "瀬戸内市牛窓体育館",
    "lat": 34.619792,
@@ -7076,6 +8030,20 @@
    "osm": "node/1777612522"
   },
   {
+   "id": "v-jp-osmg-w1230782588",
+   "name": "里庄中学校　体育館",
+   "lat": 34.514122,
+   "lon": 133.557587,
+   "street": "",
+   "city": "里庄町",
+   "region": "岡山県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1230782588",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w426080069",
    "name": "一戸町民体育館",
    "lat": 40.212228,
@@ -7087,6 +8055,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/426080069"
+  },
+  {
+   "id": "v-jp-osmg-w559626868",
+   "name": "旧小鳥谷中学校体育館",
+   "lat": 40.17525,
+   "lon": 141.307368,
+   "street": "",
+   "city": "一戸町",
+   "region": "岩手県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/559626868",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w546756519",
+   "name": "旧鳥越小学校体育館",
+   "lat": 40.239021,
+   "lon": 141.280593,
+   "street": "",
+   "city": "一戸町",
+   "region": "岩手県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/546756519",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w609549336",
@@ -7258,6 +8254,20 @@
    "osm": "way/112978235"
   },
   {
+   "id": "v-jp-osmg-w363835665",
+   "name": "奥州市立江刺愛宕小学校  体育館",
+   "lat": 39.177091,
+   "lon": 141.150685,
+   "street": "",
+   "city": "奥州市",
+   "region": "岩手県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/363835665",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1064767459",
    "name": "稲瀬体育センター",
    "lat": 39.21504,
@@ -7375,6 +8385,20 @@
    "osm": "way/761930640"
   },
   {
+   "id": "v-jp-osmg-w988789678",
+   "name": "旧川舟小学校体育館",
+   "lat": 39.483989,
+   "lon": 140.800983,
+   "street": "",
+   "city": "西和賀町",
+   "region": "岩手県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/988789678",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-n14073909727",
    "name": "軽米町町民体育館",
    "lat": 40.322396,
@@ -7466,6 +8490,34 @@
    "osm": "way/1097417174"
   },
   {
+   "id": "v-jp-osmg-w617297825",
+   "name": "大多和学園 開星中学校・高等学校 体育館",
+   "lat": 35.452245,
+   "lon": 133.072564,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/617297825",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w617299369",
+   "name": "大多和学園 開星中学校・高等学校 体育館",
+   "lat": 35.451521,
+   "lon": 133.071202,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/617299369",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w698665714",
    "name": "島根体育館",
    "lat": 35.564523,
@@ -7477,6 +8529,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/698665714"
+  },
+  {
+   "id": "v-jp-osmg-w1108150183",
+   "name": "島根大学 第1体育館",
+   "lat": 35.48869,
+   "lon": 133.06931,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1108150183",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w318469668",
+   "name": "島根大学 第2体育館",
+   "lat": 35.488032,
+   "lon": 133.068198,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/318469668",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w563620785",
@@ -7492,6 +8572,20 @@
    "osm": "way/563620785"
   },
   {
+   "id": "v-jp-osmg-w564373704",
+   "name": "島根県立松江南高等学校 体育館",
+   "lat": 35.439587,
+   "lon": 133.068571,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/564373704",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w638609247",
    "name": "松江市八束体育館",
    "lat": 35.495736,
@@ -7503,6 +8597,48 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/638609247"
+  },
+  {
+   "id": "v-jp-osmg-w564373521",
+   "name": "松江市立古志原小学校 体育館",
+   "lat": 35.441591,
+   "lon": 133.074707,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/564373521",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w1097229117",
+   "name": "松江市立大庭小学校 体育館",
+   "lat": 35.43107,
+   "lon": 133.080266,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1097229117",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w565204124",
+   "name": "松江市立雑賀小学校体育館",
+   "lat": 35.456794,
+   "lon": 133.060952,
+   "street": "",
+   "city": "松江市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/565204124",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1294881233",
@@ -7596,6 +8732,20 @@
    "osm": "way/647124263"
   },
   {
+   "id": "v-jp-osmg-w309998841",
+   "name": "町立津和野中学校体育館",
+   "lat": 34.455669,
+   "lon": 131.769545,
+   "street": "",
+   "city": "津和野町",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/309998841",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1385218507",
    "name": "市木ふれあい広場体育館",
    "lat": 34.848269,
@@ -7620,6 +8770,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/670829593"
+  },
+  {
+   "id": "v-jp-osmg-w1262248771",
+   "name": "旧飯石小学校体育館",
+   "lat": 35.255265,
+   "lon": 132.871286,
+   "street": "",
+   "city": "雲南市",
+   "region": "島根県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1262248771",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w696913622",
@@ -7687,6 +8851,34 @@
    "osm": "way/484303303"
   },
   {
+   "id": "v-jp-osmg-w696347319",
+   "name": "尾道市立大学第1体育館",
+   "lat": 34.422576,
+   "lon": 133.161465,
+   "street": "",
+   "city": "尾道市",
+   "region": "広島県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/696347319",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w696349344",
+   "name": "尾道市立大学第2体育館",
+   "lat": 34.424418,
+   "lon": 133.165034,
+   "street": "",
+   "city": "尾道市",
+   "region": "広島県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/696349344",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w407728476",
    "name": "広島県立びんご運動健康スポーツセンター",
    "lat": 34.433592,
@@ -7698,6 +8890,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/407728476"
+  },
+  {
+   "id": "v-jp-osmg-w486489194",
+   "name": "瀬戸田小学校体育館",
+   "lat": 34.306399,
+   "lon": 133.09022,
+   "street": "",
+   "city": "尾道市",
+   "region": "広島県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/486489194",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w565262954",
@@ -8051,6 +9257,20 @@
    "osm": "way/409820732"
   },
   {
+   "id": "v-jp-osmg-w410317054",
+   "name": "市立三島小学校体育館",
+   "lat": 33.98011,
+   "lon": 133.543254,
+   "street": "",
+   "city": "四国中央市",
+   "region": "愛媛県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/410317054",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w575281036",
    "name": "別子体育館",
    "lat": 33.954021,
@@ -8103,6 +9323,20 @@
    "osm": "way/1530509936"
   },
   {
+   "id": "v-jp-osmg-n4919299167",
+   "name": "愛媛大学第一体育館",
+   "lat": 33.851174,
+   "lon": 132.770605,
+   "street": "",
+   "city": "松山市",
+   "region": "愛媛県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/4919299167",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1137304282",
    "name": "松山市青少年センター体育館",
    "lat": 33.840068,
@@ -8114,6 +9348,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/1137304282"
+  },
+  {
+   "id": "v-jp-osmg-w621209648",
+   "name": "旧遊子川小学校体育館",
+   "lat": 33.433566,
+   "lon": 132.767735,
+   "street": "",
+   "city": "西予市",
+   "region": "愛媛県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/621209648",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w106863281",
+   "name": "丹原高校体育館",
+   "lat": 33.908075,
+   "lon": 133.06729,
+   "street": "",
+   "city": "西条市",
+   "region": "愛媛県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/106863281",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1322138483",
@@ -8210,6 +9472,20 @@
    ]
   },
   {
+   "id": "v-jp-osmg-w380699419",
+   "name": "中川学校体育センター",
+   "lat": 35.127904,
+   "lon": 136.839826,
+   "street": "",
+   "city": "名古屋市中川区",
+   "region": "愛知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/380699419",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w269744268",
    "name": "千種スポーツセンター",
    "lat": 35.161313,
@@ -8221,6 +9497,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/269744268"
+  },
+  {
+   "id": "v-jp-osmg-w170999907",
+   "name": "名古屋大学 体育館",
+   "lat": 35.150002,
+   "lon": 136.969601,
+   "street": "",
+   "city": "名古屋市千種区",
+   "region": "愛知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/170999907",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w264092349",
@@ -8249,6 +9539,48 @@
    "osm": "way/1310005976"
   },
   {
+   "id": "v-jp-osmg-w1299182738",
+   "name": "体育館(6号館)",
+   "lat": 35.116465,
+   "lon": 136.997111,
+   "street": "",
+   "city": "名古屋市天白区",
+   "region": "愛知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1299182738",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w1304066196",
+   "name": "10号館 (体育館)",
+   "lat": 35.141498,
+   "lon": 136.964381,
+   "street": "",
+   "city": "名古屋市昭和区",
+   "region": "愛知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1304066196",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w1304065661",
+   "name": "12号館 (体育館)",
+   "lat": 35.141138,
+   "lon": 136.964326,
+   "street": "",
+   "city": "名古屋市昭和区",
+   "region": "愛知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1304065661",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w246785742",
    "name": "トヨタ葵体育館",
    "lat": 35.172025,
@@ -8260,6 +9592,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/246785742"
+  },
+  {
+   "id": "v-jp-osmg-w1301497751",
+   "name": "学校法人 越原学園 体育館・運動場",
+   "lat": 35.129441,
+   "lon": 136.942877,
+   "street": "",
+   "city": "名古屋市瑞穂区",
+   "region": "愛知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1301497751",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w317749522",
@@ -8588,6 +9934,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/6865874149"
+  },
+  {
+   "id": "v-jp-osmg-w155166822",
+   "name": "12号館（球技体育館・レクリエーション専用体育館）",
+   "lat": 35.139316,
+   "lon": 137.151011,
+   "street": "",
+   "city": "豊田市",
+   "region": "愛知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/155166822",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w225572123",
@@ -8944,6 +10304,20 @@
    "osm": "way/1352886608"
   },
   {
+   "id": "v-jp-osmg-w1281125530",
+   "name": "村上市立荒川中学校 体育館",
+   "lat": 38.122395,
+   "lon": 139.452443,
+   "street": "",
+   "city": "村上市",
+   "region": "新潟県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1281125530",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w364832541",
    "name": "神林総合体育館",
    "lat": 38.179928,
@@ -9204,6 +10578,20 @@
    "osm": "way/1041880164"
   },
   {
+   "id": "v-jp-osmg-w248612421",
+   "name": "大学総合体育館",
+   "lat": 35.676674,
+   "lon": 139.58851,
+   "street": "",
+   "city": "世田谷区",
+   "region": "東京都",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/248612421",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w156779116",
    "name": "駒沢体育館",
    "lat": 35.624828,
@@ -9218,6 +10606,20 @@
    "aliases": [
     "Komazawa Gymnasium"
    ]
+  },
+  {
+   "id": "v-jp-osmg-w560333460",
+   "name": "市立第二小学校体育館",
+   "lat": 35.661905,
+   "lon": 139.32155,
+   "street": "",
+   "city": "八王子市",
+   "region": "東京都",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/560333460",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-n1282827634",
@@ -9299,6 +10701,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/3159184038"
+  },
+  {
+   "id": "v-jp-osmg-w996458340",
+   "name": "アキシマエンシス体育館棟",
+   "lat": 35.711752,
+   "lon": 139.368515,
+   "street": "",
+   "city": "昭島市",
+   "region": "東京都",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/996458340",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w1499175468",
+   "name": "高千穂大学体育館",
+   "lat": 35.683575,
+   "lon": 139.637757,
+   "street": "",
+   "city": "杉並区",
+   "region": "東京都",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1499175468",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-n6192126338",
@@ -9426,6 +10856,23 @@
    ]
   },
   {
+   "id": "v-jp-osmg-w138871334",
+   "name": "記念館（大学体育館）",
+   "lat": 35.662148,
+   "lon": 139.710541,
+   "street": "",
+   "city": "渋谷区",
+   "region": "東京都",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/138871334",
+   "aliases": [
+    "Memorial hall (gymnasium)"
+   ],
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1058030659",
    "name": "プラチナアリーナ",
    "lat": 35.645143,
@@ -9476,6 +10923,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/430897116"
+  },
+  {
+   "id": "v-jp-osmg-w919971233",
+   "name": "光が丘秋の陽小学校体育館",
+   "lat": 35.762054,
+   "lon": 139.635096,
+   "street": "",
+   "city": "練馬区",
+   "region": "東京都",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/919971233",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w683472501",
@@ -9546,6 +11007,20 @@
    "osm": "way/991627480"
   },
   {
+   "id": "v-jp-osmg-w147538594",
+   "name": "大学体育館",
+   "lat": 35.720356,
+   "lon": 139.707477,
+   "street": "",
+   "city": "豊島区",
+   "region": "東京都",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/147538594",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-r18472103",
    "name": "巣鴨スポーツセンター",
    "lat": 35.735114,
@@ -9609,6 +11084,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/415404222"
+  },
+  {
+   "id": "v-jp-osmg-w943764708",
+   "name": "宮の原中学校体育館",
+   "lat": 36.545112,
+   "lon": 139.854604,
+   "street": "",
+   "city": "宇都宮市",
+   "region": "栃木県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/943764708",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-r13716257",
@@ -10134,6 +11623,20 @@
    "osm": "node/13602694425"
   },
   {
+   "id": "v-jp-osmg-w305213563",
+   "name": "平野小学校体育館",
+   "lat": 35.001515,
+   "lon": 135.881943,
+   "street": "",
+   "city": "大津市",
+   "region": "滋賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/305213563",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1462612517",
    "name": "滋賀ダイハツアリーナ",
    "lat": 34.970833,
@@ -10171,6 +11674,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/467334894"
+  },
+  {
+   "id": "v-jp-osmg-w441717735",
+   "name": "サブアリーナ(4号館)",
+   "lat": 35.062387,
+   "lon": 135.976513,
+   "street": "",
+   "city": "守山市",
+   "region": "滋賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/441717735",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-n13463569124",
@@ -10397,6 +11914,20 @@
    "osm": "way/1418968856"
   },
   {
+   "id": "v-jp-osmg-w555418250",
+   "name": "長浜バイオ大学体育館",
+   "lat": 35.358072,
+   "lon": 136.279896,
+   "street": "",
+   "city": "長浜市",
+   "region": "滋賀県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/555418250",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1227709110",
    "name": "安曇川スポーツセンター",
    "lat": 35.340851,
@@ -10486,6 +12017,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/824577188"
+  },
+  {
+   "id": "v-jp-osmg-w1384932517",
+   "name": "鏡小学校体育館",
+   "lat": 32.567453,
+   "lon": 130.663082,
+   "street": "",
+   "city": "八代市",
+   "region": "熊本県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1384932517",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1115274632",
@@ -10709,6 +12254,20 @@
    "osm": "way/413204636"
   },
   {
+   "id": "v-jp-osmg-w410474437",
+   "name": "熊本県立第二高等学校体育館",
+   "lat": 32.782823,
+   "lon": 130.768052,
+   "street": "",
+   "city": "熊本市東区",
+   "region": "熊本県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/410474437",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1227704404",
    "name": "天水体育館",
    "lat": 32.865133,
@@ -10785,6 +12344,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/13130759646"
+  },
+  {
+   "id": "v-jp-osmg-w1006315164",
+   "name": "錦町立一武小学校体育館",
+   "lat": 32.198859,
+   "lon": 130.842711,
+   "street": "",
+   "city": "錦町",
+   "region": "熊本県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1006315164",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w643247179",
@@ -10889,6 +12462,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/607077925"
+  },
+  {
+   "id": "v-jp-osmg-w1237163489",
+   "name": "旧宝立小学校体育館",
+   "lat": 37.39672,
+   "lon": 137.236683,
+   "street": "",
+   "city": "珠洲市",
+   "region": "石川県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1237163489",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-n11486849635",
@@ -11182,6 +12769,20 @@
    "osm": "way/823047129"
   },
   {
+   "id": "v-jp-osmg-w955620015",
+   "name": "田園調布学園大学体育館",
+   "lat": 35.59528,
+   "lon": 139.526447,
+   "street": "",
+   "city": "川崎市麻生区",
+   "region": "神奈川県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/955620015",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w215591348",
    "name": "ひらつかサン・ライフアリーナ",
    "lat": 35.336072,
@@ -11287,6 +12888,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/155585294"
+  },
+  {
+   "id": "v-jp-osmg-w264321135",
+   "name": "27棟 体育館",
+   "lat": 35.555138,
+   "lon": 139.655786,
+   "street": "",
+   "city": "横浜市港北区",
+   "region": "神奈川県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/264321135",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w123630243",
@@ -11410,6 +13025,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/552120264"
+  },
+  {
+   "id": "v-jp-osmg-w287236795",
+   "name": "大学体育館",
+   "lat": 35.534736,
+   "lon": 139.427231,
+   "street": "",
+   "city": "相模原市南区",
+   "region": "神奈川県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/287236795",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w552398443",
@@ -11663,6 +13292,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/12105919147"
+  },
+  {
+   "id": "v-jp-osmg-w182797226",
+   "name": "藤島高等学校体育館",
+   "lat": 36.079608,
+   "lon": 136.21731,
+   "street": "",
+   "city": "福井市",
+   "region": "福井県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/182797226",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w221956643",
@@ -11996,6 +13639,20 @@
    "osm": "way/617122607"
   },
   {
+   "id": "v-jp-osmg-w277950194",
+   "name": "修猷館高校 体育館",
+   "lat": 33.583162,
+   "lon": 130.355785,
+   "street": "",
+   "city": "福岡市早良区",
+   "region": "福岡県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/277950194",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w179294940",
    "name": "FITアリーナ",
    "lat": 33.696553,
@@ -12220,6 +13877,20 @@
    "osm": "way/367487506"
   },
   {
+   "id": "v-jp-osmg-w1168999636",
+   "name": "岩代中学校体育館",
+   "lat": 37.527302,
+   "lon": 140.563516,
+   "street": "",
+   "city": "二本松市",
+   "region": "福島県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1168999636",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w638154302",
    "name": "伊達町民体育館",
    "lat": 37.820465,
@@ -12270,6 +13941,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/3935392880"
+  },
+  {
+   "id": "v-jp-osmg-n3935392894",
+   "name": "旧赤沢小学校体育館・グラウンド",
+   "lat": 37.475607,
+   "lon": 139.817677,
+   "street": "",
+   "city": "会津美里町",
+   "region": "福島県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/3935392894",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-n3935392926",
@@ -12543,6 +14228,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/421443576"
+  },
+  {
+   "id": "v-jp-osmg-w676989640",
+   "name": "角館東地区公民館 (旧角館東小学校体育館)",
+   "lat": 39.596673,
+   "lon": 140.571812,
+   "street": "",
+   "city": "仙北市",
+   "region": "秋田県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/676989640",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w669440970",
@@ -13061,6 +14760,20 @@
    "osm": "way/541670202"
   },
   {
+   "id": "v-jp-osmg-r17645318",
+   "name": "トレーニングセンターアリーナ棟",
+   "lat": 39.623069,
+   "lon": 140.204254,
+   "street": "",
+   "city": "秋田市",
+   "region": "秋田県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "relation/17645318",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w593154331",
    "name": "光沼アリーナ",
    "lat": 39.767009,
@@ -13228,6 +14941,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/753476038"
+  },
+  {
+   "id": "v-jp-osmg-w751767597",
+   "name": "能代第一中学校体育館",
+   "lat": 40.213006,
+   "lon": 140.015985,
+   "street": "",
+   "city": "能代市",
+   "region": "秋田県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/751767597",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w740286531",
@@ -13432,6 +15159,20 @@
    "osm": "way/320618334"
   },
   {
+   "id": "v-jp-osmg-w666575216",
+   "name": "太田市立城塞小学校体育館",
+   "lat": 36.30838,
+   "lon": 139.347205,
+   "street": "",
+   "city": "太田市",
+   "region": "群馬県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/666575216",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w441875819",
    "name": "太田市藪塚本町社会体育館",
    "lat": 36.353538,
@@ -13564,6 +15305,20 @@
     "Kiryu Gas Sports Center",
     "桐生市民体育館"
    ]
+  },
+  {
+   "id": "v-jp-osmg-w765271274",
+   "name": "群馬大学 桐生キャンパス 体育館",
+   "lat": 36.423191,
+   "lon": 139.350436,
+   "street": "",
+   "city": "桐生市",
+   "region": "群馬県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/765271274",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w692355806",
@@ -14569,6 +16324,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/561991546"
+  },
+  {
+   "id": "v-jp-osmg-w451557451",
+   "name": "伊那北高等学校大体育館",
+   "lat": 35.847291,
+   "lon": 137.961054,
+   "street": "",
+   "city": "伊那市",
+   "region": "長野県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/451557451",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w451557443",
+   "name": "伊那北高等学校小体育館",
+   "lat": 35.847684,
+   "lon": 137.960961,
+   "street": "",
+   "city": "伊那市",
+   "region": "長野県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/451557443",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w687258592",
@@ -15856,6 +17639,34 @@
    "osm": "node/6905587622"
   },
   {
+   "id": "v-jp-osmg-w617745282",
+   "name": "裾野市立裾野西中学校体育館",
+   "lat": 35.181551,
+   "lon": 138.904199,
+   "street": "",
+   "city": "裾野市",
+   "region": "静岡県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/617745282",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-n14102615301",
+   "name": "裾野市立西小学校体育館",
+   "lat": 35.177217,
+   "lon": 138.905113,
+   "street": "",
+   "city": "裾野市",
+   "region": "静岡県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/14102615301",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-n13430413784",
    "name": "勤労者体育センター",
    "lat": 35.138511,
@@ -16038,6 +17849,20 @@
    "osm": "way/555587670"
   },
   {
+   "id": "v-jp-osmg-w516532517",
+   "name": "窪川小学校体育館",
+   "lat": 33.211639,
+   "lon": 133.133658,
+   "street": "",
+   "city": "四万十町",
+   "region": "高知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/516532517",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w1256880490",
    "name": "中芸広域体育館 結いの丘ドーム",
    "lat": 33.440667,
@@ -16103,6 +17928,20 @@
    "osm": "way/712076518"
   },
   {
+   "id": "v-jp-osmg-w718430115",
+   "name": "精華小学校体育館",
+   "lat": 33.44187,
+   "lon": 133.173198,
+   "street": "",
+   "city": "津野町",
+   "region": "高知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/718430115",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w708806355",
    "name": "総合センター体育館",
    "lat": 33.445914,
@@ -16114,6 +17953,34 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/708806355"
+  },
+  {
+   "id": "v-jp-osmg-w718430109",
+   "name": "葉山中学校体育館",
+   "lat": 33.445565,
+   "lon": 133.185945,
+   "street": "",
+   "city": "津野町",
+   "region": "高知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/718430109",
+   "facility": "school"
+  },
+  {
+   "id": "v-jp-osmg-w711084976",
+   "name": "葉山小学校体育館",
+   "lat": 33.442185,
+   "lon": 133.211878,
+   "street": "",
+   "city": "津野町",
+   "region": "高知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/711084976",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w1256880346",
@@ -16168,6 +18035,20 @@
    "osm": "way/710589119"
   },
   {
+   "id": "v-jp-osmg-w712930761",
+   "name": "朝ヶ丘中学校体育館",
+   "lat": 33.419968,
+   "lon": 133.292694,
+   "street": "",
+   "city": "須崎市",
+   "region": "高知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/712930761",
+   "facility": "school"
+  },
+  {
    "id": "v-jp-osmg-w709707553",
    "name": "須崎市立市民体育館",
    "lat": 33.389264,
@@ -16179,6 +18060,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "way/709707553"
+  },
+  {
+   "id": "v-jp-osmg-w1351491102",
+   "name": "高知県香南市立野市東小学校の体育館",
+   "lat": 33.563678,
+   "lon": 133.720581,
+   "street": "",
+   "city": "香南市",
+   "region": "高知県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "way/1351491102",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w550790205",
@@ -16257,6 +18152,20 @@
    "country": "JP",
    "tz": "Asia/Tokyo",
    "osm": "node/6465806460"
+  },
+  {
+   "id": "v-jp-osmg-n9623736521",
+   "name": "会見小学校体育館",
+   "lat": 35.363643,
+   "lon": 133.368983,
+   "street": "",
+   "city": "南部町",
+   "region": "鳥取県",
+   "postcode": "",
+   "country": "JP",
+   "tz": "Asia/Tokyo",
+   "osm": "node/9623736521",
+   "facility": "school"
   },
   {
    "id": "v-jp-osmg-w580002618",

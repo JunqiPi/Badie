@@ -22,6 +22,15 @@ const regions = [...Map.groupBy(country.cities, (city) => city.region || '')]
   .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 const grouped = regions.length > 1 && country.cities.length > 12;
 const openAll = country.cities.length <= 24;
+// 球馆多的国家（德国、法国几千家）地图上每个地区一个点，不然页面太大、手机上画几千个点很卡
+const centre = (list: { lat: number; lon: number }[]) => ({
+  lat: list.reduce((n, v) => n + v.lat, 0) / list.length,
+  lon: list.reduce((n, v) => n + v.lon, 0) / list.length,
+});
+const pins =
+  venues.length > 500
+    ? country.cities.map((city) => ({ id: city.path, name: `${cityName(city)} · ${city.venues.length}`, ...centre(city.venues), href: city.path }))
+    : venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }));
 const attributions = [...new Set(venues.map((v) => v.attribution).filter(Boolean))];
 const tints = ['bg-sky', 'bg-peach', 'bg-mint', 'bg-lavender', 'bg-butter', 'bg-pink'];
 // 都会区的价格页现在只有美国有
@@ -52,7 +61,7 @@ const zh = pageLocale(Astro.url.pathname) === 'zh-Hans';
       </div>
     </div>
     <div class="sticker h-72 overflow-hidden sm:h-96">
-      <PinsMap client:visible pins={venues.map((v) => ({ id: v.id, name: v.name, lat: v.lat, lon: v.lon, href: v.path }))} label={t('Map of courts in {place}', { place })} />
+      <PinsMap client:visible pins={pins} label={t('Map of courts in {place}', { place })} />
     </div>
   </section>
 

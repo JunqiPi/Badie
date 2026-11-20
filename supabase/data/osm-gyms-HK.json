@@ -1,0 +1,348 @@
+{
+ "source": "OpenStreetMap (gymnasiums in HK)",
+ "kind": "openStreetMap",
+ "status": "unconfirmed",
+ "attribution": "© OpenStreetMap contributors, ODbL 1.0",
+ "venues": [
+  {
+   "id": "v-hk-osmg-w1544571706",
+   "name": "賽馬會啟德水上運動中心 Jockey Club Kai Tak Water Sports Centre",
+   "lat": 22.309455,
+   "lon": 114.213419,
+   "street": "",
+   "city": "九龍 Kowloon",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/1544571706",
+   "aliases": [
+    "Jockey Club Kai Tak Water Sports Centre"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w197739478",
+   "name": "何文田體育館 Ho Man Tin Sports Centre",
+   "lat": 22.311703,
+   "lon": 114.181135,
+   "street": "",
+   "city": "九龍城區 Kowloon City District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/197739478",
+   "aliases": [
+    "Ho Man Tin Sports Centre"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-n2940601331",
+   "name": "聯和墟體育館 Luen Wo Hui Sports Centre",
+   "lat": 22.500194,
+   "lon": 114.144891,
+   "street": "",
+   "city": "北區 North District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "node/2940601331",
+   "aliases": [
+    "Luen Wo Hui Sports Centre"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-r11598542",
+   "name": "大美督水上活動中心 Tai Mei Tuk Water Sports Centre",
+   "lat": 22.468351,
+   "lon": 114.233611,
+   "street": "",
+   "city": "大埔區 Tai Po District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "relation/11598542",
+   "aliases": [
+    "Tai Mei Tuk Water Sports Centre"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w157735352",
+   "name": "香港教育大學白石角運動中心 The Education University of Hong Kong Pak Shek Kok Sports Centre",
+   "lat": 22.430097,
+   "lon": 114.200401,
+   "street": "",
+   "city": "大埔區 Tai Po District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/157735352",
+   "aliases": [
+    "The Education University of Hong Kong Pak Shek Kok Sports Centre"
+   ],
+   "facility": "school"
+  },
+  {
+   "id": "v-hk-osmg-w148181134",
+   "name": "屯門康樂體育中心 Tuen Mun Recreation and Sports Centre",
+   "lat": 22.382778,
+   "lon": 113.962976,
+   "street": "",
+   "city": "屯門區 Tuen Mun District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/148181134",
+   "aliases": [
+    "Tuen Mun Recreation and Sports Centre"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w249296331",
+   "name": "屯門康樂體育中心射箭暨門球場 Tuen Mun Recreation and Sports Centre Archery cum Gateball Court",
+   "lat": 22.377016,
+   "lon": 113.960289,
+   "street": "",
+   "city": "屯門區 Tuen Mun District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/249296331",
+   "aliases": [
+    "Tuen Mun Recreation and Sports Centre Archery cum Gateball Court"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w134820401",
+   "name": "大學體育中心 University Sports Centre",
+   "lat": 22.418594,
+   "lon": 114.211111,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/134820401",
+   "aliases": [
+    "University Sports Centre"
+   ],
+   "facility": "school"
+  },
+  {
+   "id": "v-hk-osmg-w134818772",
+   "name": "嶺南體育館 Lingnan Stadium",
+   "lat": 22.414899,
+   "lon": 114.208732,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/134818772",
+   "aliases": [
+    "Lingnan Stadium"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-n2386167668",
+   "name": "張煊昌體育館 Thomas H.C. Cheung Gymnasium",
+   "lat": 22.421,
+   "lon": 114.206049,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "node/2386167668",
+   "aliases": [
+    "Thomas H.C. Cheung Gymnasium"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-n2388097914",
+   "name": "新亞體育館 New Asia Gymnasium",
+   "lat": 22.420974,
+   "lon": 114.209248,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "node/2388097914",
+   "aliases": [
+    "New Asia Gymnasium"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w135182311",
+   "name": "汾陽體育館 Kwok Sports Building",
+   "lat": 22.41854,
+   "lon": 114.210739,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/135182311",
+   "aliases": [
+    "Kwok Sports Building"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w299581586",
+   "name": "香港中文大學水上活動中心 The Chinese University of Hong Kong Water Sports Centre",
+   "lat": 22.418558,
+   "lon": 114.214401,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/299581586",
+   "aliases": [
+    "The Chinese University of Hong Kong Water Sports Centre"
+   ],
+   "facility": "school"
+  },
+  {
+   "id": "v-hk-osmg-r19340879",
+   "name": "九龍站平台體育館 Kowloon Station Podium Stadium",
+   "lat": 22.305553,
+   "lon": 114.162373,
+   "street": "",
+   "city": "油尖旺區 Yau Tsim Mong District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "relation/19340879",
+   "aliases": [
+    "Kowloon Station Podium Stadium"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w102256410",
+   "name": "香港體育館 Hong Kong Coliseum",
+   "lat": 22.301293,
+   "lon": 114.181993,
+   "street": "",
+   "city": "油尖旺區 Yau Tsim Mong District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/102256410",
+   "aliases": [
+    "Hong Kong Coliseum",
+    "紅磡體育館 Hung Hom Coliseum"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w225060268",
+   "name": "電訊盈科職員體育館 PCCW Sports Complex",
+   "lat": 22.335556,
+   "lon": 114.143632,
+   "street": "",
+   "city": "深水埗區 Sham Shui Po District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/225060268",
+   "aliases": [
+    "PCCW Sports Complex"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-n2439978500",
+   "name": "何善衡體育館 S H Ho Sports Hall",
+   "lat": 22.338427,
+   "lon": 114.2633,
+   "street": "",
+   "city": "西貢區 Sai Kung District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "node/2439978500",
+   "aliases": [
+    "S H Ho Sports Hall"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w587741533",
+   "name": "創興水上活動中心 Chong Hing Water Sports Centre",
+   "lat": 22.373742,
+   "lon": 114.33768,
+   "street": "",
+   "city": "西貢區 Sai Kung District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/587741533",
+   "aliases": [
+    "Chong Hing Water Sports Centre"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w173938221",
+   "name": "室內體育館 Indoor Game Hall",
+   "lat": 22.376919,
+   "lon": 114.266112,
+   "street": "",
+   "city": "西貢區 Sai Kung District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/173938221",
+   "aliases": [
+    "Indoor Game Hall"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w589007980",
+   "name": "曾肇添體育中心 Tsang Shiu Tim Sports Centre",
+   "lat": 22.337764,
+   "lon": 114.267446,
+   "street": "",
+   "city": "西貢區 Sai Kung District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/589007980",
+   "aliases": [
+    "Tsang Shiu Tim Sports Centre"
+   ]
+  },
+  {
+   "id": "v-hk-osmg-w1215365436",
+   "name": "胡李名靜體育館 Kitty Woo Stadium",
+   "lat": 22.33556,
+   "lon": 114.198928,
+   "street": "",
+   "city": "黃大仙區 Wong Tai Sin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/1215365436",
+   "aliases": [
+    "Kitty Woo Stadium"
+   ]
+  }
+ ]
+}

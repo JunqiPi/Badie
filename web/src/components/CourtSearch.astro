@@ -29,7 +29,30 @@ const { class: className } = Astro.props;
 </form>
 
 <script>
-  type Entry = { k: 'city' | 'court'; n: string; s: string; p: string; key?: string };
+  type Entry = { k: 'city' | 'court'; n: string; s: string; p: string; i?: string; key?: string };
+  type Found = { id: string; name: string; aliases: string[] | null; city: string; lat: number; lon: number; location_approximate: boolean };
+  // search.json 只有城市和有自己页面的球馆；别的球馆（OpenStreetMap、我们整理的）在数据库里搜（search_venues，最多 8 家，近的在前）
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL as string | undefined;
+  const supabaseKey = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+  async function searchServer(q: string): Promise<Found[]> {
+    if (!supabaseUrl || !supabaseKey) return [];
+    let near: { lat?: number; lon?: number } = {};
+    try {
+      near = JSON.parse(localStorage.getItem('badie-area') ?? '{}') ?? {};
+    } catch {
+      // 读不到就不按远近排
+    }
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/search_venues`, {
+        method: 'POST',
+        headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q, lat: near.lat ?? null, lng: near.lon ?? null, max_results: 8 }),
+      });
+      return response.ok ? ((await response.json()) as Found[]).filter((v) => !v.location_approximate) : [];
+    } catch {
+      return [];
+    }
+  }
 
   const fold = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   let index: Promise<Entry[]> | undefined;
@@ -82,16 +105,39 @@ const { class: className } = Astro.props;
     }
 
     input.addEventListener('focus', load, { once: true });
+    let latest = 0;
     input.addEventListener('input', async () => {
-      const query = fold(input.value.trim());
+      const raw = input.value.trim();
+      const query = fold(raw);
+      const ticket = ++latest;
       active = -1;
       if (query.length < 2) return setOpen(false);
-      const hits = (await load())
+      const entries = await load();
+      const hits = entries
         .filter((entry) => entry.key!.includes(query))
         .sort((a, b) => Number(b.key!.startsWith(query)) - Number(a.key!.startsWith(query)) || Number(a.k !== 'city') - Number(b.k !== 'city'))
         .slice(0, 8);
+      if (ticket !== latest) return;
       list.replaceChildren(...hits.map(option));
       setOpen(hits.length > 0);
+      if (hits.length >= 8) return;
+      // 再到数据库里搜：有自己页面的去页面，没有的在“附近的球馆”地图上定位到它
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      if (ticket !== latest) return;
+      const pages = new Map(entries.filter((e) => e.i).map((e) => [e.i!, e.p]));
+      const shown = new Set(hits.map((h) => h.p));
+      const more = (await searchServer(raw))
+        .map((v): Entry => ({
+          k: 'court',
+          n: [v.name, ...(v.aliases ?? []).filter((a) => /[a-z]/i.test(a) && !/[a-z]/i.test(v.name)).slice(0, 1)].join(' · '),
+          s: v.city,
+          p: pages.get(v.id) ?? `/courts/?venue=${encodeURIComponent(v.id)}&at=${v.lat.toFixed(5)},${v.lon.toFixed(5)}#near`,
+        }))
+        .filter((e) => !shown.has(e.p));
+      if (ticket !== latest || more.length === 0) return;
+      const all = [...hits, ...more].slice(0, 8);
+      list.replaceChildren(...all.map(option));
+      setOpen(true);
     });
     input.addEventListener('keydown', (event) => {
       if (list.hidden) return;
