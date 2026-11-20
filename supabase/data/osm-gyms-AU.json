@@ -931,6 +931,20 @@
    "osm": "way/1313604508"
   },
   {
+   "id": "v-au-osmg-w9858931",
+   "name": "Brisbane Grammar Sports Centre",
+   "lat": -27.458514,
+   "lon": 153.015217,
+   "street": "",
+   "city": "City of Brisbane",
+   "region": "Queensland",
+   "postcode": "",
+   "country": "AU",
+   "tz": "Australia/Brisbane",
+   "osm": "way/9858931",
+   "facility": "school"
+  },
+  {
    "id": "v-au-osmg-w1175808999",
    "name": "Brooker Stadium",
    "lat": -27.449336,
@@ -1542,6 +1556,20 @@
    "osm": "way/565175382"
   },
   {
+   "id": "v-au-osmg-w114789791",
+   "name": "University Sports Centre",
+   "lat": -41.400633,
+   "lon": 147.123987,
+   "street": "",
+   "city": "City of Launceston",
+   "region": "Tasmania",
+   "postcode": "",
+   "country": "AU",
+   "tz": "Australia/Hobart",
+   "osm": "way/114789791",
+   "facility": "school"
+  },
+  {
    "id": "v-au-osmg-w895426885",
    "name": "Derwent Valley Sport & Recreation Centre",
    "lat": -42.772799,
@@ -1738,6 +1766,20 @@
    "country": "AU",
    "tz": "Australia/Melbourne",
    "osm": "way/28885017"
+  },
+  {
+   "id": "v-au-osmg-w497395517",
+   "name": "Kew High School Sports Centre",
+   "lat": -37.795764,
+   "lon": 145.06311,
+   "street": "",
+   "city": "City of Boroondara",
+   "region": "Victoria",
+   "postcode": "",
+   "country": "AU",
+   "tz": "Australia/Melbourne",
+   "osm": "way/497395517",
+   "facility": "school"
   },
   {
    "id": "v-au-osmg-w186422913",

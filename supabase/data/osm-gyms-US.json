@@ -125,6 +125,20 @@
    "osm": "way/481846474"
   },
   {
+   "id": "v-us-osmg-w815134462",
+   "name": "Decatur High Gymnasium",
+   "lat": 34.593837,
+   "lon": -86.97328,
+   "street": "",
+   "city": "Decatur",
+   "region": "Alabama",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/815134462",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w472732493",
    "name": "T C Almon Recreation Center",
    "lat": 34.573062,
@@ -201,6 +215,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "node/367932305"
+  },
+  {
+   "id": "v-us-osmg-w468892561",
+   "name": "Haleyville High School Gymnasium",
+   "lat": 34.22489,
+   "lon": -87.60746,
+   "street": "",
+   "city": "Haleyville",
+   "region": "Alabama",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/468892561",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-n367932313",
@@ -851,6 +879,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "node/367131552"
+  },
+  {
+   "id": "v-us-osmg-w1421609325",
+   "name": "Wilson High School Gymnasium",
+   "lat": 35.565497,
+   "lon": -90.052778,
+   "street": "",
+   "city": "Wilson",
+   "region": "Arkansas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/1421609325",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w71089287",
@@ -1529,6 +1571,20 @@
    "osm": "way/440827529"
   },
   {
+   "id": "v-us-osmg-w548077837",
+   "name": "Moorpark College Gymnasium",
+   "lat": 34.298816,
+   "lon": -118.836729,
+   "street": "",
+   "city": "Moorpark",
+   "region": "California",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "osm": "way/548077837",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w28051835",
    "name": "Morgan Hill Centennial Recreation Center",
    "lat": 37.113233,
@@ -1579,6 +1635,20 @@
    "country": "US",
    "tz": "America/Los_Angeles",
    "osm": "way/30010910"
+  },
+  {
+   "id": "v-us-osmg-w517468352",
+   "name": "College of the Desert Gymnasium",
+   "lat": 33.731451,
+   "lon": -116.386922,
+   "street": "",
+   "city": "Palm Desert",
+   "region": "California",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "osm": "way/517468352",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w101206888",
@@ -1984,6 +2054,20 @@
    "osm": "way/293294303"
   },
   {
+   "id": "v-us-osmg-w238469901",
+   "name": "Westmont High School Gymnasium",
+   "lat": 37.272052,
+   "lon": -121.984973,
+   "street": "",
+   "city": "San Jose",
+   "region": "California",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "osm": "way/238469901",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w45638278",
    "name": "Taylor Gymnasium",
    "lat": 35.281419,
@@ -2047,6 +2131,20 @@
    "country": "US",
    "tz": "America/Los_Angeles",
    "osm": "way/221239778"
+  },
+  {
+   "id": "v-us-osmg-n412568308",
+   "name": "Gavilan College Gymnasium",
+   "lat": 36.971095,
+   "lon": -121.568444,
+   "street": "",
+   "city": "Santa Clara County",
+   "region": "California",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "osm": "node/412568308",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-r6593510",
@@ -2177,6 +2275,20 @@
    "country": "US",
    "tz": "America/Los_Angeles",
    "osm": "way/1115109107"
+  },
+  {
+   "id": "v-us-osmg-w1459484126",
+   "name": "Griffin Technology Academy Gymnasium",
+   "lat": 38.149808,
+   "lon": -122.245223,
+   "street": "",
+   "city": "Vallejo",
+   "region": "California",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "osm": "way/1459484126",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w1224947596",
@@ -3472,6 +3584,20 @@
    "osm": "way/80461358"
   },
   {
+   "id": "v-us-osmg-n367144278",
+   "name": "Randle Highlands Recreation Center",
+   "lat": 38.869835,
+   "lon": -76.963308,
+   "street": "",
+   "city": "",
+   "region": "District of Columbia",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "node/367144278",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-n358959721",
    "name": "Ridge Recreation Center",
    "lat": 38.876475,
@@ -3496,6 +3622,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "way/48207588"
+  },
+  {
+   "id": "v-us-osmg-w441361315",
+   "name": "The Rock School Gymnasium",
+   "lat": 29.631821,
+   "lon": -82.44725,
+   "street": "",
+   "city": "Alachua County",
+   "region": "Florida",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/441361315",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w455168413",
@@ -3628,6 +3768,20 @@
    "osm": "way/558169012"
   },
   {
+   "id": "v-us-osmg-w523096878",
+   "name": "Kissimmee Middle School Gymnasium",
+   "lat": 28.317414,
+   "lon": -81.438318,
+   "street": "",
+   "city": "Kissimmee",
+   "region": "Florida",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/523096878",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w279226701",
    "name": "Albert Kirkland Sr. Gymnasium",
    "lat": 27.907081,
@@ -3706,6 +3860,48 @@
    "osm": "way/947057128"
   },
   {
+   "id": "v-us-osmg-w523096860",
+   "name": "Horizon Middle School Gymnasium",
+   "lat": 28.243101,
+   "lon": -81.464829,
+   "street": "",
+   "city": "Osceola County",
+   "region": "Florida",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/523096860",
+   "facility": "school"
+  },
+  {
+   "id": "v-us-osmg-w523096799",
+   "name": "Liberty High School Gymnasium",
+   "lat": 28.163377,
+   "lon": -81.442944,
+   "street": "",
+   "city": "Osceola County",
+   "region": "Florida",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/523096799",
+   "facility": "school"
+  },
+  {
+   "id": "v-us-osmg-w523097048",
+   "name": "Narcoossee Middle School Gymnasium",
+   "lat": 28.327987,
+   "lon": -81.235924,
+   "street": "",
+   "city": "Osceola County",
+   "region": "Florida",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/523097048",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w431140011",
    "name": "Joseph L. Ferolito Recreation Center",
    "lat": 30.589631,
@@ -3717,6 +3913,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "way/431140011"
+  },
+  {
+   "id": "v-us-osmg-w371989692",
+   "name": "Flagler College Gymnasium",
+   "lat": 29.891196,
+   "lon": -81.31487,
+   "street": "",
+   "city": "Saint Augustine",
+   "region": "Florida",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/371989692",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-r14190667",
@@ -4018,6 +4228,20 @@
    "osm": "way/217822133"
   },
   {
+   "id": "v-us-osmg-w181972256",
+   "name": "Midtown High School Gymnasium",
+   "lat": 33.781192,
+   "lon": -84.371611,
+   "street": "",
+   "city": "Atlanta",
+   "region": "Georgia",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/181972256",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w42726177",
    "name": "O'Keefe Gymnasium",
    "lat": 33.77935,
@@ -4159,6 +4383,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "way/200376319"
+  },
+  {
+   "id": "v-us-osmg-n367915366",
+   "name": "College Street Recreation Center",
+   "lat": 33.6556,
+   "lon": -84.4526,
+   "street": "",
+   "city": "College Park",
+   "region": "Georgia",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "node/367915366",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w562626054",
@@ -4486,6 +4724,20 @@
    "osm": "node/13807323775"
   },
   {
+   "id": "v-us-osmg-w1320824932",
+   "name": "Social Circle Elementary School Gymnasium",
+   "lat": 33.658539,
+   "lon": -83.720118,
+   "street": "",
+   "city": "Social Circle",
+   "region": "Georgia",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/1320824932",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w279208562",
    "name": "Welcome All Recreation Center",
    "lat": 33.632031,
@@ -4655,7 +4907,8 @@
    "osm": "way/494303017",
    "aliases": [
     "Kalani High School Gym"
-   ]
+   ],
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w197137672",
@@ -5080,6 +5333,20 @@
    "osm": "way/779950638"
   },
   {
+   "id": "v-us-osmg-w210910804",
+   "name": "Dyett High School Gymnasium",
+   "lat": 41.800765,
+   "lon": -87.613475,
+   "street": "",
+   "city": "Chicago",
+   "region": "Illinois",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/210910804",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w1548924398",
    "name": "Edgebrook Gymnasium",
    "lat": 41.999337,
@@ -5169,6 +5436,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/1372134803"
+  },
+  {
+   "id": "v-us-osmg-w209600082",
+   "name": "Morgan Park Academy Gymnasium",
+   "lat": 41.689389,
+   "lon": -87.675832,
+   "street": "",
+   "city": "Chicago",
+   "region": "Illinois",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/209600082",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w210695208",
@@ -5879,6 +6160,20 @@
    "osm": "node/11291730301"
   },
   {
+   "id": "v-us-osmg-n2934786069",
+   "name": "Saint Libory Grade School Gymnasium",
+   "lat": 38.360705,
+   "lon": -89.712054,
+   "street": "",
+   "city": "St. Libory",
+   "region": "Illinois",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "node/2934786069",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w427885330",
    "name": "Duis Recreation Center",
    "lat": 41.808417,
@@ -5890,6 +6185,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/427885330"
+  },
+  {
+   "id": "v-us-osmg-w693673855",
+   "name": "Governors State University Gymnasium",
+   "lat": 41.449749,
+   "lon": -87.717748,
+   "street": "",
+   "city": "University Park",
+   "region": "Illinois",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/693673855",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w137918168",
@@ -6454,6 +6763,20 @@
    "osm": "node/367089096"
   },
   {
+   "id": "v-us-osmg-w1343903149",
+   "name": "Whiting Community School Gymnasium",
+   "lat": 42.126576,
+   "lon": -96.156414,
+   "street": "",
+   "city": "Whiting",
+   "region": "Iowa",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/1343903149",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w506140291",
    "name": "Ralph Nolan Gymnasium",
    "lat": 39.572828,
@@ -6790,6 +7113,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/1234807044"
+  },
+  {
+   "id": "v-us-osmg-w60256393",
+   "name": "Covington Catholic High School Gymnasium",
+   "lat": 39.06621,
+   "lon": -84.533291,
+   "street": "",
+   "city": "Park Hills",
+   "region": "Kentucky",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/60256393",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w863985823",
@@ -7338,6 +7675,20 @@
    "osm": "way/298925426"
   },
   {
+   "id": "v-us-osmg-w210454292",
+   "name": "Stevenson University Gymnasium",
+   "lat": 39.427654,
+   "lon": -76.779208,
+   "street": "",
+   "city": "Baltimore County",
+   "region": "Maryland",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/210454292",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-n1681247837",
    "name": "City of Bowie Gymnasium",
    "lat": 38.944901,
@@ -7521,6 +7872,23 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "way/217219079"
+  },
+  {
+   "id": "v-us-osmg-w102385045",
+   "name": "Boston University Fitness & Recreation Center",
+   "lat": 42.351796,
+   "lon": -71.116531,
+   "street": "",
+   "city": "Boston",
+   "region": "Massachusetts",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/102385045",
+   "aliases": [
+    "FRC"
+   ],
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w771178963",
@@ -7799,6 +8167,20 @@
    "osm": "way/242969463"
   },
   {
+   "id": "v-us-osmg-n2772013422",
+   "name": "Ferris State University Recreation Center",
+   "lat": 43.684849,
+   "lon": -85.47845,
+   "street": "",
+   "city": "Big Rapids",
+   "region": "Michigan",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Detroit",
+   "osm": "node/2772013422",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w877340730",
    "name": "Cheboygan Recreation Center",
    "lat": 45.641319,
@@ -7930,6 +8312,34 @@
    "country": "US",
    "tz": "America/Detroit",
    "osm": "way/26072751"
+  },
+  {
+   "id": "v-us-osmg-w293944441",
+   "name": "Kettering University Recreation Center",
+   "lat": 43.010965,
+   "lon": -83.714229,
+   "street": "",
+   "city": "Flint",
+   "region": "Michigan",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Detroit",
+   "osm": "way/293944441",
+   "facility": "school"
+  },
+  {
+   "id": "v-us-osmg-w279937575",
+   "name": "University of Michigan-Flint Recreation Center",
+   "lat": 43.019964,
+   "lon": -83.687614,
+   "street": "",
+   "city": "Flint",
+   "region": "Michigan",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Detroit",
+   "osm": "way/279937575",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w259249172",
@@ -8328,6 +8738,20 @@
    "osm": "way/180748381"
   },
   {
+   "id": "v-us-osmg-n367067809",
+   "name": "Saint Mary's University Gymnasium",
+   "lat": 44.04413,
+   "lon": -91.696538,
+   "street": "",
+   "city": "Winona",
+   "region": "Minnesota",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "node/367067809",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w1443127597",
    "name": "Winfred C. Tyler Gymnasium",
    "lat": 34.673745,
@@ -8391,6 +8815,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/1280837185"
+  },
+  {
+   "id": "v-us-osmg-w315521992",
+   "name": "Enterprise High School Gymnasium",
+   "lat": 32.172607,
+   "lon": -88.820354,
+   "street": "",
+   "city": "Enterprise",
+   "region": "Mississippi",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/315521992",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w556294839",
@@ -8562,6 +9000,20 @@
    "osm": "way/220071743"
   },
   {
+   "id": "v-us-osmg-w1443837962",
+   "name": "Arcadia Valley High School Gymnasium & Cafeteria",
+   "lat": 37.593815,
+   "lon": -90.631344,
+   "street": "",
+   "city": "Ironton",
+   "region": "Missouri",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/1443837962",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w513160197",
    "name": "Blue Valley Recreation Center",
    "lat": 39.089157,
@@ -8612,6 +9064,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/211212613"
+  },
+  {
+   "id": "v-us-osmg-w406608927",
+   "name": "Duchesne High School Gymnasium",
+   "lat": 38.798447,
+   "lon": -90.500684,
+   "street": "",
+   "city": "Saint Charles",
+   "region": "Missouri",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/406608927",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w1314503576",
@@ -8718,6 +9184,20 @@
    "osm": "way/518840070"
   },
   {
+   "id": "v-us-osmg-w634615395",
+   "name": "Notre Dame High School Gymnasium",
+   "lat": 38.52405,
+   "lon": -90.27235,
+   "street": "",
+   "city": "Saint Louis County",
+   "region": "Missouri",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/634615395",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w112889065",
    "name": "Sumers Recreation Center",
    "lat": 38.649253,
@@ -8794,6 +9274,20 @@
    "country": "US",
    "tz": "America/Denver",
    "osm": "node/13112907211"
+  },
+  {
+   "id": "v-us-osmg-n13244759277",
+   "name": "Highland Park School Gymnasium",
+   "lat": 46.401186,
+   "lon": -105.829481,
+   "street": "",
+   "city": "Miles City",
+   "region": "Montana",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Denver",
+   "osm": "node/13244759277",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w135266486",
@@ -9345,6 +9839,20 @@
    "osm": "node/367697083"
   },
   {
+   "id": "v-us-osmg-w515586434",
+   "name": "Paul Robeson Charter School Gymnasium",
+   "lat": 40.237722,
+   "lon": -74.749571,
+   "street": "",
+   "city": "Trenton",
+   "region": "New Jersey",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/515586434",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w270313704",
    "name": "D'Angola Gymnasium",
    "lat": 40.679816,
@@ -9460,6 +9968,20 @@
    "country": "US",
    "tz": "America/Denver",
    "osm": "node/5154451583"
+  },
+  {
+   "id": "v-us-osmg-w1263382572",
+   "name": "Lovington School Gymnasium",
+   "lat": 32.951775,
+   "lon": -103.355784,
+   "street": "",
+   "city": "Lovington",
+   "region": "New Mexico",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Denver",
+   "osm": "way/1263382572",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w1165191853",
@@ -9884,6 +10406,20 @@
    "osm": "way/276273759"
   },
   {
+   "id": "v-us-osmg-w1546963510",
+   "name": "Bronx High School for the Visual Arts Gymnasium",
+   "lat": 40.85097,
+   "lon": -73.865154,
+   "street": "",
+   "city": "The Bronx",
+   "region": "New York",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/1546963510",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w276516895",
    "name": "Draddy Gymnasium",
    "lat": 40.890726,
@@ -10194,6 +10730,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "node/14161875998"
+  },
+  {
+   "id": "v-us-osmg-n7021851110",
+   "name": "Lower School Gymnasium",
+   "lat": 40.869646,
+   "lon": -73.585233,
+   "street": "",
+   "city": "Village of Matinecock",
+   "region": "New York",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "node/7021851110",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w233812916",
@@ -10678,6 +11228,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "way/863443620"
+  },
+  {
+   "id": "v-us-osmg-w544723625",
+   "name": "Highland Recreation Center",
+   "lat": 35.749284,
+   "lon": -81.316239,
+   "street": "",
+   "city": "Hickory",
+   "region": "North Carolina",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/544723625",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w544723685",
@@ -11255,6 +11819,20 @@
    "osm": "relation/9785983"
   },
   {
+   "id": "v-us-osmg-w80321934",
+   "name": "College Hill Rec Center",
+   "lat": 39.191262,
+   "lon": -84.548415,
+   "street": "",
+   "city": "Cincinnati",
+   "region": "Ohio",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/80321934",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w68313032",
    "name": "Harold C. Schott Gymnasium and Convocation Center",
    "lat": 39.125665,
@@ -11492,6 +12070,34 @@
    "osm": "way/231044786"
   },
   {
+   "id": "v-us-osmg-w97511476",
+   "name": "Elementary Gymnasium",
+   "lat": 39.814143,
+   "lon": -84.196028,
+   "street": "",
+   "city": "Harrison Township",
+   "region": "Ohio",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/97511476",
+   "facility": "school"
+  },
+  {
+   "id": "v-us-osmg-w667223395",
+   "name": "High Shool Gymnasium",
+   "lat": 39.813547,
+   "lon": -84.195573,
+   "street": "",
+   "city": "Harrison Township",
+   "region": "Ohio",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/667223395",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w673698073",
    "name": "PK-K Gymnasium",
    "lat": 39.813975,
@@ -11594,6 +12200,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "node/368155660"
+  },
+  {
+   "id": "v-us-osmg-w1034658068",
+   "name": "St Christopher School Gymnasium",
+   "lat": 41.47744,
+   "lon": -81.845449,
+   "street": "",
+   "city": "Rocky River",
+   "region": "Ohio",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/1034658068",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w138659120",
@@ -11766,6 +12386,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "node/1746176835"
+  },
+  {
+   "id": "v-us-osmg-w722654227",
+   "name": "Blanchard Intermediate School Gymnasium",
+   "lat": 35.143294,
+   "lon": -97.652227,
+   "street": "",
+   "city": "Blanchard",
+   "region": "Oklahoma",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/722654227",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w1039352268",
@@ -11966,6 +12600,20 @@
    "osm": "way/155181228"
   },
   {
+   "id": "v-us-osmg-w1153931264",
+   "name": "Falls City High School Gymnasium",
+   "lat": 44.865491,
+   "lon": -123.429811,
+   "street": "",
+   "city": "Falls City",
+   "region": "Oregon",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "osm": "way/1153931264",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w136333759",
    "name": "Tyson Recreation Center",
    "lat": 45.539594,
@@ -12068,6 +12716,20 @@
    "country": "US",
    "tz": "America/Los_Angeles",
    "osm": "way/922797791"
+  },
+  {
+   "id": "v-us-osmg-w1417457201",
+   "name": "Lincoln Leadership Academy Gymnasium",
+   "lat": 40.624021,
+   "lon": -75.435444,
+   "street": "",
+   "city": "Allentown",
+   "region": "Pennsylvania",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/1417457201",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w244753913",
@@ -12554,6 +13216,20 @@
    "osm": "way/229068390"
   },
   {
+   "id": "v-us-osmg-w229073007",
+   "name": "Shippensburg University Recreation Center (ShipRec)",
+   "lat": 40.063593,
+   "lon": -77.524408,
+   "street": "",
+   "city": "Shippensburg Township",
+   "region": "Pennsylvania",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/229073007",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w993692332",
    "name": "South Union Recreation Center",
    "lat": 39.88053,
@@ -12989,6 +13665,20 @@
    "osm": "node/367807556"
   },
   {
+   "id": "v-us-osmg-w553130608",
+   "name": "Ninety Six Primary School Gymnasium",
+   "lat": 34.171973,
+   "lon": -82.023994,
+   "street": "",
+   "city": "Ninety Six",
+   "region": "South Carolina",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/553130608",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w334450950",
    "name": "Dukes Gymnasium",
    "lat": 33.497327,
@@ -13000,6 +13690,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "way/334450950"
+  },
+  {
+   "id": "v-us-osmg-n357124516",
+   "name": "South Carolina State University Felton Gymnasium",
+   "lat": 33.4979,
+   "lon": -80.8475,
+   "street": "",
+   "city": "Orangeburg",
+   "region": "South Carolina",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "node/357124516",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w693852864",
@@ -13541,6 +14245,20 @@
    "osm": "node/13097142293"
   },
   {
+   "id": "v-us-osmg-w1238755984",
+   "name": "Cisco College Gymnasium",
+   "lat": 32.401774,
+   "lon": -98.985004,
+   "street": "",
+   "city": "Cisco",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/1238755984",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w666697506",
    "name": "Colleyville Recreation Center",
    "lat": 32.884878,
@@ -13775,6 +14493,20 @@
    "osm": "way/717662452"
   },
   {
+   "id": "v-us-osmg-w935519725",
+   "name": "Falfurrrias Jr. High Gymnasium",
+   "lat": 27.222178,
+   "lon": -98.151859,
+   "street": "",
+   "city": "Falfurrias",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/935519725",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-n368165326",
    "name": "Evans Recreation Center",
    "lat": 32.726242,
@@ -13799,6 +14531,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/862747437"
+  },
+  {
+   "id": "v-us-osmg-w182736814",
+   "name": "San Jacinto College North Gymnasium",
+   "lat": 29.811625,
+   "lon": -95.180544,
+   "street": "",
+   "city": "Harris County",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/182736814",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w93110183",
@@ -13851,6 +14597,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/398628444"
+  },
+  {
+   "id": "v-us-osmg-w136537147",
+   "name": "Houston Christian High School Gymnasium",
+   "lat": 29.820748,
+   "lon": -95.560501,
+   "street": "",
+   "city": "Houston",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/136537147",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w1422946341",
@@ -14051,6 +14811,20 @@
    "osm": "way/1532166923"
   },
   {
+   "id": "v-us-osmg-n6223585148",
+   "name": "Spring Hill High School Gymnasium",
+   "lat": 32.564687,
+   "lon": -94.795906,
+   "street": "",
+   "city": "Longview",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "node/6223585148",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w460865966",
    "name": "Rhodes-Perrin Recreation Center",
    "lat": 33.572255,
@@ -14140,6 +14914,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "node/10218775889"
+  },
+  {
+   "id": "v-us-osmg-w900591548",
+   "name": "Morton High School Gymnasium",
+   "lat": 33.720898,
+   "lon": -102.765624,
+   "street": "",
+   "city": "Morton",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/900591548",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w1369381055",
@@ -14298,6 +15086,34 @@
    "osm": "node/11542296994"
   },
   {
+   "id": "v-us-osmg-n4037302764",
+   "name": "Old Shiner High School Gymnasium 1",
+   "lat": 29.433574,
+   "lon": -97.177122,
+   "street": "",
+   "city": "Shiner",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "node/4037302764",
+   "facility": "school"
+  },
+  {
+   "id": "v-us-osmg-n368165225",
+   "name": "Happy Hill Farm Academy Gymnasium",
+   "lat": 32.290529,
+   "lon": -97.72918,
+   "street": "",
+   "city": "Somervell County",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "node/368165225",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w422031015",
    "name": "The Colony Recreation Center",
    "lat": 33.098574,
@@ -14348,6 +15164,34 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/834346562"
+  },
+  {
+   "id": "v-us-osmg-w879110593",
+   "name": "Thrall Middle School Gymnasium",
+   "lat": 30.589225,
+   "lon": -97.295571,
+   "street": "",
+   "city": "Thrall",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/879110593",
+   "facility": "school"
+  },
+  {
+   "id": "v-us-osmg-w383125499",
+   "name": "Lake Travis High School Gymnasium",
+   "lat": 30.328432,
+   "lon": -97.968454,
+   "street": "",
+   "city": "Travis County",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/383125499",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w161317750",
@@ -14428,6 +15272,20 @@
    "osm": "way/1539343447"
   },
   {
+   "id": "v-us-osmg-w331448539",
+   "name": "West University Place Recreation Center",
+   "lat": 29.706846,
+   "lon": -95.445836,
+   "street": "",
+   "city": "West University Place",
+   "region": "Texas",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/331448539",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w557451359",
    "name": "Wylie Recreation Center",
    "lat": 33.015154,
@@ -14465,6 +15323,20 @@
    "country": "US",
    "tz": "America/Denver",
    "osm": "way/224675653"
+  },
+  {
+   "id": "v-us-osmg-w470311350",
+   "name": "Bear River High School Natatorium and Gymnasium",
+   "lat": 41.725038,
+   "lon": -112.161503,
+   "street": "",
+   "city": "Garland",
+   "region": "Utah",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Denver",
+   "osm": "way/470311350",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w155353905",
@@ -14621,6 +15493,20 @@
    "country": "US",
    "tz": "America/New_York",
    "osm": "node/4415227162"
+  },
+  {
+   "id": "v-us-osmg-w372907843",
+   "name": "Town of Middlebury Recreation Center",
+   "lat": 44.003005,
+   "lon": -73.160715,
+   "street": "",
+   "city": "Middlebury",
+   "region": "Vermont",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/372907843",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-w759637373",
@@ -15276,6 +16162,20 @@
    "osm": "way/450016124"
   },
   {
+   "id": "v-us-osmg-w190849969",
+   "name": "University Recreation Center",
+   "lat": 47.493267,
+   "lon": -117.584168,
+   "street": "",
+   "city": "Cheney",
+   "region": "Washington",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Los_Angeles",
+   "osm": "way/190849969",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w163315732",
    "name": "Lakota Gymnasium",
    "lat": 47.320315,
@@ -15487,6 +16387,20 @@
    "osm": "way/549398170"
   },
   {
+   "id": "v-us-osmg-w1557707219",
+   "name": "Paden City Elementary Gymnasium",
+   "lat": 39.610287,
+   "lon": -80.925152,
+   "street": "",
+   "city": "Paden City",
+   "region": "West Virginia",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/New_York",
+   "osm": "way/1557707219",
+   "facility": "school"
+  },
+  {
    "id": "v-us-osmg-w1338355110",
    "name": "Gilmore Gymnasium",
    "lat": 37.855767,
@@ -15696,6 +16610,20 @@
    "country": "US",
    "tz": "America/Chicago",
    "osm": "way/1548674641"
+  },
+  {
+   "id": "v-us-osmg-w1181247182",
+   "name": "Plum City Middle/High School Gymnasium",
+   "lat": 44.636033,
+   "lon": -92.192122,
+   "street": "",
+   "city": "Plum City",
+   "region": "Wisconsin",
+   "postcode": "",
+   "country": "US",
+   "tz": "America/Chicago",
+   "osm": "way/1181247182",
+   "facility": "school"
   },
   {
    "id": "v-us-osmg-n2461062452",

@@ -694,6 +694,34 @@
    "osm": "way/260497042"
   },
   {
+   "id": "v-gb-osmg-w88339284",
+   "name": "School Leisure Centre",
+   "lat": 56.136906,
+   "lon": -3.315938,
+   "street": "",
+   "city": "Fife",
+   "region": "Alba / Scotland",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/88339284",
+   "facility": "school"
+  },
+  {
+   "id": "v-gb-osmg-r6080457",
+   "name": "University of St Andrews Sports Centre",
+   "lat": 56.339097,
+   "lon": -2.814794,
+   "street": "",
+   "city": "Fife",
+   "region": "Alba / Scotland",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "relation/6080457",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w327139628",
    "name": "Waterstone Crook Sports Centre",
    "lat": 56.431579,
@@ -1539,6 +1567,20 @@
    "osm": "node/548953176"
   },
   {
+   "id": "v-gb-osmg-w25469767",
+   "name": "University of Edinburgh Sports Centre",
+   "lat": 55.94815,
+   "lon": -3.180718,
+   "street": "",
+   "city": "Southside",
+   "region": "Alba / Scotland",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/25469767",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w85509512",
    "name": "Gannochy Sports Centre",
    "lat": 56.145647,
@@ -1802,6 +1844,20 @@
    "osm": "way/486765175"
   },
   {
+   "id": "v-gb-osmg-w131627068",
+   "name": "Sports Centre at University of Wales Trinity Saint David",
+   "lat": 51.85835,
+   "lon": -4.325464,
+   "street": "",
+   "city": "Carmarthen",
+   "region": "Cymru / Wales",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/131627068",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-n385013868",
    "name": "Chepstow Leisure Centre",
    "lat": 51.646476,
@@ -2017,6 +2073,34 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/140907729"
+  },
+  {
+   "id": "v-gb-osmg-w55216070",
+   "name": "University Sports Centre",
+   "lat": 52.414454,
+   "lon": -4.066318,
+   "street": "",
+   "city": "Llanbadarn Fawr",
+   "region": "Cymru / Wales",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/55216070",
+   "facility": "school"
+  },
+  {
+   "id": "v-gb-osmg-n3650705173",
+   "name": "Coedcae School Sports Hall",
+   "lat": 51.679484,
+   "lon": -4.144464,
+   "street": "",
+   "city": "Llanelli",
+   "region": "Cymru / Wales",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "node/3650705173",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w26223379",
@@ -2305,6 +2389,20 @@
    "osm": "way/37566881"
   },
   {
+   "id": "v-gb-osmg-w45481044",
+   "name": "Swansea University Sports Centre",
+   "lat": 51.607671,
+   "lon": -3.987623,
+   "street": "",
+   "city": "Sketty",
+   "region": "Cymru / Wales",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/45481044",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-n8526410701",
    "name": "Tenby Leisure Centre",
    "lat": 51.671845,
@@ -2474,6 +2572,20 @@
    "osm": "way/711668251"
   },
   {
+   "id": "v-gb-osmg-w370747271",
+   "name": "Ashford School Sports Centre",
+   "lat": 51.148029,
+   "lon": 0.877541,
+   "street": "",
+   "city": "Ashford",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/370747271",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w1140674774",
    "name": "Chilham Sports Hall",
    "lat": 51.242755,
@@ -2487,6 +2599,20 @@
    "osm": "way/1140674774"
   },
   {
+   "id": "v-gb-osmg-w345034412",
+   "name": "Aylesbury Grammar School Sports Hall",
+   "lat": 51.812925,
+   "lon": -0.801465,
+   "street": "",
+   "city": "Aylesbury",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/345034412",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w372988837",
    "name": "Brantham Leisure Centre",
    "lat": 51.957984,
@@ -2498,6 +2624,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/372988837"
+  },
+  {
+   "id": "v-gb-osmg-w104867860",
+   "name": "Ipswich High School Sports Hall",
+   "lat": 52.003368,
+   "lon": 1.192849,
+   "street": "",
+   "city": "Babergh",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/104867860",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w170919790",
@@ -3091,6 +3231,20 @@
    "osm": "way/566836336"
   },
   {
+   "id": "v-gb-osmg-w150467040",
+   "name": "The King's School Sports Centre",
+   "lat": 51.285547,
+   "lon": 1.079908,
+   "street": "",
+   "city": "Canterbury",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/150467040",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w159588562",
    "name": "Whitstable Leisure Centre",
    "lat": 51.364002,
@@ -3156,6 +3310,20 @@
    "osm": "way/397540046"
   },
   {
+   "id": "v-gb-osmg-w526303745",
+   "name": "Brookfield Community School Sports Centre",
+   "lat": 53.232553,
+   "lon": -1.468812,
+   "street": "",
+   "city": "Chesterfield",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/526303745",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w390430928",
    "name": "Chew Valley Leisure Centre",
    "lat": 51.358158,
@@ -3193,6 +3361,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "node/1298905307"
+  },
+  {
+   "id": "v-gb-osmg-w189801724",
+   "name": "Bristol Grammar School Gym and Sports Hall",
+   "lat": 51.457374,
+   "lon": -2.605677,
+   "street": "",
+   "city": "City of Bristol",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/189801724",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w405901700",
@@ -3391,6 +3573,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/170331524"
+  },
+  {
+   "id": "v-gb-osmg-n2622714738",
+   "name": "Westminster School Sports Centre",
+   "lat": 51.494958,
+   "lon": -0.13392,
+   "street": "",
+   "city": "City of Westminster",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "node/2622714738",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w331518570",
@@ -3965,6 +4161,20 @@
    "osm": "way/45375019"
   },
   {
+   "id": "v-gb-osmg-w1043817135",
+   "name": "Winn Sports Hall @ Eastbourne College",
+   "lat": 50.762726,
+   "lon": 0.281387,
+   "street": "",
+   "city": "Eastbourne",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/1043817135",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-r3031553",
    "name": "Wide Lane Sports Centre",
    "lat": 50.952662,
@@ -4080,6 +4290,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/443803679"
+  },
+  {
+   "id": "v-gb-osmg-w448302635",
+   "name": "Newcastle University Water Sports Centre",
+   "lat": 54.979778,
+   "lon": -1.74367,
+   "street": "",
+   "city": "Gateshead",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/448302635",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-n1859966193",
@@ -4238,6 +4462,20 @@
    "osm": "way/563141038"
   },
   {
+   "id": "v-gb-osmg-w165542357",
+   "name": "Aldenham School Sports Centre",
+   "lat": 51.664349,
+   "lon": -0.328698,
+   "street": "",
+   "city": "Hertsmere",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/165542357",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w220068625",
    "name": "David Lloyd Leisure Centre",
    "lat": 51.663214,
@@ -4355,6 +4593,20 @@
    "osm": "way/656013623"
   },
   {
+   "id": "v-gb-osmg-w465506660",
+   "name": "Wellsway School Sports Centre",
+   "lat": 51.410811,
+   "lon": -2.485894,
+   "street": "",
+   "city": "Keynsham",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/465506660",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w27621819",
    "name": "Ennerdale Leisure Centre",
    "lat": 53.780992,
@@ -4418,6 +4670,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/168511807"
+  },
+  {
+   "id": "v-gb-osmg-w681409734",
+   "name": "Lancaster and Morecambe College Sports Centre",
+   "lat": 54.061973,
+   "lon": -2.826985,
+   "street": "",
+   "city": "Lancaster",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/681409734",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w1335633675",
@@ -4522,6 +4788,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/37180542"
+  },
+  {
+   "id": "v-gb-osmg-w113603225",
+   "name": "University of Lincoln Sports Centre",
+   "lat": 53.228999,
+   "lon": -0.553414,
+   "street": "",
+   "city": "Lincoln",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/113603225",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w507336788",
@@ -4823,6 +5103,20 @@
    "osm": "way/22475508"
   },
   {
+   "id": "v-gb-osmg-w508222193",
+   "name": "Park High School Sports Hall",
+   "lat": 51.599412,
+   "lon": -0.303885,
+   "street": "",
+   "city": "London Borough of Harrow",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/508222193",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w1290541017",
    "name": "Rainham Leisure Centre",
    "lat": 51.519576,
@@ -4834,6 +5128,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/1290541017"
+  },
+  {
+   "id": "v-gb-osmg-w824642543",
+   "name": "St Helen's School Sports Centre",
+   "lat": 51.611903,
+   "lon": -0.421331,
+   "street": "",
+   "city": "London Borough of Hillingdon",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/824642543",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w22476519",
@@ -5071,6 +5379,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/760187907"
+  },
+  {
+   "id": "v-gb-osmg-w797112260",
+   "name": "Bobby Moore Academy Sports Centre",
+   "lat": 51.540057,
+   "lon": -0.019863,
+   "street": "",
+   "city": "London Borough of Tower Hamlets",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/797112260",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w24981036",
@@ -5567,6 +5889,20 @@
    "osm": "way/159920776"
   },
   {
+   "id": "v-gb-osmg-n11198116552",
+   "name": "North Hertfordshire College Sports Centre",
+   "lat": 51.954394,
+   "lon": -0.25965,
+   "street": "",
+   "city": "North Hertfordshire",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "node/11198116552",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w259925376",
    "name": "Little Leisure Centre",
    "lat": 53.155072,
@@ -5723,6 +6059,20 @@
    "osm": "node/10622234073"
   },
   {
+   "id": "v-gb-osmg-w875523392",
+   "name": "Oundle School Sports Centre",
+   "lat": 52.484886,
+   "lon": -0.476747,
+   "street": "",
+   "city": "Oundle",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/875523392",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w150512616",
    "name": "Barton Leisure Centre",
    "lat": 51.763405,
@@ -5825,6 +6175,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/73593399"
+  },
+  {
+   "id": "v-gb-osmg-w564466688",
+   "name": "Princes Risborough School Community Sports Centre",
+   "lat": 51.719256,
+   "lon": -0.828335,
+   "street": "",
+   "city": "Princes Risborough",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/564466688",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w77979921",
@@ -6033,6 +6397,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/227039244"
+  },
+  {
+   "id": "v-gb-osmg-w368824918",
+   "name": "Sutton Bonington (University) Sports Centre",
+   "lat": 52.82947,
+   "lon": -1.254253,
+   "street": "",
+   "city": "Rushcliffe",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/368824918",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w165697436",
@@ -6542,6 +6920,34 @@
    "osm": "node/10984705818"
   },
   {
+   "id": "v-gb-osmg-w173498810",
+   "name": "Kingsdown School Sports Centre",
+   "lat": 51.589379,
+   "lon": -1.756566,
+   "street": "",
+   "city": "Stratton St. Margaret",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/173498810",
+   "facility": "school"
+  },
+  {
+   "id": "v-gb-osmg-w408404119",
+   "name": "Strode College Sports Centre",
+   "lat": 51.130468,
+   "lon": -2.729468,
+   "street": "",
+   "city": "Street",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/408404119",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w422719335",
    "name": "Dursley Sports Centre",
    "lat": 51.685996,
@@ -6737,6 +7143,20 @@
    "osm": "node/458507289"
   },
   {
+   "id": "v-gb-osmg-w700655432",
+   "name": "South Devon College Sports Centre",
+   "lat": 50.411593,
+   "lon": -3.58599,
+   "street": "",
+   "city": "Torbay",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/700655432",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w162766687",
    "name": "Walton Park Leisure Centre",
    "lat": 53.414619,
@@ -6761,6 +7181,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/1047514887"
+  },
+  {
+   "id": "v-gb-osmg-w757091828",
+   "name": "Skinners' School Sports Hall",
+   "lat": 51.142222,
+   "lon": 0.261905,
+   "street": "",
+   "city": "Tunbridge Wells",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/757091828",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w1544033790",
@@ -6813,6 +7247,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/531385991"
+  },
+  {
+   "id": "v-gb-osmg-w946755043",
+   "name": "Ackworth School Sports Hall",
+   "lat": 53.649415,
+   "lon": -1.336789,
+   "street": "",
+   "city": "Wakefield",
+   "region": "England",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/946755043",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w321657424",
@@ -7270,6 +7718,20 @@
    "osm": "way/304956210"
   },
   {
+   "id": "v-gb-osmg-n3279317562",
+   "name": "Middle School Sports Hall",
+   "lat": 54.601267,
+   "lon": -5.847784,
+   "street": "",
+   "city": "Ballycloghan",
+   "region": "Northern Ireland / Tuaisceart Éireann",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "node/3279317562",
+   "facility": "school"
+  },
+  {
    "id": "v-gb-osmg-w19271144",
    "name": "Avoniel Leisure Centre",
    "lat": 54.59453,
@@ -7437,6 +7899,20 @@
    "country": "GB",
    "tz": "Europe/London",
    "osm": "way/247459980"
+  },
+  {
+   "id": "v-gb-osmg-w296331978",
+   "name": "Ulster University Sports Centre",
+   "lat": 54.688862,
+   "lon": -5.883366,
+   "street": "",
+   "city": "Jordanstown",
+   "region": "Northern Ireland / Tuaisceart Éireann",
+   "postcode": "",
+   "country": "GB",
+   "tz": "Europe/London",
+   "osm": "way/296331978",
+   "facility": "school"
   },
   {
    "id": "v-gb-osmg-w553276956",

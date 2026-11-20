@@ -265,6 +265,20 @@
    "osm": "way/153968114"
   },
   {
+   "id": "v-in-osmg-w252333089",
+   "name": "JMI University Sports Complex",
+   "lat": 28.562533,
+   "lon": 77.279043,
+   "street": "",
+   "city": "South East Delhi",
+   "region": "Delhi",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "way/252333089",
+   "facility": "school"
+  },
+  {
    "id": "v-in-osmg-w1409663979",
    "name": "Jamia Hamdard Sports Complex",
    "lat": 28.514379,
@@ -1077,6 +1091,48 @@
    "osm": "way/992986854"
   },
   {
+   "id": "v-in-osmg-n7312087550",
+   "name": "KE College Indoor Stadium",
+   "lat": 9.643827,
+   "lon": 76.519341,
+   "street": "",
+   "city": "Kottayam",
+   "region": "Kerala",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "node/7312087550",
+   "facility": "school"
+  },
+  {
+   "id": "v-in-osmg-w1000700967",
+   "name": "St.Thomas College Sports Complex",
+   "lat": 9.698813,
+   "lon": 76.666972,
+   "street": "",
+   "city": "Kottayam",
+   "region": "Kerala",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "way/1000700967",
+   "facility": "school"
+  },
+  {
+   "id": "v-in-osmg-n3656562165",
+   "name": "Farook College Indoor Stadium",
+   "lat": 11.199881,
+   "lon": 75.856734,
+   "street": "",
+   "city": "Kozhikode",
+   "region": "Kerala",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "node/3656562165",
+   "facility": "school"
+  },
+  {
    "id": "v-in-osmg-n9492761233",
    "name": "Hi Tech Sports Complex",
    "lat": 11.338705,
@@ -1088,6 +1144,20 @@
    "country": "IN",
    "tz": "Asia/Kolkata",
    "osm": "node/9492761233"
+  },
+  {
+   "id": "v-in-osmg-w804661732",
+   "name": "Indoor Stadium , Devagiri CMI Public School",
+   "lat": 11.26331,
+   "lon": 75.835518,
+   "street": "",
+   "city": "Kozhikode",
+   "region": "Kerala",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "way/804661732",
+   "facility": "school"
   },
   {
    "id": "v-in-osmg-w798844440",
@@ -1129,6 +1199,20 @@
    "osm": "way/1092019315"
   },
   {
+   "id": "v-in-osmg-n7520857797",
+   "name": "SS College Indoor Stadium",
+   "lat": 11.234688,
+   "lon": 76.03976,
+   "street": "",
+   "city": "Malappuram",
+   "region": "Kerala",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "node/7520857797",
+   "facility": "school"
+  },
+  {
    "id": "v-in-osmg-w192584453",
    "name": "Indoor Stadium Palakkad",
    "lat": 10.785084,
@@ -1140,6 +1224,20 @@
    "country": "IN",
    "tz": "Asia/Kolkata",
    "osm": "way/192584453"
+  },
+  {
+   "id": "v-in-osmg-w731847120",
+   "name": "Jawaharlal College Of Engineering and Technology Indoor Stadium",
+   "lat": 10.778888,
+   "lon": 76.430841,
+   "street": "",
+   "city": "Palakkad",
+   "region": "Kerala",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "way/731847120",
+   "facility": "school"
   },
   {
    "id": "v-in-osmg-n7501447404",
@@ -1392,6 +1490,34 @@
    "osm": "way/286077010"
   },
   {
+   "id": "v-in-osmg-w626142584",
+   "name": "University of Mumbai Sports Complex",
+   "lat": 19.073725,
+   "lon": 72.854847,
+   "street": "",
+   "city": "Mumbai Suburban District",
+   "region": "Maharashtra",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "way/626142584",
+   "facility": "school"
+  },
+  {
+   "id": "v-in-osmg-w1098492625",
+   "name": "Flame University Sports Complex",
+   "lat": 18.52322,
+   "lon": 73.729429,
+   "street": "",
+   "city": "Pune",
+   "region": "Maharashtra",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "way/1098492625",
+   "facility": "school"
+  },
+  {
    "id": "v-in-osmg-n9310789116",
    "name": "R S Sports Complex",
    "lat": 18.481376,
@@ -1507,6 +1633,20 @@
    "country": "IN",
    "tz": "Asia/Kolkata",
    "osm": "way/319610868"
+  },
+  {
+   "id": "v-in-osmg-n11351630077",
+   "name": "Baptist College Indoor Stadium",
+   "lat": 25.714382,
+   "lon": 94.03124,
+   "street": "",
+   "city": "Kohima",
+   "region": "Nagaland",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "node/11351630077",
+   "facility": "school"
   },
   {
    "id": "v-in-osmg-w746051216",
@@ -1754,6 +1894,34 @@
    "country": "IN",
    "tz": "Asia/Kolkata",
    "osm": "way/669208236"
+  },
+  {
+   "id": "v-in-osmg-w252285893",
+   "name": "Osmania University Sports Complex",
+   "lat": 17.423867,
+   "lon": 78.532127,
+   "street": "",
+   "city": "",
+   "region": "Telangana",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "way/252285893",
+   "facility": "school"
+  },
+  {
+   "id": "v-in-osmg-n5412092785",
+   "name": "University Indoor Stadium",
+   "lat": 18.027909,
+   "lon": 79.556452,
+   "street": "",
+   "city": "Hanumakonda",
+   "region": "Telangana",
+   "postcode": "",
+   "country": "IN",
+   "tz": "Asia/Kolkata",
+   "osm": "node/5412092785",
+   "facility": "school"
   },
   {
    "id": "v-in-osmg-w31420562",

@@ -112,7 +112,8 @@
    "osm": "way/603962713",
    "aliases": [
     "國立屏東科技大學孟祥體育館"
-   ]
+   ],
+   "facility": "school"
   },
   {
    "id": "v-tw-osmg-w1274882860",
@@ -267,6 +268,20 @@
    "osm": "way/141163410"
   },
   {
+   "id": "v-tw-osmg-w910007468",
+   "name": "江翠國中運動中心",
+   "lat": 25.027952,
+   "lon": 121.468197,
+   "street": "",
+   "city": "板橋區",
+   "region": "新北市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/910007468",
+   "facility": "school"
+  },
+  {
    "id": "v-tw-osmg-w406447137",
    "name": "遠東體育館",
    "lat": 25.000837,
@@ -372,6 +387,20 @@
    ]
   },
   {
+   "id": "v-tw-osmg-w392023437",
+   "name": "中原大學體育館",
+   "lat": 24.959997,
+   "lon": 121.242427,
+   "street": "",
+   "city": "中壢區",
+   "region": "桃園市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/392023437",
+   "facility": "school"
+  },
+  {
    "id": "v-tw-osmg-w890967638",
    "name": "八德國民運動中心",
    "lat": 24.960095,
@@ -396,6 +425,34 @@
    "country": "TW",
    "tz": "Asia/Taipei",
    "osm": "way/670406853"
+  },
+  {
+   "id": "v-tw-osmg-n13706254502",
+   "name": "仁和國中體育館",
+   "lat": 24.894035,
+   "lon": 121.273727,
+   "street": "",
+   "city": "大溪區",
+   "region": "桃園市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "node/13706254502",
+   "facility": "school"
+  },
+  {
+   "id": "v-tw-osmg-w1490533911",
+   "name": "大溪國小運動中心",
+   "lat": 24.884059,
+   "lon": 121.285712,
+   "street": "",
+   "city": "大溪區",
+   "region": "桃園市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/1490533911",
+   "facility": "school"
   },
   {
    "id": "v-tw-osmg-w406003644",
@@ -487,6 +544,20 @@
    "country": "TW",
    "tz": "Asia/Taipei",
    "osm": "way/983521363"
+  },
+  {
+   "id": "v-tw-osmg-w687128044",
+   "name": "文澳國小多功能體育館",
+   "lat": 23.563689,
+   "lon": 119.583976,
+   "street": "",
+   "city": "馬公市",
+   "region": "澎湖縣",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/687128044",
+   "facility": "school"
   },
   {
    "id": "v-tw-osmg-w584853389",
@@ -617,6 +688,34 @@
    "country": "TW",
    "tz": "Asia/Taipei",
    "osm": "way/186083423"
+  },
+  {
+   "id": "v-tw-osmg-w263474212",
+   "name": "麗山高中體育館",
+   "lat": 25.085304,
+   "lon": 121.577379,
+   "street": "",
+   "city": "內湖區",
+   "region": "臺北市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/263474212",
+   "facility": "school"
+  },
+  {
+   "id": "v-tw-osmg-w426278318",
+   "name": "國立臺北護理健康大學體育館",
+   "lat": 25.118309,
+   "lon": 121.518624,
+   "street": "",
+   "city": "北投區",
+   "region": "臺北市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/426278318",
+   "facility": "school"
   },
   {
    "id": "v-tw-osmg-w127948735",
@@ -756,6 +855,20 @@
    "osm": "way/507770026"
   },
   {
+   "id": "v-tw-osmg-w552823013",
+   "name": "學甲區綜合體育館",
+   "lat": 23.229907,
+   "lon": 120.181452,
+   "street": "",
+   "city": "學甲區",
+   "region": "臺南市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/552823013",
+   "facility": "school"
+  },
+  {
    "id": "v-tw-osmg-w833832458",
    "name": "臺南市新市全民運動中心",
    "lat": 23.067041,
@@ -828,6 +941,20 @@
    "osm": "way/1560439380"
   },
   {
+   "id": "v-tw-osmg-w559974365",
+   "name": "中華國小體育館",
+   "lat": 23.991962,
+   "lon": 121.607062,
+   "street": "",
+   "city": "花蓮市",
+   "region": "花蓮縣",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/559974365",
+   "facility": "school"
+  },
+  {
    "id": "v-tw-osmg-w446439545",
    "name": "亞緻運動中心",
    "lat": 23.98593,
@@ -891,6 +1018,20 @@
    "country": "TW",
    "tz": "Asia/Taipei",
    "osm": "way/774925389"
+  },
+  {
+   "id": "v-tw-osmg-w771520290",
+   "name": "建國國中體育館",
+   "lat": 24.694763,
+   "lon": 120.91098,
+   "street": "",
+   "city": "頭份市",
+   "region": "苗栗縣",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/771520290",
+   "facility": "school"
   },
   {
    "id": "v-tw-osmg-w1499531385",
@@ -1082,6 +1223,20 @@
    ]
   },
   {
+   "id": "v-tw-osmg-w775703639",
+   "name": "茄萣國中體育館",
+   "lat": 22.90466,
+   "lon": 120.181755,
+   "street": "",
+   "city": "茄萣區",
+   "region": "高雄市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/775703639",
+   "facility": "school"
+  },
+  {
    "id": "v-tw-osmg-w1059680074",
    "name": "豐嶸神力羽球館",
    "lat": 22.653775,
@@ -1109,6 +1264,20 @@
    "aliases": [
     "Kaohsiung Yancheng Sports Center"
    ]
+  },
+  {
+   "id": "v-tw-osmg-w310541507",
+   "name": "國立中山大學西子灣海域運動中心",
+   "lat": 22.626767,
+   "lon": 120.264099,
+   "street": "",
+   "city": "鼓山區",
+   "region": "高雄市",
+   "postcode": "",
+   "country": "TW",
+   "tz": "Asia/Taipei",
+   "osm": "way/310541507",
+   "facility": "school"
   }
  ]
 }

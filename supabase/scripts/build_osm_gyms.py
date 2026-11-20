@@ -4,7 +4,9 @@
 sport=badminton，build_osm_venues.py 收不到（東京体育館就没收到）。这里按当地的叫法收名字：
 - 名字符合这个国家的写法（COUNTRIES[cc]["names"]），而且是体育场馆（leisure 或 building 是 sports_centre /
   sports_hall，或者 stadium 但名字带“体育馆”一类的词）；
-- 不收打不了羽毛球或不对外开放的（武道館、学校、园区里的楼、单位自用、泳池、球场……，COUNTRIES[cc]["skip"]）；
+- 不收打不了羽毛球的（武道館、泳池、冰场、各种球场……）和军队、警察、单位自用的（COUNTRIES[cc]["skip"]）；
+- 学校、大学的体育馆也收（不少学校晚上、周末开放给俱乐部和社区），标成学校体育馆（kind = school），
+  附近列表里排在公共场馆后面（COUNTRIES[cc]["school"]）；
 - 不收名字只是通称的（“体育館”“체육관”）：多半是学校里没起名的，也认不出是哪一家；
 - 和已有的球馆（App 自带的、supabase/data 里的、--exclude 给的）150 米内或 1 公里内同名的不收。
 英文名（name:en）、alt_name、official_name 做别名（冠名、英文都能搜到）。城市、省用 OSM 的行政区划。
@@ -30,66 +32,66 @@ SCHOOLS = "学校|小学|中学|高校|高等|大学|학교|초등|중학|고등
 
 # names：名字里要有的词；skip：不收的；generic：名字只是这些通称的不收；city / region：行政区划的 admin_level
 COUNTRIES = {
-    "JP": {"names": "体育館|アリーナ|スポーツセンター|総合運動場|体育センター",
-           "skip": f"武道館|{SCHOOLS}|弓道|柔道|剣道|相撲|卓球|プール|競技場|野球|球場|陸上|サッカー|テニス|ゴルフ|スケート|"
-                   "ボウリング|号館|棟|校舎|研修|社員|従業員|病院|刑務所|拘置所|自衛隊|駐屯地|基地|警察|消防",
+    "JP": {"school": f"{SCHOOLS}|号館|棟|校舎", "names": "体育館|アリーナ|スポーツセンター|総合運動場|体育センター",
+           "skip": f"武道館|弓道|柔道|剣道|相撲|卓球|プール|競技場|野球|球場|陸上|サッカー|テニス|ゴルフ|スケート|"
+                   "ボウリング|研修|社員|従業員|病院|刑務所|拘置所|自衛隊|駐屯地|基地|警察|消防",
            "generic": r"[第大小中新旧東西南北一二三四五六七八九十0-9０-９ 　()（）・]*"
                       r"(体育館|アリーナ|サブアリーナ|メインアリーナ|屋内運動場|体育センター|スポーツセンター)"
                       r"[ 　()（）0-9０-９一二三四五六七八九十号棟]*",
            "word": "体育館|アリーナ", "city": [7, 8], "region": 4},
-    "KR": {"names": "체육관|체육센터|스포츠센터|배드민턴",
-           "skip": f"{SCHOOLS}|태권도|수영|골프|볼링|헬스|피트니스|당구|검도|유도|합기도|복싱|주짓수|클라이밍|빙상|아이스|"
+    "KR": {"school": SCHOOLS, "names": "체육관|체육센터|스포츠센터|배드민턴",
+           "skip": f"태권도|수영|골프|볼링|헬스|피트니스|당구|검도|유도|합기도|복싱|주짓수|클라이밍|빙상|아이스|"
                    "야구|축구|씨름|레슬링|역도|사격|양궁|무도|교회|부대|사단|경찰|교도소|아파트|사옥|연수원",
            "generic": r"(실내|다목적|제[0-9일이삼]+)?\s*(체육관|체육센터|스포츠센터|배드민턴장)\s*[0-9]*",
            "word": "체육관|배드민턴", "city": [6], "region": 4},
-    "TW": {"names": "運動中心|體育館|体育馆|羽球|羽毛球",
-           "skip": f"{SCHOOLS}|游泳|泳池|網球|棒球|射箭|保齡|國軍|營區|監獄",
+    "TW": {"school": SCHOOLS, "names": "運動中心|體育館|体育馆|羽球|羽毛球",
+           "skip": f"游泳|泳池|網球|棒球|射箭|保齡|國軍|營區|監獄",
            "generic": r"(綜合)?(體育館|運動中心|羽球館|羽球場)", "word": "體育館|羽球", "city": [7, 8, 6], "region": 4},
-    "HK": {"names": "體育館|[Ss]ports [Cc]entre",
-           "skip": SCHOOLS, "generic": r"(體育館|[Ss]ports [Cc]entre)", "word": "體育館|[Ss]ports [Cc]entre",
+    "HK": {"school": SCHOOLS, "names": "體育館|[Ss]ports [Cc]entre",
+           "skip": "營|監獄", "generic": r"(體育館|[Ss]ports [Cc]entre)", "word": "體育館|[Ss]ports [Cc]entre",
            "city": [6, 5], "region": 4},
-    "MY": {"names": "Dewan Badminton|Dewan Serbaguna|Dewan Orang Ramai|Dewan Komuniti|Kompleks Sukan|Sports Complex|"
+    "MY": {"school": f"{SCHOOLS}|Sekolah|SK |SMK|SJK|Universiti|Kolej", "names": "Dewan Badminton|Dewan Serbaguna|Dewan Orang Ramai|Dewan Komuniti|Kompleks Sukan|Sports Complex|"
                     "Sports Centre|Badminton|Stadium Tertutup",
-           "skip": f"{SCHOOLS}|Sekolah|SK |SMK|SJK|Universiti|Kolej|Masjid|Surau|Kem |Polis|Tentera|Penjara",
+           "skip": f"Masjid|Surau|Kem |Polis|Tentera|Penjara",
            "generic": r"(Dewan Serbaguna|Dewan Orang Ramai|Dewan Komuniti|Dewan Badminton|Kompleks Sukan)",
            "word": "Stadium|Dewan", "city": [6, 7, 5], "region": 4},
-    "ID": {"names": "GOR[ .]|Gedung Olahraga|Gelanggang|Badminton|Bulu ?[Tt]angkis",
-           "skip": f"{SCHOOLS}|Sekolah|SD |SMP|SMA|SMK|Universitas|Kampus|Masjid|Polres|Polda|Kodim|Lanud|Lapas|[Ff]utsal|"
+    "ID": {"school": f"{SCHOOLS}|Sekolah|SD |SMP|SMA|SMK|Universitas|Kampus", "names": "GOR[ .]|Gedung Olahraga|Gelanggang|Badminton|Bulu ?[Tt]angkis",
+           "skip": f"Masjid|Polres|Polda|Kodim|Lanud|Lapas|[Ff]utsal|"
                    "[Ss]epak|[Bb]asket|[Vv]oli|[Rr]enang|[Kk]olam",
            "generic": r"(GOR|Gedung Olahraga|Lapangan Badminton|Lapangan Bulu ?[Tt]angkis)", "word": "GOR|Gedung",
            "city": [5], "region": 4},
-    "TH": {"names": "โรงยิม|แบดมินตัน|ศูนย์กีฬา|ยิมเนเซียม|Badminton|Gymnasium",
-           "skip": f"{SCHOOLS}|โรงเรียน|มหาวิทยาลัย|ค่าย|กองทัพ|ตำรวจ|พนักงาน|ว่ายน้ำ|ฟุตซอล",
+    "TH": {"school": f"{SCHOOLS}|โรงเรียน|มหาวิทยาลัย", "names": "โรงยิม|แบดมินตัน|ศูนย์กีฬา|ยิมเนเซียม|Badminton|Gymnasium",
+           "skip": f"ค่าย|กองทัพ|ตำรวจ|พนักงาน|ว่ายน้ำ|ฟุตซอล",
            "generic": r"(โรงยิม|ศูนย์กีฬา|ยิมเนเซียม|Gymnasium)", "word": "โรงยิม|Gymnasium", "city": [6], "region": 4},
-    "VN": {"names": "Nhà thi đấu|[Cc]ầu lông|Trung tâm [Tt]hể dục [Tt]hể thao|Trung tâm [Vv]ăn hóa",
-           "skip": f"{SCHOOLS}|Trường|Đại học|[Bb]ơi|[Tt]ennis|[Bb]óng đá|Quân|Công an",
+    "VN": {"school": f"{SCHOOLS}|Trường|Đại học", "names": "Nhà thi đấu|[Cc]ầu lông|Trung tâm [Tt]hể dục [Tt]hể thao|Trung tâm [Vv]ăn hóa",
+           "skip": f"[Bb]ơi|[Tt]ennis|[Bb]óng đá|Quân|Công an",
            "generic": r"(Nhà thi đấu|Sân cầu lông|Trung tâm thể dục thể thao)", "word": "Nhà thi đấu", "city": [6], "region": 4},
-    "PH": {"names": "Gymnasium|Sports Complex|Sports Center|Badminton",
+    "PH": {"school": f"{SCHOOLS}|FEU|UST|UP |DLSU|Ateneo|Academy", "names": "Gymnasium|Sports Complex|Sports Center|Badminton",
            # 菲律宾的 Covered Court 多是篮球场
-           "skip": f"{SCHOOLS}|Camp |Military|Police|Barracks|Covered Court|Basketball|FEU|UST|UP |DLSU|Ateneo|Academy", "generic": r"(Gymnasium|Sports Complex|Sports Center)",
+           "skip": "Camp |Military|Police|Barracks|Covered Court|Basketball", "generic": r"(Gymnasium|Sports Complex|Sports Center)",
            "word": "Gymnasium", "city": [7, 6], "region": 4},
-    "IN": {"names": "Indoor Stadium|Badminton|Sports Complex",
-           "skip": f"{SCHOOLS}|Cantonment|Army|Police|Air Force", "generic": r"(Indoor Stadium|Sports Complex)",
+    "IN": {"school": SCHOOLS, "names": "Indoor Stadium|Badminton|Sports Complex",
+           "skip": f"Cantonment|Army|Police|Air Force", "generic": r"(Indoor Stadium|Sports Complex)",
            "word": "Indoor Stadium|Badminton", "city": [5, 6], "region": 4},
-    # 德国、法国只数一数、不生成：Sporthalle / Gymnase 主要是学校、俱乐部的，散客去不了，一下就是八九千家
-    "DE": {"names": "Sporthalle|Mehrzweckhalle|Turnhalle", "skip": f"{SCHOOLS}|Schule|Gymnasium|Bundeswehr|Kaserne",
+    # 德国、法国：Sporthalle / Gymnase 很多是学校、俱乐部的（打羽毛球主要在这些地方的俱乐部）
+    "DE": {"school": f"{SCHOOLS}|[Ss]chule|Gymnasium", "names": "Sporthalle|Mehrzweckhalle|Turnhalle", "skip": "Bundeswehr|Kaserne",
            "generic": r"(Sporthalle|Mehrzweckhalle|Turnhalle)", "word": "halle", "city": [8, 6], "region": 4},
-    "FR": {"names": "Gymnase|Salle omnisports|Salle des sports|Complexe sportif",
-           "skip": f"{SCHOOLS}|Lycée|Collège|École|Ecole|Caserne", "generic": r"(Gymnase|Salle omnisports|Salle des sports)",
+    "FR": {"school": f"{SCHOOLS}|Lycée|Collège|École|Ecole", "names": "Gymnase|Salle omnisports|Salle des sports|Complexe sportif",
+           "skip": "Caserne", "generic": r"(Gymnase|Salle omnisports|Salle des sports)",
            "word": "Gymnase|Salle", "city": [8], "region": 4},
-    "GB": {"names": "Leisure Centre|Sports Centre|Sports Hall", "skip": f"{SCHOOLS}|Academy|Barracks|RAF |Tennis|Golf|Swim|Pool",
+    "GB": {"school": f"{SCHOOLS}|Academy", "names": "Leisure Centre|Sports Centre|Sports Hall", "skip": f"Barracks|RAF |Tennis|Golf|Swim|Pool",
            "generic": r"(Leisure Centre|Sports Centre|Sports Hall)", "word": "Centre|Hall", "city": [8, 10, 6, 5], "region": 4},
-    "US": {"names": "Recreation Center|Rec Center|Gymnasium",  # Community Center 多半没有体育馆
-           "skip": f"{SCHOOLS}|Elementary|Middle|High|Academy|Church|Air Force|Army|Navy|Fort |Gymnastics|Kids|Jungle|"
+    "US": {"school": f"{SCHOOLS}|Elementary|Middle|High|Academy", "names": "Recreation Center|Rec Center|Gymnasium",  # Community Center 多半没有体育馆
+           "skip": f"Church|Air Force|Army|Navy|Fort |Gymnastics|Kids|Jungle|"
                    "Little|Tumbl|Cheer|Aquatic|Pool|Senior",
            "generic": r"(Recreation Center|Rec Center|Community Center|Gymnasium)", "word": "Center|Gymnasium",
            "city": [8, 7, 6], "region": 4},
-    "AU": {"names": "Leisure Centre|Sports Centre|Recreation Centre|Badminton|Stadium",
-           "skip": f"{SCHOOLS}|Grammar|Barracks|Aquatic|Swim|Pool|Tennis|Football|Cricket|Racecourse|Speedway",
+    "AU": {"school": f"{SCHOOLS}|Grammar", "names": "Leisure Centre|Sports Centre|Recreation Centre|Badminton|Stadium",
+           "skip": f"Barracks|Aquatic|Swim|Pool|Tennis|Football|Cricket|Racecourse|Speedway",
            "generic": r"(Leisure Centre|Sports Centre|Recreation Centre)",
            "word": "Centre|Badminton", "city": [7, 6, 8], "region": 4},
-    "CA": {"names": "Community Centre|Recreation Centre|Community Center|Recreation Center|Badminton",
-           "skip": f"{SCHOOLS}|Secondary|Elementary|Church|Forces|Curling|Ice|Rink|Hockey|Arena$|Aquatic|Pool|Seniors?",
+    "CA": {"school": f"{SCHOOLS}|Secondary|Elementary", "names": "Community Centre|Recreation Centre|Community Center|Recreation Center|Badminton",
+           "skip": f"Church|Forces|Curling|Ice|Rink|Hockey|Arena$|Aquatic|Pool|Seniors?",
            "generic": r"(Community Centre|Recreation Centre|Community Center|Recreation Center)",
            "word": "Centre|Center|Badminton", "city": [8, 6, 7], "region": 4},
 }
@@ -198,6 +200,8 @@ def main():
                      "tz": tzf.timezone_at(lat=lat, lng=lon), "osm": c["osm"]}
             if c["aliases"]:
                 venue["aliases"] = [x[:120] for x in c["aliases"][:6]]
+            if re.search(cfg["school"], " ".join([c["name"], *c["aliases"]])):
+                venue["facility"] = "school"
             venues.append(venue)
         venues.sort(key=lambda v: (v["region"], v["city"], v["name"], v["id"]))
         catalog = {"source": f"OpenStreetMap (gymnasiums in {cc})", "kind": "openStreetMap", "status": "unconfirmed",

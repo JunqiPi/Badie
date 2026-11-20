@@ -501,6 +501,20 @@
    "osm": "way/488381470"
   },
   {
+   "id": "v-my-osmg-w262601149",
+   "name": "A12 Kompleks Sukan Universiti",
+   "lat": 5.357381,
+   "lon": 100.308412,
+   "street": "",
+   "city": "Timur Laut",
+   "region": "Pulau Pinang",
+   "postcode": "",
+   "country": "MY",
+   "tz": "Asia/Kuala_Lumpur",
+   "osm": "way/262601149",
+   "facility": "school"
+  },
+  {
    "id": "v-my-osmg-w788476454",
    "name": "Kompleks Sukan Luncur Putrajaya",
    "lat": 2.889058,

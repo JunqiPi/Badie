@@ -254,6 +254,20 @@
    "osm": "way/471425154"
   },
   {
+   "id": "v-kr-osmg-w170360423",
+   "name": "영덕중학교 체육관",
+   "lat": 37.258502,
+   "lon": 127.072077,
+   "street": "",
+   "city": "수원시",
+   "region": "경기도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "osm": "way/170360423",
+   "facility": "school"
+  },
+  {
    "id": "v-kr-osmg-w608648489",
    "name": "구룡체육관",
    "lat": 37.3082,
@@ -733,6 +747,20 @@
    "osm": "way/1307147115"
   },
   {
+   "id": "v-kr-osmg-n4631441639",
+   "name": "중리초등학교 복합시설 체육관",
+   "lat": 35.256011,
+   "lon": 128.520043,
+   "street": "",
+   "city": "창원시",
+   "region": "경상남도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "osm": "node/4631441639",
+   "facility": "school"
+  },
+  {
    "id": "v-kr-osmg-w239956257",
    "name": "고운체육관",
    "lat": 35.520551,
@@ -760,6 +788,20 @@
    "country": "KR",
    "tz": "Asia/Seoul",
    "osm": "way/896194066"
+  },
+  {
+   "id": "v-kr-osmg-w1381600048",
+   "name": "국립경국대학교 스포츠센터",
+   "lat": 36.54225,
+   "lon": 128.802388,
+   "street": "",
+   "city": "안동시",
+   "region": "경상북도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "osm": "way/1381600048",
+   "facility": "school"
   },
   {
    "id": "v-kr-osmg-n5342191878",
@@ -1079,7 +1121,8 @@
    "osm": "way/551625240",
    "aliases": [
     "Gymnasium for KU Middle and High Schools"
-   ]
+   ],
+   "facility": "school"
   },
   {
    "id": "v-kr-osmg-w249853047",
@@ -1093,6 +1136,20 @@
    "country": "KR",
    "tz": "Asia/Seoul",
    "osm": "way/249853047"
+  },
+  {
+   "id": "v-kr-osmg-n3957856561",
+   "name": "구현고등학교 체육관",
+   "lat": 37.502534,
+   "lon": 126.874192,
+   "street": "",
+   "city": "구로구",
+   "region": "서울특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "osm": "node/3957856561",
+   "facility": "school"
   },
   {
    "id": "v-kr-osmg-n6235091820",
@@ -1709,6 +1766,20 @@
    "osm": "way/330451632"
   },
   {
+   "id": "v-kr-osmg-w1032936574",
+   "name": "동신고등학교체육관장원관",
+   "lat": 35.168084,
+   "lon": 126.922971,
+   "street": "",
+   "city": "북구",
+   "region": "전남광주통합특별시",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "osm": "way/1032936574",
+   "facility": "school"
+  },
+  {
    "id": "v-kr-osmg-n12426559034",
    "name": "무등경기장 국민체육센터",
    "lat": 35.169478,
@@ -2251,6 +2322,20 @@
    "country": "KR",
    "tz": "Asia/Seoul",
    "osm": "node/4675128051"
+  },
+  {
+   "id": "v-kr-osmg-w899371311",
+   "name": "황간중학교 체육관",
+   "lat": 36.23063,
+   "lon": 127.909667,
+   "street": "",
+   "city": "영동군",
+   "region": "충청북도",
+   "postcode": "",
+   "country": "KR",
+   "tz": "Asia/Seoul",
+   "osm": "way/899371311",
+   "facility": "school"
   },
   {
    "id": "v-kr-osmg-w471742577",

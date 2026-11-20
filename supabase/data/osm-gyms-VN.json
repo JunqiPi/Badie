@@ -73,6 +73,20 @@
    "osm": "way/1447975276"
   },
   {
+   "id": "v-vn-osmg-n5251598327",
+   "name": "Nhà thi đấu đa năng Trường Trung học phổ thông Bùi Hữu Nghĩa",
+   "lat": 10.061176,
+   "lon": 105.762774,
+   "street": "",
+   "city": "Phường Bình Thủy",
+   "region": "Thành phố Cần Thơ",
+   "postcode": "",
+   "country": "VN",
+   "tz": "Asia/Ho_Chi_Minh",
+   "osm": "node/5251598327",
+   "facility": "school"
+  },
+  {
    "id": "v-vn-osmg-w543237691",
    "name": "Nhà thi đấu đa năng",
    "lat": 10.033362,
@@ -542,6 +556,20 @@
    ]
   },
   {
+   "id": "v-vn-osmg-w240346626",
+   "name": "Nhà thi đấu Đại học Hàng hải",
+   "lat": 20.835661,
+   "lon": 106.693949,
+   "street": "",
+   "city": "Phường Lê Chân",
+   "region": "Thành phố Hải Phòng",
+   "postcode": "",
+   "country": "VN",
+   "tz": "Asia/Bangkok",
+   "osm": "way/240346626",
+   "facility": "school"
+  },
+  {
    "id": "v-vn-osmg-w858446638",
    "name": "Nhà thi đấu TDTT tỉnh Hải Dương",
    "lat": 20.932578,
@@ -754,6 +782,20 @@
    "country": "VN",
    "tz": "Asia/Ho_Chi_Minh",
    "osm": "way/1308105273"
+  },
+  {
+   "id": "v-vn-osmg-w1238050644",
+   "name": "Trung tâm Thể dục Thể thao Đại học Quốc gia Thành phố Hồ Chí Minh",
+   "lat": 10.882416,
+   "lon": 106.81085,
+   "street": "",
+   "city": "Phường Đông Hòa",
+   "region": "Thành phố Hồ Chí Minh",
+   "postcode": "",
+   "country": "VN",
+   "tz": "Asia/Ho_Chi_Minh",
+   "osm": "way/1238050644",
+   "facility": "school"
   },
   {
    "id": "v-vn-osmg-w570283280",
@@ -997,6 +1039,20 @@
    "country": "VN",
    "tz": "Asia/Bangkok",
    "osm": "way/928684122"
+  },
+  {
+   "id": "v-vn-osmg-w1340586481",
+   "name": "Nhà thi đấu Trường Trung học phổ thông Huỳnh Thúc Kháng",
+   "lat": 13.960259,
+   "lon": 107.861025,
+   "street": "",
+   "city": "Xã Ia Grai",
+   "region": "Tỉnh Gia Lai",
+   "postcode": "",
+   "country": "VN",
+   "tz": "Asia/Ho_Chi_Minh",
+   "osm": "way/1340586481",
+   "facility": "school"
   },
   {
    "id": "v-vn-osmg-w1340532224",

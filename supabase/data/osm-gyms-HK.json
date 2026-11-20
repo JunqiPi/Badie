@@ -69,6 +69,23 @@
    ]
   },
   {
+   "id": "v-hk-osmg-w157735352",
+   "name": "香港教育大學白石角運動中心 The Education University of Hong Kong Pak Shek Kok Sports Centre",
+   "lat": 22.430097,
+   "lon": 114.200401,
+   "street": "",
+   "city": "大埔區 Tai Po District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/157735352",
+   "aliases": [
+    "The Education University of Hong Kong Pak Shek Kok Sports Centre"
+   ],
+   "facility": "school"
+  },
+  {
    "id": "v-hk-osmg-w148181134",
    "name": "屯門康樂體育中心 Tuen Mun Recreation and Sports Centre",
    "lat": 22.382778,
@@ -99,6 +116,23 @@
    "aliases": [
     "Tuen Mun Recreation and Sports Centre Archery cum Gateball Court"
    ]
+  },
+  {
+   "id": "v-hk-osmg-w134820401",
+   "name": "大學體育中心 University Sports Centre",
+   "lat": 22.418594,
+   "lon": 114.211111,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/134820401",
+   "aliases": [
+    "University Sports Centre"
+   ],
+   "facility": "school"
   },
   {
    "id": "v-hk-osmg-w134818772",
@@ -163,6 +197,23 @@
    "aliases": [
     "Kwok Sports Building"
    ]
+  },
+  {
+   "id": "v-hk-osmg-w299581586",
+   "name": "香港中文大學水上活動中心 The Chinese University of Hong Kong Water Sports Centre",
+   "lat": 22.418558,
+   "lon": 114.214401,
+   "street": "",
+   "city": "沙田區 Sha Tin District",
+   "region": "香港 Hong Kong",
+   "postcode": "",
+   "country": "HK",
+   "tz": "Asia/Hong_Kong",
+   "osm": "way/299581586",
+   "aliases": [
+    "The Chinese University of Hong Kong Water Sports Centre"
+   ],
+   "facility": "school"
   },
   {
    "id": "v-hk-osmg-r19340879",

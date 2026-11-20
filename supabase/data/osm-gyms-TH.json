@@ -127,6 +127,38 @@
    ]
   },
   {
+   "id": "v-th-osmg-w172948080",
+   "name": "ศูนย์กีฬาแห่งจุฬาลงกรณ์มหาวิทยาลัย",
+   "lat": 13.738814,
+   "lon": 100.526526,
+   "street": "",
+   "city": "เขตปทุมวัน",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/172948080",
+   "aliases": [
+    "CU Sports Complex",
+    "อาคารเฉลิมราชสุดากีฬาสถาน"
+   ],
+   "facility": "school"
+  },
+  {
+   "id": "v-th-osmg-w237763393",
+   "name": "ศูนย์กีฬาโรงเรียนนราทร",
+   "lat": 13.695362,
+   "lon": 100.637784,
+   "street": "",
+   "city": "เขตประเวศ",
+   "region": "กรุงเทพมหานคร",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/237763393",
+   "facility": "school"
+  },
+  {
    "id": "v-th-osmg-w234366102",
    "name": "อาคารยิมเนเซียม",
    "lat": 13.757663,
@@ -435,6 +467,37 @@
    ]
   },
   {
+   "id": "v-th-osmg-w1535961804",
+   "name": "ศูนย์กีฬามหาวิทยาลัยราชภัฏอุดรธานี สามพร้าว",
+   "lat": 17.449734,
+   "lon": 102.922202,
+   "street": "",
+   "city": "อำเภอเมืองอุดรธานี",
+   "region": "จังหวัดอุดรธานี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1535961804",
+   "aliases": [
+    "Udon Thani Rajabhat University Sport Center"
+   ],
+   "facility": "school"
+  },
+  {
+   "id": "v-th-osmg-w1535961797",
+   "name": "โรงยิมศูนย์กีฬามหาวิทยาลัยราชภัฏอุดรธานี สามพร้าว",
+   "lat": 17.448885,
+   "lon": 102.924093,
+   "street": "",
+   "city": "อำเภอเมืองอุดรธานี",
+   "region": "จังหวัดอุดรธานี",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1535961797",
+   "facility": "school"
+  },
+  {
    "id": "v-th-osmg-w458229916",
    "name": "โรงยิมเนเซียม1",
    "lat": 18.868737,
@@ -494,6 +557,23 @@
    "country": "TH",
    "tz": "Asia/Bangkok",
    "osm": "way/272383284"
+  },
+  {
+   "id": "v-th-osmg-w1460848729",
+   "name": "โรงยิมโรงเรียนแม่สะเรียง \"บริพัตรศึกษา\"",
+   "lat": 18.180854,
+   "lon": 97.927399,
+   "street": "",
+   "city": "อำเภอแม่สะเรียง",
+   "region": "จังหวัดแม่ฮ่องสอน",
+   "postcode": "",
+   "country": "TH",
+   "tz": "Asia/Bangkok",
+   "osm": "way/1460848729",
+   "aliases": [
+    "The Mae Sariang \"Boripat Suksa\" Gymnasium"
+   ],
+   "facility": "school"
   }
  ]
 }

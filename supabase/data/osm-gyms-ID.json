@@ -1233,6 +1233,20 @@
    "osm": "node/2640373412"
   },
   {
+   "id": "v-id-osmg-w1414367510",
+   "name": "SMASH Badminton Hall",
+   "lat": -6.27705,
+   "lon": 106.963037,
+   "street": "",
+   "city": "Bekasi",
+   "region": "Jawa Barat",
+   "postcode": "",
+   "country": "ID",
+   "tz": "Asia/Jakarta",
+   "osm": "way/1414367510",
+   "facility": "school"
+  },
+  {
    "id": "v-id-osmg-w519877050",
    "name": "GOR ASG",
    "lat": -6.585558,
@@ -1257,6 +1271,23 @@
    "country": "ID",
    "tz": "Asia/Jakarta",
    "osm": "way/36966894"
+  },
+  {
+   "id": "v-id-osmg-r19371830",
+   "name": "GOR SMANDACIS",
+   "lat": -7.329427,
+   "lon": 108.344926,
+   "street": "",
+   "city": "Ciamis",
+   "region": "Jawa Barat",
+   "postcode": "",
+   "country": "ID",
+   "tz": "Asia/Jakarta",
+   "osm": "relation/19371830",
+   "aliases": [
+    "Gelanggang Olahraga SMANDACIS"
+   ],
+   "facility": "school"
   },
   {
    "id": "v-id-osmg-n9809236306",
@@ -2026,6 +2057,20 @@
    "osm": "way/563588343"
   },
   {
+   "id": "v-id-osmg-w588301794",
+   "name": "Gedung Olahraga SD Negeri Sendangmulyo 04",
+   "lat": -7.043575,
+   "lon": 110.480325,
+   "street": "",
+   "city": "Kota Semarang",
+   "region": "Jawa Tengah",
+   "postcode": "",
+   "country": "ID",
+   "tz": "Asia/Jakarta",
+   "osm": "way/588301794",
+   "facility": "school"
+  },
+  {
    "id": "v-id-osmg-w506127106",
    "name": "Gelanggang Olahraga Sapta Marga",
    "lat": -7.088247,
@@ -2474,6 +2519,20 @@
    "osm": "way/460851236"
   },
   {
+   "id": "v-id-osmg-w449479305",
+   "name": "GOR Kampus C",
+   "lat": -7.264628,
+   "lon": 112.784969,
+   "street": "",
+   "city": "Surabaya",
+   "region": "Jawa Timur",
+   "postcode": "",
+   "country": "ID",
+   "tz": "Asia/Jakarta",
+   "osm": "way/449479305",
+   "facility": "school"
+  },
+  {
    "id": "v-id-osmg-w450294988",
    "name": "GOR Olahraga China",
    "lat": -7.238671,
@@ -2527,6 +2586,20 @@
    "country": "ID",
    "tz": "Asia/Jakarta",
    "osm": "way/448078346"
+  },
+  {
+   "id": "v-id-osmg-w454831107",
+   "name": "GOR SMA Negeri 16 Surabaya",
+   "lat": -7.310254,
+   "lon": 112.75916,
+   "street": "",
+   "city": "Surabaya",
+   "region": "Jawa Timur",
+   "postcode": "",
+   "country": "ID",
+   "tz": "Asia/Jakarta",
+   "osm": "way/454831107",
+   "facility": "school"
   },
   {
    "id": "v-id-osmg-w451304610",

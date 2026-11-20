@@ -5,6 +5,20 @@
  "attribution": "© OpenStreetMap contributors, ODbL 1.0",
  "venues": [
   {
+   "id": "v-ph-osmg-n12537606592",
+   "name": "San Juan Elementary School Gymnasium",
+   "lat": 14.606622,
+   "lon": 121.0228,
+   "street": "",
+   "city": "1st District",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "node/12537606592",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w699462022",
    "name": "Villar Gymnasium (Manuela 4-C)",
    "lat": 14.453624,
@@ -135,6 +149,23 @@
    "osm": "node/4527734889"
   },
   {
+   "id": "v-ph-osmg-w48348599",
+   "name": "UP Gymnasium (CHK Building)",
+   "lat": 14.659297,
+   "lon": 121.062812,
+   "street": "",
+   "city": "4th District",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/48348599",
+   "aliases": [
+    "College of Human Kinetics"
+   ],
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w266250698",
    "name": "Sahara Sports Complex",
    "lat": 14.685163,
@@ -198,6 +229,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/38182139"
+  },
+  {
+   "id": "v-ph-osmg-w137963993",
+   "name": "Noblesse International School Gymnasium",
+   "lat": 15.124544,
+   "lon": 120.583049,
+   "street": "",
+   "city": "Angeles",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/137963993",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w313346647",
@@ -583,6 +628,20 @@
    "osm": "way/404550559"
   },
   {
+   "id": "v-ph-osmg-w43615605",
+   "name": "University of the Cordilleras Gymnasium",
+   "lat": 16.408675,
+   "lon": 120.597772,
+   "street": "",
+   "city": "Central Business District",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/43615605",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w1331687630",
    "name": "Kalanganan II Gymnasium",
    "lat": 7.201652,
@@ -607,6 +666,23 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/289519824"
+  },
+  {
+   "id": "v-ph-osmg-w926849656",
+   "name": "Davao City-UP Sports Complex",
+   "lat": 7.085256,
+   "lon": 125.470998,
+   "street": "",
+   "city": "Davao City",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/926849656",
+   "aliases": [
+    "Davao City-University of the Philippines Sports Complex"
+   ],
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w150199047",
@@ -646,6 +722,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "node/1252498052"
+  },
+  {
+   "id": "v-ph-osmg-w926849650",
+   "name": "UP Mindanao Gymnasium",
+   "lat": 7.086643,
+   "lon": 125.471761,
+   "street": "",
+   "city": "Davao City",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/926849650",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w129281922",
@@ -869,6 +959,20 @@
    "osm": "way/222312254"
   },
   {
+   "id": "v-ph-osmg-w36748027",
+   "name": "Marist High School Gymnasium",
+   "lat": 14.646406,
+   "lon": 121.124443,
+   "street": "",
+   "city": "District II",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/36748027",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w22480452",
    "name": "Enrique M. Razon Sports Center",
    "lat": 14.566926,
@@ -898,6 +1002,20 @@
    "osm": "way/331770763"
   },
   {
+   "id": "v-ph-osmg-w128969946",
+   "name": "TUP Gymnasium",
+   "lat": 14.587114,
+   "lon": 120.984538,
+   "street": "",
+   "city": "Fifth District",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/128969946",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w625100623",
    "name": "Tondo Sports Complex",
    "lat": 14.608585,
@@ -925,6 +1043,20 @@
    "aliases": [
     "Senator Arturo M. Tolentino Sports Center"
    ]
+  },
+  {
+   "id": "v-ph-osmg-w179381128",
+   "name": "FEU Gymnasium",
+   "lat": 14.60384,
+   "lon": 120.988407,
+   "street": "",
+   "city": "Fourth District",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/179381128",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w119985338",
@@ -1330,6 +1462,20 @@
    "osm": "way/232671027"
   },
   {
+   "id": "v-ph-osmg-w684522498",
+   "name": "Manuel S. Enverga University Foundation Gymnasium",
+   "lat": 13.949766,
+   "lon": 121.620911,
+   "street": "",
+   "city": "Lucena",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/684522498",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w549861542",
    "name": "Baritan Sports Complex",
    "lat": 14.673426,
@@ -1380,6 +1526,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/139821302"
+  },
+  {
+   "id": "v-ph-osmg-w452336304",
+   "name": "Andres Bonifacio Integrated School Gymnasium",
+   "lat": 14.586713,
+   "lon": 121.034894,
+   "street": "",
+   "city": "Mandaluyong",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/452336304",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w148833159",
@@ -1461,6 +1621,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "relation/13374327"
+  },
+  {
+   "id": "v-ph-osmg-n11527161162",
+   "name": "FEU Alabang Gymnasium",
+   "lat": 14.409992,
+   "lon": 121.038641,
+   "street": "",
+   "city": "Muntinlupa District 2",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "node/11527161162",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w1140688564",
@@ -1643,6 +1817,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/486530897"
+  },
+  {
+   "id": "v-ph-osmg-w583440438",
+   "name": "PUP Gymnasium",
+   "lat": 14.599241,
+   "lon": 121.010745,
+   "street": "",
+   "city": "Sixth District",
+   "region": "",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/583440438",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w106486037",
@@ -4649,6 +4837,20 @@
    "osm": "way/651427531"
   },
   {
+   "id": "v-ph-osmg-w209014581",
+   "name": "Nabunturan Comprehensive National High School Gymnasium",
+   "lat": 7.605402,
+   "lon": 125.96378,
+   "street": "",
+   "city": "",
+   "region": "Davao de Oro",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/209014581",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w1301750346",
    "name": "Pantukan Sports Center",
    "lat": 7.137287,
@@ -4753,7 +4955,8 @@
    "osm": "way/988878171",
    "aliases": [
     "Davao del Norte State College Sports Complex"
-   ]
+   ],
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w1376395729",
@@ -5043,6 +5246,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/316554380"
+  },
+  {
+   "id": "v-ph-osmg-n4984223221",
+   "name": "Dolores National Highschool Gymnasium",
+   "lat": 12.040354,
+   "lon": 125.479974,
+   "street": "",
+   "city": "",
+   "region": "Eastern Samar",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "node/4984223221",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w245153801",
@@ -5724,6 +5941,20 @@
    "osm": "way/846711256"
   },
   {
+   "id": "v-ph-osmg-n14092015940",
+   "name": "Cabuyao Athletes Basic School Sports Complex",
+   "lat": 14.253516,
+   "lon": 121.140659,
+   "street": "",
+   "city": "Cabuyao",
+   "region": "Laguna",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "node/14092015940",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w283606563",
    "name": "New Friar Angelico Gymnasium",
    "lat": 14.188257,
@@ -5828,6 +6059,23 @@
    "osm": "way/54669225"
   },
   {
+   "id": "v-ph-osmg-w140802846",
+   "name": "University Sports Center",
+   "lat": 14.083114,
+   "lon": 121.313812,
+   "street": "",
+   "city": "San Pablo",
+   "region": "Laguna",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/140802846",
+   "aliases": [
+    "Florante Aquino Stadium"
+   ],
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w638534645",
    "name": "Sinalhan Sports Complex",
    "lat": 14.330345,
@@ -5865,6 +6113,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/1323888976"
+  },
+  {
+   "id": "v-ph-osmg-w601205422",
+   "name": "North Central Mindanao College Gymnasium",
+   "lat": 7.921977,
+   "lon": 123.776545,
+   "street": "",
+   "city": "",
+   "region": "Lanao del Norte",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/601205422",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w557997198",
@@ -5917,6 +6179,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/245922448"
+  },
+  {
+   "id": "v-ph-osmg-w245440711",
+   "name": "Baybay National High School Gymnasium",
+   "lat": 10.674773,
+   "lon": 124.804818,
+   "street": "",
+   "city": "Baybay",
+   "region": "Leyte",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/245440711",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w473541305",
@@ -6861,6 +7137,20 @@
    "osm": "way/1447651812"
   },
   {
+   "id": "v-ph-osmg-w1447048510",
+   "name": "School Gymnasium",
+   "lat": 15.585954,
+   "lon": 120.927632,
+   "street": "",
+   "city": "",
+   "region": "Nueva Ecija",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/1447048510",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w937962067",
    "name": "Sibul Elementary Gymnasium",
    "lat": 15.627731,
@@ -6926,6 +7216,34 @@
    "osm": "node/11097290416"
   },
   {
+   "id": "v-ph-osmg-w174123404",
+   "name": "School Gymnasium",
+   "lat": 15.48843,
+   "lon": 120.971124,
+   "street": "",
+   "city": "Cabanatuan",
+   "region": "Nueva Ecija",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/174123404",
+   "facility": "school"
+  },
+  {
+   "id": "v-ph-osmg-w176509589",
+   "name": "Wesleyan University-Philippines Gymnasium",
+   "lat": 15.485136,
+   "lon": 120.976008,
+   "street": "",
+   "city": "Cabanatuan",
+   "region": "Nueva Ecija",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/176509589",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w455892326",
    "name": "Cuyapa Gymnasium",
    "lat": 15.44232,
@@ -6937,6 +7255,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/455892326"
+  },
+  {
+   "id": "v-ph-osmg-w1021380904",
+   "name": "NEUST Gymnasium",
+   "lat": 15.293063,
+   "lon": 120.947498,
+   "street": "",
+   "city": "Gapan",
+   "region": "Nueva Ecija",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/1021380904",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w451763331",
@@ -7080,6 +7412,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/591308778"
+  },
+  {
+   "id": "v-ph-osmg-w230049828",
+   "name": "Nueva Vizcaya State University Gymnasium",
+   "lat": 16.481609,
+   "lon": 121.144544,
+   "street": "",
+   "city": "",
+   "region": "Nueva Vizcaya",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/230049828",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w199991034",
@@ -7567,6 +7913,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/159606106"
+  },
+  {
+   "id": "v-ph-osmg-w107731311",
+   "name": "Holy Rosary Academy Gymnasium",
+   "lat": 14.938869,
+   "lon": 120.602154,
+   "street": "",
+   "city": "Lubao",
+   "region": "Pampanga",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/107731311",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w107728735",
@@ -8183,6 +8543,34 @@
    "osm": "way/824013640"
   },
   {
+   "id": "v-ph-osmg-w788066393",
+   "name": "Santo Domingo Elementary School Gymnasium",
+   "lat": 16.492583,
+   "lon": 121.529788,
+   "street": "",
+   "city": "",
+   "region": "Quirino",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/788066393",
+   "facility": "school"
+  },
+  {
+   "id": "v-ph-osmg-w814424851",
+   "name": "School Gymnasium",
+   "lat": 16.392623,
+   "lon": 121.528178,
+   "street": "",
+   "city": "",
+   "region": "Quirino",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/814424851",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w803151781",
    "name": "Tucod Barangay Gymnasium",
    "lat": 16.398589,
@@ -8389,6 +8777,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/660542865"
+  },
+  {
+   "id": "v-ph-osmg-w953624608",
+   "name": "Basey 1 Central Elementary School Gymnasium",
+   "lat": 11.281811,
+   "lon": 125.067891,
+   "street": "",
+   "city": "Basey",
+   "region": "Samar",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/953624608",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w340266700",
@@ -8704,6 +9106,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/471515195"
+  },
+  {
+   "id": "v-ph-osmg-w881937895",
+   "name": "Aemilianum College Gymnasium",
+   "lat": 12.985326,
+   "lon": 123.978764,
+   "street": "",
+   "city": "",
+   "region": "Sorsogon",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/881937895",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-n6086300995",
@@ -9749,6 +10165,20 @@
    "osm": "way/354743373"
   },
   {
+   "id": "v-ph-osmg-w957875154",
+   "name": "Interworld Colleges Foundation Inc. Gymnasium",
+   "lat": 15.668061,
+   "lon": 120.575611,
+   "street": "",
+   "city": "Paniqui",
+   "region": "Tarlac",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/957875154",
+   "facility": "school"
+  },
+  {
    "id": "v-ph-osmg-w156212684",
    "name": "Ramos Gymnasium",
    "lat": 15.666125,
@@ -10338,6 +10768,20 @@
    "country": "PH",
    "tz": "Asia/Manila",
    "osm": "way/584831193"
+  },
+  {
+   "id": "v-ph-osmg-w694909886",
+   "name": "Saint Columban College Gymnasium",
+   "lat": 7.827229,
+   "lon": 123.439304,
+   "street": "",
+   "city": "",
+   "region": "Zamboanga del Sur",
+   "postcode": "",
+   "country": "PH",
+   "tz": "Asia/Manila",
+   "osm": "way/694909886",
+   "facility": "school"
   },
   {
    "id": "v-ph-osmg-w960017909",
