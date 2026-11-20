@@ -1,4 +1,908 @@
 {
   "about": "我们对照球馆、运营方或市政府官网核对过的价格和开放时间，按球馆 id。只给网站用（web/src/lib/venues.ts），App 的目录价格只能是整数。badminton=false 表示官网写明不对外开放羽毛球。",
-  "venues": {}
+  "venues": {
+    "v-gb-1000098": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 7.5,
+      "playTimes": "Open badminton sessions Tue, Wed and Fri 7–9 AM. Other badminton sessions are members only.",
+      "web": "https://www.yclub.org.uk/timetable/",
+      "sources": [
+        "https://www.yclub.org.uk/timetable/",
+        "https://www.yclub.org.uk/what-we-offer/sports-hall/"
+      ],
+      "note": "Non-member price per open session; no badminton club, recreational play only.",
+      "checked": "2026-11-20",
+      "name": "Y Club Manchester"
+    },
+    "v-gb-1000381": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Two courts, bookable up to two weeks ahead at reception or by phone. Club open Mon–Fri 6:45 AM–10 PM, Sat–Sun 8 AM–8 PM.",
+      "web": "https://ccsclub.co.uk/facilities/badminton-table-tennis/",
+      "sources": [
+        "https://ccsclub.co.uk/facilities/badminton-table-tennis/",
+        "https://ccsclub.co.uk/"
+      ],
+      "note": "Members' club; memberships from £34–£49 per month. No court hire price published.",
+      "checked": "2026-11-20",
+      "name": "Charing Cross Sports Club"
+    },
+    "v-gb-1000892": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://www.better.org.uk/leisure-centre/london/covent-garden/jubilee-hall-gym",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/london/covent-garden/jubilee-hall-gym",
+        "https://www.better.org.uk/leisure-centre/london/covent-garden/jubilee-hall-gym/prices"
+      ],
+      "note": "Official centre page lists gym, studios, café, sauna and treatment centre only; no sports hall or badminton on the facilities or prices pages.",
+      "checked": "2026-11-20",
+      "name": "Jubilee Hall Gym"
+    },
+    "v-gb-1002122": {
+      "badminton": true,
+      "perCourtHour": 26.0,
+      "perPerson": null,
+      "playTimes": "Sports hall open Mon–Fri 7 AM–10 PM, Sat 9 AM–6 PM, Sun 9 AM–10 PM.",
+      "web": "https://www.better.org.uk/leisure-centre/london/barnet/hendon-leisure-centre/prices",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/london/barnet/hendon-leisure-centre/prices",
+        "https://www.better.org.uk/leisure-centre/london/barnet/hendon-leisure-centre"
+      ],
+      "note": "Non-member adult: 60 min £26.00 (listed off-peak), 40 min £26.00 (listed peak); table labels are ambiguous. Members £16.80. Peak Mon–Fri 6:30–9 AM & 4–10 PM, Sat–Sun 9 AM–1 PM.",
+      "checked": "2026-11-20",
+      "name": "Hendon Leisure Centre"
+    },
+    "v-gb-1002306": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:30 AM–10 PM, Sat–Sun and bank holidays 9 AM–5 PM; four-court sports hall used for badminton.",
+      "web": "https://be-well.org.uk/centres/john-orwell-sports-centre/",
+      "sources": [
+        "https://be-well.org.uk/centres/john-orwell-sports-centre/",
+        "https://be-well.org.uk/memberships/"
+      ],
+      "note": "Be Well (Tower Hamlets Council). No pay-and-play court price published; Be Well badminton membership £49/month (up to 8 sessions of 40 or 60 min) or £299 for 50 sessions. Booking via towerhamletscouncil.gladstonego.cloud.",
+      "checked": "2026-11-20",
+      "name": "John Orwell Sports Centre"
+    },
+    "v-gb-1002335": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Open to the public weekdays 6–10 PM, Sat 12–5 PM, Sun and school holidays 9 AM–5 PM. Badminton courts hired on a casual basis through the online booking portal.",
+      "web": "https://www.highgateschool.org.uk/mallinson/fitness-and-facilities/",
+      "sources": [
+        "https://www.highgateschool.org.uk/mallinson/",
+        "https://www.highgateschool.org.uk/mallinson/fitness-and-facilities/"
+      ],
+      "note": "School facility; public use outside pupil hours. No price published on the school pages.",
+      "checked": "2026-11-20",
+      "name": "Highgate School (mallinson Sports Centre)"
+    },
+    "v-gb-1002416": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Badminton social (16+, all levels) Thu 8–10 PM; advanced invite-only session Mon 8:30–10:30 PM. Courts bookable via the Places Leisure app; centre open Mon–Fri 6:30 AM–10:30 PM, Sat 7 AM–7:30 PM, Sun 7:30 AM–9:30 PM.",
+      "web": "https://www.placesleisure.org/centres/tooting-leisure-centre/centre-activities/sports/",
+      "sources": [
+        "https://www.placesleisure.org/centres/tooting-leisure-centre/centre-activities/sports/",
+        "https://www.placesleisure.org/centres/tooting-leisure-centre/"
+      ],
+      "note": "Court hire and social sessions offered (free Places membership needed to book online); badminton courses not run here. No badminton price published.",
+      "checked": "2026-11-20",
+      "name": "Tooting Leisure Centre"
+    },
+    "v-gb-1002458": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 8.0,
+      "playTimes": "No Strings social badminton Fri 8–10 PM and Sun 7–9 PM. Reception open Mon–Fri 4–10 PM, Sat 9 AM–5 PM, Sun 8 AM–5 PM, closed bank holidays.",
+      "web": "https://www.lleisure.co.uk/sport-and-fitness/chilwell-olympia/badminton-and-squash/",
+      "sources": [
+        "https://www.lleisure.co.uk/sport-and-fitness/chilwell-olympia/badminton-and-squash/",
+        "https://www.lleisure.co.uk/sport-and-fitness/price-list/",
+        "https://www.lleisure.co.uk/sport-and-fitness/chilwell-olympia/"
+      ],
+      "note": "Ten courts for members and non-members. Court price £13.90 full price, £12.10 with leisure card, duration not stated, so not converted. Social session £8.00 guest, £6.90 with leisure card; racket hire £2.20; age 16+.",
+      "checked": "2026-11-20",
+      "name": "Chilwell Olympia Sports Centre"
+    },
+    "v-gb-1002459": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Building open Mon–Thu 7 AM–9:30 PM, Fri 7 AM–8 PM, Sat–Sun 9 AM–4 PM. Book through the Active Nottingham app or website.",
+      "web": "https://www.activenottingham.com/centres/clifton-leisure-centre/",
+      "sources": [
+        "https://www.activenottingham.com/centres/clifton-leisure-centre/",
+        "https://www.activenottingham.com/prices/"
+      ],
+      "note": "Active Nottingham PAYG list (from 1/4/26): Badminton (Adult & Junior) £13.00 full price, £11.00 with free Active Nottingham account, £5.50 concession; unit/duration not stated, so not converted. Times are building hours; activity times vary.",
+      "checked": "2026-11-20",
+      "name": "Clifton Leisure Centre"
+    },
+    "v-gb-1002473": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Building open Mon–Fri 6 AM–10 PM, Sat 6 AM–6 PM, Sun 8 AM–6 PM. Ten-court sports hall; book through the Active Nottingham app or website.",
+      "web": "https://www.activenottingham.com/centres/harvey-hadden-sports-village/",
+      "sources": [
+        "https://www.activenottingham.com/centres/harvey-hadden-sports-village/",
+        "https://www.activenottingham.com/prices/"
+      ],
+      "note": "Active Nottingham PAYG list (from 1/4/26): Badminton (Adult & Junior) £13.00 full price, £11.00 with free Active Nottingham account, £5.50 concession; unit/duration not stated, so not converted. Times are building hours; activity times vary.",
+      "checked": "2026-11-20",
+      "name": "Harvey Hadden Sports Village"
+    },
+    "v-gb-1002506": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Building open Mon–Thu 7 AM–10 PM, Fri 7 AM–9 PM, Sat 8 AM–4:30 PM, Sun 9 AM–4:30 PM. Book through the Active Nottingham app or website.",
+      "web": "https://www.activenottingham.com/centres/southglade-leisure-centre/",
+      "sources": [
+        "https://www.activenottingham.com/centres/southglade-leisure-centre/",
+        "https://www.activenottingham.com/prices/"
+      ],
+      "note": "Active Nottingham PAYG list (from 1/4/26): Badminton (Adult & Junior) £13.00 full price, £11.00 with free Active Nottingham account, £5.50 concession; unit/duration not stated, so not converted. Times are building hours; activity times vary.",
+      "checked": "2026-11-20",
+      "name": "Southglade Leisure Centre"
+    },
+    "v-gb-1002524": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Pay-to-play court hire; centre open Mon–Fri 6 AM–10:30 PM, Sat–Sun 8 AM–4 PM.",
+      "web": "https://twmove.co.uk/activities/sports-hall/",
+      "sources": [
+        "https://twmove.co.uk/activities/sports-hall/",
+        "https://twmove.co.uk/opening-times/",
+        "https://twmove.co.uk/locations/stretford-sports-village/"
+      ],
+      "note": "Trafford Leisure is now \"move\" (twmove.co.uk). Non-members need a Pay As You Go account. Court price not shown.",
+      "checked": "2026-11-20",
+      "name": "Stretford Sports Village (chester Centre)"
+    },
+    "v-gb-1002552": {
+      "badminton": true,
+      "perCourtHour": 16.36,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://www.sport.manchester.ac.uk/sport-and-activity/activities-and-events/",
+      "sources": [
+        "https://www.sport.manchester.ac.uk/sport-and-activity/activities-and-events/",
+        "https://www.sport.manchester.ac.uk/join/registering-public/"
+      ],
+      "note": "Public £15.00 per 55-min court (2026-27), converted to per hour; off-peak £10.50. Public register online for Pay As You Go. Times not shown.",
+      "checked": "2026-11-20",
+      "name": "University of Manchester (armitage Sports Centre)"
+    },
+    "v-gb-1002553": {
+      "badminton": true,
+      "perCourtHour": 16.6,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:30 AM–10 PM, Sat–Sun 9 AM–6 PM. Multi Sports Hall used by St Peters High School Mon–Fri 9 AM–5 PM.",
+      "web": "https://www.better.org.uk/leisure-centre/manchester/belle-vue-sports-village",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/manchester/belle-vue-sports-village/prices",
+        "https://www.better.org.uk/leisure-centre/manchester/belle-vue-sports-village"
+      ],
+      "note": "Non-member 60 min written as \"£16 60\" on the price page (read as £16.60); 40 min peak £13.50; MCRactive resident cheaper. Peak Mon–Fri from 4 PM, Sat–Sun 9 AM–1 PM.",
+      "checked": "2026-11-20",
+      "name": "Belle Vue Sports Village"
+    },
+    "v-gb-1002563": {
+      "badminton": true,
+      "perCourtHour": 16.5,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:30 AM–10 PM, Sat–Sun 9 AM–5 PM.",
+      "web": "https://www.better.org.uk/leisure-centre/manchester/moss-side",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/manchester/moss-side/prices",
+        "https://www.better.org.uk/leisure-centre/manchester/moss-side"
+      ],
+      "note": "Non-member 60 min £16.50; 40 min peak £13.50; MCRactive resident cheaper. Peak Mon–Fri 4–10 PM, Sat–Sun 9 AM–1 PM.",
+      "checked": "2026-11-20",
+      "name": "Moss Side Leisure Centre"
+    },
+    "v-gb-1002566": {
+      "badminton": true,
+      "perCourtHour": 15.0,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:15 AM–10:30 PM, Sat–Sun 9 AM–7:30 PM; courts as timetabled.",
+      "web": "https://www.better.org.uk/leisure-centre/manchester/sugden-sports-centre",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/manchester/sugden-sports-centre/prices",
+        "https://www.better.org.uk/leisure-centre/manchester/sugden-sports-centre"
+      ],
+      "note": "Better adult 60 min £15.00; 40 min £13.50.",
+      "checked": "2026-11-20",
+      "name": "Sugden Sports Centre"
+    },
+    "v-gb-1002574": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:30 AM–9 PM, Sat–Sun 8 AM–5 PM.",
+      "web": "https://www.oldhamactive.co.uk/activity/badminton/",
+      "sources": [
+        "https://www.oldhamactive.co.uk/venue/failsworth-sports-centre/",
+        "https://www.oldhamactive.co.uk/memberships/pay-n-play/",
+        "https://www.oldhamactive.co.uk/sport-and-court/"
+      ],
+      "note": "Pay and play badminton £14.80 (2026), slot length not stated, so perCourtHour null.",
+      "checked": "2026-11-20",
+      "name": "Failsworth Sports Centre"
+    },
+    "v-gb-1002638": {
+      "badminton": true,
+      "perCourtHour": 13.0,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 7 AM–9 PM, Sat–Sun 9 AM–4 PM. Peak daily from 5 PM.",
+      "web": "https://www.gc-hub.org/racquets",
+      "sources": [
+        "https://www.gc-hub.org/racquets",
+        "https://www.gc-hub.org/"
+      ],
+      "note": "Now the George Carnall Community Hub (beactiveurmston.org redirects). 60 min £13 peak, £10 off-peak.",
+      "checked": "2026-11-20",
+      "name": "Beactive Urmston"
+    },
+    "v-gb-1002692": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable seven days a week by phone. Off-peak Mon–Fri 8 AM–5 PM.",
+      "web": "https://www.mmu.ac.uk/sport/fitness-and-facilities/platt-lane-sports-complex",
+      "sources": [
+        "https://www.mmu.ac.uk/sport/fitness-and-facilities/platt-lane-sports-complex"
+      ],
+      "note": "2026/27 public badminton £13.50 per court peak, £8.75 off-peak; slot length not stated, so perCourtHour left null. Open to the public.",
+      "checked": "2026-11-20",
+      "name": "Manchester Metropolitan University (platt Lane Sports Complex)"
+    },
+    "v-gb-1002841": {
+      "badminton": true,
+      "perCourtHour": 20.73,
+      "perPerson": null,
+      "playTimes": "Community bookings Mon–Fri 5–10 PM, Sat–Sun 9 AM–6 PM. Single courts bookable online in 55-minute slots, released 7 days ahead.",
+      "web": "https://ggcb.co.uk/booking/sports-hall-badminton/",
+      "sources": [
+        "https://ggcb.co.uk/booking/sports-hall-badminton/",
+        "https://ggcb.co.uk/"
+      ],
+      "note": "£19 per court per 55-minute slot (price from the booking page's product data), converted to per hour. School community lettings open to the public.",
+      "checked": "2026-11-20",
+      "name": "George Green's School & Sports Centre"
+    },
+    "v-gb-1003322": {
+      "badminton": true,
+      "perCourtHour": 12.7,
+      "perPerson": null,
+      "playTimes": "Sports hall open Mon–Fri 7 AM–10 PM, Sat–Sun 9 AM–5 PM, with badminton sessions all week.",
+      "web": "https://www.better.org.uk/leisure-centre/london/hackney/queensbridge-sport-and-community-centre/prices",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/london/hackney/queensbridge-sport-and-community-centre/prices",
+        "https://www.better.org.uk/leisure-centre/london/hackney/queensbridge-sport-and-community-centre"
+      ],
+      "note": "Non-member adult: 60 min £12.70 (listed off-peak), 40 min £10.15 (listed peak). Extra participants £3.00 each (court booker exempt). Peak Mon–Fri 6:30–9 AM & 4–10 PM, Sat–Sun 9 AM–1 PM.",
+      "checked": "2026-11-20",
+      "name": "Queensbridge Sports & Community Centre"
+    },
+    "v-gb-1004223": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Thu 6 AM–10 PM, Fri 6 AM–9 PM, Sat–Sun 7 AM–6 PM. Courts booked online with a free MORE account, up to 8 days ahead.",
+      "web": "https://www.moreleisure.com/cocks-moors-woods-leisure-centre/sports-and-activities/sports-hall-courts/",
+      "sources": [
+        "https://www.moreleisure.com/cocks-moors-woods-leisure-centre/sports-and-activities/sports-hall-courts/"
+      ],
+      "note": "Run by MORE Leisure (Birmingham Community Leisure Trust). Court price not shown; racket hire £2.00.",
+      "checked": "2026-11-20",
+      "name": "Cocks Moors Woods Leisure Centre"
+    },
+    "v-gb-1004247": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Thu 6:30 AM–10 PM, Fri 6:30 AM–9 PM, Sat–Sun 7 AM–5 PM. Courts booked online with a free MORE account, up to 8 days ahead.",
+      "web": "https://www.moreleisure.com/fox-hollies-leisure-centre/sports-and-activities/sports-hall-courts/",
+      "sources": [
+        "https://www.moreleisure.com/fox-hollies-leisure-centre/sports-and-activities/sports-hall-courts/"
+      ],
+      "note": "Now run by MORE Leisure (Birmingham Community Leisure Trust). Court price not shown on the page; racket hire £2.60.",
+      "checked": "2026-11-20",
+      "name": "Fox Hollies Leisure Centre"
+    },
+    "v-gb-1004361": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon, Tue and Thu 6:30 AM–9:30 PM, Wed 6:30 AM–9:45 PM, Fri 6:30 AM–9 PM, Sat 8 AM–5:30 PM, Sun 7:45 AM–8 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/aireborough-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/aireborough-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. Centre page lists a 4 court sports hall.",
+      "checked": "2026-11-20",
+      "name": "Aireborough Leisure Centre"
+    },
+    "v-gb-1004384": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Fri 8 AM–9 PM, Sat 8:30 AM–6 PM, Sun 8:30 AM–5 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/fearnville-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/fearnville-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. Centre page lists a 4 court sports hall.",
+      "checked": "2026-11-20",
+      "name": "Fearnville Leisure Centre"
+    },
+    "v-gb-1004400": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon 6 AM–9:30 PM, Tue–Thu 6 AM–10 PM, Fri 6 AM–9:30 PM, Sat–Sun 8 AM–5 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/john-smeaton-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/john-smeaton-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. Centre page lists 4 court and 2 court sports halls.",
+      "checked": "2026-11-20",
+      "name": "John Smeaton Leisure Centre - John Smeaton Academy"
+    },
+    "v-gb-1004402": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon 11:45 AM–8:30 PM, Tue 6:45 AM–9:30 PM, Wed 1 PM–9:30 PM, Thu 6:45 AM–10 PM, Fri 1:15 PM–9 PM, Sat 7:45 AM–3:15 PM, Sun 8:30 AM–1:15 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/kippax-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/kippax-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. Centre page lists a 4 court sports hall.",
+      "checked": "2026-11-20",
+      "name": "Kippax Leisure Centre"
+    },
+    "v-gb-1004403": {
+      "badminton": false,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://active.leeds.gov.uk/our-centres/kirkstall-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/kirkstall-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton"
+      ],
+      "note": "Kirkstall is not on the Active Leeds list of centres available for badminton court bookings; its facilities list has squash courts and a gymnastics hall but no sports hall.",
+      "checked": "2026-11-20",
+      "name": "Kirkstall Leisure Centre"
+    },
+    "v-gb-1004408": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Fri 6:30 AM–9 PM, Sat–Sun 8 AM–5 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/middleton-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/middleton-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. The input web link (leeds.gov.uk) was generic; used the Active Leeds centre page.",
+      "checked": "2026-11-20",
+      "name": "Middleton Leisure Centre"
+    },
+    "v-gb-1004425": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Thu 6:30 AM–9:30 PM, Fri 6:30 AM–9 PM, Sat 6:45 AM–4:30 PM, Sun 8:30 AM–5:30 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/rothwell-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/rothwell-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours.",
+      "checked": "2026-11-20",
+      "name": "Rothwell Leisure Centre"
+    },
+    "v-gb-1004427": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Thu 6:45 AM–10 PM, Fri 6:45 AM–9 PM, Sat 8 AM–5 PM, Sun 8 AM–6 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/scott-hall-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/scott-hall-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours.",
+      "checked": "2026-11-20",
+      "name": "Scott Hall Sports Centre"
+    },
+    "v-gb-1004443": {
+      "badminton": true,
+      "perCourtHour": 17.5,
+      "perPerson": 8.75,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Fri 6:30 AM–10:30 PM, weekends 7:30 AM–9 PM (last entry 30 minutes before closing).",
+      "web": "https://sport.leeds.ac.uk/the-edge/racquet-and-ball-sports/",
+      "sources": [
+        "https://sport.leeds.ac.uk/the-edge/racquet-and-ball-sports/",
+        "https://sport.leeds.ac.uk/price-list/",
+        "https://sport.leeds.ac.uk/facilities/facility-locations/"
+      ],
+      "note": "Non-member public prices: full court hire (60 min, 2–4 players) £17.50; badminton individual entry (60 min) £8.75 per person. Non-member staff/student £12.75 court, £7.75 entry; included in Edge membership. 12 courts across two sports halls. Booking online via sportsbookings.leeds.ac.uk.",
+      "checked": "2026-11-20",
+      "name": "The Edge"
+    },
+    "v-gb-1004716": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Badminton court hire Mon 12–4 PM, Wed and Thu 11:30 AM–4 PM.",
+      "web": "https://altvalley.co.uk/walton-timetables/",
+      "sources": [
+        "https://altvalley.co.uk/walton-timetables/",
+        "https://altvalley.co.uk/hire-a-space/"
+      ],
+      "note": "Run by Alt Valley Community Trust. No price published; enquire to book. Timetable page last updated Jan 2026.",
+      "checked": "2026-11-20",
+      "name": "Walton Sports Centre"
+    },
+    "v-gb-1004758": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "One court for private hire, booked online or by phone during centre opening hours: Mon–Fri 8 AM–8 PM, Sat 8 AM–4:30 PM, Sun 10 AM–12 PM (closed bank holiday Mondays).",
+      "web": "https://www.penistoneleisurecentre.org.uk/book/badminton-pickleball/",
+      "sources": [
+        "https://www.penistoneleisurecentre.org.uk/book/badminton-pickleball/",
+        "https://www.penistoneleisurecentre.org.uk/opening-hours/"
+      ],
+      "note": "Private hire of the hall for badminton or pickleball, £13.00 per booking, max 4 players; slot length not stated so perCourtHour left null. Discounts with Penistone leisure card.",
+      "checked": "2026-11-20",
+      "name": "Penistone Leisure Centre"
+    },
+    "v-gb-1004810": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon, Tue and Thu 6:15 AM–10 PM, Wed 6:15 AM–10:30 PM, Fri 6:15 AM–9:30 PM, Sat 8 AM–6 PM, Sun 8 AM–9:30 PM. Four-court main hall.",
+      "web": "https://activecentres.org/centres/kingswood/",
+      "sources": [
+        "https://activecentres.org/centres/kingswood/",
+        "https://activecentres.org/wp-content/uploads/2026/02/Active-Centre-Price-Card-January-2026v3.pdf"
+      ],
+      "note": "Price card (Jan 2026) lists Badminton Adult (Peak) £12.20, Adult (Off-Peak) £8.70, Junior (Off-Peak) £6.20 without stating per court or duration, so not converted. Times are centre opening hours. Book online or on 0300 333 0300.",
+      "checked": "2026-11-20",
+      "name": "Kingswood Active Lifestyle Centre"
+    },
+    "v-gb-1005294": {
+      "badminton": true,
+      "perCourtHour": 17.02,
+      "perPerson": null,
+      "playTimes": "Court hire 10 AM–5 PM and 6 PM to close, 55-minute slots; last courts 9 PM. Centre open Mon–Tue 9 AM–10 PM, Wed 10 AM–10 PM, Thu 10 AM–10:30 PM, Fri 10 AM–11 PM, Sat 10 AM–10 PM, Sun 10 AM–7 PM.",
+      "web": "https://www.bobcartercentre.org/copy-of-sports",
+      "sources": [
+        "https://www.bobcartercentre.org/copy-of-sports",
+        "https://www.bobcartercentre.org/contact"
+      ],
+      "note": "£15.60 per 55 min from 6 PM (converted to per hour); £10 per 55 min 10 AM–5 PM. Membership not required. Book by phone 01603 867102.",
+      "checked": "2026-11-20",
+      "name": "Bob Carter Centre"
+    },
+    "v-gb-1005314": {
+      "badminton": true,
+      "perCourtHour": 8.25,
+      "perPerson": null,
+      "playTimes": "Courts for hire 9 AM–10 PM on days the centre is open: Mon–Fri 9 AM–10 PM, Sat 10 AM–2 PM, closed Sun.",
+      "web": "https://www.norwich.gov.uk/sports-and-leisure/welcome-norman-centre/game-badminton-short-tennis-table-tennis-and-pickleball",
+      "sources": [
+        "https://www.norwich.gov.uk/sports-and-leisure/welcome-norman-centre/game-badminton-short-tennis-table-tennis-and-pickleball",
+        "https://www.norwich.gov.uk/sports-and-leisure/norman-centre-0"
+      ],
+      "note": "General £8.25/hour, Go4Less £6.60/hour (from 18 May 2026). Book by phone 01603 408140. The two council pages give different weekend hours.",
+      "checked": "2026-11-20",
+      "name": "Norman Centre"
+    },
+    "v-gb-1005328": {
+      "badminton": true,
+      "perCourtHour": 13.88,
+      "perPerson": 6.0,
+      "playTimes": "Courts bookable 7 AM to last booking 9:40 PM in 40-minute blocks. Drop-in sessions Mon, Tue, Wed, Thu and Fri late mornings (e.g. Fri social 9–11 AM).",
+      "web": "https://www.sportspark.co.uk/sports/badminton",
+      "sources": [
+        "https://www.sportspark.co.uk/sports/badminton"
+      ],
+      "note": "Pay & play court hire £9.25 per 40 min, converted to per hour; non-members also pay 90p per person. Adult drop-in £6.00. Racket hire £2.50.",
+      "checked": "2026-11-20",
+      "name": "Sportspark at Uea"
+    },
+    "v-gb-1005912": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Thu 6:15 AM–10 PM, Fri 6:15 AM–9:30 PM, Sat 8 AM–7 PM, Sun 8 AM–9 PM. Four-court main hall.",
+      "web": "https://activecentres.org/centres/bradley-stoke/",
+      "sources": [
+        "https://activecentres.org/centres/bradley-stoke/",
+        "https://activecentres.org/wp-content/uploads/2026/02/Active-Centre-Price-Card-January-2026v3.pdf"
+      ],
+      "note": "Price card (Jan 2026) lists Badminton Adult (Peak) £12.20, Adult (Off-Peak) £8.70, Junior (Off-Peak) £6.20 without stating per court or duration, so not converted. Times are centre opening hours. Book online or on 0300 333 0300.",
+      "checked": "2026-11-20",
+      "name": "Bradley Stoke Active Lifestyle Centre"
+    },
+    "v-gb-1005913": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Thu 6 AM–10 PM, Fri 6 AM–9 PM, Sat–Sun 8 AM–6 PM. Five courts in the main hall and five in the Severnside sports hall.",
+      "web": "https://activecentres.org/centres/thornbury/",
+      "sources": [
+        "https://activecentres.org/centres/thornbury/",
+        "https://activecentres.org/wp-content/uploads/2026/02/Active-Centre-Price-Card-January-2026v3.pdf"
+      ],
+      "note": "Price card (Jan 2026) lists Badminton Adult (Peak) £12.20, Adult (Off-Peak) £8.70, Junior (Off-Peak) £6.20 without stating per court or duration, so not converted. Times are centre opening hours. Book online or on 0300 333 0300.",
+      "checked": "2026-11-20",
+      "name": "Thornbury Active Lifestyle Centre"
+    },
+    "v-gb-1005914": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6 AM–10 PM, Sat 7:45 AM–6:15 PM, Sun 8 AM–9 PM. Seven-court main hall.",
+      "web": "https://activecentres.org/centres/yate/",
+      "sources": [
+        "https://activecentres.org/centres/yate/",
+        "https://activecentres.org/wp-content/uploads/2026/02/Active-Centre-Price-Card-January-2026v3.pdf"
+      ],
+      "note": "Price card (Jan 2026) lists Badminton Adult (Peak) £12.20, Adult (Off-Peak) £8.70, Junior (Off-Peak) £6.20 without stating per court or duration, so not converted. Times are centre opening hours. Book online or on 0300 333 0300.",
+      "checked": "2026-11-20",
+      "name": "Yate Active Lifestyle Centre"
+    },
+    "v-gb-1006870": {
+      "badminton": true,
+      "perCourtHour": 12.0,
+      "perPerson": null,
+      "playTimes": "Sports hall open Mon–Fri 9 AM–10 PM, Sat–Sun 8 AM–4 PM.",
+      "web": "https://www.greenbanksportsacademy.co.uk/facilities/sports-hall/",
+      "sources": [
+        "https://www.greenbanksportsacademy.co.uk/facilities/sports-hall/",
+        "https://www.greenbanksportsacademy.co.uk/opening-times/"
+      ],
+      "note": "Badminton £12.00 per court per hour (individual hire). Book by phone or email with the academy.",
+      "checked": "2026-11-20",
+      "name": "Greenbank Sports Academy"
+    },
+    "v-gb-1008169": {
+      "badminton": true,
+      "perCourtHour": 9.0,
+      "perPerson": null,
+      "playTimes": "Indoor Sports Centre open in term time (7 Sep–20 Dec 2026) Mon–Fri 7 AM–10:30 PM, Sat 8 AM–8 PM, Sun 8 AM–9 PM. Badminton is booked online in 55-minute slots.",
+      "web": "https://www.bristol.ac.uk/sport/memberships/payg/",
+      "sources": [
+        "https://www.bristol.ac.uk/sport/memberships/payg/",
+        "https://www.bristol.ac.uk/sport/contacts/indoor-sports-centre-annual-opening-hours/",
+        "https://www.bristol.ac.uk/sport/facilities/indoor/"
+      ],
+      "note": "PAYG sports hall booking £8.25 for badminton per 55-min booking, converted pro rata to £9.00/hour; needs a free online account. Hours change in vacations.",
+      "checked": "2026-11-20",
+      "name": "University of Bristol (indoor Sports Centre)"
+    },
+    "v-gb-1009892": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Thu 4:30–10 PM, Fri 4–8 PM, Sat–Sun 9 AM–5 PM.",
+      "web": "https://lcsports.org.uk/double-sports-hall/",
+      "sources": [
+        "https://lcsports.org.uk/double-sports-hall/",
+        "https://lcsports.org.uk/faqs/"
+      ],
+      "note": "Sports hall used for badminton and available for hire to non-members; no price published, book by emailing lcsports@liverpoolcollege.org.uk.",
+      "checked": "2026-11-20",
+      "name": "Liverpool College (lc Sports)"
+    },
+    "v-gb-1010838": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Open to the community Mon–Fri 5–10 PM, Sat 9 AM–5 PM, Sun 9 AM–3 PM.",
+      "web": "https://moseley.bham.sch.uk/moseley-sports-centre/",
+      "sources": [
+        "https://moseley.bham.sch.uk/moseley-sports-centre/"
+      ],
+      "note": "School sports centre for students and the local community; badminton listed. No prices or online booking shown.",
+      "checked": "2026-11-20",
+      "name": "Moseley School and Sixth Form Sport Centre"
+    },
+    "v-gb-1011669": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6 AM–10 PM, Sat–Sun 8 AM–5 PM. Off-peak Mon–Fri 6 AM–4 PM and all weekend.",
+      "web": "https://salfordcommunityleisure.co.uk/sports/racket-sports/badminton/",
+      "sources": [
+        "https://salfordcommunityleisure.co.uk/sports/racket-sports/badminton/",
+        "https://salfordcommunityleisure.co.uk/location/swinton-pendlebury-leisure-centre/"
+      ],
+      "note": "Adult court £11.90 per booking, slot length not stated, so perCourtHour null. Free for members.",
+      "checked": "2026-11-20",
+      "name": "Swinton and Pendlebury Leisure Centre"
+    },
+    "v-gb-1014061": {
+      "badminton": true,
+      "perCourtHour": 12.0,
+      "perPerson": null,
+      "playTimes": "Sports hall booking slots Mon–Fri 6:30 AM–10 PM, Sat–Sun 9 AM–6 PM. Non-members book one day ahead.",
+      "web": "https://www.dmu.ac.uk/campus/leisure/sports-hall.aspx",
+      "sources": [
+        "https://www.dmu.ac.uk/campus/leisure/pay-as-you-go.aspx",
+        "https://www.dmu.ac.uk/campus/leisure/sports-hall.aspx"
+      ],
+      "note": "DMU QEII Leisure Centre. Badminton court hire £12.00 per hour; pay-as-you-go 'Court' price £5.50 community (standard court bookings are 45 minutes). Public must register an account; non-members pay when booking.",
+      "checked": "2026-11-20",
+      "name": "The Queen Elizabeth Ii Diamond Jubilee Leisure Centre"
+    },
+    "v-gb-1035894": {
+      "badminton": true,
+      "perCourtHour": 10.0,
+      "perPerson": null,
+      "playTimes": "Sports hall available for hire Mon–Fri 5–10 PM, Sat 9 AM–5 PM, Sun 10 AM–4 PM.",
+      "web": "https://www.childwallssa.org/facility-hire/about-us/",
+      "sources": [
+        "https://www.childwallssa.org/facility-hire/about-us/"
+      ],
+      "note": "Childwall in the Community lettings: badminton court £10 per court per hour; one-off or regular bookings.",
+      "checked": "2026-11-20",
+      "name": "Childwall Sports and Science Academy"
+    },
+    "v-gb-1036527": {
+      "badminton": true,
+      "perCourtHour": 17.5,
+      "perPerson": 8.75,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Fri 9 AM–10 PM, Sat 9 AM–5 PM, Sun 12–8 PM.",
+      "web": "https://sport.leeds.ac.uk/facilities/sports-halls/",
+      "sources": [
+        "https://sport.leeds.ac.uk/the-edge/racquet-and-ball-sports/",
+        "https://sport.leeds.ac.uk/price-list/",
+        "https://sport.leeds.ac.uk/facilities/facility-locations/",
+        "https://sport.leeds.ac.uk/facilities/sports-halls/"
+      ],
+      "note": "Gryphon Sports Centre has 6 badminton courts; the University racquet sports page links one price list for The Edge and Gryphon courts: non-member public full court hire (60 min) £17.50, individual entry (60 min) £8.75; staff/student non-member £12.75 / £7.75; included in Edge membership.",
+      "checked": "2026-11-20",
+      "name": "University of Leeds (the Gryphon Sports Centre)"
+    },
+    "v-gb-1037878": {
+      "badminton": true,
+      "perCourtHour": 9.5,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 7 AM–10 PM, Sat–Sun 9 AM–6 PM. Book courts in person or by phone.",
+      "web": "https://www.bcu.ac.uk/doug-ellis-sports-centre/price-list",
+      "sources": [
+        "https://www.bcu.ac.uk/doug-ellis-sports-centre/price-list",
+        "https://www.bcu.ac.uk/doug-ellis-sports-centre/facilities"
+      ],
+      "note": "Public price per hour; student £7.50, staff/alumni £8.50. Open to the general public.",
+      "checked": "2026-11-20",
+      "name": "Doug Ellis Sports Centre"
+    },
+    "v-gb-1038000": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Thu 7:15 AM–10 PM, Fri 7:15 AM–9:30 PM, Sat 8 AM–6 PM, Sun 8:15 AM–7:05 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/armley-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/armley-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. Centre page lists 4 court and 2 court sports halls.",
+      "checked": "2026-11-20",
+      "name": "Armley Leisure Centre"
+    },
+    "v-gb-1038001": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Fri 7 AM–10 PM, Sat 8 AM–6:30 PM, Sun 8 AM–9:30 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/morley-leisure-centre",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/morley-leisure-centre",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. Centre page lists 6 and 4 court sports halls.",
+      "checked": "2026-11-20",
+      "name": "Morley Leisure Centre"
+    },
+    "v-gb-1039525": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Sports Hall 1 is available for hire, including badminton, outside school hours.",
+      "web": "https://bristolacademysouth.e-act.org.uk/ma-sport-fitness/facilities/badminton-booking/",
+      "sources": [
+        "https://bristolacademysouth.e-act.org.uk/ma-sport-fitness/facilities/sports-hall-1/"
+      ],
+      "note": "Site moved to bristolacademysouth.e-act.org.uk. Its \"Badminton Booking\" link goes to Eventbrite (not used as a source); no price on the academy site.",
+      "checked": "2026-11-20",
+      "name": "Merchants Academy Sports and Fitness"
+    },
+    "v-gb-1042061": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable online, in the Volair app or at reception. Centre (gym) open Mon–Thu 6:30 AM–10 PM, Fri 6:30 AM–9 PM, Sat–Sun 8:30 AM–6 PM.",
+      "web": "https://volair.org.uk/location/huyton/",
+      "sources": [
+        "https://volair.org.uk/location/huyton/",
+        "https://volair.org.uk/memberships-pricing/",
+        "https://www.knowsley.gov.uk/knowsley-offer/place/sport-and-fitness/leisure-centres"
+      ],
+      "note": "Now Volair Huyton (Longview Drive). Volair price list: badminton peak £14.00, off-peak £7.50, booking length not stated so perCourtHour left null. Pay-as-you-go registration, no membership needed.",
+      "checked": "2026-11-20",
+      "name": "Knowsley Leisure and Culture Park"
+    },
+    "v-gb-1044661": {
+      "badminton": true,
+      "perCourtHour": 12.0,
+      "perPerson": null,
+      "playTimes": null,
+      "web": "https://www.sfcentre.co.uk/product/sports-hall/",
+      "sources": [
+        "https://www.sfcentre.co.uk/product/sports-hall/"
+      ],
+      "note": "Sports hall hire £6 per 30 minutes (converted to per hour); described as ideal for badminton. Booking requires St Faiths Centre membership (open to join). Hours not stated.",
+      "checked": "2026-11-20",
+      "name": "St Faith's Centre"
+    },
+    "v-gb-1044894": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Courts bookable during centre opening hours: Mon–Fri 7 AM–10 PM, Sat 8 AM–6 PM, Sun 8 AM–8 PM. Booking is essential and times may vary.",
+      "web": "https://active.leeds.gov.uk/our-centres/holt-park-active",
+      "sources": [
+        "https://active.leeds.gov.uk/our-centres/holt-park-active",
+        "https://active.leeds.gov.uk/classesandactivities/sports/Badminton",
+        "https://active.leeds.gov.uk/classesandactivities/pricing",
+        "https://active.leeds.gov.uk/sites/default/files/2026-06/Pricing%20Increase%202026.pdf"
+      ],
+      "note": "Listed on Active Leeds badminton page as a centre for court bookings (booking essential). Adult badminton court standard price £15.65 per booking from 1 June 2026 (Leedscard peak £14.50, off-peak £8.10; peak = after 4 PM weekdays); slot length not stated, so perCourtHour left null. Times given are centre opening hours. Centre page lists a 2 court sports hall.",
+      "checked": "2026-11-20",
+      "name": "Holt Park Active"
+    },
+    "v-gb-1103624": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre for Sport open Mon–Fri 7:15 AM–10:30 PM, Sat–Sun 9 AM–8:30 PM, closed on bank holidays. Courts book online, in the UWE Bristol Sport app or by contacting the centre.",
+      "web": "https://www.uwe.ac.uk/life/sport/sports-facilities/sports-hall",
+      "sources": [
+        "https://www.uwe.ac.uk/life/sport/sports-facilities/sports-hall",
+        "https://www.uwe.ac.uk/life/sport/contact-and-opening-hours",
+        "https://www.uwe.ac.uk/life/sport/membership-and-prices"
+      ],
+      "note": "Badminton court hire £10 (standard cost), duration not stated, so not converted; racket hire £1.50. Non-members book via Pay As You Go registration.",
+      "checked": "2026-11-20",
+      "name": "Uwe Centre for Sport"
+    },
+    "v-gb-30004433": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:30 AM–10 PM, Sat 7 AM–6 PM, Sun 7 AM–10 PM; 4-court sports hall bookable for badminton.",
+      "web": "https://www.movesouthwark.co.uk/centres/the-castle-leisure-centre",
+      "sources": [
+        "https://www.movesouthwark.co.uk/centres/the-castle-leisure-centre",
+        "https://www.movesouthwark.co.uk/activities/sports"
+      ],
+      "note": "Now Move Southwark (Southwark Council). Prices not published on site; booking via southwarkcouncil.gladstonego.cloud.",
+      "checked": "2026-11-20",
+      "name": "The Castle Centre"
+    },
+    "v-gb-30007349": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": 8.5,
+      "playTimes": "Centre open Mon–Fri 6 AM–10:30 PM, Sat–Sun 7 AM–8 PM; non-members can book courts with Pay & Go. Social badminton in term time Mon 12–1 PM, Tue 4–6 PM, Thu 4–5:30 PM, Fri 12–1 PM.",
+      "web": "https://www.sportandfitness.bham.ac.uk/facilities/indoor-sport/",
+      "sources": [
+        "https://www.sportandfitness.bham.ac.uk/facilities/indoor-sport/",
+        "https://www.sportandfitness.bham.ac.uk/timetables/social-sport/",
+        "https://www.sportandfitness.bham.ac.uk/opening-times/"
+      ],
+      "note": "perPerson is the non-member Social Sport price (from 3 Aug 2026). Social badminton times are from the Term Two (Jan–Mar 2026) timetable; current term is in the app. Court hire price not shown.",
+      "checked": "2026-11-20",
+      "name": "University of Birmingham Sport and Fitness"
+    },
+    "v-gb-30007625": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Thu 6:30 AM–10 PM, Fri 6:30 AM–9 PM, Sat–Sun 7 AM–5 PM. Courts booked online with a free MORE account.",
+      "web": "https://www.moreleisure.com/stechford-leisure-centre/sports-and-activities/sports-hall-courts/",
+      "sources": [
+        "https://www.moreleisure.com/stechford-leisure-centre/sports-and-activities/sports-hall-courts/"
+      ],
+      "note": "Run by MORE Leisure (Birmingham Community Leisure Trust); old birminghamleisure.com link is 404. Court price not shown; racket hire £2.00.",
+      "checked": "2026-11-20",
+      "name": "Stechford Leisure Centre"
+    },
+    "v-gb-30008450": {
+      "badminton": true,
+      "perCourtHour": 26.0,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6 AM–10 PM, Sat 6:30 AM–5 PM, Sun 7:45 AM–6 PM; sports hall has badminton daily.",
+      "web": "https://www.better.org.uk/leisure-centre/london/barnet/barnet-copthall-leisure-centre/prices",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/london/barnet/barnet-copthall-leisure-centre/prices",
+        "https://www.better.org.uk/leisure-centre/london/barnet/barnet-copthall-leisure-centre"
+      ],
+      "note": "Non-member adult: 60 min £26.00 (listed off-peak), 40 min £26.00 (listed peak); table labels are ambiguous. Members £16.80. Sports hall hours not listed separately.",
+      "checked": "2026-11-20",
+      "name": "Barnet Copthall Leisure Centre"
+    },
+    "v-gb-30008872": {
+      "badminton": true,
+      "perCourtHour": 13.8,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:30 AM–10 PM, Sat–Sun 8 AM–8 PM; sports hall hosts badminton.",
+      "web": "https://www.better.org.uk/leisure-centre/london/gunnersbury-park/gunnersbury-park-sports/prices",
+      "sources": [
+        "https://www.better.org.uk/leisure-centre/london/gunnersbury-park/gunnersbury-park-sports/prices",
+        "https://www.better.org.uk/leisure-centre/london/gunnersbury-park/gunnersbury-park-sports"
+      ],
+      "note": "Badminton court hire (1 hour) non-member £13.80, member £9.65, any time.",
+      "checked": "2026-11-20",
+      "name": "Gunnersbury Park Sports Hub"
+    },
+    "v-gb-50002178": {
+      "badminton": true,
+      "perCourtHour": null,
+      "perPerson": null,
+      "playTimes": "Centre open Mon–Fri 6:30 AM–10 PM, Sat 7 AM–6 PM, Sun 7 AM–10 PM; 4-court sports hall bookable for badminton.",
+      "web": "https://www.movesouthwark.co.uk/centres/canada-water-leisure-centre",
+      "sources": [
+        "https://www.movesouthwark.co.uk/centres/canada-water-leisure-centre",
+        "https://www.movesouthwark.co.uk/activities/sports"
+      ],
+      "note": "Now Move Southwark (Southwark Council). Prices not published on site; booking via southwarkcouncil.gladstonego.cloud.",
+      "checked": "2026-11-20",
+      "name": "Canada Water Leisure Centre"
+    }
+  }
 }
