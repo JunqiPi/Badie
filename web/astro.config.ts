@@ -57,8 +57,8 @@ export default defineConfig({
     filter: (page) => {
       const path = decodeURIComponent(new URL(page).pathname);
       const english = path.replace(/^\/(?:zh-hant|zh|ja|ko|id|ms|th|vi|hi)(?=\/)/, '');
-      // 不收录的球馆页、城市页、国家页不进；球馆目录的中文版也不进（只有英文版收录）
-      return !hidden.has(english) && !(english !== path && english.startsWith('/courts/'));
+      // 不收录的球馆页、城市页、国家页不进；球馆目录的中文版也不进（韩国、日本的韩文、日文版照常进）
+      return !hidden.has(english) && !path.startsWith('/zh/courts/');
     },
   })],
   vite: { plugins: [tailwindcss()] },
