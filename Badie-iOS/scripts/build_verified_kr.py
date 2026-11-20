@@ -50,19 +50,33 @@ def street_of(address, region, city):
     return rest[len(city):].strip() if rest.startswith(city) else rest
 
 
-venues, skipped = [], []
-rows = [r for f in sorted(SRC.glob('output-*.json')) for r in json.loads(f.read_text())]
-inputs = {r['id']: r for f in sorted(SRC.glob('input-*.json')) for r in json.loads(f.read_text())}
-for v in rows:
-    src = inputs.get(v['id'], {})
-    has_values = v.get('perPerson') is not None or v.get('perCourtHour') is not None or v.get('playTimes')
-    if v.get('badminton') is not True or not v.get('address') or not has_values or not v.get('sources'):
-        continue
+def overture(pending):
+    """Nominatim 查不到的：到 Overture Maps 里按官网名找（supabase/scripts/overture_places.py），
+    离开放数据里的区中心 8 公里内才算。结果缓存在 <目录>/overture-cache.json"""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'supabase' / 'scripts'))
+    import overture_places
+    cache_file = SRC / 'overture-cache.json'
+    done = json.loads(cache_file.read_text()) if cache_file.exists() else {}
+    district = {v['id']: (v['lat'], v['lon']) for v in json.loads(
+        (Path(__file__).resolve().parent.parent / 'Badie' / 'Resources' / 'venues-KR.json').read_text())['venues']}
+    ask = [(f"{v['id']}|{n}", n, district[v['id']]) for v in pending for n in dict.fromkeys(filter(None, [v.get('officialName'), v['name']]))
+           if f"{v['id']}|{n}" not in done and v['id'] in district]
+    if ask:
+        got = overture_places.find(ask, log=lambda m: None)
+        done.update({k: got.get(k) for k, _, _ in ask})
+        cache_file.write_text(json.dumps(done, ensure_ascii=False))
+    found = {}
+    for v in pending:
+        for n in filter(None, [v.get('officialName'), v['name']]):
+            o = done.get(f"{v['id']}|{n}")
+            if o and v['id'] in district and overture_places.metres(district[v['id']], (o['lat'], o['lon'])) <= 8000:
+                found[v['id']] = (o['lat'], o['lon'])
+                break
+    return found
+
+
+def add(v, src, point, attr):
     city, region = src.get('city', ''), src.get('region', '')
-    point = locate(v, city.split()[-1] if city else '')
-    if not point:
-        skipped.append(v['name'])
-        continue
     price = {k: int(v[k]) for k in ('perPerson', 'perCourtHour') if v.get(k) is not None}
     entry = {
         'id': v['id'], 'name': v.get('officialName') or v['name'], 'lat': point[0], 'lon': point[1],
@@ -73,7 +87,34 @@ for v in rows:
         entry['price'] = price
     if v.get('playTimes'):
         entry['playTimes'] = v['playTimes']
+    if attr:
+        entry['attr'] = attr
     venues.append(entry)
+
+
+
+venues, skipped = [], []
+later = []
+rows = [r for f in sorted(SRC.glob('output-*.json')) for r in json.loads(f.read_text())]
+inputs = {r['id']: r for f in sorted(SRC.glob('input-*.json')) for r in json.loads(f.read_text())}
+for v in rows:
+    src = inputs.get(v['id'], {})
+    has_values = v.get('perPerson') is not None or v.get('perCourtHour') is not None or v.get('playTimes')
+    if v.get('badminton') is not True or not v.get('address') or not has_values or not v.get('sources'):
+        continue
+    city, region = src.get('city', ''), src.get('region', '')
+    point = locate(v, city.split()[-1] if city else '')
+    if not point:
+        later.append((v, src))
+        continue
+    add(v, src, point, None)
+if later:
+    placed = overture([v for v, _ in later])
+    for v, src in later:
+        if v['id'] in placed:
+            add(v, src, placed[v['id']], 'Coordinates © Overture Maps Foundation (CDLA Permissive 2.0)')
+        else:
+            skipped.append(v.get('officialName') or v['name'])
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text(json.dumps({
