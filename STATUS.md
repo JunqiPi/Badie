@@ -246,8 +246,9 @@
     - 日本的门牌 OSM 几乎没有：`--gsi` 用国土地理院的住所検索（`msearch.gsi.go.jp`，每秒 1 次，查得到番地；查到的地址要在同一个市区町村里并带番地号码），署名“出典：国土地理院”。中日韩地名按包含关系核对，门牌、城市、省用表里自己写的
     - **日本的体育馆（OSM，`build_osm_gyms.py JP` → `supabase/data/osm-gyms-JP.json`，走种子同步）1,253 家**：OSM 里日本的体育馆很少标 sport=badminton，之前東京体育館都没有。按名字收（体育館 / アリーナ / スポーツセンター…），不收武道館、学校、园区里的楼、单位自用、只叫“体育館”的；英文名、alt_name 做别名（“Tokyo Metropolitan Gymnasium”能搜到）。重跑时用 `--exclude` 给线上库导出的我们整理的球馆，免得重复。日本现在一共 2,918 家
 - **各国的体育馆（OSM，2026-11-19）**：`supabase/scripts/build_osm_gyms.py <国家…>` → `supabase/data/osm-gyms-<国家>.json`，走种子同步（推 main 就进库）。每个国家一套当地叫法（names）、不收的词（skip：学校、武道館、泳池、冰场、篮球场、单位自用……）、通称（generic）、行政区划级别，见脚本里的 COUNTRIES；`--count` 只数不写。查询结果按名字缓存，改了规则要清掉 `--cache` 目录
-  - 新增：美国 1,214（Recreation Center、Gymnasium，不收 Community Center）、菲律宾 791、英国 581（苏格兰、威尔士等 Sport England 没有的）、印尼 280、澳大利亚 235、加拿大 233、韩国 168、印度 150、越南 107、台湾 81、马来西亚 74、泰国 33、香港 18（加日本 1,253）
-  - 德国（3,948）、法国（4,554）只数没收：Sporthalle / Gymnase 主要是学校和俱乐部的，散客去不了，而且网站城市页会多出一大截
+  - 现有 14,526 家（2026-11-20）：法国 4,619、德国 4,372、日本 1,388、美国 1,280、菲律宾 822、英国 615、印尼 285、澳大利亚 238、加拿大 233、韩国 174、印度 162、越南 111、台湾 93、马来西亚 75、泰国 38、香港 21
+  - 学校、大学的体育馆也收（1,430 家，`kind = school`）：不少晚上、周末开放给俱乐部和社区。`venues_near` 里室内公共场馆在前、学校其次、露天最后（迁移 `20261230000000_school_gyms_last.sql`）。名字只是“体育館”这种通称的（多半是学校里没起名的）还是不收：认不出是哪一家；要收得用所在学校的名字起名（“某某小学 · 体育館”），日本一国就可能上万所
+  - 德国、法国的 Sporthalle / Gymnase 以学校、俱乐部的为主（羽毛球在那边主要是俱乐部活动）。国家页球馆超过 500 家时地图每个地区一个点，德国页压缩后约 180 KB；网站一共约 12,100 个文件
   - 韩国 OSM 里体育馆少，要补全得用韩国政府的公共数据（全国体育设施标准数据）或我们自己收集的表
   - 写法：本地生成每批 150 家的 SQL（带 md5 校验、文字先统一成 NFC、id 原样带上），用 Supabase 连接逐批执行；加密后推仓库让数据库下载的办法被安全检查拦了。名字匹配别太松：只看共同词会把“Badminton Power”配给花店“Flower Power”
   - Overture 署名：坐标来自它的，`attribution` 是“Coordinates © Overture Maps Foundation (CDLA Permissive 2.0); address © OpenStreetMap contributors”，导出时带上，网站页脚按它署名。网络要放行 `overturemaps-us-west-2.s3.us-west-2.amazonaws.com`，装 `pyarrow==21.0.0`
