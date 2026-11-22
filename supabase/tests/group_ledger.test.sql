@@ -1,7 +1,7 @@
 -- 球群的价格和收款记录：价格写在每周场次上、改价格只影响以后的场次、免费不用付、收款记录、一次标已付、我还没付的
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(33);
+select plan(34);
 
 -- 1 是群主，2–4 是成员，5 不是成员
 insert into auth.users (id, email)
@@ -64,6 +64,9 @@ insert into ids select 'manual', id from public.group_sessions where group_id = 
 -- 改价格：还没开始的跟着改，开过的、组织者单独改过的不动；旧版 App 不带 "price" 就沿用
 select pg_temp.login(1);
 select lives_ok($$ select public.update_group(pg_temp.id('group'), 'Wed night', '', 1, 9, 'open', pg_temp.slot('{"price": 15}')) $$, '改成每人 $15');
+select public.set_guest_signup(pg_temp.id('group'), true, null);
+select is((public.guest_group_page((select guest_code from public.play_groups where id = pg_temp.id('group'))) -> 'sessions' -> 0 ->> 'price')::numeric,
+          15::numeric, '访客报名页上写着每人 $15');
 select is((select fee from public.group_sessions where group_id = pg_temp.id('group') and starts_at > now() and fee_by is null
            order by starts_at limit 1), 15::numeric, '以后的场次改成 $15');
 select is((select fee from public.group_sessions where id = pg_temp.id('week')), 12::numeric, '开过的那一场还是 $12');

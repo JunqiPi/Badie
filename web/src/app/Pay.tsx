@@ -1,7 +1,7 @@
 // 收款：付钱的人看到的付款半屏（球群页、访客报名页）、访客的付款页（/pay/<凭证>/，提醒邮件里的链接）、
 // “我的 → 收款方式”。钱不经过 Badie，这里只给链接
 import { useEffect, useState, type SubmitEvent } from 'react';
-import { copyText, deviceTokens, money, type GuestPayment, type Handles } from './club';
+import { copyText, deviceTokens, money, type Due, type GuestPayment, type Handles } from './club';
 import { t } from './i18n';
 import { Icon } from './icons';
 import { Empty, Group, Tag } from './kit';
@@ -109,6 +109,51 @@ async function guestPaid(token: string, paid: boolean) {
   else if (paid) toast(t('Marked as paid.'));
 }
 
+/** 我还没付的：按球群和收钱的人合起来，一张卡一个按钮，一次付清。group 给了就只看这个球群（球群页），不给就是所有球群（球局页） */
+export function DuesCard({ group, onPaid }: { group?: string; onPaid?: () => void }) {
+  const { data, refresh } = useLive<Due[]>('my_dues', { args: group ? { p_group: group } : {}, every: 120_000 });
+  const [open, setOpen] = useState<string>();
+  const piles = new Map<string, Due[]>();
+  for (const due of data ?? []) {
+    const key = `${due.group_id}:${due.to_id}`;
+    piles.set(key, [...(piles.get(key) ?? []), due]);
+  }
+  if (!piles.size) return null;
+  return [...piles].map(([key, dues]) => {
+    const first = dues[0];
+    const total = dues.reduce((sum, d) => sum + d.amount, 0);
+    const dates = dues.map((d) => day(d.starts_at, d.tz)).join(', ');
+    return (
+      <section key={key} aria-label={t('You haven’t paid yet')} className="sticker grid gap-3 bg-butter p-4 text-on-accent">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-headline">{t('You haven’t paid yet')}</p>
+            <p className="text-footnote font-bold">{group ? dates : `${first.group} · ${dates}`}</p>
+          </div>
+          <span className="text-title2 font-black tabular-nums">{money(total)}</span>
+        </div>
+        <Button className="button-lg" onClick={() => setOpen(key)}>
+          <Icon name="coins" className="size-5" />{t('Pay {name} · {amount}', { name: first.to, amount: money(total) })}
+        </Button>
+        <PaySheet open={open === key} onClose={() => setOpen(undefined)} canUndo={false}
+                  info={{ to: first.to, amount: total, handles: first.handles, paid: false,
+                          note: `Badie · ${first.group} · ${dates}`, when: `${first.group} · ${dates}` }}
+                  onPaid={async (paid) => {
+                    if (!paid) return;
+                    for (const d of dues) {
+                      const { error } = await supabase!.rpc('i_paid', { p_session: d.session_id, p_paid: true });
+                      if (error) return toast(problem(error), 'error');
+                    }
+                    toast(t('Marked as paid.'));
+                    setOpen(undefined);
+                    await refresh();
+                    onPaid?.();
+                  }} />
+      </section>
+    );
+  });
+}
+
 /** 访客报名页最上面：这台设备上报过名、要付钱的场次（开场后到结束后 24 小时）。group 是球群 id */
 export function GuestPayCard({ group }: { group: string }) {
   const { data, refresh } = useLive<GuestPayment[]>('guest_payment', { args: { p_tokens: deviceTokens() }, every: 60_000 });
@@ -124,7 +169,7 @@ export function GuestPayCard({ group }: { group: string }) {
             <p className="text-footnote font-bold text-ink-secondary">{p.venue}</p>
           </div>
           {p.paid ? <Tag icon="check" tint="mint">{t('Paid')}</Tag> : (
-            <Button variant="quiet" className="button-sm" onClick={() => setOpen(p.token)}>
+            <Button className="button-sm" onClick={() => setOpen(p.token)}>
               {p.amount === null ? t('Pay {name}', { name: p.to }) : t('Pay {name} · {amount}', { name: p.to, amount: money(p.amount) })}
             </Button>
           )}

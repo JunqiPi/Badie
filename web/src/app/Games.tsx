@@ -14,6 +14,7 @@ import { gamesFromScore, problem, supabase, useLive, winPercent, type Game, type
 import { day, dayName, hours, timeOf } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
 import { Sheet } from './Nearby';
+import { DuesCard } from './Pay';
 import { TonightCard } from './Tonight';
 import { startOptions, unset, windowTitle } from './usual';
 
@@ -47,6 +48,7 @@ export function Games({ profile }: { profile: Profile }) {
       </LargeTitle>
 
       <TonightCard />
+      <DuesCard />
       {!profile.assessed_at && (
         <Notice icon="sparkle" tint="lavender" action={{ label: t('Take the quiz'), to: '/level-quiz/' }}>
           {t('You’re starting at level 3. Take the 2-minute level quiz so you’re matched with the right players.')}

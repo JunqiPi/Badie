@@ -76,6 +76,48 @@ export interface TonightSession {
   unpaid: number | null;
 }
 
+/** 我还没付的一场（my_dues）：开过的、写了金额的场次，60 天内 */
+export interface Due {
+  session_id: string;
+  group_id: string;
+  group: string;
+  starts_at: string;
+  ends_at: string;
+  tz: string | null;
+  amount: number;
+  to: string;
+  to_id: string;
+  handles: Handles;
+}
+
+/** 收款记录（group_ledger）：开过的场次，第一页还有谁还欠着 */
+export interface Ledger {
+  sessions: LedgerSession[];
+  owed: OwedPerson[] | null;
+}
+
+export interface LedgerSession {
+  id: string;
+  starts_at: string;
+  ends_at: string;
+  venue: string;
+  tz: string | null;
+  amount: number | null;
+  payee: string | null;
+  owes: number;
+  paid: number;
+}
+
+/** 谁还欠着：注册用户按人、访客按名字合起来；signups 是那几行报名 */
+export interface OwedPerson {
+  id: string | null;
+  name: string;
+  guest: boolean;
+  sessions: number;
+  amount: number;
+  signups: string[];
+}
+
 /** 球局页的“今晚”卡（my_tonight） */
 export type MyTonight =
   | { kind: 'night'; session_id: string; group_id: string; name: string; board_code: string; status: 'court' | 'next' | 'waiting' | 'resting'; court: number | null; games: number }
@@ -193,6 +235,10 @@ export const deviceTokens = () => Object.values(loadTokens()).slice(-50);
 
 /** $12 / $12.50 */
 export const money = (amount: number) => `$${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
+
+/** 每场的价格：0 写“免费”，null 不写 */
+export const priceText = (price: number | null | undefined) =>
+  price === null || price === undefined ? null : price === 0 ? t('Free') : t('{amount} each', { amount: money(price) });
 
 /** 看板的链接（二维码也是它） */
 export const boardLink = (code: string) => `${location.origin}/live/${code}/`;

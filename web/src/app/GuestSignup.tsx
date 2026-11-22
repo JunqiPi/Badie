@@ -5,6 +5,7 @@ import { Icon } from './icons';
 import { Empty, IconTile, Notice, Tag } from './kit';
 import { GuestPayCard } from './Pay';
 import { Link, navigate } from './router';
+import { priceText } from './club';
 import { problem, supabase, useLive, type GuestGroup, type GuestSession } from './supabase';
 import { dayName, hours } from './time';
 import { Button, Field, Skeleton, toast } from './ui';
@@ -162,7 +163,7 @@ function SessionCard({ session: s, mainVenue, expanded, onToggle, children }: {
 }) {
   const going = s.players.filter((p) => !p.waitlisted);
   const waiting = s.players.filter((p) => p.waitlisted);
-  const counts = [t('{n}/{total} signed up', { n: going.length, total: s.capacity }), waiting.length > 0 && t('{n} on waitlist', { n: waiting.length })]
+  const counts = [t('{n}/{total} signed up', { n: going.length, total: s.capacity }), waiting.length > 0 && t('{n} on waitlist', { n: waiting.length }), priceText(s.price)]
     .filter(Boolean).join(' · ');
   const over = ended(s);
   const badge = s.cancelled ? t('Cancelled') : over ? t('Ended') : going.length >= s.capacity ? t('Full') : null;

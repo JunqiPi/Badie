@@ -10,18 +10,21 @@ import { problem, supabase, useLive } from './supabase';
 import { dayName, hours } from './time';
 import { Button, toast } from './ui';
 
+/** 写了金额、还没付的由最上面的“你还没付”卡（DuesCard）收，场次行上不再重复 */
+const payHere = (s: TonightSession) => s.pay !== null && (s.pay.paid || !(s.pay.amount && s.pay.amount > 0));
+
 /** 场次行上的一个按钮：组织者 / 帮手“排场”，付钱的人“付给 Kevin · $12”，开始排场后“看排场”，结束后组织者“收款 · n 人没付” */
 export function TonightAction({ tonight: s, group, tz, onChange }: { tonight: TonightSession; group: string; tz: string | null; onChange: () => void }) {
   const [paying, setPaying] = useState(false);
   if (s.can_run) {
     return <Link to={`/night/${s.id}/`} className="button button-lg w-full"><Icon name="court" className="size-5" />{t('Run courts')}</Link>;
   }
-  if (s.pay) {
+  if (s.pay && payHere(s)) {
     const pay = s.pay;
     if (pay.paid) return <div><Tag icon="check" tint="mint">{t('Paid')}</Tag></div>;
     return (
       <>
-        <Button variant="quiet" onClick={() => setPaying(true)}>
+        <Button onClick={() => setPaying(true)}>
           <Icon name="coins" className="size-4" />
           {pay.amount === null ? t('Pay {name}', { name: pay.to }) : t('Pay {name} · {amount}', { name: pay.to, amount: money(pay.amount) })}
         </Button>
@@ -56,7 +59,7 @@ export function PastTonight({ tonight, shown, group, tz, onChange }: {
   tz: string | null;
   onChange: () => void;
 }) {
-  const past = (tonight ?? []).filter((s) => !shown.includes(s.id) && (s.can_run || s.pay || s.board || s.unpaid));
+  const past = (tonight ?? []).filter((s) => !shown.includes(s.id) && (s.can_run || payHere(s) || s.board || s.unpaid));
   return past.map((s) => (
     <article key={s.id} className="sticker grid gap-3 p-4">
       <h3 className="text-headline">{dayName(s.starts_at, tz)} · {hours(s.starts_at, s.ends_at, tz)}</h3>

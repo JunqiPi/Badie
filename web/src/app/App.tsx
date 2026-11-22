@@ -5,6 +5,7 @@ import { Contact, Support } from './Contact';
 import { Discover } from './Discover';
 import { Challenges, GameDetail, Games } from './Games';
 import { GroupPage } from './Group';
+import { LedgerPage, LedgerSessionPage } from './Ledger';
 import { GuestSignup } from './GuestSignup';
 import { startLocale, t, useLocale } from './i18n';
 import { Groups } from './Groups';
@@ -142,12 +143,16 @@ export default function App() {
   const match = id('matches');
   const chat = path.match(/^\/messages\/(game|group|dm)\/([0-9a-f-]{36})\//);
   const editing = path.match(/^\/groups\/([0-9a-f-]{36})\/edit\//)?.[1];
+  // 收款记录和其中的某一场
+  const ledger = path.match(/^\/groups\/([0-9a-f-]{36})\/payments\/(?:([0-9a-f-]{36})\/)?/);
   const day = path.match(/^\/day\/(\d{4}-\d{2}-\d{2})\//)?.[1];
   return shell(
     // 按天看人、附近的人都在发现页里了：旧地址跳过去，选好那一天
     day ? <Redirect to={`/?day=${day}`} />
     : path.startsWith('/nearby/') ? <Redirect to="/" />
     : editing ? <EditGroup key={editing} id={editing} profile={profile} />
+    : ledger?.[2] ? <LedgerSessionPage key={ledger[2]} group={ledger[1]} id={ledger[2]} />
+    : ledger ? <LedgerPage key={ledger[1]} id={ledger[1]} />
     : player ? <PlayerPage key={player} id={player} />
     : chat ? <Messages open={{ kind: chat[1] as ThreadKind, id: chat[2] }} />
     : group ? <GroupPage key={group} id={group} />

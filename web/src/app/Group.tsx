@@ -10,7 +10,8 @@ import { problem, supabase, useLive, type GroupCourt, type GroupDetail, type Gro
 import { dayName, hours } from './time';
 import { Button, Skeleton, toast } from './ui';
 // 当晚（排场、看排场、付钱、收款）的入口
-import type { TonightSession } from './club';
+import { priceText, type TonightSession } from './club';
+import { DuesCard } from './Pay';
 import { PastTonight, TonightAction } from './Tonight';
 
 export function GroupPage({ id }: { id: string }) {
@@ -43,6 +44,9 @@ export function GroupPage({ id }: { id: string }) {
   const withFee = g.schedules.filter((sc) => sc.fee);
   const sameFee = withFee.length === g.schedules.length && new Set(withFee.map((sc) => sc.fee)).size === 1;
   const fees = sameFee ? withFee.slice(0, 1) : withFee;
+  // 价格：各场一样就一个标签，不一样就写在每个每周场次后面
+  const samePrice = new Set(g.schedules.map((sc) => sc.price ?? null)).size === 1;
+  const groupPrice = samePrice ? priceText(g.schedules[0]?.price) : null;
 
   async function join() {
     const status = await act('join', 'join_group', { p_group: g!.id });
@@ -90,6 +94,7 @@ export function GroupPage({ id }: { id: string }) {
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:items-start lg:gap-8">
         <div className="grid min-w-0 gap-6">
+          <DuesCard group={g.id} onPaid={refreshTonight} />
           <section aria-label={g.venue.name} className="sticker grid gap-3 p-5">
             {/* 球馆：主球馆在前 */}
             {courts.map((c, i) => (
@@ -107,7 +112,12 @@ export function GroupPage({ id }: { id: string }) {
               <li><Tag icon="level" tint="lime">{t('Lv.{min}–{max}', { min: g.level_min, max: g.level_max })}</Tag></li>
               {g.gender && <li><Tag icon="users" tint="lavender">{audienceLabel(g.gender)}</Tag></li>}
               <li><Tag icon={g.join_policy === 'approval' ? 'lock' : 'userPlus'}>{g.join_policy === 'approval' ? t('Organizer approves') : t('Join directly')}</Tag></li>
-              {g.schedules.map((sc) => <li key={`${sc.weekday}-${sc.start}-${sc.venue}`}><Tag icon="calendar" tint="butter">{slotText(sc)}</Tag></li>)}
+              {groupPrice && <li><Tag icon="coins" tint="mint">{groupPrice}</Tag></li>}
+              {g.schedules.map((sc) => (
+                <li key={`${sc.weekday}-${sc.start}-${sc.venue}`}>
+                  <Tag icon="calendar" tint="butter">{[slotText(sc), !samePrice && priceText(sc.price)].filter(Boolean).join(' · ')}</Tag>
+                </li>
+              ))}
               {member && g.invite_code && <li><Tag icon="hash">{t('Group code {code}', { code: g.invite_code })}</Tag></li>}
             </ul>
             {/* 收费备注最长 120 字，放不进标签：单独一行；各场一样就只写一次 */}
@@ -119,6 +129,7 @@ export function GroupPage({ id }: { id: string }) {
             ))}
             <p className="flex items-center gap-1.5 text-footnote text-ink-secondary"><Icon name="bolt" className="size-3.5" />{activityText(g.activity)}</p>
             {member && <Link to={`/messages/group/${g.id}/`} className="button button-quiet w-full"><Icon name="chats" className="size-5" />{t('Group chat')}</Link>}
+            {organizer && <Link to={`/groups/${g.id}/payments/`} className="button button-quiet w-full"><Icon name="coins" className="size-5" />{t('Payments')}</Link>}
           </section>
 
           <section aria-labelledby="sessions" className="grid gap-2">
@@ -277,7 +288,8 @@ function Session({ session: s, courts, member, organizer, busy, confirm, setConf
           ) : (
             <>
               <p className="text-footnote font-bold text-ink-secondary tabular-nums">
-                {[t('{n}/{total} signed up', { n: s.confirmed, total: s.capacity }), s.waitlist > 0 && t('{n} waiting', { n: s.waitlist })].filter(Boolean).join(' · ')}
+                {[t('{n}/{total} signed up', { n: s.confirmed, total: s.capacity }), s.waitlist > 0 && t('{n} waiting', { n: s.waitlist }), priceText(s.price)]
+                  .filter(Boolean).join(' · ')}
               </p>
               <span className="block h-2.5 max-w-60 overflow-hidden rounded-full border-2 border-stroke bg-surface" aria-hidden="true">
                 <span className="block h-full bg-lime" style={{ width: `${Math.min(100, (s.confirmed / s.capacity) * 100)}%` }} />

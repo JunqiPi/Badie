@@ -69,6 +69,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
     : schedules.some((s) => s.end - s.start > 720) ? t('Each session can be up to 12 hours')
     : schedules.some((s) => s.end - s.start < 60) ? t('Each session needs at least 1 hour')
     : schedules.some((s) => !(s.capacity >= minSpots && s.capacity <= 40)) ? (coached ? t('Each session needs 1 to 40 spots.') : t('Each session needs 4 to 40 spots.'))
+    : schedules.some((s) => s.price != null && !(s.price >= 0 && s.price <= 1000)) ? t('Enter an amount like 12 or 12.50.')
     : undefined;
 
   async function submit(event: SubmitEvent) {
@@ -76,7 +77,7 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
     if (issue) return setError(issue);
     setBusy(true);
     setError(undefined);
-    const sessions = schedules.map((s) => ({ ...s, venue: courts.length > 1 ? courtOf(s) : null }));
+    const sessions = schedules.map((s) => ({ ...s, price: s.price ?? null, venue: courts.length > 1 ? courtOf(s) : null }));
     const common = {
       p_name: name.trim(), p_summary: summary.trim(), p_level_min: min, p_level_max: max, p_policy: approval ? 'approval' : 'open',
       p_schedules: sessions, p_coached: coached, p_venues: courts.map((c) => c.id),
@@ -208,9 +209,19 @@ function GroupForm({ profile, group }: { profile: Profile; group?: GroupDetail }
                   </select>
                 </label>
               )}
+              {/* 价格：空 = 不写，0 = 免费。报名前就能看到，开场后按这个收 */}
+              <label className="grid gap-1.5 sm:col-span-2">
+                <span className="text-footnote font-bold text-ink-secondary">{t('Price per person')} {t('(optional)')}</span>
+                <span className="relative">
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-4 grid place-items-center font-black">$</span>
+                  <input type="number" inputMode="decimal" min="0" max="1000" step="0.01" placeholder={t('0 = free')}
+                         value={s.price ?? ''} className="field pl-8 tabular-nums"
+                         onChange={(e) => update(i, { price: e.target.value === '' ? null : Number(e.target.value) })} />
+                </span>
+              </label>
               <label className="grid gap-1.5 sm:col-span-2">
                 <span className="text-footnote font-bold text-ink-secondary">{t('Fee note')} {t('(optional)')}</span>
-                <input value={s.fee ?? ''} maxLength={120} placeholder={t('$12 each, pay at the desk')} onChange={(e) => update(i, { fee: e.target.value })} className="field" />
+                <input value={s.fee ?? ''} maxLength={120} placeholder={t('Shuttles included. Pay at the desk.')} onChange={(e) => update(i, { fee: e.target.value })} className="field" />
               </label>
               {schedules.length > 1 && (
                 <button type="button" onClick={() => setSchedules(schedules.filter((_, n) => n !== i))} className="link justify-self-start text-sm">

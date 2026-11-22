@@ -463,7 +463,8 @@ function NightMatch({ n, act }: { n: NightState; act: Act }) {
 
 // MARK: 收款（只有组织者）
 
-function Payments({ n }: { n: NightState }) {
+/** 收款记录里点进某一场也用这个 */
+export function Payments({ n }: { n: Pick<NightState, 'session_id' | 'tz' | 'starts_at'> }) {
   const { data: pay, refresh } = useLive<NightPay>('night_pay', { args: { p_session: n.session_id }, every: 30_000 });
   const [amount, setAmount] = useState<string>();
   const [busy, setBusy] = useState<string>();
@@ -493,7 +494,7 @@ function Payments({ n }: { n: NightState }) {
   async function saveAmount(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     const clean = value.trim() === '' ? null : Number(value);
-    if (clean !== null && !(clean > 0)) return toast(t('Enter an amount like 12 or 12.50.'), 'error');
+    if (clean !== null && !(clean >= 0 && clean <= 1000)) return toast(t('Enter an amount like 12 or 12.50.'), 'error');
     if (await run('amount', 'set_session_fee', { p_session: n.session_id, p_amount: clean })) {
       setAmount(undefined);
       toast(t('Saved'));

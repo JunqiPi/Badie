@@ -69,13 +69,14 @@ revoke execute on function public.schedule_price_changed() from public, anon, au
 create trigger group_schedules_price_changed after update of price on public.group_schedules
   for each row when (old.price is distinct from new.price) execute function public.schedule_price_changed();
 
--- 每人多少钱：这一场的；没有时，每周场次没写价格的才用同一个每周场次上一次填的（写了价格以后，以前没金额的场次不补）
+-- 每人多少钱：这一场的；没有时，每周场次没写价格的才用同一个每周场次上一次填的（写了价格以后，以前没金额的场次不补）。
+-- 不属于每周场次的单独一场（schedule_id 空）只看自己的
 create or replace function public.session_fee(p_session uuid)
 returns numeric language sql stable security definer set search_path = '' as $$
   select coalesce(gs.fee, case when sc.price is null then
            (select p.fee from public.group_sessions p where p.schedule_id = gs.schedule_id and p.starts_at < gs.starts_at
                                                       and p.fee is not null order by p.starts_at desc limit 1) end)
-  from public.group_sessions gs join public.group_schedules sc on sc.id = gs.schedule_id
+  from public.group_sessions gs left join public.group_schedules sc on sc.id = gs.schedule_id
   where gs.id = p_session
 $$;
 
@@ -358,6 +359,39 @@ begin
     'guests_allowed', case when organizer then (select guests_allowed from public.play_groups where id = p_group) end,
     'guest_limit', case when organizer then (select guest_limit from public.play_groups where id = p_group) end,
     'guest_code', case when organizer then (select guest_code from public.play_groups where id = p_group) end);
+end
+$$;
+
+-- 访客报名页：每一场多 "price"。其余同上一版
+create or replace function public.guest_group_page(p_code text, p_tokens text[] default '{}')
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare
+  g public.play_groups;
+  mine text[] := (select coalesce(array_agg(public.guest_token_hash(t)), '{}') from unnest(p_tokens[1:50]) t);
+begin
+  select * into g from public.play_groups where guest_code = p_code and guests_allowed;
+  if g.id is null then return null; end if;
+  perform public.ensure_sessions(g.id);
+  return jsonb_build_object(
+    'group_id', g.id, 'name', g.name, 'summary', g.summary,
+    'organizer', (select nickname from public.profiles where id = g.owner_id),
+    'venue', (select jsonb_build_object('name', v.name, 'city', v.city) from public.venues v where v.id = g.venue_id),
+    'sessions', coalesce((select jsonb_agg(jsonb_build_object(
+        'id', s.id, 'starts_at', s.starts_at, 'ends_at', s.ends_at, 'capacity', s.capacity, 'cancelled', s.cancelled_at is not null,
+        'venue', v.name, 'city', v.city, 'tz', v.time_zone_id, 'price', public.session_fee(s.id),
+        'guest_spots', public.guest_cap(g.guest_limit, s.capacity) - (select count(*) from public.session_signups su
+                                                                       where su.session_id = s.id and su.user_id is null),
+        'players', (select coalesce(jsonb_agg(jsonb_build_object(
+                                      'name', case when su.user_id is null then su.guest_name
+                                                   when p.public_initials then public.initials(p.nickname) else p.nickname end,
+                                      'guest', su.user_id is null, 'waitlisted', su.waitlisted,
+                                      'me', coalesce(su.guest_token_hash = any(mine) or su.guest_mail_token_hash = any(mine), false))
+                                    order by su.waitlisted, su.signed_up_at), '[]')
+                    from public.session_signups su left join public.profiles p on p.id = su.user_id
+                    where su.session_id = s.id and (su.user_id is null or p.id is not null)))
+        order by s.starts_at)
+      from public.group_sessions s join public.venues v on v.id = coalesce(s.venue_id, g.venue_id)
+      where s.group_id = g.id and s.ends_at > now() - interval '1 day' and s.starts_at < now() + interval '14 days'), '[]'));
 end
 $$;
 

@@ -1,5 +1,6 @@
 // 当晚端到端：组织者建群 → 一场开始了 30 分钟（直接写库）→ 球群页点“排场” → 全到了 → 开始 → 打完了（撤销条）
 // → 用今晚的名单开一场比赛、输比分 → 收款填金额、标已付 → 球员在球群页“付给 … · $12”点“我付了” → 不登录的人看看板
+// → 组织者的收款记录：这一场已付 2/3，Raj 还欠着，标成已付
 // 需要本地 Supabase 和已启动的网站；场次和报名直接写进库（DB_URL）
 import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
@@ -28,8 +29,10 @@ await olivia.getByRole('combobox', { name: 'Choose venue' }).fill('Los Angeles B
 await olivia.getByRole('option', { name: /Los Angeles Badminton Club/ }).click();
 await olivia.getByLabel('Day of the week').selectOption(tomorrow);
 await olivia.getByLabel('Spots').fill('8');
+await olivia.getByLabel('Price per person (optional)').fill('10');
 await olivia.getByRole('button', { name: 'Create group' }).click();
 await olivia.getByRole('heading', { name: 'Wed doubles' }).waitFor();
+await olivia.getByText('$10 each').first().waitFor();
 const groupId = new URL(olivia.url()).pathname.split('/')[2];
 const code = (await olivia.locator('p.font-mono').innerText()).trim();
 
@@ -106,6 +109,17 @@ await olivia.reload();
 await olivia.getByText('Paid 2', { exact: true }).waitFor();
 await olivia.getByText('Paid 2', { exact: true }).click();
 await olivia.getByText('Marked by them').waitFor();
+
+// 收款记录：这一场已付 2/3，Raj 还欠 $12，一次标成已付
+await olivia.goto(`${base}/groups/${groupId}/`);
+await olivia.getByRole('link', { name: 'Payments', exact: true }).click();
+await olivia.getByRole('heading', { name: 'Still owed' }).waitFor();
+await olivia.getByText('Paid 2/3').waitFor();
+await olivia.getByText('1 session · $12').waitFor();
+await olivia.getByRole('button', { name: 'Mark paid' }).click();
+await olivia.getByText('Everyone has paid.').waitFor();
+await olivia.getByText('Paid 3/3').click();
+await olivia.getByText('Paid 3', { exact: true }).waitFor();
 
 console.log('ok: ran the courts, finished a game, played a match, set the fee and collected payments');
 await browser.close();

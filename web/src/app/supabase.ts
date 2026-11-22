@@ -381,7 +381,8 @@ export interface Thread {
 // 球群
 
 /** venue：在球群的哪个球馆（id），null = 主球馆 */
-export type Schedule = { weekday: number; start: number; end: number; capacity: number; fee: string | null; venue?: string | null };
+/** price：每人每场，0 = 免费，null = 没写 */
+export type Schedule = { weekday: number; start: number; end: number; capacity: number; fee: string | null; venue?: string | null; price?: number | null };
 
 export type GroupCourt = { id: string; name: string; city: string; tz: string | null };
 
@@ -410,6 +411,8 @@ export interface GroupSession {
   starts_at: string;
   ends_at: string;
   capacity: number;
+  /** 这一场每人多少钱：0 = 免费，null = 没写 */
+  price?: number | null;
   /** 这一场在哪个球馆（id） */
   venue: string;
   cancelled: boolean;
@@ -445,6 +448,8 @@ export interface GuestSession {
   venue: string;
   city: string;
   tz: string | null;
+  /** 每人多少钱：0 = 免费，null = 没写 */
+  price?: number | null;
   /** 还能报几个访客 */
   guest_spots: number;
   /** me：这台设备上报的 */
