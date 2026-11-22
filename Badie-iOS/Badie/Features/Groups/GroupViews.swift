@@ -128,6 +128,8 @@ struct GroupDetailView: View {
     @State private var sessionDetail: GroupSession?
     /// 当天的场次（排场、看排场、付钱），见 TonightViews.swift
     @State private var tonight: [GroupTonight] = []
+    /// 我在这个群还没付的（写了金额的场次），见 LedgerViews.swift
+    @State private var dues: [MyDue] = []
 
     private var group: PlayGroup? {
         _ = groupManager.revision
@@ -153,6 +155,9 @@ struct GroupDetailView: View {
             if let group {
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.Spacing.xl) {
+                        DuesCard(dues: dues, showsGroup: false) {
+                            Task { await loadTonight() }
+                        }
                         header(group)
                         if let me, group.isMember(me) {
                             sessionsSection(group)
@@ -235,8 +240,13 @@ struct GroupDetailView: View {
                 .presentationDragIndicator(.visible)
         }
         .task(id: groupManager.revision) {
-            if let list = try? await appState.backend.remoteGroupTonight(groupId) { tonight = list }
+            await loadTonight()
         }
+    }
+
+    private func loadTonight() async {
+        if let list = try? await appState.backend.remoteGroupTonight(groupId) { tonight = list }
+        if let list = try? await appState.backend.remoteMyDues(groupId) { dues = list }
     }
 
     // MARK: Header
@@ -286,6 +296,18 @@ struct GroupDetailView: View {
                         foreground: AppTheme.Colors.ink)
                 TagPill(text: String(localized: "群号 \(group.inviteCode)"), icon: "number", fill: AppTheme.Colors.surfaceMuted,
                         foreground: AppTheme.Colors.ink)
+                // 价格：各场一样就一个标签，不一样就写在每个每周场次后面（报名前就能看到）
+                if group.samePrice, let price = FeeText.price(group.schedules.first?.price) {
+                    TagPill(text: price, icon: "dollarsign.circle.fill", fill: AppTheme.Colors.mint)
+                }
+                if !group.samePrice {
+                    ForEach(group.schedules) { schedule in
+                        if let price = FeeText.price(schedule.price) {
+                            TagPill(text: "\(schedule.weekdayTitle) \(schedule.timeText) · \(price)", icon: "dollarsign.circle.fill",
+                                    fill: AppTheme.Colors.mint)
+                        }
+                    }
+                }
             }
             ForEach(group.feeLines, id: \.self) { line in
                 Label(line, systemImage: "banknote")
@@ -303,6 +325,15 @@ struct GroupDetailView: View {
                     }
                 } label: {
                     Label("球群群聊", systemImage: "bubble.left.and.bubble.right.fill")
+                }
+                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
+            }
+            // 组织者：收款记录（开过的每一场谁付了、谁还欠着）
+            if let me, group.isOrganizer(me) {
+                Button {
+                    router.open(.groupPayments(groupId: group.id))
+                } label: {
+                    Label("收款", systemImage: "dollarsign.circle.fill")
                 }
                 .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .medium))
             }
@@ -492,6 +523,7 @@ struct SessionRow: View {
                         HStack(spacing: 6) {
                             Text("已报 \(session.signedUp.count)/\(session.capacity)")
                             if !session.waitlist.isEmpty { Text("· 候补 \(session.waitlist.count)") }
+                            if let price = FeeText.price(session.price) { Text(verbatim: "· \(price)") }
                         }
                         .font(AppTheme.Typography.footnote)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
@@ -816,6 +848,9 @@ struct CreateGroupView: View {
         if !isEditing && venue == nil { return String(localized: "选择固定的球馆") }
         if schedules.contains(where: { $0.endMinutes - $0.startMinutes < 60 }) { return String(localized: "每场至少 1 小时") }
         if schedules.contains(where: { $0.endMinutes - $0.startMinutes > 720 }) { return String(localized: "每场最长 12 小时") }
+        if schedules.contains(where: { $0.price.map { !GroupSchedule.priceRange.contains($0) } ?? false }) {
+            return String(localized: "价格最多 $1000。")
+        }
         return nil
     }
 
@@ -855,7 +890,8 @@ struct CreateGroupView: View {
                             Button {
                                 var next = schedules.last ?? schedules[0]
                                 next = GroupSchedule(id: UUID().uuidString, weekday: next.weekday % 7 + 1, startMinutes: next.startMinutes,
-                                                     endMinutes: next.endMinutes, capacity: next.capacity, feeNote: nil)
+                                                     endMinutes: next.endMinutes, capacity: next.capacity, feeNote: nil,
+                                                     price: next.price)
                                 schedules.append(next)
                             } label: {
                                 Label("再加一个场次", systemImage: "plus.circle.fill")
@@ -1071,6 +1107,7 @@ struct CreateGroupView: View {
                     .font(AppTheme.Typography.bodyBold)
                     .foregroundStyle(AppTheme.Colors.ink)
             }
+            PriceField(price: schedule.price)
             BrutalTextField(label: String(localized: "费用说明（选填）"), placeholder: "",
                             text: Binding(get: { schedule.wrappedValue.feeNote ?? "" },
                                           set: { schedule.wrappedValue.feeNote = $0.isEmpty ? nil : $0 }),
@@ -1247,5 +1284,29 @@ enum GroupRules {
         }
         points.append(String(localized: "加入后就能报名每周的场次。"))
         return points + Self.points
+    }
+}
+
+/// 每周场次的价格：空 = 不写，0 = 免费。输入的字自己记着，能读成数字时才写回去（输到“12.”时不跳）
+private struct PriceField: View {
+    @Binding var price: Double?
+    @State private var text: String
+
+    init(price: Binding<Double?>) {
+        _price = price
+        _text = State(initialValue: price.wrappedValue.map(FeeText.plain) ?? "")
+    }
+
+    var body: some View {
+        BrutalTextField(label: String(localized: "每人价格（选填）"), placeholder: String(localized: "0 = 免费"), text: $text,
+                        keyboard: .decimalPad)
+            .onChange(of: text) { _, value in
+                let clean = value.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ",", with: ".")
+                if clean.isEmpty {
+                    price = nil
+                } else if let number = Double(clean) {
+                    price = (number * 100).rounded() / 100
+                }
+            }
     }
 }

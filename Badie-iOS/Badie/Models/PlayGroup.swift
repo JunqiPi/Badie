@@ -74,6 +74,9 @@ struct PlayGroup: Identifiable, Codable, Hashable {
         }
     }
 
+    /// 各场价格一样时的价格（都没写也算一样，是 nil）
+    var samePrice: Bool { Set(schedules.map(\.price)).count <= 1 }
+
     /// 收费说明：各场一样就只留一条，不一样就写明是哪一场
     var feeLines: [String] {
         let notes: [(GroupSchedule, String)] = schedules.compactMap { schedule in schedule.feeNote.map { (schedule, $0) } }
@@ -117,8 +120,11 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
     var feeNote: String?
     /// 在哪个球馆（群里的球馆之一）；nil = 主球馆
     var venueId: String? = nil
+    /// 每人每场多少钱：0 = 免费，nil = 没写。报名前就能看到，开场后按这个收
+    var price: Double? = nil
 
     static let feeNoteLimit = 120
+    static let priceRange: ClosedRange<Double> = 0...1000
 
     /// 这个场次实际在哪个球馆：不是群里的球馆（比如被删掉了）就回到主球馆
     func effectiveVenueId(in group: PlayGroup) -> String {
@@ -133,7 +139,7 @@ struct GroupSchedule: Identifiable, Codable, Hashable {
         !schedules.isEmpty && schedules.count <= PlayGroup.maxSchedules && schedules.allSatisfy {
             (60...720).contains($0.endMinutes - $0.startMinutes) && $0.endMinutes <= 24 * 60
                 && capacityRange(coached: coached).contains($0.capacity) && (1...7).contains($0.weekday)
-        } && schedules.allSatisfy { ($0.feeNote?.count ?? 0) <= feeNoteLimit }
+        } && schedules.allSatisfy { ($0.feeNote?.count ?? 0) <= feeNoteLimit && $0.price.map { priceRange.contains($0) } ?? true }
     }
 
     var weekdayTitle: String {
@@ -177,6 +183,8 @@ struct GroupSession: Identifiable, Codable, Hashable {
     var guests: [String: GroupGuest]? = nil
     /// 开场前 2 小时内退出的人（只有组织者拿得到）
     var lateCancels: [GroupLateCancel]? = nil
+    /// 这一场每人多少钱：0 = 免费，nil = 没写
+    var price: Double? = nil
 
     /// 开场前多久内退出算临时取消（与球局规则一致）
     static let lateCancellationWindow: TimeInterval = 2 * 3600

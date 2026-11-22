@@ -27,6 +27,8 @@ struct GamesView: View {
     @State private var weeklyStanding: WeeklyStanding?
     /// 今晚的排场、比赛（my_tonight）：有内容才显示
     @State private var tonight: [TonightItem] = []
+    /// 我还没付的（所有球群，写了金额的场次）：有才显示
+    @State private var dues: [MyDue] = []
 
     var body: some View {
         ScrollView {
@@ -47,6 +49,12 @@ struct GamesView: View {
                 if !tonight.isEmpty {
                     TonightCard(items: tonight)
                         .padding(.horizontal, AppTheme.Spacing.screen)
+                }
+                if !dues.isEmpty {
+                    DuesCard(dues: dues) {
+                        Task { if let items = try? await appState.backend.remoteMyDues() { dues = items } }
+                    }
+                    .padding(.horizontal, AppTheme.Spacing.screen)
                 }
 
                 if let game = matchManager.nextGame {
@@ -108,6 +116,7 @@ struct GamesView: View {
         .task(id: router.selectedTab) {
             while router.selectedTab == .games && !Task.isCancelled {
                 if let items = try? await appState.backend.remoteMyTonight() { tonight = items }
+                if let items = try? await appState.backend.remoteMyDues() { dues = items }
                 try? await Task.sleep(nanoseconds: 30_000_000_000)
             }
         }

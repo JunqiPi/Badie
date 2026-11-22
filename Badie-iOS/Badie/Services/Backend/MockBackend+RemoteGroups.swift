@@ -13,6 +13,8 @@ extension MockBackend {
         let fee: String?
         /// 在哪个球馆；nil = 主球馆（旧服务器没有这一项）
         let venue: String?
+        /// 每人每场多少钱：0 = 免费，nil = 没写（旧服务器没有这一项）
+        let price: Double?
     }
 
     struct RemoteGroupSummary: Decodable {
@@ -72,6 +74,8 @@ extension MockBackend {
             let venue: String?
             /// 开场前 2 小时内退出的人（只有组织者拿得到；旧服务器没有这一项）
             let lateCancels: [LateCancel]?
+            /// 这一场每人多少钱（旧服务器没有这一项）
+            let price: Double?
 
             struct LateCancel: Decodable {
                 let nickname: String
@@ -222,7 +226,8 @@ extension MockBackend {
     private static func serverSchedules(_ schedules: [GroupSchedule]) -> [[String: Any]] {
         schedules.map { schedule in
             var item: [String: Any] = ["weekday": schedule.weekday - 1, "start": schedule.startMinutes, "end": schedule.endMinutes,
-                                       "capacity": schedule.capacity, "fee": schedule.feeNote ?? ""]
+                                       "capacity": schedule.capacity, "fee": schedule.feeNote ?? "",
+                                       "price": schedule.price.map { $0 as Any } ?? NSNull()]
             if let venue = schedule.venueId { item["venue"] = venue }
             return item
         }
@@ -346,7 +351,8 @@ extension MockBackend {
                 slot: TimeSlot(date: session.startsAt, startTime: session.startsAt, endTime: session.endsAt),
                 capacity: session.capacity, signedUp: signedUp, waitlist: waitlist, isCancelled: session.cancelled,
                 venueId: session.venue ?? schedule?.effectiveVenueId(in: group), guests: guests.isEmpty ? nil : guests,
-                lateCancels: session.lateCancels?.map { GroupLateCancel(name: $0.nickname, guest: $0.guest) }
+                lateCancels: session.lateCancels?.map { GroupLateCancel(name: $0.nickname, guest: $0.guest) },
+                price: session.price
             )
         }
     }
@@ -385,7 +391,7 @@ extension MockBackend {
             schedules: schedules.enumerated().map { index, schedule in
                 GroupSchedule(id: "\(id)-\(index)", weekday: schedule.weekday + 1, startMinutes: schedule.start, endMinutes: schedule.end,
                               capacity: schedule.capacity, feeNote: schedule.fee?.isEmpty == false ? schedule.fee : nil,
-                              venueId: schedule.venue)
+                              venueId: schedule.venue, price: schedule.price)
             },
             joinPolicy: joinPolicy == "approval" ? .approval : .open,
             inviteCode: inviteCode ?? existing?.inviteCode ?? "", createdAt: existing?.createdAt ?? Date(),

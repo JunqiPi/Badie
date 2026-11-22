@@ -154,6 +154,74 @@ struct GroupTonight: Decodable, Equatable, Identifiable {
     let unpaid: Int?
 }
 
+/// 我还没付的一场（my_dues）：开过的、写了金额的场次，60 天内
+struct MyDue: Decodable, Equatable, Identifiable {
+    let sessionId: String
+    let groupId: String
+    let group: String
+    let startsAt: Date
+    let endsAt: Date
+    let tz: String?
+    let amount: Double
+    let to: String
+    let toId: String
+    let handles: PaymentHandles?
+
+    var id: String { sessionId }
+}
+
+/// 收款记录（group_ledger，只有组织者）：开过的场次（新的在前），第一页还有谁还欠着
+struct GroupLedger: Decodable, Equatable {
+    struct Session: Decodable, Equatable, Identifiable {
+        let id: String
+        let startsAt: Date
+        let endsAt: Date
+        let venue: String
+        let tz: String?
+        let amount: Double?
+        let payee: String?
+        /// 要付几人、付了几人
+        let owes: Int
+        let paid: Int
+    }
+
+    /// 谁还欠着：注册用户按人、访客按名字合起来；signups 是那几行报名
+    struct Owed: Decodable, Equatable, Identifiable {
+        let userId: String?
+        let name: String
+        let guest: Bool
+        let sessions: Int
+        let amount: Double
+        let signups: [String]
+
+        var id: String { userId ?? "guest:" + name.lowercased() }
+
+        enum CodingKeys: String, CodingKey {
+            case userId = "id"
+            case name, guest, sessions, amount, signups
+        }
+    }
+
+    /// 一页几场；少于这个数就是翻到头了
+    static let pageSize = 20
+
+    let sessions: [Session]
+    let owed: [Owed]?
+}
+
+/// 导出成表格的一行（group_ledger_rows）
+struct LedgerRow: Decodable, Equatable {
+    let startsAt: Date
+    let tz: String?
+    let venue: String
+    let name: String
+    let guest: Bool
+    let amount: Double?
+    let owes: Bool
+    let paidAt: Date?
+    let paidSelf: Bool
+}
+
 /// 球局页最上面的“今晚”（my_tonight）
 struct TonightItem: Decodable, Equatable, Identifiable {
     /// night | match
@@ -466,6 +534,12 @@ enum FeeText {
     /// $12、$12.50（只有美元）
     static func text(_ amount: Double) -> String {
         "$" + plain(amount)
+    }
+
+    /// 每场的价格：0 写“免费”，nil 不写
+    static func price(_ price: Double?) -> String? {
+        guard let price else { return nil }
+        return price == 0 ? String(localized: "免费") : String(localized: "每人 \(text(price))")
     }
 
     /// 12、12.50：链接里用

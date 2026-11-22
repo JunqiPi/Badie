@@ -34,6 +34,43 @@ final class ClubNightTests: XCTestCase {
         XCTAssertEqual(state.next.first?.count, 4)
     }
 
+    /// 收款记录、我还没付的：金额是 numeric（10.00）、访客没有用户 id
+    func testDecodesLedgerAndDues() throws {
+        let ledgerJSON = """
+        {"sessions":[{"id":"s-1","starts_at":"2026-11-18T19:00:00-08:00","ends_at":"2026-11-18T22:00:00-08:00","venue":"LABC",
+                      "tz":"America/Los_Angeles","amount":12.50,"payee":"Kevin","owes":12,"paid":12},
+                     {"id":"s-2","starts_at":"2026-11-11T19:00:00-08:00","ends_at":"2026-11-11T22:00:00-08:00","venue":"LABC",
+                      "tz":"America/Los_Angeles","amount":null,"payee":"Kevin","owes":0,"paid":0}],
+         "owed":[{"id":"u-2","name":"Amy","guest":false,"sessions":2,"amount":25.00,"signups":["a","b"]},
+                 {"id":null,"name":"Tony","guest":true,"sessions":1,"amount":12.50,"signups":["c"]}]}
+        """
+        let ledger = try RemoteJSON.decode(GroupLedger.self, from: Data(ledgerJSON.utf8))
+        XCTAssertEqual(ledger.sessions.first?.amount, 12.5)
+        XCTAssertNil(ledger.sessions.last?.amount)
+        XCTAssertEqual(ledger.owed?.first?.userId, "u-2")
+        XCTAssertEqual(ledger.owed?.last?.id, "guest:tony")
+        XCTAssertEqual(ledger.owed?.last?.signups, ["c"])
+        // 往前翻的页没有“谁还欠着”
+        XCTAssertNil(try RemoteJSON.decode(GroupLedger.self, from: Data(#"{"sessions":[],"owed":null}"#.utf8)).owed)
+
+        let duesJSON = """
+        [{"session_id":"s-1","group_id":"g-1","group":"LABC 周三","starts_at":"2026-11-18T19:00:00-08:00",
+          "ends_at":"2026-11-18T22:00:00-08:00","tz":"America/Los_Angeles","amount":12.00,"to":"Kevin","to_id":"u-1",
+          "handles":{"venmo":"kevin-w","zelle":"kevin@example.com"}}]
+        """
+        let dues = try RemoteJSON.decode([MyDue].self, from: Data(duesJSON.utf8))
+        XCTAssertEqual(dues.first?.amount, 12)
+        XCTAssertEqual(dues.first?.handles?.venmo, "kevin-w")
+    }
+
+    func testPriceText() {
+        XCTAssertNil(FeeText.price(nil))
+        XCTAssertEqual(FeeText.price(0), String(localized: "免费"))
+        XCTAssertEqual(FeeText.plain(12.5), "12.50")
+        XCTAssertTrue(GroupSchedule.areValid([GroupSchedule(id: "a", weekday: 4, startMinutes: 1140, endMinutes: 1320, capacity: 12, price: 0)]))
+        XCTAssertFalse(GroupSchedule.areValid([GroupSchedule(id: "a", weekday: 4, startMinutes: 1140, endMinutes: 1320, capacity: 12, price: 1001)]))
+    }
+
     func testNoPermissionIsNull() throws {
         XCTAssertNil(try RemoteJSON.decode(NightState?.self, from: Data("null".utf8)))
     }

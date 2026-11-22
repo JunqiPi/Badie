@@ -27,6 +27,8 @@ private struct SwapTarget: Identifiable {
 struct NightView: View {
     let sessionId: String
     var opensPay = false
+    /// 从收款记录点进来的某一场：只有收款，没有排场和比赛
+    var payOnly = false
 
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: Router
@@ -146,12 +148,13 @@ struct NightView: View {
     private var header: some View {
         ZStack {
             VStack(spacing: 0) {
-                Text("当晚")
+                Text(payOnly ? String(localized: "收款") : String(localized: "当晚"))
                     .font(AppTheme.Typography.headline)
                     .foregroundStyle(AppTheme.Colors.ink)
                     .accessibilityAddTraits(.isHeader)
                 if let state {
-                    Text(verbatim: subtitle(state))
+                    Text(verbatim: payOnly ? TimeSlot(date: state.startsAt, startTime: state.startsAt, endTime: state.endsAt).formattedFull
+                                           : subtitle(state))
                         .font(AppTheme.Typography.caption)
                         .foregroundStyle(AppTheme.Colors.inkSecondary)
                         .lineLimit(1)
@@ -161,7 +164,7 @@ struct NightView: View {
             HStack {
                 IconButton(systemName: "chevron.left", accessibilityLabel: String(localized: "返回")) { dismiss() }
                 Spacer()
-                if let state, state.open {
+                if let state, state.open, !payOnly {
                     IconButton(systemName: "slider.horizontal.3", accessibilityLabel: String(localized: "排场设置")) { showsSettings = true }
                 }
             }
@@ -183,7 +186,9 @@ struct NightView: View {
     @ViewBuilder
     private func content(_ state: NightState) -> some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            SegmentedSticker(options: segments(state), selection: $segment, title: { $0.title })
+            if !payOnly {
+                SegmentedSticker(options: segments(state), selection: $segment, title: { $0.title })
+            }
             staleLine
         }
         .padding(.horizontal, AppTheme.Spacing.screen)

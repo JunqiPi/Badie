@@ -12,6 +12,10 @@ struct PaySheet: View {
     let pay: GroupTonight.Pay
     /// 打开时是不是已付
     let paid: Bool
+    /// 一次付几场（“你还没付”卡）：其余几场，点“我付了”时一起标
+    var otherSessionIds: [String] = []
+    /// 一次付几场时的日期（“11月11日, 11月18日”），写在备注和标题下面
+    var dates: String? = nil
     let onPaidChange: (Bool) -> Void
 
     @EnvironmentObject private var appState: AppState
@@ -25,7 +29,8 @@ struct PaySheet: View {
 
     /// 付款备注：Badie · 周三 7 PM · 球群名
     private var note: String {
-        "Badie · \(startsAt.formatted(.dateTime.weekday(.abbreviated).hour())) · \(groupName)"
+        if let dates { return "Badie · \(groupName) · \(dates)" }
+        return "Badie · \(startsAt.formatted(.dateTime.weekday(.abbreviated).hour())) · \(groupName)"
     }
 
     var body: some View {
@@ -104,6 +109,7 @@ struct PaySheet: View {
     }
 
     private var subtitle: String {
+        if let dates { return groupName.isEmpty ? dates : "\(groupName) · \(dates)" }
         let slot = TimeSlot(date: startsAt, startTime: startsAt, endTime: endsAt)
         return groupName.isEmpty ? slot.formattedFull : "\(slot.formattedFull) · \(groupName)"
     }
@@ -164,7 +170,9 @@ struct PaySheet: View {
         Task {
             defer { saving = false }
             do {
-                try await appState.backend.remoteIPaid(sessionId, paid: paid)
+                for id in [sessionId] + (paid ? otherSessionIds : []) {
+                    try await appState.backend.remoteIPaid(id, paid: paid)
+                }
                 isPaid = paid
                 onPaidChange(paid)
                 if paid {

@@ -432,7 +432,7 @@ extension MockBackend {
                 let waitlist = Array(bots.dropFirst(schedule.capacity))
                 db.groupSessions[id] = GroupSession(id: id, groupId: group.id, scheduleId: schedule.id, slot: slot,
                                                     capacity: schedule.capacity, signedUp: signed, waitlist: waitlist,
-                                                    venueId: schedule.effectiveVenueId(in: group))
+                                                    venueId: schedule.effectiveVenueId(in: group), price: schedule.price)
             }
         }
     }

@@ -107,6 +107,35 @@ extension MockBackend {
         try await requireRemote().call("i_paid", ["p_session": sessionId, "p_paid": paid])
     }
 
+    // MARK: 我还没付的、收款记录
+
+    /// groupId 为 nil 是所有球群
+    func remoteMyDues(_ groupId: String? = nil) async throws -> [MyDue] {
+        guard let remote else { return [] }
+        return try await remote.rpc("my_dues", groupId.map { ["p_group": $0] } ?? [:], as: [MyDue].self)
+    }
+
+    /// before 为 nil 是第一页（带“谁还欠着”）；往前翻传上一页最后一场的开始时间
+    func remoteGroupLedger(_ groupId: String, before: Date? = nil) async throws -> GroupLedger {
+        var args: [String: Any] = ["p_group": groupId, "p_limit": GroupLedger.pageSize]
+        if let before {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            args["p_before"] = formatter.string(from: before)
+        }
+        return try await requireRemote().rpc("group_ledger", args, as: GroupLedger.self)
+    }
+
+    func remoteGroupLedgerRows(_ groupId: String) async throws -> [LedgerRow] {
+        try await requireRemote().rpc("group_ledger_rows", ["p_group": groupId], as: [LedgerRow].self)
+    }
+
+    /// 一次标几行已付（收款记录里“标成已付”），返回改了几行
+    @discardableResult
+    func remoteMarkSignupsPaid(_ signupIds: [String], paid: Bool) async throws -> Int {
+        try await requireRemote().rpc("mark_signups_paid", ["p_signups": signupIds, "p_paid": paid], as: Int.self)
+    }
+
     func remoteMyPaymentHandles() async throws -> PaymentHandles {
         guard let remote else { return PaymentHandles() }
         return try await remote.rpc("my_payment_handles", as: PaymentHandles.self)

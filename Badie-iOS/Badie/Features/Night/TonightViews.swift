@@ -28,15 +28,21 @@ struct TonightPlayerButton: View {
     /// 刚在付款半屏里点了“我付了”（等下次拉到新数据之前先这样显示）
     @State private var paidHere: Bool?
 
+    /// 写了金额、还没付的由球群页最上面的“你还没付”卡（DuesCard）收，场次行上只管没写金额的和已付的
+    static func paysHere(_ item: GroupTonight) -> Bool {
+        guard let pay = item.pay else { return false }
+        return pay.paid || (pay.amount ?? 0) <= 0
+    }
+
     /// 组织者、帮手有“排场”，不用换掉报名按钮
     static func replacesSignup(_ item: GroupTonight) -> Bool {
-        item.pay != nil || (item.board != nil && item.canRun != true)
+        paysHere(item) || (item.board != nil && item.canRun != true)
     }
 
     var body: some View {
-        if let pay = item.pay {
+        if let pay = item.pay, Self.paysHere(item) {
             Button(payTitle(pay)) { showsPay = true }
-                .buttonStyle(BrutalButtonStyle(kind: .secondary, size: .small, fullWidth: false))
+                .buttonStyle(BrutalButtonStyle(kind: (paidHere ?? pay.paid) ? .secondary : .primary, size: .small, fullWidth: false))
                 .sheet(isPresented: $showsPay) {
                     PaySheet(sessionId: item.id, groupName: groupManager.group(id: groupId)?.name ?? "",
                              startsAt: item.startsAt, endsAt: item.endsAt, pay: pay, paid: paidHere ?? pay.paid) { paid in

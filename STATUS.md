@@ -310,6 +310,15 @@
 - **还没做**：安卓（同样几样，照 iPhone 搬，这次没动 `Badie-Android/`）；比需求简单的地方见 `CLUB_NIGHT.md`
 - **上线前用户要做**：没有新的密钥。提交审核时 Notes 写一句“收款只是给出 Venmo / Cash App / PayPal 链接，钱不经过 App，是线下场地费，不走内购”（和打赏的说明分开）
 
+## 球群的价格和收款记录（2026-11-22，分支 `claude/wizardly-sagan-kqnhpv`，没推 main）
+
+用户试用当晚收款后说：看不到以前的场次和谁付了钱，付款按钮看不出能点，教练用不够。这是“第一步”（不碰钱）；第二步教练开 Stripe、报名就付钱，等这一步上线后再做。细节见 `CLUB_NIGHT.md` 的“价格和收款记录”。
+
+- 数据库：迁移 `20261231000000_group_ledger.sql`，测试 `group_ledger.test.sql`（本机全部 48 个测试文件通过）
+- 网站：建群填每人价格（0 = 免费）、球群页 / 访客报名页 / 每一场写价格、“你还没付”卡（球群页和球局页）、组织者的收款记录 `/groups/<id>/payments/`（还欠着、开过的场次、导出 CSV）和某一场 `/groups/<id>/payments/<场次>/`。`night.e2e.mjs` 加了这几步，本机通过
+- iPhone：同样几样（`Features/Night/LedgerViews.swift`、编辑球群的价格、当晚页的 `payOnly`），版本号没改。只能在 CI 上编译
+- **还没做**：安卓（照 iPhone 搬）；金额只有美元
+
 ## 搜索：对准的词和落地页（2026-11-19，网站，已推 main）
 
 - 主要对准两个词：**badminton partner / group app**、**badminton tournament maker**。“badminton courts” 这种通用词结果是场地尺寸文章和 Google 地图，不作为目标；球馆目录对准“城市 + badminton courts”。

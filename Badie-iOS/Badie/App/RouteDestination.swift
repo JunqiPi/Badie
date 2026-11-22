@@ -76,6 +76,10 @@ struct RouteDestination: View {
             MyMatchesView()
         case .paymentHandles:
             PaymentHandlesView()
+        case .groupPayments(let groupId):
+            GroupLedgerView(groupId: groupId)
+        case .sessionPayments(let sessionId):
+            NightView(sessionId: sessionId, opensPay: true, payOnly: true)
         }
     }
 }

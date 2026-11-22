@@ -86,6 +86,9 @@ enum Route: Hashable {
     /// 新建比赛（从“当晚”开时带上那一场）、比赛页
     case createMatch(sessionId: String?)
     case match(id: String)
+    /// 球群的收款记录（组织者），和其中某一场的收款
+    case groupPayments(groupId: String)
+    case sessionPayments(sessionId: String)
     /// 我的 → 比赛、收款方式
     case myMatches
     case paymentHandles
