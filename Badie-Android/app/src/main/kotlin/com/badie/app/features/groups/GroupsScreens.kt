@@ -83,6 +83,10 @@ import com.badie.app.l10n.tr
 import com.badie.app.models.Coordinate
 import com.badie.app.models.FeeText
 import com.badie.app.models.MyDue
+import com.badie.app.models.GroupTonight
+import com.badie.app.features.night.TonightPastRow
+import com.badie.app.features.night.TonightPlayerButton
+import com.badie.app.features.night.TonightRunButton
 import com.badie.app.models.DistanceFormatter
 import com.badie.app.models.Gender
 import com.badie.app.models.GroupActivity
@@ -231,6 +235,14 @@ fun GroupScreen(id: String) {
         } catch (_: RemoteError) {
         }
     }
+    // 当天的场次（排场、看排场、付钱），见 features/night/NightWidgets.kt
+    var tonight by remember(id) { mutableStateOf(emptyList<GroupTonight>()) }
+    LaunchedEffect(id, groupManager.revision) {
+        try {
+            tonight = env.night.groupTonight(id)
+        } catch (_: RemoteError) {
+        }
+    }
     val disbanded = tr("球群已解散，成员会收到通知")
     val left = tr("已退出，已报名的场次也一并取消")
 
@@ -251,12 +263,13 @@ fun GroupScreen(id: String) {
                         scope.launch {
                             try {
                                 dues = env.payments.myDues(id)
+                                tonight = env.night.groupTonight(id)
                             } catch (_: RemoteError) {
                             }
                         }
                     }
                     GroupHeader(group)
-                    if (me != null && group.isMember(me)) SessionsSection(group) { sessionDetail = it } else JoinCard(group)
+                    if (me != null && group.isMember(me)) SessionsSection(group, tonight) { sessionDetail = it } else JoinCard(group)
                     MembersSection(group)
                     if (me != null && group.isOrganizer(me) && group.pendingIds.isNotEmpty()) PendingSection(group)
                     if (me != null && group.isMember(me) && group.ownerId != me) {
@@ -417,7 +430,7 @@ private fun JoinCard(group: PlayGroup) {
 }
 
 @Composable
-private fun SessionsSection(group: PlayGroup, onOpen: (String) -> Unit) {
+private fun SessionsSection(group: PlayGroup, tonight: List<GroupTonight>, onOpen: (String) -> Unit) {
     val env = LocalEnv.current
     val sessions = env.groupManager.sessions(group.id)
     val me = env.appState.currentUser?.id ?: ""
@@ -427,7 +440,9 @@ private fun SessionsSection(group: PlayGroup, onOpen: (String) -> Unit) {
             RulesButton(tr("报名和候补"), GroupRules.points())
         }
         if (sessions.isEmpty()) Text(tr("未来两周没有场次"), style = AppTheme.Typography.footnote, color = AppTheme.colors.inkSecondary)
-        sessions.forEach { session -> SessionRow(session, me) { onOpen(session.id) } }
+        // 已经结束、还在收款的场次
+        tonight.filter { item -> sessions.none { it.id == item.id } }.forEach { item -> TonightPastRow(item, group.name) }
+        sessions.forEach { session -> SessionRow(session, me, tonight.firstOrNull { it.id == session.id }) { onOpen(session.id) } }
     }
 }
 
@@ -482,7 +497,7 @@ private fun PendingSection(group: PlayGroup) {
 // MARK: - 场次行
 
 @Composable
-fun SessionRow(session: GroupSession, userId: String, onOpen: () -> Unit) {
+fun SessionRow(session: GroupSession, userId: String, tonight: GroupTonight? = null, onOpen: () -> Unit) {
     val env = LocalEnv.current
     val colors = AppTheme.colors
     val haptics = rememberHaptics()
@@ -524,10 +539,15 @@ fun SessionRow(session: GroupSession, userId: String, onOpen: () -> Unit) {
         }
     }
 
-    Row(
+    // 当天的场次白底加阴影，多一个排场 / 看排场 / 付钱的按钮；报了名的其他场次淡柠檬绿
+    val fill = if (tonight == null && status == GroupSession.Status.SignedUp) colors.lime.copy(alpha = 0.35f) else colors.surface
+    Column(
         Modifier.fillMaxWidth()
-            .sticker(if (status == GroupSession.Status.SignedUp) colors.lime.copy(alpha = 0.35f) else colors.surface, radius = AppTheme.Radius.md, shadow = AppTheme.Elevation.none)
+            .sticker(fill, radius = AppTheme.Radius.md, shadow = if (tonight != null) AppTheme.Elevation.card else AppTheme.Elevation.none)
             .padding(AppTheme.Spacing.md),
+        verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
+    ) {
+    Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md),
     ) {
@@ -546,12 +566,19 @@ fun SessionRow(session: GroupSession, userId: String, onOpen: () -> Unit) {
             }
             ProgressBar(session.signedUp.size.toFloat() / maxOf(1, session.capacity), Modifier.widthIn(max = 160.dp))
         }
-        when (status) {
-            GroupSession.Status.SignedUp -> BrutalButton(tr("已报名 ✓"), ::cancel, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false)
-            is GroupSession.Status.Waitlisted ->
-                BrutalButton(tr("候补第 %lld", status.position), ::cancel, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false)
-            GroupSession.Status.None -> BrutalButton(if (session.isFull) tr("候补") else tr("报名"), ::signUp, size = ButtonSize.Small, fullWidth = false)
+        // 开场后：看排场、付钱换掉报名按钮（一行只有一个按钮）
+        if (tonight != null && tonight.replacesSignup) {
+            TonightPlayerButton(tonight, env.groupManager.group(session.groupId)?.name.orEmpty())
+        } else {
+            when (status) {
+                GroupSession.Status.SignedUp -> BrutalButton(tr("已报名 ✓"), ::cancel, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false)
+                is GroupSession.Status.Waitlisted ->
+                    BrutalButton(tr("候补第 %lld", status.position), ::cancel, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false)
+                GroupSession.Status.None -> BrutalButton(if (session.isFull) tr("候补") else tr("报名"), ::signUp, size = ButtonSize.Small, fullWidth = false)
+            }
         }
+    }
+    tonight?.let { TonightRunButton(it) }
     }
 }
 

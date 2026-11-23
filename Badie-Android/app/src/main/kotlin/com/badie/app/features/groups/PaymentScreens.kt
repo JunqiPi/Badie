@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -63,6 +64,7 @@ import com.badie.app.design.pressable
 import com.badie.app.design.rememberHaptics
 import com.badie.app.design.rounded
 import com.badie.app.design.sticker
+import com.badie.app.features.night.showClubError
 import com.badie.app.features.social.copyText
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
@@ -160,14 +162,56 @@ fun DuesCard(dues: List<MyDue>, modifier: Modifier = Modifier, showsGroup: Boole
 @Composable
 private fun PaySheet(pile: Pile, onPaid: () -> Unit) {
     val env = LocalEnv.current
+    PayToContent(
+        to = pile.first.to, subtitle = "${pile.first.group} · ${pile.dates}", amount = pile.total,
+        handles = pile.first.handles ?: PaymentHandles(), note = "Badie · ${pile.first.group} · ${pile.dates}",
+        paid = false, paidSelf = false,
+        onMark = { paid -> pile.dues.forEach { env.payments.iPaid(it.sessionId, paid) } },
+        onPaidChange = { if (it) onPaid() },
+    )
+}
+
+/**
+ * 付款半屏的内容（iPhone 的 PaySheet）：付给谁、金额、各个 App 的按钮、Zelle 复制，底部“我付了”；
+ * 已付时写“已付”，自己标的可以“改回没付”。“你还没付”卡（几场一起付）和球群页场次行上的“付给…”（没写金额的一场）共用
+ */
+@Composable
+internal fun PayToContent(
+    to: String,
+    subtitle: String,
+    amount: Double?,
+    handles: PaymentHandles,
+    note: String,
+    paid: Boolean,
+    paidSelf: Boolean,
+    onMark: suspend (Boolean) -> Unit,
+    onPaidChange: (Boolean) -> Unit,
+) {
+    val env = LocalEnv.current
     val colors = AppTheme.colors
     val context = LocalContext.current
     val haptics = rememberHaptics()
     val scope = rememberCoroutineScope()
     var saving by remember { mutableStateOf(false) }
-    val handles = pile.first.handles ?: PaymentHandles()
-    val note = "Badie · ${pile.first.group} · ${pile.dates}"
+    var isPaid by remember { mutableStateOf<Boolean?>(null) }
+    val paidNow = isPaid ?: paid
     val copied = tr("已复制")
+
+    fun mark(value: Boolean) {
+        saving = true
+        scope.launch {
+            try {
+                onMark(value)
+                isPaid = value
+                if (value) haptics.success()
+                onPaidChange(value)
+            } catch (error: RemoteError) {
+                env.appState.showClubError(error)
+            }
+            saving = false
+        }
+    }
+
     Column(
         Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen).padding(bottom = AppTheme.Spacing.lg)
             .navigationBarsPadding(),
@@ -175,14 +219,14 @@ private fun PaySheet(pile: Pile, onPaid: () -> Unit) {
     ) {
         Row(Modifier.padding(top = AppTheme.Spacing.lg), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.md)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs)) {
-                Text(tr("付给 %@", pile.first.to), style = AppTheme.Typography.title2, color = colors.ink, modifier = Modifier.semantics { heading() })
-                Text("${pile.first.group} · ${pile.dates}", style = AppTheme.Typography.footnote, color = colors.inkSecondary)
+                Text(tr("付给 %@", to), style = AppTheme.Typography.title2, color = colors.ink, modifier = Modifier.semantics { heading() })
+                Text(subtitle, style = AppTheme.Typography.footnote, color = colors.inkSecondary)
             }
-            Text(FeeText.text(pile.total), style = rounded(40, FontWeight.Black), color = colors.ink)
+            amount?.let { Text(FeeText.text(it), style = rounded(40, FontWeight.Black), color = colors.ink) }
         }
-        handles.venmo?.takeIf { it.isNotEmpty() }?.let { AppRow("Venmo", "@$it") { openLink(context, PayLinks.venmo(it, pile.total, note)) } }
-        handles.cashapp?.takeIf { it.isNotEmpty() }?.let { AppRow("Cash App", "$$it") { openLink(context, PayLinks.cashApp(it, pile.total)) } }
-        handles.paypal?.takeIf { it.isNotEmpty() }?.let { AppRow("PayPal", it) { openLink(context, PayLinks.payPal(it, pile.total)) } }
+        handles.venmo?.takeIf { it.isNotEmpty() }?.let { AppRow("Venmo", "@$it") { openLink(context, PayLinks.venmo(it, amount, note)) } }
+        handles.cashapp?.takeIf { it.isNotEmpty() }?.let { AppRow("Cash App", "$$it") { openLink(context, PayLinks.cashApp(it, amount)) } }
+        handles.paypal?.takeIf { it.isNotEmpty() }?.let { AppRow("PayPal", it) { openLink(context, PayLinks.payPal(it, amount)) } }
         handles.zelle?.takeIf { it.isNotEmpty() }?.let { zelle ->
             Row(
                 Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp).sticker(colors.surface, radius = 16.dp, shadow = AppTheme.Elevation.none)
@@ -204,23 +248,22 @@ private fun PaySheet(pile: Pile, onPaid: () -> Unit) {
             }
         }
         if (handles.isEmpty) {
-            Text(tr("%@ 还没填收款方式，当面付就行。", pile.first.to), style = AppTheme.Typography.subheadline, color = colors.inkSecondary)
+            Text(tr("%@ 还没填收款方式，当面付就行。", to), style = AppTheme.Typography.subheadline, color = colors.inkSecondary)
         } else {
             Text(tr("备注：%@", note), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
         }
-        BrutalButton(tr("我付了"), {
-            saving = true
-            scope.launch {
-                try {
-                    pile.dues.forEach { env.payments.iPaid(it.sessionId, true) }
-                    haptics.success()
-                    onPaid()
-                } catch (error: RemoteError) {
-                    env.appState.showError(error)
+        if (paidNow) {
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs)) {
+                Row(Modifier.defaultMinSize(minHeight = 56.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+                    Symbol(Sym.checkmarkCircleFill, size = 17, tint = colors.success)
+                    Text(tr("已付"), style = AppTheme.Typography.headline, color = colors.success)
                 }
-                saving = false
+                // 只能改回自己标的（组织者标的不动）
+                if (paidSelf || isPaid == true) TextAction(tr("改回没付"), { mark(false) }, enabled = !saving)
             }
-        }, enabled = !saving)
+        } else {
+            BrutalButton(tr("我付了"), { mark(true) }, enabled = !saving)
+        }
     }
 }
 
@@ -392,32 +435,59 @@ private fun LedgerSessionRow(session: GroupLedger.Session, onClick: () -> Unit) 
     }
 }
 
-// MARK: - 某一场的收款（收款记录点进来；和 iPhone 当晚页的“收款”一样）
+// MARK: - 某一场的收款（收款记录点进来；和当晚页的“收款”分段是同一块 SessionPayPanel）
 
 @Composable
 fun SessionPaymentsScreen(sessionId: String) {
     val env = LocalEnv.current
     val colors = AppTheme.colors
-    val scope = rememberCoroutineScope()
     var times by remember(sessionId) { mutableStateOf<SessionTimes?>(null) }
-    var pay by remember(sessionId) { mutableStateOf<NightPay?>(null) }
     var loaded by remember(sessionId) { mutableStateOf(false) }
+
+    LaunchedEffect(sessionId) {
+        try {
+            times = env.payments.sessionTimes(sessionId)
+        } catch (_: RemoteError) {
+        }
+        loaded = true
+    }
+
+    Column(Modifier.fillMaxSize()) {
+        ScreenHeader(tr("收款"), onBack = { env.router.pop() })
+        times?.let { Text(it.startsAt.slotText(it.endsAt, it.tz), style = AppTheme.Typography.caption, color = colors.inkSecondary, modifier = Modifier.align(Alignment.CenterHorizontally)) }
+        val session = times
+        when {
+            session != null && session.role == "organizer" -> SessionPayPanel(sessionId, session.startsAt)
+            loaded -> EmptyStateView(Sym.lockFill, tr("只有组织者能看。"))
+            else -> Box(Modifier.fillMaxWidth().padding(top = AppTheme.Spacing.xxl), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = colors.ink)
+            }
+        }
+    }
+}
+
+/**
+ * 某一场的收款（只有组织者）：每人多少钱、已付几人、没付的（点圆圈标已付）、已付和不用付（收起来），底部“提醒没付的”。
+ * 收款记录里的某一场和当晚页的“收款”分段都用它（iPhone 当晚页的 paySection）。[tick] 变了就重拉一次（当晚页每 10 秒）
+ */
+@Composable
+fun ColumnScope.SessionPayPanel(sessionId: String, startsAt: Instant, tick: Int = 0) {
+    val env = LocalEnv.current
+    val colors = AppTheme.colors
+    val scope = rememberCoroutineScope()
+    var pay by remember(sessionId) { mutableStateOf<NightPay?>(null) }
     var feeText by remember(sessionId) { mutableStateOf("") }
     var showsPaid by remember { mutableStateOf(false) }
     var showsExempt by remember { mutableStateOf(false) }
     var reload by remember { mutableStateOf(0) }
 
-    LaunchedEffect(sessionId, reload) {
+    LaunchedEffect(sessionId, reload, tick) {
         try {
-            if (times == null) times = env.payments.sessionTimes(sessionId)
-            if (times?.role == "organizer") {
-                val next = env.payments.nightPay(sessionId)
-                if (pay == null || pay?.amount != next.amount) feeText = next.amount?.let(FeeText::plain) ?: ""
-                pay = next
-            }
+            val next = env.payments.nightPay(sessionId)
+            if (pay == null || pay?.amount != next.amount) feeText = next.amount?.let(FeeText::plain) ?: ""
+            pay = next
         } catch (_: RemoteError) {
         }
-        loaded = true
     }
 
     fun act(work: suspend () -> Unit) {
@@ -425,124 +495,117 @@ fun SessionPaymentsScreen(sessionId: String) {
             try {
                 work()
             } catch (error: RemoteError) {
-                env.appState.showError(error)
+                env.appState.showClubError(error)
             }
             reload++
         }
     }
 
     val remindedToast = { count: Int -> L10n.tr("已提醒 %lld 人", count) }
-    Column(Modifier.fillMaxSize()) {
-        ScreenHeader(tr("收款"), onBack = { env.router.pop() })
-        times?.let { Text(it.startsAt.slotText(it.endsAt, it.tz), style = AppTheme.Typography.caption, color = colors.inkSecondary, modifier = Modifier.align(Alignment.CenterHorizontally)) }
-        val current = pay
-        val session = times
-        when {
-            current != null && session != null -> {
-                Column(
-                    Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen)
-                        .padding(top = AppTheme.Spacing.md, bottom = AppTheme.Spacing.xxl),
-                    verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.lg),
-                ) {
-                    // 每人多少钱（空 = 不写，0 = 这一场免费）
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
-                        Text(tr("每人"), style = AppTheme.Typography.headline, color = colors.ink)
-                        StickerTextField(
-                            feeText, { feeText = it }, "", Modifier.width(130.dp),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        )
-                        Spacer(Modifier.weight(1f))
-                        val clean = feeText.trim().replace(",", ".")
-                        BrutalButton(tr("保存"), {
-                            act { env.payments.setSessionFee(sessionId, clean.toDoubleOrNull()) }
-                        }, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false,
-                            enabled = feeText != (current.amount?.let(FeeText::plain) ?: "") && (clean.isEmpty() || clean.toDoubleOrNull() != null))
-                    }
-                    // 已付几人 / 要付几人
-                    Column(Modifier.fillMaxWidth().card(fill = colors.mint, shadow = AppTheme.Elevation.none), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs)) {
-                        Text(tr("已付"), style = AppTheme.Typography.footnoteBold, color = colors.onAccent)
-                        Text("${current.owing.count { it.paid }}/${current.owing.size}", style = rounded(40, FontWeight.Black), color = colors.onAccent)
-                        current.amount?.let { Text(tr("每人 %@", FeeText.text(it)), style = AppTheme.Typography.subheadlineBold, color = colors.onAccent) }
-                    }
-                    if (current.hasHandles == false && current.payeeIsMe != false) {
-                        Box(Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.lg, shadow = AppTheme.Elevation.none).padding(horizontal = AppTheme.Spacing.lg)) {
-                            MenuRow(Sym.banknote, tr("填收款方式"), tint = colors.butter) { env.router.open(Route.PaymentHandles) }
-                        }
-                    }
-                    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
-                        Text(tr("没付 %lld", current.unpaid.size), style = AppTheme.Typography.title3, color = colors.ink, modifier = Modifier.semantics { heading() })
-                        if (current.unpaid.isNotEmpty()) {
-                            PeopleCard(current.unpaid) { person ->
-                                PayName(person, Modifier.weight(1f))
-                                TextAction(tr("不用付"), { act { env.payments.setSignupOwes(person.id, false) } })
-                                val label = tr("%@ 标为已付", person.name)
-                                Box(
-                                    Modifier.size(48.dp).semantics { contentDescription = label }.pressable { act { env.payments.markSignupPaid(person.id, true) } },
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Box(Modifier.size(28.dp).border(2.dp, colors.stroke, CircleShape))
-                                }
-                            }
-                        }
-                    }
-                    Collapsible(tr("已付 %lld", current.paid.size), showsPaid, { showsPaid = it }) {
-                        PeopleCard(current.paid) { person ->
-                            PayName(person, Modifier.weight(1f))
-                            if (person.paidSelf == true) Text(tr("自己标的"), style = AppTheme.Typography.caption, color = colors.inkSecondary)
-                            val label = tr("%@ 改回没付", person.name)
-                            Box(
-                                Modifier.size(48.dp).semantics { contentDescription = label }.pressable { act { env.payments.markSignupPaid(person.id, false) } },
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Symbol(Sym.checkmarkCircleFill, size = 28, tint = colors.success)
-                            }
-                        }
-                    }
-                    if (current.exempt.isNotEmpty()) {
-                        Collapsible(tr("不用付 %lld", current.exempt.size), showsExempt, { showsExempt = it }) {
-                            PeopleCard(current.exempt) { person ->
-                                PayName(person, Modifier.weight(1f))
-                                BrutalButton(tr("加回来"), { act { env.payments.setSignupOwes(person.id, true) } }, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false)
-                            }
-                        }
-                    }
-                }
-                // 提醒没付的：不能提醒时写原因
-                val now = Instant.now()
-                val blocked = when {
-                    current.unpaid.isEmpty() -> tr("都付了。")
-                    current.canRemind == true -> null
-                    current.remindedAt?.let { now.epochSecond - it.epochSecond < 12 * 3600 } == true -> tr("12 小时内提醒过了。")
-                    now < session.startsAt -> tr("开场后才能提醒。")
-                    else -> tr("结束 7 天后不能再提醒。")
-                }
-                Column(
-                    Modifier.fillMaxWidth().padding(horizontal = AppTheme.Spacing.screen).padding(top = AppTheme.Spacing.md, bottom = AppTheme.Spacing.lg).navigationBarsPadding(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs),
-                ) {
-                    blocked?.let { Text(it, style = AppTheme.Typography.caption, color = colors.inkSecondary) }
-                    BrutalButton({
-                        scope.launch {
-                            try {
-                                val count = env.payments.remindUnpaid(sessionId)
-                                env.appState.showToast(remindedToast(count), Toast.Style.Success)
-                            } catch (error: RemoteError) {
-                                env.appState.showError(error)
-                            }
-                            reload++
-                        }
-                    }, enabled = blocked == null) {
-                        Symbol(Sym.bellFill, size = 16)
-                        Spacer(Modifier.size(AppTheme.Spacing.sm))
-                        Text(tr("提醒没付的"))
+    val current = pay
+    if (current == null) {
+        Box(Modifier.fillMaxWidth().padding(top = AppTheme.Spacing.xxl), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = colors.ink)
+        }
+        return
+    }
+    Column(
+        Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen)
+            .padding(top = AppTheme.Spacing.md, bottom = AppTheme.Spacing.xxl),
+        verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.lg),
+    ) {
+        // 每人多少钱（空 = 不写，0 = 这一场免费）
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+            Text(tr("每人"), style = AppTheme.Typography.headline, color = colors.ink)
+            StickerTextField(
+                feeText, { feeText = it }, "", Modifier.width(130.dp),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            )
+            Spacer(Modifier.weight(1f))
+            val clean = feeText.trim().replace(",", ".")
+            BrutalButton(tr("保存"), {
+                act { env.payments.setSessionFee(sessionId, clean.toDoubleOrNull()) }
+            }, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false,
+                enabled = feeText != (current.amount?.let(FeeText::plain) ?: "") && (clean.isEmpty() || clean.toDoubleOrNull() != null))
+        }
+        // 已付几人 / 要付几人
+        Column(Modifier.fillMaxWidth().card(fill = colors.mint, shadow = AppTheme.Elevation.none), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs)) {
+            Text(tr("已付"), style = AppTheme.Typography.footnoteBold, color = colors.onAccent)
+            Text("${current.owing.count { it.paid }}/${current.owing.size}", style = rounded(40, FontWeight.Black), color = colors.onAccent)
+            current.amount?.let { Text(tr("每人 %@", FeeText.text(it)), style = AppTheme.Typography.subheadlineBold, color = colors.onAccent) }
+        }
+        if (current.hasHandles == false && current.payeeIsMe != false) {
+            Box(Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.lg, shadow = AppTheme.Elevation.none).padding(horizontal = AppTheme.Spacing.lg)) {
+                MenuRow(Sym.banknote, tr("填收款方式"), tint = colors.butter) { env.router.open(Route.PaymentHandles) }
+            }
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+            Text(tr("没付 %lld", current.unpaid.size), style = AppTheme.Typography.title3, color = colors.ink, modifier = Modifier.semantics { heading() })
+            if (current.unpaid.isNotEmpty()) {
+                PeopleCard(current.unpaid) { person ->
+                    PayName(person, Modifier.weight(1f))
+                    TextAction(tr("不用付"), { act { env.payments.setSignupOwes(person.id, false) } })
+                    val label = tr("%@ 标为已付", person.name)
+                    Box(
+                        Modifier.size(48.dp).semantics { contentDescription = label }.pressable { act { env.payments.markSignupPaid(person.id, true) } },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Box(Modifier.size(28.dp).border(2.dp, colors.stroke, CircleShape))
                     }
                 }
             }
-            loaded -> EmptyStateView(Sym.lockFill, tr("只有组织者能看。"))
-            else -> Box(Modifier.fillMaxWidth().padding(top = AppTheme.Spacing.xxl), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = colors.ink)
+        }
+        Collapsible(tr("已付 %lld", current.paid.size), showsPaid, { showsPaid = it }) {
+            PeopleCard(current.paid) { person ->
+                PayName(person, Modifier.weight(1f))
+                if (person.paidSelf == true) Text(tr("自己标的"), style = AppTheme.Typography.caption, color = colors.inkSecondary)
+                val label = tr("%@ 改回没付", person.name)
+                Box(
+                    Modifier.size(48.dp).semantics { contentDescription = label }.pressable { act { env.payments.markSignupPaid(person.id, false) } },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Symbol(Sym.checkmarkCircleFill, size = 28, tint = colors.success)
+                }
             }
+        }
+        if (current.exempt.isNotEmpty()) {
+            Collapsible(tr("不用付 %lld", current.exempt.size), showsExempt, { showsExempt = it }) {
+                PeopleCard(current.exempt) { person ->
+                    PayName(person, Modifier.weight(1f))
+                    BrutalButton(tr("加回来"), { act { env.payments.setSignupOwes(person.id, true) } }, kind = ButtonKind.Secondary, size = ButtonSize.Small, fullWidth = false)
+                }
+            }
+        }
+    }
+    // 提醒没付的：不能提醒时写原因
+    val now = Instant.now()
+    val blocked = when {
+        current.unpaid.isEmpty() -> tr("都付了。")
+        current.canRemind == true -> null
+        current.remindedAt?.let { now.epochSecond - it.epochSecond < 12 * 3600 } == true -> tr("12 小时内提醒过了。")
+        now < startsAt -> tr("开场后才能提醒。")
+        else -> tr("结束 7 天后不能再提醒。")
+    }
+    Column(
+        Modifier.fillMaxWidth().padding(horizontal = AppTheme.Spacing.screen).padding(top = AppTheme.Spacing.md, bottom = AppTheme.Spacing.lg).navigationBarsPadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xs),
+    ) {
+        blocked?.let { Text(it, style = AppTheme.Typography.caption, color = colors.inkSecondary) }
+        BrutalButton({
+            scope.launch {
+                try {
+                    val count = env.payments.remindUnpaid(sessionId)
+                    env.appState.showToast(remindedToast(count), Toast.Style.Success)
+                } catch (error: RemoteError) {
+                    env.appState.showClubError(error)
+                }
+                reload++
+            }
+        }, enabled = blocked == null) {
+            Symbol(Sym.bellFill, size = 16)
+            Spacer(Modifier.size(AppTheme.Spacing.sm))
+            Text(tr("提醒没付的"))
         }
     }
 }

@@ -125,6 +125,15 @@ fun GamesScreen() {
                 }
             }
             TodoPills(rankings)
+            // 今晚的排场、比赛（my_tonight）：有内容才显示；在这一页时每 30 秒看一次
+            var tonight by remember { mutableStateOf(emptyList<com.badie.app.models.TonightItem>()) }
+            LaunchedEffect(me, router.selectedTab) {
+                while (router.selectedTab == com.badie.app.shell.MainTab.Games) {
+                    quietly { tonight = env.night.myTonight() }
+                    kotlinx.coroutines.delay(30_000)
+                }
+            }
+            if (tonight.isNotEmpty()) com.badie.app.features.night.TonightCard(tonight, Modifier.padding(horizontal = AppTheme.Spacing.screen))
             // 我还没付的（所有球群，写了金额的场次）：有才显示
             var dues by remember { mutableStateOf(emptyList<com.badie.app.models.MyDue>()) }
             LaunchedEffect(me) { quietly { dues = env.payments.myDues() } }

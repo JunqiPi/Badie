@@ -137,6 +137,8 @@ class AppEnvironment(
     val groupManager = GroupManager(context, locationManager)
     /** 收款：价格、你还没付、收款记录（见 features/groups/PaymentScreens.kt） */
     val payments = com.badie.app.backend.PaymentsApi(backend.remote)
+    /** 当晚的排场、比赛（见 features/night、features/matches） */
+    val night = com.badie.app.backend.NightApi(backend.remote)
     /** 从网站下载安装的正式包：有新版本时提示（见 SideloadUpdates） */
     val updates = SideloadUpdates.forApp(android)
 }

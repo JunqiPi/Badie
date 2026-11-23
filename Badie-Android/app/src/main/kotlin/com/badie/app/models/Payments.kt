@@ -54,6 +54,9 @@ object PayLinks {
 
     fun payPal(name: String, amount: Double?): Uri =
         Uri.parse("https://paypal.me/" + Uri.encode(name) + (amount?.let { "/" + FeeText.plain(it) + "USD" } ?: ""))
+
+    /** 公开看板：/live/<码>/ */
+    fun board(code: String): String = "https://badie.rsvp/live/$code/"
 }
 
 /** 我还没付的一场（my_dues）：开过的、写了金额的场次，60 天内 */
