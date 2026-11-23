@@ -291,7 +291,8 @@
   - 改每周场次的时间、名额、费用、球馆：同一个星期几的改在原来那一场上，报名保留，报了名的人收到“场次有变”（以前是取消再重新报）。换星期几、删掉的照旧取消
   - 同一场同名的访客，后报的记成 “Tony 2”
   - 清访客邮箱改成函数 `forget_guest_emails()`（收款迁移已经改了它：开了收款的留到付清或 7 天）
-- **还没做**：安卓（同样四样加上面的修补，照 iPhone 搬，不在这次范围）；邮件只有纯文字；旧版 App 点访客会打开找不到的资料页（旧版改不了，新版不能点）；同一个访客收到几封带链接的邮件时，只有最新一封的取消链接有效
+- 安卓（2026-11-23，开发分支）：访客报名照 iPhone 搬完（编辑球群的开关、上限、链接；球群页“复制报名链接”；名单里的访客、移出、同名、临时退出；设置里“报名链接上只显示我的首字母”），截图 `GuestSignupScreenshotTest`
+- **还没做**：邮件只有纯文字；旧版 App 点访客会打开找不到的资料页（旧版改不了，新版不能点）；同一个访客收到几封带链接的邮件时，只有最新一封的取消链接有效
 - **上线前用户要做**：Supabase → Edge Functions → Secrets 加 `TURNSTILE_SECRET_KEY`（Cloudflare → Turnstile 里网站那个组件的 Secret Key，和登录用的是同一个）。没配时函数不核对人机验证，每次报名在函数日志里写一条警告。发件人沿用约球邮件的 `games@badie.rsvp`，不用另配
 
 ## 球群当晚的排场、比赛和收款（iPhone 1.0.7，2026-11-19，分支 `claude/club-night`，没推 main）
@@ -307,7 +308,7 @@
   - 公开看板 `live_board`（排场结束后 24 小时、比赛 7 天，只有名字）；球员的 `my_tonight`；球群页的 `group_tonight`（没改 `group_page`，旧版 App 不受影响）
 - 网站：`/night/<场次>/`、`/matches/…`、`/live/<码>/`、`/pay/<凭证>/`，球群页的按钮、球局页“今晚”卡、“+”菜单“比赛 · 循环赛”（英文 Match · round robin）、设置里的收款方式；二维码用 `qrcode-generator` 2.0.4。端到端测试 `night.e2e.mjs`。隐私政策加了收款方式和访客邮箱的保留时间
 - iPhone 1.0.7（版本号已改）：同样几样，看板用 App 里的 Safari 打开；`/app/matches/<id>/` 的通知打开比赛页
-- 安卓（2026-11-23，开发分支，没推 main）：排场和比赛照 iPhone 搬完——`models/ClubNight.kt`、`backend/NightApi.kt`、`features/night/`（当晚页、设置、加人、换人、撤销、看板、球群页场次行的“排场 / 看排场 / 付给… / 收款 · n 人没付”、球局页“今晚”卡）、`features/matches/`（新建、比赛页、输比分、积分榜、最终排名分享成图、我的 → 比赛）；“+”菜单“比赛 · 循环赛、淘汰赛”，推送 `/app/matches/<id>/` 打开比赛页。当晚页的“收款”和收款记录里的某一场共用 `SessionPayPanel`。和 iPhone 不一样：看板没有二维码（要加依赖），只显示链接、可复制和打开；看板用浏览器标签页（Custom Tabs）打开。单元测试 `ClubNightTest`，截图 `NightScreenshotTest`
+- 安卓（2026-11-23，开发分支）：排场和比赛照 iPhone 搬完——`models/ClubNight.kt`、`backend/NightApi.kt`、`features/night/`（当晚页、设置、加人、换人、撤销、看板、球群页场次行的“排场 / 看排场 / 付给… / 收款 · n 人没付”、球局页“今晚”卡）、`features/matches/`（新建、比赛页、输比分、积分榜、最终排名分享成图、我的 → 比赛）；“+”菜单“比赛 · 循环赛、淘汰赛”，推送 `/app/matches/<id>/` 打开比赛页。当晚页的“收款”和收款记录里的某一场共用 `SessionPayPanel`。和 iPhone 不一样：看板没有二维码（要加依赖），只显示链接、可复制和打开；看板用浏览器标签页（Custom Tabs）打开。单元测试 `ClubNightTest`，截图 `NightScreenshotTest`
 - **还没做**：比需求简单的地方见 `CLUB_NIGHT.md`
 - **上线前用户要做**：没有新的密钥。提交审核时 Notes 写一句“收款只是给出 Venmo / Cash App / PayPal 链接，钱不经过 App，是线下场地费，不走内购”（和打赏的说明分开）
 
