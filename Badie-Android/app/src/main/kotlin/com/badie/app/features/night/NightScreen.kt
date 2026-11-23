@@ -29,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
@@ -99,7 +100,7 @@ fun NightScreen(sessionId: String, opensPay: Boolean = false) {
     var state by remember(sessionId) { mutableStateOf<NightState?>(null) }
     var loaded by remember(sessionId) { mutableStateOf(false) }
     var loadedAt by remember(sessionId) { mutableLongStateOf(System.currentTimeMillis()) }
-    var segment by remember(sessionId) { mutableStateOf(if (opensPay) NightSegment.Pay else NightSegment.Courts) }
+    var segment by rememberSaveable(sessionId) { mutableStateOf(if (opensPay) NightSegment.Pay else NightSegment.Courts) }
     var payTick by remember { mutableIntStateOf(0) }
     // 撤销条显示到什么时候；服务器给的时间换算成本机时间（两边的钟可能不一样）
     var undoDeadline by remember { mutableStateOf<Long?>(null) }
@@ -361,11 +362,11 @@ private fun CourtsSection(
             // 开始前：设置和点名
             Column(Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.lg, shadow = AppTheme.Elevation.none)) {
                 CourtStepper(state.courts, { onSettings(it, state.doubles, state.balance) }, Modifier.padding(start = AppTheme.Spacing.lg, end = AppTheme.Spacing.xs), enabled = state.open)
-                InsetDivider()
+                InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                 SegmentedSticker(listOf(false, true), state.doubles, { if (state.open) onSettings(state.courts, it, state.balance) }, Modifier.padding(AppTheme.Spacing.md)) {
                     if (it) tr("双打") else tr("单打")
                 }
-                InsetDivider()
+                InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                 ToggleRow(tr("按实力分队"), state.balance, { if (state.open) onSettings(state.courts, state.doubles, it) }, Modifier.padding(horizontal = AppTheme.Spacing.lg).defaultMinSize(minHeight = 56.dp))
             }
             Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
@@ -638,9 +639,9 @@ internal fun NightSettingsSheet(state: NightState, me: String?, onDismiss: () ->
             }
             Column(Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.lg, shadow = AppTheme.Elevation.none)) {
                 CourtStepper(courts, { courts = it }, Modifier.padding(start = AppTheme.Spacing.lg, end = AppTheme.Spacing.xs))
-                InsetDivider()
+                InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                 SegmentedSticker(listOf(false, true), doubles, { doubles = it }, Modifier.padding(AppTheme.Spacing.md)) { if (it) tr("双打") else tr("单打") }
-                InsetDivider()
+                InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                 ToggleRow(tr("按实力分队"), balance, { balance = it }, Modifier.padding(horizontal = AppTheme.Spacing.lg).defaultMinSize(minHeight = 56.dp))
             }
             if (state.isOrganizer) {

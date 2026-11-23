@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -296,7 +297,7 @@ fun GroupLedgerScreen(groupId: String) {
     var reachedEnd by remember(groupId) { mutableStateOf(false) }
     var failed by remember(groupId) { mutableStateOf(false) }
     var busy by remember { mutableStateOf<String?>(null) }
-    var reload by remember { mutableStateOf(0) }
+    var reload by remember { mutableIntStateOf(0) }
     val marked = tr("已标成已付")
     val headers = listOf(tr("日期"), tr("时间"), tr("球馆"), tr("球友"), tr("访客"), tr("金额"), tr("已付"), tr("自己标的"))
     val guestWord = tr("访客")
@@ -479,7 +480,7 @@ fun ColumnScope.SessionPayPanel(sessionId: String, startsAt: Instant, tick: Int 
     var feeText by remember(sessionId) { mutableStateOf("") }
     var showsPaid by remember { mutableStateOf(false) }
     var showsExempt by remember { mutableStateOf(false) }
-    var reload by remember { mutableStateOf(0) }
+    var reload by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(sessionId, reload, tick) {
         try {

@@ -226,7 +226,7 @@ fun MatchCreateScreen(sessionId: String? = null) {
                         },
                     )
                 }
-                InsetDivider()
+                InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                 Row(
                     Modifier.fillMaxWidth().defaultMinSize(minHeight = 52.dp).pressable(scale = 1f) { showsVenuePicker = true }.padding(horizontal = AppTheme.Spacing.lg),
                     verticalAlignment = Alignment.CenterVertically,
@@ -239,7 +239,7 @@ fun MatchCreateScreen(sessionId: String? = null) {
                     )
                     Symbol(Sym.chevronRight, size = 13, tint = colors.inkTertiary)
                 }
-                InsetDivider()
+                InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                 CourtStepper(courts, { courts = it }, Modifier.padding(start = AppTheme.Spacing.lg, end = AppTheme.Spacing.xs))
             }
 
@@ -300,7 +300,7 @@ fun MatchCreateScreen(sessionId: String? = null) {
                     Column(Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.lg, shadow = AppTheme.Elevation.none)) {
                         if (format == MatchFormat.Groups) {
                             StepperRow(tr("几组"), pools, 2..8) { pools = it }
-                            InsetDivider()
+                            InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                             Row(
                                 Modifier.defaultMinSize(minHeight = 56.dp).padding(horizontal = AppTheme.Spacing.lg),
                                 verticalAlignment = Alignment.CenterVertically,
@@ -321,7 +321,7 @@ fun MatchCreateScreen(sessionId: String? = null) {
                             }
                         }
                         if (format.hasKnockout) {
-                            if (format == MatchFormat.Groups) InsetDivider()
+                            if (format == MatchFormat.Groups) InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
                             ToggleRow(tr("打三四名"), thirdPlace, { thirdPlace = it }, Modifier.padding(horizontal = AppTheme.Spacing.lg).defaultMinSize(minHeight = 56.dp))
                         }
                     }
@@ -495,7 +495,7 @@ private fun MatchPlayerPicker(candidates: List<User>, selectedIds: Set<String>, 
                     Text(user.nickname, style = AppTheme.Typography.bodyBold, color = colors.ink, modifier = Modifier.weight(1f))
                     Symbol(if (isSelected) Sym.checkmarkCircleFill else Sym.circle, size = 24, tint = if (isSelected) colors.success else colors.inkTertiary)
                 }
-                InsetDivider()
+                InsetDivider(Modifier.padding(horizontal = AppTheme.Stroke.width))
             }
         }
     }
