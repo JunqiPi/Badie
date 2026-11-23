@@ -38,6 +38,8 @@ data class PlayGroup(
     val coached: Boolean? = null,
     /** 主球馆以外的球馆（按顺序；旧数据里没有这一项） */
     val otherVenueIds: List<String>? = null,
+    /** 访客报名的设置（只有组织者拿得到；旧数据里没有这一项） */
+    val guestSignup: GuestSignup? = null,
 ) {
     @Serializable
     enum class JoinPolicy(val rawValue: String) {
@@ -95,6 +97,23 @@ data class PlayGroup(
         const val MAX_SCHEDULES = 7
         const val MAX_VENUES = 5
         val NAME_LIMIT = 2..20
+    }
+}
+
+/** 允许不注册的人报名：组织者打开后有一个报名链接（和群号分开，可以重置），访客在网页上填名字报名 */
+@Serializable
+data class GuestSignup(
+    val allowed: Boolean,
+    /** 每场最多几个访客；null = 每场名额的一半 */
+    val limit: Int? = null,
+    /** 报名链接的码（第一次打开后才有） */
+    val code: String? = null,
+) {
+    val link: String? get() = code?.let { "https://badie.rsvp/g/$it/" }
+
+    companion object {
+        /** 没设上限时，按名额最多的那一场算一半 */
+        fun defaultLimit(capacity: Int): Int = maxOf(1, capacity / 2)
     }
 }
 
@@ -165,6 +184,10 @@ data class GroupSession(
     val isCancelled: Boolean = false,
     /** 在哪个球馆；null = 球群的主球馆 */
     val venueId: String? = null,
+    /** 名单里的访客（不注册、在网页上报名的人）：id 是那一行报名的 id，不是用户 */
+    val guests: Map<String, GroupGuest>? = null,
+    /** 开场前 2 小时内退出的人（只有组织者拿得到） */
+    val lateCancels: List<GroupLateCancel>? = null,
     /** 这一场每人多少钱：0 = 免费，null = 没写 */
     val price: Double? = null,
 ) {
@@ -200,6 +223,14 @@ data class GroupSession(
         }
     }
 }
+
+/** 场次名单里的访客 */
+@Serializable
+data class GroupGuest(val name: String, val signedUpAt: Long)
+
+/** 开场前 2 小时内退出的人 */
+@Serializable
+data class GroupLateCancel(val name: String, val guest: Boolean)
 
 /** 球群的真实活跃度（对外展示用，不显示成员总数） */
 data class GroupActivity(

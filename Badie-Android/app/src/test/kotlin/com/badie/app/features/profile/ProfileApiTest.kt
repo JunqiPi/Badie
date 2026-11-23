@@ -159,12 +159,13 @@ class ProfileApiTest {
         val api = signedIn()
         val privacy = api.backend.currentUser!!.privacy
         server.on("PATCH /rest/v1/profiles", "")
-        api.updatePrivacy(privacy.copy(challengePolicy = ChallengePolicy.SimilarLevel, emailAlerts = true, showsWhenSearching = false))
+        api.updatePrivacy(privacy.copy(challengePolicy = ChallengePolicy.SimilarLevel, emailAlerts = true, showsWhenSearching = false, initialsOnPublicPages = true))
         val body = lastPatch().second
         assertEquals("similar", body.getValue("challenge_policy").jsonPrimitive.content)
         assertEquals("true", body.getValue("email_alerts").jsonPrimitive.content)
         assertEquals("false", body.getValue("show_searching").jsonPrimitive.content)
-        assertEquals(7, body.size)
+        assertEquals("报名链接上只显示首字母", "true", body.getValue("public_initials").jsonPrimitive.content)
+        assertEquals(8, body.size)
         assertEquals(ChallengePolicy.SimilarLevel, api.backend.currentUser?.privacy?.challengePolicy)
     }
 

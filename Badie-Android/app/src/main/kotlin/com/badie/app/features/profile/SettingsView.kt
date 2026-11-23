@@ -223,6 +223,8 @@ fun SettingsView() {
                     ChallengePolicyRow(privacy.challengePolicy) { policy -> updatePrivacy { it.copy(challengePolicy = policy) } }
                     InsetDivider()
                     ToggleRow(tr("出现在排行榜上"), privacy.showsOnLeaderboards, { on -> updatePrivacy { it.copy(showsOnLeaderboards = on) } })
+                    InsetDivider()
+                    ToggleRow(tr("报名链接上只显示我的首字母"), privacy.initialsOnPublicPages, { on -> updatePrivacy { it.copy(initialsOnPublicPages = on) } })
                 }
             }
             SectionLabel(

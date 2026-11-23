@@ -45,6 +45,8 @@ data class PrivacySettings(
     val emailAlerts: Boolean = false,
     /** 发了约球请求时，附近的人在发现页能看到我（默认开） */
     val showsWhenSearching: Boolean = true,
+    /** 球群公开的报名页（访客报名链接）上只显示我名字的首字母（默认关闭） */
+    val initialsOnPublicPages: Boolean = false,
 )
 
 // MARK: - 用户

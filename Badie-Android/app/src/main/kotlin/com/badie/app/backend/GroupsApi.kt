@@ -68,6 +68,10 @@ class RemoteGroupDetail(
     val sessions: List<Session>? = null,
     val members: List<Member>? = null,
     val pending: List<Member>? = null,
+    /** 访客报名的设置（只有组织者拿得到） */
+    val guestsAllowed: Boolean? = null,
+    val guestLimit: Int? = null,
+    val guestCode: String? = null,
 ) {
     @Serializable
     class Session(
@@ -82,11 +86,20 @@ class RemoteGroupDetail(
         val players: List<Player>? = null,
         /** 这一场在哪个球馆（旧服务器没有这一项） */
         val venue: String? = null,
+        /** 开场前 2 小时内退出的人（只有组织者拿得到；旧服务器没有这一项） */
+        val lateCancels: List<LateCancel>? = null,
         /** 这一场每人多少钱（旧服务器没有这一项） */
         val price: Double? = null,
     ) {
+        /** 访客的 id 是那一行报名的 id；guest、signedUpAt：不注册、在网页上报名的人（旧服务器没有这两项） */
         @Serializable
-        class Player(val id: String, val nickname: String, val waitlisted: Boolean)
+        class Player(
+            val id: String, val nickname: String, val waitlisted: Boolean, val guest: Boolean? = null,
+            @Serializable(InstantSerializer::class) val signedUpAt: Instant? = null,
+        )
+
+        @Serializable
+        class LateCancel(val nickname: String, val guest: Boolean)
     }
 
     @Serializable
@@ -163,6 +176,16 @@ class GroupsApi(private val remote: SupabaseClient) {
     suspend fun cancelSignup(sessionId: String) = remote.call("cancel_signup", json("p_session" to sessionId))
 
     suspend fun cancelSession(sessionId: String) = remote.call("cancel_session", json("p_session" to sessionId))
+
+    /** 访客报名：开关、每场上限（null = 名额的一半） */
+    suspend fun setGuestSignup(groupId: String, allowed: Boolean, limit: Int?) =
+        remote.call("set_guest_signup", json("p_group" to groupId, "p_allowed" to allowed, "p_limit" to limit))
+
+    /** 换一个报名链接，旧的马上失效 */
+    suspend fun resetGuestLink(groupId: String) = remote.call("reset_guest_link", json("p_group" to groupId))
+
+    /** 组织者把访客移出某一场（guestId 是那一行报名的 id） */
+    suspend fun removeGuest(guestId: String) = remote.call("remove_guest", json("p_signup" to guestId))
 
     companion object {
         /** 服务器的星期是 0 = 周日（本地 1 = 周日）；不在主球馆的场次带上 venue */

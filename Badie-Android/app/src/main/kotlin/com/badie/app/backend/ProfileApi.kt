@@ -180,7 +180,7 @@ class ProfileApi(
             "show_on_boards" to privacy.showsOnLeaderboards, "challenge_policy" to privacy.challengePolicy.serverValue,
             "discoverable" to privacy.findableByNickname, "show_as_regular" to privacy.showsAsRegular,
             "allow_message_requests" to privacy.allowsMessageRequests, "email_alerts" to privacy.emailAlerts,
-            "show_searching" to privacy.showsWhenSearching,
+            "show_searching" to privacy.showsWhenSearching, "public_initials" to privacy.initialsOnPublicPages,
         ),
     ) { it.copy(privacy = privacy) }
 

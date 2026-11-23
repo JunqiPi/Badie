@@ -82,6 +82,8 @@ sealed class RemoteError : Exception() {
             "mixed_side_full" -> tr("这个混双局里和你同性别的位子已经满了。")
             "objectionable_content" -> tr("这里不能用不当用语，请换个说法。")
             "owner_cannot_leave" -> tr("群主不能退出自己的球群。")
+            "signup_not_found" -> tr("已经不在这一场的名单上了。")
+            "invalid_guest_limit" -> tr("每场访客最多 1–40 人。")
             "not_organizer" -> tr("只有组织者才能这样操作。")
             "not_member" -> tr("请先加入球群。")
             "session_closed" -> tr("本场已关闭。")

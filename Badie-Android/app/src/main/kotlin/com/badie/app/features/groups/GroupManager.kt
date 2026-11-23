@@ -19,8 +19,11 @@ import com.badie.app.features.venues.LocationManager
 import com.badie.app.models.Coordinate
 import com.badie.app.models.Gender
 import com.badie.app.models.GroupActivity
+import com.badie.app.models.GroupGuest
+import com.badie.app.models.GroupLateCancel
 import com.badie.app.models.GroupSchedule
 import com.badie.app.models.GroupSession
+import com.badie.app.models.GuestSignup
 import com.badie.app.models.PlayGroup
 import com.badie.app.models.Room
 import com.badie.app.models.TimeSlot
@@ -301,6 +304,25 @@ class GroupManager(
         loadGroup(groupId)
     }
 
+    /** 允许不注册的人报名；limit 为 null 是每场名额的一半 */
+    suspend fun setGuestSignup(groupId: String, allowed: Boolean, limit: Int?) {
+        api.setGuestSignup(groupId, allowed, limit)
+        loadGroup(groupId)
+    }
+
+    /** 换一个报名链接，旧的马上失效 */
+    suspend fun resetGuestLink(groupId: String) {
+        api.resetGuestLink(groupId)
+        loadGroup(groupId)
+    }
+
+    /** 组织者把访客移出某一场（guestId 是那一行报名的 id） */
+    suspend fun removeGuest(guestId: String, sessionId: String) {
+        val groupId = sessionMap[sessionId]?.groupId ?: throw BackendError(tr("这一场已经结束或取消了"))
+        api.removeGuest(guestId)
+        loadGroup(groupId)
+    }
+
     // MARK: 服务器数据 → 本地模型
 
     internal fun cacheGroup(summary: RemoteGroupSummary, me: String) {
@@ -316,13 +338,22 @@ class GroupManager(
             detail.id, detail.name, detail.summary, detail.levelMin..maxOf(detail.levelMin, detail.levelMax), detail.joinPolicy,
             detail.gender, detail.coached, detail.venue, detail.venues, detail.schedules.orEmpty(), detail.activity, detail.myRole,
             detail.inviteCode, detail.members, detail.pending, me,
+            guestSignup = detail.guestsAllowed?.let { GuestSignup(it, detail.guestLimit, detail.guestCode) },
         )
         val group = groups[detail.id] ?: return
         val zone = venue(group)?.zone ?: java.time.ZoneId.systemDefault()
         // 这个群的场次以服务器为准
         sessionMap.keys.filter { sessionMap[it]?.groupId == detail.id }.forEach(sessionMap::remove)
         for (session in detail.sessions.orEmpty()) {
-            for (player in session.players.orEmpty()) cache.cache(player.id, player.nickname, null)
+            // 访客不是用户：记在这一场的名单里，不进用户缓存
+            val guests = mutableMapOf<String, GroupGuest>()
+            for (player in session.players.orEmpty()) {
+                if (player.guest == true) {
+                    guests[player.id] = GroupGuest(player.nickname, (player.signedUpAt ?: session.startsAt).toEpochMilli())
+                } else {
+                    cache.cache(player.id, player.nickname, null)
+                }
+            }
             val signedUp = session.players?.filter { !it.waitlisted }?.map { it.id }?.toMutableList()
                 ?: (0 until session.confirmed).map { "spot-${session.id}-$it" }.toMutableList()
             val waitlist = session.players?.filter { it.waitlisted }?.map { it.id }?.toMutableList()
@@ -348,7 +379,8 @@ class GroupManager(
                 id = session.id, groupId = detail.id, scheduleId = schedule?.id ?: "",
                 slot = TimeSlot.of(start, start, session.endsAt.toEpochMilli(), zone),
                 capacity = session.capacity, signedUp = signedUp, waitlist = waitlist, isCancelled = session.cancelled,
-                venueId = session.venue ?: schedule?.effectiveVenueId(group), price = session.price,
+                venueId = session.venue ?: schedule?.effectiveVenueId(group), guests = guests.ifEmpty { null },
+                lateCancels = session.lateCancels?.map { GroupLateCancel(it.nickname, it.guest) }, price = session.price,
             )
         }
     }
@@ -358,6 +390,8 @@ class GroupManager(
         place: RemoteGroupVenue, places: List<RemoteGroupVenue>?, schedules: List<RemoteSchedule>, activity: RemoteGroupActivity,
         myRole: String?, inviteCode: String?,
         members: List<RemoteGroupDetail.Member>?, pending: List<RemoteGroupDetail.Member>?, me: String,
+        // 列表里的球群信息不带访客设置：沿用上次球群页拿到的
+        guestSignup: GuestSignup? = groups[id]?.guestSignup,
     ) {
         val existing = groups[id]
         for (member in members.orEmpty() + pending.orEmpty()) cache.cache(member.id, member.nickname, member.rating)
@@ -394,6 +428,7 @@ class GroupManager(
             inviteCode = inviteCode ?: existing?.inviteCode ?: "", createdAt = existing?.createdAt ?: now(),
             audience = audience?.let { value -> Gender.entries.firstOrNull { it.rawValue == value } }, coached = coached,
             otherVenueIds = courts.drop(1).map { it.id }.ifEmpty { null },
+            guestSignup = guestSignup,
         )
         if (groups[id] != group) groups[id] = group
         activities[id] = GroupActivity(activity.sessions, activity.average)

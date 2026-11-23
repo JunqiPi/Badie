@@ -9,7 +9,9 @@ import com.badie.app.features.social.SocialTestSupport.environment
 import com.badie.app.features.social.SocialTestSupport.text
 import com.badie.app.models.Coordinate
 import com.badie.app.models.GroupSchedule
+import com.badie.app.models.GroupLateCancel
 import com.badie.app.models.GroupSession
+import com.badie.app.models.GuestSignup
 import com.badie.app.models.PlayGroup
 import com.badie.app.remote.FakeServer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -127,6 +129,72 @@ class GroupManagerTest {
         // 同一个地方 60 秒内不重拉
         env.groupManager.loadNearby(Coordinate(34.001, -118.0), 10.0)
         assertEquals(1, server.requests.size)
+    }
+
+    /** 访客（不注册、在网页上报名）：在名单里、算人数、不进用户缓存；组织者看到访客报名的设置，可以移出访客。对应 iPhone 的 testGuestsComeFromServerAndCanBeRemoved */
+    @Test
+    fun guestsComeFromServerAndCanBeRemoved() = runTest {
+        val env = environment(server, backgroundScope)
+        val manager = env.groupManager
+        val guestId = "6f1c2c3e-0000-4000-8000-0000000000aa"
+        val guest = """{"id":"$guestId","nickname":"Tina","waitlisted":false,"guest":true,"signed_up_at":"2026-11-16T03:00:00Z"}"""
+        val page = groupPage("confirmed", players = """[{"id":"$ME","nickname":"Alex","waitlisted":false},$guest]""")
+            .replace("\"confirmed\":1", "\"confirmed\":2")
+            .replace("\"invite_code\":\"ABC2LX\"", "\"invite_code\":\"ABC2LX\",\"guests_allowed\":true,\"guest_limit\":null,\"guest_code\":\"7fQk2Rx9\"")
+            .replace("\"players\":", "\"late_cancels\":[{\"nickname\":\"Sam\",\"guest\":true}],\"players\":")
+        server.on("POST /rest/v1/rpc/group_page", page)
+        manager.loadGroup("grp1")
+
+        val session = manager.session("s1")!!
+        assertEquals("访客也算报上的人", listOf(ME, guestId), session.signedUp)
+        assertEquals("Tina", session.guests?.get(guestId)?.name)
+        assertEquals(Instant.parse("2026-11-16T03:00:00Z").toEpochMilli(), session.guests?.get(guestId)?.signedUpAt)
+        assertEquals(listOf(GroupLateCancel("Sam", true)), session.lateCancels)
+        assertNull("访客不是用户，不进用户缓存", manager.user(guestId))
+        val group = manager.group("grp1")!!
+        assertEquals(GuestSignup(allowed = true, limit = null, code = "7fQk2Rx9"), group.guestSignup)
+        assertEquals("https://badie.rsvp/g/7fQk2Rx9/", group.guestSignup?.link)
+
+        // 列表里的球群信息不带访客设置：沿用球群页拿到的
+        server.on("POST /rest/v1/rpc/my_groups", """{"groups":[]}""")
+        val summary = """{"id":"grp1","name":"Thu doubles","level_min":3,"level_max":5,"join_policy":"approval","venue":{"id":"v-test-court","name":"Test Court"},""" +
+            """"schedules":[],"activity":{"sessions":6,"average":7.5},"my_role":"owner"}"""
+        server.on("POST /rest/v1/rpc/groups_near", "[$summary]")
+        manager.loadNearby(Coordinate(33.6, -117.8), 10.0)
+        assertEquals("7fQk2Rx9", manager.group("grp1")?.guestSignup?.code)
+
+        server.requests.clear()
+        server.on("POST /rest/v1/rpc/remove_guest", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage("confirmed"))
+        manager.removeGuest(guestId, "s1")
+        assertEquals(guestId, server.text(0, "p_signup"))
+        assertNull("旧服务器（没有这几项）：没有访客报名的设置", manager.group("grp1")?.guestSignup)
+        assertNull(manager.session("s1")?.guests)
+
+        server.requests.clear()
+        server.on("POST /rest/v1/rpc/set_guest_signup", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage("confirmed"))
+        manager.setGuestSignup("grp1", allowed = true, limit = 6)
+        assertEquals("true", server.text(0, "p_allowed"))
+        assertEquals("6", server.text(0, "p_limit"))
+        server.on("POST /rest/v1/rpc/set_guest_signup", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage("confirmed"))
+        manager.setGuestSignup("grp1", allowed = true, limit = null)
+        assertEquals("null 是名额的一半", "null", server.json(2)["p_limit"].toString())
+
+        server.requests.clear()
+        server.on("POST /rest/v1/rpc/reset_guest_link", "null")
+        server.on("POST /rest/v1/rpc/group_page", groupPage("confirmed"))
+        manager.resetGuestLink("grp1")
+        assertEquals("grp1", server.text(0, "p_group"))
+    }
+
+    @Test
+    fun guestLimitDefaultsToHalfTheCapacity() {
+        assertEquals(6, GuestSignup.defaultLimit(12))
+        assertEquals(2, GuestSignup.defaultLimit(5))
+        assertEquals("至少 1 个", 1, GuestSignup.defaultLimit(1))
+        assertNull("还没打开过就没有链接", GuestSignup(allowed = false).link)
     }
 
     /** 两个球馆：周四在主球馆，周日在第二个球馆 */

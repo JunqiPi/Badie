@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -38,14 +39,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.badie.app.backend.BackendError
 import com.badie.app.design.AppTheme
 import com.badie.app.design.AvatarView
@@ -54,6 +58,7 @@ import com.badie.app.design.ButtonKind
 import com.badie.app.design.ButtonSize
 import com.badie.app.design.ChoiceChip
 import com.badie.app.design.EmptyStateView
+import com.badie.app.design.FitText
 import com.badie.app.design.IconButton
 import com.badie.app.design.IconTile
 import com.badie.app.design.InsetDivider
@@ -77,11 +82,16 @@ import com.badie.app.design.sticker
 import com.badie.app.features.social.ConfirmDialog
 import com.badie.app.features.social.MultilineField
 import com.badie.app.features.social.ToggleRow
+import com.badie.app.features.social.copyText
 import com.badie.app.features.social.shareText
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
 import com.badie.app.models.Coordinate
+import com.badie.app.models.DateText
 import com.badie.app.models.FeeText
+import com.badie.app.models.GroupGuest
+import com.badie.app.models.GroupLateCancel
+import com.badie.app.models.GuestSignup
 import com.badie.app.models.MyDue
 import com.badie.app.models.DistanceFormatter
 import com.badie.app.models.Gender
@@ -263,6 +273,10 @@ fun GroupScreen(id: String) {
                         Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                             TextAction(tr("退出球群"), { confirmsLeave = true }, color = AppTheme.colors.danger)
                         }
+                    }
+                    val guestLink = group.guestSignup?.takeIf { it.allowed }?.link
+                    if (me != null && group.isOrganizer(me) && guestLink != null) {
+                        CopyGuestLinkButton(guestLink, Sym.link, ButtonSize.Medium)
                     }
                     if (group.ownerId == me) {
                         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
@@ -581,10 +595,13 @@ fun SessionSheet(sessionId: String, onDismiss: () -> Unit) {
                 }
                 IconButton(Sym.xmark, tr("关闭"), onClick = onDismiss)
             }
-            Roster(tr("已报名 %lld/%lld", session.signedUp.size, session.capacity), session.signedUp)
-            if (session.waitlist.isNotEmpty()) Roster(tr("候补 %lld", session.waitlist.size), session.waitlist)
             val me = env.appState.currentUser?.id
-            if (me != null && group.isOrganizer(me) && !session.isCancelled) {
+            val organizer = me != null && group.isOrganizer(me)
+            Roster(tr("已报名 %lld/%lld", session.signedUp.size, session.capacity), session.signedUp, session, organizer)
+            if (session.waitlist.isNotEmpty()) Roster(tr("候补 %lld", session.waitlist.size), session.waitlist, session, organizer)
+            val dropped = session.lateCancels.orEmpty()
+            if (organizer && dropped.isNotEmpty()) LateCancels(dropped)
+            if (organizer && !session.isCancelled) {
                 TextAction(tr("取消这一场"), {
                     scope.launch {
                         try {
@@ -604,14 +621,25 @@ fun SessionSheet(sessionId: String, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun Roster(title: String, ids: List<String>) {
+private fun Roster(title: String, ids: List<String>, session: GroupSession, organizer: Boolean) {
     val env = LocalEnv.current
     val colors = AppTheme.colors
     val me = env.appState.currentUser?.id
+    // 访客和报了名的成员同名：可能是同一个人注册后又报了一次，给组织者标出来
+    val memberNames = (session.signedUp + session.waitlist).filter { session.guests?.get(it) == null }
+        .mapNotNull { env.groupManager.user(it)?.nickname?.lowercase() }.toSet()
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
         Text(title, style = AppTheme.Typography.headline, color = colors.ink)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
             ids.forEachIndexed { index, userId ->
+                val guest = session.guests?.get(userId)
+                if (guest != null) {
+                    GuestChip(
+                        guest, userId, session, canRemove = organizer && !session.isCancelled,
+                        sameName = organizer && guest.name.lowercase() in memberNames,
+                    )
+                    return@forEachIndexed
+                }
                 val user = env.groupManager.user(userId) ?: return@forEachIndexed
                 val label = "${index + 1}. ${user.nickname}"
                 Row(
@@ -627,6 +655,108 @@ private fun Roster(title: String, ids: List<String>) {
                 }
             }
         }
+    }
+}
+
+/** 访客：名字后面标“访客”；组织者点开可以移出这一场（和移出成员一样，候补递补）。不能点开资料页 */
+@Composable
+private fun GuestChip(guest: GroupGuest, id: String, session: GroupSession, canRemove: Boolean, sameName: Boolean) {
+    val env = LocalEnv.current
+    val colors = AppTheme.colors
+    val scope = rememberCoroutineScope()
+    var menu by remember { mutableStateOf(false) }
+    val removed = tr("已移出这一场")
+    Box {
+        Row(
+            Modifier.clip(CircleShape).background(colors.surface).border(1.dp, colors.stroke, CircleShape)
+                .then(if (canRemove) Modifier.pressable(scale = 0.97f) { menu = true } else Modifier)
+                .padding(start = 4.dp, end = AppTheme.Spacing.sm, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Box(
+                Modifier.size(28.dp).clip(CircleShape).background(colors.surfaceMuted).border(1.5.dp, colors.stroke, CircleShape)
+                    .clearAndSetSemantics {},
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(guest.name.take(1).uppercase(), style = AppTheme.Typography.caption.copy(fontWeight = FontWeight.Black), color = colors.ink)
+            }
+            Text(guest.name, style = AppTheme.Typography.footnoteBold, color = colors.ink)
+            GuestPill(tr("访客"), colors.mint)
+            if (sameName) GuestPill(tr("同名"), colors.surfaceMuted, colors.ink)
+        }
+        if (canRemove) {
+            DropdownMenu(menu, onDismissRequest = { menu = false }, containerColor = colors.surface, shape = RoundedCornerShape(AppTheme.Radius.md)) {
+                Text(
+                    tr("%@ · 访客 · 报名于 %@", guest.name, DateText.monthDay(guest.signedUpAt)),
+                    style = AppTheme.Typography.footnote, color = colors.inkSecondary,
+                    modifier = Modifier.padding(horizontal = AppTheme.Spacing.md, vertical = AppTheme.Spacing.xs),
+                )
+                DropdownMenuItem(
+                    text = { Text(tr("移出这一场"), style = AppTheme.Typography.body, color = colors.danger) },
+                    leadingIcon = { Symbol(Sym.minus, size = 16, tint = colors.danger) },
+                    onClick = {
+                        menu = false
+                        scope.launch {
+                            try {
+                                env.groupManager.removeGuest(id, session.id)
+                                env.appState.showToast(removed)
+                            } catch (error: RemoteError) {
+                                env.appState.showError(error)
+                            } catch (error: BackendError) {
+                                env.appState.showError(error)
+                            }
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+/** 名字后面的小标签（访客、同名） */
+@Composable
+private fun GuestPill(text: String, fill: Color, color: Color = AppTheme.colors.onAccent) {
+    Text(
+        text, style = AppTheme.Typography.caption.copy(fontSize = 11.sp, fontWeight = FontWeight.ExtraBold), color = color, maxLines = 1,
+        modifier = Modifier.clip(CircleShape).background(fill).border(1.5.dp, AppTheme.colors.stroke, CircleShape).padding(horizontal = 6.dp, vertical = 1.dp),
+    )
+}
+
+/** 开场前 2 小时内退出的人（只有组织者看得到） */
+@Composable
+private fun LateCancels(people: List<GroupLateCancel>) {
+    val colors = AppTheme.colors
+    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        Text(tr("临时退出 %lld", people.size), style = AppTheme.Typography.headline, color = colors.ink)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+            people.forEach { person ->
+                Row(
+                    Modifier.clip(CircleShape).background(colors.surfaceMuted).padding(horizontal = AppTheme.Spacing.sm, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text(person.name, style = AppTheme.Typography.footnoteBold, color = colors.inkSecondary)
+                    if (person.guest) GuestPill(tr("访客"), colors.mint)
+                }
+            }
+        }
+    }
+}
+
+/** 复制报名链接（球群页、编辑球群里的访客报名） */
+@Composable
+private fun CopyGuestLinkButton(link: String, icon: SymbolId, size: ButtonSize, modifier: Modifier = Modifier) {
+    val env = LocalEnv.current
+    val android = LocalContext.current
+    val copied = tr("已复制报名链接")
+    BrutalButton(onClick = {
+        copyText(android, link)
+        env.appState.showToast(copied, Toast.Style.Success)
+    }, modifier, kind = ButtonKind.Secondary, size = size) {
+        Symbol(icon, size = 15)
+        Spacer(Modifier.width(6.dp))
+        FitText(tr("复制报名链接"))
     }
 }
 
@@ -661,6 +791,10 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
     var extraIndex by remember { mutableStateOf<Int?>(-1) }
     var didSetup by rememberSaveable { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
+    // 访客报名（只在编辑时有）：开关和每场上限随“保存”一起存；复制、重置链接马上生效
+    var guestsAllowed by rememberSaveable { mutableStateOf(false) }
+    // null = 每场名额的一半
+    var guestLimit by rememberSaveable { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(Unit) {
         if (didSetup) return@LaunchedEffect
@@ -680,6 +814,8 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
             pickedVenueId = editing.venueId
             extraVenueIds.clear()
             extraVenueIds.addAll(editing.venueIds.drop(1))
+            guestsAllowed = editing.guestSignup?.allowed ?: false
+            guestLimit = editing.guestSignup?.limit
             return@LaunchedEffect
         }
         if (isEditing) return@LaunchedEffect
@@ -722,7 +858,11 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
         scope.launch {
             try {
                 if (editingGroupId != null) {
+                    val guestsBefore = groupManager.group(editingGroupId)?.guestSignup
                     groupManager.update(editingGroupId, name, schedules.toList(), lowerLevel..upperLevel, joinPolicy, summary, coached, allVenueIds)
+                    if (guestsAllowed != (guestsBefore?.allowed ?: false) || guestLimit != guestsBefore?.limit) {
+                        groupManager.setGuestSignup(editingGroupId, guestsAllowed, guestLimit)
+                    }
                     env.appState.showToast(saved, Toast.Style.Success)
                     env.router.pop()
                 } else {
@@ -824,6 +964,14 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
             FormSection(tr("加入方式")) {
                 SegmentedSticker(PlayGroup.JoinPolicy.entries, joinPolicy, { joinPolicy = it }) { it.title }
             }
+            val editingGroup = editingGroupId?.let(groupManager::group)
+            if (editingGroup != null) {
+                FormSection(tr("访客报名")) {
+                    // 名额最多的那一场：访客上限不超过它
+                    val maxCapacity = schedules.maxOfOrNull { it.capacity } ?: 4
+                    GuestSignupEditor(editingGroup, guestsAllowed, { guestsAllowed = it }, guestLimit, maxCapacity) { guestLimit = it }
+                }
+            }
         }
         Column(Modifier.fillMaxWidth().background(colors.canvas)) {
             InsetDivider()
@@ -861,6 +1009,73 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
                 }
                 env.appState.backend.cacheVenue(venue)
                 normalizeCourts()
+            }
+        }
+    }
+}
+
+/** 允许不注册的人报名：每场访客上限、报名链接（复制、重置） */
+@Composable
+private fun GuestSignupEditor(
+    group: PlayGroup, allowed: Boolean, onAllowed: (Boolean) -> Unit, limit: Int?, maxCapacity: Int, onLimit: (Int) -> Unit,
+) {
+    val env = LocalEnv.current
+    val colors = AppTheme.colors
+    val scope = rememberCoroutineScope()
+    var confirmsResetLink by remember { mutableStateOf(false) }
+    val shownLimit = minOf(maxCapacity, limit ?: GuestSignup.defaultLimit(maxCapacity))
+    val resetDone = tr("已换新链接，旧链接已失效")
+    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+        Column(Modifier.fillMaxWidth().sticker(colors.surface, radius = AppTheme.Radius.lg, shadow = AppTheme.Elevation.none)) {
+            ToggleRow(tr("允许不注册的人报名"), allowed, onAllowed, Modifier.defaultMinSize(minHeight = 60.dp).padding(horizontal = AppTheme.Spacing.md))
+            if (allowed) {
+                InsetDivider()
+                Row(
+                    Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).padding(horizontal = AppTheme.Spacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(tr("每场访客最多 %lld 人", shownLimit), style = AppTheme.Typography.bodyBold, color = colors.ink, modifier = Modifier.weight(1f))
+                    StepButtons(
+                        canDecrease = shownLimit > 1, canIncrease = shownLimit < maxCapacity,
+                        onDecrease = { onLimit(shownLimit - 1) }, onIncrease = { onLimit(shownLimit + 1) },
+                    )
+                }
+                InsetDivider()
+                // 链接在第一次打开、保存后才有
+                val link = group.guestSignup?.takeIf { it.allowed }?.link
+                if (link != null) {
+                    Column(Modifier.padding(AppTheme.Spacing.md), verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm), verticalAlignment = Alignment.CenterVertically) {
+                            IconTile(Sym.link, fill = colors.sky, size = 36.dp)
+                            Text(
+                                link.removePrefix("https://"), style = AppTheme.Typography.bodyBold, color = colors.ink,
+                                maxLines = 1, overflow = TextOverflow.MiddleEllipsis,
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.Spacing.sm), verticalAlignment = Alignment.CenterVertically) {
+                            CopyGuestLinkButton(link, Sym.docOnDoc, ButtonSize.Small, Modifier.weight(1f))
+                            TextAction(tr("重置链接"), { confirmsResetLink = true })
+                        }
+                    }
+                } else {
+                    Text(
+                        tr("保存后就有报名链接"), style = AppTheme.Typography.footnote, color = colors.inkSecondary,
+                        modifier = Modifier.fillMaxWidth().padding(AppTheme.Spacing.md),
+                    )
+                }
+            }
+        }
+        Text(tr("关掉后链接失效"), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
+    }
+    if (confirmsResetLink) {
+        ConfirmDialog(tr("重置报名链接？"), tr("旧链接会马上失效"), tr("重置链接"), onDismiss = { confirmsResetLink = false }) {
+            scope.launch {
+                try {
+                    env.groupManager.resetGuestLink(group.id)
+                    env.appState.showToast(resetDone, Toast.Style.Success)
+                } catch (error: RemoteError) {
+                    env.appState.showError(error)
+                }
             }
         }
     }
