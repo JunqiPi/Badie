@@ -318,7 +318,7 @@
 - 网站：建群填每人价格（0 = 免费）、球群页 / 访客报名页 / 每一场写价格、“你还没付”卡（球群页和球局页）、组织者的收款记录 `/groups/<id>/payments/`（还欠着、开过的场次、导出 CSV）和某一场 `/groups/<id>/payments/<场次>/`。`night.e2e.mjs` 加了这几步，本机通过
 - iPhone：同样几样（`Features/Night/LedgerViews.swift`、编辑球群的价格、当晚页的 `payOnly`），CI 编译和测试通过。用户定了放 **1.0.8**（版本号还没改，1.0.7 提交后再改）
 - 设计稿：https://claude.ai/artifact/NQRCGsWTAMYgsyhxnnkirw 的“1.0.8 价格和收款记录”那一行（7 张，按流程排）
-- 安卓（2026-11-23，开发分支）：收款这一套搬完了——编辑球群的价格、球群页和场次的价格、“你还没付”卡（球群页、球局页）和付款半屏、组织者的收款记录（导出 CSV，走 FileProvider 的 `exports/`）、某一场的收款、“我的 → 收款方式”。代码在 `features/groups/PaymentScreens.kt`、`backend/PaymentsApi.kt`、`models/Payments.kt`；单元测试 `PaymentsTest`、截图 `PaymentsScreenshotTest`。1.0.7 的排场、比赛、访客报名安卓还没有
+- 安卓（2026-11-23 推到 main）：收款这一套搬完了——编辑球群的价格、球群页和场次的价格、“你还没付”卡（球群页、球局页）和付款半屏、组织者的收款记录（导出 CSV，走 FileProvider 的 `exports/`）、某一场的收款、“我的 → 收款方式”。代码在 `features/groups/PaymentScreens.kt`、`backend/PaymentsApi.kt`、`models/Payments.kt`；单元测试 `PaymentsTest`、截图 `PaymentsScreenshotTest`。1.0.7 的排场、比赛、访客报名安卓还没有
 - **还没做**：金额只有美元
 - 本机跑安卓构建时 Maven 中央仓库会限流（429）：给 gradlew 加 `-I <初始化脚本>`，脚本里把 `https://maven-central.storage-download.googleapis.com/maven2/` 放到 pluginManagement 和 dependencyResolutionManagement 的仓库最前面（不要改全局配置）
 
