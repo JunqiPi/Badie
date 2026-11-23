@@ -98,6 +98,8 @@ export function LedgerPage({ id }: { id: string }) {
               {sessions.map((s) => {
                 const amount = priceText(s.amount);
                 const all = s.owes > 0 && s.paid >= s.owes;
+                // 没写金额、也没人付过的（多半是以前没用收款的场次）不显示“已付 0/18”
+                const tag = s.owes > 0 && (s.amount !== null || s.paid > 0);
                 return (
                   <li key={s.id}>
                     <Link to={`/groups/${id}/payments/${s.id}/`} className="sticker lift flex items-center gap-3 p-4">
@@ -107,7 +109,7 @@ export function LedgerPage({ id }: { id: string }) {
                           {[amount ?? t('No amount set'), s.venue].join(' · ')}
                         </p>
                       </div>
-                      {s.owes > 0 && (
+                      {tag && (
                         <Tag icon={all ? 'check' : undefined} tint={all ? 'mint' : 'butter'}>{t('Paid {n}/{total}', { n: s.paid, total: s.owes })}</Tag>
                       )}
                       <Icon name="chevronRight" className="size-4 shrink-0" />

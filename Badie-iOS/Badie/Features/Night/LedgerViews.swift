@@ -230,6 +230,8 @@ struct GroupLedgerView: View {
 
     private func sessionRow(_ session: GroupLedger.Session) -> some View {
         let all = session.owes > 0 && session.paid >= session.owes
+        // 没写金额、也没人付过的（多半是以前没用收款的场次）不显示“已付 0/18”
+        let tag = session.owes > 0 && (session.amount != nil || session.paid > 0)
         return HStack(spacing: AppTheme.Spacing.md) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: TimeSlot(date: session.startsAt, startTime: session.startsAt, endTime: session.endsAt).formattedFull)
@@ -241,7 +243,7 @@ struct GroupLedgerView: View {
                     .lineLimit(1)
             }
             Spacer(minLength: 0)
-            if session.owes > 0 {
+            if tag {
                 TagPill(text: String(localized: "已付 \(session.paid)/\(session.owes)"), icon: all ? "checkmark" : nil,
                         fill: all ? AppTheme.Colors.mint : AppTheme.Colors.butter)
             }
