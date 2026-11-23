@@ -316,7 +316,8 @@
 
 - 数据库：迁移 `20261231000000_group_ledger.sql`，测试 `group_ledger.test.sql`（本机全部 48 个测试文件通过）
 - 网站：建群填每人价格（0 = 免费）、球群页 / 访客报名页 / 每一场写价格、“你还没付”卡（球群页和球局页）、组织者的收款记录 `/groups/<id>/payments/`（还欠着、开过的场次、导出 CSV）和某一场 `/groups/<id>/payments/<场次>/`。`night.e2e.mjs` 加了这几步，本机通过
-- iPhone：同样几样（`Features/Night/LedgerViews.swift`、编辑球群的价格、当晚页的 `payOnly`），版本号没改。只能在 CI 上编译
+- iPhone：同样几样（`Features/Night/LedgerViews.swift`、编辑球群的价格、当晚页的 `payOnly`），CI 编译和测试通过。用户定了放 **1.0.8**（版本号还没改，1.0.7 提交后再改）
+- 设计稿：https://claude.ai/artifact/NQRCGsWTAMYgsyhxnnkirw 的“1.0.8 价格和收款记录”那一行（7 张，按流程排）
 - **还没做**：安卓（照 iPhone 搬）；金额只有美元
 
 ## 搜索：对准的词和落地页（2026-11-19，网站，已推 main）
