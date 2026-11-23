@@ -307,7 +307,8 @@
   - 公开看板 `live_board`（排场结束后 24 小时、比赛 7 天，只有名字）；球员的 `my_tonight`；球群页的 `group_tonight`（没改 `group_page`，旧版 App 不受影响）
 - 网站：`/night/<场次>/`、`/matches/…`、`/live/<码>/`、`/pay/<凭证>/`，球群页的按钮、球局页“今晚”卡、“+”菜单“比赛 · 循环赛”（英文 Match · round robin）、设置里的收款方式；二维码用 `qrcode-generator` 2.0.4。端到端测试 `night.e2e.mjs`。隐私政策加了收款方式和访客邮箱的保留时间
 - iPhone 1.0.7（版本号已改）：同样几样，看板用 App 里的 Safari 打开；`/app/matches/<id>/` 的通知打开比赛页
-- **还没做**：安卓（同样几样，照 iPhone 搬，这次没动 `Badie-Android/`）；比需求简单的地方见 `CLUB_NIGHT.md`
+- 安卓（2026-11-23，开发分支，没推 main）：排场和比赛照 iPhone 搬完——`models/ClubNight.kt`、`backend/NightApi.kt`、`features/night/`（当晚页、设置、加人、换人、撤销、看板、球群页场次行的“排场 / 看排场 / 付给… / 收款 · n 人没付”、球局页“今晚”卡）、`features/matches/`（新建、比赛页、输比分、积分榜、最终排名分享成图、我的 → 比赛）；“+”菜单“比赛 · 循环赛、淘汰赛”，推送 `/app/matches/<id>/` 打开比赛页。当晚页的“收款”和收款记录里的某一场共用 `SessionPayPanel`。和 iPhone 不一样：看板没有二维码（要加依赖），只显示链接、可复制和打开；看板用浏览器标签页（Custom Tabs）打开。单元测试 `ClubNightTest`，截图 `NightScreenshotTest`
+- **还没做**：比需求简单的地方见 `CLUB_NIGHT.md`
 - **上线前用户要做**：没有新的密钥。提交审核时 Notes 写一句“收款只是给出 Venmo / Cash App / PayPal 链接，钱不经过 App，是线下场地费，不走内购”（和打赏的说明分开）
 
 ## 球群的价格和收款记录（2026-11-23 推到 main：数据库、网站上线；iPhone 在 1.0.8）
@@ -318,7 +319,7 @@
 - 网站：建群填每人价格（0 = 免费）、球群页 / 访客报名页 / 每一场写价格、“你还没付”卡（球群页和球局页）、组织者的收款记录 `/groups/<id>/payments/`（还欠着、开过的场次、导出 CSV）和某一场 `/groups/<id>/payments/<场次>/`。`night.e2e.mjs` 加了这几步，本机通过
 - iPhone：同样几样（`Features/Night/LedgerViews.swift`、编辑球群的价格、当晚页的 `payOnly`），CI 编译和测试通过。用户定了放 **1.0.8**（版本号还没改，1.0.7 提交后再改）
 - 设计稿：https://claude.ai/artifact/NQRCGsWTAMYgsyhxnnkirw 的“1.0.8 价格和收款记录”那一行（7 张，按流程排）
-- 安卓（2026-11-23 推到 main）：收款这一套搬完了——编辑球群的价格、球群页和场次的价格、“你还没付”卡（球群页、球局页）和付款半屏、组织者的收款记录（导出 CSV，走 FileProvider 的 `exports/`）、某一场的收款、“我的 → 收款方式”。代码在 `features/groups/PaymentScreens.kt`、`backend/PaymentsApi.kt`、`models/Payments.kt`；单元测试 `PaymentsTest`、截图 `PaymentsScreenshotTest`。1.0.7 的排场、比赛、访客报名安卓还没有
+- 安卓（2026-11-23 推到 main）：收款这一套搬完了——编辑球群的价格、球群页和场次的价格、“你还没付”卡（球群页、球局页）和付款半屏、组织者的收款记录（导出 CSV，走 FileProvider 的 `exports/`）、某一场的收款、“我的 → 收款方式”。代码在 `features/groups/PaymentScreens.kt`、`backend/PaymentsApi.kt`、`models/Payments.kt`；单元测试 `PaymentsTest`、截图 `PaymentsScreenshotTest`。1.0.7 的排场、比赛见上一节
 - **还没做**：金额只有美元
 - 本机跑安卓构建时 Maven 中央仓库会限流（429）：给 gradlew 加 `-I <初始化脚本>`，脚本里把 `https://maven-central.storage-download.googleapis.com/maven2/` 放到 pluginManagement 和 dependencyResolutionManagement 的仓库最前面（不要改全局配置）
 

@@ -38,6 +38,9 @@ class PushTest {
         assertEquals(Route.Room("r-1"), route("/rooms/r-1/"))
         assertEquals(Route.Group("p-1"), route("/app/groups/p-1/"))
         assertEquals(Route.Challenges, route("/app/challenges/"))
+        // 比赛的通知（类型 match）打开比赛页
+        assertEquals(Route.Match("m-1"), route("/app/matches/m-1/"))
+        assertEquals(MainTab.Games, tab("/app/matches/m-1/"))
         assertEquals("没有具体球局就打开通知列表", Route.Notifications, route("/app/games/"))
         assertEquals(Route.Notifications, route(""))
         assertEquals(MainTab.Home, tab(""))

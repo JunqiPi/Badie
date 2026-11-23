@@ -209,6 +209,7 @@ fun MainTabView() {
                     CreateAction.QuickMatch -> router.isMatchSetupPresented = true
                     CreateAction.CreateRoom -> router.open(Route.CreateRoom(), MainTab.Games)
                     CreateAction.Groups -> router.open(Route.Groups, MainTab.Games)
+                    CreateAction.Match -> router.open(Route.CreateMatch(), MainTab.Games)
                     CreateAction.JoinRoom -> router.open(Route.JoinRoom(), MainTab.Games)
                 }
             }
@@ -269,6 +270,10 @@ private fun RouteDestination(route: Route) {
         is Route.GroupPayments -> com.badie.app.features.groups.GroupLedgerScreen(route.groupId)
         is Route.SessionPayments -> com.badie.app.features.groups.SessionPaymentsScreen(route.sessionId)
         Route.PaymentHandles -> com.badie.app.features.groups.PaymentHandlesScreen()
+        is Route.Night -> com.badie.app.features.night.NightScreen(route.sessionId, opensPay = route.pay)
+        is Route.CreateMatch -> com.badie.app.features.matches.MatchCreateScreen(route.sessionId)
+        is Route.Match -> com.badie.app.features.matches.MatchScreen(route.id)
+        Route.MyMatches -> com.badie.app.features.matches.MyMatchesScreen()
     }
 }
 
@@ -401,7 +406,7 @@ private fun RowScope.CreateButton(onCreate: () -> Unit) {
 
 // MARK: - “+”菜单
 
-enum class CreateAction { QuickMatch, CreateRoom, Groups, JoinRoom }
+enum class CreateAction { QuickMatch, CreateRoom, Groups, Match, JoinRoom }
 
 @Composable
 fun CreateMenuSheet(onSelect: (CreateAction) -> Unit) {
@@ -414,6 +419,7 @@ fun CreateMenuSheet(onSelect: (CreateAction) -> Unit) {
         CreateOption(Sym.boltFill, colors.lime, tr("快速匹配")) { onSelect(CreateAction.QuickMatch) }
         CreateOption(Sym.sportscourtFill, colors.peach, tr("发起球局")) { onSelect(CreateAction.CreateRoom) }
         CreateOption(Sym.person3Fill, colors.sky, tr("固定局 · 球群")) { onSelect(CreateAction.Groups) }
+        CreateOption(Sym.trophyFill, colors.butter, tr("比赛 · 循环赛、淘汰赛")) { onSelect(CreateAction.Match) }
         CreateOption(Sym.number, colors.lavender, tr("输入房间码 / 群号")) { onSelect(CreateAction.JoinRoom) }
     }
 }

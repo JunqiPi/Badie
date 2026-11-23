@@ -346,6 +346,9 @@ object DateText {
         return "${weekday(date, zone)} ${time(date, zone)}"
     }
 
+    /** 星期几加几点（周三 下午7时、Wed 7 PM）：付款备注里用 */
+    fun weekdayHour(date: Long, zone: ZoneId = ZoneId.systemDefault()): String = format(date, "EEEj", "EEE HH", zone)
+
     fun weekday(date: Long, zone: ZoneId = ZoneId.systemDefault()): String =
         RecurringTimeSlot.weekdayNames[weekdayOf(date, zone) - 1]
 

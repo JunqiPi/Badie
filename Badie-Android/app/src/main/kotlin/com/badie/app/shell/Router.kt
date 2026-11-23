@@ -65,6 +65,13 @@ sealed interface Route {
     data class VenueLeaderboard(val venueId: String) : Route
     /** 收到和发出的挑战 */
     data object Challenges : Route
+    /** 当晚：排场、比赛、收款（球群某一场的组织者和帮手）；pay 是直接打开收款 */
+    data class Night(val sessionId: String, val pay: Boolean = false) : Route
+    /** 新建比赛（从“当晚”开时带上那一场）、比赛页 */
+    data class CreateMatch(val sessionId: String? = null) : Route
+    data class Match(val id: String) : Route
+    /** 我的 → 比赛 */
+    data object MyMatches : Route
     /** 球群的收款记录（组织者），和其中某一场的收款 */
     data class GroupPayments(val groupId: String) : Route
     data class SessionPayments(val sessionId: String) : Route

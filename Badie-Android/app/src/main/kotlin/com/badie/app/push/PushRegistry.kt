@@ -92,6 +92,7 @@ object PushRegistry {
             first == "games" && id != null -> Route.Game(id) to MainTab.Games
             first == "rooms" && id != null -> Route.Room(id) to MainTab.Games
             first == "groups" && id != null -> Route.Group(id) to MainTab.Games
+            first == "matches" && id != null -> Route.Match(id) to MainTab.Games
             first == "join" -> Route.JoinRoom(query(uri, "code")) to MainTab.Games
             first == "challenges" -> Route.Challenges to MainTab.Games
             else -> Route.Notifications to MainTab.Home
