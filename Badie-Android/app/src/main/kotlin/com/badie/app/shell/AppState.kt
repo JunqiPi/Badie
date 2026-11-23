@@ -135,6 +135,8 @@ class AppEnvironment(
     val surveyManager = SurveyManager(context)
     val inboxManager = InboxManager(context)
     val groupManager = GroupManager(context, locationManager)
+    /** 收款：价格、你还没付、收款记录（见 features/groups/PaymentScreens.kt） */
+    val payments = com.badie.app.backend.PaymentsApi(backend.remote)
     /** 从网站下载安装的正式包：有新版本时提示（见 SideloadUpdates） */
     val updates = SideloadUpdates.forApp(android)
 }

@@ -65,6 +65,11 @@ sealed interface Route {
     data class VenueLeaderboard(val venueId: String) : Route
     /** 收到和发出的挑战 */
     data object Challenges : Route
+    /** 球群的收款记录（组织者），和其中某一场的收款 */
+    data class GroupPayments(val groupId: String) : Route
+    data class SessionPayments(val sessionId: String) : Route
+    /** 我的 → 收款方式 */
+    data object PaymentHandles : Route
 }
 
 // MARK: - 路由器：每个标签页一条独立的导航栈

@@ -17,6 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -92,6 +94,7 @@ fun GamesScreen() {
     val me = env.appState.currentUser?.id
     var segment by rememberSaveable { mutableStateOf(Segment.Upcoming) }
     val rankings = rememberRankingManager()
+    val scope = rememberCoroutineScope()
     LaunchedEffect(me) {
         try {
             rooms.refresh()
@@ -122,6 +125,12 @@ fun GamesScreen() {
                 }
             }
             TodoPills(rankings)
+            // 我还没付的（所有球群，写了金额的场次）：有才显示
+            var dues by remember { mutableStateOf(emptyList<com.badie.app.models.MyDue>()) }
+            LaunchedEffect(me) { quietly { dues = env.payments.myDues() } }
+            com.badie.app.features.groups.DuesCard(dues, Modifier.padding(horizontal = AppTheme.Spacing.screen)) {
+                scope.launch { quietly { dues = env.payments.myDues() } }
+            }
             book.nextGame?.let { game ->
                 GameTicketCard(
                     game, book.players(game), me, compact = true,

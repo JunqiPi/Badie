@@ -170,6 +170,8 @@ fun ProfileScreen() {
                             value = "${slots.size}/${TimeSlotConstants.MAXIMUM_RECURRING_SLOTS}",
                         ) { router.open(Route.RecurringSlots) }
                         InsetDivider()
+                        MenuRow(Sym.banknote, tr("收款方式"), tint = AppTheme.colors.mint) { router.open(Route.PaymentHandles) }
+                        InsetDivider()
                         MenuRow(Sym.locationCircleFill, tr("附近范围"), tint = AppTheme.colors.sky, value = DistanceFormatter.radius(location.preferences.travelRadiusKm)) {
                             showRadius = true
                         }

@@ -266,6 +266,9 @@ private fun RouteDestination(route: Route) {
         Route.Leaderboard -> LeaderboardScreen()
         is Route.VenueLeaderboard -> LeaderboardScreen(route.venueId)
         Route.Challenges -> ChallengesScreen()
+        is Route.GroupPayments -> com.badie.app.features.groups.GroupLedgerScreen(route.groupId)
+        is Route.SessionPayments -> com.badie.app.features.groups.SessionPaymentsScreen(route.sessionId)
+        Route.PaymentHandles -> com.badie.app.features.groups.PaymentHandlesScreen()
     }
 }
 

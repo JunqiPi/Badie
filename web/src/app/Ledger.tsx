@@ -180,7 +180,7 @@ function download(rows: LedgerRow[]) {
     return [at.date, at.time, r.venue, r.name, r.guest ? t('Guest') : '', r.amount ?? '', paid, r.paid_self ? t('Marked by them') : ''];
   });
   // 带 BOM，Excel 打开中文不乱码
-  const csv = '﻿' + [head, ...lines].map((line) => line.map(cell).join(',')).join('\r\n');
+  const csv = '\ufeff' + [head, ...lines].map((line) => line.map(cell).join(',')).join('\r\n');
   const link = document.createElement('a');
   link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   link.download = `badie-payments-${local(new Date().toISOString(), null).date}.csv`;

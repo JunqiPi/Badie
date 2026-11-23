@@ -348,7 +348,7 @@ class GroupManager(
                 id = session.id, groupId = detail.id, scheduleId = schedule?.id ?: "",
                 slot = TimeSlot.of(start, start, session.endsAt.toEpochMilli(), zone),
                 capacity = session.capacity, signedUp = signedUp, waitlist = waitlist, isCancelled = session.cancelled,
-                venueId = session.venue ?: schedule?.effectiveVenueId(group),
+                venueId = session.venue ?: schedule?.effectiveVenueId(group), price = session.price,
             )
         }
     }
@@ -387,7 +387,7 @@ class GroupManager(
             schedules = schedules.mapIndexed { index, schedule ->
                 GroupSchedule(
                     "$id-$index", schedule.weekday + 1, schedule.start, schedule.end, schedule.capacity,
-                    schedule.fee?.takeIf { it.isNotEmpty() }, venueId = schedule.venue,
+                    schedule.fee?.takeIf { it.isNotEmpty() }, venueId = schedule.venue, price = schedule.price,
                 )
             },
             joinPolicy = if (joinPolicy == "approval") PlayGroup.JoinPolicy.Approval else PlayGroup.JoinPolicy.Open,

@@ -53,6 +53,9 @@ data class PlayGroup(
             }
     }
 
+    /** 各场价格一样（都没写也算一样） */
+    val samePrice: Boolean get() = schedules.map { it.price }.toSet().size <= 1
+
     fun isMember(userId: String): Boolean = userId in memberIds
 
     fun isOrganizer(userId: String): Boolean = userId in organizerIds
@@ -110,6 +113,8 @@ data class GroupSchedule(
     val feeNote: String? = null,
     /** 在哪个球馆（群里的球馆之一）；null = 主球馆 */
     val venueId: String? = null,
+    /** 每人每场多少钱：0 = 免费，null = 没写。报名前就能看到，开场后按这个收 */
+    val price: Double? = null,
 ) {
     /** 这个场次实际在哪个球馆：不是群里的球馆（比如被删掉了）就回到主球馆 */
     fun effectiveVenueId(group: PlayGroup): String = venueId?.takeIf { it in group.venueIds } ?: group.venueId
@@ -131,6 +136,7 @@ data class GroupSchedule(
 
     companion object {
         const val FEE_NOTE_LIMIT = 120
+        val PRICE_RANGE = 0.0..1000.0
 
         /** 名额 4–40；教练带课的群 1–40（教练不报名，人数指学员） */
         fun capacityRange(coached: Boolean): IntRange = if (coached) 1..40 else 4..40
@@ -140,7 +146,7 @@ data class GroupSchedule(
             schedules.isNotEmpty() && schedules.size <= PlayGroup.MAX_SCHEDULES && schedules.all {
                 (it.endMinutes - it.startMinutes) in 60..720 && it.endMinutes <= 24 * 60 &&
                     it.capacity in capacityRange(coached) && it.weekday in 1..7
-            } && schedules.all { (it.feeNote?.characterCount ?: 0) <= FEE_NOTE_LIMIT }
+            } && schedules.all { (it.feeNote?.characterCount ?: 0) <= FEE_NOTE_LIMIT && (it.price?.let { price -> price in PRICE_RANGE } ?: true) }
     }
 }
 
@@ -159,6 +165,8 @@ data class GroupSession(
     val isCancelled: Boolean = false,
     /** 在哪个球馆；null = 球群的主球馆 */
     val venueId: String? = null,
+    /** 这一场每人多少钱：0 = 免费，null = 没写 */
+    val price: Double? = null,
 ) {
     fun effectiveVenueId(group: PlayGroup): String = venueId ?: group.venueId
 

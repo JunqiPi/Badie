@@ -332,6 +332,9 @@ object DateText {
         return dayText(date, zone)
     }
 
+    /** 月日，如中文 "11月18日"、英文 "Nov 18"（付款备注、你还没付的卡片） */
+    fun monthDay(date: Long, zone: ZoneId = ZoneId.systemDefault()): String = format(date, "MMMd", "M月d日", zone)
+
     /** 数字月日，如 "10/15" */
     fun shortDay(date: Long, zone: ZoneId = ZoneId.systemDefault()): String = format(date, "Md", "M/d", zone)
 

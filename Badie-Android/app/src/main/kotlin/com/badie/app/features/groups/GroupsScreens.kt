@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -80,6 +81,8 @@ import com.badie.app.features.social.shareText
 import com.badie.app.l10n.L10n
 import com.badie.app.l10n.tr
 import com.badie.app.models.Coordinate
+import com.badie.app.models.FeeText
+import com.badie.app.models.MyDue
 import com.badie.app.models.DistanceFormatter
 import com.badie.app.models.Gender
 import com.badie.app.models.GroupActivity
@@ -220,6 +223,14 @@ fun GroupScreen(id: String) {
     }
     val group = groupManager.group(id)
     val me = env.appState.currentUser?.id
+    // 我在这个群还没付的（写了金额的场次），见 PaymentScreens.kt
+    var dues by remember(id) { mutableStateOf(emptyList<MyDue>()) }
+    LaunchedEffect(id) {
+        try {
+            dues = env.payments.myDues(id)
+        } catch (_: RemoteError) {
+        }
+    }
     val disbanded = tr("球群已解散，成员会收到通知")
     val left = tr("已退出，已报名的场次也一并取消")
 
@@ -236,6 +247,14 @@ fun GroupScreen(id: String) {
                     Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = AppTheme.Spacing.screen).padding(bottom = AppTheme.Spacing.xxl),
                     verticalArrangement = Arrangement.spacedBy(AppTheme.Spacing.xl),
                 ) {
+                    DuesCard(dues, showsGroup = false) {
+                        scope.launch {
+                            try {
+                                dues = env.payments.myDues(id)
+                            } catch (_: RemoteError) {
+                            }
+                        }
+                    }
                     GroupHeader(group)
                     if (me != null && group.isMember(me)) SessionsSection(group) { sessionDetail = it } else JoinCard(group)
                     MembersSection(group)
@@ -307,6 +326,14 @@ private fun GroupHeader(group: PlayGroup) {
             group.audience?.let { TagPill(it.onlyLabel, fill = colors.peach) }
             TagPill(group.joinPolicy.title, icon = Sym.personBadgePlus, fill = colors.surfaceMuted, foreground = colors.ink)
             TagPill(tr("群号 %@", group.inviteCode), icon = Sym.number, fill = colors.surfaceMuted, foreground = colors.ink)
+            // 价格：各场一样就一个标签，不一样就写在每个每周场次后面（报名前就能看到）
+            if (group.samePrice) {
+                FeeText.price(group.schedules.firstOrNull()?.price)?.let { TagPill(it, icon = Sym.banknote, fill = colors.mint) }
+            } else {
+                group.schedules.forEach { schedule ->
+                    FeeText.price(schedule.price)?.let { TagPill("${schedule.weekdayTitle} ${schedule.timeText} · $it", icon = Sym.banknote, fill = colors.mint) }
+                }
+            }
         }
         group.feeLines.forEach { IconLine(Sym.banknote, it, AppTheme.Typography.subheadline, colors.ink) }
         IconLine(Sym.waveformPathEcg, groupManager.activity(group.id).text, AppTheme.Typography.footnoteBold)
@@ -317,6 +344,14 @@ private fun GroupHeader(group: PlayGroup) {
                 Symbol(Sym.bubbleLeftAndBubbleRightFill, size = 15)
                 Spacer(Modifier.size(AppTheme.Spacing.sm))
                 Text(tr("球群群聊"))
+            }
+        }
+        // 组织者：收款记录（开过的每一场谁付了、谁还欠着）
+        if (me != null && group.isOrganizer(me)) {
+            BrutalButton({ env.router.open(Route.GroupPayments(group.id)) }, kind = ButtonKind.Secondary, size = ButtonSize.Medium) {
+                Symbol(Sym.banknote, size = 15)
+                Spacer(Modifier.size(AppTheme.Spacing.sm))
+                Text(tr("收款"))
             }
         }
     }
@@ -507,6 +542,7 @@ fun SessionRow(session: GroupSession, userId: String, onOpen: () -> Unit) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(tr("已报 %lld/%lld", session.signedUp.size, session.capacity), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
                 if (session.waitlist.isNotEmpty()) Text(tr("· 候补 %lld", session.waitlist.size), style = AppTheme.Typography.footnote, color = colors.inkSecondary)
+                FeeText.price(session.price)?.let { Text("· $it", style = AppTheme.Typography.footnote, color = colors.inkSecondary) }
             }
             ProgressBar(session.signedUp.size.toFloat() / maxOf(1, session.capacity), Modifier.widthIn(max = 160.dp))
         }
@@ -675,6 +711,7 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
             !isEditing && pickedVenueId == null -> tr("选择固定的球馆")
             schedules.any { it.endMinutes - it.startMinutes < 60 } -> tr("每场至少 1 小时")
             schedules.any { it.endMinutes - it.startMinutes > 720 } -> tr("每场最长 12 小时")
+            schedules.any { schedule -> schedule.price?.let { it !in GroupSchedule.PRICE_RANGE } ?: false } -> tr("价格最多 \$1000。")
             else -> null
         }
     }
@@ -763,7 +800,7 @@ fun CreateGroupScreen(venueId: String?, editingGroupId: String? = null) {
                 if (schedules.size < PlayGroup.MAX_SCHEDULES) {
                     TextAction(tr("再加一个场次"), {
                         val last = schedules.last()
-                        schedules.add(GroupSchedule(UUID.randomUUID().toString(), last.weekday % 7 + 1, last.startMinutes, last.endMinutes, last.capacity))
+                        schedules.add(GroupSchedule(UUID.randomUUID().toString(), last.weekday % 7 + 1, last.startMinutes, last.endMinutes, last.capacity, price = last.price))
                     })
                 }
             }
@@ -914,6 +951,8 @@ private fun ScheduleEditor(
                 onIncrease = { onChange(schedule.copy(capacity = schedule.capacity + step)) },
             )
         }
+        // 价格：空 = 不写，0 = 免费（输入框自己记着字，换了场次重新取）
+        key(schedule.id) { PriceField(schedule.price) { onChange(schedule.copy(price = it)) } }
         MultilineField(
             schedule.feeNote.orEmpty(), { onChange(schedule.copy(feeNote = it.ifEmpty { null })) }, "", label = tr("费用说明（选填）"),
             characterLimit = GroupSchedule.FEE_NOTE_LIMIT,

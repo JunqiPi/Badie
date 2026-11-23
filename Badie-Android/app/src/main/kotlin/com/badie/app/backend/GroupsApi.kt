@@ -16,7 +16,11 @@ import java.time.Instant
 
 /** venue：在哪个球馆；null = 主球馆（旧服务器没有这一项） */
 @Serializable
-class RemoteSchedule(val weekday: Int, val start: Int, val end: Int, val capacity: Int, val fee: String? = null, val venue: String? = null)
+class RemoteSchedule(
+    val weekday: Int, val start: Int, val end: Int, val capacity: Int, val fee: String? = null, val venue: String? = null,
+    /** 每人每场多少钱：0 = 免费，null = 没写（旧服务器没有这一项） */
+    val price: Double? = null,
+)
 
 @Serializable
 class RemoteGroupVenue(val id: String, val name: String, val city: String? = null, val tz: String? = null)
@@ -78,6 +82,8 @@ class RemoteGroupDetail(
         val players: List<Player>? = null,
         /** 这一场在哪个球馆（旧服务器没有这一项） */
         val venue: String? = null,
+        /** 这一场每人多少钱（旧服务器没有这一项） */
+        val price: Double? = null,
     ) {
         @Serializable
         class Player(val id: String, val nickname: String, val waitlisted: Boolean)
@@ -160,9 +166,10 @@ class GroupsApi(private val remote: SupabaseClient) {
 
     companion object {
         /** 服务器的星期是 0 = 周日（本地 1 = 周日）；不在主球馆的场次带上 venue */
-        fun serverSchedules(schedules: List<GroupSchedule>): List<Map<String, Any>> = schedules.map {
-            val item = mutableMapOf<String, Any>(
+        fun serverSchedules(schedules: List<GroupSchedule>): List<Map<String, Any?>> = schedules.map {
+            val item = mutableMapOf<String, Any?>(
                 "weekday" to it.weekday - 1, "start" to it.startMinutes, "end" to it.endMinutes, "capacity" to it.capacity, "fee" to (it.feeNote ?: ""),
+                "price" to it.price,
             )
             it.venueId?.let { venue -> item["venue"] = venue }
             item
